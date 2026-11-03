@@ -1,0 +1,54 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index b2d629af..1af66e84 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -438,7 +438,11 @@ internal sealed partial class LythonRuntime
+                 }
+             }
+ 
+-            var result = new PyDict(context.MemoryGovernor, span);
++            // Native members cannot expose their enclosing object until its
++            // hook runs. Stage them under one working reservation, then admit
++            // final dictionary capacity once instead of growing it per field.
++            using var memberStorage = context.MemoryGovernor.ReserveTemporary(64, span);
++            var members = new List<KeyValuePair<object, object>>();
+             var valueEnd = -1;
+             while (true)
+             {
+@@ -449,8 +453,18 @@ internal sealed partial class LythonRuntime
+                 if (peek < bytes.Length && bytes.Span[peek] == (byte)'}')
+                 {
+                     var end = peek + 1;
++                    var result = new PyDict(PyDictStorage.Create(members.Count, context.MemoryGovernor, span), context.MemoryGovernor, span);
++                    foreach (var member in members)
++                    {
++                        context.CheckExecution(span);
++                        result.SetItem(member.Key, member.Value);
++                    }
+                     if (matched && result.Count == expected.Length) context.State.JsonRecordKeys = expected;
+                     else context.State.RememberJsonRecordKeys(result.Keys, result.Count, span);
++                    // No callback can borrow this private staging list. Relinquish
++                    // it before awaiting the hook; payloads have independent owners.
++                    members = null!;
++                    memberStorage.Dispose();
+                     return options.ObjectHook is null
+                         ? ((object)result, end)
+                         : (await InvokeJsonCallbackCoreAsync(options.ObjectHook, result, context, span, asynchronous).ConfigureAwait(false), end);
+@@ -487,7 +501,16 @@ internal sealed partial class LythonRuntime
+ 
+                 var memberColon = EnsureJsonColon(bytes.Span, memberKeyEnd, input, span, context);
+                 var (memberValue, memberEnd) = await ReadJsonValueAsync(input, options, context, span, depth, memberColon + 1, asynchronous).ConfigureAwait(false);
+-                result.SetItem(memberKey, memberValue);
++                if (members.Count == members.Capacity)
++                {
++                    var oldCapacity = members.Capacity;
++                    var capacity = oldCapacity == 0 ? 4 : checked(oldCapacity * 2);
++                    // Old and replacement arrays coexist during capacity growth.
++                    memberStorage.Grow(checked(32L + 32L * capacity), span);
++                    members.Capacity = capacity;
++                    if (oldCapacity != 0) memberStorage.Shrink(32L + 32L * oldCapacity);
++                }
++                members.Add(new(memberKey, memberValue));
+                 context.CheckExecution(span);
+                 valueEnd = memberEnd;
+             }

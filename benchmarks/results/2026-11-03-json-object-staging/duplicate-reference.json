@@ -1,0 +1,6 @@
+{
+  "reference": "CPython 3.13.2 -I -S -X utf8",
+  "expected": "2098176\n",
+  "actual": "2098176\n",
+  "passed": true
+}

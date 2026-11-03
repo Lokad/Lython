@@ -2092,3 +2092,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   unknown/reordered near controls, config timing variable. Both APIs, 767 public/
   181 internal per framework PASS. Full 41672373384 active. Changed-key snapshot
   metadata stays batch-owned; no new owner graph or interning guarantee.
+
+- [Native JSON object staging, B169](results/2026-11-03-json-object-staging/README.md):
+  WITHDRAWN. Final capacity once from member count adds a pair representation;
+  report allocation +5.02%, duplicate-heavy +10–11% elapsed/+18.98% allocation,
+  accounted peak +655,360 B. Unique/unknown allocation −2–3%, CPU inconclusive.
+  Both APIs, controls/goldens/gates/balances/joins retained; no contract promotion,
+  extra retime or full qualification. Restore B166 and assess complete activation/
+  operand storage rather than another staging or name-index variation.

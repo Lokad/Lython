@@ -1,0 +1,11 @@
+{
+  "baselineRevision": "2323ccebc8d526e5a5e0214d85d2de9feba5bff2",
+  "baselineCoreSHA256": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+  "candidateCoreSHA256": "a0cf86434a9cf3406c6d84093a66bb0ebacd90ad36c9302305b60135975dd01a",
+  "focusedReleaseNet11": {
+    "public": 767,
+    "whitebox": 181
+  },
+  "sourceSHA256": "8b20a9ad6d72198b06dfdf044bc24641d3b415853bc88a05b0bcc398475be0ea",
+  "publication": "postponed"
+}
