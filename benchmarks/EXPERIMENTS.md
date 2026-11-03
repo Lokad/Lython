@@ -2001,3 +2001,8 @@ The [B151 bulk text source pair](results/2026-11-03-bulk-text-operations/README.
 retains only managed bulk casing. Both whitespace scanners are removed after
 short-ASCII/Unicode regressions; all three variants, controls and original failure
 conditions remain. Allocation is unchanged; canonical/long elapsed gains are modest.
+
+The [B153 owned JSON-name set](results/2026-11-03-json-owned-name-set-withdrawn/README.md)
+reduces unique-name allocation/elapsed but harms repeated-schema report timing.
+Both initial and native-span refinements are removed; all controls and source
+variants remain. The prior unique-name debt is unresolved.

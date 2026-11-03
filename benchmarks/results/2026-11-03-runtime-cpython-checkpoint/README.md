@@ -4,8 +4,9 @@
 core **578496bb2cd47ba826729dca9fe2cbadf277597caafe518d745e36a2d2e2f92c**.
 Frozen after a joined nonincremental Release build,0 warnings. Includes B150 CSV
 and retained B151 bulk casing; both scanner prototypes are absent. Later uncommitted
-work is excluded. Full delivery41600267923 runs independently; qualification is
-recorded separately. No publication, causal source speedup or guest-only CPU claim.
+work is excluded. Full delivery41600267923 is GREEN on the same exact runtime: Windows/Ubuntu
+ordinary Release.NET11/10, original Stress and installed consumers. The cached
+receipt is in../2026-11-03-bulk-text-operations/delivery-ci-status.json. No publication, causal source speedup or guest-only CPU claim.
 
 | Complete script | Fresh Lython / CPython ms (ratio) | Warm Lython / CPython ms (ratio) | Identical Lython control fresh / warm |
 | --- | ---: | ---: | ---: |

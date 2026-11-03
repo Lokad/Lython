@@ -73,5 +73,6 @@ Focused Release263 internal and1,493 public cases per actual.NET11/.NET10 PASS:
 Unicode inventories/context, casing boundaries, split/rsplit/count/remainders,
 cooperative cancellation, terminal admission refusal, aliases and zero balances.
 Broader public ASCII-control and chunk-edge regressions remain independently useful.
-Full Windows/Ubuntu, original Stress and installed consumers batch at delivery;
-qualification status will be recorded separately. Publication remains postponed.
+Full41600267923 is GREEN on exactbd3f9dee: Windows/Ubuntu ordinary Release.NET11/10,
+original Stress and installed consumers PASS; every required step verified in
+[the cached receipt](delivery-ci-status.json). No unchanged replay. Publication postponed.

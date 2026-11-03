@@ -1,0 +1,148 @@
+[
+  {
+    "variant": "initial",
+    "cases": [
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 5116036,
+            "PeakRootBytes": 5213028
+          },
+          "candidate": {
+            "PeakExecutionBytes": 5115924,
+            "PeakRootBytes": 5212916
+          },
+          "before-control": {
+            "PeakExecutionBytes": 5116036,
+            "PeakRootBytes": 5213028
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 4556536,
+            "PeakRootBytes": 4638712
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4556424,
+            "PeakRootBytes": 4638600
+          },
+          "before-control": {
+            "PeakExecutionBytes": 4556536,
+            "PeakRootBytes": 4638712
+          }
+        }
+      },
+      {
+        "case": "scripts.json-unique-keys.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 3123819,
+            "PeakRootBytes": 3179883
+          },
+          "candidate": {
+            "PeakExecutionBytes": 2799899,
+            "PeakRootBytes": 2855963
+          },
+          "before-control": {
+            "PeakExecutionBytes": 3123819,
+            "PeakRootBytes": 3179883
+          }
+        }
+      },
+      {
+        "case": "scripts.json-unique-long-keys.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 4687659,
+            "PeakRootBytes": 4743723
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4363739,
+            "PeakRootBytes": 4419803
+          },
+          "before-control": {
+            "PeakExecutionBytes": 4687659,
+            "PeakRootBytes": 4743723
+          }
+        }
+      }
+    ]
+  },
+  {
+    "variant": "refined",
+    "cases": [
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 5116036,
+            "PeakRootBytes": 5213028
+          },
+          "candidate": {
+            "PeakExecutionBytes": 5115924,
+            "PeakRootBytes": 5212916
+          },
+          "before-control": {
+            "PeakExecutionBytes": 5116036,
+            "PeakRootBytes": 5213028
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 4556536,
+            "PeakRootBytes": 4638712
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4556424,
+            "PeakRootBytes": 4638600
+          },
+          "before-control": {
+            "PeakExecutionBytes": 4556536,
+            "PeakRootBytes": 4638712
+          }
+        }
+      },
+      {
+        "case": "scripts.json-unique-keys.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 3123819,
+            "PeakRootBytes": 3179883
+          },
+          "candidate": {
+            "PeakExecutionBytes": 2799899,
+            "PeakRootBytes": 2855963
+          },
+          "before-control": {
+            "PeakExecutionBytes": 3123819,
+            "PeakRootBytes": 3179883
+          }
+        }
+      },
+      {
+        "case": "scripts.json-unique-long-keys.large",
+        "peaks": {
+          "before": {
+            "PeakExecutionBytes": 4687659,
+            "PeakRootBytes": 4743723
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4363739,
+            "PeakRootBytes": 4419803
+          },
+          "before-control": {
+            "PeakExecutionBytes": 4687659,
+            "PeakRootBytes": 4743723
+          }
+        }
+      }
+    ]
+  }
+]

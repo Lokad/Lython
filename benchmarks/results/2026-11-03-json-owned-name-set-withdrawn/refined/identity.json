@@ -1,0 +1,21 @@
+{
+  "sourceRevision": "bd3f9dee plus B153 native-span owned-name HashSet refinement",
+  "baseCommit": "bd3f9dee3d0f372f6738c1973cb042bd12903e20",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "578496bb2cd47ba826729dca9fe2cbadf277597caafe518d745e36a2d2e2f92c",
+    "candidate": "85bc20eced41c1842111abcf525df739639ce1784e9a86104278e1d1210aa25a",
+    "before-control": "578496bb2cd47ba826729dca9fe2cbadf277597caafe518d745e36a2d2e2f92c"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/ExecutionState.JsonKeys.cs": "62aaea2b83fd328f0a65991690e9be8de69b194246c3d7492f913176271f0af8"
+  },
+  "normalizedAuxiliaryBits": [
+    "Lokad.Lython.Benchmarks.dll",
+    "Lokad.Lython.Benchmarks.exe",
+    "Lokad.Lython.Benchmarks.pdb",
+    "Lokad.Lython.Utf8Regex.dll",
+    "Lokad.Lython.Utf8Regex.pdb"
+  ],
+  "allocationDriverReuse": "unchanged B150 helper, legacy purpose label; actual case IDs/catalogue/hashes define this diagnostic"
+}
