@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "3662fc56 plus B150 record-staging prototype",
+  "baseCommit": "3662fc56eabf69757d281e5740c9348ab310b796",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "3b5b9c67e0e1b2e5f2367f896225d914d3357c803e859caf75c9988c9fb5838d",
+    "candidate": "87f3ce5bee709fd66fe55d5e6ea287341711ed2018e60c770c874340e90a42fa",
+    "before-control": "3b5b9c67e0e1b2e5f2367f896225d914d3357c803e859caf75c9988c9fb5838d"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "9f9e956bb170795a5be462d99371dbd0c1463d5596ddde84552f07a9084e1492"
+  },
+  "normalizedAuxiliaryBits": {
+    "reason": "unchanged helper/adapter source rebuilt against private core reference metadata; identical bits in both images",
+    "replaced": [
+      "Lokad.Lython.Benchmarks.dll",
+      "Lokad.Lython.Benchmarks.pdb",
+      "Lokad.Lython.Utf8Regex.dll",
+      "Lokad.Lython.Utf8Regex.pdb"
+    ]
+  },
+  "allocationPeaks": "one untimed initial full invocation per image; accounted execution/aggregate root, not CLR residency"
+}

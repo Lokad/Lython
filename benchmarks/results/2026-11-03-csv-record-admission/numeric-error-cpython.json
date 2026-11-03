@@ -1,0 +1,6 @@
+{
+  "version": "Python 3.13.2",
+  "source": "\nimport csv\nevents=[]\ndef rows():\n    events.append('first')\n    yield 'bad,\"open\\n'\n    events.append('second')\n    yield 'close\",1\\n'\nr=csv.reader(rows(),quoting=csv.QUOTE_NONNUMERIC,strict=True)\ntry:next(r)\nexcept ValueError as error:print(str(error))\nprint(r.line_num,events)\n",
+  "stdout": "could not convert string to float: 'bad'\n1 ['first']\n",
+  "stderr": ""
+}

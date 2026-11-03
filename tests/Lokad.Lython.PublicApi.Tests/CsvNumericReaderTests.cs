@@ -13,6 +13,19 @@ public sealed class CsvNumericReaderTests
         { "recovery", "import csv\nr=csv.reader(['1,bad','2,\"three\"','٤,5'],quoting=csv.QUOTE_NONNUMERIC)\ntry:\n next(r)\nexcept ValueError as e:\n print(type(e).__name__,str(e))\nprint(next(r),next(r),next(r,'end'))", "ValueError could not convert string to float: 'bad'\n[2.0, 'three'] [4.0, 5.0] end\n" },
         { "dict", "import csv\nr=csv.DictReader(['\"a\",\"b\"','1,2,3','4'],restkey='extra',restval='missing',quoting=csv.QUOTE_NONNUMERIC)\nprint(list(r))", "[{'a': 1.0, 'b': 2.0, 'extra': [3.0]}, {'a': 4.0, 'b': 'missing'}]\n" },
         { "default", "import csv\nprint(list(csv.reader(['1,2'],quoting=csv.QUOTE_MINIMAL)))", "[['1', '2']]\n" },
+        { "conversion before further input", """
+            import csv
+            events=[]
+            def rows():
+                events.append('first')
+                yield 'bad,"open\n'
+                events.append('second')
+                yield 'close",1\n'
+            r=csv.reader(rows(),quoting=csv.QUOTE_NONNUMERIC,strict=True)
+            try:next(r)
+            except ValueError as error:print(str(error))
+            print(r.line_num,events)
+            """, "could not convert string to float: 'bad'\n1 ['first']\n" },
         { "arithmetic", "import csv\nfor row in csv.reader(['1,2','٣,4'],quoting=csv.QUOTE_NONNUMERIC):\n print(row[0]+1)", "2.0\n4.0\n" },
     };
 

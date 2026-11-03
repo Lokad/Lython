@@ -803,10 +803,15 @@ or publishing buffered history. Field conversion uses Python string protocols;
 RunAsync awaits guest conversions and sink callbacks. Native escaping checks
 cancellation. Buffered writers retain rendered rows and their capacity until the
 execution owner ends; getvalue admits an independent result and omits the final
-terminator. Readers consume borrowed UTF-8 lines directly and accumulate fields in
-the existing governed byte builder, without whole-line decoding or field re-encoding.
-Field capacity and replacement overlap stay funded; completed strings acquire
-independent ownership before scratch is reused. EOF releases working capacity while
+terminator. Readers consume borrowed UTF-8 lines directly and stage decoded record
+bytes and field boundaries, without whole-line decoding or field re-encoding.
+Text-field storage is admitted as a batch before constructing the final row; each
+returned string owns a copy before scratch is reused. Non-numeric quoting converts
+unquoted numbers at the field boundary, preserving error and source-consumption
+order. Record capacity and replacement overlap stay funded. A wide record can need
+more working capacity than its largest individual field, causing earlier admission
+refusal; allow headroom for the record buffer alongside its output payloads.
+EOF releases working capacity while
 queued and retained rows remain charged. Parsing checks cancellation in bounded
 chunks. Readers acquire one source iterator
 at construction in the selected execution mode. Dictionary readers infer headers

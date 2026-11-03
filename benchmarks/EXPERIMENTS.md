@@ -1990,3 +1990,9 @@ are withdrawn after a bounded representation refinement. Text allocation falls
 about3%, but general allocation and representative elapsed costs remain adverse.
 Both source variants, original CRLF-golden failure and all controls remain; independent
 ownership regressions survive. Global string sharing is not permanently ruled out.
+
+The [CSV record admission migration](results/2026-11-03-csv-record-admission/README.md)
+is retained after a bounded same-source confirmation. It reduces allocation4.5–13.6%
+and improves variable-width CSV elapsed/CPU about10%. Canonical timings vary; a
+single wide record demonstrates additional working-memory headroom. Both tradeoffs
+and all adverse data remain explicit, separately from CPython comparisons.

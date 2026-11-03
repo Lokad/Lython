@@ -59,7 +59,7 @@ public sealed class CsvDenialOwnershipTests
         var parser = Parser(source);
         parser.Feed("\"prefix\n"u8);
         var field = (GovernedByteBuilder)typeof(LythonRuntime.CsvRecordParser)
-            .GetField("_field", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
+            .GetField("_record", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
         var capacity = checked((int)field.CommittedCapacity);
         var committed = context.MemoryGovernor.CurrentCommittedBytes;
         var pressure = Cap - context.MemoryGovernor.CurrentAccountedBytes;
@@ -86,7 +86,7 @@ public sealed class CsvDenialOwnershipTests
         var parser = Parser(source);
         parser.Feed(Encoding.UTF8.GetBytes("\"" + new string('x', 15) + "\n")); // supplied newline fills the initial 16 bytes
         var field = (GovernedByteBuilder)typeof(LythonRuntime.CsvRecordParser)
-            .GetField("_field", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
+            .GetField("_record", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
         Assert.Equal(16, field.Length);
         Assert.Equal(16, field.CommittedCapacity);
         var owned = source.OwnedBytes;
@@ -158,6 +158,8 @@ public sealed class CsvDenialOwnershipTests
         var governor = context.MemoryGovernor;
         var owner = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
         var parser = Parser(owner);
+        parser.Feed("prime\n"u8);
+        Assert.True(parser.TryTakeReady(out _)); // Reuse admitted descriptor/queue capacity.
         parser.Feed("\"\n"u8); // Pending quoted field contains one supplied newline.
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
@@ -180,7 +182,7 @@ public sealed class CsvDenialOwnershipTests
     }
 
     [Fact]
-    public void DeniedRowBackingAdmissionPreservesCompletedFields()
+    public void DeniedRowBackingAdmissionPreservesRecordWorkingStorage()
     {
         var context = Context();
         var governor = context.MemoryGovernor;
@@ -189,7 +191,8 @@ public sealed class CsvDenialOwnershipTests
         parser.Feed("x,\"\n"u8); // Retained first field and pending newline field.
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
-        // Finish the field, then deny private row backing before publication.
+        // Admit both payload estimates, then deny row backing before any final
+        // field payload is allocated. Staged record bytes remain funded.
         var pressure = Cap - governor.CurrentAccountedBytes - (129 + 192 - 1);
         governor.Reserve(pressure, Span);
 
@@ -197,8 +200,7 @@ public sealed class CsvDenialOwnershipTests
 
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Equal(reserved + pressure, governor.CurrentReservedBytes);
-        Assert.Equal(committed + 129,
-            governor.CurrentCommittedBytes);
+        Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.True(governor.PeakAccountedBytes <= Cap);
         governor.ReleaseReserved(pressure);
         parser.ResetRecord();
@@ -206,6 +208,41 @@ public sealed class CsvDenialOwnershipTests
         parser.ReleaseScratch();
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(owner);
+    }
+
+    [Fact]
+    public void WholeRecordAdmissionPrecedesFinalFieldAllocation()
+    {
+        var budget = new LythonMemoryBudget(Cap);
+        using var owner = budget.CreateScope();
+        var context = Context(owner);
+        var governor = context.MemoryGovernor;
+        var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
+        var parser = Parser(source);
+        parser.Feed("retained\n"u8);
+        Assert.True(parser.TryTakeReady(out var previous));
+        const int length = 65536;
+        parser.Feed(Encoding.UTF8.GetBytes(new string('a', length) + ",\"" + new string('b', length)));
+        var committed = governor.CurrentCommittedBytes;
+        Assert.True(owner.TryReserve(Cap - budget.ReservedBytes - 70000, out var pressure));
+        using (pressure)
+        {
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var refusal = Assert.Throws<LythonRuntimeException>(() => parser.Feed("\"\n"u8));
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.Same(governor.AdmissionFailure, refusal);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, refusal.Attribution?.Reason);
+            Assert.True(allocated < 32768, $"Allocated {allocated} bytes before refusing complete record storage.");
+            Assert.Equal(committed, governor.CurrentCommittedBytes);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            Assert.False(parser.TryTakeReady(out _));
+            Assert.Equal("retained", Assert.IsType<PyString>(previous[0]).AsString());
+            parser.ResetRecord();
+            Assert.Same(refusal, Assert.Throws<LythonRuntimeException>(() => parser.Feed("ok\n"u8)));
+            parser.ReleaseScratch();
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]
@@ -241,7 +278,7 @@ public sealed class CsvDenialOwnershipTests
         var parser = Parser(owner);
         parser.Feed(Encoding.UTF8.GetBytes(input));
         var field = (GovernedByteBuilder)typeof(LythonRuntime.CsvRecordParser)
-            .GetField("_field", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
+            .GetField("_record", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
         Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes + rowBytes + field.CommittedCapacity, owner.OwnedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         GC.KeepAlive(owner);

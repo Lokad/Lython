@@ -1,0 +1,70 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 8423764,
+        "PeakRootBytes": 8519860
+      },
+      "candidate": {
+        "PeakExecutionBytes": 8423780,
+        "PeakRootBytes": 8519876
+      },
+      "before-control": {
+        "PeakExecutionBytes": 8423764,
+        "PeakRootBytes": 8519860
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large.ragged",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 30927124,
+        "PeakRootBytes": 31023220
+      },
+      "candidate": {
+        "PeakExecutionBytes": 30927236,
+        "PeakRootBytes": 31023332
+      },
+      "before-control": {
+        "PeakExecutionBytes": 30927124,
+        "PeakRootBytes": 31023220
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large.multiline",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 1710550,
+        "PeakRootBytes": 1806646
+      },
+      "candidate": {
+        "PeakExecutionBytes": 1710582,
+        "PeakRootBytes": 1806678
+      },
+      "before-control": {
+        "PeakExecutionBytes": 1710550,
+        "PeakRootBytes": 1806646
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large.long-fields",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 1217499,
+        "PeakRootBytes": 1313595
+      },
+      "candidate": {
+        "PeakExecutionBytes": 1217547,
+        "PeakRootBytes": 1313643
+      },
+      "before-control": {
+        "PeakExecutionBytes": 1217499,
+        "PeakRootBytes": 1313595
+      }
+    }
+  }
+]

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Batch CSV text-field admission and row construction within the existing parser.
+  Preserve immediate numeric conversion, cancellation and retained-row ownership.
+  Record working storage can exceed the largest-field buffer used previously;
+  this can require more admission headroom for a wide record.
+
 - Return a fresh read-only proxy for each class `__dict__`/`vars` access, as in
   Python, while sharing live namespace storage and mutation tracking. Admit each
   proxy through its execution owner; instance dictionary identity is unchanged.

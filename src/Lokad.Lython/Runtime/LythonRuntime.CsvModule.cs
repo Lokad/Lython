@@ -458,8 +458,10 @@ internal sealed partial class LythonRuntime
         private readonly PyString _delimiter;
         private readonly PyString? _quoteCharacter;
         private readonly PyString? _escapeCharacter;
-        private readonly List<object> _row = new();
-        private readonly GovernedByteBuilder _field;
+        private readonly List<CsvField> _fields = new();
+        private readonly GovernedByteBuilder _record;
+        private int _fieldStart;
+        private long _stringBytes;
         private readonly CsvRecordSource _owner;
         private readonly List<PyList> _ready = new();
         private int _readyHead;
@@ -469,7 +471,15 @@ internal sealed partial class LythonRuntime
         private bool _afterQuote;
         private bool _recordStarted;
 
-        internal long StorageBytes => checked(16L * _row.Capacity + _field.CommittedCapacity + 16L * _ready.Capacity);
+        // Field descriptors and native record bytes are private working storage.
+        // Returned strings acquire independent payloads before publication.
+        private readonly struct CsvField(int start, int length, object? converted)
+        {
+            internal readonly int Start = start, Length = length;
+            internal readonly object? Converted = converted;
+        }
+
+        internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity + 16L * _ready.Capacity);
 
         public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, CsvRecordSource owner)
         {
@@ -477,7 +487,7 @@ internal sealed partial class LythonRuntime
             _context = context;
             _span = span;
             _owner = owner;
-            _field = new GovernedByteBuilder(context.MemoryGovernor, span, 16);
+            _record = new GovernedByteBuilder(context.MemoryGovernor, span, 16);
             _delimiter = options.Delimiter;
             _quoteCharacter = options.QuoteChar;
             _escapeCharacter = options.EscapeChar;
@@ -518,7 +528,7 @@ internal sealed partial class LythonRuntime
                 {
                     // Copy ordinary text in bounded runs. A native growth can
                     // signal cancellation; check before any further parsing.
-                    _field.Append(text[runStart..i]);
+                    _record.Append(text[runStart..i]);
                     runStart = i;
                     _context.CheckExecution(_span);
                     nextCheck = (long)i + 4096;
@@ -528,18 +538,18 @@ internal sealed partial class LythonRuntime
                 {
                     if (MatchesEscapeAt(text, i))
                     {
-                        _field.Append(text[runStart..i]);
+                        _record.Append(text[runStart..i]);
                         ConsumeEscape(text, ref i);
                         runStart = i + 1;
                         continue;
                     }
                     if (MatchesQuoteAt(text, i))
                     {
-                        _field.Append(text[runStart..i]);
+                        _record.Append(text[runStart..i]);
                         var quote = _quoteCharacter!.Utf8Bytes.Span;
                         if (_options.DoubleQuote && MatchesCsvAt(text, i + quote.Length, _quoteCharacter))
                         {
-                            _field.Append(quote);
+                            _record.Append(quote);
                             i += 2 * quote.Length - 1;
                         }
                         else
@@ -555,7 +565,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (c is (byte)'\r' or (byte)'\n')
                 {
-                    _field.Append(text[runStart..i]);
+                    _record.Append(text[runStart..i]);
                     FinishRecord();
                     if (c == (byte)'\r' && i + 1 < text.Length && text[i + 1] == (byte)'\n') i++;
                     runStart = i + 1;
@@ -563,7 +573,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (MatchesCsvAt(text, i, _delimiter))
                 {
-                    _field.Append(text[runStart..i]);
+                    _record.Append(text[runStart..i]);
                     FinishField();
                     i += _delimiter.Utf8Bytes.Length - 1;
                     runStart = i + 1;
@@ -571,7 +581,7 @@ internal sealed partial class LythonRuntime
                     _afterQuote = false;
                     continue;
                 }
-                if (_options.SkipInitialSpace && !_fieldStarted && _field.Length == 0 && c == (byte)' ')
+                if (_options.SkipInitialSpace && !_fieldStarted && _record.Length == _fieldStart && c == (byte)' ')
                 {
                     runStart = i + 1;
                     continue;
@@ -589,7 +599,7 @@ internal sealed partial class LythonRuntime
                 if (_afterQuote) throw CsvError("Invalid csv input.", _span);
                 if (MatchesEscapeAt(text, i))
                 {
-                    _field.Append(text[runStart..i]);
+                    _record.Append(text[runStart..i]);
                     ConsumeEscape(text, ref i);
                     runStart = i + 1;
                     continue;
@@ -597,7 +607,7 @@ internal sealed partial class LythonRuntime
                 _fieldStarted = true;
                 _recordStarted = true;
             }
-            _field.Append(text[runStart..]);
+            _record.Append(text[runStart..]);
             _context.CheckExecution(_span);
             if (_inQuotes) return;
             if (text.IsEmpty)
@@ -625,23 +635,17 @@ internal sealed partial class LythonRuntime
             if (index + escape.Length >= text.Length)
             {
                 if (_options.Strict) throw CsvError("Invalid csv input.", _span);
-                _field.Append(escape);
+                _record.Append(escape);
                 index += escape.Length - 1;
                 return;
             }
             index += escape.Length;
             // Consume a Python character, including a supplementary scalar.
             Rune.DecodeFromUtf8(text[index..], out _, out var width);
-            _field.Append(text.Slice(index, width));
+            _record.Append(text.Slice(index, width));
             index += width - 1;
             _fieldStarted = true;
             _recordStarted = true;
-        }
-
-        private void AddRowCell(object cell)
-        {
-            EnsureListCapacity(_row);
-            _row.Add(cell);
         }
 
         private void EnsureListCapacity<T>(List<T> values)
@@ -659,12 +663,21 @@ internal sealed partial class LythonRuntime
 
         private void FinishField()
         {
-            // Fields remain batch-owned; row/table backing is admitted separately.
-            var payload = _field.ToPyString();
-            object cell = _options.Quoting == CsvQuotingMode.NonNumeric && !_fieldWasQuoted && _field.Length != 0
-                ? ParseOwnedFloatText(payload, _context, _span) : payload;
-            AddRowCell(cell);
-            _field.Truncate(0);
+            var length = _record.Length - _fieldStart;
+            object? converted = null;
+            if (_options.Quoting == CsvQuotingMode.NonNumeric && !_fieldWasQuoted && length != 0)
+            {
+                // Conversion must still fail at this field, before another
+                // source line can be fetched or later field syntax inspected.
+                var payload = PyString.CopyFromUtf8(_record.WrittenSpan.Slice(_fieldStart, length),
+                    _context.MemoryGovernor, _span);
+                converted = ParseOwnedFloatText(payload, _context, _span);
+            }
+            EnsureListCapacity(_fields);
+            _fields.Add(new CsvField(_fieldStart, length, converted));
+            if (converted is null && length != 0)
+                _stringBytes = checked(_stringBytes + PyString.EstimateApproximateBytes(length));
+            _fieldStart = _record.Length;
             _fieldStarted = false;
             _fieldWasQuoted = false;
             _afterQuote = false;
@@ -678,7 +691,7 @@ internal sealed partial class LythonRuntime
 
         private void FinishRecord()
         {
-            if (!_recordStarted && !_fieldStarted && _field.Length == 0 && _row.Count == 0)
+            if (!_recordStarted && !_fieldStarted && _record.Length == _fieldStart && _fields.Count == 0)
             {
                 EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
                 ReleaseRowScratch();
@@ -686,8 +699,37 @@ internal sealed partial class LythonRuntime
             }
 
             FinishField();
-            EnqueueRecord(new PyList(_row, _context.MemoryGovernor, _span));
-            _row.Clear();
+            // Admit all ordinary field payloads once, while working bytes and
+            // old capacities remain funded. Each final value commits its part.
+            using var storage = _context.MemoryGovernor.ReserveTemporary(_stringBytes, _span);
+            _context.CheckExecution(_span);
+            var row = new PyList(_fields.Count, _context.MemoryGovernor, _span);
+            foreach (var field in _fields)
+            {
+                _context.CheckExecution(_span);
+                object cell;
+                if (field.Converted is { } converted) cell = converted;
+                else if (field.Length == 0) cell = PyString.Empty;
+                else
+                {
+                    var bytes = new byte[field.Length];
+                    for (var offset = 0; offset < bytes.Length;)
+                    {
+                        _context.CheckExecution(_span);
+                        var count = Math.Min(4096, bytes.Length - offset);
+                        _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.AsSpan(offset, count));
+                        offset += count;
+                    }
+                    cell = PyString.FromOwnedUtf8(bytes, _context.MemoryGovernor, _span, storage);
+                }
+                row.Add(cell);
+            }
+            _context.CheckExecution(_span);
+            EnqueueRecord(row);
+            _fields.Clear();
+            _record.Truncate(0);
+            _fieldStart = 0;
+            _stringBytes = 0;
             ReleaseRowScratch();
             _recordStarted = false;
             _afterQuote = false;
@@ -697,8 +739,10 @@ internal sealed partial class LythonRuntime
         // starts clean. Completed queue entries are untouched.
         public void ResetRecord()
         {
-            _row.Clear();
-            _field.Truncate(0);
+            _fields.Clear();
+            _record.Truncate(0);
+            _fieldStart = 0;
+            _stringBytes = 0;
             _inQuotes = false;
             _fieldStarted = false;
             _fieldWasQuoted = false;
@@ -708,20 +752,22 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseRowScratch()
         {
-            if (_row.Capacity > 1024)
+            if (_fields.Capacity > 1024)
             {
-                var before = _row.Capacity;
-                _row.TrimExcess();
-                _context.MemoryGovernor.Release(16L * (before - _row.Capacity));
+                var before = _fields.Capacity;
+                _fields.TrimExcess();
+                _context.MemoryGovernor.Release(16L * (before - _fields.Capacity));
             }
         }
 
         internal void ReleaseScratch()
         {
-            _field.Release();
+            _record.Release();
             var before = StorageBytes;
-            _row.Clear();
-            _row.Capacity = 0;
+            _fields.Clear();
+            _fields.Capacity = 0;
+            _fieldStart = 0;
+            _stringBytes = 0;
             // EOF can precede consumption of records already queued by Feed.
             // Their slots stay funded until the last record is handed out.
             if (_readyHead >= _ready.Count)
