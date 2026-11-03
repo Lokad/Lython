@@ -46,15 +46,31 @@ public sealed class StringLowerCallTests
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(80 * 1024) };
         foreach (var asynchronous in new[] { false, true })
         {
-            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+            var executionBudget = new LythonMemoryBudget(80 * 1024);
+            var options = new LythonRunOptions { MemoryBudget = executionBudget };
+            ILythonMemoryReservation? blocker = null;
+            var host = new MockLythonHost
             {
+                OnStandardOutputWrite = () =>
+                {
+                    // Leave setup/print headroom, but refuse the substantial casing
+                    // buffer independently of whether final conversion needs a copy.
+                    if (blocker is null)
+                        Assert.True(executionBudget.TryReserve(executionBudget.LimitBytes!.Value - executionBudget.ReservedBytes - 4096, out blocker));
+                }
+            };
+            try
+            {
+                using var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
                 Assert.False(result.Success);
                 Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Equal("ready\n", result.StandardOutput);
             }
+            finally { blocker?.Dispose(); }
+            Assert.Equal(0, executionBudget.ReservedBytes);
             Assert.Equal(baseline, budget.ReservedBytes);
         }
     }

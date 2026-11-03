@@ -13,6 +13,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private static readonly PyString[] AsciiCharacters = CreateAsciiCharacters();
 
     private readonly byte[] _utf8;
+    private readonly int _byteLength;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
     private int _runeLength = -1;
@@ -21,25 +22,22 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private int _hashCode;
     private bool _hashCodeComputed;
 
-    private PyString(byte[] utf8)
+    private PyString(byte[] utf8) : this(utf8, utf8.Length) { }
+
+    private PyString(byte[] utf8, int byteLength, MemoryGovernor? governor = null, LythonSourceSpan? allocationSpan = null)
     {
         _utf8 = utf8;
+        _byteLength = byteLength;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
     }
 
     private PyString(byte[] utf8, MemoryGovernor governor, LythonSourceSpan? allocationSpan, bool prefunded = false)
+        : this(utf8, utf8.Length, governor, allocationSpan)
     {
-        if (!prefunded) ChargeGovernedAllocation(governor, allocationSpan, EstimateApproximateBytes(utf8.Length));
-        _utf8 = utf8;
-        _memoryGovernor = governor;
-        _allocationSpan = allocationSpan;
-
-        static void ChargeGovernedAllocation(MemoryGovernor governor, LythonSourceSpan? allocationSpan, long bytes)
+        if (!prefunded)
         {
-            if (bytes <= 0)
-            {
-                return;
-            }
-
+            var bytes = EstimateApproximateBytes(utf8.Length);
             governor.Reserve(bytes, allocationSpan);
             governor.Commit(bytes);
         }
@@ -51,9 +49,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     {
         get
         {
-            return _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(_utf8));
+            return _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(Utf8Span));
 
-            static int CountRunes(byte[] utf8)
+            static int CountRunes(ReadOnlySpan<byte> utf8)
             {
                 var count = 0;
                 for (var i = 0; i < utf8.Length;)
@@ -76,7 +74,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     public int GetUtf16CodeUnitCount()
     {
         var units = 0;
-        var bytes = _utf8.AsSpan();
+        var bytes = Utf8Span;
         for (var i = 0; i < bytes.Length;)
         {
             var lead = bytes[i];
@@ -105,7 +103,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return units;
     }
 
-    public ReadOnlyMemory<byte> Utf8Bytes => _utf8;
+    private ReadOnlySpan<byte> Utf8Span => _utf8.AsSpan(0, _byteLength);
+
+    public ReadOnlyMemory<byte> Utf8Bytes => _utf8.AsMemory(0, _byteLength);
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -161,6 +161,20 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return result;
     }
 
+    // The caller relinquishes this backing only after success. Its full capacity
+    // is already committed to the same owner; only new string metadata is admitted.
+    internal static PyString FromTransferredUtf8(byte[] utf8, int byteLength,
+        MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    {
+        if (byteLength <= 0 || byteLength > utf8.Length)
+            throw new ArgumentOutOfRangeException(nameof(byteLength));
+        var metadataBytes = EstimateApproximateBytes(0);
+        using var metadata = governor?.ReserveTemporary(metadataBytes, allocationSpan);
+        var result = new PyString(utf8, byteLength, governor, allocationSpan);
+        metadata?.Commit(metadataBytes);
+        return result;
+    }
+
     public static PyString FromUtf8(ReadOnlyMemory<byte> utf8)
     {
         if (utf8.Length == 0)
@@ -212,13 +226,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private PyString ConcatCore(PyString other, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         var resultLength = CheckedByteLength(
-            RuntimeMemoryEstimates.SaturatingAdd(_utf8.Length, other._utf8.Length),
+            RuntimeMemoryEstimates.SaturatingAdd(_byteLength, other._byteLength),
             allocationSpan);
         var result = governor is null
             ? new byte[resultLength]
             : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
-        Buffer.BlockCopy(_utf8, 0, result, 0, _utf8.Length);
-        Buffer.BlockCopy(other._utf8, 0, result, _utf8.Length, other._utf8.Length);
+        Buffer.BlockCopy(_utf8, 0, result, 0, _byteLength);
+        Buffer.BlockCopy(other._utf8, 0, result, _byteLength, other._byteLength);
         return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan, prefunded: true);
     }
 
@@ -232,20 +246,20 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
-        if (count <= 0 || _utf8.Length == 0)
+        if (count <= 0 || _byteLength == 0)
         {
             return Empty;
         }
 
         var resultLength = CheckedByteLength(
-            RuntimeMemoryEstimates.SaturatingMultiply(_utf8.Length, count),
+            RuntimeMemoryEstimates.SaturatingMultiply(_byteLength, count),
             allocationSpan);
         var result = governor is null
             ? new byte[resultLength]
             : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
         for (var i = 0; i < count; i++)
         {
-            Buffer.BlockCopy(_utf8, 0, result, i * _utf8.Length, _utf8.Length);
+            Buffer.BlockCopy(_utf8, 0, result, i * _byteLength, _byteLength);
         }
 
         return governor is null ? new PyString(result) : new PyString(result, governor, allocationSpan, prefunded: true);
@@ -332,7 +346,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public IEnumerable<PyString> EnumerateRunes()
     {
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        for (var byteIndex = 0; byteIndex < _byteLength;)
         {
             var runeLength = GetRuneLengthAtByteIndex(byteIndex);
             if (runeLength == 1)
@@ -358,11 +372,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         // bytes, so retaining a UTF-16 copy per string would pin megabytes
         // behind long-lived values for no hot-path gain. Persistent rune and
         // offset caches below keep their own charges.
-        return Utf8.GetString(_utf8);
+        return Utf8.GetString(Utf8Span);
     }
 
     // Borrowed bounded working storage uses the same strict decoder as AsString.
-    internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(_utf8, destination);
+    internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(Utf8Span, destination);
 
     internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
 
@@ -384,23 +398,23 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public bool StartsWith(PyString prefix)
     {
-        var prefixBytes = prefix._utf8.AsSpan();
-        return prefixBytes.Length <= _utf8.Length &&
-            _utf8.AsSpan()[..prefixBytes.Length].SequenceEqual(prefixBytes);
+        var prefixBytes = prefix.Utf8Span;
+        return prefixBytes.Length <= _byteLength &&
+            Utf8Span[..prefixBytes.Length].SequenceEqual(prefixBytes);
     }
 
     public bool EndsWith(PyString suffix)
     {
-        var suffixBytes = suffix._utf8.AsSpan();
-        return suffixBytes.Length <= _utf8.Length &&
-            _utf8.AsSpan()[^suffixBytes.Length..].SequenceEqual(suffixBytes);
+        var suffixBytes = suffix.Utf8Span;
+        return suffixBytes.Length <= _byteLength &&
+            Utf8Span[^suffixBytes.Length..].SequenceEqual(suffixBytes);
     }
 
-    public bool Contains(PyString part) => IndexOfBytes(_utf8, part._utf8) >= 0;
+    public bool Contains(PyString part) => IndexOfBytes(Utf8Span, part.Utf8Span) >= 0;
 
     public int Find(PyString part)
     {
-        var byteIndex = IndexOfBytes(_utf8, part._utf8);
+        var byteIndex = IndexOfBytes(Utf8Span, part.Utf8Span);
         return byteIndex < 0 ? -1 : ByteIndexToRuneIndex(byteIndex);
     }
 
@@ -415,14 +429,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         var offset = 0;
         while (true)
         {
-            var found = IndexOfBytes(_utf8.AsSpan()[offset..], part._utf8);
+            var found = IndexOfBytes(Utf8Span[offset..], part.Utf8Span);
             if (found < 0)
             {
                 return count;
             }
 
             count++;
-            offset += found + part._utf8.Length;
+            offset += found + part._byteLength;
         }
     }
 
@@ -435,21 +449,21 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         var governor = context?.MemoryGovernor ?? _memoryGovernor;
         context?.CheckExecution(span);
         var remaining = count < 0 ? long.MaxValue : count;
-        if (oldValue._utf8.Length == 0)
+        if (oldValue._byteLength == 0)
         {
             long insertionCount = 1;
             var prefixEnd = 0;
-            while (prefixEnd < _utf8.Length && insertionCount < remaining)
+            while (prefixEnd < _byteLength && insertionCount < remaining)
             {
                 context?.CheckExecution(span);
                 prefixEnd += GetRuneLengthAtByteIndex(prefixEnd);
                 insertionCount++;
             }
-            if (prefixEnd == _utf8.Length) _runeLength = (int)(insertionCount - 1);
+            if (prefixEnd == _byteLength) _runeLength = (int)(insertionCount - 1);
             var capacity = CheckedByteLength(
                 RuntimeMemoryEstimates.SaturatingAdd(
-                    _utf8.Length,
-                    RuntimeMemoryEstimates.SaturatingMultiply(insertionCount, newValue._utf8.Length)),
+                    _byteLength,
+                    RuntimeMemoryEstimates.SaturatingMultiply(insertionCount, newValue._byteLength)),
                 span);
             var builder = governor is null
                 ? new GovernedByteBuilder(capacity)
@@ -465,29 +479,29 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                     builder.Append(newValue);
                     byteIndex += runeLength;
                 }
-                builder.Append(_utf8.AsSpan(prefixEnd));
+                builder.Append(Utf8Span[prefixEnd..]);
                 return builder.ToPyString();
             }
             finally { builder.Release(); }
         }
 
         var result = governor is null
-            ? new GovernedByteBuilder(_utf8.Length)
-            : new GovernedByteBuilder(governor, span, _utf8.Length);
+            ? new GovernedByteBuilder(_byteLength)
+            : new GovernedByteBuilder(governor, span, _byteLength);
         try
         {
             var offset = 0;
-            while (offset < _utf8.Length && remaining > 0)
+            while (offset < _byteLength && remaining > 0)
             {
                 context?.CheckExecution(span);
-                var found = IndexOfBytes(_utf8.AsSpan(offset), oldValue._utf8);
+                var found = IndexOfBytes(Utf8Span[offset..], oldValue.Utf8Span);
                 if (found < 0) break;
                 result.Append(_utf8.AsSpan(offset, found));
                 result.Append(newValue);
-                offset += found + oldValue._utf8.Length;
+                offset += found + oldValue._byteLength;
                 remaining--;
             }
-            result.Append(_utf8.AsSpan(offset));
+            result.Append(Utf8Span[offset..]);
             return result.ToPyString();
         }
         finally { result.Release(); }
@@ -503,7 +517,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public bool Equals(PyString? other)
     {
-        return other is not null && _utf8.AsSpan().SequenceEqual(other._utf8);
+        return other is not null && Utf8Span.SequenceEqual(other.Utf8Span);
     }
 
     public override bool Equals(object? obj) => obj is PyString other && Equals(other);
@@ -516,7 +530,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         var hash = new HashCode();
-        hash.AddBytes(_utf8);
+        hash.AddBytes(Utf8Span);
 
         var computed = hash.ToHashCode();
         _hashCode = computed;
@@ -526,7 +540,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public static int CompareOrdinal(PyString left, PyString right)
     {
-        return left._utf8.AsSpan().SequenceCompareTo(right._utf8);
+        return left.Utf8Span.SequenceCompareTo(right.Utf8Span);
     }
 
     public object GetIndex(int index) => Index(index);
@@ -572,9 +586,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return 0;
         }
 
-        if (Length == _utf8.Length)
+        if (Length == _byteLength)
         {
-            return Math.Min(byteIndex, _utf8.Length);
+            return Math.Min(byteIndex, _byteLength);
         }
 
         var offsets = GetRuneByteOffsets();
@@ -592,22 +606,22 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         var length = Length;
         if (runeIndex >= length)
         {
-            return _utf8.Length;
+            return _byteLength;
         }
 
-        return length == _utf8.Length ? runeIndex : GetRuneByteOffsets()[runeIndex];
+        return length == _byteLength ? runeIndex : GetRuneByteOffsets()[runeIndex];
     }
 
     internal int GetByteIndexAfterRunes(int startByte, int runeCount)
     {
-        if (runeCount <= 0 || startByte >= _utf8.Length)
+        if (runeCount <= 0 || startByte >= _byteLength)
         {
-            return Math.Min(startByte, _utf8.Length);
+            return Math.Min(startByte, _byteLength);
         }
 
-        if (Length == _utf8.Length)
+        if (Length == _byteLength)
         {
-            return (int)Math.Min((long)startByte + runeCount, _utf8.Length);
+            return (int)Math.Min((long)startByte + runeCount, _byteLength);
         }
 
         var offsets = GetRuneByteOffsets();
@@ -637,11 +651,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return Empty;
         }
 
-        var length = endByte - startByte;
+        var bytes = Utf8Span[startByte..endByte];
+        var length = bytes.Length;
         var result = _memoryGovernor is null
             ? new byte[length]
             : AllocateGovernedUtf8(length, _memoryGovernor, _allocationSpan);
-        Buffer.BlockCopy(_utf8, startByte, result, 0, result.Length);
+        bytes.CopyTo(result);
         return _memoryGovernor is null ? new PyString(result) : new PyString(result, _memoryGovernor, _allocationSpan, prefunded: true);
     }
 
@@ -661,7 +676,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             throw new ArgumentOutOfRangeException(nameof(runeIndex));
         }
 
-        if (length == _utf8.Length)
+        if (length == _byteLength)
         {
             return new RuneByteRange(runeIndex, 1);
         }
@@ -681,13 +696,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         CommitCacheCharge(32L + (4L * ((long)Length + 1)));
         var offsets = new int[Length + 1];
         var runeIndex = 0;
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        for (var byteIndex = 0; byteIndex < _byteLength;)
         {
             offsets[runeIndex++] = byteIndex;
             byteIndex += GetRuneLengthAtByteIndex(byteIndex);
         }
 
-        offsets[runeIndex] = _utf8.Length;
+        offsets[runeIndex] = _byteLength;
         _runeByteOffsets = offsets;
         return offsets;
     }

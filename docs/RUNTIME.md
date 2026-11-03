@@ -299,9 +299,12 @@ specialized algorithms and supported asynchronous callbacks. Private output stay
 funded across suspended callbacks and generator yields, and releases on unwind
 or close. Capacity admission can reject before a later field is evaluated.
 
-Consuming UTF-8 builders transfer a full backing buffer into the immutable result;
-partial buffers produce an exact copy. Nonconsuming snapshots remain independent.
-Output admission retains the conservative working/final-storage overlap charge.
+Consuming UTF-8 builders transfer their backing capacity into the immutable string,
+whose content uses only the written prefix. Unused capacity stays charged to the
+result owner; finalization admits new string metadata without duplicating payload
+funding. This avoids a final copy but can retain more capacity than an exact-sized
+copy. Builders detach before reuse. Nonconsuming snapshots remain independent
+copies and admit their real working/output overlap; byte-array results stay exact-sized.
 
 Whitespace splitting scans UTF-8 ranges once, then admits the complete string
 output and final list capacity. Larger range scratch is admitted separately and

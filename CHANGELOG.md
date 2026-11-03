@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Transfer terminal UTF-8 builder storage into immutable strings without a final
+  trimming copy. Keep unused backing capacity charged, admit metadata before
+  publication, and preserve independent snapshots from reusable builders.
+
 - Keep private builtin list/tuple loop state in admitted operand storage, removing
   repeated general cursor and enumerator construction. Preserve live list mutation,
   generators, cancellation and asynchronous protocol/resource cleanup. Position

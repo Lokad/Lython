@@ -435,7 +435,8 @@ public sealed class RuntimeStorageSubsystemTests
 
         Assert.Equal("abc", value.AsString());
         Assert.Equal(0, builder.Length);
-        Assert.Equal(PyString.EstimateApproximateBytes(3), governor.CurrentCommittedBytes);
+        // Ownership moves the full retained capacity, including unused bytes.
+        Assert.Equal(PyString.EstimateApproximateBytes(8), governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

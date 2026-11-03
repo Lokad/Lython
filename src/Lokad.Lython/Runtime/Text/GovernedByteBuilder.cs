@@ -49,7 +49,7 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
 
     public int Length => _length;
 
-    // Published strings are copies; an explicit scratch owner may reuse capacity.
+    // Nonconsuming conversions copy; consuming conversions detach before reuse.
     internal void Clear() => _length = 0;
 
     internal long CommittedCapacity => _committedCapacity;
@@ -146,24 +146,28 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
     }
 
     public PyString ToPyString()
-        => CreateString(consumeBuffer: false);
+    {
+        if (_length == 0) return PyString.Empty;
+        using var storage = _memoryGovernor?.ReserveTemporary(PyString.EstimateApproximateBytes(_length), _allocationSpan);
+        var exact = WrittenSpan.ToArray();
+        return _memoryGovernor is null ? PyString.FromOwnedUtf8(exact)
+            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan, storage!);
+    }
 
     public PyString ToPyStringAndRelease()
     {
-        var result = CreateString(consumeBuffer: true);
-        Release();
+        if (_length == 0)
+        {
+            Release();
+            return PyString.Empty;
+        }
+        var result = PyString.FromTransferredUtf8(_buffer, _length, _memoryGovernor, _allocationSpan);
+        // No refund: the immutable string now owns the already committed capacity.
+        // A failed metadata admission leaves this builder intact and funded.
+        _buffer = [];
+        _length = 0;
+        _committedCapacity = 0;
         return result;
-    }
-
-    private PyString CreateString(bool consumeBuffer)
-    {
-        if (_length == 0) return PyString.Empty;
-        // Preserve conservative output/working overlap admission even when the
-        // exact backing can move to the immutable result without a final copy.
-        using var storage = _memoryGovernor?.ReserveTemporary(PyString.EstimateApproximateBytes(_length), _allocationSpan);
-        var exact = consumeBuffer ? GetFinalBytes() : WrittenSpan.ToArray();
-        return _memoryGovernor is null ? PyString.FromOwnedUtf8(exact)
-            : PyString.FromOwnedUtf8(exact, _memoryGovernor, _allocationSpan, storage!);
     }
 
     public byte[] ToArrayAndRelease()
