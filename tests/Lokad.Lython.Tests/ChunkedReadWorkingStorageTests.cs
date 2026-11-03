@@ -7,6 +7,38 @@ namespace Lokad.Lython.Tests;
 
 public sealed class ChunkedReadWorkingStorageTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReturnedSliceKeepsIndependentPayloadAfterPrivateWindowCleanup(bool asynchronous)
+    {
+        var host = new MockLythonHost();
+        var first = "α😀" + new string('x', 24) + "\n";
+        host.SeedFile("/file", first + new string('y', 40));
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(host, new() { MemoryBudget = owner });
+            var state = await CreateAsync(context, 128);
+            var unrelated = context.MemoryGovernor.CurrentCommittedBytes - state.OwnedBytes;
+            try
+            {
+                var line = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);
+                var alias = line.SliceByByteRange(2, 6);
+                state.Release();
+                context.MemoryGovernor.RefundUnpublishedValue(line);
+                Assert.Equal("😀", alias.AsString());
+                // Private read-window cleanup must not refund a retained value.
+                // Independent copies and funded shared backing are both valid.
+                Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= unrelated + state.OwnedBytes +
+                    Lokad.Lython.Runtime.Text.PyString.EstimateApproximateBytes(alias.Utf8Bytes.Length));
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { state.Release(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task PendingReadKeepsWorkingCapacityUntilCancellationFinishes()
     {

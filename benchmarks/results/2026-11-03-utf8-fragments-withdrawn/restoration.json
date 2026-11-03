@@ -1,0 +1,12 @@
+{
+  "runtimeSourceMatches": "d7b715d3fc1ac1f1c640c94c816f2a1f1f4dc067",
+  "nonincrementalReleaseSolutionBuild": true,
+  "perActualTarget": {
+    "internal": 637,
+    "publicFocused": 117
+  },
+  "retainedNewSemanticCases": 3,
+  "sharingFlagsOrCopyFrontiersRetained": false,
+  "fullRuntimeQualification": "cached41583008474 on d7b715d3, no unchanged replay",
+  "publication": "postponed"
+}

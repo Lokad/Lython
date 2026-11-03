@@ -1,0 +1,10 @@
+{
+  "initialFailure": "long-fragment independent stdout golden captured local Windows CRLF instead of Linux LF; failed at verify before that case timing",
+  "oldGolden": "'16\\r\\n'",
+  "newGolden": "'16\\n'",
+  "originalResponseActualSha": "e6c21e8d260fe71882debdb339d2402a2ca7648529bc2303f48649bce0380017",
+  "completedTimingJobsPreserved": 8,
+  "initialAfterQuietGate": "not reached",
+  "continuation": "only missing long-fragment job plus allocation; all actual images/source unchanged",
+  "CPythonVerification": "remaining case additionally verifies isolated VM CPython before timings"
+}

@@ -1,0 +1,24 @@
+Started lython-b149-fragments-20261103.service - /bin/sh /home/lokad/lython-bench-checks/utf8-fragments-b149-20261103/collect-all.sh.
+Initial machine gate passed; a campaign still needs every sampling gate.
+warm scripts.csv-summary-helpers.large complete
+warm scripts.text-summary-helpers.large complete
+warm scripts.report-render.large complete
+compile-run scripts.csv-summary-helpers.large complete
+compile-run scripts.text-summary-helpers.large complete
+compile-run scripts.report-render.large complete
+warm scripts.filename-filter-ascii.large complete
+warm scripts.json-unique-keys.large complete
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/utf8-fragments-b149-20261103/collect.py", line 98, in <module>
+    workers = [Worker(label,cases[case_id],lane,stack) for label in labels]
+               ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lokad/lython-bench-checks/utf8-fragments-b149-20261103/collect.py", line 49, in __init__
+    self.request('verify', 2)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/lokad/lython-bench-checks/utf8-fragments-b149-20261103/collect.py", line 60, in request
+    assert response['status'] == ('Equivalent' if operation == 'verify' else 'Completed'), response
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'protocolVersion': 2, 'requestId': 1, 'caseId': 'scripts.text-long-fragments.large', 'status': 'Mismatch', 'completedInvocations': 0, 'elapsedTicks': None, 'clockFrequency': 1000000000, 'sourceSha256': '18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3', 'fixtureSha256': 'fb589c8226f0585825d4b7a0e90b72e6307c7e4380959d2f5f02ebef651ae900', 'expectedOutputSha256': 'b7a33ec2d3fa6748259d5a72ed976b7308fa7355fd99818bc0dc12fece595277', 'actualOutputSha256': 'e6c21e8d260fe71882debdb339d2402a2ca7648529bc2303f48649bce0380017', 'reason': 'Complete public result differs from the independent golden.'}
+lython-b149-fragments-20261103.service: Main process exited, code=exited, status=1/FAILURE
+lython-b149-fragments-20261103.service: Failed with result 'exit-code'.
+lython-b149-fragments-20261103.service: Consumed 2min 55.054s CPU time, 512.0K memory peak, 0B memory swap peak.

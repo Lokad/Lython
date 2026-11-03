@@ -1984,3 +1984,9 @@ optimization. The live class-proxy identity correction is retained independently
 The [immutable dev.14 producer assessment](results/2026-11-03-development-producer-dev14/README.md)
 records actual semantic, funding and in-flight cancellation checks separately from
 unchanged public API, ordinary released pin and unqualified backend performance.
+
+The [immutable UTF8 fragment prototypes](results/2026-11-03-utf8-fragments-withdrawn/README.md)
+are withdrawn after a bounded representation refinement. Text allocation falls
+about3%, but general allocation and representative elapsed costs remain adverse.
+Both source variants, original CRLF-golden failure and all controls remain; independent
+ownership regressions survive. Global string sharing is not permanently ruled out.

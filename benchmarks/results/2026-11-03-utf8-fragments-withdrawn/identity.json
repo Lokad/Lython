@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "d7b715d3 plus B149 prototype; see source.patch and hashes",
+  "baseCommit": "d7b715d3fc1ac1f1c640c94c816f2a1f1f4dc067",
+  "coreSHA256": {
+    "baseline": "44dad50f87d72f9d81a3581f7fd2559e3670bc8a1d7842889a500d252aaa4f69",
+    "candidate": "7ca0f5abd9cd3ab20f9fba1a62fa68ceffa03763af2fc981bc36ec90c2ea2994",
+    "before-control": "44dad50f87d72f9d81a3581f7fd2559e3670bc8a1d7842889a500d252aaa4f69"
+  },
+  "changedSourceSha256": {
+    "src\\Lokad.Lython\\Runtime\\Text\\PyString.cs": "d285c4919d072ae0e40b6c923a6cf6703d3e42f9f2b563e779c101996754831b",
+    "src\\Lokad.Lython\\Runtime\\Text\\PyStringOps.Whitespace.cs": "d0ae0a0860473ddd54e154fa51d69760c50047ca9ed7ea790d6bae5080e3f594",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.TextFileHandle.Read.cs": "c014f8830117c8886dff815fe5526859e4b5ef13deeb594c4296485ed4550d73"
+  },
+  "publication": "postponed",
+  "prototype": true
+}

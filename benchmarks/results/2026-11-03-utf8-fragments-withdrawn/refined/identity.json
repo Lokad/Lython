@@ -1,0 +1,18 @@
+{
+  "sourceRevision": "d7b715d3 plus refined B149 explicit array-range prototype",
+  "baseCommit": "d7b715d3fc1ac1f1c640c94c816f2a1f1f4dc067",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "44dad50f87d72f9d81a3581f7fd2559e3670bc8a1d7842889a500d252aaa4f69",
+    "candidate": "7e62886c9cf79aed7505195e6d56c387f2914ef8f25e859639dc5867564910a5",
+    "before-control": "44dad50f87d72f9d81a3581f7fd2559e3670bc8a1d7842889a500d252aaa4f69",
+    "legacy": "7ca0f5abd9cd3ab20f9fba1a62fa68ceffa03763af2fc981bc36ec90c2ea2994"
+  },
+  "normalizedAuxiliaryBits": "identical current helper/adapter DLLs in all images; only core differs, same public API",
+  "sourceSha256": {
+    "src\\Lokad.Lython\\Runtime\\Text\\PyString.cs": "84804fefe19995f83d89987159d2e02cfafe4d79f8c90821019c9698320c6f8e",
+    "src\\Lokad.Lython\\Runtime\\Text\\PyStringOps.Whitespace.cs": "d0ae0a0860473ddd54e154fa51d69760c50047ca9ed7ea790d6bae5080e3f594",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.TextFileHandle.Read.cs": "c014f8830117c8886dff815fe5526859e4b5ef13deeb594c4296485ed4550d73"
+  },
+  "allocationDiagnostic": "reuse existing complete-jobs source with warmup64/batch8, exact original counts/source retained in parent; CPU timing unqualified"
+}

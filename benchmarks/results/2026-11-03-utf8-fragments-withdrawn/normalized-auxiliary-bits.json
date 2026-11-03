@@ -1,0 +1,10 @@
+{
+  "sameSourceRevision": "d7b715d3",
+  "reason": "deterministic auxiliary builds include changed reference assembly identity; freeze identical candidate helper/adapter bits for both core images, no public API change",
+  "replacedFiles": [
+    "Lokad.Lython.Benchmarks.dll",
+    "Lokad.Lython.Benchmarks.pdb",
+    "Lokad.Lython.Utf8Regex.dll",
+    "Lokad.Lython.Utf8Regex.pdb"
+  ]
+}

@@ -40,6 +40,28 @@ public sealed class WhitespaceStorageOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void IndependentOwnerFragmentsRemainFundedAfterSourceCleanup()
+    {
+        var budget = new LythonMemoryBudget();
+        using (var resultOwner = budget.CreateScope())
+        {
+            var resultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = resultOwner });
+            PyList result;
+            using (var sourceOwner = budget.CreateScope())
+            {
+                var sourceContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = sourceOwner });
+                var input = PyString.FromString("α 😀 XYZ", sourceContext.MemoryGovernor, Span);
+                result = PyStringOps.SplitWhitespace(input, resultContext.MemoryGovernor, Span, resultContext);
+            }
+            Assert.Equal(["α", "😀", "XYZ"], result.Cast<PyString>().Select(part => part.AsString()).ToArray());
+            Assert.All(result.Cast<PyString>(), part => Assert.Same(resultContext.MemoryGovernor, part.OwnerMemoryGovernor));
+            Assert.Equal(resultContext.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

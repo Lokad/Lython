@@ -1,0 +1,282 @@
+[
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 5.5237734054054055,
+        "iqrPercent": 0.4449401646786539,
+        "weightedCpuMilliseconds": 5.7957957957957955,
+        "totalCpuTicks": 193,
+        "completedInvocations": 333
+      },
+      "baseline": {
+        "medianMilliseconds": 5.459284918918919,
+        "iqrPercent": 0.23389856691557082,
+        "weightedCpuMilliseconds": 5.7657657657657655,
+        "totalCpuTicks": 192,
+        "completedInvocations": 333
+      },
+      "before-control": {
+        "medianMilliseconds": 5.3716655,
+        "iqrPercent": 0.7417928681327456,
+        "weightedCpuMilliseconds": 5.643274853801169,
+        "totalCpuTicks": 193,
+        "completedInvocations": 342
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 1.1812625177888059,
+      "cpuPercent": 0.5208333333333259,
+      "controlElapsedPercent": -1.6049614596094441,
+      "controlCpuPercent": -2.12445175438597
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 3.7475786190476192,
+        "iqrPercent": 0.4937308662961237,
+        "weightedCpuMilliseconds": 4.126984126984127,
+        "totalCpuTicks": 78,
+        "completedInvocations": 189
+      },
+      "baseline": {
+        "medianMilliseconds": 3.6363305535714288,
+        "iqrPercent": 0.37194972319793534,
+        "weightedCpuMilliseconds": 3.888888888888889,
+        "totalCpuTicks": 196,
+        "completedInvocations": 504
+      },
+      "before-control": {
+        "medianMilliseconds": 3.533001631578948,
+        "iqrPercent": 0.8936419865394187,
+        "weightedCpuMilliseconds": 3.7816764132553606,
+        "totalCpuTicks": 194,
+        "completedInvocations": 513
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 3.0593496338479964,
+      "cpuPercent": 6.1224489795918435,
+      "controlElapsedPercent": -2.8415712067484167,
+      "controlCpuPercent": -2.7568922305764354
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.report-render.large",
+    "lane": "warm",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 5.623494571428571,
+        "iqrPercent": 2.3519615230610698,
+        "weightedCpuMilliseconds": 6.0,
+        "totalCpuTicks": 189,
+        "completedInvocations": 315
+      },
+      "baseline": {
+        "medianMilliseconds": 5.755019314285715,
+        "iqrPercent": 2.282361956675265,
+        "weightedCpuMilliseconds": 6.158730158730159,
+        "totalCpuTicks": 194,
+        "completedInvocations": 315
+      },
+      "before-control": {
+        "medianMilliseconds": 5.662839085714285,
+        "iqrPercent": 2.3125073738883044,
+        "weightedCpuMilliseconds": 6.095238095238095,
+        "totalCpuTicks": 192,
+        "completedInvocations": 315
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -2.2853918583845445,
+      "cpuPercent": -2.577319587628868,
+      "controlElapsedPercent": -1.601736215595484,
+      "controlCpuPercent": -1.0309278350515538
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 5.62054544117647,
+        "iqrPercent": 1.4880767407203357,
+        "weightedCpuMilliseconds": 6.111111111111111,
+        "totalCpuTicks": 187,
+        "completedInvocations": 306
+      },
+      "baseline": {
+        "medianMilliseconds": 5.606906914285714,
+        "iqrPercent": 0.4500484917220203,
+        "weightedCpuMilliseconds": 6.158730158730159,
+        "totalCpuTicks": 194,
+        "completedInvocations": 315
+      },
+      "before-control": {
+        "medianMilliseconds": 5.543187088235293,
+        "iqrPercent": 0.9527429381104415,
+        "weightedCpuMilliseconds": 6.633986928104575,
+        "totalCpuTicks": 203,
+        "completedInvocations": 306
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 0.24324510999116367,
+      "cpuPercent": -0.7731958762886681,
+      "controlElapsedPercent": -1.136452361783824,
+      "controlCpuPercent": 7.716798059429952
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 3.6877690980392157,
+        "iqrPercent": 0.8029951728507839,
+        "weightedCpuMilliseconds": 3.9869281045751634,
+        "totalCpuTicks": 183,
+        "completedInvocations": 459
+      },
+      "baseline": {
+        "medianMilliseconds": 3.8003246938775512,
+        "iqrPercent": 0.4122096763912387,
+        "weightedCpuMilliseconds": 4.489795918367347,
+        "totalCpuTicks": 198,
+        "completedInvocations": 441
+      },
+      "before-control": {
+        "medianMilliseconds": 3.75199768,
+        "iqrPercent": 0.3577630143950451,
+        "weightedCpuMilliseconds": 3.977777777777778,
+        "totalCpuTicks": 179,
+        "completedInvocations": 450
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -2.961736296366102,
+      "cpuPercent": -11.200237670825896,
+      "controlElapsedPercent": -1.271654865580496,
+      "controlCpuPercent": -11.404040404040394
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.report-render.large",
+    "lane": "compile-run",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 6.086319,
+        "iqrPercent": 2.4801428622127846,
+        "weightedCpuMilliseconds": 6.944444444444445,
+        "totalCpuTicks": 200,
+        "completedInvocations": 288
+      },
+      "baseline": {
+        "medianMilliseconds": 5.863814090909091,
+        "iqrPercent": 2.152863945493334,
+        "weightedCpuMilliseconds": 6.498316498316498,
+        "totalCpuTicks": 193,
+        "completedInvocations": 297
+      },
+      "before-control": {
+        "medianMilliseconds": 5.960033677419355,
+        "iqrPercent": 1.2253833118630633,
+        "weightedCpuMilliseconds": 6.559139784946237,
+        "totalCpuTicks": 183,
+        "completedInvocations": 279
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 3.7945423514682552,
+      "cpuPercent": 6.865284974093266,
+      "controlElapsedPercent": 1.6409044526059846,
+      "controlCpuPercent": 0.9359852916597022
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.filename-filter-ascii.large",
+    "lane": "warm",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 0.6905651157894737,
+        "iqrPercent": 0.9728929966933159,
+        "weightedCpuMilliseconds": 0.8693957115009746,
+        "totalCpuTicks": 223,
+        "completedInvocations": 2565
+      },
+      "baseline": {
+        "medianMilliseconds": 0.6745125180327869,
+        "iqrPercent": 2.303931770168551,
+        "weightedCpuMilliseconds": 0.8415300546448088,
+        "totalCpuTicks": 231,
+        "completedInvocations": 2745
+      },
+      "before-control": {
+        "medianMilliseconds": 0.6699332348993289,
+        "iqrPercent": 1.4553072963736697,
+        "weightedCpuMilliseconds": 0.8426547352721849,
+        "totalCpuTicks": 226,
+        "completedInvocations": 2682
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 2.379881370253001,
+      "cpuPercent": 3.311308574466465,
+      "controlElapsedPercent": -0.6789026164871648,
+      "controlCpuPercent": 0.13364711351286918
+    }
+  },
+  {
+    "measurementStatus": "diagnostic: eight completed jobs, final machine gate not reached",
+    "block": 0,
+    "case": "scripts.json-unique-keys.large",
+    "lane": "warm",
+    "values": {
+      "candidate": {
+        "medianMilliseconds": 2.0733957802197804,
+        "iqrPercent": 3.328070144270855,
+        "weightedCpuMilliseconds": 2.283272283272283,
+        "totalCpuTicks": 187,
+        "completedInvocations": 819
+      },
+      "baseline": {
+        "medianMilliseconds": 1.976788828282828,
+        "iqrPercent": 2.788828616212942,
+        "weightedCpuMilliseconds": 2.1773288439955105,
+        "totalCpuTicks": 194,
+        "completedInvocations": 891
+      },
+      "before-control": {
+        "medianMilliseconds": 2.009419656862745,
+        "iqrPercent": 1.579923049189805,
+        "weightedCpuMilliseconds": 2.2004357298474946,
+        "totalCpuTicks": 202,
+        "completedInvocations": 918
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 4.887064847532119,
+      "cpuPercent": 4.865752803897139,
+      "controlElapsedPercent": 1.6506987551251129,
+      "controlCpuPercent": 1.0612492419648456
+    }
+  }
+]

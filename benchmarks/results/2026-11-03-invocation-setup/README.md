@@ -41,7 +41,9 @@ Focused Release validation on actual .NET11/.NET10:13 namespace public cases,
 4 namespace admission cases and160 related public cases each PASS. Coverage includes
 live views, replacement/add/delete invalidation rules, retained result projections,
 refusal without publication, terminal refusal, cancellation and shared-budget reuse.
-Full platform/stress/package qualification is tracked separately at delivery.
+Full Windows/Ubuntu.NET11/.NET10, original Stress and installed-consumer checks
+PASS on exactd7b715d3, [cached run41583008474](delivery-ci-status.json). This qualifies
+the retained namespace correction, not the later withdrawn storage prototypes.
 
 Raw data: [initial first](setup-first.json), [initial confirmation](setup-confirm.json),
 [larger first](setup-large-first.json), [larger confirmation](setup-large-confirm.json),
