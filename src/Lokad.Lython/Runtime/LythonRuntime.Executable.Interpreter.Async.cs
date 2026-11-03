@@ -6,6 +6,108 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ExecutableFrameInterpreter
     {
+        private ValueTask<bool> ExecuteMemberLoadAsync(ExecutableInstruction instruction)
+        {
+            var target = Pop(ref _stack, instruction.Span);
+            if (TryReadMemberCache(instruction, target, out var cached))
+            {
+                if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
+                _stack.Push(cached);
+                return new(false);
+            }
+            var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
+            if (!resolved.IsCompletedSuccessfully) return AwaitMemberLoadAsync(resolved, target, instruction);
+            CompleteMemberLoad(resolved.GetAwaiter().GetResult(), target, instruction);
+            return new(false);
+        }
+
+        private async ValueTask<bool> AwaitMemberLoadAsync(ValueTask<(bool Found, object Value)> pending,
+            object target, ExecutableInstruction instruction)
+        {
+            CompleteMemberLoad(await pending.ConfigureAwait(false), target, instruction);
+            return false;
+        }
+
+        private void CompleteMemberLoad((bool Found, object Value) member, object target, ExecutableInstruction instruction)
+        {
+            if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target,
+                _codeObject.Names[instruction.NameIndex], instruction.Span, _context);
+            PublishMemberCache(instruction, target, member.Value);
+            if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
+            _stack.Push(member.Value);
+        }
+
+        private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
+        {
+            var cursor = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+            var next = cursor.TryMoveNextAsync();
+            return next.IsCompletedSuccessfully
+                ? CompleteForNextAsync(next.GetAwaiter().GetResult(), cursor, instruction)
+                : AwaitForNextAsync(next, cursor, instruction);
+        }
+
+        private async ValueTask<bool> AwaitForNextAsync(ValueTask<PyIterationResult> pending,
+            PyIteration.Cursor cursor, ExecutableInstruction instruction)
+            => await CompleteForNextAsync(await pending.ConfigureAwait(false), cursor, instruction).ConfigureAwait(false);
+
+        private ValueTask<bool> CompleteForNextAsync(PyIterationResult next, PyIteration.Cursor cursor, ExecutableInstruction instruction)
+        {
+            if (next.HasValue)
+            {
+                _stack.Push(next.Value);
+                return new(false);
+            }
+            _ = Pop(ref _stack, instruction.Span);
+            var disposal = cursor.DisposeAsync();
+            if (!disposal.IsCompletedSuccessfully) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
+            disposal.GetAwaiter().GetResult();
+            _instructionIndex = instruction.TargetIndex;
+            return new(true);
+        }
+
+        private async ValueTask<bool> AwaitCursorDisposalAsync(ValueTask pending, int targetIndex)
+        {
+            await pending.ConfigureAwait(false);
+            _instructionIndex = targetIndex;
+            return true;
+        }
+
+        private async ValueTask<bool> ExecuteConditionalJumpAsync(ExecutableInstruction instruction)
+        {
+            if (await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false))
+                return false;
+            _instructionIndex = instruction.TargetIndex;
+            return true;
+        }
+
+        private async ValueTask<bool> ExecuteDelegationAsync(ExecutableInstruction instruction)
+        {
+            if (_delegation is null)
+            {
+                var source = Pop(ref _stack, instruction.Span);
+                _delegation = new GeneratorDelegation(await IterAsync([source], instruction.Span, _context).ConfigureAwait(false),
+                    _context, instruction.Span);
+            }
+            CompleteDelegatedStep(await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false));
+            return false;
+        }
+
+        private void CompleteDelegatedStep(PyIterationResult delegated)
+        {
+            _sentValue = PyNone.Instance;
+            _injectedException = null;
+            if (delegated.HasValue)
+            {
+                YieldValue = delegated.Value;
+                HasYield = true;
+            }
+            else
+            {
+                _stack.Push(_delegation!.ReturnValue);
+                _delegation = null;
+            }
+        }
+
         private async ValueTask ExecuteDefinitionOrFallbackAsync(ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
@@ -28,7 +130,7 @@ internal sealed partial class LythonRuntime
             SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
         }
 
-        private async ValueTask<bool> ExecuteStructureAsync(ExecutableInstruction instruction)
+        private async ValueTask<bool> ExecuteContextManagerAsync(ExecutableInstruction instruction)
         {
             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
             {
@@ -58,7 +160,7 @@ internal sealed partial class LythonRuntime
                     instruction.Span, _context).ConfigureAwait(false);
                 return false;
             }
-            return ExecuteStructure(instruction);
+            throw new InvalidOperationException("Unexpected asynchronous context-manager instruction.");
         }
 
         private async ValueTask ExecuteValueOperationAsync(ExecutableInstruction instruction)

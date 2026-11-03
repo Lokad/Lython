@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share the synchronous instruction loop with asynchronous execution, resuming
+  after incomplete operations and awaited cleanup. Preserve original error spans,
+  cancellation, memory ownership and dynamic member behavior.
+
 - Prepare constant f-string format layouts once in compiled code, sharing the
   existing parser and formatter. Preserve custom raw specifications, value checks,
   dynamic formats, asynchronous protocols and ownership cleanup.

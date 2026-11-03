@@ -170,6 +170,13 @@ Successful loop advances and true conditional arms continue at the next
 instruction; they need no unconditional entry jump. Exception routing restores
 the compiler-prepared protected-entry depth.
 
+Both public APIs advance the same non-async instruction loop. Completed operations
+stay in that loop; asynchronous execution awaits incomplete operations and cursor
+disposal before resuming it. Suspended failures keep their original instruction
+span. Abandoned cursors finish cleanup before another guest instruction or handler
+runs. Both APIs use the same identity-based member-cache eligibility rules;
+mutable descriptors and guest protocols retain their normal resolution.
+
 Ordinary functions defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,
 decorators, defaults and annotations keep their existing evaluation order. Methods
