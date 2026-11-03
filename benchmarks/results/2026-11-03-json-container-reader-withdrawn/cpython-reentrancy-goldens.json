@@ -1,0 +1,15 @@
+{
+  "reference": "CPython3.13.2 isolated -I -S -X utf8, same source/owned value.txt fixture, module return projected through print",
+  "cases": [
+    {
+      "pairs": false,
+      "output": "[{\"a\": [2, {\"a\": 3, \"extra\": 3}, 6], \"extra\": 3}, {\"a\": 5, \"extra\": 3}]|[1, 1, 1]\n",
+      "goldenPassed": true
+    },
+    {
+      "pairs": true,
+      "output": "[{\"a\": [2, {\"a\": 3, \"extra\": 3}, 6], \"extra\": 3}, {\"a\": 5, \"extra\": 3}]|[1, 1, 2]\n",
+      "goldenPassed": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "c31d639d + B137 one resumable JSON container reader; existing scalar grammar/hooks/depth boundary unchanged",
+  "baselineRuntime": "fd7bc7e4",
+  "coreSHA256": {
+    "baseline": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+    "candidate": "7bdf2edfe9669886ec5697daa6ce3968a6329f909abac6677e96bd5ba1852890",
+    "before-control": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42"
+  },
+  "boundary": "Warm excludes compilation/startup; compile-run compiles/disposes each invocation; compile-only has no guest work. Complete worker/reset/staging/actual mediated I/O/output-check/prior-result cleanup, final owners/results/process/fixtures joined outside batch.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted nine-batch means. Includes runtime/JIT/response, not guest-only CPU."
+}
