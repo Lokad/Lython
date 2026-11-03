@@ -6,11 +6,12 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NativeSliceAdmissionTests
 {
     [Theory]
-    [InlineData("repr")]
-    [InlineData("str")]
-    public async Task OutputIsAdmittedAfterBoundCallback(string operation)
+    [InlineData("repr", false)] [InlineData("repr", true)]
+    [InlineData("str", false)] [InlineData("str", true)]
+    public async Task RenderingRetainsPriorCapacityAndAdmitsNewStorageAfterCallback(string operation, bool fundedPrefix)
     {
-        using var script = new LythonEngine().Compile("import time\nclass Gate:\n def __repr__(self):time.time();return 'gate'\ns=slice('x'*262144,Gate(),None)\nvalue="+operation+"(s)\ntime.time()");
+        var arguments = fundedPrefix ? "'x'*262144,Gate(),None" : "Gate(),'x'*262144,None";
+        using var script = new LythonEngine().Compile("import time\nclass Gate:\n def __repr__(self):time.time();return 'gate'\ns=slice("+arguments+")\nvalue="+operation+"(s)\ntime.time()");
         Assert.True(script.IsValid);
         foreach(var asynchronous in new[] {false,true})
         {
@@ -19,8 +20,8 @@ public sealed class NativeSliceAdmissionTests
             using(var result = asynchronous ? await script.RunAsync(host,new LythonRunOptions { MemoryBudget=budget })
                 : script.Run(host,new LythonRunOptions { MemoryBudget=budget }))
             {
-                Assert.False(result.Success);
-                Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
+                Assert.Equal(fundedPrefix, result.Success);
+                if (!fundedPrefix) Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
                 Assert.True(host.AllocatedAtGate>0);
                 var allocated=GC.GetTotalAllocatedBytes(true)-host.AllocatedAtGate;
                 Assert.InRange(allocated,0,128*1024);

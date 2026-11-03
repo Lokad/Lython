@@ -21,7 +21,7 @@ public sealed class CasingStorageLifetimeTests
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var input = PyString.FromString("aBcD", context.MemoryGovernor, Span);
             var before = root.ReservedBytes;
-            var outputBytes = PyString.EstimateApproximateBytes(4);
+            var outputBytes = PyString.EstimateApproximateBytes(0);
             hook.AfterGrowth = bytes => { if (bytes == outputBytes) cancellation.Cancel(); };
             var error = Assert.Throws<LythonRuntimeException>(() => ApplyOrdinary(input, operation, context));
             Assert.True(cancellation.IsCancellationRequested);
@@ -49,7 +49,7 @@ public sealed class CasingStorageLifetimeTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var input = PyString.FromString("aBcD", context.MemoryGovernor, Span);
             var before = root.ReservedBytes;
-            var outputBytes = PyString.EstimateApproximateBytes(4);
+            var outputBytes = PyString.EstimateApproximateBytes(0);
             hook.RefuseGrowth = bytes => !resultStorage || bytes == outputBytes;
             var error = Assert.Throws<LythonRuntimeException>(() => ApplyOrdinary(input, operation, context));
             Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
@@ -107,9 +107,7 @@ public sealed class CasingStorageLifetimeTests
     [InlineData(true, "initial")]
     [InlineData(false, "growth")]
     [InlineData(true, "growth")]
-    [InlineData(false, "final")]
-    [InlineData(true, "final")]
-    public void RefusedCapacityAndCopyOverlapKeepInputAndReturnPrivateStorage(bool upper, string stage)
+    public void RefusedCapacityAndReplacementKeepsInputAndReturnsPrivateStorage(bool upper, string stage)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using (var owner = root.CreateScope())
@@ -118,24 +116,14 @@ public sealed class CasingStorageLifetimeTests
             var text = ExpansionInput(upper);
             var input = PyString.FromString(text, context.MemoryGovernor, Span);
             var length = input.Utf8Bytes.Length;
-            var available = stage switch
-            {
-                "initial" => length - 1,
-                "growth" => 3L * length - 1,
-                _ => 2L * length + PyString.EstimateApproximateBytes(length + 1) - 1
-            };
+            var available = stage == "initial" ? length - 1 : 3L * length - 1;
             Assert.True(owner.TryReserve(root.LimitBytes!.Value - root.ReservedBytes - available, out var padding));
             using (padding)
             {
                 var before = root.ReservedBytes;
                 var error = Assert.Throws<LythonRuntimeException>(() => Apply(input, upper, context));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
-                Assert.Equal(stage switch
-                {
-                    "initial" => length,
-                    "growth" => 2L * length,
-                    _ => PyString.EstimateApproximateBytes(length + 1)
-                }, error.Attribution?.Requested);
+                Assert.Equal(stage == "initial" ? length : 2L * length, error.Attribution?.Requested);
                 Assert.Equal(before, root.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(text, input.AsString());

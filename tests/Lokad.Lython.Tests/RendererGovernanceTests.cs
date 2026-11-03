@@ -5,15 +5,13 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG06: joined renderers build through the owning governor. A tiny join
-/// pins the exact contract: the builder growth peaks, then releases, leaving
-/// exactly the retained string charge behind.
+/// Joined renderers fund their retained backing capacity through the owner.
 /// </summary>
 public sealed class RendererGovernanceTests
 {
     [Theory]
     [InlineData(20)] // Denied builder growth.
-    [InlineData(220)] // Denied final string while scratch remains live.
+    [InlineData(191)] // Denied string metadata while 64-byte backing remains live.
     public void DeniedStringReprReleasesScratchOnEveryAttempt(long cap)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
@@ -32,7 +30,7 @@ public sealed class RendererGovernanceTests
     }
 
     [Fact]
-    public void JoinRenderedSequenceCommitsExactOutput()
+    public void JoinRenderedSequenceKeepsRetainedCapacityFunded()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -44,8 +42,8 @@ public sealed class RendererGovernanceTests
 
         Assert.Equal("xyyz", text.AsString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(128 + 4, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
-        Assert.Equal(8 + 132, context.MemoryGovernor.PeakAccountedBytes - peakBefore);
+        Assert.Equal(128 + 8, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(128 + 8, context.MemoryGovernor.PeakAccountedBytes - peakBefore);
     }
     [Fact]
     public void OnlyGovernedJoinOverloadRemains()

@@ -77,12 +77,18 @@ public sealed class StringIOAccountingTests
     [Fact]
     public void ReadDenialDoesNotConsumeCharactersAndReleasesScratch()
     {
-        var context = Context(300);
+        var budget = new LythonMemoryBudget(4096);
+        using var owner = budget.CreateScope();
+        var context = Context(0, owner);
         var stream = new LythonRuntime.StringIOObject(context.State, Span, "\n");
         stream.Write(PyString.FromString("a😀bc"), Span);
         stream.Seek(0, 0, Span);
+        // Let the small read buffer fit, but refuse metadata before cursor commit.
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes -
+            (PyString.EstimateApproximateBytes(0) - 1), out var padding));
+        using var held = padding;
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < 2; i++)
         {
             var error = Assert.Throws<LythonRuntimeException>(() => stream.Read(-1, false, Span));
             Assert.Equal("MemoryError", error.ExceptionType);

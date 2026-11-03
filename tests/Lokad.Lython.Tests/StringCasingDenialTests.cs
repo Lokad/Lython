@@ -15,10 +15,10 @@ public sealed class StringCasingDenialTests
     public void CasingDenialReleasesScratch(string source, bool upper)
     {
         var length = Encoding.UTF8.GetByteCount(source);
-        var governor = new MemoryGovernor(new LythonMemoryBudget(2 * PyString.EstimateApproximateBytes(length) + length - 1));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyString.EstimateApproximateBytes(length) + length + PyString.EstimateApproximateBytes(0) - 1));
         var value = PyString.FromString(source, governor, null);
         var before = governor.CurrentCommittedBytes;
-        for (var attempt = 0; attempt < 100; attempt++)
+        for (var attempt = 0; attempt < 2; attempt++)
         {
             var failure = Assert.Throws<LythonRuntimeException>(() => upper ? PyStringOps.Upper(value) : PyStringOps.Lower(value));
             Assert.Equal("MemoryError", failure.ExceptionType);

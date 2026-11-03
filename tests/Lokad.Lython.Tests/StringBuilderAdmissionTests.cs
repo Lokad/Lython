@@ -14,7 +14,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void RefusalPrecedesExactStringCopyAndKeepsBuilderFunded(bool consume, bool shared)
+    public void RefusalPrecedesCopyOrTransferAndKeepsBuilderFunded(bool consume, bool shared)
     {
         foreach (var measured in new[] { false, true })
         {
@@ -25,7 +25,8 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
             var governor = context.MemoryGovernor;
             var builder = new GovernedByteBuilder(governor, Span, 65536);
             builder.Append(new byte[65536]);
-            var padding = 1024 * 1024 - budget.ReservedBytes - 8192;
+            var headroom = consume ? PyString.EstimateApproximateBytes(0) - 1 : 8192;
+            var padding = 1024 * 1024 - budget.ReservedBytes - headroom;
             ILythonMemoryReservation? blocker = null;
             if (shared) Assert.True(budget.TryReserve(padding, out blocker));
             else { governor.Reserve(padding, Span); governor.Commit(padding); }
@@ -37,7 +38,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
                 { if (consume) builder.ToPyStringAndRelease(); else builder.ToPyString(); });
             var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
             if (measured) output.WriteLine($"STRING_BUILDER_ADMISSION:{consume}:{shared}:{allocated}");
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
                 error.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, error);
             Assert.Same(Span, error.Span);
@@ -50,7 +51,7 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
             hostPadding?.Dispose();
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);
-            if (measured) Assert.True(allocated < 32768, $"Refused string copy allocated {allocated} bytes.");
+            if (measured) Assert.True(allocated < 32768, $"Refused string conversion allocated {allocated} bytes.");
         }
     }
 

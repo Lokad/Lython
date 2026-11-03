@@ -76,11 +76,11 @@ public sealed class ContextualCasingTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void FinalCopyRefusalReturnsScratchWithoutChangingInput(int operation)
+    public void MetadataRefusalReturnsScratchWithoutChangingInput(int operation)
     {
         const string text = "ABCD";
         var bytes = Encoding.UTF8.GetByteCount(text);
-        var governor = new MemoryGovernor(new LythonMemoryBudget(2 * PyString.EstimateApproximateBytes(bytes) + bytes - 1));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyString.EstimateApproximateBytes(bytes) + bytes + PyString.EstimateApproximateBytes(0) - 1));
         var input = PyString.FromString(text, governor, null);
         var baseline = governor.CurrentCommittedBytes;
         for (var attempt = 0; attempt < 2; attempt++)
