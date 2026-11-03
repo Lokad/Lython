@@ -1,0 +1,23 @@
+{
+  "before": {
+    "nsPerGrowShrinkPair": 26.977252960205078,
+    "iqrPercent": 0.13362698275222348,
+    "allocatedBytes": [
+      0
+    ]
+  },
+  "candidate": {
+    "nsPerGrowShrinkPair": 26.100730895996094,
+    "iqrPercent": 1.892314550251021,
+    "allocatedBytes": [
+      0
+    ]
+  },
+  "before-control": {
+    "nsPerGrowShrinkPair": 28.303241729736328,
+    "iqrPercent": 2.073582877610093,
+    "allocatedBytes": [
+      0
+    ]
+  }
+}

@@ -57,6 +57,12 @@ containment assertions to make iteration faster.
 
 Anonymous GitHub API calls are capped at 60/hour: space CI status checks minutes apart, never poll in a tight loop.
 
+Benchmark catalogs, workers, raw snapshots and logs belong in persistent working
+storage, separately from RAM-backed guest fixtures. Do not keep sole evidence in
+`/dev/shm` across SSH/service lifetimes; archive and verify RAM traces before the
+owned collection ends. Keep missing/adverse evidence explicit.
+
+
 ## Packaging
 
 Treat NuGet artifacts as release outputs only when produced by an explicit

@@ -1,0 +1,13 @@
+{
+  "baselineRuntimeSource": "7c183083",
+  "baselineTestCorrection": "7e96843b",
+  "baselineFullCI": 41693945867,
+  "baselineCoreSHA256": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed",
+  "candidateCoreSHA256": "6bf29cb93985725f7a367264f1e1b23d5f6e970717d7aa7feebe24c84fca4f3f",
+  "sources": {
+    "src/Lokad.Lython/Public/LythonMemoryBudget.cs": "fe55aa416705441c0ef84573748af3640d5167de96a54c2b0f468edda4a6dbcb",
+    "tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs": "b39b76884ea4e385460599ea8921e66d2c92ad1bd127882b6727663446a588e0"
+  },
+  "focusedPublicPerActualFramework": 164,
+  "publication": "postponed"
+}

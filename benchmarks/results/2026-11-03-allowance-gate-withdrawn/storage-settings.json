@@ -1,0 +1,1 @@
+{"logindIPCConfig": ["#RemoveIPC=yes"], "user": "UID=1000\nState=active\nLinger=no\n", "configExit": 0, "userExit": 0}

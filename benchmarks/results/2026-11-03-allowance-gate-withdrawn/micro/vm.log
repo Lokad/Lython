@@ -1,0 +1,7 @@
+Running as unit: lython-b177-resize-diagnostic-20261103.service; invocation ID: 672fb0683edf4fefaf7e2a238d5d804f
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 4.189s
+CPU time consumed: 1.203s
+Memory peak: 724.0K
+Memory swap peak: 0B

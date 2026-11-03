@@ -2149,3 +2149,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   −1–2%, asyncJSON+2–3%, report inconsistent, allocation flat. WITHDRAW added state/
   parent storage without useful complete-script benefit; restore original source,
   no permanent design ban or third unchanged retime. All adverse controls retained.
+
+- [Standalone allowance gate, B177](results/2026-11-03-allowance-gate-withdrawn/README.md):
+  object→managed Lock only, both-target focused164 pass. Complete five-script pair
+  mixed with identical controls+8.30%CSV/+5.19%async text. One direct resize diagnostic
+  26.977 nsold/26.101 nsnew/28.303 nsoldcontrol, no timed allocation. No useful
+  whole-script improvement established: withdraw runtime swap, retain independent
+  concurrent growth/shrink test. Micro machine snapshots lost after RAM staging
+  vanished; samples/main complete-job evidence retained, cause unproven. Persistent
+  evidence storage adopted separately from RAM fixtures, no VM policy change.

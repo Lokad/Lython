@@ -659,6 +659,14 @@ Changed identities require a separate campaign.
 
 ## Evidence and delivery
 
+Keep catalogs, frozen workers, snapshots and captured logs in persistent working
+storage, independently of guest fixture storage. RAM-backed fixtures may use tmpfs
+when recorded; keep their timing boundary unchanged. Do not keep the sole evidence
+copy in `/dev/shm` across SSH/service lifetimes. Archive and verify RAM traces into
+persistent storage inside the owned collection before it ends, including failures.
+[Login cleanup may remove user IPC objects](https://www.freedesktop.org/software/systemd/man/latest/logind.conf.html#RemoveIPC=);
+lingering sessions are not an evidence-retention guarantee.
+
 Atomic versioned JSON checkpoints contain clean source revision; loaded assembly,
 Python, adapter and dependency identities; VM/OS/CPU/storage/timer information;
 effective runtime options; source/input/output digests; correctness, warmup,

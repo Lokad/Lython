@@ -1,0 +1,27 @@
+diff --git a/src/Lokad.Lython/Public/LythonMemoryBudget.cs b/src/Lokad.Lython/Public/LythonMemoryBudget.cs
+index f91f1c6f..5dccb2a4 100644
+--- a/src/Lokad.Lython/Public/LythonMemoryBudget.cs
++++ b/src/Lokad.Lython/Public/LythonMemoryBudget.cs
+@@ -35,7 +35,7 @@ public sealed class LythonMemoryBudget : ILythonMemoryBudget
+ 
+     private sealed class State(long? limit)
+     {
+-        internal readonly object Gate = new();
++        internal readonly System.Threading.Lock Gate = new();
+         internal readonly long? Limit = limit;
+         internal long Reserved;
+         internal long Peak;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs b/tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs
+index bd4d01f9..b1f15973 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/GovernedMemoryContractTests.cs
+@@ -247,6 +247,9 @@ public sealed class GovernedMemoryContractTests
+                 if (owner.TryReserve(16, out var reservation))
+                 {
+                     Assert.InRange(budget.ReservedBytes, 16, 64);
++                    if (reservation.TryResize(24))
++                        Assert.InRange(budget.ReservedBytes, 24, 64);
++                    Assert.True(reservation.TryResize(8));
+                     reservation.Dispose();
+                 }
+         })));

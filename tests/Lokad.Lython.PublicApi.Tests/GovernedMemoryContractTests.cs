@@ -247,6 +247,9 @@ public sealed class GovernedMemoryContractTests
                 if (owner.TryReserve(16, out var reservation))
                 {
                     Assert.InRange(budget.ReservedBytes, 16, 64);
+                    if (reservation.TryResize(24))
+                        Assert.InRange(budget.ReservedBytes, 24, 64);
+                    Assert.True(reservation.TryResize(8));
                     reservation.Dispose();
                 }
         })));
