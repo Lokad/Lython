@@ -1,6 +1,6 @@
 # Iterator-owned JSON working storage — B154
 
-2026-11-03. Retained, focused qualified; full delivery follows the source commit.
+2026-11-03. Retained and fully qualified41609489628 on exact0f05d7c0.
 One governed builder replaces per-next builder/capacity construction. Each yielded
 string is an independent funded copy. Exhaustion/failure releases scratch; abandoned
 iterators remain charged to their owner. Largest-chunk capacity can remain longer
@@ -83,3 +83,8 @@ demonstrates config warm/fresh elapsed−13.00/−10.23%, unchanged controls−0
 It uses the same exact source images/API/checks and changes both fixture locations.
 This closes elapsed uncertainty for that condition; the original filesystem result
 remains unproven. No earlier adverse data are replaced.
+
+Full delivery41609489628 is GREEN on exact0f05d7c0: Windows/Ubuntu ordinary
+Release.NET11/10, original Stress and installed consumers all PASS. Every required
+step is verified in the cached delivery-ci-status.json under the B154 evidence.
+No unchanged replay. Publication remains postponed.

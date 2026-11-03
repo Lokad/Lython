@@ -43,4 +43,9 @@ transport/final result/program/process/fixture teardown outside. All declared
 stdout/file goldens, identities, before/after quiet gates and cleanup/joins PASS.
 Four jobs80.713s, service81.315s/exit0, lease free. No retry or missing observation.
 [All observations](raw-results.tar.gz), [controls/dispersion](assessment.json).
-Publication remains postponed. Full B154 qualification41609489628 runs separately.
+Publication remains postponed. Full B154 qualification41609489628 is now GREEN on exact0f05d7c0.
+
+Full delivery41609489628 is GREEN on exact0f05d7c0: Windows/Ubuntu ordinary
+Release.NET11/10, original Stress and installed consumers all PASS. Every required
+step is verified in the cached delivery-ci-status.json under the B154 evidence.
+No unchanged replay. Publication remains postponed.
