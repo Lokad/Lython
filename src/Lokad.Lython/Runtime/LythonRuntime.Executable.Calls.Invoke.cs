@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
         // branches reach this completion helper; their operands stay borrowed.
         private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
         {
-            if (!pending.IsCompletedSuccessfully) return AwaitCallValueAsync(pending, start);
+            if (!pending.IsCompleted) return AwaitCallValueAsync(pending, start);
             CompleteExecutableValueTransfer(ref _stack, start, pending.GetAwaiter().GetResult());
             return default;
         }

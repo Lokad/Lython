@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecutePreparedOperationAsync(operation, instruction.Span, true));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
                             if (asynchronous)
                             {
                                 pending = ExecuteDelegationAsync(instruction);
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             else
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteDefinitionOrFallbackAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                             else if (!TryLoadDirectCallReceiver(instruction))
                             {
                                 pending = ExecuteMemberLoadAsync(instruction);
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = ExecuteContextManagerAsync(instruction);
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = ExecuteForNextAsync(instruction);
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteOrdinaryCall(call, callStart, target, true));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteGetIteratorAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                             else
                             {
                                 pending = ExecuteConditionalJumpAsync(instruction);
-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
 
         private static ValueTask<bool> WithoutJump(ValueTask operation)
         {
-            if (operation.IsCompletedSuccessfully)
+            if (operation.IsCompleted)
             {
                 operation.GetAwaiter().GetResult();
                 return new(false);

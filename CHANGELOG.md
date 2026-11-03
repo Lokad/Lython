@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Handle already-completed failures and cancellation in the shared instruction
+  loop, avoiding redundant async fault relays while retaining genuine suspension
+  and awaited cleanup.
+
 - Read evaluated call targets once and share ordinary call selection and result
   transfer across both APIs. Keep native values outside async call wrappers and
   preserve dynamic binding, suspended users and argument-storage cleanup.

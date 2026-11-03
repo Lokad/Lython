@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
                 return new(false);
             }
             var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
-            if (!resolved.IsCompletedSuccessfully) return AwaitMemberLoadAsync(resolved, target, instruction);
+            if (!resolved.IsCompleted) return AwaitMemberLoadAsync(resolved, target, instruction);
             CompleteMemberLoad(resolved.GetAwaiter().GetResult(), target, instruction);
             return new(false);
         }
@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
         {
             var cursor = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
             var next = cursor.TryMoveNextAsync();
-            return next.IsCompletedSuccessfully
+            return next.IsCompleted
                 ? CompleteForNextAsync(next.GetAwaiter().GetResult(), cursor, instruction)
                 : AwaitForNextAsync(next, cursor, instruction);
         }
@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
             }
             _ = Pop(ref _stack, instruction.Span);
             var disposal = cursor.DisposeAsync();
-            if (!disposal.IsCompletedSuccessfully) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
+            if (!disposal.IsCompleted) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
             disposal.GetAwaiter().GetResult();
             _instructionIndex = instruction.TargetIndex;
             return new(true);
@@ -169,7 +169,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, _context);
-                if (!pending.IsCompletedSuccessfully) return AwaitIteratorCreationAsync(pending, slot);
+                if (!pending.IsCompleted) return AwaitIteratorCreationAsync(pending, slot);
                 _stack[slot] = pending.GetAwaiter().GetResult();
                 return default;
             }
