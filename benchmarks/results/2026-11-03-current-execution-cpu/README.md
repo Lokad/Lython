@@ -80,3 +80,7 @@ Archive retrieved and SHA-256 verified. At cleanup, ordinary archived staging
 was already absent for an unmeasured reason; remaining raw profile staging was
 removed after verification, with lease free. Runtime
 internal native signatures in profiler maps do not add unsafe code to Lython.
+
+B176 outcome: [prototype withdrawn after a bounded confirmation](../2026-11-03-json-reader-withdrawn/README.md).
+Semantics pass; synchronous JSON improves modestly, asynchronous JSON slows roughly
+2–3%, report remains inconsistent and allocation flat. No reader code retained.

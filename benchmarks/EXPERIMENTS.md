@@ -2141,3 +2141,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   visible. Select one shared token-driven JSON reader between actual suspensions,
   retiring recursive async container readers; no second parser or staged member
   representation. Whole-script outcome unmeasured, no runtime prototype yet.
+
+- [Shared JSON reader, B176](results/2026-11-03-json-reader-withdrawn/README.md):
+  747 public/172 internal per actual target pass. One loop/lazy admitted parent
+  array replaces recursive async containers; initial complete five-script pair
+  inconclusive. One justified same-bit role-swapped target confirmation: syncJSON
+  −1–2%, asyncJSON+2–3%, report inconsistent, allocation flat. WITHDRAW added state/
+  parent storage without useful complete-script benefit; restore original source,
+  no permanent design ban or third unchanged retime. All adverse controls retained.

@@ -1,0 +1,15 @@
+{
+  "baselineRuntimeSource": "7c183083",
+  "baselineTestCorrection": "7e96843b",
+  "baselineCoreSHA256": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed",
+  "candidateCoreSHA256": "41567127e71889edd448bf7be073d27f20cf5fd23328e7487a97fb13e007c71b",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "cc70e1aaf1197168cc13bae8434eb2b940408f06df95cbb737f16b4c66e101a5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Reader.cs": "1b6ea4e2de3236826a08cfca2a9b6bad0a288f07934169c6d0bd3a4b5cfc9508"
+  },
+  "focusedPerActualFramework": {
+    "public": 747,
+    "internal": 172
+  },
+  "publication": "postponed"
+}
