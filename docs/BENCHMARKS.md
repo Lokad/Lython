@@ -122,6 +122,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Previous-record JSON keys |Unique-name allocation−14.64%; warm elapsed−31.7–35.1%; accounted peak−834,737 B|[Both APIs; unknown/reordered schemas near controls; config timing variable](../benchmarks/results/2026-11-03-json-record-key-snapshots/README.md)|
 | Complete call transport |Async elapsed−1.7–5.7%versus shared-driver source; sync near controls|[Four-image comparison; allocation/peaks unchanged; prior sync blocker not reproduced](../benchmarks/results/2026-11-03-ordinary-call-transport/README.md)|
 | Compiled constant format layouts |Report allocation−10.47%; warm/fresh elapsed−6.4/−4.9%|[Compilation flat; initial adverse CSV control retained](../benchmarks/results/2026-11-03-prepared-format-layouts/README.md)|
 | Native producer UTF-8 handoff |Config warm/fresh−19.6/−16.3%; allocation−37.8%, CSV rewrite allocation−10.2%|[CSV elapsed flat; text/report control drift retained](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md)|
@@ -129,7 +130,7 @@ original elapsed observations retain their own recorded timing boundaries:
 | Bulk CSV construction |Allocation−13.7–15.1%, CPU−7.2–11.1%|[Controlled comparison](../benchmarks/results/2026-11-02-native-csv-records/README.md)|
 | Direct UTF-8 formatting |Allocation−8.67%; confirmation elapsed/CPU−5–8%|[Original adverse timing preserved](../benchmarks/results/2026-11-02-formatting-confirmation/README.md)|
 | Native local forwarding |Named CSV/text allocation−30.5%/−34.7%; warm elapsed−5–8%/−8–10%|[Complete scripts and controls](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)|
-| Shared JSON names |Report allocation−13.8%, warm elapsed−9–13%|[Unique-name regression remains open](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)|
+| Historical shared JSON name index |Report allocation−13.8%, warm elapsed−9–13%|[Original unique-name regression retained; index replaced by the snapshot change above](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)|
 | Native wildcard cursors |Unicode/ASCII file-filter elapsed−48%/−11%, allocation−85%/−44%|[Pre-translation source pair](../benchmarks/results/2026-11-03-native-wildcard-cursors/README.md)|
 | Native producer writes |Config allocation−43.6%/RAM warm−24.1%; complete CSV rewrite allocation/time about−5%|[Controlled scripts; initial unstable fresh control preserved](../benchmarks/results/2026-11-03-native-stream-transport/README.md)|
 | JSON iterator working storage |Config allocation−10.5%/−4.4%; RAM warm/fresh elapsed−13%/−10%|[Ordinary-filesystem elapsed unproven; scratch retention](../benchmarks/results/2026-11-03-json-iterator-working-storage/README.md)|

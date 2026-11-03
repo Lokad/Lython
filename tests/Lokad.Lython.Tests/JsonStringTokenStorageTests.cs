@@ -25,12 +25,12 @@ public sealed class JsonStringTokenStorageTests
             var method = typeof(LythonRuntime).GetNestedType("JsonModule", BindingFlags.NonPublic)!
                 .GetMethod("ReadJsonString", BindingFlags.NonPublic | BindingFlags.Static)!;
             var scan = method.CreateDelegate<Func<PyString, bool, int, LythonRuntime.ExecutionContext,
-                LythonSourceSpan, bool, (PyString, int)>>();
+                LythonSourceSpan, PyString[]?, (PyString, int, bool)>>();
             Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes, out var blocker));
             using (blocker)
             {
                 cancellation.Cancel();
-                var failure = Assert.Throws<LythonRuntimeException>(() => scan(source, true, 0, context, new(0, 0, 0, 0), false));
+                var failure = Assert.Throws<LythonRuntimeException>(() => scan(source, true, 0, context, new(0, 0, 0, 0), null));
                 Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
                 Assert.Null(context.MemoryGovernor.AdmissionFailure);
             }

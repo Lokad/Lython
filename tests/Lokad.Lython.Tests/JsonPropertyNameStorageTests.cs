@@ -20,19 +20,21 @@ public sealed class JsonPropertyNameStorageTests
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
             var state = context.State;
             var span = new LythonSourceSpan(0, 0, 0, 0);
-            var name = Encoding.UTF8.GetBytes("retained-name");
-            var retained = populated ? state.GetJsonPropertyName(name, span) : null;
+            var retained = PyString.FromString("retained-name", context.MemoryGovernor, span);
+            if (populated) state.RememberJsonRecordKeys([retained], 1, span);
+            var snapshot = state.JsonRecordKeys;
             var before = budget.ReservedBytes;
             Assert.True(budget.TryReserve(limit - before, out var blocker));
             using (blocker)
             {
-                if (populated) Assert.Same(retained, state.GetJsonPropertyName(name, span));
-                var failure = Assert.Throws<LythonRuntimeException>(() => state.GetJsonPropertyName("new-name"u8.ToArray(), span));
+                if (populated) Assert.Same(retained, Assert.Single(snapshot));
+                var failure = Assert.Throws<LythonRuntimeException>(() => state.RememberJsonRecordKeys([retained, retained], 2, span));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(limit, budget.ReservedBytes);
-                if (retained is not null) Assert.Equal("retained-name", retained.AsString());
+                Assert.Same(snapshot, state.JsonRecordKeys);
+                Assert.Equal("retained-name", retained.AsString());
             }
             Assert.Equal(before, budget.ReservedBytes);
         }
@@ -64,13 +66,13 @@ public sealed class JsonPropertyNameStorageTests
         Assert.NotSame(PyNone.Instance, dictionaries[1].Items.Single().Value);
 
         // Mutating the white-box input backing must not change retained names
-        // or corrupt the table used by a later decode in this execution.
+        // or corrupt a hint used by a later decode in this execution.
         bytes[3] = (byte)'z';
         var second = await Read();
         var next = second.Select(item => Assert.IsType<PyDict>(item)).ToArray();
         Assert.Equal("alpha", keys[0].AsString());
         Assert.Equal("zlpha", Assert.IsType<PyString>(next[0].Items.Single().Key).AsString());
-        Assert.Same(keys[0], next[1].Items.Single().Key);
+        Assert.Equal("alpha", Assert.IsType<PyString>(next[1].Items.Single().Key).AsString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);

@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Replace the execution-wide JSON property-name index with an immutable previous-
+  object key snapshot. Reuse names independently of field order without indexing
+  every unique name. Preserve owned bytes, dictionary order/duplicate replacement,
+  hooks and cancellation; equal decoded strings have no interning guarantee.
+  Replaced private snapshot metadata remains funded until execution cleanup.
+
 - Handle already-completed failures and cancellation in the shared instruction
   loop, avoiding redundant async fault relays while retaining genuine suspension
   and awaited cleanup.

@@ -23,6 +23,8 @@ public sealed class JsonTokenExecutionTests
         { "literal-ignored-hooks", "import json\nevents=[]\ndef hook(value):\n events.append(value)\n return value\nprint(json.loads('[true,false,null]',parse_int=hook,parse_float=hook,parse_constant=hook))\nprint(events)", "[True, False, None]\n[]\n" },
         { "literal-constant-hooks", "import json\nevents=[]\ndef hook(value):\n events.append(value)\n return value\nprint(json.loads('[NaN,Infinity,-Infinity]',parse_constant=hook))\nprint(events)", "['NaN', 'Infinity', '-Infinity']\n['NaN', 'Infinity', '-Infinity']\n" },
         { "literal-object-hooks", "import json\nevents=[]\ndef hook(pairs):\n events.append(pairs)\n return dict(pairs)\nprint(json.loads('{\"café\":[true,false,null],\"z\":null}',object_pairs_hook=hook))\nprint(events)", "{'café': [True, False, None], 'z': None}\n[[('café', [True, False, None]), ('z', None)]]\n" },
+        { "record-layout-changes", "import json\nrows=json.loads('[{\"a\":1,\"b\":2},{\"b\":3,\"a\":4},{\"other\":5},{},{\"a\":6,\"b\":7}]')\nprint([list(row.items()) for row in rows])", "[[('a', 1), ('b', 2)], [('b', 3), ('a', 4)], [('other', 5)], [], [('a', 6), ('b', 7)]]\n" },
+        { "record-duplicates-and-escapes", "import json\nrows=json.loads(r'[{\"field_name\":1,\"\\u0066ield_name\":2},{\"field_name\":3}]')\nprint([list(row.items()) for row in rows])\nprint(json.loads(r'{\"field_name\":1,\"\\u0066ield_name\":2}',object_pairs_hook=lambda p:p))", "[[('field_name', 2)], [('field_name', 3)]]\n[('field_name', 1), ('field_name', 2)]\n" },
     };
 
     [Theory]
@@ -49,6 +51,49 @@ public sealed class JsonTokenExecutionTests
         foreach (var pairs in new[] { false, true })
         foreach (var escaped in new[] { false, true })
         foreach (var cancel in new[] { false, true }) yield return [pairs, escaped, cancel];
+    }
+
+    [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task NestedRecordConstructionSurvivesReentrantAndSuspendingHooks(bool asynchronous, bool pairs)
+    {
+        var source = """
+            import json
+            events=[]
+            def number(text):
+                json.loads('{"unrelated":0}')
+                return int(text)
+            def hook(value):
+                value=dict(value)
+                events.append(list(value))
+                json.loads('{"hint":9}')
+                with open('hooks.txt','a') as target: target.write('x')
+                return value
+            """ + "\nrows=json.loads(document,parse_int=number," + (pairs ? "object_pairs_hook" : "object_hook") + "=hook)\n" + """
+            print(rows[0]['a'],rows[1]['a'],events)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?>
+        {
+            ["document"] = """[{"a":1,"child":{"café😀":2},"z":3},{"z":4,"child":{"café😀":5},"a":6}]"""
+        } };
+        var synchronousHost = new MockLythonHost();
+        var asynchronousHost = new DelayedLythonHost();
+        synchronousHost.SeedFile("/hooks.txt", "before");
+        asynchronousHost.SeedFile("/hooks.txt", "before");
+        ILythonHost host = asynchronous ? asynchronousHost : synchronousHost;
+        using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("1 6 [['café😀'], ['a', 'child', 'z'], ['café😀'], ['z', 'child', 'a']]\n", result.StandardOutput);
+            Assert.Equal("beforexxxx", asynchronous ? asynchronousHost.ReadText("/hooks.txt") : synchronousHost.ReadText("/hooks.txt"));
+            if (asynchronous) Assert.True(asynchronousHost.CompletedAsynchronously > 0);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
     }
 
     [Theory]

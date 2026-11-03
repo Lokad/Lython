@@ -519,12 +519,18 @@ including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.
 Plain JSON strings use the native scan's validated boundary/control facts and an
 independent admitted UTF-8 copy, without a second token parse or decoding scratch.
-Property names share immutable decoded storage by UTF-8 content within an execution,
-including separate decoder calls and reentrant hooks. Table keys own their bytes;
-they never borrow an input document. Mutable records remain independent; value
-strings use the ordinary decoder. The names and conservative index capacity/replacement headroom remain
-charged to the execution/result owner. Many unique names add index storage and can
-reject earlier; there is no separate cache allowance or admission fallback.
+Property names can reuse immutable UTF-8 keys from the previous completed native
+object, independently of field order. A sorted key-only snapshot replaces an
+execution-wide name index; names always own their bytes and never borrow input.
+Mutable records remain independent. Equal decoded strings have no interning or
+cross-decode identity guarantee; duplicate dictionary entries retain their first
+key and last value. Value strings use the ordinary decoder.
+Snapshots and key payloads remain charged to the execution/result owner through
+nested, reentrant and suspended callbacks. Matching key sets reuse their snapshot;
+changed sets admit replacement metadata before allocation. Replaced snapshot
+metadata stays conservatively charged until the bounded execution owner ends,
+so changing schemas can reject earlier. There is no separate cache allowance,
+admission fallback or collector-dependent refund.
 Lenient plain control characters need no rewrite. Escaped tokens retain direct
 UTF-8 decoding and admitted scratch where necessary, including genuine lenient
 rewrites. Input aliases and results stay funded across callbacks/source reuse.
