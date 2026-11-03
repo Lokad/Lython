@@ -189,6 +189,21 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
+    // A private producer range is copied into the file's admitted staging before
+    // this guard returns. It never escapes to a guest or asynchronous borrower.
+    internal static object InvokeFileWrite(ExecutionContext.TextFileHandle receiver, ReadOnlyMemory<byte> utf8,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            return receiver.WriteUtf8(utf8);
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private static object InvokeCsvWriterow(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);

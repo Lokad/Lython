@@ -184,8 +184,8 @@ internal sealed partial class LythonRuntime
     // the same rendering helpers as encode(), so joined chunks equal encode()
     // output exactly while each advance visits only what its chunk needs. A
     // container opener is consumable before later elements (and their default
-    // hooks) are visited. Per-advance scratch is scope-bound; sort scratch
-    // stays funded across yields and ends when its frame is relinquished.
+    // hooks) are visited. The iterator owns reusable UTF-8 scratch; public chunks
+    // are independent. Sort scratch ends when its frame is relinquished.
     internal sealed class JsonEncodeIterator : PyIteratorBase
     {
         private sealed class EmitFrame
@@ -241,7 +241,11 @@ internal sealed partial class LythonRuntime
 
         public override ValueTask<PyIterationResult> TryMoveNextAsync() => TryMoveNextCoreAsync(true);
 
-        private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
+        internal async ValueTask WriteToAsync(ExecutionContext.TextFileHandle target, LythonSourceSpan span, bool asynchronous)
+            => _ = await TryMoveNextCoreAsync(asynchronous, target, span).ConfigureAwait(false);
+
+        private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous,
+            ExecutionContext.TextFileHandle? target = null, LythonSourceSpan? writeSpan = null)
         {
             if (Interlocked.CompareExchange(ref _advancing, 1, 0) != 0)
             {
@@ -250,38 +254,43 @@ internal sealed partial class LythonRuntime
             }
             try
             {
-                _context.CheckExecution(_span);
-                if (_finished) return PyIterationResult.End;
-                var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
-                builder.Clear();
                 while (true)
                 {
-                    _context.CheckExecution(_span);
-                    var (advanced, chunkReady) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
-                    if (!advanced)
+                    try
+                    {
+                        _context.CheckExecution(_span);
+                        if (_finished) return PyIterationResult.End;
+                        var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
+                        builder.Clear();
+                        while (true)
+                        {
+                            _context.CheckExecution(_span);
+                            var (advanced, chunkReady) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
+                            if (!advanced)
+                            {
+                                Finish();
+                                return PyIterationResult.End;
+                            }
+                            if (chunkReady && builder.Length != 0) break;
+                        }
+
+                        // Public/custom chunks must survive later advances independently.
+                        if (target is null) return PyIterationResult.Yield(builder.ToPyString());
+                    }
+                    catch (InvalidOperationException ex)
                     {
                         Finish();
-                        return PyIterationResult.End;
+                        throw new LythonRuntimeException("TypeError", ex.Message, _span);
                     }
-
-                    if (!chunkReady || builder.Length == 0)
+                    catch
                     {
-                        continue;
+                        Finish();
+                        throw;
                     }
-
-                    var chunk = builder.ToPyString();
-                    return PyIterationResult.Yield(chunk);
+                    // Consumer failure leaves the iterator resumable. The guard and
+                    // admitted builder remain live until this native copy finishes.
+                    InvokeFileWrite(target, _builder!.WrittenMemory, writeSpan ?? _span, _context);
                 }
-            }
-            catch (InvalidOperationException ex)
-            {
-                Finish();
-                throw new LythonRuntimeException("TypeError", ex.Message, _span);
-            }
-            catch
-            {
-                Finish();
-                throw;
             }
             finally { Volatile.Write(ref _advancing, 0); }
         }

@@ -532,7 +532,12 @@ Native JSON and CSV file output share the executable engine's guarded write
 operation, including stack admission, cancellation, type checks and error handling.
 JSON resolves guest writers for each chunk; CSV captures a guest write callable
 at construction. Native file handles have immutable methods and can be retained
-directly. Output remains staged and funded through existing flush/close cleanup.
+directly. Native text output copies the producer's admitted UTF-8 range into file
+staging before its scratch can be reused, avoiding an intermediate Python string.
+Public/custom chunks remain independent values. One codec/newline/BOM algorithm
+serves both routes; an encoding error owns its input, and ordinary writes preserve
+the original string identity. A native consumer error leaves an escaped encoder
+resumable. Output remains staged and funded through existing flush/close cleanup.
 
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm

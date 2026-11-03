@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Stage native JSON/CSV UTF-8 output without intermediate Python strings, sharing
+  the existing text-file codec. Preserve public chunks, codec-error inputs,
+  resumable encoder aliases and asynchronous publication/cleanup.
+
 - Do not reject valid code when a class method rebinds a known outer name through
   `global` or `nonlocal`; class-local analysis no longer hides that invalidation.
 

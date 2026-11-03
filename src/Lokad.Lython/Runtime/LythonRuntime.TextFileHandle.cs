@@ -352,6 +352,12 @@ internal sealed partial class LythonRuntime
                 return RequireWriter().Write(text);
             }
 
+            internal BigInteger WriteUtf8(ReadOnlyMemory<byte> utf8)
+            {
+                EnsureOpen();
+                return RequireWriter().Write(utf8);
+            }
+
             public object WriteLines(object value, LythonSourceSpan span, ExecutionContext context)
             {
                 EnsureOpen();

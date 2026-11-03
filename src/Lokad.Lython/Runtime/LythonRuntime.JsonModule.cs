@@ -252,6 +252,11 @@ internal sealed partial class LythonRuntime
             var chunks = CanUseDefaultEncoderAsync(bound, extras, 1, span, context, false).GetAwaiter().GetResult()
                 ? new JsonEncodeIterator(bound.Values[0], JsonDumpOptions.Default, context, span)
                 : IterateWithClass(bound, extras, span, context);
+            if (chunks is JsonEncodeIterator native && bound.Values[1] is ExecutionContext.TextFileHandle textFile)
+            {
+                native.WriteToAsync(textFile, span, false).GetAwaiter().GetResult();
+                return PyNone.Instance;
+            }
             foreach (var chunk in PyIteration.ToSequence(chunks, span, context))
             {
                 context.CheckExecution(span);
@@ -278,6 +283,11 @@ internal sealed partial class LythonRuntime
                 var method = await PyTextStream.ResolveMemberAsync(instance, "iterencode", span, context).ConfigureAwait(false);
                 chunks = await InvokeCallableTargetAsync(method, span, span, context,
                     () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound.Values[0])])).ConfigureAwait(false);
+            }
+            if (chunks is JsonEncodeIterator native && bound.Values[1] is ExecutionContext.TextFileHandle textFile)
+            {
+                await native.WriteToAsync(textFile, span, true).ConfigureAwait(false);
+                return PyNone.Instance;
             }
             await foreach (var chunk in PyIteration.ToSequenceAsync(chunks, span, context).ConfigureAwait(false))
             {

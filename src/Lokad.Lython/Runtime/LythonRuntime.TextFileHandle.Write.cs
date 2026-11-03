@@ -63,18 +63,25 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            public BigInteger Write(PyString text)
+            public BigInteger Write(PyString text) => Write(text.Utf8Bytes, text);
+
+            // The producer keeps its admitted range alive until staging finishes.
+            // Ordinary writes retain the original string for codec-error identity.
+            internal BigInteger Write(ReadOnlyMemory<byte> utf8) => Write(utf8, null);
+
+            private BigInteger Write(ReadOnlyMemory<byte> utf8, PyString? original)
             {
-                var inputLength = text.Length;
+                var inputLength = original?.Length ?? 0;
                 var appendedLineFeedCount = 0;
-                if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+                if (original is null || _newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
                 {
-                    foreach (var value in text.Utf8Bytes.Span)
+                    var offset = 0;
+                    foreach (var value in utf8.Span)
                     {
-                        if (value == (byte)'\n')
-                        {
+                        if ((offset++ & 1023) == 0) _services.CheckExecution(null);
+                        if (original is null && (value & 0xC0) != 0x80) inputLength++;
+                        if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed && value == (byte)'\n')
                             appendedLineFeedCount++;
-                        }
                     }
                 }
 
@@ -88,10 +95,10 @@ internal sealed partial class LythonRuntime
                     return new BigInteger(inputLength);
                 }
 
-                var bufferedLength = checked(_bufferedRuneLength + text.Length);
-                _buffer.Append(text);
+                var bufferedLength = checked(_bufferedRuneLength + inputLength);
+                _buffer.Append(utf8.Span);
                 if (IsUtf16Encoding(_encoding))
-                    _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(text.Utf8Bytes.Span);
+                    _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(utf8.Span);
                 _hasWrittenText = true;
                 _bufferedRuneLength = bufferedLength;
                 _bufferedLineFeedCount += appendedLineFeedCount;
@@ -101,7 +108,7 @@ internal sealed partial class LythonRuntime
                 {
                     var length = 0L;
                     var position = 0;
-                    var source = text.Utf8Bytes.Span;
+                    var source = utf8.Span;
                     for (var offset = 0; offset < source.Length; position++)
                     {
                         if ((position & 1023) == 0) _services.CheckExecution(null);
@@ -118,7 +125,7 @@ internal sealed partial class LythonRuntime
                             TextErrorMode.Ignore => length,
                             TextErrorMode.Replace => checked(length + 1),
                             TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
-                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, text, _services)
+                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, original, _services)
                         };
                     }
 
@@ -128,7 +135,7 @@ internal sealed partial class LythonRuntime
                 void AppendSingleByteNormalized()
                 {
                     const string hex = "0123456789abcdef";
-                    var source = text.Utf8Bytes.Span;
+                    var source = utf8.Span;
                     Span<byte> encoded = stackalloc byte[4];
                     var position = 0;
                     for (var offset = 0; offset < source.Length;)

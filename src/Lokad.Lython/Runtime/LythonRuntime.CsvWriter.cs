@@ -64,6 +64,8 @@ internal sealed partial class LythonRuntime
                 }
                 AppendBytes(builder, writer.Options.LineTerminator.Utf8Bytes.Span, context, span);
                 context.CheckExecution(span);
+                if (writer.WriteTarget is ExecutionContext.TextFileHandle textFile)
+                    return InvokeFileWrite(textFile, builder.WrittenMemory, span, context);
                 var rendered = builder.ToPyStringAndRelease();
                 if (writer.WriteTarget is null)
                 {
@@ -72,7 +74,7 @@ internal sealed partial class LythonRuntime
                     return new BigInteger(rendered.Length);
                 }
                 context.CheckExecution(span);
-                if (writer.WriteTarget is ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle)
+                if (writer.WriteTarget is ExecutionContext.BinaryFileHandle)
                     return InvokeFileWrite(writer.WriteTarget, rendered, span, context);
                 return asynchronous
                     ? await InvokeCallableTargetAsync(writer.WriteTarget, span, span, context,
