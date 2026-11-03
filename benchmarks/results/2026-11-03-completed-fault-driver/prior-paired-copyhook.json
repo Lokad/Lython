@@ -1,0 +1,24 @@
+[
+  {
+    "label": "before",
+    "exitCode": 0,
+    "stdout": "{\"scenario\":\"copyhook\",\"Success\":true,\"value\":\"3\",\"error\":null,\"message\":null,\"completedAsynchronously\":4,\"libraryHash\":\"A3AA23470C2437ACF40E4D26DB47BDC1B9E3BD35B62B5E0AEB3DD783FCFE54A6\",\"processId\":3065159}\n",
+    "stderr": "",
+    "timedOut": false,
+    "seconds": 10.432166929356754,
+    "cpuSeconds": 11.081685,
+    "coreSHA256": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6",
+    "unchangedProcessBoundSeconds": 25
+  },
+  {
+    "label": "candidate",
+    "exitCode": 0,
+    "stdout": "{\"scenario\":\"copyhook\",\"Success\":true,\"value\":\"3\",\"error\":null,\"message\":null,\"completedAsynchronously\":4,\"libraryHash\":\"E25A735305F1DFB429C834AC00D0ACAC4B5179D6C2AF605794BE7D59250A1591\",\"processId\":3065173}\n",
+    "stderr": "",
+    "timedOut": false,
+    "seconds": 11.331327536143363,
+    "cpuSeconds": 12.079739,
+    "coreSHA256": "e25a735305f1dfb429c834ac00d0acac4b5179d6c2af605794be7d59250a1591",
+    "unchangedProcessBoundSeconds": 25
+  }
+]

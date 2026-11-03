@@ -1,0 +1,213 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index fb2b76b9..701655df 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,10 @@
+ 
+ ## 0.11.0 - Unreleased
+ 
++- Handle already-completed failures and cancellation in the shared instruction
++  loop, avoiding redundant async fault relays while retaining genuine suspension
++  and awaited cleanup.
++
+ - Read evaluated call targets once and share ordinary call selection and result
+   transfer across both APIs. Keep native values outside async call wrappers and
+   preserve dynamic binding, suspended users and argument-storage cleanup.
+diff --git a/docs/RUNTIME.md b/docs/RUNTIME.md
+index de0445b3..da2dd164 100644
+--- a/docs/RUNTIME.md
++++ b/docs/RUNTIME.md
+@@ -170,8 +170,8 @@ Successful loop advances and true conditional arms continue at the next
+ instruction; they need no unconditional entry jump. Exception routing restores
+ the compiler-prepared protected-entry depth.
+ 
+-Both public APIs advance the same non-async instruction loop. Completed operations
+-stay in that loop; asynchronous execution awaits incomplete operations and cursor
++Both public APIs advance the same non-async instruction loop. Completed operations,
++including failures and cancellation, stay in that loop; asynchronous execution awaits incomplete operations and cursor
+ disposal before resuming it. Suspended failures keep their original instruction
+ span. Abandoned cursors finish cleanup before another guest instruction or handler
+ runs. Both APIs use the same identity-based member-cache eligibility rules;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 17b098f6..701458ee 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
+         // branches reach this completion helper; their operands stay borrowed.
+         private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
+         {
+-            if (!pending.IsCompletedSuccessfully) return AwaitCallValueAsync(pending, start);
++            if (!pending.IsCompleted) return AwaitCallValueAsync(pending, start);
+             CompleteExecutableValueTransfer(ref _stack, start, pending.GetAwaiter().GetResult());
+             return default;
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index c5d9458e..b73c6614 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
+                 return new(false);
+             }
+             var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
+-            if (!resolved.IsCompletedSuccessfully) return AwaitMemberLoadAsync(resolved, target, instruction);
++            if (!resolved.IsCompleted) return AwaitMemberLoadAsync(resolved, target, instruction);
+             CompleteMemberLoad(resolved.GetAwaiter().GetResult(), target, instruction);
+             return new(false);
+         }
+@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
+         {
+             var cursor = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+             var next = cursor.TryMoveNextAsync();
+-            return next.IsCompletedSuccessfully
++            return next.IsCompleted
+                 ? CompleteForNextAsync(next.GetAwaiter().GetResult(), cursor, instruction)
+                 : AwaitForNextAsync(next, cursor, instruction);
+         }
+@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
+             }
+             _ = Pop(ref _stack, instruction.Span);
+             var disposal = cursor.DisposeAsync();
+-            if (!disposal.IsCompletedSuccessfully) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
++            if (!disposal.IsCompleted) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
+             disposal.GetAwaiter().GetResult();
+             _instructionIndex = instruction.TargetIndex;
+             return new(true);
+@@ -169,7 +169,7 @@ internal sealed partial class LythonRuntime
+             try
+             {
+                 var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, _context);
+-                if (!pending.IsCompletedSuccessfully) return AwaitIteratorCreationAsync(pending, slot);
++                if (!pending.IsCompleted) return AwaitIteratorCreationAsync(pending, slot);
+                 _stack[slot] = pending.GetAwaiter().GetResult();
+                 return default;
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index e913ca0b..fd82fb60 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecutePreparedOperationAsync(operation, instruction.Span, true));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
+                             if (asynchronous)
+                             {
+                                 pending = ExecuteDelegationAsync(instruction);
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             else
+@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteDefinitionOrFallbackAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
+                             else if (!TryLoadDirectCallReceiver(instruction))
+                             {
+                                 pending = ExecuteMemberLoadAsync(instruction);
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = ExecuteContextManagerAsync(instruction);
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 jumped = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = ExecuteForNextAsync(instruction);
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 jumped = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteOrdinaryCall(call, callStart, target, true));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteGetIteratorAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = WithoutJump(ExecuteOperandValueOperationAsync(instruction));
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
+                             else
+                             {
+                                 pending = ExecuteConditionalJumpAsync(instruction);
+-                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                 jumped = ConsumeOperation(ref pending);
+                             }
+                             break;
+@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
+ 
+         private static ValueTask<bool> WithoutJump(ValueTask operation)
+         {
+-            if (operation.IsCompletedSuccessfully)
++            if (operation.IsCompleted)
+             {
+                 operation.GetAwaiter().GetResult();
+                 return new(false);

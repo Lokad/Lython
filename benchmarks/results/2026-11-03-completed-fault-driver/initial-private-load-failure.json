@@ -1,0 +1,24 @@
+[
+  {
+    "label": "before",
+    "exitCode": -6,
+    "stdout": "",
+    "stderr": "Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.\n\nFile name: 'Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null'\nRequested by: Lokad.Lython.WorkerFixture, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n --> System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\n   at StackGuardFixture.RunAsync(String libraryPath, String scenario)\n   at Program.<Main>$(String[] args)\n   at Program.<Main>(String[] args)\n\nFailed to open file '/home/lokad/lython-bench-checks/copyhook-b165-20261103/Lokad.Lython.dll'. The system cannot find the file specified.\n (0x80070002)\n",
+    "timedOut": false,
+    "seconds": 0.10210093297064304,
+    "cpuSeconds": 0.031348,
+    "coreSHA256": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6",
+    "unchangedProcessBoundSeconds": 25
+  },
+  {
+    "label": "candidate",
+    "exitCode": -6,
+    "stdout": "",
+    "stderr": "Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.\n\nFile name: 'Lokad.Lython, Version=0.11.0.0, Culture=neutral, PublicKeyToken=null'\nRequested by: Lokad.Lython.WorkerFixture, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\n --> System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\n   at StackGuardFixture.RunAsync(String libraryPath, String scenario)\n   at Program.<Main>$(String[] args)\n   at Program.<Main>(String[] args)\n\nFailed to open file '/home/lokad/lython-bench-checks/copyhook-b165-20261103/Lokad.Lython.dll'. The system cannot find the file specified.\n (0x80070002)\n",
+    "timedOut": false,
+    "seconds": 0.09889027383178473,
+    "cpuSeconds": 0.031709,
+    "coreSHA256": "e25a735305f1dfb429c834ac00d0acac4b5179d6c2af605794be7d59250a1591",
+    "unchangedProcessBoundSeconds": 25
+  }
+]

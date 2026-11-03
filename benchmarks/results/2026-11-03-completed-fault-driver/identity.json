@@ -1,0 +1,47 @@
+{
+  "baselineSource": "d3261a39937bc95595d5a24eca51c1b1bd4a770d",
+  "candidateBasedOn": "5aabe9cc",
+  "prototype": "B167 classify completed failed operations in native prefix",
+  "files": {
+    "baseline": {
+      "Lokad.Lython.Benchmarks.dll": "f73e9aa6dc550cde85028fdb1f57b86dadb7263c3081e9eaf1d16bc6b0327380",
+      "Lokad.Lython.dll": "e25a735305f1dfb429c834ac00d0acac4b5179d6c2af605794be7d59250a1591",
+      "Lokad.Lython.Utf8Regex.dll": "e0056ec8ed3c39c27c13e59138057b2241614d3ef55ac58df73031a8508a0c7a",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+    },
+    "candidate": {
+      "Lokad.Lython.Benchmarks.dll": "f73e9aa6dc550cde85028fdb1f57b86dadb7263c3081e9eaf1d16bc6b0327380",
+      "Lokad.Lython.dll": "4e0c344639200ab9d701a99013b82174e49af940e93b49954c63ed3cf179b554",
+      "Lokad.Lython.Utf8Regex.dll": "e0056ec8ed3c39c27c13e59138057b2241614d3ef55ac58df73031a8508a0c7a",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+    }
+  },
+  "sourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "49a51664e5ae5996f29a2df282f03733a3ea508d9e529ce923e5cf459df8e42e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "8d9f672fd2a87ca6ef3631dfbfa387cd64727563f4b0a86d551071cb0d363b92",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "0be588da93ef9d572546818107427a7a760038f5cc3784597ec10d088924015a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "48e7e3b082bb6cf135fccf889a7f5c45900f40f2a38e3d047ff0b0460fc02f67",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "946cdb6f8eab6df13fcfbd25a8dfc27bc80e9e2af728d50e023ba305cb668a81",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "be9778bbae7a2cfeab2842b5ed5d97d85d337c24a7e51903b9599da2bc6b4e67",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "d9931590bd3d288f873b411044d1d3d3495d723bfdd11561349391fd3a644efc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "e8cb8bbc139e85f646d2928b318d2849e08bdbea431d5663772c07205214c96f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "8c4f3ca546c082286d5a3b909196e6432de19001efdb3dc82163f97a55fbc969",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs": "0e52026f86954cd7afc29fbfca4f9cf650d8c7e8033ad303486b816730baee1f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "4f99ba51d29e07fcfc7ac064d89f438cfd3b80afcbcda55f1e1055ab8be59929",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "f849f0fa1a558f7adba44ee2a612f8ad6e5e72fbfc5ad3d82020f7ea17ff4ead",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "a38c1a5ede821d6dfdddb94433045600306fe3e9ea259b7bc8e17e845388bef4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "d4a6b42ea47eafdb826e3efc6fa1ed388a00bb03871b1757c8c317a28f528bcf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs": "52d53961dd766c60bf5d8c25a6e06d47dbc999a0f863173d28f29fe818765b6e"
+  },
+  "focusedPerActualTarget": {
+    "public": 5652,
+    "whitebox": 820
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "allBuildsAndTestsJoined": true
+}

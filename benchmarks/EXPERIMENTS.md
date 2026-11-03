@@ -2075,3 +2075,9 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Original Windows direct-Sum allocation outlier preserved; test-only76725065
   isolates/warms the control with the same8192 items/4096B bound. Full corrected
   qualification pending, no production retiming for a fixture-only change.
+
+- [Completed-fault driver, B167](results/2026-11-03-completed-fault-driver/README.md):
+  433f7e36 consumes all completed outcomes in the native prefix; genuine pending
+  operations still await. Original Ubuntu25s copyhook failure retained. Unchanged
+  three-rejection fixture11.06→8.97s in one quiet-VM pair; normal control uncertainty
+  and flat allocation/peaks retained. No deadline/fixture/stack-policy relaxation.
