@@ -1,6 +1,6 @@
 # Native dictionary ownership — B186
 
-2026-11-03. **RETAINED; full delivery qualification pending.** Native table and
+2026-11-03. **RETAINED978b51b5; FULLY QUALIFIED41730446899.** Native table and
 capacity/commit accounting now belong to the actual PyDict. Delete the separate
 OrderedPyDictStorage object, static PyDictStorage factory/capacity forwarders and
 unused Clone contract/implementations. CSV/dataclass known-capacity construction
@@ -20,8 +20,9 @@ host-mediated environment writes, copy/attach refusal/cancellation rollback, ali
 visibility, CSV/JSON/dataclasses, suspended callbacks, retained results and shared
 allowance reuse. Existing attach regression now also checks original data through
 refusal and live values through successful ownership transfer. No architecture-only
-suite or relaxed threshold/timeout. Full Windows/Ubuntu, original Stress and
-installed-package consumers are a separate exact-source checkpoint, pending.
+suite or relaxed threshold/timeout. Exact-source978b51b5 full Windows/Ubuntu, actual .NET11/.NET10 Release, original
+Stress and installed-package consumers all GREEN in41730446899. All eight gates
+verified in the [terminal receipt](delivery-ci-status.json); do not re-query.
 
 ## Bounded comparison and decision
 

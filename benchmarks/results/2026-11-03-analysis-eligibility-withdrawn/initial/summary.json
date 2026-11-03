@@ -1,0 +1,164 @@
+{
+  "complete": true,
+  "performanceQualification": false,
+  "reason": "Candidate fails existing frontend provider-capability contract; retain timings as withdrawn evidence only",
+  "elapsedSeconds": 246.38708069175482,
+  "timing": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.0872320263396912,
+        "candidate": 0.08524110970464134,
+        "after-control": 0.0866911987012987
+      },
+      "newVersusFirstPercent": -2.2823230395875527,
+      "newVersusSecondPercent": -1.6727061320881642,
+      "oldControlPercent": -0.6199874760291046
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.06594549773282177,
+        "candidate": 0.06599403910614525,
+        "after-control": 0.06713949684210527
+      },
+      "newVersusFirstPercent": 0.07360832049543298,
+      "newVersusSecondPercent": -1.7060862678995647,
+      "oldControlPercent": 1.810584725770048
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.07797295941686366,
+        "candidate": 0.07765388533225283,
+        "after-control": 0.07765502869329198
+      },
+      "newVersusFirstPercent": -0.40921120218738727,
+      "newVersusSecondPercent": -0.0014723593029231097,
+      "oldControlPercent": -0.4077448463536526
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.060006313658838066,
+        "candidate": 0.055321656886715566,
+        "after-control": 0.05957968788682582
+      },
+      "newVersusFirstPercent": -7.806939780965061,
+      "newVersusSecondPercent": -7.146782991207623,
+      "oldControlPercent": -0.7109681398490775
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "after-control": 0.05812527647238328,
+        "candidate": 0.05602562036492054,
+        "before-control": 0.05730152663230241
+      },
+      "newVersusFirstPercent": -2.2266531842497272,
+      "newVersusSecondPercent": -3.612294400802263,
+      "oldControlPercent": 1.437570495052931
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "after-control": 5.724236636363636,
+        "candidate": 5.798359090909091,
+        "before-control": 5.706769529411765
+      },
+      "newVersusFirstPercent": 1.6049283403734682,
+      "newVersusSecondPercent": 1.294888021829621,
+      "oldControlPercent": 0.3060769645917727
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "after-control": 3.4119871296296296,
+        "candidate": 3.4937158490566036,
+        "before-control": 3.3424810000000003
+      },
+      "newVersusFirstPercent": 4.524628533613306,
+      "newVersusSecondPercent": 2.3953407888688494,
+      "oldControlPercent": 2.079477179664724
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "after-control": 5.772624848484849,
+        "candidate": 5.885054,
+        "before-control": 6.005674750000001
+      },
+      "newVersusFirstPercent": -2.008446261596175,
+      "newVersusSecondPercent": 1.9476261573564857,
+      "oldControlPercent": -3.8804948855272525
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "after-control": 5.6855009333333335,
+        "candidate": 5.6448124,
+        "before-control": 5.627812380952381
+      },
+      "newVersusFirstPercent": 0.3020715314738798,
+      "newVersusSecondPercent": -0.7156543251058523,
+      "oldControlPercent": 1.0250617553670072
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "after-control": 0.3130557888888889,
+        "candidate": 0.3006108695652174,
+        "before-control": 0.38521609574468085
+      },
+      "newVersusFirstPercent": -21.96305583127538,
+      "newVersusSecondPercent": -3.975304008222169,
+      "oldControlPercent": -18.7324225682458
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "after-control": 5.378333722222222,
+        "candidate": 5.2572655263157895,
+        "before-control": 5.259635921052632
+      },
+      "newVersusFirstPercent": -0.04506765815014413,
+      "newVersusSecondPercent": -2.2510353979375175,
+      "oldControlPercent": 2.2567683952130713
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "after-control": 5.339748486486487,
+        "candidate": 5.3169244054054055,
+        "before-control": 5.208967513513514
+      },
+      "newVersusFirstPercent": 2.072519968915554,
+      "newVersusSecondPercent": -0.4274373809710963,
+      "oldControlPercent": 2.5106889730774906
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "after-control": 0.21078917948717948,
+        "candidate": 0.2147652643678161,
+        "before-control": 0.21474157861635218
+      },
+      "newVersusFirstPercent": 0.01102988606889177,
+      "newVersusSecondPercent": 1.886285097892526,
+      "oldControlPercent": -1.8405374285870746
+    }
+  ]
+}

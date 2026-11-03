@@ -4,6 +4,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class SharedCompilerFactTests
 {
+    [Fact]
+    public void NestedDeclarationsKeepAllDiagnosticFamiliesAndTheirOrder()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile("""
+            if False:
+                result: int = 'bad'
+                def use():
+                    return local
+                    local = 1
+            def outer():
+                nonlocal missing
+            """, budget))
+        {
+            Assert.False(script.IsValid);
+            var codes = script.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray();
+            Assert.Contains("LA1080", codes);
+            Assert.Contains("LA3205", codes);
+            Assert.Contains("LA3146", codes);
+            Assert.True(Array.IndexOf(codes, "LA1080") < Array.IndexOf(codes, "LA3205"));
+            Assert.True(Array.IndexOf(codes, "LA3205") < Array.IndexOf(codes, "LA3146"));
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

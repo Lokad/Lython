@@ -1,0 +1,7 @@
+[
+  "src/Lokad.Lython/Frontend/ImplicitSuperSyntaxFacts.cs",
+  "src/Lokad.Lython/Frontend/StaticAnalyzer.cs",
+  "src/Lokad.Lython/Frontend/Syntax.cs",
+  "tests/Lokad.Lython.PublicApi.Tests/RegexAnalysisBindingTests.cs",
+  "tests/Lokad.Lython.PublicApi.Tests/SharedCompilerFactTests.cs"
+]

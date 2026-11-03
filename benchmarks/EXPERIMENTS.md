@@ -2195,10 +2195,20 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 
 - [Native dictionary ownership, B186](results/2026-11-03-native-dictionary-ownership/README.md):
-  RETAINED, delivery pending. PyDict owns native table/capacity, removes separate
+  RETAINED978b51b5, full GREEN41730446899. PyDict owns native table/capacity, removes separate
   wrapper/static factory/unused Clone; live namespace/environment bridges remain.
   Both-target206 internal/2,021 public pass. Complete CSV/JSON/report allocation
   −1.7–2.4% /−1.1%, local constructor−24B. Initial adverse compile+14–32% retained;
   same-bit role-swapped confirmation report sync−4–5% /async−1.6–2.1%, compile
   near/slightly above controls, config async variable. No general CPU gain, fresh
-  debt closure or repeated CPython checkpoint. Full exact-source delivery next.
+  debt closure or repeated CPython checkpoint. Exact-source full delivery cached.
+
+
+- [Shared analysis eligibility, B187](results/2026-11-03-analysis-eligibility-withdrawn/README.md):
+  WITHDRAWN. Initial annotation-pass skip loses existing LA2010 analysis in three
+  targeted cases despite main tests passing; corrected source preserves annotation
+  binding work and matches eight baseline contracts. Corrected compilation allocation
+  −0.2–0.6%, but fresh text+3–4.5% and report+2% versus both controls; warm controls
+  straddle. Metadata/eligibility state not justified. Preserve both full variants,
+  all favorable/adverse timings and new capability/diagnostic-order regressions.
+  No permanent analysis-design ban, full prototype qualification or debt closure.

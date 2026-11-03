@@ -5,6 +5,21 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class RegexAnalysisBindingTests
 {
+    [Theory]
+    [InlineData("import re\nif False: pattern = re.compile('a')")]
+    [InlineData("import re\ndef prepare():\n global pattern\n pattern = re.compile('a')")]
+    [InlineData("import re\ndef prepare():\n global pattern\n pattern = re.compile('a')\nprepare()")]
+    public void ConstantPatternAnalysisPreservesMissingProviderFailureAcrossScopes(string source)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.False(script.IsValid);
+            Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA2010");
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     public static TheoryData<string, string> OrdinaryReceivers => new()
     {
         { "class Echo:\n    LOCALE = 4\n    def compile(self, pattern, flags=0): return pattern + ':' + str(flags)\nre = Echo()\nprint(re.compile(r'\\N{NOT A CHARACTER}', re.LOCALE))", "\\N{NOT A CHARACTER}:4\n" },

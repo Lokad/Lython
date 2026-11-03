@@ -1,0 +1,13 @@
+{
+  "restoredSource": "978b51b5",
+  "nonincrementalReleaseSolutionBuild": "PASS, 0 warnings/errors",
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "internalPerFramework": 148,
+  "publicPerFramework": 1129,
+  "status": "PASS",
+  "productionDiff": "empty",
+  "fullPrototypeQualification": false
+}

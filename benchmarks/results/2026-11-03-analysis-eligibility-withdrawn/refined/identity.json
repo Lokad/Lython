@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "978b51b5 plus B187 corrected directive/name-only eligibility, unconditional annotation binding analysis retained",
+  "coreSHA256": {
+    "before-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "candidate": "61e25c60a6ac4c05b733a5a2fcb2ec664fda5e7a3a9371d453bb010b6ffdcd10",
+    "after-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371"
+  }
+}

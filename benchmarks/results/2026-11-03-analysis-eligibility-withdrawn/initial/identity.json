@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "978b51b5 plus B187 shared postparse analysis-eligibility patch",
+  "coreSHA256": {
+    "before-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "candidate": "5c2fbbefb8e503b9e44e99cfebd613cb517bbcbcb7ce5565fb02a1c4e0b1c65a",
+    "after-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371"
+  }
+}

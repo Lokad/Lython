@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "internalPerFramework": 148,
+  "publicPerFramework": 1129,
+  "contractDiagnosticCases": 8,
+  "contractDiagnosticBaselineMatched": true,
+  "notes": "New scoped/dead-code LA2010 and nested diagnostic-family/order controls; focused compiler cancellation/refusal/ownership; initial candidate failure remains preserved"
+}
