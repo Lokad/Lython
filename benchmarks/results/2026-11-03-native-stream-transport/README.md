@@ -93,3 +93,10 @@ before/after quiet gates, full outputs, worker joins/owned cleanup and free leas
 No timeout/restart/abandoned operation. Primary ordinary-filesystem CPython rows
 remain tied to their recorded earlier source; these data do not relabel them.
 Publication remains postponed; broader text/report/unique-key debt remains open.
+
+Delivery run [41620245727](https://github.com/Lokad/Lython/actions/runs/41620245727)
+is complete and GREEN for exact 93bc77bb: Windows/Ubuntu ordinary Release .NET11/
+.NET10, original Stress scales and installed Release consumers. Required steps
+are verified in [the cached receipt](delivery-ci-status.json). Later class-method
+fact correction ca4822f4 is separately focused-qualified and is not included in
+this receipt. Publication remains postponed.
