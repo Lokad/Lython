@@ -1,0 +1,943 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": 2,
+  "performanceQualified": false,
+  "purpose": "supervised correctness and timer smoke; no sampling qualification or ratios",
+  "state": "Completed",
+  "started": "2026-11-03T03:10:36.2098146+00:00",
+  "updated": "2026-11-03T03:10:38.3353513+00:00",
+  "catalogSha256": "cafb2926a73166d2d074f0afd8e05a4803e59a1395925c0e788c0f51222d12b5",
+  "caseCount": 4,
+  "launched": {
+    "dotnet": {
+      "path": "C:\\Users\\JoannesVermorel\\.dotnet11\\dotnet.exe",
+      "sha256": "d443bda8c97450ab5d90ba48376414170068dc7da82ce2b3dfa0b32ef2dd3476"
+    },
+    "python": {
+      "path": "C:\\Python313\\python.exe",
+      "sha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1"
+    },
+    "pythonWorker": {
+      "path": "D:\\code\\Lython\\benchmarks\\cpython-worker.py",
+      "sha256": "02ca606af6b937a5bec8da744da36e6dbea45ef14ee7207732f34da052ad32f1"
+    },
+    "adapter": {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net11.0\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "27feabd6e6c5d02ea62d6751b09ad62f938dbb728013ccf92d50c25cf7e69538"
+    },
+    "library": {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net11.0\\Lokad.Lython.dll",
+      "sha256": "aa46eba22ed54676739a15c25184b4c55239492c7364ffd80c444ac0d3a21e1f"
+    }
+  },
+  "lythonIdentity": {
+    "protocolVersion": 2,
+    "status": "Ready",
+    "engine": "Lython",
+    "catalogSha256": "cafb2926a73166d2d074f0afd8e05a4803e59a1395925c0e788c0f51222d12b5",
+    "catalogVersion": 1,
+    "processId": 51836,
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-zfalycje.kdw",
+    "runtimeVersion": "11.0.0",
+    "architecture": "X64",
+    "platform": "Microsoft Windows 10.0.26200",
+    "processorCount": 28,
+    "serverGc": false,
+    "gcLatencyMode": "Interactive",
+    "runtimeOverrides": {
+      "DOTNET_gcServer": null,
+      "COMPlus_gcServer": null,
+      "DOTNET_GCHeapCount": null,
+      "COMPlus_GCHeapCount": null,
+      "DOTNET_GCHeapHardLimit": null,
+      "COMPlus_GCHeapHardLimit": null,
+      "DOTNET_GCHeapHardLimitPercent": null,
+      "COMPlus_GCHeapHardLimitPercent": null,
+      "DOTNET_TieredCompilation": null,
+      "COMPlus_TieredCompilation": null,
+      "DOTNET_TieredPGO": null,
+      "COMPlus_TieredPGO": null,
+      "DOTNET_TC_QuickJit": null,
+      "COMPlus_TC_QuickJit": null,
+      "DOTNET_TC_QuickJitForLoops": null,
+      "COMPlus_TC_QuickJitForLoops": null,
+      "DOTNET_ReadyToRun": null,
+      "COMPlus_ReadyToRun": null,
+      "DOTNET_PROCESSOR_COUNT": null
+    },
+    "clockFrequency": 10000000,
+    "clockHighResolution": true,
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+    "timingBoundary": "command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included",
+    "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+    "benchmarkDotNetLoaded": false,
+    "libraries": [
+      {
+        "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net11.0\\Lokad.Lython.dll",
+        "sha256": "aa46eba22ed54676739a15c25184b4c55239492c7364ffd80c444ac0d3a21e1f",
+        "version": "0.11.0\u002B02efd7971cf8c4e6eeaf295840665f489e99f1ca",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "7e934b33-db46-44e7-bfd0-cab82ba39f3d"
+      },
+      {
+        "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net11.0\\Lokad.Lython.Benchmarks.dll",
+        "sha256": "27feabd6e6c5d02ea62d6751b09ad62f938dbb728013ccf92d50c25cf7e69538",
+        "version": "1.0.0\u002B02efd7971cf8c4e6eeaf295840665f489e99f1ca",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "0994cd35-b209-4195-a2ce-b6beda253a7e"
+      },
+      {
+        "path": "C:\\Users\\JoannesVermorel\\.dotnet11\\shared\\Microsoft.NETCore.App\\11.0.0-rc.3.26522.148\\System.Private.CoreLib.dll",
+        "sha256": "df53885902e896a2b40988237cbe9cbb9f1bb0743200f05fe9257c56a29c5732",
+        "version": "11.0.0-rc.3.26522.148\u002B5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "4d3da96b-886f-4bbc-ab65-95c08e83c881"
+      }
+    ]
+  },
+  "pythonIdentity": {
+    "protocolVersion": 2,
+    "status": "Ready",
+    "engine": "CPython",
+    "catalogSha256": "cafb2926a73166d2d074f0afd8e05a4803e59a1395925c0e788c0f51222d12b5",
+    "catalogVersion": 1,
+    "processId": 51844,
+    "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Python313\\python.exe",
+    "fileFixtureDirectory": "C:\\Users\\JoannesVermorel\\AppData\\Local\\Temp\\lython-comparison-files-q3b2gwid.1ha",
+    "executableSha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1",
+    "adapterSha256": "02ca606af6b937a5bec8da744da36e6dbea45ef14ee7207732f34da052ad32f1",
+    "architecture": "AMD64",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=1, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+    "paths": [
+      "C:\\Python313\\python313.zip",
+      "C:\\Python313\\DLLs",
+      "C:\\Python313\\Lib",
+      "C:\\Python313"
+    ],
+    "configArgs": null,
+    "debug": false,
+    "freeThreaded": false,
+    "gilEnabled": true,
+    "gcEnabled": true,
+    "clockFrequency": 1000000000,
+    "clockResolutionSeconds": 1e-07,
+    "clockMonotonic": true,
+    "clockImplementation": "QueryPerformanceCounter()",
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "timingBoundary": "command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included",
+    "captureByteLimit": 16777216
+  },
+  "responses": [
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 1,
+        "caseId": "scripts.file-search.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 1,
+        "caseId": "scripts.file-search.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 2,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 123358,
+        "clockFrequency": 10000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 2,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 9665600,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 3,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 139936,
+        "clockFrequency": 10000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 3,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 9352400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 4,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 8710,
+        "clockFrequency": 10000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 4,
+        "caseId": "scripts.file-search.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 176700,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 5,
+        "caseId": "scripts.file-search.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 5,
+        "caseId": "scripts.file-search.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+        "fixtureSha256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+        "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "actualOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+        "reason": null,
+        "actualFilesSha256": "a79851dd3a1acbfd6fa9fb458cd0be9c6aa354427005da818757805e12b6eca8"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 6,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 6,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 7,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 476430,
+        "clockFrequency": 10000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 7,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 13131600,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 8,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 478632,
+        "clockFrequency": 10000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 8,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 12719100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 9,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 10323,
+        "clockFrequency": 10000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 9,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 211600,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 10,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 10,
+        "caseId": "scripts.text-summary-helpers.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+        "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+        "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "actualOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+        "reason": null,
+        "actualFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 11,
+        "caseId": "scripts.report-render.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 11,
+        "caseId": "scripts.report-render.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 12,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 1047339,
+        "clockFrequency": 10000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 12,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 36971800,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 13,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 1168989,
+        "clockFrequency": 10000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 13,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 38787400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 14,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 14533,
+        "clockFrequency": 10000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 14,
+        "caseId": "scripts.report-render.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 232600,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 15,
+        "caseId": "scripts.report-render.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 15,
+        "caseId": "scripts.report-render.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+        "fixtureSha256": "d5b2f3e1eef1bfdd2a1b8095e5b87c6c145720ba0bd57378e1d5a81703960da8",
+        "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "actualOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+        "reason": null,
+        "actualFilesSha256": "69c5fff5c16aeca5717f033da425df672e98e25d7f90390c736f4b5624f5fa11"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 16,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 16,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 17,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 310088,
+        "clockFrequency": 10000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "warm",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 17,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 16316700,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 18,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 286631,
+        "clockFrequency": 10000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile-run",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 18,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 19547100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 19,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 10596,
+        "clockFrequency": 10000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "batch",
+      "lane": "compile",
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 19,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Completed",
+        "completedInvocations": 2,
+        "elapsedTicks": 183500,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": null,
+        "reason": null
+      }
+    },
+    {
+      "engine": "Lython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 20,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    },
+    {
+      "engine": "CPython",
+      "operation": "verify",
+      "lane": null,
+      "response": {
+        "protocolVersion": 2,
+        "requestId": 20,
+        "caseId": "scripts.filename-filter-ascii.large",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "392e45b9d91cf11bc7b1989c59c85c895f8c6e32b9c40424981ad13202b87a02",
+        "fixtureSha256": "70823b92d38de239d509a93ff4d18b82f86c7ce2e8f57d45c2b311b1dace54c4",
+        "expectedOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "actualOutputSha256": "f16c302d5d30e1d3fbe955cf4f637f58a871adeba597922e3baad0aeeb13f656",
+        "reason": null,
+        "actualFilesSha256": "b8726f5bcefd0d33df3af9d786246e2b9382966139a683dc872021ee92c16107"
+      }
+    }
+  ],
+  "error": null,
+  "deadlinesSeconds": {
+    "startup": 30,
+    "request": 65,
+    "shutdown": 5,
+    "case": 300,
+    "campaign": 600
+  }
+}

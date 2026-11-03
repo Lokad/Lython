@@ -1,0 +1,322 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.596287529411764,
+        "iqrPercent": 1.0361049438573207
+      },
+      "candidate": {
+        "medianMilliseconds": 5.680507352941177,
+        "iqrPercent": 1.1709828114462715
+      },
+      "CPython": {
+        "medianMilliseconds": 3.546066275862069,
+        "iqrPercent": 0.565505699457823
+      }
+    },
+    "LythonOverCPython": 1.6019179877173089,
+    "unchangedControlPercent": -1.482610941183038
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.426101157894737,
+        "iqrPercent": 2.533501761592465
+      },
+      "candidate": {
+        "medianMilliseconds": 5.492244277777778,
+        "iqrPercent": 0.5885096738990426
+      },
+      "CPython": {
+        "medianMilliseconds": 3.3909527666666666,
+        "iqrPercent": 0.38354805354950233
+      }
+    },
+    "LythonOverCPython": 1.619675842072167,
+    "unchangedControlPercent": -1.204300401398073
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.79678205882353,
+        "iqrPercent": 1.753628115883141
+      },
+      "candidate": {
+        "medianMilliseconds": 5.896591,
+        "iqrPercent": 0.7597430647041841
+      },
+      "CPython": {
+        "medianMilliseconds": 4.2510735,
+        "iqrPercent": 0.5321793032591334
+      }
+    },
+    "LythonOverCPython": 1.3870828156699713,
+    "unchangedControlPercent": -1.6926549794019863
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.719903055555555,
+        "iqrPercent": 0.5578930994897044
+      },
+      "candidate": {
+        "medianMilliseconds": 5.522709777777778,
+        "iqrPercent": 0.7154167153209757
+      },
+      "CPython": {
+        "medianMilliseconds": 4.146722125,
+        "iqrPercent": 0.3240300313105682
+      }
+    },
+    "LythonOverCPython": 1.3318253819039727,
+    "unchangedControlPercent": 3.570589180174588
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 3.633447961538462,
+        "iqrPercent": 0.4936442707359782
+      },
+      "candidate": {
+        "medianMilliseconds": 3.724398769230769,
+        "iqrPercent": 0.7536270593514919
+      },
+      "CPython": {
+        "medianMilliseconds": 1.297155051948052,
+        "iqrPercent": 0.43974055950755614
+      }
+    },
+    "LythonOverCPython": 2.8712055383336876,
+    "unchangedControlPercent": -2.442026574697098
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 3.5982747857142856,
+        "iqrPercent": 0.16209057487411457
+      },
+      "candidate": {
+        "medianMilliseconds": 3.5918747931034485,
+        "iqrPercent": 0.6021560021162287
+      },
+      "CPython": {
+        "medianMilliseconds": 1.1864409058823528,
+        "iqrPercent": 0.97449339263093
+      }
+    },
+    "LythonOverCPython": 3.0274367440426215,
+    "unchangedControlPercent": 0.17817972450280273
+  },
+  {
+    "case": "scripts.file-search.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.4761302816901409,
+        "iqrPercent": 1.5121985490419507
+      },
+      "candidate": {
+        "medianMilliseconds": 0.49096270198675496,
+        "iqrPercent": 0.9730713146254474
+      },
+      "CPython": {
+        "medianMilliseconds": 0.24468518357487923,
+        "iqrPercent": 2.005690719651548
+      }
+    },
+    "LythonOverCPython": 2.0065076880166273,
+    "unchangedControlPercent": -3.0210890229731224
+  },
+  {
+    "case": "scripts.file-search.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.3757969471698113,
+        "iqrPercent": 0.18571048670794088
+      },
+      "candidate": {
+        "medianMilliseconds": 0.3584132544802867,
+        "iqrPercent": 0.2817246121990293
+      },
+      "CPython": {
+        "medianMilliseconds": 0.15063444307692309,
+        "iqrPercent": 1.6469815852106369
+      }
+    },
+    "LythonOverCPython": 2.3793579154885522,
+    "unchangedControlPercent": 4.850181312276414
+  },
+  {
+    "case": "scripts.report-render.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 6.073642866666666,
+        "iqrPercent": 3.5774367723497913
+      },
+      "candidate": {
+        "medianMilliseconds": 5.814924882352941,
+        "iqrPercent": 4.542835478234823
+      },
+      "CPython": {
+        "medianMilliseconds": 2.54242885,
+        "iqrPercent": 1.082621250148246
+      }
+    },
+    "LythonOverCPython": 2.287153436900679,
+    "unchangedControlPercent": 4.449205957911495
+  },
+  {
+    "case": "scripts.report-render.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 5.742534444444445,
+        "iqrPercent": 4.606177566583546
+      },
+      "candidate": {
+        "medianMilliseconds": 5.7354096666666665,
+        "iqrPercent": 2.1391429425548787
+      },
+      "CPython": {
+        "medianMilliseconds": 2.391856523809524,
+        "iqrPercent": 1.183740775023017
+      }
+    },
+    "LythonOverCPython": 2.397890345668329,
+    "unchangedControlPercent": 0.12422439183701339
+  },
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "lane": "compile",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.08605328608247423,
+        "iqrPercent": 1.0616164512867547
+      },
+      "candidate": {
+        "medianMilliseconds": 0.08717086956521738,
+        "iqrPercent": 2.598728135146868
+      },
+      "CPython": {
+        "medianMilliseconds": 0.05469605792349727,
+        "iqrPercent": 0.1537488051455993
+      }
+    },
+    "LythonOverCPython": 1.5937322153479918,
+    "unchangedControlPercent": -1.2820607254663607
+  },
+  {
+    "case": "scripts.report-render.large",
+    "lane": "compile",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.05956599646434885,
+        "iqrPercent": 1.3882721270344647
+      },
+      "candidate": {
+        "medianMilliseconds": 0.06139762953692115,
+        "iqrPercent": 0.7405307645401334
+      },
+      "CPython": {
+        "medianMilliseconds": 0.03774385236664162,
+        "iqrPercent": 0.20162004878170128
+      }
+    },
+    "LythonOverCPython": 1.626692181299039,
+    "unchangedControlPercent": -2.9832309266449086
+  },
+  {
+    "case": "scripts.filename-filter-unicode.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.8952486543209877,
+        "iqrPercent": 0.9300485260036875
+      },
+      "candidate": {
+        "medianMilliseconds": 0.8744928125000001,
+        "iqrPercent": 0.3690196138690274
+      },
+      "CPython": {
+        "medianMilliseconds": 0.42176403781512606,
+        "iqrPercent": 0.6717902651389807
+      }
+    },
+    "LythonOverCPython": 2.0734172051039614,
+    "unchangedControlPercent": 2.373471974189334
+  },
+  {
+    "case": "scripts.filename-filter-unicode.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.7767117387387387,
+        "iqrPercent": 1.5698358208025516
+      },
+      "candidate": {
+        "medianMilliseconds": 0.7894226949152542,
+        "iqrPercent": 0.5686949220712456
+      },
+      "CPython": {
+        "medianMilliseconds": 0.33238920394736843,
+        "iqrPercent": 1.049379156992143
+      }
+    },
+    "LythonOverCPython": 2.3749949924374016,
+    "unchangedControlPercent": -1.6101584434280891
+  },
+  {
+    "case": "scripts.filename-filter-ascii.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.7764283000000001,
+        "iqrPercent": 0.817148859720862
+      },
+      "candidate": {
+        "medianMilliseconds": 0.7736212258064517,
+        "iqrPercent": 1.6128881609062582
+      },
+      "CPython": {
+        "medianMilliseconds": 0.29194148843930634,
+        "iqrPercent": 0.7072236295666909
+      }
+    },
+    "LythonOverCPython": 2.6499187557827533,
+    "unchangedControlPercent": 0.3628486525330654
+  },
+  {
+    "case": "scripts.filename-filter-ascii.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.6567289931034482,
+        "iqrPercent": 1.2581214416645352
+      },
+      "candidate": {
+        "medianMilliseconds": 0.638332880794702,
+        "iqrPercent": 0.2863740726114307
+      },
+      "CPython": {
+        "medianMilliseconds": 0.21097106779661018,
+        "iqrPercent": 0.6230109631066008
+      }
+    },
+    "LythonOverCPython": 3.0256891973931532,
+    "unchangedControlPercent": 2.881899532708343
+  }
+]

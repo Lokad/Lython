@@ -1,0 +1,160 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:16.34]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.Net11QualificationRequiresMatchingDeclaredAndActualToolchains(defect: "none") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.Net11QualificationRequiresMatchingDeclaredAndActualToolchains(defect: "none") [217 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "Qualified"
+Actual:   "Unqualified"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.Net11QualificationRequiresMatchingDeclaredAndActualToolchains(String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 778
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:20.39]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "fresh-process", defect: "noise") [FAIL]
+[xUnit.net 00:00:20.53]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "warm", defect: "noise") [FAIL]
+[xUnit.net 00:00:20.64]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile", defect: "noise") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "fresh-process", defect: "noise") [110 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "warm", defect: "noise") [140 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile", defect: "noise") [100 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:20.77]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "warm", defect: "missing") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "warm", defect: "missing") [139 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:20.87]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile-run", defect: "noise") [FAIL]
+[xUnit.net 00:00:21.01]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile-run", defect: "missing") [FAIL]
+[xUnit.net 00:00:21.12]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile", defect: "missing") [FAIL]
+[xUnit.net 00:00:21.25]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "fresh-process", defect: "missing") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile-run", defect: "noise") [96 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile-run", defect: "missing") [140 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "compile", defect: "missing") [110 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(lane: "fresh-process", defect: "missing") [127 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.EveryLaneStillRequiresBothQualifiedControls(String lane, String defect) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 382
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:22.80]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "compile") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "compile") [95 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(String lane) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 429
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:22.95]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "compile-run") [FAIL]
+[xUnit.net 00:00:23.06]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "warm") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "compile-run") [150 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(String lane) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 429
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "warm") [106 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(String lane) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 429
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:23.24]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "fresh-process") [FAIL]
+[xUnit.net 00:00:23.48]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "fresh-process", expected: "Qualified") [FAIL]
+[xUnit.net 00:00:23.59]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "compile", expected: "Qualified") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(lane: "fresh-process") [179 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(String lane) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 429
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "fresh-process", expected: "Qualified") [179 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(String lane, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 343
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "compile", expected: "Qualified") [115 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(String lane, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 343
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:23.77]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "warm", expected: "Unqualified") [FAIL]
+[xUnit.net 00:00:23.87]     Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "compile-run", expected: "Unqualified") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "warm", expected: "Unqualified") [177 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(String lane, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 343
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(lane: "compile-run", expected: "Unqualified") [93 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ComparisonSamplingTests.ControlFloorDependsOnTheDeclaredMeasurementBoundary(String lane, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ComparisonSamplingTests.cs:line 343
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    17, Passed:   559, Skipped:     0, Total:   576, Duration: 22 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)
