@@ -1,0 +1,9 @@
+{
+  "reference": "CPython 3.13.2 isolated; Windows CRLF normalized",
+  "sourceSha256": "54c4caed66f18a025619749c56334fbf3c5533effb3bf8e58a8e15b565911137",
+  "fixtureSha256": "bc15a693b9994c8f83d00da9b57b90fb599422cef0b735560c8e06d37e1485cf",
+  "inputUtf8Bytes": 851797,
+  "expectedOutput": "8386560\n",
+  "actual": "8386560\n",
+  "passed": true
+}

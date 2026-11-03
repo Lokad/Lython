@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "802fb318885b59051c7387ec19fd7e1af48ac4d3 + B139 native UTF8 key/hash handoff",
+  "baselineRuntime": "fd7bc7e4",
+  "previousRuntime": "802fb318",
+  "coreSHA256": {
+    "baseline": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+    "candidate": "bc8fac46f779aa544f444bf1329f668a4423c93d97b68112caf19ac42686bdbd",
+    "before-control": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+    "legacy": "380b78d49359b22ba73fe337ef400f4d1949485f6ef6e9945bfae49d86a9d108",
+    "legacy-control": "380b78d49359b22ba73fe337ef400f4d1949485f6ef6e9945bfae49d86a9d108"
+  },
+  "boundary": "Warm excludes compilation/startup. Complete worker/reset/staging/mediated I/O/full goldens/prior-result cleanup. Compile-run compiles/disposes each invocation; final results/process/fixtures joined outside batch.",
+  "cpuMetric": "Linux/proc TGID user+system through response, weighted batch means; runtime/JIT/response included, not guest-only CPU."
+}

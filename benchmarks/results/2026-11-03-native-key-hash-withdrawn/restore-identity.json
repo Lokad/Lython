@@ -1,0 +1,11 @@
+{
+  "current": {
+    "sha256": "72acfe0c01eda35ebcfb9a94a1364c481c1d6b7ccfad8d7b3641f04cfe2e0438",
+    "path": "D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net11.0\\Lokad.Lython.dll"
+  },
+  "frozen802": {
+    "sha256": "380b78d49359b22ba73fe337ef400f4d1949485f6ef6e9945bfae49d86a9d108",
+    "path": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\native-key-construction-b139\\before-core\\Lokad.Lython.dll"
+  },
+  "restoredSourceMatches802": true
+}

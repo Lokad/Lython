@@ -3,8 +3,9 @@
 2026-11-03. Retained with **open unique-key regression debt**. This removes repeated
 immutable name allocations/copies/admission and hash calculation in record workloads.
 It is not a general JSON speedup or completion of the 0.11.0 performance objective.
-Full platform/stress/package qualification is pending at this commit; focused checks
-passed. Publication remains postponed.
+Full platform/stress/package qualification passed at exact802fb318: cached
+41554275552, Windows/Ubuntu ordinary.NET11/10, original Stress both and installed
+consumers. Focused checks also passed. Publication remains postponed.
 
 One lazy native UTF-8 content table belongs to ExecutionState and the existing
 execution/result memory owner. Borrowed input is lookup-only; stored keys own decoded
@@ -81,5 +82,5 @@ cases per target (two new admission-refusal cases beyond the181 selection). Cove
 includes genuinely suspended/reentrant hooks, retained aliases, concurrent shared
 allowances, scanner cancellation, terminal first refusal, cleanup and sequential
 budget reuse. Borrowed-input mutation cannot alter stored names or later lookups;
-mutable records remain distinct. Original checks were not relaxed. Full delivery
-qualification will be recorded separately without replaying cached fd7bc7e4 CI.
+mutable records remain distinct. Original checks were not relaxed. Full delivery qualification is preserved in delivery-ci-status.json; no unchanged
+qualification replay is needed.
