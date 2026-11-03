@@ -2,7 +2,9 @@
 
 2026-11-03. Retained source **433f7e36b769999dafaa08a5440082328e5ccdb6**,
 core4e0c344639200ab9d701a99013b82174e49af940e93b49954c63ed3cf179b554.
-Focused checks and bounded diagnostics PASS; full41663811073 is pending.
+Focused checks and bounded diagnostics PASS. Full **41663811073 GREEN** on the
+exact retained source: Windows/Ubuntu, .NET 11/.NET 10, installed package consumers
+and original stress scales. [Cached delivery receipt](delivery-ci-status.json).
 Publication postponed; overall whole-script performance objective remains OPEN.
 
 The shared driver used IsCompletedSuccessfully to select native consumption.
@@ -72,7 +74,8 @@ Release **5652 public/820 internal per actual.NET11/.NET10** PASS, including all
 owned stack scenarios with the original25s deadlines. Covers completed/genuine
 async failure, generators/closures/protocols, original Python error spans, cleanup,
 first refusal, cancellation, retained aliases and budget reuse. No fixture/input/
-timeout/stack-policy changes. Full corrected delivery41663811073 pending.
+timeout/stack-policy changes. Full corrected delivery41663811073 PASS on both platforms and frameworks,
+including installed package consumers and original stress scales.
 
 One owned VM service64.541s, exit0; every fixture/control worker and native user
 joins, shared lease free. Same quiet Standard_F4as_v7 Ubuntu24.04.4.NET11RC3
