@@ -1,0 +1,40 @@
+{
+  "baselineRuntimeRevision": "873ae62548d4b62f803878a2ee031e072d640cad",
+  "candidateBasedOn": "89a54d3e",
+  "prototype": "B162 retained shared driver, stable suspension spans, yield check confined to yielding opcode",
+  "fullyQualified": false,
+  "files": {
+    "baseline": {
+      "Lokad.Lython.Benchmarks.dll": "f73e9aa6dc550cde85028fdb1f57b86dadb7263c3081e9eaf1d16bc6b0327380",
+      "Lokad.Lython.dll": "a890ccf44ea9ee7ccbae436cfc64b39bb6367191f1a9aaf42c8ef5388ac2da79",
+      "Lokad.Lython.Utf8Regex.dll": "e0056ec8ed3c39c27c13e59138057b2241614d3ef55ac58df73031a8508a0c7a",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+    },
+    "candidate": {
+      "Lokad.Lython.Benchmarks.dll": "f73e9aa6dc550cde85028fdb1f57b86dadb7263c3081e9eaf1d16bc6b0327380",
+      "Lokad.Lython.dll": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6",
+      "Lokad.Lython.Utf8Regex.dll": "e0056ec8ed3c39c27c13e59138057b2241614d3ef55ac58df73031a8508a0c7a",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+    }
+  },
+  "sourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "bb59b05a39c55c3d9a5d78be0ca966fdda4aff8a158d07ac744b645b90a28e96",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "7a5795c503ad71d58561a68995c7d92f5094e0deab320300b44b866b71e8b0a6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "2624315df510c38b1c6855d0c021c5fdb5d4a1538c82ab4788bbd77324627be3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "e8cb8bbc139e85f646d2928b318d2849e08bdbea431d5663772c07205214c96f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "8c4f3ca546c082286d5a3b909196e6432de19001efdb3dc82163f97a55fbc969"
+  },
+  "focusedPerTarget": {
+    "public": 5232,
+    "whitebox": 624
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "allBuildsAndTestsJoined": true,
+  "toolSHA256": "9931defa37cc24a4044456505201a5c7856550a0ccb3870ff2a41d537e03e01b",
+  "catalogSHA256": "dab09551014c905d53dd56c94809f5bf3a3a090a866227865bc78ef285dba443"
+}

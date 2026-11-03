@@ -1,0 +1,10 @@
+{
+  "sourceRevision": "b087c7b86a02f3ba24e9926bf8e41526f39ba8b2",
+  "coreSHA256": {
+    "candidate": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6",
+    "before-control": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6",
+    "baseline": "a3aa23470c2437acf40e4d26db47bdc1b9e3bd35b62b5e0aeb3dd783fcfe54a6"
+  },
+  "boundary": "Existing comparison protocol2; complete Run, actual RAM-backed I/O, checks and result cleanup; reset/startup excluded; compile-run includes compilation; compile-only separate",
+  "prototype": false
+}

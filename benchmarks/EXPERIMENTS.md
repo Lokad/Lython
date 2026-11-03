@@ -2049,3 +2049,21 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   B160 source. Async elapsed+21–23% CSV/text/JSON and+11%report; allocation nearly
   unchanged except CSV+6.6%. No source prototype or CPython-gap attribution.
   Select shared native instruction dispatch and real-suspension continuation.
+
+- [Shared instruction driver, B162](results/2026-11-03-shared-instruction-driver/README.md):
+  b087c7b8 removes duplicate opcode loops and shares existing cache semantics.
+  Completed operations remain outside the async outer loop; real suspension and
+  cleanup await their users. All source variants/controls remain; allocation and
+  accounted peaks unchanged. Async JSON benefits; synchronous text/JSON about2.3%
+  adverse against control remains explicit pre-release debt. No general speedup claim.
+
+- [Current b087 CPython checkpoint, B163](results/2026-11-03-shared-driver-cpython-checkpoint/README.md):
+  four complete RAM file scripts, warm/fresh and two compilation-only cases.
+  Fresh CSV/JSON1.61/1.37×, text/report3.02/2.39×. Identical-current control drift
+  remains visible; startup excluded and no source-pair gain inferred.
+
+- [Current complete call transport, B164](results/2026-11-03-call-transport-profile/README.md):
+  four bounded CPU captures through existing workers, both APIs. Prefix14–20%leaf;
+  binding-only work about1%, async value wrapper about2% is not a substantial-cost
+  proof. Source identifies duplicated target reading/native selection/transfer;
+  next coherent migration removes the complete duplicated route, not only a wrapper.
