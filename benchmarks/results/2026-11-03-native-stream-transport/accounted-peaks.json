@@ -1,0 +1,30 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "allImages": {
+      "PeakExecutionBytes": 4556536,
+      "PeakRootBytes": 4638968
+    }
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "allImages": {
+      "PeakExecutionBytes": 389897,
+      "PeakRootBytes": 463145
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allImages": {
+      "PeakExecutionBytes": 15229,
+      "PeakRootBytes": 88477
+    }
+  },
+  {
+    "case": "scripts.csv-rewrite.large",
+    "allImages": {
+      "PeakExecutionBytes": 5944403,
+      "PeakRootBytes": 6012627
+    }
+  }
+]

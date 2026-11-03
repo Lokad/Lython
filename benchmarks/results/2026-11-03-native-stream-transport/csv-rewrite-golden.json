@@ -1,0 +1,9 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "case": "scripts.csv-rewrite.large",
+  "inputBytes": 57361,
+  "outputBytes": 61458,
+  "stdout": "4097\n",
+  "sourceSha256": "aa71da4c9cd6f4b7051d36f6dccd245ec8fb554387dbaf2227b6ddc352a33f90",
+  "expectedFilesSha256": "eb6c38bf2060f315dc409f977a1888d18f46c4a989d583c5e0bab637f1977e24"
+}

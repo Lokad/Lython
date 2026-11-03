@@ -1,0 +1,84 @@
+[
+  {
+    "block": 0,
+    "case": "scripts.config-edit.large",
+    "lane": "warm",
+    "values": {
+      "before-control": {
+        "medianMilliseconds": 0.3286443865435356,
+        "iqrPercent": 0.8844226951407468,
+        "weightedCpuMilliseconds": 0.3737906772207564,
+        "totalCpuTicks": 255,
+        "completedInvocations": 6822
+      },
+      "candidate": {
+        "medianMilliseconds": 0.25120640425531915,
+        "iqrPercent": 0.537497025347431,
+        "weightedCpuMilliseconds": 0.28706518068220194,
+        "totalCpuTicks": 255,
+        "completedInvocations": 8883
+      },
+      "baseline": {
+        "medianMilliseconds": 0.3311490536649215,
+        "iqrPercent": 1.940795337187747,
+        "weightedCpuMilliseconds": 0.37230948225712623,
+        "totalCpuTicks": 256,
+        "completedInvocations": 6876
+      },
+      "CPython": {
+        "medianMilliseconds": 0.18536560779985284,
+        "iqrPercent": 0.25570967458337046,
+        "weightedCpuMilliseconds": 0.23464966069822582,
+        "totalCpuTicks": 287,
+        "completedInvocations": 12231
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -24.140986822959064,
+      "cpuPercent": -22.896086626139823,
+      "controlElapsedPercent": -0.7563564182551663,
+      "controlCpuPercent": 0.39783970976252636
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.config-edit.large",
+    "lane": "compile-run",
+    "values": {
+      "before-control": {
+        "medianMilliseconds": 0.4216864123539231,
+        "iqrPercent": 0.9296149900312335,
+        "weightedCpuMilliseconds": 0.4767204600259692,
+        "totalCpuTicks": 257,
+        "completedInvocations": 5391
+      },
+      "candidate": {
+        "medianMilliseconds": 0.34911251675977656,
+        "iqrPercent": 0.5004465392978293,
+        "weightedCpuMilliseconds": 0.40192427063935443,
+        "totalCpuTicks": 259,
+        "completedInvocations": 6444
+      },
+      "baseline": {
+        "medianMilliseconds": 0.42037463851351353,
+        "iqrPercent": 0.4427320954772768,
+        "weightedCpuMilliseconds": 0.47484984984984985,
+        "totalCpuTicks": 253,
+        "completedInvocations": 5328
+      },
+      "CPython": {
+        "medianMilliseconds": 0.2531575989949749,
+        "iqrPercent": 0.6887881718393845,
+        "weightedCpuMilliseconds": 0.3126744835287549,
+        "totalCpuTicks": 280,
+        "completedInvocations": 8955
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -16.952050676921637,
+      "cpuPercent": -15.357608143617373,
+      "controlElapsedPercent": 0.3120487584712839,
+      "controlCpuPercent": 0.3939371944017278
+    }
+  }
+]

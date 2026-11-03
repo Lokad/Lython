@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "8b34d97e plus B157 shared native stream transport prototype",
+  "baseCommit": "8b34d97e863cf3ed138b1f893198a6563a108477",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "f13a567561ae2ad1d7242196a89dc0762cf3439c4ebd9f08247b68ecf29370cb",
+    "candidate": "d65c6f5443dbf2a287e7bb7acd3fdfeadd25d212638847475aa7fe7b2fe7cc12",
+    "before-control": "f13a567561ae2ad1d7242196a89dc0762cf3439c4ebd9f08247b68ecf29370cb"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/PyTextStream.cs": "6758c063d7efd0e4ee2eec166c4c19d624b4b4c5f479f0f1aa323fb385b81b13",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "a6ee5983553facb950c0bc4caf9e15b66fe426a82f40598af07849aef4bddbad",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "60a22590920d548d34f42d45dc98be1b6a2adbe46948e489732288f686a0adae",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "cb565e3123d54b9ee13291455fce5c62b5cbe72e518bb00e41183454d8483a9b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvWriter.cs": "3f1f4d60fe866e85483ccd244bb8a6c659217af851fff4c17a5cdc23ca4b69cd"
+  },
+  "normalizedAuxiliaryBits": [
+    "Lokad.Lython.Benchmarks.dll",
+    "Lokad.Lython.Benchmarks.pdb",
+    "Lokad.Lython.Utf8Regex.dll",
+    "Lokad.Lython.Utf8Regex.pdb"
+  ]
+}

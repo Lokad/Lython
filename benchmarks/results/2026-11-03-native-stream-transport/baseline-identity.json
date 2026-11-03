@@ -1,0 +1,11 @@
+{
+  "baseCommit": "8b34d97e863cf3ed138b1f893198a6563a108477",
+  "coreSHA256": "f13a567561ae2ad1d7242196a89dc0762cf3439c4ebd9f08247b68ecf29370cb",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/PyTextStream.cs": "122b0643722fe6cc7410e2d663be91303e9d2a6767ea56f40932a80c5f38e6ba",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "8f01b4fac9af4e14d7dc27c68aaf1aa52183a4399e1434cf256611ea4e5e6745",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "373620bfe3cf37f536393772c5f0f2593a206770ffbf6034ab6748c407b0302f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "9f9e956bb170795a5be462d99371dbd0c1463d5596ddde84552f07a9084e1492",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvWriter.cs": "2f09434a32a443ec35082c0190a9ec3fcab79611aa9709ac8c02ef1809644a53"
+  }
+}

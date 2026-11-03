@@ -2018,3 +2018,10 @@ separate observed truncate/storage sensitivity from interpreter attribution.
 The original filesystem ratios remain; RAM config improves13%warm/10%fresh with
 controls. Both conditions, copy's adverse fresh point and the initial diagnostic
 controller failure are preserved.
+
+The [B157 native producer/stream transport](results/2026-11-03-native-stream-transport/README.md)
+shares the existing guarded write with JSON/CSV. Native packets disappear while
+custom JSON lookup and captured CSV callables remain. A bounded larger-batch
+confirmation resolves initial config control instability; all initial outcomes
+are preserved. RAM config improves24%warm/17%fresh and allocation44%; whole CSV
+rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured.

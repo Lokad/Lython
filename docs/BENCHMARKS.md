@@ -18,7 +18,7 @@ synchronous execution in an already-running host**, with fixture reset excluded
 (protocol2). Ratio is Lython elapsed divided by CPython elapsed; above one means
 slower. IQR is interquartile range divided by median. The filename scripts read
 names, filter and write/check256 selected names; they do not traverse768 files.
-Later JSON-iterator changes are excluded; their source-pair results are listed below.
+Later JSON-iterator and native-write changes are excluded; results are listed below.
 
 The gap remains substantial. Config editing is particularly slow even warm;
 compilation alone is about58µs and does not explain its millisecond execution.
@@ -66,21 +66,22 @@ describe their original revisions.
 ## Storage-sensitive config and copy
 
 Supplemental measurements use the same actual file APIs and checks, with fixtures
-on shared tmpfs instead of the VM filesystem. Runtime source **0f05d7c0**,2026-11-03:
+on shared tmpfs instead of the VM filesystem. Measured2026-11-03; exact runtime revisions are shown:
 
-| RAM-backed workload | Lython | CPython | Ratio |
-| --- | ---: | ---: | ---: |
-| Config compile-run |0.438 ms|0.253 ms|1.73×|
-| Config warm |0.328 ms|0.184 ms|1.78×|
-| Copy/manifest compile-run |0.400 ms|0.238 ms|1.68×|
-| Copy/manifest warm |0.227 ms|0.150 ms|1.51×|
+| RAM-backed workload | Runtime | Lython | CPython | Ratio |
+| --- | --- | ---: | ---: | ---: |
+| Config compile-run |93bc77bb|0.349 ms|0.253 ms|1.38×|
+| Config warm |93bc77bb|0.251 ms|0.185 ms|1.36×|
+| Copy/manifest compile-run |0f05d7c0|0.400 ms|0.238 ms|1.68×|
+| Copy/manifest warm |0f05d7c0|0.227 ms|0.150 ms|1.51×|
 
 The earlier bd3 runtime measures2.05×warm on RAM versus8.18×in the primary table:
-storage condition materially affects config's ratio. Current config source-pair
-warm/fresh times improve13.0%/10.2%, controls−0.8%/+0.3%. This supports a gain under
+storage condition materially affects config's ratio. Current native-write config source-pair
+warm/fresh times improve24.1%/17.0%, controls−0.8%/+0.3%. This supports a gain under
 this storage condition; ordinary-filesystem elapsed remains unproven. Copy fresh
 is1.4%adverse with2.1%IQR. These results complement the primary table and do not
-replace its included-I/O boundary. [Exact conditions and all controls](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
+replace its included-I/O boundary. [Config conditions/controls](../benchmarks/results/2026-11-03-native-stream-transport/README.md),
+[earlier copy/storage observations](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
 
 ## Machine and included work
 
@@ -119,6 +120,7 @@ original elapsed observations retain their own recorded timing boundaries:
 | Native local forwarding |Named CSV/text allocation−30.5%/−34.7%; warm elapsed−5–8%/−8–10%|[Complete scripts and controls](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)|
 | Shared JSON names |Report allocation−13.8%, warm elapsed−9–13%|[Unique-name regression remains open](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)|
 | Native wildcard cursors |Unicode/ASCII file-filter elapsed−48%/−11%, allocation−85%/−44%|[Pre-translation source pair](../benchmarks/results/2026-11-03-native-wildcard-cursors/README.md)|
+| Native producer writes |Config allocation−43.6%/RAM warm−24.1%; complete CSV rewrite allocation/time about−5%|[Controlled scripts; initial unstable fresh control preserved](../benchmarks/results/2026-11-03-native-stream-transport/README.md)|
 | JSON iterator working storage |Config allocation−10.5%/−4.4%; RAM warm/fresh elapsed−13%/−10%|[Ordinary-filesystem elapsed unproven; scratch retention](../benchmarks/results/2026-11-03-json-iterator-working-storage/README.md)|
 | Bulk ASCII casing |Canonical text warm elapsed−3.0%, control−0.1%; allocation unchanged|[Long-line gain; both scanner prototypes withdrawn](../benchmarks/results/2026-11-03-bulk-text-operations/README.md)|
 | CSV record admission |Allocation−4.5–13.6%; variable-width CSV elapsed/CPU about−10%|[Canonical timings vary; wide-record working peak grows](../benchmarks/results/2026-11-03-csv-record-admission/README.md)|
