@@ -6,6 +6,7 @@ using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class ExactBytesSumTests
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
@@ -39,7 +40,9 @@ public sealed class ExactBytesSumTests
     {
         var context = Context();
         object[] arguments = [new PyBytes(Enumerable.Repeat((byte)255, 8192).ToArray()), BigInteger.Zero];
-        _ = Invoke(arguments, context, asynchronous);
+        // Keep first-use/runtime setup outside this steady-state allocation
+        // check, without allowing a per-item result allocation through it.
+        for (var warmup = 0; warmup < 8; warmup++) _ = Invoke(arguments, context, asynchronous);
         var before = GC.GetAllocatedBytesForCurrentThread();
         var result = Invoke(arguments, context, asynchronous);
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
