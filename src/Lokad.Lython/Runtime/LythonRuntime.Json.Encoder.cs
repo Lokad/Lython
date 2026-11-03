@@ -212,6 +212,8 @@ internal sealed partial class LythonRuntime
         private bool _hasRoot;
         private long _scratchBytes;
         private bool _finished;
+        private GovernedByteBuilder? _builder;
+        private int _advancing;
 
         public JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
         {
@@ -241,11 +243,17 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
         {
-            var builder = new GovernedByteBuilder(_context.MemoryGovernor, _span);
+            if (Interlocked.CompareExchange(ref _advancing, 1, 0) != 0)
+            {
+                _context.CheckExecution(_span);
+                throw new LythonRuntimeException("ValueError", "generator already executing", _span);
+            }
             try
             {
                 _context.CheckExecution(_span);
                 if (_finished) return PyIterationResult.End;
+                var builder = _builder ??= new GovernedByteBuilder(_context.MemoryGovernor, _span);
+                builder.Clear();
                 while (true)
                 {
                     _context.CheckExecution(_span);
@@ -275,7 +283,7 @@ internal sealed partial class LythonRuntime
                 Finish();
                 throw;
             }
-            finally { builder.Release(); }
+            finally { Volatile.Write(ref _advancing, 0); }
         }
 
         private void GrowScratch(long bytes)
@@ -307,6 +315,8 @@ internal sealed partial class LythonRuntime
             _finished = true;
             _hasRoot = false;
             _rootValue = null;
+            _builder?.Release();
+            _builder = null;
             while (_stack.TryPeek(out var frame)) CloseFrame(frame);
             _markers?.Clear();
         }

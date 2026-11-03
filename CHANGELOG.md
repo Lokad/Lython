@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse JSON iterator working storage across chunks while keeping yielded strings
+  independent. Retained largest-chunk capacity can require more admission headroom.
+  Reject reentrant encoder advancement with Python's ValueError, fixing silent
+  item loss through default callbacks.
+
 - Convert ASCII lower/upper spans directly into admitted UTF-8 output windows
   with managed bulk operations, preserving Unicode context and cancellation.
 

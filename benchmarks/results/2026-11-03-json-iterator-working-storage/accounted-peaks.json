@@ -1,0 +1,70 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 4556536,
+        "PeakRootBytes": 4638712
+      },
+      "candidate": {
+        "PeakExecutionBytes": 4556536,
+        "PeakRootBytes": 4638712
+      },
+      "before-control": {
+        "PeakExecutionBytes": 4556536,
+        "PeakRootBytes": 4638712
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 389889,
+        "PeakRootBytes": 462881
+      },
+      "candidate": {
+        "PeakExecutionBytes": 389897,
+        "PeakRootBytes": 462889
+      },
+      "before-control": {
+        "PeakExecutionBytes": 389889,
+        "PeakRootBytes": 462881
+      }
+    }
+  },
+  {
+    "case": "scripts.file-manifest.large",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 18114,
+        "PeakRootBytes": 106370
+      },
+      "candidate": {
+        "PeakExecutionBytes": 18114,
+        "PeakRootBytes": 106370
+      },
+      "before-control": {
+        "PeakExecutionBytes": 18114,
+        "PeakRootBytes": 106370
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "peaks": {
+      "before": {
+        "PeakExecutionBytes": 15221,
+        "PeakRootBytes": 88213
+      },
+      "candidate": {
+        "PeakExecutionBytes": 15229,
+        "PeakRootBytes": 88221
+      },
+      "before-control": {
+        "PeakExecutionBytes": 15221,
+        "PeakRootBytes": 88213
+      }
+    }
+  }
+]

@@ -1,0 +1,7 @@
+Running as unit: lython-b154-allocation-confirm-20261103.service; invocation ID: b69f4a798cae4521b21d5658b41dfa92
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 49.141s
+CPU time consumed: 34.661s
+Memory peak: 256.0K
+Memory swap peak: 0B

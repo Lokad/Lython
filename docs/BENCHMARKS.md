@@ -9,7 +9,7 @@
 | JSON-to-Markdown report |3,072 records /189,441 B|5.923 ms|2.557 ms|2.32×|Variable;3.1% Lython IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Diagnostic;1.5% Lython IQR|
-| Config read/edit/write |7,177 B|2.101 ms|0.334 ms|6.29×|Variable;5.6% Lython IQR|
+| Config read/edit/write |7,177 B|2.101 ms|0.334 ms|6.29×|Host truncate asymmetry; variable|
 | Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Diagnostic;1.1% Lython IQR|
 
 Measured **2026-11-03**, exact runtime/worker revision **bd3f9dee**, against
@@ -18,7 +18,7 @@ synchronous execution in an already-running host**, with fixture reset excluded
 (protocol2). Ratio is Lython elapsed divided by CPython elapsed; above one means
 slower. IQR is interquartile range divided by median. The filename scripts read
 names, filter and write/check256 selected names; they do not traverse768 files.
-Uncommitted prototypes are excluded.
+Later JSON-iterator changes are excluded; their source-pair results are listed below.
 
 The gap remains substantial. Config editing is particularly slow even warm;
 compilation alone is about58µs and does not explain its millisecond execution.
@@ -96,6 +96,7 @@ original elapsed observations retain their own recorded timing boundaries:
 | Native local forwarding |Named CSV/text allocation−30.5%/−34.7%; warm elapsed−5–8%/−8–10%|[Complete scripts and controls](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)|
 | Shared JSON names |Report allocation−13.8%, warm elapsed−9–13%|[Unique-name regression remains open](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)|
 | Native wildcard cursors |Unicode/ASCII file-filter elapsed−48%/−11%, allocation−85%/−44%|[Pre-translation source pair](../benchmarks/results/2026-11-03-native-wildcard-cursors/README.md)|
+| JSON iterator working storage |Large/small config allocation−10.5%/−4.4%; copy−1.6%|[Elapsed remains unproven; scratch retention](../benchmarks/results/2026-11-03-json-iterator-working-storage/README.md)|
 | Bulk ASCII casing |Canonical text warm elapsed−3.0%, control−0.1%; allocation unchanged|[Long-line gain; both scanner prototypes withdrawn](../benchmarks/results/2026-11-03-bulk-text-operations/README.md)|
 | CSV record admission |Allocation−4.5–13.6%; variable-width CSV elapsed/CPU about−10%|[Canonical timings vary; wide-record working peak grows](../benchmarks/results/2026-11-03-csv-record-admission/README.md)|
 

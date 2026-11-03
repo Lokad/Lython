@@ -49,6 +49,9 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
 
     public int Length => _length;
 
+    // Published strings are copies; an explicit scratch owner may reuse capacity.
+    internal void Clear() => _length = 0;
+
     internal long CommittedCapacity => _committedCapacity;
     internal int AvailableCapacity => _buffer.Length - _length;
 

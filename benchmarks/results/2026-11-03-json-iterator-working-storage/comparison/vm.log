@@ -1,0 +1,7 @@
+Running as unit: lython-b154-iterator-storage-20261103.service; invocation ID: 931f6796e6884b1cbdd653a8257d848c
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 3min 36.824s
+CPU time consumed: 2min 34.843s
+Memory peak: 359.1M
+Memory swap peak: 0B

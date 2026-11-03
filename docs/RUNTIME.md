@@ -521,8 +521,11 @@ Parse hooks still receive independently funded text before invocation.
 JSON encoders write UTF-8 directly into governed capacity, including string
 escaping, keys, separators and indentation. Replacement buffers and the final
 independent result are admitted while earlier storage remains funded. Incremental
-encoding releases private chunk capacity after each yield; yielded text stays
-charged. Large integer and Python float formatting still use managed invariant
+encoding reuses one admitted working buffer; each yielded string is an independent
+funded copy. Exhaustion or failure releases scratch; abandoned iterators retain it
+until their enclosing owner ends. Keeping the largest working chunk can require
+more headroom between yields. Reentrant advancement raises Python's generator
+ValueError while preserving the active operation. Large integer and Python float formatting still use managed invariant
 text renderers. Hooks, circular-reference checks and cancellation remain active.
 
 Any refused admission fails the command, including cache admission. Guest code

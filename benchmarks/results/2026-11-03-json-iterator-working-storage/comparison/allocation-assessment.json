@@ -1,0 +1,90 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 8215285.0,
+        "diagnosticMedianElapsedMs": 9.3838625,
+        "diagnosticMedianProcessCpuMs": 9.966875
+      },
+      "candidate": {
+        "medianAllocatedBytes": 8215306.0,
+        "diagnosticMedianElapsedMs": 9.5925625,
+        "diagnosticMedianProcessCpuMs": 15.403125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 8215374.0,
+        "diagnosticMedianElapsedMs": 9.2522875,
+        "diagnosticMedianProcessCpuMs": 12.929625
+      }
+    },
+    "allocationPercent": 0.0002556210770610079,
+    "controlAllocationPercent": 0.0010833464694215422
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 814660.0,
+        "diagnosticMedianElapsedMs": 3.5636875,
+        "diagnosticMedianProcessCpuMs": 4.01275
+      },
+      "candidate": {
+        "medianAllocatedBytes": 779140.0,
+        "diagnosticMedianElapsedMs": 3.521775,
+        "diagnosticMedianProcessCpuMs": 3.954
+      },
+      "before-control": {
+        "medianAllocatedBytes": 870548.0,
+        "diagnosticMedianElapsedMs": 3.5859625,
+        "diagnosticMedianProcessCpuMs": 4.1315
+      }
+    },
+    "allocationPercent": -4.360101146490559,
+    "controlAllocationPercent": 6.860285272383582
+  },
+  {
+    "case": "scripts.file-manifest.large",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 81627.0,
+        "diagnosticMedianElapsedMs": 2.1803625,
+        "diagnosticMedianProcessCpuMs": 2.95325
+      },
+      "candidate": {
+        "medianAllocatedBytes": 81685.0,
+        "diagnosticMedianElapsedMs": 2.2726625,
+        "diagnosticMedianProcessCpuMs": 3.168125
+      },
+      "before-control": {
+        "medianAllocatedBytes": 82957.0,
+        "diagnosticMedianElapsedMs": 2.1586375,
+        "diagnosticMedianProcessCpuMs": 3.07025
+      }
+    },
+    "allocationPercent": 0.07105492055323737,
+    "controlAllocationPercent": 1.6293628333762022
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "images": {
+      "before": {
+        "medianAllocatedBytes": 60885.0,
+        "diagnosticMedianElapsedMs": 3.2359,
+        "diagnosticMedianProcessCpuMs": 3.585375
+      },
+      "candidate": {
+        "medianAllocatedBytes": 58377.0,
+        "diagnosticMedianElapsedMs": 3.002925,
+        "diagnosticMedianProcessCpuMs": 3.3775
+      },
+      "before-control": {
+        "medianAllocatedBytes": 61473.0,
+        "diagnosticMedianElapsedMs": 3.051075,
+        "diagnosticMedianProcessCpuMs": 3.40925
+      }
+    },
+    "allocationPercent": -4.119241192411927,
+    "controlAllocationPercent": 0.9657551120965779
+  }
+]

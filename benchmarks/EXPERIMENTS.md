@@ -2006,3 +2006,8 @@ The [B153 owned JSON-name set](results/2026-11-03-json-owned-name-set-withdrawn/
 reduces unique-name allocation/elapsed but harms repeated-schema report timing.
 Both initial and native-span refinements are removed; all controls and source
 variants remain. The prior unique-name debt is unresolved.
+
+The [B154 iterator-owned JSON working storage](results/2026-11-03-json-iterator-working-storage/README.md)
+removes per-chunk builder construction and fixes reentrant item loss. Allocation
+confirmation supports config/copy reductions; elapsed remains unproven. Retained
+largest-buffer capacity is explicit; initial drift and failed tests remain.
