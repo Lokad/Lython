@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "7a3a8afe B183 source, measured frozen precommit 3eee2a0e+patch; B166 source baseline qualified as2323cceb",
+  "coreSHA256": {
+    "candidate": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9",
+    "before-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+    "after-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc"
+  },
+  "purpose": "Direct combined storage debt decision; actual CPython baseline; no publication"
+}

@@ -1,0 +1,15 @@
+Nov 03 21:02:28 lython-bench systemd[1]: Started lython-b184-coupled-cpython-20261103.service - /usr/bin/python3 /home/lokad/lython-bench-checks/combined-storage-checkpoint-b184-20261103/collect.py.
+Nov 03 21:02:29 lython-bench python3[3084307]: Initial machine gate passed; a campaign still needs every sampling gate.
+Nov 03 21:02:51 lython-bench python3[3084306]: warm scripts.csv-summary-helpers.large complete
+Nov 03 21:03:12 lython-bench python3[3084306]: compile-run scripts.csv-summary-helpers.large complete
+Nov 03 21:03:34 lython-bench python3[3084306]: warm scripts.text-summary-helpers.large complete
+Nov 03 21:03:55 lython-bench python3[3084306]: compile-run scripts.text-summary-helpers.large complete
+Nov 03 21:04:17 lython-bench python3[3084306]: warm scripts.json-summary-helpers.large complete
+Nov 03 21:04:39 lython-bench python3[3084306]: compile-run scripts.json-summary-helpers.large complete
+Nov 03 21:05:01 lython-bench python3[3084306]: warm scripts.report-render.large complete
+Nov 03 21:05:20 lython-bench python3[3084306]: compile-run scripts.report-render.large complete
+Nov 03 21:05:42 lython-bench python3[3084306]: compile scripts.csv-summary-helpers.large complete
+Nov 03 21:06:04 lython-bench python3[3084306]: compile scripts.report-render.large complete
+Nov 03 21:06:05 lython-bench python3[3084836]: Initial machine gate passed; a campaign still needs every sampling gate.
+Nov 03 21:06:05 lython-bench systemd[1]: lython-b184-coupled-cpython-20261103.service: Deactivated successfully.
+Nov 03 21:06:05 lython-bench systemd[1]: lython-b184-coupled-cpython-20261103.service: Consumed 4min 13.595s CPU time, 1.4M memory peak, 0B memory swap peak.

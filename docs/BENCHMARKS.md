@@ -2,11 +2,11 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.514 ms|3.510 ms|1.57×|RAM;b7a0f40a;Diagnostic;0.6% control /1.2% IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.850 ms|4.223 ms|1.39×|RAM;b7a0f40a;Diagnostic;0.2% control /1.1% IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.524 ms|1.301 ms|2.71×|RAM;b7a0f40a;Diagnostic;2.7% control /1.1% IQR|
+| CSV summary/helpers |4,096 records /57,361 B|5.541 ms|3.481 ms|1.59×|RAM;7a3a8afe;Variable;1.0% control /3.9% IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|6.198 ms|4.436 ms|1.40×|RAM;7a3a8afe;Diagnostic;0.1% control /0.6% IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.512 ms|1.262 ms|2.78×|RAM;7a3a8afe;Variable;10.0% control /1.6% IQR|
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|5.684 ms|2.466 ms|2.31×|RAM;b7a0f40a;Variable;0.6% control /3.8% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|5.675 ms|2.506 ms|2.26×|RAM;7a3a8afe;Variable;0.6% control /3.2% IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
 | Config read/edit/write |7,177 B|0.290 ms|0.251 ms|1.16×|Earlier RAM;b3f1e9c3;0.9% Lython IQR|
@@ -17,7 +17,7 @@ Measured **2026-11-03**, against **CPython3.13.16** on **.NET11RC3**. These are
 host**, including I/O and checks, excluding fixture reset (protocol2). Ratio is
 Lython elapsed / CPython elapsed; above one means slower. IQR is interquartile
 range / median. **Rows have different storage conditions and revisions.** Latest
-CSV/text/JSON/report points use shared tmpfs on **b7a0f40a**. Config is the earlier
+CSV/text/JSON/report points use shared tmpfs on **7a3a8afe**. Config is the earlier
 **b3f1e9c3** RAM point; four other rows are earlier **bd3f9dee** on the ordinary
 VM filesystem. All rows describe their measured revision; none automatically describes today's HEAD. Filename scripts read
 names, filter and write/check256 selected names, rather than traverse768 files.
@@ -41,23 +41,28 @@ later results do not explain that waiting. All adverse observations are preserve
 
 ## Warm execution, compilation and startup
 
-Latest external checkpoint **b7a0f40a**, RAM-backed files, reused compiled code with the same
+Latest external checkpoint **7a3a8afe**, RAM-backed files, reused compiled code with the same
 invocation/I/O/check boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers |5.249 ms|3.316 ms|1.58×|0.6% /0.6%|
-| JSON-lines/helpers |5.648 ms|4.084 ms|1.38×|0.8% /0.4%|
-| Text summary/helpers |3.311 ms|1.156 ms|2.87×|0.6% /0.2%|
-| JSON-to-Markdown report |5.531 ms|2.366 ms|2.34×|1.7% /2.7%|
+| CSV summary/helpers |5.365 ms|3.335 ms|1.61×|1.1% /0.7%|
+| JSON-lines/helpers |5.669 ms|4.091 ms|1.39×|0.9% /0.4%|
+| Text summary/helpers |3.250 ms|1.181 ms|2.75×|0.5% /0.5%|
+| JSON-to-Markdown report |5.326 ms|2.357 ms|2.26×|2.0% /2.9%|
 
-Warm identical-source controls differ 0.2–1.9%; fresh text differs 2.7%. Report
-fresh has 3.8% Lython /2.4% CPython IQR and stays variable. Independent warm/fresh
-process medians must not be subtracted. **Compilation only:** CSV
-85.57µs versus54.98µs (**1.56×**), report59.94µs versus37.50µs (**1.60×**).
-Unchanged compile controls differ +0.4/−0.2%; guest execution/I/O is excluded.
-**Startup is unmeasured.**
-[Current complete observations and controls](../benchmarks/results/2026-11-03-native-sequence-cpython-checkpoint/README.md).
+Identical old controls differ8.3% for warm text and10.0% for fresh text; fresh
+text source-pair gain is **inconclusive**. Other warm controls differ0.4–2.4%.
+Report fresh has3.2% Lython /3.9% CPython IQR and stays variable. These are diagnostic
+process observations. Independent phase medians must not be subtracted.
+**Compilation only:** CSV85.35µs versus54.60µs (**1.56×**), report59.66µs versus
+37.74µs (**1.58×**). Unchanged compile controls differ1.3/2.6%; execution/I/O is
+excluded. **Startup is unmeasured.**
+[Current complete observations, identities and controls](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md).
+The frozen precommit build corresponds to7a3a8afe runtime source; its actual
+binary hash and SourceLink identity are recorded with the source patch.
+[Earlier b7a0f40a observations](../benchmarks/results/2026-11-03-native-sequence-cpython-checkpoint/README.md)
+retain their original values and boundaries.
 [Earlier b087 observations](../benchmarks/results/2026-11-03-shared-driver-cpython-checkpoint/README.md)
 remain immutable; different process medians do not establish a source-pair gain.
 Other warm file cases remain [historical ordinary-filesystem measurements](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md);
@@ -118,13 +123,15 @@ dispatch-only measurement. Exact worker procedures and limitations are linked be
 
 ## Improvements against earlier Lython
 
-Laterd3261a39 call consolidation has a separate controlled comparison; it does
-not relabel the earlier external CPython points as current HEAD.
+Source-pair improvements below retain their own measured revisions. The combined
+storage checkpoint directly compares7a3a8afe with pre-loop B166; individual
+historical regressions remain preserved even where later coupled work offsets them.
 These source-pair improvements are separate from the CPython ratios above;
 original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Combined loop/string/casing/reader storage |Report elapsed−2.7–4.5% warm /−3.7–4.3% fresh versus pre-loop B166|[Direct coupled pair; sync report debt offset; CSV+1–2% and fresh JSON+1.8–1.9% accepted, fresh text uncertain](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)|
 | Reader-owned UTF-8 windows |Complete-script allocation−1–2.75%; block reads−10–15%|[Fewer copies/cache storage; mixed elapsed, unstable async controls and provisional CSV/JSON debt](../benchmarks/results/2026-11-03-reader-owned-windows/README.md)|
 | Direct casing storage |Text allocation−5.92%; warm elapsed−3.7% Run/−9.8% RunAsync against old roles|[Conservative capacity; moving controls, Unicode near unchanged, long ASCII inconclusive](../benchmarks/results/2026-11-03-direct-casing-storage/README.md)|
 | Terminal UTF-8 storage |Report allocation−5.68%; elapsed−4.1–6.6%, controls+1.2/−1.7%|[Both APIs; confirmed CSV elapsed+1–4% and higher retained capacity accepted as explicit debt](../benchmarks/results/2026-11-03-terminal-utf8-storage/README.md)|

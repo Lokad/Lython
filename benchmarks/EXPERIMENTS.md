@@ -7,6 +7,14 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [combined storage/CPython checkpoint](results/2026-11-03-combined-storage-cpython-checkpoint/README.md)
+directly compares7a3a8afe with pre-loop B166 and a same-bits control. Synchronous
+report elapsed is net2.7–4.5% lower warm /3.7–4.3% fresh, offsetting the earlier
+individual report debt. CSV remains1–2% slower and fresh JSON1.8–1.9% slower;
+those are accepted current tradeoffs, not erased by allocation results. Fresh
+text straddles old roles (10% unchanged-control spread). Current CPython ratios
+and all limits are in the authoritative performance guide; no async debt is closed.
+
 The [reader-owned window milestone](results/2026-11-03-reader-owned-windows/README.md)
 borrows unchanged UTF-8 directly until window retirement, removing an intermediate
 string/copy and reader rune-offset cache. Whole-script allocation falls1–2.75%,

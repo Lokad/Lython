@@ -90,5 +90,8 @@ filesystem and owned service log is preserved. Collection167.560s, owned168.177s
 exit0; all goldens/joins/ownership checks pass. Persistent evidence and frozen
 workers, RAM guest fixtures only. Retrieved archive SHA256 verified:
 `5ed5655097247b8d197834ea7948690985656b3fb993a22d5f1a4f028d71994c`.
-Full delivery qualification is pending for this source. B178's receipt does not
-qualify it. Publication and tagging remain postponed.
+Full delivery qualification is GREEN on exact7a3a8afe: Windows/Ubuntu, actual
+.NET11/.NET10 Release, installed package consumers and original Stress.
+[Terminal41717353893](https://github.com/Lokad/Lython/actions/runs/41717353893)
+and delivery-ci-status.json retain all eight passed gates. Never re-query terminal
+evidence. Publication and tagging remain postponed.
