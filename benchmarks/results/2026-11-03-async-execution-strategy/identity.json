@@ -1,0 +1,14 @@
+{
+  "runtimeCommit": "873ae62548d4b62f803878a2ee031e072d640cad",
+  "coreSHA256": "a890ccf44ea9ee7ccbae436cfc64b39bb6367191f1a9aaf42c8ef5388ac2da79",
+  "sameRuntimeBitsInAllImages": true,
+  "apiByImage": {
+    "before": "Run",
+    "candidate": "awaited RunAsync",
+    "before-control": "Run"
+  },
+  "host": "Existing ComparisonFileHost, synchronously completing owned byte files under both APIs",
+  "purpose": "Diagnostic API-strategy gate; no source prototype, CPython ratio or async-I/O-delay comparison",
+  "workersJoined": true,
+  "leaseFree": true
+}

@@ -2042,4 +2042,10 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Report allocation−10.47%, warm/fresh elapsed−6.4/−4.9%, compilation flat.
   Initial CSV+2.26%/control−0.85% remains unresolved; shared-hash diagnostic does
   not consistently reproduce it. All adverse conditions retained; no speculative
-  helper-parameter refinement. Full delivery41632382342 active.
+  helper-parameter refinement. Full delivery41632382342 GREEN.
+
+- [Run versus RunAsync on identical runtime, B161](results/2026-11-03-async-execution-strategy/README.md):
+  four complete scripts, synchronous-completion host, shared CLR hash and exact
+  B160 source. Async elapsed+21–23% CSV/text/JSON and+11%report; allocation nearly
+  unchanged except CSV+6.6%. No source prototype or CPython-gap attribution.
+  Select shared native instruction dispatch and real-suspension continuation.
