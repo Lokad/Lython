@@ -46,8 +46,10 @@ Source/context identification is explicit in identities and raw observations.
 The core was frozen before the matching commit; source is unchanged. Both APIs
 are semantically tested separately; this external comparison uses synchronous Run.
 B162's shared dispatch debt and API comparisons are separate, as are historical
-ordinary-filesystem points. Full runtime delivery41642981787 remains pending when
-this record is written; this checkpoint does not substitute for package qualification.
+ordinary-filesystem points. Full runtime delivery41642981787 PASSED at exactb087c7b8: Windows/Ubuntu.NET11/
+.NET10, original Stress and installed consumers. Its
+[cached receipt](../2026-11-03-shared-instruction-driver/delivery-ci-status.json)
+is separate from this external performance checkpoint.
 
 [Assessment](assessment.json), [raw measurements/identities/gates](observations.tgz),
 [frozen source identity](identity.json), [existing collector adaptation](collect.py).

@@ -84,8 +84,9 @@ pass on retained source, including real async protocols/host operations, generat
 closures/defaults/type descriptors/imports, shared-cache mutation, managed stack
 admission, terminal first refusal, cancellation, retained aliases and awaited
 cursor cleanup/budget reuse. Existing semantic/lifetime coverage is reused; no fuel
-or internal-dispatch architecture tests were added. Full delivery run41642981787
-is pending when this record is written; do not infer platform/package qualification.
+or internal-dispatch architecture tests were added. **Full delivery41642981787 PASSED** at exactb087c7b8: Windows/Ubuntu.NET11/
+.NET10, installed Release consumers and original Stress on both platforms.
+[Cached exact-source receipt](delivery-ci-status.json); do not re-query this terminal run.
 
 Quiet Azure Standard_F4as_v7, Ubuntu24.04.4, SDK/runtime.NET11RC3 as in B161.
 Baseline source873ae625/corea890ccf44ea9ee7ccbae436cfc64b39bb6367191f1a9aaf42c8ef5388ac2da79.
