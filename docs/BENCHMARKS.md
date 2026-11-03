@@ -19,7 +19,7 @@ Lython elapsed / CPython elapsed; above one means slower. IQR is interquartile
 range / median. **Rows have different storage conditions and revisions.** Latest
 CSV/text/JSON/report points use shared tmpfs on **b087c7b8**. Config is the earlier
 **b3f1e9c3** RAM point; four other rows are earlier **bd3f9dee** on the ordinary
-VM filesystem. These historical rows do not describe today's HEAD. Filename scripts read
+VM filesystem. All rows describe their measured revision; none automatically describes today's HEAD. Filename scripts read
 names, filter and write/check256 selected names, rather than traverse768 files.
 
 Text/report gaps remain substantial. Current RAM-backed config editing is much
@@ -41,7 +41,7 @@ later results do not explain that waiting. All adverse observations are preserve
 
 ## Warm execution, compilation and startup
 
-Current **b087c7b8**, RAM-backed files, reused compiled code with the same
+Latest external checkpoint **b087c7b8**, RAM-backed files, reused compiled code with the same
 invocation/I/O/check boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
@@ -115,12 +115,14 @@ dispatch-only measurement. Exact worker procedures and limitations are linked be
 
 ## Improvements against earlier Lython
 
+Laterd3261a39 call consolidation has a separate controlled comparison; it does
+not relabel the earlier external CPython points as current HEAD.
 These source-pair improvements are separate from the CPython ratios above;
 original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Shared instruction driver |One opcode loop; allocation/peaks unchanged|[Async results variable; synchronous text/JSON regression debt open](../benchmarks/results/2026-11-03-shared-instruction-driver/README.md)|
+| Complete call transport |Async elapsed−1.7–5.7%versus shared-driver source; sync near controls|[Four-image comparison; allocation/peaks unchanged; prior sync blocker not reproduced](../benchmarks/results/2026-11-03-ordinary-call-transport/README.md)|
 | Compiled constant format layouts |Report allocation−10.47%; warm/fresh elapsed−6.4/−4.9%|[Compilation flat; initial adverse CSV control retained](../benchmarks/results/2026-11-03-prepared-format-layouts/README.md)|
 | Native producer UTF-8 handoff |Config warm/fresh−19.6/−16.3%; allocation−37.8%, CSV rewrite allocation−10.2%|[CSV elapsed flat; text/report control drift retained](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md)|
 | Native helper returns |CSV/JSON allocation−19.9%/−19.3%|[Elapsed diagnostic](../benchmarks/results/2026-11-02-native-function-returns/README.md)|

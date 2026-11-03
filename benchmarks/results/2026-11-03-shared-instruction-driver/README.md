@@ -101,3 +101,8 @@ auxiliary binaries are identical. Frozen identities describe pre-delivery status
 [crossover](confirmation.tgz), [span](final.tgz), [retained](retained.tgz).
 [B161 same-source API comparison](../2026-11-03-async-execution-strategy/README.md)
 is separate from these source pairs.
+
+Later [B165 complete-call transport](../2026-11-03-ordinary-call-transport/README.md)
+provides a same-process four-image assessment: sync candidate versus pre-driver
+within−0.73/+0.44%; the provisional synchronous blocker is closed at that coupled
+milestone. This does not erase or disprove the adverse observations above.

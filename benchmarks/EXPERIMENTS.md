@@ -2067,3 +2067,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   binding-only work about1%, async value wrapper about2% is not a substantial-cost
   proof. Source identifies duplicated target reading/native selection/transfer;
   next coherent migration removes the complete duplicated route, not only a wrapper.
+
+- [Complete ordinary-call transport, B165](results/2026-11-03-ordinary-call-transport/README.md):
+  d3261a39 deletes duplicate selectors/second target read and net77 production lines.
+  Four-image BOTH-API comparison closes the provisional B162 sync blocker without
+  erasing adverse data; async1.7–5.7%lower versus B162. Allocation/peaks unchanged.
+  Original Windows direct-Sum allocation outlier preserved; test-only76725065
+  isolates/warms the control with the same8192 items/4096B bound. Full corrected
+  qualification pending, no production retiming for a fixture-only change.

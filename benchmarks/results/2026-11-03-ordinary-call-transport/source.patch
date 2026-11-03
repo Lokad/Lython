@@ -1,0 +1,528 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 63c36ef7..fb2b76b9 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,10 @@
+ 
+ ## 0.11.0 - Unreleased
+ 
++- Read evaluated call targets once and share ordinary call selection and result
++  transfer across both APIs. Keep native values outside async call wrappers and
++  preserve dynamic binding, suspended users and argument-storage cleanup.
++
+ - Share the synchronous instruction loop with asynchronous execution, resuming
+   after incomplete operations and awaited cleanup. Preserve original error spans,
+   cancellation, memory ownership and dynamic member behavior.
+diff --git a/docs/RUNTIME.md b/docs/RUNTIME.md
+index 3d52cd4e..de0445b3 100644
+--- a/docs/RUNTIME.md
++++ b/docs/RUNTIME.md
+@@ -200,6 +200,11 @@ Large native-call argument packets acquire separate working admission before
+ allocation, even when the operand buffer already has capacity. Their reservation
+ lasts through the awaited call and cleanup; construction observes cancellation.
+ The existing tiny cleared argument pools use control headroom.
++Each call opcode reads its evaluated target once and offers it to the executable
++frame runner. Other calls share native/general target selection and completed
++stack-value transfer across both APIs. Native results travel as objects;
++potentially asynchronous branches retain operands and argument funding until
++their actual completion. Dynamic calls keep the general binder.
+ Return values and failures resume the existing instruction
+ and exception routing. Prepared operations route directly to their existing
+ handler; native stores do not traverse asynchronous display and definition
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 5836b09c..775c0b0a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -499,119 +499,6 @@ internal sealed partial class LythonRuntime
+         stack[start] = result;
+     }
+ 
+-    private static void ExecuteExecutableCall(
+-        ExecutableCallSite callSite,
+-        ref ExecutableValueStack stack,
+-        ExecutionContext context)
+-    {
+-        var start = ReadExecutableCallTarget(callSite, ref stack, out var target);
+-
+-        try
+-        {
+-            object result;
+-            if (callSite.HasReceiver && ReferenceEquals(target, DirectListAppend))
+-            {
+-                result = InvokeListAppend((PyList)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectFileWrite))
+-            {
+-                result = InvokeFileWrite(stack[start],
+-                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))
+-            {
+-                result = InvokeCsvWriterow((CsvWriterObject)stack[start],
+-                    stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && stack[start] is PyString stringReceiver &&
+-                target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+-            {
+-                result = InvokeSingleInput(stringReceiver, stringOperation, callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && stack[start] is PyDict dictionaryReceiver &&
+-                target is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
+-            {
+-                result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringJoin))
+-            {
+-                result = InvokeStringJoin((PyString)stack[start], stack[start + callSite.ArgumentOffset], callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringSplit))
+-            {
+-                result = InvokeStringSplit((PyString)stack[start],
+-                    callSite.ArgumentCount >= 1 ? stack[start + callSite.ArgumentOffset] : null,
+-                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : null,
+-                    callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && (ReferenceEquals(target, DirectStringStartsWith) || ReferenceEquals(target, DirectStringEndsWith)))
+-            {
+-                result = InvokeStringAffixFromOperands((PyString)stack[start],
+-                    stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount), callSite.CallSpan, context,
+-                    isStart: ReferenceEquals(target, DirectStringStartsWith));
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectStringReplace))
+-            {
+-                result = InvokeStringReplace((PyString)stack[start], stack[start + callSite.ArgumentOffset],
+-                    stack[start + callSite.ArgumentOffset + 1],
+-                    callSite.ArgumentCount == 3 ? stack[start + callSite.ArgumentOffset + 2] : null,
+-                    callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
+-            {
+-                result = InvokeDictionaryGet((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
+-                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
+-                    callSite.CallSpan, context);
+-            }
+-            else if (callSite.HasReceiver && ReferenceEquals(target, DirectDictionarySetDefault))
+-            {
+-                result = InvokeDictionarySetDefault((PyDict)stack[start], stack[start + callSite.ArgumentOffset],
+-                    callSite.ArgumentCount == 2 ? stack[start + callSite.ArgumentOffset + 1] : PyNone.Instance,
+-                    callSite.CallSpan, context);
+-            }
+-            else if (callSite.IsPositionalOnly && callSite.ArgumentCount == 1 &&
+-                SelectNativeUnaryOperation(target, stack[start + callSite.ArgumentOffset], NativeReturnShape.Other, out _) is { } nativeOperation)
+-            {
+-                result = InvokeSingleInput(stack[start + callSite.ArgumentOffset], nativeOperation, callSite.CallSpan, context);
+-            }
+-            else if (target is PyFunctionBase function)
+-            {
+-                result = InvokeFunctionFromOperands(function, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+-                    callSite.CallSpan, context, callSite: callSite.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+-                        ? null : callSite);
+-            }
+-            else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
+-            {
+-                result = InvokeFunctionFromOperands(method, stack.Slice(start + callSite.ArgumentOffset, callSite.ArgumentCount).Span,
+-                    callSite.CallSpan, context, bound.Receiver,
+-                    callSite.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : callSite);
+-            }
+-            else
+-            {
+-                using var storage = ReserveExecutableCallArguments(callSite, context);
+-                var arguments = PrepareExecutableCallArguments(callSite, ref stack, start, context);
+-                try
+-                {
+-                    result = InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+-                }
+-                finally
+-                {
+-                    // Withdraw finished inputs when their borrow ends.
+-                    ReturnCallArguments(arguments);
+-                }
+-            }
+-
+-            CompleteExecutableValueTransfer(ref stack, start, result);
+-        }
+-        catch
+-        {
+-            // Withdraw the failed operation's inputs. Surrounding operands
+-            // stay intact.
+-            stack.RemoveTail(stack.Count - start);
+-            throw;
+-        }
+-    }
+-
+     private static ExecutableCell[] CaptureExecutableClosures(
+         ExecutableCodeObject codeObject,
+         ExecutionContext context,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+new file mode 100644
+index 00000000..17b098f6
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -0,0 +1,148 @@
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    private sealed partial class ExecutableFrameInterpreter
++    {
++        // The opcode has already read its evaluated target and offered it to the
++        // linear frame runner. Both APIs use the same remaining call selection.
++        private ValueTask ExecuteOrdinaryCall(ExecutableCallSite call, int start, object target, bool asynchronous)
++        {
++            try
++            {
++                object result;
++                if (call.HasReceiver && ReferenceEquals(target, DirectListAppend))
++                {
++                    result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectFileWrite))
++                {
++                    result = InvokeFileWrite(_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectCsvWriterow))
++                {
++                    if (asynchronous) return CompleteCallValue(InvokeCsvWriterowAsync((CsvWriterObject)_stack[start],
++                        _stack[start + call.ArgumentOffset], call.CallSpan, _context), start);
++                    result = InvokeCsvWriterow((CsvWriterObject)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && _stack[start] is PyString stringReceiver &&
++                    target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
++                {
++                    result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && _stack[start] is PyDict dictionaryReceiver &&
++                    target is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
++                {
++                    result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectStringJoin))
++                {
++                    if (asynchronous) return CompleteCallValue(InvokeStringJoinAsync((PyString)_stack[start],
++                        _stack[start + call.ArgumentOffset], call.CallSpan, _context), start);
++                    result = InvokeStringJoin((PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectStringSplit))
++                {
++                    var separator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;
++                    var count = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : null;
++                    if (asynchronous && count is PyInstance)
++                        return CompleteCallValue(InvokeStringSplitAsync((PyString)_stack[start], separator, count, call.CallSpan, _context), start);
++                    result = InvokeStringSplit((PyString)_stack[start], separator, count, call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && (ReferenceEquals(target, DirectStringStartsWith) || ReferenceEquals(target, DirectStringEndsWith)))
++                {
++                    var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
++                    // Only guest bounds need an awaited protocol invocation.
++                    if (asynchronous && ((arguments.Length >= 2 && arguments.Span[1] is PyInstance) ||
++                        (arguments.Length == 3 && arguments.Span[2] is PyInstance)))
++                        return CompleteCallValue(InvokeStringAffixFromOperandsAsync((PyString)_stack[start], arguments,
++                            call.CallSpan, _context, isStart: ReferenceEquals(target, DirectStringStartsWith)), start);
++                    result = InvokeStringAffixFromOperands((PyString)_stack[start], arguments, call.CallSpan, _context,
++                        isStart: ReferenceEquals(target, DirectStringStartsWith));
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectStringReplace))
++                {
++                    result = InvokeStringReplace((PyString)_stack[start], _stack[start + call.ArgumentOffset],
++                        _stack[start + call.ArgumentOffset + 1], call.ArgumentCount == 3 ? _stack[start + call.ArgumentOffset + 2] : null,
++                        call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectDictionaryGet))
++                {
++                    var receiver = (PyDict)_stack[start];
++                    var key = _stack[start + call.ArgumentOffset];
++                    var fallback = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
++                    if (asynchronous && receiver.HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key))
++                        return CompleteCallValue(InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context), start);
++                    result = InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
++                }
++                else if (call.HasReceiver && ReferenceEquals(target, DirectDictionarySetDefault))
++                {
++                    result = InvokeDictionarySetDefault((PyDict)_stack[start], _stack[start + call.ArgumentOffset],
++                        call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, _context);
++                }
++                else if (call.IsPositionalOnly && call.ArgumentCount == 1 &&
++                    SelectNativeUnaryOperation(target, _stack[start + call.ArgumentOffset], NativeReturnShape.Other, out _) is { } nativeOperation)
++                {
++                    result = InvokeSingleInput(_stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, _context);
++                }
++                else if (target is PyFunctionBase function)
++                {
++                    var site = call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true } ? null : call;
++                    var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
++                    if (asynchronous) return CompleteCallValue(InvokeFunctionFromOperandsAsync(function, arguments,
++                        call.CallSpan, _context, callSite: site), start);
++                    result = InvokeFunctionFromOperands(function, arguments.Span, call.CallSpan, _context, callSite: site);
++                }
++                else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
++                {
++                    var site = call.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : call;
++                    var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
++                    if (asynchronous) return CompleteCallValue(InvokeFunctionFromOperandsAsync(method, arguments,
++                        call.CallSpan, _context, bound.Receiver, site), start);
++                    result = InvokeFunctionFromOperands(method, arguments.Span, call.CallSpan, _context, bound.Receiver, site);
++                }
++                else
++                {
++                    if (asynchronous) return CompleteCallValue(InvokeExecutableGeneralTargetAsync(call, start, target), start);
++                    using var storage = ReserveExecutableCallArguments(call, _context);
++                    var arguments = PrepareExecutableCallArguments(call, ref _stack, start, _context);
++                    try { result = InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, _context, arguments); }
++                    finally { ReturnCallArguments(arguments); }
++                }
++                CompleteExecutableValueTransfer(ref _stack, start, result);
++                return default;
++            }
++            catch
++            {
++                _stack.RemoveTail(_stack.Count - start);
++                throw;
++            }
++        }
++
++        // Native results above travel as objects. Only potentially asynchronous
++        // branches reach this completion helper; their operands stay borrowed.
++        private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
++        {
++            if (!pending.IsCompletedSuccessfully) return AwaitCallValueAsync(pending, start);
++            CompleteExecutableValueTransfer(ref _stack, start, pending.GetAwaiter().GetResult());
++            return default;
++        }
++
++        private async ValueTask AwaitCallValueAsync(ValueTask<object> pending, int start)
++        {
++            try { CompleteExecutableValueTransfer(ref _stack, start, await pending.ConfigureAwait(false)); }
++            catch { _stack.RemoveTail(_stack.Count - start); throw; }
++        }
++
++        private async ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target)
++        {
++            using var storage = ReserveExecutableCallArguments(call, _context);
++            var arguments = PrepareExecutableCallArguments(call, ref _stack, start, _context);
++            try { return await InvokeCallableTargetAsync(target, call.TargetSpan, call.CallSpan, _context, arguments).ConfigureAwait(false); }
++            finally { ReturnCallArguments(arguments); }
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index 345bbcf7..6737d213 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -49,11 +49,9 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
+-        private bool TrySuspendForExecutableCall(ExecutableInstruction instruction)
++        private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
+         {
+-            var site = _codeObject.CallSites[instruction.CallSiteIndex];
+             if (!site.IsPositionalOnly) return false;
+-            var start = ReadExecutableCallTarget(site, ref _stack, out var target);
+             var function = target as PyExecutableFunction;
+             object? receiver = null;
+             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 885e0bb4..c5d9458e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -163,130 +163,23 @@ internal sealed partial class LythonRuntime
+             throw new InvalidOperationException("Unexpected asynchronous context-manager instruction.");
+         }
+ 
+-        private async ValueTask ExecuteValueOperationAsync(ExecutableInstruction instruction)
++        private ValueTask ExecuteGetIteratorAsync(ExecutableInstruction instruction)
+         {
+-            switch (instruction.OpCode)
++            var slot = _stack.Count - 1;
++            try
+             {
+-                case ExecutableOpCode.GetIter:
+-                    var iterableSlot = _stack.Count - 1;
+-                    try { _stack[iterableSlot] = await PyIteration.Cursor.CreateAsync(_stack[iterableSlot], instruction.Span, _context).ConfigureAwait(false); }
+-                    catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
+-                    break;
+-                case ExecutableOpCode.Call:
+-                    var call = _codeObject.CallSites[instruction.CallSiteIndex];
+-                    var start = ReadExecutableCallTarget(call, ref _stack, out var callable);
+-                    try
+-                    {
+-                        object result;
+-                        if (call.HasReceiver && ReferenceEquals(callable, DirectListAppend))
+-                        {
+-                            result = InvokeListAppend((PyList)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectFileWrite))
+-                        {
+-                            result = InvokeFileWrite(_stack[start],
+-                                _stack[start + call.ArgumentOffset], call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectCsvWriterow))
+-                        {
+-                            result = await InvokeCsvWriterowAsync((CsvWriterObject)_stack[start],
+-                                _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
+-                        }
+-                        else if (call.HasReceiver && _stack[start] is Text.PyString stringReceiver &&
+-                            callable is Func<Text.PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
+-                        {
+-                            result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && _stack[start] is PyDict dictionaryReceiver &&
+-                            callable is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
+-                        {
+-                            result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringJoin))
+-                        {
+-                            result = await InvokeStringJoinAsync((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset], call.CallSpan, _context).ConfigureAwait(false);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringSplit))
+-                        {
+-                            var splitSeparator = call.ArgumentCount >= 1 ? _stack[start + call.ArgumentOffset] : null;
+-                            var splitCount = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : null;
+-                            result = splitCount is PyInstance
+-                                ? await InvokeStringSplitAsync((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context).ConfigureAwait(false)
+-                                : InvokeStringSplit((Text.PyString)_stack[start], splitSeparator, splitCount, call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && (ReferenceEquals(callable, DirectStringStartsWith) || ReferenceEquals(callable, DirectStringEndsWith)))
+-                        {
+-                            var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+-                            // Native bounds stay synchronous; only guest index
+-                            // protocols need the awaited call wrapper.
+-                            result = (arguments.Length >= 2 && arguments.Span[1] is PyInstance) ||
+-                                (arguments.Length == 3 && arguments.Span[2] is PyInstance)
+-                                ? await InvokeStringAffixFromOperandsAsync((Text.PyString)_stack[start], arguments, call.CallSpan, _context,
+-                                    isStart: ReferenceEquals(callable, DirectStringStartsWith)).ConfigureAwait(false)
+-                                : InvokeStringAffixFromOperands((Text.PyString)_stack[start], arguments, call.CallSpan, _context,
+-                                    isStart: ReferenceEquals(callable, DirectStringStartsWith));
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectStringReplace))
+-                        {
+-                            result = InvokeStringReplace((Text.PyString)_stack[start], _stack[start + call.ArgumentOffset],
+-                                _stack[start + call.ArgumentOffset + 1],
+-                                call.ArgumentCount == 3 ? _stack[start + call.ArgumentOffset + 2] : null,
+-                                call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectDictionaryGet))
+-                        {
+-                            var receiver = (PyDict)_stack[start];
+-                            var key = _stack[start + call.ArgumentOffset];
+-                            var fallback = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
+-                            // Native-key equality can reach asynchronous guest/host work.
+-                            result = receiver.HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key)
+-                                ? await InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, _context).ConfigureAwait(false)
+-                                : InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, _context);
+-                        }
+-                        else if (call.HasReceiver && ReferenceEquals(callable, DirectDictionarySetDefault))
+-                        {
+-                            result = InvokeDictionarySetDefault((PyDict)_stack[start], _stack[start + call.ArgumentOffset],
+-                                call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance,
+-                                call.CallSpan, _context);
+-                        }
+-                        else if (call.IsPositionalOnly && call.ArgumentCount == 1 &&
+-                            SelectNativeUnaryOperation(callable, _stack[start + call.ArgumentOffset], NativeReturnShape.Other, out _) is { } nativeOperation)
+-                        {
+-                            result = InvokeSingleInput(_stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, _context);
+-                        }
+-                        else if (callable is PyFunctionBase function)
+-                        {
+-                            result = await InvokeFunctionFromOperandsAsync(function, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+-                                call.CallSpan, _context, callSite: call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true }
+-                                    ? null : call).ConfigureAwait(false);
+-                        }
+-                        else if (callable is PyBoundMethod { Function: PyFunctionBase method } bound)
+-                        {
+-                            result = await InvokeFunctionFromOperandsAsync(method, _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+-                                call.CallSpan, _context, bound.Receiver,
+-                                call.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : call).ConfigureAwait(false);
+-                        }
+-                        else
+-                        {
+-                            using var storage = ReserveExecutableCallArguments(call, _context);
+-                            var arguments = PrepareExecutableCallArguments(call, ref _stack, start, _context);
+-                            try
+-                            {
+-                                result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
+-                                    arguments).ConfigureAwait(false);
+-                            }
+-                            finally { ReturnCallArguments(arguments); }
+-                        }
+-                        CompleteExecutableValueTransfer(ref _stack, start, result);
+-                    }
+-                    catch
+-                    {
+-                        _stack.RemoveTail(_stack.Count - start);
+-                        throw;
+-                    }
+-                    break;
+-                default: throw new InvalidOperationException($"Unexpected asynchronous value-operation opcode: {instruction.OpCode}");
++                var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, _context);
++                if (!pending.IsCompletedSuccessfully) return AwaitIteratorCreationAsync(pending, slot);
++                _stack[slot] = pending.GetAwaiter().GetResult();
++                return default;
+             }
++            catch { _stack.RemoveTail(_stack.Count - slot); throw; }
++        }
++
++        private async ValueTask AwaitIteratorCreationAsync(ValueTask<PyIteration.Cursor> pending, int slot)
++        {
++            try { _stack[slot] = await pending.ConfigureAwait(false); }
++            catch { _stack.RemoveTail(_stack.Count - slot); throw; }
+         }
+ 
+         private async ValueTask ExecuteOperandValueOperationAsync(ExecutableInstruction instruction)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 76f7345e..e913ca0b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -160,13 +160,22 @@ internal sealed partial class LythonRuntime
+                             }
+                             break;
+                         case ExecutableOpCode.Call:
+-                            if (TrySuspendForExecutableCall(instruction)) return InstructionPause.Boundary;
+-                            goto case ExecutableOpCode.GetIter;
++                            var call = _codeObject.CallSites[instruction.CallSiteIndex];
++                            var callStart = ReadExecutableCallTarget(call, ref _stack, out var target);
++                            if (TrySuspendForExecutableCall(call, callStart, target)) return InstructionPause.Boundary;
++                            if (!asynchronous) ExecuteOrdinaryCall(call, callStart, target, false).GetAwaiter().GetResult();
++                            else
++                            {
++                                pending = WithoutJump(ExecuteOrdinaryCall(call, callStart, target, true));
++                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
++                                _ = ConsumeOperation(ref pending);
++                            }
++                            break;
+                         case ExecutableOpCode.GetIter:
+                             if (!asynchronous) ExecuteValueOperation(instruction);
+                             else
+                             {
+-                                pending = WithoutJump(ExecuteValueOperationAsync(instruction));
++                                pending = WithoutJump(ExecuteGetIteratorAsync(instruction));
+                                 if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                 _ = ConsumeOperation(ref pending);
+                             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 1c0c3010..4a66f7d0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -451,18 +451,7 @@ internal sealed partial class LythonRuntime
+                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
+                     break;
+ 
+-                case ExecutableOpCode.Call:
+-                    ExecuteExecutableCall(
+-                        _codeObject.CallSites[instruction.CallSiteIndex],
+-                        ref _stack,
+-                        _context);
+-                    break;
+-
+-                case ExecutableOpCode.Subscript:
+                 case ExecutableOpCode.Slice:
+-                case ExecutableOpCode.Binary:
+-                case ExecutableOpCode.Augmented:
+-                case ExecutableOpCode.Unary:
+                     ExecuteOperandValueOperation(instruction);
+                     break;
+ 

@@ -1,0 +1,574 @@
+{
+  "sync": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 5.423084375,
+          "cpuMs": 5.42575,
+          "allocatedBytes": 5503170.25,
+          "elapsedIqrPercent": 0.5443742519679952
+        },
+        "candidate": {
+          "elapsedMs": 5.335759375,
+          "cpuMs": 5.347,
+          "allocatedBytes": 5503216.5,
+          "elapsedIqrPercent": 0.24475194779562365
+        },
+        "before-control": {
+          "elapsedMs": 5.309928125,
+          "cpuMs": 5.31703125,
+          "allocatedBytes": 5503236.75,
+          "elapsedIqrPercent": 1.1236027794632333
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 5.3586875,
+          "cpuMs": 5.35978125,
+          "allocatedBytes": 5503263.25,
+          "elapsedIqrPercent": 1.4480574767608716
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -1.610246014289607,
+          "cpuMs": -1.4514122471547597,
+          "allocatedBytes": 0.0008404246624849065
+        },
+        "before-control": {
+          "elapsedMs": -2.0865662817573294,
+          "cpuMs": -2.0037552412108806,
+          "allocatedBytes": 0.0012083943795815344
+        },
+        "pre-shared-driver": {
+          "elapsedMs": -1.1874584746802808,
+          "cpuMs": -1.2158457356125862,
+          "allocatedBytes": 0.001689934997006759
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -0.42786829797408776,
+        "cpuMs": -0.23846588888305487,
+        "allocatedBytes": -0.0008494959785942946
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "candidate": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "before": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 3.654521875,
+          "cpuMs": 3.65459375,
+          "allocatedBytes": 3321963.5,
+          "elapsedIqrPercent": 0.3599992133033874
+        },
+        "candidate": {
+          "elapsedMs": 3.641003125,
+          "cpuMs": 3.64075,
+          "allocatedBytes": 3321963.5,
+          "elapsedIqrPercent": 0.476946171256034
+        },
+        "before-control": {
+          "elapsedMs": 3.690871875,
+          "cpuMs": 3.691625,
+          "allocatedBytes": 3321963.5,
+          "elapsedIqrPercent": 0.5619437819146778
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 3.6678,
+          "cpuMs": 3.67065625,
+          "allocatedBytes": 3322803.25,
+          "elapsedIqrPercent": 0.6852711434647454
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -0.36991843153216797,
+          "cpuMs": -0.3788040736401932,
+          "allocatedBytes": 0.0
+        },
+        "before-control": {
+          "elapsedMs": 0.9946581589417969,
+          "cpuMs": 1.0132795197824729,
+          "allocatedBytes": 0.0
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 0.36333412288029887,
+          "cpuMs": 0.4395153360069015,
+          "allocatedBytes": 0.025278724465205293
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -0.7305980424232472,
+        "cpuMs": -0.8147385089519066,
+        "allocatedBytes": -0.02527233594105116
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "before": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 5.939515625,
+          "cpuMs": 5.94471875,
+          "allocatedBytes": 4204561.0,
+          "elapsedIqrPercent": 2.119070105148519
+        },
+        "candidate": {
+          "elapsedMs": 5.68735625,
+          "cpuMs": 5.68915625,
+          "allocatedBytes": 4204629.75,
+          "elapsedIqrPercent": 1.0653016504812685
+        },
+        "before-control": {
+          "elapsedMs": 5.84773125,
+          "cpuMs": 5.8509375,
+          "allocatedBytes": 4204629.75,
+          "elapsedIqrPercent": 0.4682371475262217
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 5.6622,
+          "cpuMs": 5.662625,
+          "allocatedBytes": 4204629.75,
+          "elapsedIqrPercent": 0.5452827522870966
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -4.245453517095521,
+          "cpuMs": -4.298983866982775,
+          "allocatedBytes": 0.001635129089572196
+        },
+        "before-control": {
+          "elapsedMs": -1.5453175106345585,
+          "cpuMs": -1.577555708585876,
+          "allocatedBytes": 0.001635129089572196
+        },
+        "pre-shared-driver": {
+          "elapsedMs": -4.668993946791744,
+          "cpuMs": -4.745283366012898,
+          "allocatedBytes": 0.001635129089572196
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": 0.4442840238776391,
+        "cpuMs": 0.468532703472313,
+        "allocatedBytes": 0.0
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "candidate": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "before": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "values": {
+        "before": {
+          "elapsedMs": 6.067203125,
+          "cpuMs": 6.17359375,
+          "allocatedBytes": 7353489.0,
+          "elapsedIqrPercent": 3.640062734837142
+        },
+        "candidate": {
+          "elapsedMs": 6.091971875,
+          "cpuMs": 6.2349375,
+          "allocatedBytes": 7353478.5,
+          "elapsedIqrPercent": 3.0931076811643985
+        },
+        "before-control": {
+          "elapsedMs": 6.1119,
+          "cpuMs": 6.25846875,
+          "allocatedBytes": 7353404.25,
+          "elapsedIqrPercent": 0.32043022627988
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 6.104253125,
+          "cpuMs": 6.24146875,
+          "allocatedBytes": 7353490.75,
+          "elapsedIqrPercent": 1.611786044668641
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": 0.4082399993819097,
+          "cpuMs": 0.9936473387158085,
+          "allocatedBytes": -0.00014278936162348543
+        },
+        "before-control": {
+          "elapsedMs": 0.7366965318142515,
+          "cpuMs": 1.3748070157677539,
+          "allocatedBytes": -0.0011525141330848143
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 0.6106602867363087,
+          "cpuMs": 1.0994406620941088,
+          "allocatedBytes": 2.379822694464906e-05
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -0.20119168960576195,
+        "cpuMs": -0.10464283747315672,
+        "allocatedBytes": -0.00016658754891096805
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "candidate": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "before": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    }
+  ],
+  "async": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 6.289453125,
+          "cpuMs": 6.367375,
+          "allocatedBytes": 5865111.25,
+          "elapsedIqrPercent": 0.44449413079932776
+        },
+        "candidate": {
+          "elapsedMs": 6.067196875,
+          "cpuMs": 6.14815625,
+          "allocatedBytes": 5863846.0,
+          "elapsedIqrPercent": 1.1039900530671267
+        },
+        "before-control": {
+          "elapsedMs": 6.21855,
+          "cpuMs": 6.29859375,
+          "allocatedBytes": 5863848.25,
+          "elapsedIqrPercent": 1.525777713454105
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 6.503353125,
+          "cpuMs": 6.57784375,
+          "allocatedBytes": 5865047.25,
+          "elapsedIqrPercent": 0.4627420566217494
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -3.53379293211602,
+          "cpuMs": -3.4428434009305176,
+          "allocatedBytes": -0.021572480828901952
+        },
+        "before-control": {
+          "elapsedMs": -1.127333705980993,
+          "cpuMs": -1.0802135888022923,
+          "allocatedBytes": -0.021534118385224676
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 3.4009316191540906,
+          "cpuMs": 3.305424134749413,
+          "allocatedBytes": -0.0010911983979844386
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -6.706636432263558,
+        "cpuMs": -6.5323458010081215,
+        "allocatedBytes": -0.02048150592478537
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "candidate": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "before": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 8423780,
+          "PeakRootBytes": 8520132
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 4.152909375,
+          "cpuMs": 4.21253125,
+          "allocatedBytes": 3323013.75,
+          "elapsedIqrPercent": 0.3371883115075067
+        },
+        "candidate": {
+          "elapsedMs": 3.91811875,
+          "cpuMs": 3.9809375,
+          "allocatedBytes": 3323033.25,
+          "elapsedIqrPercent": 0.7899199073534923
+        },
+        "before-control": {
+          "elapsedMs": 4.138365625,
+          "cpuMs": 4.20565625,
+          "allocatedBytes": 3323013.75,
+          "elapsedIqrPercent": 0.41298006383862457
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 4.575790625,
+          "cpuMs": 4.63915625,
+          "allocatedBytes": 3323851.25,
+          "elapsedIqrPercent": 0.49636230897255956
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -5.653641912183549,
+          "cpuMs": -5.4977336963375585,
+          "allocatedBytes": 0.0005868167111788836
+        },
+        "before-control": {
+          "elapsedMs": -0.35020629363000655,
+          "cpuMs": -0.16320353706574808,
+          "allocatedBytes": 0.0
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 10.182770964030485,
+          "cpuMs": 10.127521309189103,
+          "allocatedBytes": 0.025203025416309366
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -14.372857696040231,
+        "cpuMs": -14.188328966070074,
+        "allocatedBytes": -0.024610006239000892
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "before": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 3860515,
+          "PeakRootBytes": 3940067
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "values": {
+        "before": {
+          "elapsedMs": 6.383796875,
+          "cpuMs": 6.4466875,
+          "allocatedBytes": 4205265.5,
+          "elapsedIqrPercent": 1.052811928637689
+        },
+        "candidate": {
+          "elapsedMs": 6.236684375,
+          "cpuMs": 6.30046875,
+          "allocatedBytes": 4205897.0,
+          "elapsedIqrPercent": 1.306132715750902
+        },
+        "before-control": {
+          "elapsedMs": 6.509921875,
+          "cpuMs": 6.58003125,
+          "allocatedBytes": 4205965.75,
+          "elapsedIqrPercent": 1.2317256111464467
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 6.828228125,
+          "cpuMs": 6.8926875,
+          "allocatedBytes": 4205223.25,
+          "elapsedIqrPercent": 0.5308386646792161
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -2.304467120125897,
+          "cpuMs": -2.2681221945378915,
+          "allocatedBytes": 0.015016887756558184
+        },
+        "before-control": {
+          "elapsedMs": 1.9757050932169617,
+          "cpuMs": 2.068407224640567,
+          "allocatedBytes": 0.016651742916118373
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 6.961863898590925,
+          "cpuMs": 6.918281675666771,
+          "allocatedBytes": -0.001004692807149432
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -8.663210120854004,
+        "cpuMs": -8.591986072196079,
+        "allocatedBytes": 0.016021741532989964
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "candidate": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "before": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 5116036,
+          "PeakRootBytes": 5213284
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "values": {
+        "before": {
+          "elapsedMs": 6.4529375,
+          "cpuMs": 6.665625,
+          "allocatedBytes": 7355037.25,
+          "elapsedIqrPercent": 2.6158145030848345
+        },
+        "candidate": {
+          "elapsedMs": 6.34484375,
+          "cpuMs": 6.5673125,
+          "allocatedBytes": 7354991.5,
+          "elapsedIqrPercent": 1.0590292314132952
+        },
+        "before-control": {
+          "elapsedMs": 6.56134375,
+          "cpuMs": 6.76228125,
+          "allocatedBytes": 7355010.25,
+          "elapsedIqrPercent": 2.0306911217690735
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 6.685103125,
+          "cpuMs": 6.89784375,
+          "allocatedBytes": 7355010.75,
+          "elapsedIqrPercent": 1.5186284056014399
+        }
+      },
+      "changeVersusB162Percent": {
+        "candidate": {
+          "elapsedMs": -1.6751092041415228,
+          "cpuMs": -1.4749179559306214,
+          "allocatedBytes": -0.0006220226824837916
+        },
+        "before-control": {
+          "elapsedMs": 1.679951959863235,
+          "cpuMs": 1.4500703234880508,
+          "allocatedBytes": -0.00036709535359280565
+        },
+        "pre-shared-driver": {
+          "elapsedMs": 3.5978285083343886,
+          "cpuMs": 3.4838255977496457,
+          "allocatedBytes": -0.00036029729149067435
+        }
+      },
+      "candidateVersusPreSharedDriverPercent": {
+        "elapsedMs": -5.089814900948153,
+        "cpuMs": -4.7918054102051855,
+        "allocatedBytes": -0.00026172633398324763
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "candidate": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "before": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        },
+        "pre-shared-driver": {
+          "PeakExecutionBytes": 4556536,
+          "PeakRootBytes": 4638968
+        }
+      },
+      "allGoldensPassed": true,
+      "allBalancesZero": true
+    }
+  ]
+}

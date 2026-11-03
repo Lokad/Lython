@@ -1,0 +1,7 @@
+Running as unit: lython-b165-ordinary-calls-20261103.service; invocation ID: 0e2f5772fe2743a599be85ef401cb86a
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2min 58.295s
+CPU time consumed: 3min 6.623s
+Memory peak: 692.0K
+Memory swap peak: 0B
