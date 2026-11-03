@@ -11,6 +11,8 @@ internal static class NativeOperationSources
         "random-bytes" => "import random\nreturn len(random.randbytes(200000))",
         "random-bits" => "import random\nreturn random.getrandbits(1600000).bit_length()",
         "integer-to-bytes" => "return len((1).to_bytes(200000))",
+        "float-fixed-format" => "return len(f'{1.25:.200000f}')",
+        "float-scientific-format" => "return len(format(1.25,'.200000E'))",
         "decimal-digits" => "import decimal,itertools\nreturn len(decimal.DecimalTuple(0,itertools.repeat(1,50000),0).digits)",
         "decimal-text" => "import decimal\nreturn decimal.Decimal('" + new string(' ', 100000) + "1').is_zero()",
         "decimal-context-text" => "import decimal\nreturn decimal.Context().create_decimal('" + new string(' ', 100000) + "1').is_zero()",

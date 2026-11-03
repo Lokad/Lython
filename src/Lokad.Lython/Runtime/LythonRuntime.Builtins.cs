@@ -593,17 +593,17 @@ internal sealed partial class LythonRuntime
 
     private static object Bin(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "bin(number) expects an integer.", "0b", 2, lower: true, span, context);
+        return FormatIntegerBase(arguments, "bin(number) expects an integer.", 'b', span, context);
     }
 
     private static object Oct(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "oct(number) expects an integer.", "0o", 8, lower: true, span, context);
+        return FormatIntegerBase(arguments, "oct(number) expects an integer.", 'o', span, context);
     }
 
     private static object Hex(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        return FormatIntegerBase(arguments, "hex(number) expects an integer.", "0x", 16, lower: true, span, context);
+        return FormatIntegerBase(arguments, "hex(number) expects an integer.", 'x', span, context);
     }
 
     private static object Chr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -737,7 +737,7 @@ internal sealed partial class LythonRuntime
         return (int)value;
     }
 
-    private static object FormatIntegerBase(object[] arguments, string message, string prefix, int radix, bool lower, LythonSourceSpan span, ExecutionContext context)
+    private static object FormatIntegerBase(object[] arguments, string message, char type, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
         {
@@ -749,9 +749,14 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
         }
-        var sign = integer < BigInteger.Zero ? "-" : string.Empty;
-        var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);
-        return PyString.FromString(sign + prefix + digits, context.MemoryGovernor, span);
+        var output = new GovernedByteBuilder(context.MemoryGovernor, span);
+        try
+        {
+            AppendIntegerFormat(output, integer, new(-1, null, null, true, false, null, null, null, type),
+                context, span, RuntimeErrors.OperandTypeName(arguments[0]));
+            return output.ToPyStringAndRelease();
+        }
+        finally { output.Release(); }
     }
 
     // Shared int() conversion failure: quotes the offending source like CPython

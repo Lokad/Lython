@@ -302,8 +302,16 @@ scalars directly in UTF-8. Standalone string padding shares its exact output
 allocation with `ljust`, `rjust` and `center`, preserving unchanged string identity.
 Multipart f-strings append native string and numeric fields into one admitted
 UTF-8 output builder. Numeric padding avoids padded intermediate CLR strings;
-numeric digit/date renderers and user-defined `__format__` results retain their
-specialized algorithms and supported asynchronous callbacks. Private output stays
+integer digits and finite fixed/scientific float fields use admitted span storage
+without intermediate CLR strings. Integer base conversion is linear in digit
+count. .NET 10 uses an admitted character bridge for decimal integers; .NET 11
+formats them directly into UTF-8. Scratch and final output overlap remain funded.
+Grouping in these fields includes sign-aware zero fill, which can exceed the requested
+width by one scalar when another grouping separator is required.
+Managed radix, grouping and padding loops check cancellation; opaque BCL decimal
+and float conversion is synchronous and cannot interrupt midway. Other numeric/date
+renderers and user-defined `__format__` results retain their specialized algorithms
+and supported asynchronous callbacks. Private output stays
 funded across suspended callbacks and generator yields, and releases on unwind
 or close. Capacity admission can reject before a later field is evaluated.
 

@@ -1,0 +1,1 @@
+{"framework":".NET 10.0.8","target":[{"type":"System.Numerics.INumberBase\u00601[[System.Numerics.BigInteger, System.Runtime.Numerics, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a]]","Name":"System.IUtf8SpanFormattable.TryFormat"}],"allocated":131072,"iterations":4096,"output":"123456"}

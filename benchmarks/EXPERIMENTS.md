@@ -2212,3 +2212,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   straddle. Metadata/eligibility state not justified. Preserve both full variants,
   all favorable/adverse timings and new capability/diagnostic-order regressions.
   No permanent analysis-design ban, full prototype qualification or debt closure.
+
+- [Admitted numeric UTF-8 output, B188](results/2026-11-04-admitted-numeric-formatting/README.md):
+  RETAINED, delivery pending. Delete integer CLR digit/sign/group strings and
+  per-digit DivRem; share integer/base/percent and fixed/scientific span output.
+  Demonstrated denied construction allocated162–170KB decimal/~17MB hex before
+  admission; focused checks now preflight. Independent golden exposed old zero-fill
+  grouping errors; preserve failed run, correct shared output and add parity cases.
+  Both actual targets130 internal/1,031 public PASS. Complete report allocation−6.1%,
+  numeric−18–87%. Initial async float+26–31% remains adverse; longer same-bit role-
+  swapped confirmation gives6–8% improvement. Report sync inconclusive, async elapsed
+  about−3% with near-flat CPU. No general CPU/fresh debt claim; whole objective OPEN.

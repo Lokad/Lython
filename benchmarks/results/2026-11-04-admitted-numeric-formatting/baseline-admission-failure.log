@@ -1,0 +1,38 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.65]     Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "x", bits: 32768, asynchronous: False) [FAIL]
+[xUnit.net 00:00:00.79]     Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "d", bits: 262144, asynchronous: False) [FAIL]
+[xUnit.net 00:00:00.81]     Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "x", bits: 32768, asynchronous: True) [FAIL]
+[xUnit.net 00:00:00.94]     Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "d", bits: 262144, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "x", bits: 32768, asynchronous: False) [109 ms]
+  Error Message:
+   Refused integer x formatting allocated 17060344 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(String format, Int32 bits, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeOperationAllocationTests.cs:line 50
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "d", bits: 262144, asynchronous: False) [137 ms]
+  Error Message:
+   Refused integer d formatting allocated 162280 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(String format, Int32 bits, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeOperationAllocationTests.cs:line 50
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "x", bits: 32768, asynchronous: True) [20 ms]
+  Error Message:
+   Refused integer x formatting allocated 17067704 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(String format, Int32 bits, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeOperationAllocationTests.cs:line 50
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(format: "d", bits: 262144, asynchronous: True) [129 ms]
+  Error Message:
+   Refused integer d formatting allocated 169640 bytes.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeOperationAllocationTests.IntegerFormattingRefusesBeforeConstructingProportionalDigits(String format, Int32 bits, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeOperationAllocationTests.cs:line 50
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     4, Passed:     0, Skipped:     0, Total:     4, Duration: 408 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

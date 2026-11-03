@@ -187,36 +187,15 @@ internal sealed partial class LythonRuntime
         private void AppendInteger(object value, PercentSpecifier specifier)
         {
             var integer = CoerceInteger(value, specifier.Conversion);
-            var negative = integer.Sign < 0;
-            var magnitude = BigInteger.Abs(integer);
-            var upper = specifier.Conversion == 'X';
-            var radix = specifier.Conversion switch
-            {
-                'o' => 8,
-                'x' or 'X' => 16,
-                _ => 10
-            };
-            var digits = radix == 10
-                ? magnitude.ToString(CultureInfo.InvariantCulture)
-                : ToUnsignedBaseString(magnitude, radix, upper);
-            using var precisionStorage = specifier.Precision is { } requested && digits.Length < requested
-                ? _context.MemoryGovernor.ReserveTemporary(checked(128L + 4L * requested), _span) : null;
-            if (specifier.Precision is { } precision && digits.Length < precision)
-            {
-                digits = new string('0', precision - digits.Length) + digits;
-            }
-
-            var sign = NumericSign(negative, specifier);
-            var prefix = specifier.Alternate
-                ? specifier.Conversion switch
-                {
-                    'o' => "0o",
-                    'x' => "0x",
-                    'X' => "0X",
-                    _ => string.Empty
-                }
-                : string.Empty;
-            AppendNumeric(sign + prefix + digits, sign.Length + prefix.Length, specifier);
+            var type = specifier.Conversion is 'o' or 'x' or 'X' ? specifier.Conversion : 'd';
+            var native = new InterpolatedFormatSpecifier(
+                Fill: specifier.ZeroPad && !specifier.LeftAdjust ? '0' : ' ',
+                Align: specifier.LeftAdjust ? '<' : specifier.ZeroPad ? '=' : '>',
+                Sign: specifier.PlusSign ? '+' : specifier.SpaceSign ? ' ' : null,
+                Alternate: specifier.Alternate, ZeroPad: false, Width: specifier.Width,
+                Grouping: null, Precision: null, Type: type);
+            AppendIntegerFormat(_builder, integer, native, _context, _span,
+                RuntimeErrors.OperandTypeName(value), specifier.Precision.GetValueOrDefault());
         }
 
         private void AppendFloating(object value, PercentSpecifier specifier)

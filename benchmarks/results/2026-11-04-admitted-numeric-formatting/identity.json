@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "b09b259e plus B188 admitted numeric output patch",
+  "coreSHA256": {
+    "before-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "after-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "candidate": "cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e"
+  }
+}

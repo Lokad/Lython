@@ -1,0 +1,6 @@
+{
+  "src/Lokad.Lython/Runtime/LythonRuntime.Operations.NumericFormatting.cs": "1d7b25b42fd4c1d439b1362abac99b4f3650b4830e239f117ca88eb3d39c913f",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "7dd35923f4d5c7020eca5caabf2010f65ec1d80eda802b123f2d4fec930bf217",
+  "src/Lokad.Lython/Runtime/LythonRuntime.PercentFormatting.cs": "449d0bbeea46bbeb069b4bddcd7d8e1b50c78710410ee8e79a4bb63612cd9ddd",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "ddeb1b31c3a24f764634ff1c6a02d868c67eeaf75bbefdd6c265692b5c7522ef"
+}

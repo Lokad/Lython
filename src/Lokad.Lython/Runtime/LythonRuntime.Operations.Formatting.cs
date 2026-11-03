@@ -198,11 +198,7 @@ internal sealed partial class LythonRuntime
             return;
         }
         var spec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
-        if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
-        {
-            AppendInterpolatedFormatPadding(output, numericText, spec, numericPrefixLength, numeric: true, span, context);
-            return;
-        }
+        if (TryAppendNumericValue(output, value, spec, context, span)) return;
 
         ValidateStringFormatSpecifier(value, formatSpecifier, spec, span);
         PyStringOps.AppendFormattedStringValue(output, value as PyString ?? ToInterpolatedPyString(value, context),
@@ -254,53 +250,34 @@ internal sealed partial class LythonRuntime
 
     }
 
-    private static bool TryFormatNumericValue(
-        object value,
-        InterpolatedFormatSpecifier spec,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        out string text,
-        out int numericPrefixLength)
+    private static bool TryAppendNumericValue(GovernedByteBuilder output, object value,
+        InterpolatedFormatSpecifier spec, ExecutionContext context, LythonSourceSpan span)
     {
-        text = string.Empty;
-        numericPrefixLength = 0;
-
         if (TryGetIntegerFormatValue(value, out var integer))
         {
             if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%' or 'e' or 'E')
             {
-                // Like CPython's int-to-double conversion, integers past
-                // the double range fail explicitly instead of rendering
-                // infinity.
                 var asDouble = (double)integer;
                 if (!double.IsFinite(asDouble))
-                {
                     throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
-                }
-
-                return TryFormatFloatingValue(asDouble, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(value));
+                AppendFloatingFormat(output, asDouble, spec, context, span, RuntimeErrors.OperandTypeName(value));
             }
-
-            text = FormatIntegerValue(integer, spec, span, RuntimeErrors.OperandTypeName(value), out numericPrefixLength);
+            else AppendIntegerFormat(output, integer, spec, context, span, RuntimeErrors.OperandTypeName(value));
             return true;
         }
-
         if (value is double floating)
         {
             if (spec.Type is 'd' or 'b' or 'o' or 'x' or 'X' or 'n')
-            {
                 throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for object of type '{RuntimeErrors.OperandTypeName(floating)}'", span);
-            }
-
-            return TryFormatFloatingValue(floating, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(floating));
+            AppendFloatingFormat(output, floating, spec, context, span, RuntimeErrors.OperandTypeName(floating));
+            return true;
         }
-
-        if (value is PyDecimal decimalValue)
+        if (value is PyDecimal decimalValue &&
+            TryFormatDecimalValue(decimalValue, spec, span, context, out var text, out var prefix))
         {
-            return TryFormatDecimalValue(decimalValue, spec, span, context, out text, out numericPrefixLength);
+            AppendInterpolatedFormatPadding(output, text, spec, prefix, numeric: true, span, context);
+            return true;
         }
-
-        _ = context;
         return false;
     }
 
@@ -676,65 +653,6 @@ internal sealed partial class LythonRuntime
     private static bool TryGetIntegerFormatValue(object value, out BigInteger integer)
         => Numbers.PyNumberOps.TryAsInteger(value, out integer);
 
-    private static string FormatIntegerValue(
-        BigInteger value,
-        InterpolatedFormatSpecifier spec,
-        LythonSourceSpan span,
-        string typeName,
-        out int numericPrefixLength)
-    {
-        if (spec.Precision is not null)
-        {
-            throw new LythonRuntimeException("ValueError", "Precision not allowed in integer format specifier", span);
-        }
-
-        var type = spec.Type ?? 'd';
-        var negative = value.Sign < 0;
-        var magnitude = BigInteger.Abs(value);
-        string digits;
-        string prefix;
-        switch (type)
-        {
-            case 'd':
-            case 'n':
-                digits = magnitude.ToString(CultureInfo.InvariantCulture);
-                prefix = string.Empty;
-                break;
-            case 'b':
-                digits = ToUnsignedBaseString(magnitude, 2, upper: false);
-                prefix = spec.Alternate ? "0b" : string.Empty;
-                break;
-            case 'o':
-                digits = ToUnsignedBaseString(magnitude, 8, upper: false);
-                prefix = spec.Alternate ? "0o" : string.Empty;
-                break;
-            case 'x':
-                digits = ToUnsignedBaseString(magnitude, 16, upper: false);
-                prefix = spec.Alternate ? "0x" : string.Empty;
-                break;
-            case 'X':
-                digits = ToUnsignedBaseString(magnitude, 16, upper: true);
-                prefix = spec.Alternate ? "0X" : string.Empty;
-                break;
-            default:
-                throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span);
-        }
-
-        if (spec.Grouping is { } grouping)
-        {
-            if (type is not ('d' or 'n'))
-            {
-                throw new LythonRuntimeException("ValueError", $"Cannot specify '{grouping}' with '{type}'.", span);
-            }
-
-            digits = GroupDigits(digits, grouping);
-        }
-
-        var sign = FormatNumericSign(negative, spec.Sign);
-        numericPrefixLength = sign.Length + prefix.Length;
-        return sign + prefix + digits;
-    }
-
     private static bool TryFormatFloatingValue(
         double value,
         InterpolatedFormatSpecifier spec,
@@ -790,12 +708,10 @@ internal sealed partial class LythonRuntime
         {
             null when precision is null => Numbers.PyNumberOps.RenderFloat(value),
             null => RenderFloatDefaultPrecision(value, precision.Value, spec.Alternate),
-            'f' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-            'F' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+            'f' or 'F' => FormatSimpleFloatingText(value, spec, governor, span),
             'g' => FormatGeneralFloat(value, precision, spec.Alternate, upper: false),
             'G' => FormatGeneralFloat(value, precision, spec.Alternate, upper: true),
-            'e' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
-            'E' => NormalizeExponentMarker(value.ToString("E" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: true),
+            'e' or 'E' => FormatSimpleFloatingText(value, spec, governor, span),
             '%' => FormatPercentText(value, precision),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span)
         };
@@ -1148,25 +1064,8 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var align = spec.Align ?? (numeric ? '>' : '<');
-        var fill = new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' ');
-        if (numeric && spec.ZeroPad && spec.Align is null)
-        {
-            align = '=';
-            fill = new Rune('0');
-        }
-
-        if (align == '=' && !numeric)
-        {
-            throw new LythonRuntimeException("ValueError", "'=' alignment requires a numeric value.", span);
-        }
-
         var padding = width - length;
-        var left = align switch
-        {
-            '<' or '=' => 0, '>' => padding, '^' => padding / 2,
-            _ => throw new LythonRuntimeException("ValueError", $"Unknown alignment option '{align}'.", span),
-        };
+        var (align, fill, left) = GetInterpolatedPadding(spec, padding, numeric, span);
         Span<byte> fillBytes = stackalloc byte[4];
         var fillLength = fill.EncodeToUtf8(fillBytes);
         var textBytes = Encoding.UTF8.GetByteCount(text);
@@ -1217,32 +1116,6 @@ internal sealed partial class LythonRuntime
 
     private static int GetNumericPrefixLength(string text)
         => text.Length > 0 && text[0] is '-' or '+' or ' ' ? 1 : 0;
-
-    private static string ToUnsignedBaseString(BigInteger value, int radix, bool upper)
-    {
-        if (value.IsZero)
-        {
-            return "0";
-        }
-
-        const string lowerDigits = "0123456789abcdef";
-        const string upperDigits = "0123456789ABCDEF";
-        var digits = upper ? upperDigits : lowerDigits;
-        var builder = new StringBuilder();
-        while (value > BigInteger.Zero)
-        {
-            value = BigInteger.DivRem(value, radix, out var remainder);
-            builder.Append(digits[(int)remainder]);
-        }
-
-        for (var left = 0; left < builder.Length / 2; left++)
-        {
-            var right = builder.Length - left - 1;
-            (builder[left], builder[right]) = (builder[right], builder[left]);
-        }
-
-        return builder.ToString();
-    }
 
     private static string GroupDigits(string digits, char separator)
     {

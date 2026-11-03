@@ -1,0 +1,11 @@
+{
+  "configuration": "Release",
+  "targets": [
+    "actual .NET11 RC3",
+    "actual .NET10.0.8"
+  ],
+  "internalPassedPerTarget": 130,
+  "publicPassedPerTarget": 1031,
+  "scope": "native major-allocation refusal, cancellation at scratch admission, format protocols/lifetimes/alias/cleanup, numeric/complex/Decimal/parity; no claim of in-flight BCL cancellation",
+  "fullDelivery": "pending"
+}

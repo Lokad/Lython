@@ -1,0 +1,1 @@
+{"framework":".NET 11.0.0-rc.3.26522.148","target":[{"type":"System.Numerics.BigInteger","Name":"TryFormat"}],"allocated":0,"iterations":4096,"output":"123456"}

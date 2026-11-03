@@ -1,0 +1,95 @@
+{
+  "complete": true,
+  "elapsedSeconds": 98.15815927134827,
+  "sourceRoles": "SWAPPED: controls NEW, candidate OLD",
+  "timing": [
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.2641891875,
+        "candidate": 5.198679244897959,
+        "after-control": 5.10668024
+      },
+      "cpuMilliseconds": {
+        "before-control": 5.416666666666667,
+        "candidate": 5.3061224489795915,
+        "after-control": 5.2
+      },
+      "new1VersusOldPercent": 1.260126649789628,
+      "new2VersusOldPercent": -1.7696611112956728,
+      "newControlPercent": -2.9920837167860648,
+      "iqrPercent": {
+        "before-control": 3.82136801132332,
+        "candidate": 2.2337673183655458,
+        "after-control": 3.1255150606414204
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 5.337328562500001,
+        "candidate": 5.499615382978723,
+        "after-control": 5.311497489795919
+      },
+      "cpuMilliseconds": {
+        "before-control": 5.833333333333333,
+        "candidate": 5.74468085106383,
+        "after-control": 5.714285714285714
+      },
+      "new1VersusOldPercent": -2.95087581907999,
+      "new2VersusOldPercent": -3.420564531931236,
+      "newControlPercent": -0.48397006857645586,
+      "iqrPercent": {
+        "before-control": 3.723375057194945,
+        "candidate": 2.858763163875084,
+        "after-control": 2.5256905430839587
+      }
+    },
+    {
+      "case": "scripts.numeric-floating.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 0.48974996267190574,
+        "candidate": 0.526544781779661,
+        "after-control": 0.49374667128712874
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.5108055009823183,
+        "candidate": 0.5508474576271186,
+        "after-control": 0.5148514851485149
+      },
+      "new1VersusOldPercent": -6.987975264590607,
+      "new2VersusOldPercent": -6.228930876815153,
+      "newControlPercent": 0.8160712444812424,
+      "iqrPercent": {
+        "before-control": 0.5425357763751328,
+        "candidate": 0.44228737655012534,
+        "after-control": 1.772078621838982
+      }
+    },
+    {
+      "case": "scripts.numeric-floating.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 0.5413502586206896,
+        "candidate": 0.5848285558139535,
+        "after-control": 0.5388117424892704
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.625,
+        "candidate": 0.6744186046511628,
+        "after-control": 0.6223175965665236
+      },
+      "new1VersusOldPercent": -7.434366321725106,
+      "new2VersusOldPercent": -7.868427912285803,
+      "newControlPercent": -0.4689230476932038,
+      "iqrPercent": {
+        "before-control": 0.8860857660673872,
+        "candidate": 0.6854837390050578,
+        "after-control": 1.1538755093707171
+      }
+    }
+  ]
+}
