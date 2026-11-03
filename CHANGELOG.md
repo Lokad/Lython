@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare constant f-string format layouts once in compiled code, sharing the
+  existing parser and formatter. Preserve custom raw specifications, value checks,
+  dynamic formats, asynchronous protocols and ownership cleanup.
+
 - Stage native JSON/CSV UTF-8 output without intermediate Python strings, sharing
   the existing text-file codec. Preserve public chunks, codec-error inputs,
   resumable encoder aliases and asynchronous publication/cleanup.

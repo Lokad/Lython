@@ -260,6 +260,14 @@ compiled templates retain their separate owner. Private expanded specifications
 refund after use, and final strings remain funded. Structural scans and resumed
 callbacks observe the current cancellation token.
 
+Constant f-string specifications keep an immutable native layout with the compiled
+program, funded by its compilation owner. The existing formatter reuses it without
+per-field grammar parsing or descriptor allocation. Value-dependent checks remain
+at execution; custom and date formatters receive the original raw specification.
+Invalid native grammar can still reach a custom formatter. Dynamic specifications
+and other formatting APIs use the same parser at their actual operation. Layouts
+retain no execution token, callback state or separate cache owner.
+
 String width and precision in f-strings, `str.format` and `format()` count Unicode
 scalars directly in UTF-8. Standalone string padding shares its exact output
 allocation with `ljust`, `rjust` and `center`, preserving unchanged string identity.

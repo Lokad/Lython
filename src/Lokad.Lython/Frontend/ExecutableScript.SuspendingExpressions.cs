@@ -1,3 +1,4 @@
+using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Frontend;
@@ -14,7 +15,8 @@ internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleSt
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
 internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
-internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append) : ExecutableOperation;
+internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
+    LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat) : ExecutableOperation;
 internal sealed record ExecutableStartFormattedString : ExecutableOperation;
 internal sealed record ExecutableAppendFormattedText(PyString Text) : ExecutableOperation;
 internal sealed record ExecutableFinishFormattedString : ExecutableOperation;
@@ -65,7 +67,8 @@ internal sealed partial class ExecutableScript
                         EmitOperation(new ExecutableConvertFormattedValue(conversion), span, block);
                     if (field.FormatSpecifierParts is not null)
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
-                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append), span, block);
+                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append,
+                        field.FormatSpecifierParts is null ? LythonRuntime.PrepareConstantFormatSpecifier(field.FormatSpecifier, span) : null), span, block);
                 }
             }
             if (append) EmitOperation(new ExecutableFinishFormattedString(), span, block);

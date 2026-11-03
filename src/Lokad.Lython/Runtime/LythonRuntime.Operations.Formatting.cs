@@ -71,14 +71,15 @@ internal sealed partial class LythonRuntime
         char? conversion,
         string? formatSpecifier,
         ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        InterpolatedFormatSpecifier? prepared = null)
     {
         value = ConvertInterpolatedValue(value, conversion, context, span);
         if (string.IsNullOrEmpty(formatSpecifier) && value is not PyInstance)
         {
             return ToInterpolatedPyString(value, context);
         }
-        return FormatValue(value, formatSpecifier ?? "", context, span);
+        return FormatValue(value, formatSpecifier ?? "", context, span, prepared);
     }
 
     private static object ConvertInterpolatedValue(object value, char? conversion, ExecutionContext context, LythonSourceSpan span)
@@ -92,22 +93,23 @@ internal sealed partial class LythonRuntime
         };
 
     private static void AppendInterpolatedStringPart(GovernedByteBuilder output, object value, char? conversion,
-        string? specifier, ExecutionContext context, LythonSourceSpan span)
+        string? specifier, ExecutionContext context, LythonSourceSpan span, InterpolatedFormatSpecifier? prepared = null)
     {
         value = ConvertInterpolatedValue(value, conversion, context, span);
         if (string.IsNullOrEmpty(specifier) && value is not PyInstance)
             output.Append(ToInterpolatedPyString(value, context));
         else if (value is PyDate or PyTime or PyDateTime or PyInstance)
             output.Append(FormatValue(value, specifier ?? "", context, span));
-        else AppendInterpolatedStringValue(output, value, specifier ?? "", context, span);
+        else AppendInterpolatedStringValue(output, value, specifier ?? "", context, span, prepared);
     }
 
-    private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span)
+    private static PyString FormatValue(object value, string specifier, ExecutionContext context, LythonSourceSpan span,
+        InterpolatedFormatSpecifier? prepared = null)
         => value is PyDate or PyTime or PyDateTime
             ? PyDateTimeOps.FormatValue(value, PyString.FromString(specifier, context.MemoryGovernor, span), span, context)
             : value is PyInstance instance
             ? (PyString)FormatInstanceAsync(instance, specifier, context, span, false).GetAwaiter().GetResult()
-            : FormatInterpolatedStringValue(value, specifier, context, span);
+            : FormatInterpolatedStringValue(value, specifier, context, span, prepared);
 
     private static async ValueTask<object> FormatInstanceAsync(PyInstance instance, string specifier,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -166,12 +168,13 @@ internal sealed partial class LythonRuntime
         object value,
         string formatSpecifier,
         ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        InterpolatedFormatSpecifier? prepared = null)
     {
         // Standalone string formatting preserves an unchanged input's identity.
         if (value is PyString text)
         {
-            var stringSpec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
+            var stringSpec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
             ValidateStringFormatSpecifier(value, formatSpecifier, stringSpec, span);
             return PyStringOps.FormatStringValue(text, stringSpec.Width, stringSpec.Precision,
                 new Rune(stringSpec.Fill >= 0 ? stringSpec.Fill : stringSpec.ZeroPad ? '0' : ' '), stringSpec.Align ?? '<', context, span);
@@ -179,7 +182,7 @@ internal sealed partial class LythonRuntime
         var output = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            AppendInterpolatedStringValue(output, value, formatSpecifier, context, span);
+            AppendInterpolatedStringValue(output, value, formatSpecifier, context, span, prepared);
             context.CheckExecution(span);
             return output.ToPyStringAndRelease();
         }
@@ -187,14 +190,14 @@ internal sealed partial class LythonRuntime
     }
 
     private static void AppendInterpolatedStringValue(GovernedByteBuilder output, object value,
-        string formatSpecifier, ExecutionContext context, LythonSourceSpan span)
+        string formatSpecifier, ExecutionContext context, LythonSourceSpan span, InterpolatedFormatSpecifier? prepared = null)
     {
         if (value is PyComplex complex)
         {
-            AppendComplexValue(output, complex, formatSpecifier, context, span);
+            AppendComplexValue(output, complex, formatSpecifier, context, span, prepared);
             return;
         }
-        var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
+        var spec = prepared ?? ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
             AppendInterpolatedFormatPadding(output, numericText, spec, numericPrefixLength, numeric: true, span, context);
@@ -1022,6 +1025,17 @@ internal sealed partial class LythonRuntime
         return raw[..marker] + (upper ? 'E' : 'e') + raw[marker + 1] + stripped;
     }
 
+    // Native grammar does not constrain custom __format__. Invalid or oversized
+    // literal specs must still reach the original runtime call and error order.
+    internal static InterpolatedFormatSpecifier? PrepareConstantFormatSpecifier(string? text, LythonSourceSpan span)
+    {
+        if (string.IsNullOrEmpty(text)) return null;
+        try { return ParseInterpolatedFormatSpecifier(text, PyNone.Instance, span); }
+        catch (LythonRuntimeException error) when (error.Attribution is null && error.ExceptionType == "ValueError") { return null; }
+        catch (ArgumentException) { return null; }
+        catch (OverflowException) { return null; }
+    }
+
     private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span)
     {
         var index = 0;
@@ -1264,7 +1278,7 @@ internal sealed partial class LythonRuntime
         return core[..signLength] + grouped + core[decimalIndex..] + suffix;
     }
 
-    private sealed record InterpolatedFormatSpecifier(
+    internal sealed record InterpolatedFormatSpecifier(
         int Fill, // Unicode scalar; -1 means unspecified, so NUL remains a valid fill.
         char? Align,
         char? Sign,

@@ -183,9 +183,9 @@ internal sealed partial class LythonRuntime
                         var formattedDestination = (GovernedByteBuilder)_stack.Peek();
                         if (fieldValue is PyInstance instance)
                             formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
-                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span);
+                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span, field.PreparedFormat);
                     }
-                    else _stack.Push(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
+                    else _stack.Push(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = Pop(ref _stack, span);
@@ -199,10 +199,10 @@ internal sealed partial class LythonRuntime
     }
 
     private static ValueTask<PyString> FormatSuspendedFieldAsync(object value, char? conversion, string? specifier,
-        ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
+        ExecutionContext _context, LythonSourceSpan span, bool asynchronous, InterpolatedFormatSpecifier? prepared = null)
         => value is PyInstance instance
             ? FormatInstanceFieldAsync(instance, conversion, specifier, _context, span, asynchronous)
-            : new(FormatInterpolatedStringPart(value, conversion, specifier, _context, span));
+            : new(FormatInterpolatedStringPart(value, conversion, specifier, _context, span, prepared));
 
     private static async ValueTask<PyString> FormatInstanceFieldAsync(PyInstance instance, char? conversion, string? specifier,
         ExecutionContext _context, LythonSourceSpan span, bool asynchronous)
