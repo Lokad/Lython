@@ -1,0 +1,29 @@
+{
+  "sourceRevision": "ca4822f4b9493abaff64944abb832b256c6ebb50 plus B158 native UTF8 producer handoff prototype",
+  "baseCommit": "ca4822f4b9493abaff64944abb832b256c6ebb50",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "11e95e80b6b16b8877ec04d45c5b93df133fb2b10a3b0dcf08520d5994754126",
+    "candidate": "5b4c4e6e2411c94eb8b42cb612996a419490b336830b6c7169ebafdd713868a5",
+    "before-control": "11e95e80b6b16b8877ec04d45c5b93df133fb2b10a3b0dcf08520d5994754126"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "371d0075aa5f4c1a04cc8ec8832a320c68110be35fcc4ee29ca5674d573847aa",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvWriter.cs": "dc386217088df91e802d184911ce48b59d3c2a7067067d06b0522a36e245056e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Encoder.cs": "ffca03ad4aaadcf1f26b3c519548cc7e315a801636a54ca3356f73b0282c5b67",
+    "src/Lokad.Lython/Runtime/LythonRuntime.JsonModule.cs": "7d404e671345159fbf506de3d414cf4b0c4d04d0a621f117d6f52320407ad847",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Write.cs": "9acdfaeb215ffd0346387a830983b4ee0a586a0e885be2e8b25481e61cf408cb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs": "38e6d720d5d953b0fae7d4cf58a3d5e9a9574e75ffe150e422b088ca12a9743a"
+  },
+  "normalizedAuxiliaryBits": [
+    "Lokad.Lython.Benchmarks.dll",
+    "Lokad.Lython.Benchmarks.pdb",
+    "Lokad.Lython.Benchmarks.exe",
+    "Lokad.Lython.Utf8Regex.dll",
+    "Lokad.Lython.Utf8Regex.pdb"
+  ],
+  "onlyImageDifferences": [
+    "Lokad.Lython.dll",
+    "Lokad.Lython.pdb"
+  ]
+}

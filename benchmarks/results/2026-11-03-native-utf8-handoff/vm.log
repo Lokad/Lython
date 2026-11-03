@@ -1,0 +1,8 @@
+Running as unit: lython-b158-native-utf8-20261103.service; invocation ID: e055592e92334b9cba72a69eead052e4
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 3min 36.279s
+CPU time consumed: 3min 55.105s
+Memory peak: 1.1M
+Memory swap peak: 0B
+bash: line 6: $'\r': command not found

@@ -1,0 +1,5 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "source": "import json\nsaved = None\nclass Encoder(json.JSONEncoder):\n    def iterencode(self, value):\n        global saved\n        saved = super().iterencode(value)\n        return saved\nwith open('output','w') as target:\n    pass\ntry:\n    json.dump([1,2],target,cls=Encoder)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('closed writer accepted output')\ntail=list(saved)\nassert tail and ''.join(tail).endswith(']')\nassert next(saved,'finished') == 'finished'\nprint('ok')\n",
+  "stdout": "ok\n"
+}

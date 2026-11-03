@@ -2025,3 +2025,9 @@ custom JSON lookup and captured CSV callables remain. A bounded larger-batch
 confirmation resolves initial config control instability; all initial outcomes
 are preserved. RAM config improves24%warm/17%fresh and allocation44%; whole CSV
 rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured.
+
+- [Native producer UTF-8 handoff, B158](results/2026-11-03-native-utf8-handoff/README.md):
+  retained b3f1e9c3; one encoder/codec, unpublished producer strings removed.
+  Config warm/fresh −19.6/−16.3%, allocation −37.8%; CSV allocation −10.2%, elapsed
+  flat. Preserve control drift, small allocation uncertainty and the successful
+  VM service followed by a trailing-CR controller error. Full delivery pending.

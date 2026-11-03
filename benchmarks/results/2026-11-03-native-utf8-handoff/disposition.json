@@ -1,0 +1,17 @@
+{
+  "status": "retained, committed, focused qualified; full delivery active",
+  "runtimeCommit": "b3f1e9c3e0f8c9bade38d111d9cda33110b57883",
+  "deliveryRun": 41625654805,
+  "publicApiChange": false,
+  "uncommittedPrototypeRemains": false,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedInternalPerTarget": 315,
+  "affectedPublicPerTarget": 1303,
+  "finalFocusedPublicPerTarget": 68,
+  "frontendCorrectionFocusedPerTarget": 214,
+  "workersJoined": true,
+  "leaseFree": true
+}

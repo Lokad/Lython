@@ -18,7 +18,8 @@ synchronous execution in an already-running host**, with fixture reset excluded
 (protocol2). Ratio is Lython elapsed divided by CPython elapsed; above one means
 slower. IQR is interquartile range divided by median. The filename scripts read
 names, filter and write/check256 selected names; they do not traverse768 files.
-Later JSON-iterator and native-write changes are excluded; results are listed below.
+Later JSON-iterator, native-write and UTF-8 handoff changes are excluded;
+current config points are listed below.
 
 The gap remains substantial. Config editing is particularly slow even warm;
 compilation alone is about58µs and does not explain its millisecond execution.
@@ -70,17 +71,19 @@ on shared tmpfs instead of the VM filesystem. Measured2026-11-03; exact runtime 
 
 | RAM-backed workload | Runtime | Lython | CPython | Ratio |
 | --- | --- | ---: | ---: | ---: |
-| Config compile-run |93bc77bb|0.349 ms|0.253 ms|1.38×|
-| Config warm |93bc77bb|0.251 ms|0.185 ms|1.36×|
+| Config compile-run |b3f1e9c3|0.290 ms|0.251 ms|1.16×|
+| Config warm |b3f1e9c3|0.207 ms|0.181 ms|1.14×|
 | Copy/manifest compile-run |0f05d7c0|0.400 ms|0.238 ms|1.68×|
 | Copy/manifest warm |0f05d7c0|0.227 ms|0.150 ms|1.51×|
 
 The earlier bd3 runtime measures2.05×warm on RAM versus8.18×in the primary table:
-storage condition materially affects config's ratio. Current native-write config source-pair
-warm/fresh times improve24.1%/17.0%, controls−0.8%/+0.3%. This supports a gain under
-this storage condition; ordinary-filesystem elapsed remains unproven. Copy fresh
-is1.4%adverse with2.1%IQR. These results complement the primary table and do not
-replace its included-I/O boundary. [Config conditions/controls](../benchmarks/results/2026-11-03-native-stream-transport/README.md),
+storage condition materially affects config's ratio. The current UTF-8 handoff
+improves config warm/fresh19.6%/16.3%, controls+0.1%/+0.6%, against its preceding
+runtime. This supports a gain under this storage condition; ordinary-filesystem
+elapsed remains unproven. Copy fresh is1.4%adverse with2.1%IQR. These results
+complement the primary table and do not replace its included-I/O boundary.
+[Current config conditions/controls](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md),
+[earlier native writes](../benchmarks/results/2026-11-03-native-stream-transport/README.md),
 [earlier copy/storage observations](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
 
 ## Machine and included work
@@ -114,6 +117,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Native producer UTF-8 handoff |Config warm/fresh−19.6/−16.3%; allocation−37.8%, CSV rewrite allocation−10.2%|[CSV elapsed flat; text/report control drift retained](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md)|
 | Native helper returns |CSV/JSON allocation−19.9%/−19.3%|[Elapsed diagnostic](../benchmarks/results/2026-11-02-native-function-returns/README.md)|
 | Bulk CSV construction |Allocation−13.7–15.1%, CPU−7.2–11.1%|[Controlled comparison](../benchmarks/results/2026-11-02-native-csv-records/README.md)|
 | Direct UTF-8 formatting |Allocation−8.67%; confirmation elapsed/CPU−5–8%|[Original adverse timing preserved](../benchmarks/results/2026-11-02-formatting-confirmation/README.md)|
