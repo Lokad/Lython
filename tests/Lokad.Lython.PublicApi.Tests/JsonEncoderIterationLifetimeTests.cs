@@ -7,6 +7,49 @@ public sealed class JsonEncoderIterationLifetimeTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task NativeWriterFailureLeavesCapturedEncoderResumable(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile("""
+            import json
+            saved = None
+            class Encoder(json.JSONEncoder):
+                def iterencode(self, value):
+                    global saved
+                    saved = super().iterencode(value)
+                    return saved
+            with open('/output', 'w') as target:
+                pass
+            try:
+                json.dump([1, 2], target, cls=Encoder)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('closed writer accepted output')
+            tail = list(saved)
+            assert tail and ''.join(tail).endswith(']')
+            assert next(saved, 'finished') == 'finished'
+            return 'ok'
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+            var baseline = budget.ReservedBytes;
+            var host = new MockLythonHost();
+            var delayed = new DelayedLythonHost();
+            using (var result = asynchronous ? await script.RunAsync(delayed) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("ok", result.ReturnValue);
+                if (asynchronous) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ReentrantDefaultCannotAdvanceTheActiveIterator(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
@@ -28,7 +71,7 @@ public sealed class JsonEncoderIterationLifetimeTests
             return ''.join(parts)
             """, budget))
         {
-            Assert.True(script.IsValid);
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
             var baseline = budget.ReservedBytes;
             var host = new MockLythonHost();
             var delayed = new DelayedLythonHost();
@@ -62,7 +105,7 @@ public sealed class JsonEncoderIterationLifetimeTests
             return 'ok'
             """, budget))
         {
-            Assert.True(script.IsValid);
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
             var baseline = budget.ReservedBytes;
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
             {

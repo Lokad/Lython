@@ -5,6 +5,21 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ClassScopeDirectiveTests
 {
     [Fact]
+    public async Task NestedMethodCanReplaceKnownGlobalValue()
+    {
+        await AssertOutput("""
+            value=None
+            class Outer:
+             class Inner:
+              def update(self):
+               global value
+               value=[3]
+            Outer.Inner().update()
+            print(list(value))
+            """, "[3]\n");
+    }
+
+    [Fact]
     public async Task GlobalReadsWritesAndDeletes()
     {
         await AssertOutput("""

@@ -351,6 +351,9 @@ internal static partial class StaticAbstractInterpreter
                         bindings.InvalidateMutableSequenceFacts();
                         return true;
                     }
+                    // Methods can later rebind outer names through global/nonlocal.
+                    // The class-local clone must not hide those effects from its parent.
+                    InvalidateDirectiveBindings(classDefinition.Body, bindings);
                     AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone());
                     return true;
 

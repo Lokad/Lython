@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Do not reject valid code when a class method rebinds a known outer name through
+  `global` or `nonlocal`; class-local analysis no longer hides that invalidation.
+
 - Share guarded native file writes with JSON and CSV producers, eliminating repeated
   method/argument binding. Preserve per-chunk guest JSON lookup, captured guest CSV
   callables, cancellation, memory admission and asynchronous publication cleanup.
