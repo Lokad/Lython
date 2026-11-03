@@ -15,7 +15,7 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
     public DateTimeOffset UtcNow => LocalNow;
     public bool CompletesSynchronously => true;
 
-    // Matched per-invocation reset/staging is included in both worker clocks.
+    // Command-v2 resets every invocation but excludes staging from both clocks.
     public void Reset()
     {
         var owner = Path.GetDirectoryName(_root)!;

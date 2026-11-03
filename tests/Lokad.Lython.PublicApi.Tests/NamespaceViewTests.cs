@@ -76,7 +76,55 @@ public sealed class NamespaceViewTests
             """);
         using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("True\n7\n3\nchanged\nFalse\nmappingproxy False True\n9 True\nreadonly\nreplace unsupported\n", result.StandardOutput);
+        Assert.Equal("True\n7\n3\nchanged\nFalse\nmappingproxy False False\n9 True\nreadonly\nreplace unsupported\n", result.StandardOutput);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FreshClassProxiesShareLiveStorageAndMutationVersion(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            class C:value=1
+            print(object.__dict__ is object.__dict__,type.__dict__ is type.__dict__)
+            left=C.__dict__
+            right=vars(C)
+            print(left is right,left==right)
+            first=iter(left)
+            second=iter(right)
+            next(first)
+            next(second)
+            C.added=2
+            for iterator in (first,second):
+                try:next(iterator)
+                except RuntimeError:print('added')
+            print(left['added'],right['added'])
+            stable=iter(left)
+            next(stable)
+            C.value=3
+            print(left['value'],right['value'],len(list(stable))==len(left)-1)
+            first=iter(left)
+            next(first)
+            del C.added
+            try:next(first)
+            except RuntimeError:print('deleted')
+            print('added' in left,'added' in right)
+            return [left,right]
+            """);
+        var budget = new LythonMemoryBudget(262144);
+        using (var result = asynchronous
+            ? await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget })
+            : script.Run(new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget }))
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("False False\nFalse True\nadded\nadded\n2 2\n3 3 True\ndeleted\nFalse False\n", result.StandardOutput);
+            var values = Assert.IsType<List<object?>>(result.ReturnValue);
+            Assert.Equal(2, values.Count);
+            foreach (var value in values)
+                Assert.Equal(new System.Numerics.BigInteger(3), Assert.IsType<Dictionary<object, object?>>(value)["value"]);
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Theory]

@@ -1,0 +1,58 @@
+[
+  {
+    "file": "setup-large-first.json",
+    "operation": "builtin-table",
+    "medianUs": 2.7136429443359376,
+    "iqrPercent": 66.52392067480568,
+    "allocatedBytesPerInvocation": 13144.24609375
+  },
+  {
+    "file": "setup-large-first.json",
+    "operation": "empty-async-run-cleanup",
+    "medianUs": 17.301580078125,
+    "iqrPercent": 30.5591119692035,
+    "allocatedBytesPerInvocation": 16566.95703125
+  },
+  {
+    "file": "setup-large-first.json",
+    "operation": "empty-compile-cleanup",
+    "medianUs": 1.8491290283203126,
+    "iqrPercent": 26.223392228644382,
+    "allocatedBytesPerInvocation": 8296.140625
+  },
+  {
+    "file": "setup-large-first.json",
+    "operation": "empty-sync-run-cleanup",
+    "medianUs": 21.24125830078125,
+    "iqrPercent": 15.217885933176962,
+    "allocatedBytesPerInvocation": 16280.28125
+  },
+  {
+    "file": "setup-large-confirm.json",
+    "operation": "builtin-table",
+    "medianUs": 3.46835693359375,
+    "iqrPercent": 50.7690043001776,
+    "allocatedBytesPerInvocation": 13144.24609375
+  },
+  {
+    "file": "setup-large-confirm.json",
+    "operation": "empty-async-run-cleanup",
+    "medianUs": 18.88901171875,
+    "iqrPercent": 48.10546010236191,
+    "allocatedBytesPerInvocation": 16575.140625
+  },
+  {
+    "file": "setup-large-confirm.json",
+    "operation": "empty-compile-cleanup",
+    "medianUs": 1.8530841064453125,
+    "iqrPercent": 52.534187852611886,
+    "allocatedBytesPerInvocation": 8296.140625
+  },
+  {
+    "file": "setup-large-confirm.json",
+    "operation": "empty-sync-run-cleanup",
+    "medianUs": 20.382771484375,
+    "iqrPercent": 21.888891545297287,
+    "allocatedBytesPerInvocation": 16280.28125
+  }
+]

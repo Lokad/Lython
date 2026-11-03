@@ -1,0 +1,50 @@
+[
+  {
+    "file": "setup-first.json",
+    "operation": "builtin-table",
+    "medianUs": 3.115947265625,
+    "iqrPercent": 29.773656812077494
+  },
+  {
+    "file": "setup-first.json",
+    "operation": "empty-async-run-cleanup",
+    "medianUs": 14.20966796875,
+    "iqrPercent": 13.466073797136902
+  },
+  {
+    "file": "setup-first.json",
+    "operation": "empty-compile-cleanup",
+    "medianUs": 3.0932734375,
+    "iqrPercent": 33.92593303513924
+  },
+  {
+    "file": "setup-first.json",
+    "operation": "empty-sync-run-cleanup",
+    "medianUs": 21.75935546875,
+    "iqrPercent": 9.268938737737644
+  },
+  {
+    "file": "setup-confirm.json",
+    "operation": "builtin-table",
+    "medianUs": 2.786560546875,
+    "iqrPercent": 31.630825691674385
+  },
+  {
+    "file": "setup-confirm.json",
+    "operation": "empty-async-run-cleanup",
+    "medianUs": 15.4615390625,
+    "iqrPercent": 16.196451679242394
+  },
+  {
+    "file": "setup-confirm.json",
+    "operation": "empty-compile-cleanup",
+    "medianUs": 2.7065546875,
+    "iqrPercent": 5.614119657428885
+  },
+  {
+    "file": "setup-confirm.json",
+    "operation": "empty-sync-run-cleanup",
+    "medianUs": 21.66775,
+    "iqrPercent": 14.24096313213184
+  }
+]

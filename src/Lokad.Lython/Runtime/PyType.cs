@@ -32,10 +32,15 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal static readonly PyBuiltinRuntimeType NotImplementedType = CreateOpaqueRuntimeType("NotImplementedType");
 
     private readonly Dictionary<string, object> _members;
-    private PyMappingProxy? _namespace;
+    private PyDict? _namespace;
     internal static readonly PyBuiltinRuntimeType MappingProxyType = CreateOpaqueRuntimeType("mappingproxy");
     internal PyMappingProxy GetNamespace(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => _namespace ??= new PyMappingProxy(new PyDict(new ObjectNamespaceStorage(_members, null, context.MemoryGovernor, span), context.MemoryGovernor, span), context.MemoryGovernor, span);
+    {
+        // Views share the live dictionary/version, not their Python identity.
+        // Every returned proxy is admitted through its actual caller's owner.
+        _namespace ??= new PyDict(new ObjectNamespaceStorage(_members, null, context.MemoryGovernor, span), context.MemoryGovernor, span);
+        return new PyMappingProxy(_namespace, context.MemoryGovernor, span);
+    }
 
     public PyType(string name, IReadOnlyList<PyType> bases, Dictionary<string, object> members, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
     {
@@ -172,14 +177,14 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
         var added = !_members.ContainsKey(name);
         _members[name] = value;
-        if (added) _namespace?.Dictionary.NotifyNamespaceMutation();
+        if (added) _namespace?.NotifyNamespaceMutation();
         return true;
     }
 
     public bool RemoveOwnMember(string name)
     {
         if (!_members.Remove(name)) return false;
-        _namespace?.Dictionary.NotifyNamespaceMutation();
+        _namespace?.NotifyNamespaceMutation();
         return true;
     }
 

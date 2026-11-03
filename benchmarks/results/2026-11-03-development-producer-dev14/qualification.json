@@ -1,0 +1,35 @@
+{
+  "developmentOnly": true,
+  "sourceBase": "713aab43 plus B148 namespace correction",
+  "sourceScope": "no adapter/core regex changes; private package override only",
+  "perTarget": {
+    "nativeFocused": 84,
+    "publicFocused": 421,
+    "lifetimeRecheck": 6,
+    "inFlightCancellationStages": [
+      "compile",
+      "match",
+      "cursor"
+    ]
+  },
+  "failedSetup": "initial internal invocation used missing filter key internal instead of native, rejected before tests. Original command errors preserved; native filter corrected. Public checks passed on first invocation.",
+  "runtimeHashes": {
+    "net11.0": {
+      "Lokad.Lython.dll": "d90536ab4679174c10f3152b2f66a5b90b3805d63f074a5f8bcc562bc007547e",
+      "Lokad.Lython.Utf8Regex.dll": "55fe51de3e9aa4da326bfbf16ba838c65a6ef2d643f54b5925536fcee826530d",
+      "Lokad.Utf8Regex.dll": "20e13fd734407a45147aa33177adaf01b49f8d29497a560d028181739ff0b564",
+      "Lokad.Utf8Regex.PythonRe.dll": "9eec852190634ce37a13be05fc606b74f80553ce820e378e89b9c17f9128ee94"
+    },
+    "net10.0": {
+      "Lokad.Lython.dll": "c010be783791e584d82d4a3d4303990f426be05596d7b58797d1c956de02cf42",
+      "Lokad.Lython.Utf8Regex.dll": "d62086ce77e4280d7a6d7d031af71160b851353b84ed6412a7abf1c8a05ba2ae",
+      "Lokad.Utf8Regex.dll": "91b37b944b7c98fb278307e974d0e19aa74438a89f457fad7872d3a2efcb5011",
+      "Lokad.Utf8Regex.PythonRe.dll": "645aaaa264af108b12c6b210be5659149ca34c640854c3abbbed0ba356f1d955"
+    }
+  },
+  "finalReleasedAdapterQualification": false,
+  "backendPerformanceQualified": false,
+  "managedSafetyQualified": false,
+  "ordinaryPin": "0.4.0 unchanged",
+  "coreBackendDependencies": 0
+}

@@ -110,9 +110,11 @@ internal sealed class PyMappingProxy : IPySubscriptableValue, IPyIterableValue, 
     internal PyMappingProxy(PyDict dictionary, MemoryGovernor governor, LythonSourceSpan span)
     {
         governor.Reserve(64, span); governor.Commit(64); Dictionary = dictionary;
+        OwnerMemoryGovernor = governor;
+        AllocationSpan = span;
     }
-    public MemoryGovernor? OwnerMemoryGovernor => Dictionary.OwnerMemoryGovernor;
-    public LythonSourceSpan? AllocationSpan => Dictionary.AllocationSpan;
+    public MemoryGovernor? OwnerMemoryGovernor { get; }
+    public LythonSourceSpan? AllocationSpan { get; }
     public int Length => Dictionary.Count;
     public int Count => Dictionary.Count;
     public int GetPyHashCode() => throw new PyUnhashableException();

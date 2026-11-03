@@ -1,0 +1,15 @@
+{
+  "developmentOnly": true,
+  "version": "0.5.0-dev.14",
+  "ordinaryPin": "0.4.0 unchanged",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.14.nupkg": "5b05513477a33071fd810dcd6325235c5acada2b4b7abf245260d37f8cb69fe5",
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.14.nupkg": "e8189bfd86a3b71855f6c514631992c39224b3e077f6c44568f5688f09e31d08"
+  },
+  "producer": {
+    "type": "git",
+    "url": "https://github.com/Lokad/Utf8Regex.git",
+    "branch": "refs/heads/master",
+    "commit": "895f98a06c4b6b28abb79ab3231f0b277b848fe8"
+  }
+}

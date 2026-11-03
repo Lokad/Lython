@@ -673,8 +673,11 @@ Append result copies are admitted while old aliases remain funded. Native buffer
 and scratch return allowance when their actual use ends; arbitrary callback-retained
 values can remain conservatively charged until execution/result cleanup.
 
-Instance and class namespace views share their actual attribute storage; instance
-attribute deletion keeps reusable table capacity funded. Exposed key labels are
+Instance and class namespace views share their actual attribute storage. Each class
+`__dict__`/`vars` access admits a fresh read-only proxy over the shared backing;
+instance `__dict__` retains its identity. Repeated proxies remain conservatively
+charged until their execution/result owner ends. Instance attribute deletion keeps
+reusable table capacity funded. Exposed key labels are
 cached conservatively until the owner ends. Read-only class/native-module views
 and their public projections use the same admitted storage and result owners as
 other dictionaries. Function custom attributes use a canonical governed dictionary,

@@ -1976,3 +1976,11 @@ roughly14–15% range-loop gain, but representative scripts remain flat/adverse 
 allocation unchanged. The compiler/runtime plan layer is removed; independent
 capture, suspension, cancellation and refusal regressions remain. All variants,
 controls and failed initial conditions are preserved; operand work is not banned.
+
+The [invocation setup gate](results/2026-11-03-invocation-setup/README.md) records
+stable fixed allocation and noisy elapsed observations, including a larger-batch
+correction. It does not establish builtin sharing as the next dominant whole-script
+optimization. The live class-proxy identity correction is retained independently.
+The [immutable dev.14 producer assessment](results/2026-11-03-development-producer-dev14/README.md)
+records actual semantic, funding and in-flight cancellation checks separately from
+unchanged public API, ordinary released pin and unqualified backend performance.

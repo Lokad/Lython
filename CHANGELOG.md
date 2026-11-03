@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Return a fresh read-only proxy for each class `__dict__`/`vars` access, as in
+  Python, while sharing live namespace storage and mutation tracking. Admit each
+  proxy through its execution owner; instance dictionary identity is unchanged.
+
 - Match filename wildcards directly over UTF-8, removing whole-string rune arrays,
   retained character caches and per-character CLR conversions. Preserve Unicode
   classes, cancellation and result ownership.

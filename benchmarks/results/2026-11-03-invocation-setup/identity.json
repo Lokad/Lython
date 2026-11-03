@@ -1,0 +1,12 @@
+{
+  "baseCommit": "713aab432b45bba7822ac6aca519777aea7e2e1f",
+  "prototype": false,
+  "sourceSha256": {
+    "src\\Lokad.Lython\\Runtime\\PyType.cs": "cfc1669997b0dd745f1e068ae61aec9e94d2124cc461ee2ad5fd07a6dbcb54a5",
+    "src\\Lokad.Lython\\Runtime\\PyNamespaceView.cs": "13ea81fa55b3e7bf28b8c15cb749692cc75dad37d66832b96b20efe06bb528de"
+  },
+  "coreSha256": "a5b8eecada0e951826d82edd0a597e2b1ea17f38130adc414dbb7d95d8209dcc",
+  "pythonGoldenVersion": "Python 3.13.2",
+  "exactCPUgain": false,
+  "publication": "postponed"
+}

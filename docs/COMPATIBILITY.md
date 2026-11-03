@@ -98,8 +98,9 @@ ordinary comprehension scoping and skip the class namespace.
 
 `vars(obj)` follows the object's `__dict__`, including supported descriptors.
 Instance and script-module dictionaries are live. Class namespaces expose a live,
-read-only `mappingproxy`; native builtin-module namespaces expose cached read-only
-definitions. Function and wrapper dictionaries hold live custom attributes.
+read-only `mappingproxy`, with a fresh proxy on each access; native builtin-module
+namespaces expose cached read-only definitions. Function and wrapper dictionaries
+hold live custom attributes.
 Replacing a function dictionary preserves old aliases. Replacing an instance's
 whole `__dict__` is explicitly unsupported; mutate its entries instead.
 
