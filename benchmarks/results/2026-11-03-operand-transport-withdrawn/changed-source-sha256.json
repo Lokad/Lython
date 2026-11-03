@@ -1,0 +1,10 @@
+{
+  "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "3414af2957f8ff9851a49fbe757439147b396fa1c8f9c9857558850e43ae8257",
+  "src/Lokad.Lython/Frontend/ExecutableScript.Operands.cs": "4290d9226b9888fe479cbef43e4a26323c74235a6ac665690f67b9950eb9aea3",
+  "src/Lokad.Lython/Frontend/ExecutableScript.cs": "90d86820d2e485b10e14a34c67b268ba7667efdfc8a488a4894e14a10d3b22e6",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "5071c775f6f5c4863646ede2797270d7c5476dfc52ecd072962e0689c80c68b4",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "a81e46e02935b0366dd4737989dcd9d0b16a185b1ddaac9a55f170faa91d9be3",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operands.cs": "3aeb3a2fb125e840b44d91931317857f2583b46dd435e781398f7c677237ae5c",
+  "tests/Lokad.Lython.PublicApi.Tests/OperandTransportTests.cs": "973444b2c9cb1ba85daf98526cad0e79c264f33e0cd11bfbad1a2c85bca333ba",
+  "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "a8a4ff764168769dd557343572d0f830244c18d841f80fcb65eda2ffa2f2b531"
+}

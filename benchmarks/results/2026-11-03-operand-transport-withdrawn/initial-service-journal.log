@@ -1,0 +1,19 @@
+Started lython-b147-operands-20261103.service - /bin/sh /home/lokad/lython-bench-checks/operand-transport-b147-20261103/collect-all.sh.
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/operand-transport-b147-20261103/collect.py", line 13, in <module>
+    cases = {c['id']: c for c in json.loads(catalog.read_text())['cases']}
+                                            ~~~~~~~~~~~~~~~~~^^
+  File "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/lokad/lython-bench-checks/operand-transport-b147-20261103/measurement-catalog.json'
+lython-b147-operands-20261103.service: Main process exited, code=exited, status=1/FAILURE
+lython-b147-operands-20261103.service: Failed with result 'exit-code'.
+inactive
+lease-free

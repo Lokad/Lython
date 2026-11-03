@@ -1969,3 +1969,10 @@ collections per completed job versus one for unbound catches. These cases
 complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
 each window finishes its last complete job.
 The report also records failed memory recovery after reference withdrawal.
+
+The [compiled operator-operand attempt](results/2026-11-03-operand-transport-withdrawn/README.md)
+was withdrawn after bounded source-backed refinement. Steadier controls confirm a
+roughly14–15% range-loop gain, but representative scripts remain flat/adverse and
+allocation unchanged. The compiler/runtime plan layer is removed; independent
+capture, suspension, cancellation and refusal regressions remain. All variants,
+controls and failed initial conditions are preserved; operand work is not banned.

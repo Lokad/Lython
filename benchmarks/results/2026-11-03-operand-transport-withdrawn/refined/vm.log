@@ -1,0 +1,7 @@
+Running as unit: lython-b147-operands-refined-20261103.service; invocation ID: c68b33f393764904acb72f3b388215f3
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2min 58.682s
+CPU time consumed: 2min 54.186s
+Memory peak: 256.0K
+Memory swap peak: 0B
