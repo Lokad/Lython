@@ -1,0 +1,17 @@
+{
+  "baselineRevision": "b7a0f40a402ef6d067e2b41e63befe63077dc386",
+  "baselineCoreSHA256": "6d4b0c32961c01a1fe1f975585ceb01b3791ca24f1cd24b5750f60dac01161ed",
+  "candidateCoreSHA256": "bf2ddeb1d6adb8b4dccda00e0980225502b3a5a92e8aec019ab753ac3a6e69ed",
+  "sources": {
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "3c3a25851f1aab499bc333c1a5debaae1beb965ae8e55621b1ec5179536381ef",
+    "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs": "bd096c930de8b3b73686d32c0fbc9c0820afc75806fde34d3d267470d5c475f7",
+    "tests/Lokad.Lython.Tests/TerminalStringStorageTests.cs": "f2c27937252fa4fe691cd2bd624c76e639ba761adf7e12a30341b47b10d82f0a",
+    "tests/Lokad.Lython.Tests/RuntimeStorageSubsystemTests.cs": "4aabf59a524da9aa65b9411e3e4c5d7b6e10aefb3c7281ed1340ee09374f7710",
+    "tests/Lokad.Lython.PublicApi.Tests/StringLowerCallTests.cs": "04b4b8db6c7369f730b257e251fedbc8cd2dbf450e426e46bf958afa1dbc27ae"
+  },
+  "focusedPerActualFramework": {
+    "public": 104,
+    "internal": 143
+  },
+  "publication": "postponed"
+}

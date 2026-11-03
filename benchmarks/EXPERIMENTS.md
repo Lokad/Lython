@@ -2124,3 +2124,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   only. Fresh CSV/JSON1.57/1.39×, text/report2.71/2.31×CPython. Fresh text control
   +2.7%, report3.8%IQR remain visible. All30 workers/goldens/gates/joins pass in
   166.214s owned service. No source-pair gain or subtraction of phase medians.
+
+- [Terminal UTF-8 ownership, B174](results/2026-11-03-terminal-utf8-storage/README.md):
+  transfer partial-capacity arrays into immutable strings, retaining full capacity.
+  Report allocation −5.68%, elapsed −4.1–6.6% with controls +1.2/−1.7%. Managed
+  object size remains 72 B on the measured runtime. One same-bit role-swapped
+  CSV/JSON confirmation establishes roughly 1–4% CSV elapsed debt; JSON uncertain.
+  Retain with explicit peak/timing tradeoffs; no third unchanged retime. All adverse
+  controls remain. Next gate uses current CPU evidence for coherent activation/
+  transport work, without replaying slower call-control/arena designs.
