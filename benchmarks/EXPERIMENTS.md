@@ -2011,3 +2011,10 @@ The [B154 iterator-owned JSON working storage](results/2026-11-03-json-iterator-
 removes per-chunk builder construction and fixes reentrant item loss. Allocation
 confirmation supports config/copy reductions; elapsed remains unproven. Retained
 largest-buffer capacity is explicit; initial drift and failed tests remain.
+
+The [B155 file trace](results/2026-11-03-config-file-boundary/README.md) and
+[B156 RAM-backed comparison](results/2026-11-03-ram-file-checkpoint/README.md)
+separate observed truncate/storage sensitivity from interpreter attribution.
+The original filesystem ratios remain; RAM config improves13%warm/10%fresh with
+controls. Both conditions, copy's adverse fresh point and the initial diagnostic
+controller failure are preserved.

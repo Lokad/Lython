@@ -1,0 +1,349 @@
+{
+  "baseline": {
+    "writeOpens": [
+      "3050923 1793696595.542403 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050924 1793696595.544096 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.549681 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.551090 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.554937 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000023>",
+      "3050924 1793696595.556264 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000015>",
+      "3050923 1793696595.560202 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000023>",
+      "3050924 1793696595.561620 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.565917 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.567318 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.574302 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000033>",
+      "3050924 1793696595.575824 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000018>",
+      "3050923 1793696595.580124 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.581562 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000016>",
+      "3050923 1793696595.585533 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.586981 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.590725 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.592133 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050923 1793696595.595911 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050924 1793696595.601508 openat(AT_FDCWD, \"/tmp/lython-comparison-files-f3kgsg8s/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000019>"
+    ],
+    "truncates": [
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.022,
+        "line": "3050923 1793696595.542514 ftruncate(67, 0) = 0 <0.000022>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.522,
+        "line": "3050924 1793696595.544237 ftruncate(67, 0) = 0 <0.000522>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.019,
+        "line": "3050923 1793696595.549787 ftruncate(67, 0) = 0 <0.000019>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.301,
+        "line": "3050924 1793696595.551231 ftruncate(67, 0) = 0 <0.000301>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.019,
+        "line": "3050923 1793696595.555043 ftruncate(67, 0) = 0 <0.000019>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.516,
+        "line": "3050924 1793696595.556405 ftruncate(67, 0) = 0 <0.000516>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.026,
+        "line": "3050923 1793696595.560313 ftruncate(67, 0) = 0 <0.000026>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.5429999999999999,
+        "line": "3050924 1793696595.561761 ftruncate(67, 0) = 0 <0.000543>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.02,
+        "line": "3050923 1793696595.566032 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 2.379,
+        "line": "3050924 1793696595.567460 ftruncate(67, 0) = 0 <0.002379>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.022,
+        "line": "3050923 1793696595.574427 ftruncate(67, 0) = 0 <0.000022>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.741,
+        "line": "3050924 1793696595.575973 ftruncate(67, 0) = 0 <0.000741>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.02,
+        "line": "3050923 1793696595.580243 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.532,
+        "line": "3050924 1793696595.581699 ftruncate(67, 0) = 0 <0.000532>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.02,
+        "line": "3050923 1793696595.585649 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.365,
+        "line": "3050924 1793696595.587118 ftruncate(67, 0) = 0 <0.000365>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050923 1793696595.590849 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.253,
+        "line": "3050924 1793696595.592272 ftruncate(67, 0) = 0 <0.000253>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050923",
+        "tracedMilliseconds": 0.02,
+        "line": "3050923 1793696595.596027 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050924",
+        "tracedMilliseconds": 0.038,
+        "line": "3050924 1793696595.601659 ftruncate(67, 0) = 0 <0.000038>"
+      }
+    ],
+    "reset": {
+      "count": 10,
+      "medianTracedMilliseconds": 0.02,
+      "maxTracedMilliseconds": 0.026
+    },
+    "guest": {
+      "count": 10,
+      "medianTracedMilliseconds": 0.519,
+      "maxTracedMilliseconds": 2.379
+    }
+  },
+  "candidate": {
+    "writeOpens": [
+      "3050944 1793696597.320441 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050946 1793696597.322230 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000018>",
+      "3050944 1793696597.325985 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050946 1793696597.327563 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.331941 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050946 1793696597.333626 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.342904 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050946 1793696597.344549 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000018>",
+      "3050944 1793696597.347587 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050946 1793696597.349189 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000016>",
+      "3050944 1793696597.354508 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050946 1793696597.356127 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.359910 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050946 1793696597.361547 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.365969 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050946 1793696597.367622 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.370774 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000025>",
+      "3050946 1793696597.372405 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>",
+      "3050944 1793696597.377753 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000024>",
+      "3050946 1793696597.379430 openat(AT_FDCWD, \"/tmp/lython-comparison-files-z_fg7f_5/job/config.json\", O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0666) = 67 <0.000017>"
+    ],
+    "truncates": [
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.320553 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.038,
+        "line": "3050946 1793696597.322373 ftruncate(67, 0) = 0 <0.000038>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.02,
+        "line": "3050944 1793696597.326097 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 1.489,
+        "line": "3050946 1793696597.327694 ftruncate(67, 0) = 0 <0.001489>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.332059 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 4.738,
+        "line": "3050946 1793696597.333767 ftruncate(67, 0) = 0 <0.004738>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.343024 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.107,
+        "line": "3050946 1793696597.344688 ftruncate(67, 0) = 0 <0.000107>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.02,
+        "line": "3050944 1793696597.347701 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 2.347,
+        "line": "3050946 1793696597.349333 ftruncate(67, 0) = 0 <0.002347>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.02,
+        "line": "3050944 1793696597.354626 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.374,
+        "line": "3050946 1793696597.356264 ftruncate(67, 0) = 0 <0.000374>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.02,
+        "line": "3050944 1793696597.360024 ftruncate(67, 0) = 0 <0.000020>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.372,
+        "line": "3050946 1793696597.361688 ftruncate(67, 0) = 0 <0.000372>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.366086 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.186,
+        "line": "3050946 1793696597.367766 ftruncate(67, 0) = 0 <0.000186>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.370906 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 0.587,
+        "line": "3050946 1793696597.372542 ftruncate(67, 0) = 0 <0.000587>"
+      },
+      {
+        "phase": "reset",
+        "tid": "3050944",
+        "tracedMilliseconds": 0.020999999999999998,
+        "line": "3050944 1793696597.377875 ftruncate(67, 0) = 0 <0.000021>"
+      },
+      {
+        "phase": "guest",
+        "tid": "3050946",
+        "tracedMilliseconds": 1.6789999999999998,
+        "line": "3050946 1793696597.379570 ftruncate(67, 0) = 0 <0.001679>"
+      }
+    ],
+    "reset": {
+      "count": 10,
+      "medianTracedMilliseconds": 0.020999999999999998,
+      "maxTracedMilliseconds": 0.020999999999999998
+    },
+    "guest": {
+      "count": 10,
+      "medianTracedMilliseconds": 0.4805,
+      "maxTracedMilliseconds": 4.738
+    }
+  },
+  "CPython": {
+    "writeOpens": [
+      "3050953 1793696598.728193 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.728841 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000034>",
+      "3050953 1793696598.732181 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000022>",
+      "3050953 1793696598.732762 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.735111 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.735731 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.738184 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.738804 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.742193 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000025>",
+      "3050953 1793696598.742799 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.744943 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000025>",
+      "3050953 1793696598.745550 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000029>",
+      "3050953 1793696598.747787 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.748402 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.756011 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.756617 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.761395 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000025>",
+      "3050953 1793696598.761983 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>",
+      "3050953 1793696598.765020 openat(AT_FDCWD, \"/tmp/lython-comparison-files-ppl7bnfd/job/config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000024>",
+      "3050953 1793696598.765654 openat(AT_FDCWD, \"config.json\", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 3 <0.000028>"
+    ],
+    "truncates": [],
+    "reset": {
+      "count": 0,
+      "medianTracedMilliseconds": null,
+      "maxTracedMilliseconds": null
+    },
+    "guest": {
+      "count": 0,
+      "medianTracedMilliseconds": null,
+      "maxTracedMilliseconds": null
+    }
+  }
+}

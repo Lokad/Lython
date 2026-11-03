@@ -1,0 +1,174 @@
+[
+  {
+    "block": 0,
+    "case": "scripts.config-edit.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.37700340579710145,
+        "iqrPercent": 0.522270041897244,
+        "weightedCpuMilliseconds": 0.4294149221685454,
+        "totalCpuTicks": 80,
+        "completedInvocations": 1863
+      },
+      "candidate": {
+        "medianMilliseconds": 0.3279867149532711,
+        "iqrPercent": 0.2744426749561881,
+        "weightedCpuMilliseconds": 0.3842159916926272,
+        "totalCpuTicks": 74,
+        "completedInvocations": 1926
+      },
+      "CPython": {
+        "medianMilliseconds": 0.18436001831501833,
+        "iqrPercent": 0.2727532736999124,
+        "weightedCpuMilliseconds": 0.23402523402523404,
+        "totalCpuTicks": 115,
+        "completedInvocations": 4914
+      },
+      "before-control": {
+        "medianMilliseconds": 0.3740495786802031,
+        "iqrPercent": 1.4359669767167986,
+        "weightedCpuMilliseconds": 0.4173716864072194,
+        "totalCpuTicks": 74,
+        "completedInvocations": 1773
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -13.00165730338535,
+      "cpuPercent": -10.52570093457944,
+      "controlElapsedPercent": -0.7835014409625973,
+      "controlCpuPercent": -2.8045685279187937,
+      "LythonOverCPython": 1.7790555563562376,
+      "baselineOverCPython": 2.044930398916054
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.config-edit.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.4882686041666667,
+        "iqrPercent": 1.5908252002515941,
+        "weightedCpuMilliseconds": 0.5787037037037037,
+        "totalCpuTicks": 25,
+        "completedInvocations": 432
+      },
+      "candidate": {
+        "medianMilliseconds": 0.4383226818181818,
+        "iqrPercent": 1.206389495050627,
+        "weightedCpuMilliseconds": 0.5387205387205387,
+        "totalCpuTicks": 32,
+        "completedInvocations": 594
+      },
+      "CPython": {
+        "medianMilliseconds": 0.25308441000000004,
+        "iqrPercent": 0.4939626664479236,
+        "weightedCpuMilliseconds": 0.3138888888888889,
+        "totalCpuTicks": 113,
+        "completedInvocations": 3600
+      },
+      "before-control": {
+        "medianMilliseconds": 0.4894951428571429,
+        "iqrPercent": 2.9028548169843993,
+        "weightedCpuMilliseconds": 0.6349206349206349,
+        "totalCpuTicks": 24,
+        "completedInvocations": 378
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -10.229189819347106,
+      "cpuPercent": -6.909090909090909,
+      "controlElapsedPercent": 0.2512016295967978,
+      "controlCpuPercent": 9.714285714285698,
+      "LythonOverCPython": 1.7319228861950908,
+      "baselineOverCPython": 1.9292717562755706
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.file-manifest.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.22723921721311477,
+        "iqrPercent": 0.6141357967011246,
+        "weightedCpuMilliseconds": 0.3233151183970856,
+        "totalCpuTicks": 71,
+        "completedInvocations": 2196
+      },
+      "candidate": {
+        "medianMilliseconds": 0.2267100606060606,
+        "iqrPercent": 1.2128393334324257,
+        "weightedCpuMilliseconds": 0.30723905723905726,
+        "totalCpuTicks": 73,
+        "completedInvocations": 2376
+      },
+      "CPython": {
+        "medianMilliseconds": 0.1499536845238095,
+        "iqrPercent": 1.2344585445212086,
+        "weightedCpuMilliseconds": 0.2562830687830688,
+        "totalCpuTicks": 155,
+        "completedInvocations": 6048
+      },
+      "before-control": {
+        "medianMilliseconds": 0.22812672156862746,
+        "iqrPercent": 1.2937941578188112,
+        "weightedCpuMilliseconds": 0.31808278867102396,
+        "totalCpuTicks": 73,
+        "completedInvocations": 2295
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -0.23286324145268544,
+      "cpuPercent": -4.972257789159185,
+      "controlElapsedPercent": 0.3905595021832742,
+      "controlCpuPercent": -1.6183374758353963,
+      "LythonOverCPython": 1.5118672230428842,
+      "baselineOverCPython": 1.5153960233436874
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.file-manifest.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 0.39432606896551725,
+        "iqrPercent": 2.971289470223128,
+        "weightedCpuMilliseconds": 0.5555555555555556,
+        "totalCpuTicks": 29,
+        "completedInvocations": 522
+      },
+      "candidate": {
+        "medianMilliseconds": 0.39989676470588237,
+        "iqrPercent": 2.067386509312337,
+        "weightedCpuMilliseconds": 0.5882352941176471,
+        "totalCpuTicks": 27,
+        "completedInvocations": 459
+      },
+      "CPython": {
+        "medianMilliseconds": 0.23830423444976076,
+        "iqrPercent": 1.501217182771771,
+        "weightedCpuMilliseconds": 0.3588516746411483,
+        "totalCpuTicks": 135,
+        "completedInvocations": 3762
+      },
+      "before-control": {
+        "medianMilliseconds": 0.39455160606060613,
+        "iqrPercent": 2.5278177306451926,
+        "weightedCpuMilliseconds": 0.5611672278338945,
+        "totalCpuTicks": 50,
+        "completedInvocations": 891
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 1.4127130257909126,
+      "cpuPercent": 5.882352941176472,
+      "controlElapsedPercent": 0.05719558325945062,
+      "controlCpuPercent": 1.0101010101009944,
+      "LythonOverCPython": 1.6780934070652802,
+      "baselineOverCPython": 1.6547170044040866
+    }
+  }
+]

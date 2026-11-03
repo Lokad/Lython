@@ -77,3 +77,9 @@ pass baseline. Two remaining baseline failures prove actual reentrant item loss.
 Original/corrected failures, independent golden and final logs remain. Existing
 public chunk shapes are preserved. Full platform/stress/package checks batch at
 delivery. Publication postponed; whole-script performance remains active.
+
+Subsequent [B156 RAM-backed source pair](../2026-11-03-ram-file-checkpoint/README.md)
+demonstrates config warm/fresh elapsed−13.00/−10.23%, unchanged controls−0.78/+0.25%.
+It uses the same exact source images/API/checks and changes both fixture locations.
+This closes elapsed uncertainty for that condition; the original filesystem result
+remains unproven. No earlier adverse data are replaced.

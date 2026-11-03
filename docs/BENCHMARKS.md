@@ -23,6 +23,10 @@ Later JSON-iterator changes are excluded; their source-pair results are listed b
 The gap remains substantial. Config editing is particularly slow even warm;
 compilation alone is about58µs and does not explain its millisecond execution.
 These diagnostic points include host work and checks, not guest CPU alone.
+A [file-boundary trace](../benchmarks/results/2026-11-03-config-file-boundary/README.md)
+observes separate truncation calls in the managed host versus CPython's O_TRUNC;
+slow calls on this VM limit interpreter attribution. Their untraced share is
+unquantified; the table retains the actual included-I/O measurements.
 Identical-source controls differ up to5.7%; text/config results are variable.
 Independent phase/revision medians do not establish a source speedup.
 [Exact observations, controls and boundaries](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md).
@@ -58,6 +62,25 @@ IQR6.8%; its control IQR11.8%. These limit precision without explaining away the
 differ+2.4/−2.2/+0.6%; no guest execution is included. **Startup is unmeasured.**
 [Historical startup observations](../benchmarks/results/2026-10-29-foundation/README.md)
 describe their original revisions.
+
+## Storage-sensitive config and copy
+
+Supplemental measurements use the same actual file APIs and checks, with fixtures
+on shared tmpfs instead of the VM filesystem. Runtime source **0f05d7c0**,2026-11-03:
+
+| RAM-backed workload | Lython | CPython | Ratio |
+| --- | ---: | ---: | ---: |
+| Config compile-run |0.438 ms|0.253 ms|1.73×|
+| Config warm |0.328 ms|0.184 ms|1.78×|
+| Copy/manifest compile-run |0.400 ms|0.238 ms|1.68×|
+| Copy/manifest warm |0.227 ms|0.150 ms|1.51×|
+
+The earlier bd3 runtime measures2.05×warm on RAM versus8.18×in the primary table:
+storage condition materially affects config's ratio. Current config source-pair
+warm/fresh times improve13.0%/10.2%, controls−0.8%/+0.3%. This supports a gain under
+this storage condition; ordinary-filesystem elapsed remains unproven. Copy fresh
+is1.4%adverse with2.1%IQR. These results complement the primary table and do not
+replace its included-I/O boundary. [Exact conditions and all controls](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
 
 ## Machine and included work
 
@@ -96,7 +119,7 @@ original elapsed observations retain their own recorded timing boundaries:
 | Native local forwarding |Named CSV/text allocation−30.5%/−34.7%; warm elapsed−5–8%/−8–10%|[Complete scripts and controls](../benchmarks/results/2026-11-02-native-local-forwarding/README.md)|
 | Shared JSON names |Report allocation−13.8%, warm elapsed−9–13%|[Unique-name regression remains open](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)|
 | Native wildcard cursors |Unicode/ASCII file-filter elapsed−48%/−11%, allocation−85%/−44%|[Pre-translation source pair](../benchmarks/results/2026-11-03-native-wildcard-cursors/README.md)|
-| JSON iterator working storage |Large/small config allocation−10.5%/−4.4%; copy−1.6%|[Elapsed remains unproven; scratch retention](../benchmarks/results/2026-11-03-json-iterator-working-storage/README.md)|
+| JSON iterator working storage |Config allocation−10.5%/−4.4%; RAM warm/fresh elapsed−13%/−10%|[Ordinary-filesystem elapsed unproven; scratch retention](../benchmarks/results/2026-11-03-json-iterator-working-storage/README.md)|
 | Bulk ASCII casing |Canonical text warm elapsed−3.0%, control−0.1%; allocation unchanged|[Long-line gain; both scanner prototypes withdrawn](../benchmarks/results/2026-11-03-bulk-text-operations/README.md)|
 | CSV record admission |Allocation−4.5–13.6%; variable-width CSV elapsed/CPU about−10%|[Canonical timings vary; wide-record working peak grows](../benchmarks/results/2026-11-03-csv-record-admission/README.md)|
 
