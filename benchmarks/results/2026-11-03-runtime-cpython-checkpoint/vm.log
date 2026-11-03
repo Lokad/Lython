@@ -1,0 +1,7 @@
+Running as unit: lython-b152-cpython-20261103.service; invocation ID: 2441836471894a628b100a884a940a24
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 6min 31.733s
+CPU time consumed: 6min 3.490s
+Memory peak: 1.2M
+Memory swap peak: 0B

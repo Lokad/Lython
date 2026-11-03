@@ -2,56 +2,60 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.681 ms|3.546 ms|1.60×|Diagnostic;1.2% Lython IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.897 ms|4.251 ms|1.39×|Diagnostic;0.8% Lython IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.724 ms|1.297 ms|2.87×|Diagnostic;0.8% Lython IQR|
-| Search with early exit |42,010 B file|0.491 ms|0.245 ms|2.01×|Diagnostic;1.0% Lython IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|5.815 ms|2.542 ms|2.29×|Variable;4.5% control drift|
-| Unicode filename filter |768 names /124,050 B|0.874 ms|0.422 ms|2.07×|Diagnostic;0.4% Lython IQR|
-| ASCII filename filter |768 names /74,898 B|0.774 ms|0.292 ms|2.65×|Diagnostic;1.6% Lython IQR|
-| Config read/edit/write |7,177 B|3.668 ms|1.960 ms|1.87×|Historical082179c4; v1 clock|
-| Copy/checksum/manifest |Two files /4,107 B|2.164 ms|0.569 ms|3.80×|Historical082179c4; v1 clock|
+| CSV summary/helpers |4,096 records /57,361 B|5.545 ms|3.551 ms|1.56×|Diagnostic;1.1% Lython IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.829 ms|4.271 ms|1.36×|Diagnostic;1.9% Lython IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.796 ms|1.297 ms|2.93×|Variable;5.5% control difference|
+| Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Diagnostic;2.7% Lython IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|5.923 ms|2.557 ms|2.32×|Variable;3.1% Lython IQR|
+| Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Variable;3.5% Lython IQR|
+| ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Diagnostic;1.5% Lython IQR|
+| Config read/edit/write |7,177 B|2.101 ms|0.334 ms|6.29×|Variable;5.6% Lython IQR|
+| Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Diagnostic;1.1% Lython IQR|
 
-Seven current rows measured **2026-11-03**, runtime **f7dd0d3a**, comparison worker
-**02efd797**, against **CPython3.13.16** on **.NET11RC3**. They use **protocol2**:
-**fresh compilation plus one complete synchronous execution in an already-running
-host**, with fixture reset excluded. Ratio is Lython elapsed divided by CPython
-elapsed; above one means slower. IQR is interquartile range divided by median.
-The filename scripts read names, filter them and write/check256 selected names;
-they do not traverse768 files. Config/copy retain their2026-11-02 historical revision
-and included-staging clock; their Lython IQR is6.1%/10.2%. They are not current rows.
+Measured **2026-11-03**, exact runtime/worker revision **bd3f9dee**, against
+**CPython3.13.16** on **.NET11RC3**. These are **fresh compilation plus one complete
+synchronous execution in an already-running host**, with fixture reset excluded
+(protocol2). Ratio is Lython elapsed divided by CPython elapsed; above one means
+slower. IQR is interquartile range divided by median. The filename scripts read
+names, filter and write/check256 selected names; they do not traverse768 files.
+Uncommitted prototypes are excluded.
 
-These short diagnostics are not portable release multipliers. Fresh controls drift
-up to4.5%. The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
-found fixture reset alone cost1.4–1.6ms for Lython versus0.11–0.18ms for CPython.
-The [earlier included-staging ratios](../benchmarks/results/2026-11-03-wildcard-cpython-checkpoint/README.md)
-remain valid for their original boundary; the corrected table is **not a runtime
-speedup**. The [earlier90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
-remains **inconclusive**: fresh270% IQR/218% control drift, warm138%/77%.
-Steadier later results do not explain that waiting. All adverse data are retained.
-[Current observations and controls](../benchmarks/results/2026-11-03-corrected-cpython-checkpoint/README.md).
+The gap remains substantial. Config editing is particularly slow even warm;
+compilation alone is about58µs and does not explain its millisecond execution.
+These diagnostic points include host work and checks, not guest CPU alone.
+Identical-source controls differ up to5.7%; text/config results are variable.
+Independent phase/revision medians do not establish a source speedup.
+[Exact observations, controls and boundaries](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md).
+
+Earlier config/copy082179c4/v1 rows are replaced here by current measurements;
+their [historical evidence](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
+remains intact. The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
+excludes staging symmetrically and is not a runtime optimization. The earlier
+[90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
+remains **inconclusive** (fresh270% IQR/218% control drift; warm138%/77%). Steadier
+later results do not explain that waiting. All adverse observations are preserved.
 
 ## Warm execution, compilation and startup
 
-Reused compiled code, with the same protocol2 invocation/file/check boundary:
+Reused compiled code, with the same invocation/file/check boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers |5.492 ms|3.391 ms|1.62×|0.6% /0.4%|
-| JSON-lines/helpers |5.523 ms|4.147 ms|1.33×|0.7% /0.3%|
-| Text summary/helpers |3.592 ms|1.186 ms|3.03×|0.6% /1.0%|
-| Search with early exit |0.358 ms|0.151 ms|2.38×|0.3% /1.6%|
-| JSON-to-Markdown report |5.735 ms|2.392 ms|2.40×|2.1% /1.2%|
-| Unicode filename filter |0.789 ms|0.332 ms|2.37×|0.6% /1.0%|
-| ASCII filename filter |0.638 ms|0.211 ms|3.03×|0.3% /0.6%|
-| Config edit (historical082179c4, v1) |3.792 ms|2.033 ms|1.87×|3.4% /5.2%|
-| Copy/manifest (historical082179c4, v1) |2.202 ms|0.441 ms|4.99×|7.5% /1.2%|
+| CSV summary/helpers |5.235 ms|3.305 ms|1.58×|1.1% /0.5%|
+| JSON-lines/helpers |5.820 ms|4.126 ms|1.41×|0.8% /0.5%|
+| Text summary/helpers |3.717 ms|1.188 ms|3.13×|0.5% /1.0%|
+| Search with early exit |0.386 ms|0.149 ms|2.60×|2.9% /0.7%|
+| JSON-to-Markdown report |5.809 ms|2.383 ms|2.44×|3.1% /2.5%|
+| Unicode filename filter |0.808 ms|0.340 ms|2.38×|3.9% /1.2%|
+| ASCII filename filter |0.675 ms|0.211 ms|3.20×|1.2% /0.5%|
+| Config read/edit/write |1.974 ms|0.241 ms|8.18×|6.8% /1.8%|
+| Copy/checksum/manifest |0.344 ms|0.202 ms|1.70×|0.8% /1.1%|
 
-Warm JSON/search controls differ3.6%/4.9%; other controls0.1–2.9%. Independent
-phase or revision medians are not additive and do not establish a source speedup.
-**Compilation only:** CSV87.17µs versus54.70µs (**1.59×**), report61.40µs versus
-37.74µs (**1.63×**). Identical controls differ1.3%/3.0%; no guest execution included.
-**Startup is unmeasured here.**
+Warm text/config identical controls differ5.7%/4.7%; JSON4.1%. Config warm Lython
+IQR6.8%; its control IQR11.8%. These limit precision without explaining away the gap.
+**Compilation only:** CSV86.55µs versus54.94µs (**1.58×**), report60.77µs versus
+37.79µs (**1.61×**), config57.84µs versus34.68µs (**1.67×**). Identical controls
+differ+2.4/−2.2/+0.6%; no guest execution is included. **Startup is unmeasured.**
 [Historical startup observations](../benchmarks/results/2026-10-29-foundation/README.md)
 describe their original revisions.
 

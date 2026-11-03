@@ -1,0 +1,8 @@
+{
+  "status": "prepared, not executed; await final B151 disposition and committed image",
+  "caseCount": 9,
+  "jobs": 21,
+  "originalSevenCaseCatalogue": "prepared-seven-case-catalogue.json",
+  "materialGap": "config/copy v1 historical clocks do not show present compile-to-result costs; unchanged source/fixtures reused, plus config compile-only",
+  "boundary": "command-v2; no new framework, startup unmeasured"
+}
