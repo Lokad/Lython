@@ -1,0 +1,16 @@
+{
+  "status": "retained, committed, focused qualified; full delivery active",
+  "runtimeCommit": "873ae62548d4b62f803878a2ee031e072d640cad",
+  "deliveryRun": 41632382342,
+  "publicApiChange": false,
+  "uncommittedPrototypeRemains": false,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedInternalPerTarget": 59,
+  "focusedPublicPerTarget": 826,
+  "workersJoined": true,
+  "leaseFree": true,
+  "regressionDebt": "Initial independent-process CSV +2.26%/control -0.85%; not consistently reproduced by shared-hash diagnostic. Remains unexplained; no zero-impact claim. Carry CSV control to next coherent comparison, no unchanged retiming now."
+}

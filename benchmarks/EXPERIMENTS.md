@@ -2036,3 +2036,10 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   exact B158 source, two complete-script CPU captures. Binding-only storage
   removal is not shown dominant; no prototype promoted. Complete activation and
   formatting remain the design target; proposal/evidence stay available.
+
+- [Prepared constant format layouts, B160](results/2026-11-03-prepared-format-layouts/README.md):
+  retained873ae625, shared parser/formatter and compilation-owned metadata.
+  Report allocation−10.47%, warm/fresh elapsed−6.4/−4.9%, compilation flat.
+  Initial CSV+2.26%/control−0.85% remains unresolved; shared-hash diagnostic does
+  not consistently reproduce it. All adverse conditions retained; no speculative
+  helper-parameter refinement. Full delivery41632382342 active.

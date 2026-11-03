@@ -2,35 +2,33 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.545 ms|3.551 ms|1.56×|Diagnostic;1.1% Lython IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.829 ms|4.271 ms|1.36×|Diagnostic;1.9% Lython IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.796 ms|1.297 ms|2.93×|Variable;5.5% control difference|
-| Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Diagnostic;2.7% Lython IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|5.923 ms|2.557 ms|2.32×|Variable;3.1% Lython IQR|
-| Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Variable;3.5% Lython IQR|
-| ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Diagnostic;1.5% Lython IQR|
-| Config read/edit/write |7,177 B|2.101 ms|0.334 ms|6.29×|Host truncate asymmetry; variable|
-| Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Diagnostic;1.1% Lython IQR|
+| CSV summary/helpers |4,096 records /57,361 B|5.545 ms|3.551 ms|1.56×|Earlier bd3;ordinary FS;Diagnostic;1.1% Lython IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.829 ms|4.271 ms|1.36×|Earlier bd3;ordinary FS;Diagnostic;1.9% Lython IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.796 ms|1.297 ms|2.93×|Earlier bd3;ordinary FS;Variable;5.5% control difference|
+| Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|5.758 ms|2.506 ms|2.30×|RAM;873ae625;3.2% Lython IQR|
+| Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
+| ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
+| Config read/edit/write |7,177 B|0.290 ms|0.251 ms|1.16×|RAM;b3f1e9c3;0.9% Lython IQR|
+| Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Earlier bd3;ordinary FS;1.1% Lython IQR|
 
-Measured **2026-11-03**, exact runtime/worker revision **bd3f9dee**, against
-**CPython3.13.16** on **.NET11RC3**. These are **fresh compilation plus one complete
-synchronous execution in an already-running host**, with fixture reset excluded
-(protocol2). Ratio is Lython elapsed divided by CPython elapsed; above one means
-slower. IQR is interquartile range divided by median. The filename scripts read
-names, filter and write/check256 selected names; they do not traverse768 files.
-Later JSON-iterator, native-write and UTF-8 handoff changes are excluded;
-current config points are listed below.
+Measured **2026-11-03**, against **CPython3.13.16** on **.NET11RC3**. These are
+**fresh compilation plus one complete synchronous execution in an already-running
+host**, including I/O and checks, excluding fixture reset (protocol2). Ratio is
+Lython elapsed / CPython elapsed; above one means slower. IQR is interquartile
+range / median. **Rows have different storage conditions and revisions.** Latest
+report/config points use shared tmpfs; other rows are earlier **bd3f9dee** on the
+ordinary VM filesystem. They do not describe today's HEAD. Filename scripts read
+names, filter and write/check256 selected names, rather than traverse768 files.
 
-The gap remains substantial. Config editing is particularly slow even warm;
-compilation alone is about58µs and does not explain its millisecond execution.
-These diagnostic points include host work and checks, not guest CPU alone.
+Text/report gaps remain substantial. Current RAM-backed config editing is much
+closer to CPython; its earlier ordinary-filesystem fresh/warm ratios were6.29/8.18×.
 A [file-boundary trace](../benchmarks/results/2026-11-03-config-file-boundary/README.md)
-observes separate truncation calls in the managed host versus CPython's O_TRUNC;
-slow calls on this VM limit interpreter attribution. Their untraced share is
-unquantified; the table retains the actual included-I/O measurements.
-Identical-source controls differ up to5.7%; text/config results are variable.
-Independent phase/revision medians do not establish a source speedup.
-[Exact observations, controls and boundaries](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md).
+observes separate managed-host truncation versus CPython's O_TRUNC. Its untraced
+share is unquantified, and RAM results do not establish ordinary-filesystem gains.
+Source-pair improvements and adverse controls are separate below. The older
+[complete ordinary-filesystem checkpoint](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md)
+preserves all nine scripts, original config/report points and timing variability.
 
 Earlier config/copy082179c4/v1 rows are replaced here by current measurements;
 their [historical evidence](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
@@ -42,7 +40,9 @@ later results do not explain that waiting. All adverse observations are preserve
 
 ## Warm execution, compilation and startup
 
-Reused compiled code, with the same invocation/file/check boundary:
+Earlier **bd3f9dee**, ordinary filesystem, reused compiled code with the same
+invocation/file/check boundary. Latest report/config warm points are in the RAM
+table below:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
@@ -64,19 +64,21 @@ differ+2.4/−2.2/+0.6%; no guest execution is included. **Startup is unmeasured
 [Historical startup observations](../benchmarks/results/2026-10-29-foundation/README.md)
 describe their original revisions.
 
-## Storage-sensitive config and copy
+## RAM-backed phases and measured revisions
 
 Supplemental measurements use the same actual file APIs and checks, with fixtures
 on shared tmpfs instead of the VM filesystem. Measured2026-11-03; exact runtime revisions are shown:
 
 | RAM-backed workload | Runtime | Lython | CPython | Ratio |
 | --- | --- | ---: | ---: | ---: |
+| Report compile-run |873ae625|5.758 ms|2.506 ms|2.30×|
+| Report warm |873ae625|5.541 ms|2.356 ms|2.35×|
 | Config compile-run |b3f1e9c3|0.290 ms|0.251 ms|1.16×|
 | Config warm |b3f1e9c3|0.207 ms|0.181 ms|1.14×|
 | Copy/manifest compile-run |0f05d7c0|0.400 ms|0.238 ms|1.68×|
 | Copy/manifest warm |0f05d7c0|0.227 ms|0.150 ms|1.51×|
 
-The earlier bd3 runtime measures2.05×warm on RAM versus8.18×in the primary table:
+The earlier bd3 runtime measures2.05×warm on RAM versus8.18×on the ordinary filesystem:
 storage condition materially affects config's ratio. The current UTF-8 handoff
 improves config warm/fresh19.6%/16.3%, controls+0.1%/+0.6%, against its preceding
 runtime. This supports a gain under this storage condition; ordinary-filesystem
@@ -85,6 +87,12 @@ complement the primary table and do not replace its included-I/O boundary.
 [Current config conditions/controls](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md),
 [earlier native writes](../benchmarks/results/2026-11-03-native-stream-transport/README.md),
 [earlier copy/storage observations](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
+Report format-layout preparation reduces allocation10.47%, warm/fresh source-pair
+elapsed6.4/4.9%. Compilation alone is59.14µs versus37.69µs (**1.57×**), effectively
+flat against its preceding source. One initial CSV control is adverse and remains
+unexplained; a bounded shared-hash diagnostic does not establish a consistent
+regression. [All report observations and the CSV uncertainty](../benchmarks/results/2026-11-03-prepared-format-layouts/README.md).
+
 
 ## Machine and included work
 
@@ -117,6 +125,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Compiled constant format layouts |Report allocation−10.47%; warm/fresh elapsed−6.4/−4.9%|[Compilation flat; initial adverse CSV control retained](../benchmarks/results/2026-11-03-prepared-format-layouts/README.md)|
 | Native producer UTF-8 handoff |Config warm/fresh−19.6/−16.3%; allocation−37.8%, CSV rewrite allocation−10.2%|[CSV elapsed flat; text/report control drift retained](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md)|
 | Native helper returns |CSV/JSON allocation−19.9%/−19.3%|[Elapsed diagnostic](../benchmarks/results/2026-11-02-native-function-returns/README.md)|
 | Bulk CSV construction |Allocation−13.7–15.1%, CPU−7.2–11.1%|[Controlled comparison](../benchmarks/results/2026-11-02-native-csv-records/README.md)|

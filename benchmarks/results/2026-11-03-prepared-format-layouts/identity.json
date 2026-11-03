@@ -1,0 +1,27 @@
+{
+  "sourceRevision": "1634d73971284ed6c18871f0571f389e5cabe0b1 plus B160 prepared literal format layouts prototype",
+  "baseCommit": "1634d73971284ed6c18871f0571f389e5cabe0b1",
+  "prototype": true,
+  "coreSHA256": {
+    "baseline": "eb9c807478e0bb9e84b5f72eab169d6b7444ffcbf97e27069270d4b3a9f410cf",
+    "candidate": "a890ccf44ea9ee7ccbae436cfc64b39bb6367191f1a9aaf42c8ef5388ac2da79",
+    "before-control": "eb9c807478e0bb9e84b5f72eab169d6b7444ffcbf97e27069270d4b3a9f410cf"
+  },
+  "changedSourceSHA256": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingExpressions.cs": "63d348ed878d862c2b7ac4b409146bd5aed8152d9df98e3b8bd5cdf119515ec6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs": "1442773eb4b0cdc9cc812b971a2e5cd0233caeb4a6ab89c1d1e962c71724591f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "d4a6b42ea47eafdb826e3efc6fa1ed388a00bb03871b1757c8c317a28f528bcf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "bd86c41d322a558e6d64adab2fc4ed343d69e0c67ca7c25cf513deef887ed9cb"
+  },
+  "normalizedAuxiliaryBits": [
+    "Lokad.Lython.Benchmarks.dll",
+    "Lokad.Lython.Benchmarks.pdb",
+    "Lokad.Lython.Benchmarks.exe",
+    "Lokad.Lython.Utf8Regex.dll",
+    "Lokad.Lython.Utf8Regex.pdb"
+  ],
+  "onlyImageDifferences": [
+    "Lokad.Lython.dll",
+    "Lokad.Lython.pdb"
+  ]
+}

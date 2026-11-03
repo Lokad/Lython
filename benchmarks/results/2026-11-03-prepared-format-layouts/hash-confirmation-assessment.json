@@ -1,0 +1,126 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "values": {
+      "before": {
+        "elapsedMs": 5.64875,
+        "elapsedIqrPercent": 0.4965147156450429,
+        "cpuMs": 5.66615625,
+        "allocatedBytes": 5503186.75
+      },
+      "candidate": {
+        "elapsedMs": 5.37930625,
+        "elapsedIqrPercent": 0.28372617751591134,
+        "cpuMs": 5.38171875,
+        "allocatedBytes": 5502024.25
+      },
+      "before-control": {
+        "elapsedMs": 5.354696875,
+        "elapsedIqrPercent": 0.26040222865090085,
+        "cpuMs": 5.35846875,
+        "allocatedBytes": 5502024.25
+      }
+    },
+    "deltas": {
+      "elapsedMs": -4.769971232573578,
+      "controlelapsedMs": -5.205631776941799,
+      "cpuMs": -5.019937457601886,
+      "controlcpuMs": -5.430268535217331,
+      "allocatedBytes": -0.021124124126803423,
+      "controlallocatedBytes": -0.021124124126803423
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "values": {
+      "before": {
+        "elapsedMs": 3.729365625,
+        "elapsedIqrPercent": 0.2833927016742966,
+        "cpuMs": 3.72871875,
+        "allocatedBytes": 3321963.5
+      },
+      "candidate": {
+        "elapsedMs": 3.71055625,
+        "elapsedIqrPercent": 0.46126844189466715,
+        "cpuMs": 3.71075,
+        "allocatedBytes": 3321977.5
+      },
+      "before-control": {
+        "elapsedMs": 3.666953125,
+        "elapsedIqrPercent": 1.186526620789574,
+        "cpuMs": 3.67784375,
+        "allocatedBytes": 3321963.5
+      }
+    },
+    "deltas": {
+      "elapsedMs": -0.5043585663446426,
+      "controlelapsedMs": -1.6735419981783073,
+      "cpuMs": -0.4819014574376279,
+      "controlcpuMs": -1.364409691666879,
+      "allocatedBytes": 0.00042143750225154264,
+      "controlallocatedBytes": 0.0
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "values": {
+      "before": {
+        "elapsedMs": 5.706540625,
+        "elapsedIqrPercent": 0.7657879417970394,
+        "cpuMs": 5.7081875,
+        "allocatedBytes": 4203719.0
+      },
+      "candidate": {
+        "elapsedMs": 5.7567375,
+        "elapsedIqrPercent": 0.6895181515572063,
+        "cpuMs": 5.75871875,
+        "allocatedBytes": 4203719.0
+      },
+      "before-control": {
+        "elapsedMs": 5.727015625,
+        "elapsedIqrPercent": 1.8998223878601634,
+        "cpuMs": 5.7284375,
+        "allocatedBytes": 4203719.0
+      }
+    },
+    "deltas": {
+      "elapsedMs": 0.8796375650090171,
+      "controlelapsedMs": 0.35879881254679,
+      "cpuMs": 0.8852415937633307,
+      "controlcpuMs": 0.3547535885953357,
+      "allocatedBytes": 0.0,
+      "controlallocatedBytes": 0.0
+    }
+  },
+  {
+    "case": "scripts.report-render.large",
+    "values": {
+      "before": {
+        "elapsedMs": 6.360996875,
+        "elapsedIqrPercent": 2.3288900766831584,
+        "cpuMs": 6.46853125,
+        "allocatedBytes": 8214045.75
+      },
+      "candidate": {
+        "elapsedMs": 5.9544875,
+        "elapsedIqrPercent": 2.057062005756164,
+        "cpuMs": 6.09396875,
+        "allocatedBytes": 7353587.75
+      },
+      "before-control": {
+        "elapsedMs": 6.42209375,
+        "elapsedIqrPercent": 2.4639063389568263,
+        "cpuMs": 6.550875,
+        "allocatedBytes": 8214047.5
+      }
+    },
+    "deltas": {
+      "elapsedMs": -6.390655159691461,
+      "controlelapsedMs": 0.9604921398424837,
+      "cpuMs": -5.790533979409929,
+      "controlcpuMs": 1.2729899078712803,
+      "allocatedBytes": -10.47544688925065,
+      "controlallocatedBytes": 2.1304970210245244e-05
+    }
+  }
+]

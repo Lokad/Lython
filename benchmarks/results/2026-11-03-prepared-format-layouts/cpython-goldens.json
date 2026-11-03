@@ -1,0 +1,14 @@
+[
+  {
+    "source": "from datetime import date\nclass Own:\n    def __format__(self, spec):\n        with open('value') as source:\n            return spec + ':' + source.read()\ndef render(value):\n    return f'[{value:>8}]'\ndef single(value):\n    return f'{value:>8}'\nvalues = [7, 'é', Own(), 3.5, complex(1, 2), date(2024, 1, 2)]\nexpected = ['[       7]', '[       é]', '[>8:ok]', '[     3.5]', '[  (1+2j)]', '[>8]']\nfor value, text in zip(values, expected):\n    assert render(value) == text\n    assert single(value) == text[1:-1]\nassert f'{7!s:>8s}' == '       7'\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\n",
+    "stderr": ""
+  },
+  {
+    "source": "class Own:\n    def __format__(self, spec):\n        with open('value') as source:\n            return spec + ':' + source.read()\ndef missing_precision(value):\n    return f'{value:9.}'\ndef huge_width(value):\n    return f'[{value:99999999999999999999999999999999999}]'\ndef string_only(value):\n    return f'{value:>8s}'\nassert missing_precision(Own()) == '9.:ok'\nassert huge_width(Own()) == '[99999999999999999999999999999999999:ok]'\nassert string_only(Own()) == '>8s:ok'\ntry:\n    missing_precision('text')\nexcept ValueError as error:\n    assert 'missing precision' in str(error)\nelse:\n    raise AssertionError('missing native precision was accepted')\ntry:\n    string_only(7)\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('integer accepted string format code')\nassert string_only('é') == '       é'\nassert missing_precision(Own()) == '9.:ok'\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\n",
+    "stderr": ""
+  }
+]
