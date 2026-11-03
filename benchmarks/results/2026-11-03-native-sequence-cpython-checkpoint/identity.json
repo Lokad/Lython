@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "b7a0f40a",
+  "coreSHA256": {
+    "candidate": "6d4b0c32961c01a1fe1f975585ceb01b3791ca24f1cd24b5750f60dac01161ed",
+    "before-control": "6d4b0c32961c01a1fe1f975585ceb01b3791ca24f1cd24b5750f60dac01161ed"
+  },
+  "purpose": "B172 current native-sequence milestone; same-source external CPython checkpoint, no source-pair inference",
+  "publication": "postponed"
+}

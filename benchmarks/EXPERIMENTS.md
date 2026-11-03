@@ -2118,3 +2118,9 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   complete activation work, no claim every script improves. Both-framework focused
   802 public/214 internal PASS; full 41682308042 active. All original observations,
   confirmation, semantics, balances, gates and joined users retained.
+
+- [Current native-sequence CPython checkpoint, B172](results/2026-11-03-native-sequence-cpython-checkpoint/README.md):
+  exact b7a0f40a; four complete RAM-file scripts warm/fresh and CSV/report compile-
+  only. Fresh CSV/JSON1.57/1.39×, text/report2.71/2.31×CPython. Fresh text control
+  +2.7%, report3.8%IQR remain visible. All30 workers/goldens/gates/joins pass in
+  166.214s owned service. No source-pair gain or subtraction of phase medians.

@@ -2,11 +2,11 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.637 ms|3.494 ms|1.61×|RAM;b087c7b8;Diagnostic;3.1% control difference|
-| JSON-lines/helpers |4,096 records /110,592 B|5.740 ms|4.195 ms|1.37×|RAM;b087c7b8;Diagnostic;1.3% Lython IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.843 ms|1.274 ms|3.02×|RAM;b087c7b8;Variable;3.3% control difference|
+| CSV summary/helpers |4,096 records /57,361 B|5.514 ms|3.510 ms|1.57×|RAM;b7a0f40a;Diagnostic;0.6% control /1.2% IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.850 ms|4.223 ms|1.39×|RAM;b7a0f40a;Diagnostic;0.2% control /1.1% IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.524 ms|1.301 ms|2.71×|RAM;b7a0f40a;Diagnostic;2.7% control /1.1% IQR|
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|5.938 ms|2.482 ms|2.39×|RAM;b087c7b8;Variable;5.2% control/3.9% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|5.684 ms|2.466 ms|2.31×|RAM;b7a0f40a;Variable;0.6% control /3.8% IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
 | Config read/edit/write |7,177 B|0.290 ms|0.251 ms|1.16×|Earlier RAM;b3f1e9c3;0.9% Lython IQR|
@@ -17,7 +17,7 @@ Measured **2026-11-03**, against **CPython3.13.16** on **.NET11RC3**. These are
 host**, including I/O and checks, excluding fixture reset (protocol2). Ratio is
 Lython elapsed / CPython elapsed; above one means slower. IQR is interquartile
 range / median. **Rows have different storage conditions and revisions.** Latest
-CSV/text/JSON/report points use shared tmpfs on **b087c7b8**. Config is the earlier
+CSV/text/JSON/report points use shared tmpfs on **b7a0f40a**. Config is the earlier
 **b3f1e9c3** RAM point; four other rows are earlier **bd3f9dee** on the ordinary
 VM filesystem. All rows describe their measured revision; none automatically describes today's HEAD. Filename scripts read
 names, filter and write/check256 selected names, rather than traverse768 files.
@@ -41,22 +41,25 @@ later results do not explain that waiting. All adverse observations are preserve
 
 ## Warm execution, compilation and startup
 
-Latest external checkpoint **b087c7b8**, RAM-backed files, reused compiled code with the same
+Latest external checkpoint **b7a0f40a**, RAM-backed files, reused compiled code with the same
 invocation/I/O/check boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers |5.292 ms|3.319 ms|1.59×|0.9% /1.2%|
-| JSON-lines/helpers |5.817 ms|4.304 ms|1.35×|0.7% /0.5%|
-| Text summary/helpers |3.377 ms|1.195 ms|2.83×|0.7% /0.2%|
-| JSON-to-Markdown report |5.464 ms|2.340 ms|2.33×|1.5% /1.7%|
+| CSV summary/helpers |5.249 ms|3.316 ms|1.58×|0.6% /0.6%|
+| JSON-lines/helpers |5.648 ms|4.084 ms|1.38×|0.8% /0.4%|
+| Text summary/helpers |3.311 ms|1.156 ms|2.87×|0.6% /0.2%|
+| JSON-to-Markdown report |5.531 ms|2.366 ms|2.34×|1.7% /2.7%|
 
-Warm text's identical control differs5.0%; other warm controls differ0.7–1.2%.
-Fresh text/report controls differ3.3/5.2%; those points remain variable. Independent
-warm/fresh process medians must not be subtracted. **Compilation only:** CSV86.14µs
-versus54.73µs (**1.57×**), report59.13µs versus37.94µs (**1.56×**). Unchanged
-controls differ+2.1/0.0%; no guest I/O/execution is included. **Startup is unmeasured.**
-[Current complete observations and controls](../benchmarks/results/2026-11-03-shared-driver-cpython-checkpoint/README.md).
+Warm identical-source controls differ 0.2–1.9%; fresh text differs 2.7%. Report
+fresh has 3.8% Lython /2.4% CPython IQR and stays variable. Independent warm/fresh
+process medians must not be subtracted. **Compilation only:** CSV
+85.57µs versus54.98µs (**1.56×**), report59.94µs versus37.50µs (**1.60×**).
+Unchanged compile controls differ +0.4/−0.2%; guest execution/I/O is excluded.
+**Startup is unmeasured.**
+[Current complete observations and controls](../benchmarks/results/2026-11-03-native-sequence-cpython-checkpoint/README.md).
+[Earlier b087 observations](../benchmarks/results/2026-11-03-shared-driver-cpython-checkpoint/README.md)
+remain immutable; different process medians do not establish a source-pair gain.
 Other warm file cases remain [historical ordinary-filesystem measurements](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md);
 [historical startup](../benchmarks/results/2026-10-29-foundation/README.md) describes
 its original source.
