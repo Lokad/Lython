@@ -5,7 +5,11 @@ This document describes the existing tools and qualification rules; it is not
 an up-to-date timing baseline. Historical profiles, rejected optimizations and
 candidate narratives are preserved in [EXPERIMENTS.md](EXPERIMENTS.md), with their
 original evidence links and exclusions. Specification version **6** applies to
-the declared milestone collections.
+the declared milestone collections. Worker protocol **2** excludes fixture reset/
+staging from persistent execution clocks. Protocol1 included it; mixed workers are
+rejected. Historical results retain their original boundary. The
+[component diagnostic](results/2026-11-03-comparison-boundary-diagnostic/README.md)
+records why this measurement correction was needed; it is not a runtime speedup.
 
 The governed-memory worker uses one shared unbounded allowance. Compiled caches
 stay charged until worker exit. Previous results are relinquished before the next
@@ -25,7 +29,8 @@ Lython disposes each compile-run script inside timing. These existing lifetime
 boundaries differ; the comparison does not establish equal live memory or cleanup
 cost. The final response payload remains available through serialization.
 
-File jobs include matched fixture reset and complete output verification. The
+File jobs perform matched fixture reset before every invocation, outside the
+reported execution clock, and include complete output verification inside it. The
 Lython host uses ordinary FileStream flush/close, efficient byte reads/appends,
 and path authorization plus cooperative admission/cancellation. CPython uses
 ordinary buffered file operations. These integration costs belong to the public
@@ -43,8 +48,8 @@ per-job medians and interpolated IQR/median; no confidence interval or certified
 multiplier is claimed. The default `--lane warm` reuses compiled code and excludes
 compilation. `--lane compile-run` compiles a fresh code object and executes it once
 per timed job in the already-running worker, including Lython's temporary
-compilation disposal. Both modes include invocation setup, file reset/staging
-and complete output-byte checks. Transport and response hashing remain outside
+compilation disposal. Both modes include invocation setup, actual guest file I/O and complete
+output-byte checks; fixture reset/staging is excluded symmetrically. Transport and response hashing remain outside
 the worker timer. Record these boundaries separately; never add unrelated medians
 to infer first-result latency. Compile-only and process startup remain separate.
 The fresh compile-run mode does not use identical-script caching as its result.
@@ -143,9 +148,9 @@ dotnet <benchmark.dll> --compare list --profile representative --out <catalog.js
 File fixtures declare bounded canonical-base64 input maps and independent output
 goldens. Both engines use actual disk files in a supervisor-owned temporary cwd.
 Every execution resets/stages its inputs, then checks all declared output bytes
-and rejects unexpected files. **Reset, staging and byte checks are inside both
-persistent execution clocks**; file-digest encoding, transport and hashing stay
-outside. Compilation-only batches do not execute or stage files. Fresh-process
+and rejects unexpected files. **Reset/staging is outside both persistent
+execution clocks; actual guest I/O and byte checks remain inside**. File-digest
+encoding, transport and hashing stay outside. Compilation-only batches do not execute or stage files. Fresh-process
 timing additionally includes directory creation and launch. Parent-owned directory
 cleanup follows pipe drain and exit, outside the sample but inside the group deadline.
 The parent removes its directory after normal exit, faults or cancellation;
@@ -248,8 +253,9 @@ declared boundary, not a measurement of instruction dispatch alone.
 
 Use the same ordinary Python source with bounded `print` output in both engines;
 do not use Lython's top-level return extension. Immutable fixture templates and
-compiled code may be reused. Copy mutable input state and create fresh globals
-on every invocation inside the timer. Do not reuse modified lists/dictionaries,
+compiled code may be reused. Copy mutable guest input state and create fresh globals
+on every invocation inside the timer. Disk fixture reset/staging is excluded;
+its full elapsed cost still counts toward wall deadlines. Do not reuse modified lists/dictionaries,
 memoized results or a exhausted iterator. Import statements remain at their
 shared source positions; both runtimes may retain natural module caches.
 Do not purge CPython's sys.modules or impose artificial containment on it.

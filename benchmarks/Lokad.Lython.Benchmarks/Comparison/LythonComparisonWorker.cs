@@ -17,6 +17,8 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
     private LythonExecutionResult? _lastResult;
     private IReadOnlyDictionary<string, byte[]>? _lastFiles;
     private int _lastRequestId;
+    // Fixture preparation is not guest execution. Wall deadlines still cover it.
+    private long _fixtureResetTicks;
 
     public async Task RunAsync(Stream input, Stream output, CancellationToken cancellationToken = default)
     {
@@ -107,6 +109,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         LythonCompiledScript? lastCompiled = null;
         var files = FileHost(workload);
         var started = Stopwatch.GetTimestamp();
+        var resetBefore = _fixtureResetTicks;
         try
         {
             for (; completed < iterations; completed++)
@@ -132,7 +135,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
                     actual = Invoke(_compiled[workload.Id], workload, files, asynchronous: lane == "warm-async");
                 }
             }
-            var elapsedTicks = Stopwatch.GetTimestamp() - started;
+            var elapsedTicks = Stopwatch.GetTimestamp() - started - (_fixtureResetTicks - resetBefore);
             // Retain the final compiled object; hashing/artifact encoding stays
             // outside the clock. No forced collections or result subtraction.
             if (lastCompiled is not null)
@@ -179,8 +182,13 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         _lastFiles = null;
         _lastResult?.Dispose();
         _lastResult = null;
-        try { files?.Reset(); }
-        catch (IOException error) { throw new WorkerJobException("Failure", "File fixture reset failed: " + error.Message); }
+        if (files is not null)
+        {
+            var resetStarted = Stopwatch.GetTimestamp();
+            try { files.Reset(); }
+            catch (IOException error) { throw new WorkerJobException("Failure", "File fixture reset failed: " + error.Message); }
+            finally { _fixtureResetTicks += Stopwatch.GetTimestamp() - resetStarted; }
+        }
         var host = (ILythonHost?)files ?? _host;
         var result = asynchronous ? script.RunAsync(host).GetAwaiter().GetResult() : script.Run(host);
         _lastResult = result;
@@ -225,6 +233,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
             maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
             maximumBatchSeconds = ComparisonProtocol.MaximumBatchSeconds,
             publicLimits = "ordinary defaults; cooperative cancellation; no forced GC",
+            timingBoundary = "command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included",
             ownershipBoundary = "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
             benchmarkDotNetLoaded = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "BenchmarkDotNet"),
             libraries = new[] { Identity(library), Identity(adapter), Identity(core) },

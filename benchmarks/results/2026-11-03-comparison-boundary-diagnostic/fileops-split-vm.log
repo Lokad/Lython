@@ -1,0 +1,9 @@
+Running as unit: lython-b144-filesplit-20261103.service
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2.221s
+CPU time consumed: 341ms
+Memory peak: 1.9M
+Memory swap peak: 0B
+WriteAllBytes
+FileStream

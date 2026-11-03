@@ -20,7 +20,13 @@ Ratio is Lython elapsed divided by CPython elapsed; above one means slower.
 IQR is interquartile range divided by median. The filename scripts read names,
 filter them and write/check256 selected names; they do not traverse768 files.
 
-These short diagnostic observations are not portable release multipliers.
+These short diagnostic observations are not portable release multipliers. They
+use historical **protocol1**, including fixture reset. The
+[component check](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
+found reset alone costs1.4–1.6ms for Lython versus0.11–0.18ms for CPython. This
+strongly affects small file-workload ratios. Protocol2 excludes reset symmetrically;
+a corrected representative checkpoint is pending. This is a clock correction, not
+a runtime speedup.
 Identical fresh controls differ0.2–2.1%. The
 [earlier90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
 remains **inconclusive**: fresh270% IQR/218% control drift, warm138%/77%.

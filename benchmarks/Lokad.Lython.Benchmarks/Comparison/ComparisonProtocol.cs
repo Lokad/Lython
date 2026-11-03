@@ -7,7 +7,7 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 
 internal static class ComparisonProtocol
 {
-    public const int Version = 1;
+    public const int Version = 2;
     public const int MaximumFrameBytes = 4 * 1024 * 1024;
     public const int MaximumCatalogBytes = 64 * 1024 * 1024;
     public const int MaximumBatchIterations = 1_000_000;

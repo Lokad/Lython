@@ -169,7 +169,7 @@ public sealed class ComparisonFileWorkerTests
 
     private static object Request(ComparisonWorkload workload, int id, string operation, string lane = "warm") => new
     {
-        protocolVersion = 1, requestId = id, operation, caseId = workload.Id, lane, iterations = 2,
+        protocolVersion = ComparisonProtocol.Version, requestId = id, operation, caseId = workload.Id, lane, iterations = 2,
         workload.SourceSha256, workload.FixtureSha256, workload.ExpectedOutputSha256,
     };
 

@@ -46,7 +46,7 @@ public sealed class ComparisonWorkerProtocolTests
         await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 1, "verify"));
         await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 2, "batch", lane, 3));
         await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 3, "verify"));
-        await ComparisonProtocol.WriteAsync(input, new { protocolVersion = 1, requestId = 4, operation = "quit" });
+        await ComparisonProtocol.WriteAsync(input, new { protocolVersion = ComparisonProtocol.Version, requestId = 4, operation = "quit" });
         input.Position = 0;
         using var output = new MemoryStream();
         var worker = new LythonComparisonWorker(manifest);

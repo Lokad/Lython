@@ -85,7 +85,7 @@ if (mode.StartsWith("once-", StringComparison.Ordinal))
     if (mode == "once-hang") { await Task.Delay(Timeout.Infinite); return 0; }
     var identity = new
     {
-        protocolVersion = 1, status = "Ready", engine = "Fixture", catalogSha256 = args[1], catalogVersion = 1,
+        protocolVersion = 2, status = "Ready", engine = "Fixture", catalogSha256 = args[1], catalogVersion = 1,
         processId = Environment.ProcessId, clockFrequency = 1000,
         maximumFrameBytes = 4 * 1024 * 1024, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60,
     };
@@ -94,7 +94,7 @@ if (mode.StartsWith("once-", StringComparison.Ordinal))
         identity,
         response = new
         {
-            protocolVersion = 1, requestId = 1, caseId = mode == "once-wrong-case" ? "other" : args[3],
+            protocolVersion = 2, requestId = 1, caseId = mode == "once-wrong-case" ? "other" : args[3],
             status = mode == "once-failure" ? "Failure" : "Equivalent",
             completedInvocations = mode == "once-two-jobs" ? 2 : mode == "once-failure" ? 0 : 1,
             elapsedTicks = mode == "once-worker-time" ? (long?)100 : null, clockFrequency = 1000,
@@ -127,7 +127,7 @@ if (mode == "truncated")
 }
 await WriteAsync(new
 {
-    protocolVersion = mode == "wrong-version" ? 2 : 1, status = "Ready", engine = "Fixture",
+    protocolVersion = mode == "wrong-version" ? 1 : 2, status = "Ready", engine = "Fixture",
     catalogSha256 = mode == "wrong-catalog" ? new string('f', 64) : args[1], catalogVersion = 1,
     processId = mode == "wrong-pid" ? 1 : Environment.ProcessId,
     clockFrequency = mode == "wrong-clock" ? 0 : 1000,
@@ -154,7 +154,7 @@ while (true)
     var operation = row.GetProperty("operation").GetString();
     if (operation == "quit")
     {
-        await WriteAsync(new { protocolVersion = 1, requestId, status = "Closed" });
+        await WriteAsync(new { protocolVersion = 2, requestId, status = "Closed" });
         if (mode == "extra-output") await WriteAsync(new { unexpected = true });
         if (mode == "hang-shutdown") await Task.Delay(Timeout.Infinite);
         return mode == "nonzero-exit" ? 7 : 0;
@@ -165,7 +165,7 @@ while (true)
     var timed = operation == "batch" || mode == "failure-with-time";
     await WriteAsync(new
     {
-        protocolVersion = 1, requestId = mode == "replay" ? requestId - 1 : requestId,
+        protocolVersion = 2, requestId = mode == "replay" ? requestId - 1 : requestId,
         caseId = mode == "wrong-case" ? "other" : Text("caseId"),
         status = failed ? "Failure" : operation == "batch" ? "Completed" : "Equivalent",
         completedInvocations = mode is "wrong-count" or "valid-failure" or "failure-with-time" ? 0

@@ -10,7 +10,8 @@ import struct
 import sys
 import time
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
+_fixture_reset_ns = 0
 MAX_FRAME_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 64 * 1024 * 1024
 MAX_BATCH_ITERATIONS = 1_000_000
@@ -244,13 +245,16 @@ def compile_case(case):
 
 
 def invoke(code, case):
+    global _fixture_reset_ns
     # Fresh namespace, bounded text capture/extraction and full cheap output
     # equality belong to every timed invocation. Preserve ordinary cyclic GC.
     stdout, stderr = BoundedCapture(), BoundedCapture()
     root = stage = None
     try:
         if case['_files'] is not None:
+            reset_started = time.perf_counter_ns()
             root, stage = reset_files(case)
+            _fixture_reset_ns += time.perf_counter_ns() - reset_started
             os.chdir(stage)
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             exec(code, {'__name__': '__main__'})
@@ -308,6 +312,7 @@ def serve(path, input_stream, output_stream):
         'clockFrequency': 1_000_000_000, 'clockResolutionSeconds': clock.resolution, 'clockMonotonic': clock.monotonic,
         'clockImplementation': clock.implementation, 'maximumFrameBytes': MAX_FRAME_BYTES,
         'maximumBatchIterations': MAX_BATCH_ITERATIONS, 'maximumBatchSeconds': MAX_BATCH_SECONDS,
+        'timingBoundary': 'command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included',
         'captureByteLimit': MAX_OUTPUT_BYTES})
     last_request_id = 0
     while (request := read_frame(input_stream)) is not None:
@@ -347,6 +352,7 @@ def serve(path, input_stream, output_stream):
                     raise ValueError('Unsupported comparison lane')
                 last_code = None
                 started = time.perf_counter_ns()
+                reset_before = _fixture_reset_ns
                 for _ in range(iterations):
                     if time.perf_counter_ns() - started >= MAX_BATCH_SECONDS * 1_000_000_000:
                         raise JobFailure('Timeout', 'Batch exceeded its internal 60-second ceiling')
@@ -356,7 +362,7 @@ def serve(path, input_stream, output_stream):
                     else:
                         actual = invoke(code, case)
                     completed += 1
-                elapsed = time.perf_counter_ns() - started
+                elapsed = time.perf_counter_ns() - started - (_fixture_reset_ns - reset_before)
                 if last_code is not None:
                     compiled[case['id']] = last_code
                 status = 'Completed'

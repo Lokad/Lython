@@ -1,0 +1,78 @@
+[
+  {
+    "engine": "Lython",
+    "case": "scripts.file-search.large",
+    "elapsedMilliseconds": 1.84045,
+    "cpuMilliseconds": 2.18721875,
+    "executionMilliseconds": 0.3580924375,
+    "resetMilliseconds": 1.45861115625,
+    "checkingMilliseconds": 0.02331009375,
+    "disposalMilliseconds": 0.000206375
+  },
+  {
+    "engine": "Lython",
+    "case": "scripts.text-summary-helpers.large",
+    "elapsedMilliseconds": 5.028409375,
+    "cpuMilliseconds": 3.74915625,
+    "executionMilliseconds": 3.58936459375,
+    "resetMilliseconds": 1.42090559375,
+    "checkingMilliseconds": 0.022485625,
+    "disposalMilliseconds": 0.00013753125
+  },
+  {
+    "engine": "Lython",
+    "case": "scripts.report-render.large",
+    "elapsedMilliseconds": 8.1137125,
+    "cpuMilliseconds": 6.5755625,
+    "executionMilliseconds": 6.19370740625,
+    "resetMilliseconds": 1.63648621875,
+    "checkingMilliseconds": 0.17555375,
+    "disposalMilliseconds": 0.000267625
+  },
+  {
+    "engine": "Lython",
+    "case": "scripts.filename-filter-ascii.large",
+    "elapsedMilliseconds": 2.12931875,
+    "cpuMilliseconds": 0.82203125,
+    "executionMilliseconds": 0.633430625,
+    "resetMilliseconds": 1.45246815625,
+    "checkingMilliseconds": 0.0350765625,
+    "disposalMilliseconds": 0.00013934375
+  },
+  {
+    "engine": "CPython",
+    "case": "scripts.file-search.large",
+    "elapsedMilliseconds": 0.26009834375,
+    "cpuMilliseconds": 0.25938925,
+    "resetMilliseconds": 0.11189640625,
+    "checkingMilliseconds": 0.02558021875,
+    "remainingMilliseconds": 0.123475125
+  },
+  {
+    "engine": "CPython",
+    "case": "scripts.text-summary-helpers.large",
+    "elapsedMilliseconds": 1.32134046875,
+    "cpuMilliseconds": 1.32137184375,
+    "resetMilliseconds": 0.1122945,
+    "checkingMilliseconds": 0.0279259375,
+    "remainingMilliseconds": 1.18156284375
+  },
+  {
+    "engine": "CPython",
+    "case": "scripts.report-render.large",
+    "elapsedMilliseconds": 2.8242556875,
+    "cpuMilliseconds": 2.82432271875,
+    "resetMilliseconds": 0.18049809375,
+    "checkingMilliseconds": 0.04374334375,
+    "remainingMilliseconds": 2.6019453125
+  },
+  {
+    "engine": "CPython",
+    "case": "scripts.filename-filter-ascii.large",
+    "elapsedMilliseconds": 0.3329601875,
+    "cpuMilliseconds": 0.33159796875,
+    "resetMilliseconds": 0.12561259375,
+    "checkingMilliseconds": 0.0277230625,
+    "remainingMilliseconds": 0.17955625
+  }
+]

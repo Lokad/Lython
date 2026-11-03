@@ -127,7 +127,7 @@ public sealed class ComparisonSamplingTests
     public async Task WarmupUsesTheRecordedLaneAndCannotSubstituteFreshPreparationForPersistentEvidence(string lane)
     {
         var trace = new SamplingSession { Lane = lane };
-        await PairedSampler.RunAsync(trace, (_, count, _) => Task.FromResult(new WorkerResponse(1, 1, "test", "Completed", count,
+        await PairedSampler.RunAsync(trace, (_, count, _) => Task.FromResult(new WorkerResponse(ComparisonProtocol.Version, 1, "test", "Completed", count,
             count * 10_000_000L, 1_000_000_000, "source", "fixture", "expected", "expected", null)), new FakeMachine(), () => { }, default);
         Assert.Equal("Measured", trace.State);
         var expected = lane == "fresh-process" ? (.1, 8L) : (1d, 32L);
@@ -688,7 +688,7 @@ public sealed class ComparisonSamplingTests
         [0, 0, 0, idle, 0, 0, 0, 0], new(StringComparer.Ordinal)
         { ["pgmajfault"] = 0, ["pswpin"] = 0, ["pswpout"] = 0, ["memory.some.total_us"] = null,
             ["memory.full.total_us"] = null, ["throttled:/sys/fs/cgroup"] = null }, "/");
-    private static WorkerResponse Response(int count, double seconds) => new(1, 1, "test", "Completed", count, (long)Math.Round(seconds * 1_000_000_000),
+    private static WorkerResponse Response(int count, double seconds) => new(ComparisonProtocol.Version, 1, "test", "Completed", count, (long)Math.Round(seconds * 1_000_000_000),
         1_000_000_000, "source", "fixture", "expected", "expected", null);
     private static List<TimedPair> Pairs(Func<int, (double Left, double Right)> times) => Enumerable.Range(0, ComparisonPolicy.Pairs)
         .Select(i => new TimedPair(i, ComparisonPolicy.LythonFirst(0, i), times(i).Left, times(i).Right)).ToList();
@@ -795,7 +795,7 @@ public sealed class ComparisonSamplingTests
             memInfo = "MemTotal: 16384000 kB\n", clockSource = "tsc", product = "VM", virtualizationVendor = "Microsoft",
             governor = (string?)null, osRelease = "Ubuntu", swaps = "Filename Type Size Used Priority", cgroup = "0::/", allowedCpus = "0-3", hostname = "test", bootId = "test" });
         var files = new[] { "/library", "/adapter", "/core", "/python", "/helper" }.Select(p => new ComparisonVerifyCommand.BinaryIdentity(p, hash)).ToList();
-        var receipt = new QualificationReceipt { SchemaVersion = 2, ProtocolVersion = 1, PolicyVersion = ComparisonPolicy.Version, EligibilityVersion = ComparisonPolicy.EligibilityVersion,
+        var receipt = new QualificationReceipt { SchemaVersion = 2, ProtocolVersion = ComparisonProtocol.Version, PolicyVersion = ComparisonPolicy.Version, EligibilityVersion = ComparisonPolicy.EligibilityVersion,
             Id = Guid.NewGuid().ToString("N"), Started = DateTimeOffset.UtcNow, Updated = DateTimeOffset.UtcNow,
             State = "Completed", Lane = lane, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()), PolicySha256 = QualificationEvidence.PolicyHash,
             Before = source, After = source, Files = files, FilesAfter = files.ToList(), Machine = machine, MachineAfter = machine,
@@ -819,7 +819,7 @@ public sealed class ComparisonSamplingTests
                 { schemaVersion = 1, catalogVersion = WorkloadCatalog.Version, cases = new[] { workload } })));
             for (var index = 0; index < 3; index++)
             {
-                var left = QualificationEvidence.Json(new { protocolVersion = 1, status = "Ready", engine = "Lython", catalogVersion = 1, catalogSha256 = hash,
+                var left = QualificationEvidence.Json(new { protocolVersion = ComparisonProtocol.Version, status = "Ready", engine = "Lython", catalogVersion = 1, catalogSha256 = hash,
                     processId = 100 + 2 * index,
                     runtime = runtimeDescription, runtimeVersion = runtime, architecture = "X64", processorCount = 4, benchmarkDotNetLoaded = false,
                     serverGc = false, gcLatencyMode = "Interactive", clockHighResolution = true, runtimeOverrides = new { DOTNET_PROCESSOR_COUNT = (string?)null },
@@ -836,7 +836,7 @@ public sealed class ComparisonSamplingTests
                 rightNode["captureByteLimit"] = 16 * 1024 * 1024;
                 var session = new QualificationSession { Closed = true, LythonIdentity = left, PythonIdentity = QualificationEvidence.Json(rightNode), Sampling = new() { Index = index, Lane = lane } };
                 row.Sessions.Add(session); var request = 0;
-                WorkerResponse Make(int count, double? seconds) => new(1, ++request, workload.Id, seconds is null ? "Equivalent" : "Completed", count,
+                WorkerResponse Make(int count, double? seconds) => new(ComparisonProtocol.Version, ++request, workload.Id, seconds is null ? "Equivalent" : "Completed", count,
                     seconds is null ? null : (long)Math.Round(seconds.Value * 1e9), 1_000_000_000, workload.SourceSha256, workload.FixtureSha256,
                     workload.ExpectedOutputSha256, lane == "compile" && seconds is not null ? null : workload.ExpectedOutputSha256, null);
                 void Verify(string phase) => session.Verification.Add(new(phase, Make(2, null), Make(2, null)));

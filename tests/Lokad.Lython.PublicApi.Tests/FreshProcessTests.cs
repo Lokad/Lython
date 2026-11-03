@@ -153,7 +153,7 @@ public sealed class FreshProcessTests
 
     private static JsonElement Prepared() => JsonSerializer.SerializeToElement(new
     {
-        protocolVersion = 1, status = "Ready", engine = "Fixture", catalogVersion = 1, clockFrequency = 1000,
+        protocolVersion = ComparisonProtocol.Version, status = "Ready", engine = "Fixture", catalogVersion = 1, clockFrequency = 1000,
         maximumFrameBytes = 4 * 1024 * 1024, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60,
     });
 

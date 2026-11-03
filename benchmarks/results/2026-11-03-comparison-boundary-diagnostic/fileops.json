@@ -1,0 +1,132 @@
+{
+  "rows": [
+    {
+      "mode": "WriteAllBytes",
+      "round": 0,
+      "iterations": 64,
+      "elapsedMilliseconds": 86.796,
+      "cpuMilliseconds": 7.225
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 1,
+      "iterations": 64,
+      "elapsedMilliseconds": 89.7579,
+      "cpuMilliseconds": 6.976
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 2,
+      "iterations": 64,
+      "elapsedMilliseconds": 93.6346,
+      "cpuMilliseconds": 10.429
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 3,
+      "iterations": 64,
+      "elapsedMilliseconds": 90.0386,
+      "cpuMilliseconds": 29.488
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 4,
+      "iterations": 64,
+      "elapsedMilliseconds": 85.5304,
+      "cpuMilliseconds": 7.448
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 5,
+      "iterations": 64,
+      "elapsedMilliseconds": 89.3237,
+      "cpuMilliseconds": 11.713
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 6,
+      "iterations": 64,
+      "elapsedMilliseconds": 90.7561,
+      "cpuMilliseconds": 33.706
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 7,
+      "iterations": 64,
+      "elapsedMilliseconds": 91.2112,
+      "cpuMilliseconds": 37.463
+    },
+    {
+      "mode": "WriteAllBytes",
+      "round": 8,
+      "iterations": 64,
+      "elapsedMilliseconds": 88.0332,
+      "cpuMilliseconds": 8.168
+    },
+    {
+      "mode": "FileStream",
+      "round": 0,
+      "iterations": 64,
+      "elapsedMilliseconds": 84.0479,
+      "cpuMilliseconds": 6.984
+    },
+    {
+      "mode": "FileStream",
+      "round": 1,
+      "iterations": 64,
+      "elapsedMilliseconds": 89.1857,
+      "cpuMilliseconds": 7.163
+    },
+    {
+      "mode": "FileStream",
+      "round": 2,
+      "iterations": 64,
+      "elapsedMilliseconds": 85.173,
+      "cpuMilliseconds": 14.235
+    },
+    {
+      "mode": "FileStream",
+      "round": 3,
+      "iterations": 64,
+      "elapsedMilliseconds": 85.0702,
+      "cpuMilliseconds": 7.012
+    },
+    {
+      "mode": "FileStream",
+      "round": 4,
+      "iterations": 64,
+      "elapsedMilliseconds": 87.9595,
+      "cpuMilliseconds": 6.918
+    },
+    {
+      "mode": "FileStream",
+      "round": 5,
+      "iterations": 64,
+      "elapsedMilliseconds": 93.7398,
+      "cpuMilliseconds": 6.818
+    },
+    {
+      "mode": "FileStream",
+      "round": 6,
+      "iterations": 64,
+      "elapsedMilliseconds": 93.3034,
+      "cpuMilliseconds": 6.827
+    },
+    {
+      "mode": "FileStream",
+      "round": 7,
+      "iterations": 64,
+      "elapsedMilliseconds": 90.5334,
+      "cpuMilliseconds": 6.859
+    },
+    {
+      "mode": "FileStream",
+      "round": 8,
+      "iterations": 64,
+      "elapsedMilliseconds": 89.672,
+      "cpuMilliseconds": 8.497
+    }
+  ],
+  "fixturesRemoved": true,
+  "bytesVerified": true
+}
