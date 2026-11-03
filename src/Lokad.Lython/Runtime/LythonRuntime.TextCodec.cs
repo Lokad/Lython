@@ -26,8 +26,6 @@ internal sealed partial class LythonRuntime
         PreserveCarriageReturnLineFeed,
     }
 
-    private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-
     private static string TextEncodingName(TextEncodingMode encoding) => encoding switch
     {
         TextEncodingMode.Utf8Bom => "utf-8-sig",
@@ -265,8 +263,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionState? guards = null,
-        bool copyInput = false)
+        ExecutionState? guards = null)
     {
         guards?.CheckExecution(span);
         if (utf8.Length == 0)
@@ -274,29 +271,20 @@ internal sealed partial class LythonRuntime
             return PyString.Empty;
         }
 
-        if (errors == TextErrorMode.Strict)
+        if (IsUnchangedUtf8Text(utf8.Span, newline))
         {
-            try
-            {
-                _ = StrictUtf8.GetCharCount(utf8.Span);
-                guards?.CheckExecution(span);
-            }
-            catch (DecoderFallbackException)
-            {
-                throw Utf8DecodeError(utf8.Span, governor, span, guards);
-            }
-
-            if (newline != TextNewlineMode.TranslateUniversal || !utf8.Span.Contains((byte)'\r'))
-            {
-                // Mutable streaming windows stay borrowed by the decoder.
-                // Their result must not adopt the array used by the next read.
-                return copyInput ? PyString.CopyFromUtf8(utf8.Span, governor, span)
-                    : PyString.FromUtf8(utf8, governor, span);
-            }
+            guards?.CheckExecution(span);
+            var result = PyString.FromUtf8(utf8, governor, span);
+            try { guards?.CheckExecution(span); return result; }
+            catch { governor.RefundUnpublishedValue(result); throw; }
         }
 
         return DecodeUtf8WithErrors(utf8.Span, governor, span, errors, newline, guards);
     }
+
+    private static bool IsUnchangedUtf8Text(ReadOnlySpan<byte> utf8, TextNewlineMode newline)
+        => (newline != TextNewlineMode.TranslateUniversal || !utf8.Contains((byte)'\r'))
+            && System.Text.Unicode.Utf8.IsValid(utf8);
 
     private static PyString DecodeText(ReadOnlyMemory<byte> payload, TextEncodingMode encoding, ExecutionContext context, LythonSourceSpan? span)
         => DecodeText(payload, encoding, context, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
@@ -652,20 +640,6 @@ internal sealed partial class LythonRuntime
         }
         return CodecError("UnicodeEncodeError", name, original,
             position, end, reason, governor, span, guards);
-    }
-
-    private static LythonRuntimeException Utf8DecodeError(ReadOnlySpan<byte> source, MemoryGovernor governor,
-        LythonSourceSpan? span, ExecutionState? guards)
-    {
-        var work = 0;
-        for (var offset = 0; offset < source.Length;)
-        {
-            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
-            if (!TryDecodeUtf8Rune(source[offset..], out _, out var consumed, out var invalid, out var reason))
-                return DecodeError(source, "utf-8", offset, offset + invalid, reason, governor, span, guards);
-            offset += consumed;
-        }
-        throw new InvalidOperationException("Expected an invalid UTF-8 sequence.");
     }
 
     private static PyString DecodeUtf8WithErrors(ReadOnlySpan<byte> source, MemoryGovernor governor,

@@ -11,11 +11,10 @@ internal sealed partial class LythonRuntime
     internal sealed partial class ExecutionContext
     {
         // Input storage is bounded by the current decoded UTF-8 window and raw
-        // carry. Accumulated reads admit UTF-8 working capacity before growth;
-        // returned values retain their execution/result funding after close.
-        // Long streams use bounded host-driven execution batches, not collection
-        // of discarded guest values. Shared codecs produce independently owned
-        // windows without adopting the mutable raw read buffer.
+        // carry. Unchanged UTF-8 windows borrow the admitted raw prefix until
+        // consumption; transformed windows retain their codec output funding.
+        // Accumulated reads admit capacity before growth and returned strings
+        // own independent storage. Long streams use bounded host-driven batches.
         internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot, IDisposable
         {
             // The decoded Python window is stored beside byte/carry backing.
@@ -40,7 +39,8 @@ internal sealed partial class LythonRuntime
             private int _windowBytes;
             private byte[]? _raw;
             private int _rawLength;
-            private PyString _window = PyString.Empty;
+            private ReadOnlyMemory<byte> _window;
+            private int _rawWindowLength;
             private long _windowCharge;
             private int _windowConsumed;
             private long _position;
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
             {
                 if (asynchronous) await RefillAsync().ConfigureAwait(false); else Refill();
                 if (Drained()) return -1;
-                Rune.DecodeFromUtf8(_window.Utf8Bytes.Span[_windowConsumed..], out var rune, out var consumed);
+                Rune.DecodeFromUtf8(_window.Span[_windowConsumed..], out var rune, out var consumed);
                 Advance(_windowConsumed + consumed);
                 return rune.Value;
             }
@@ -163,12 +163,12 @@ internal sealed partial class LythonRuntime
                             return EmitAccumulated(builder);
                         }
 
-                        var bytes = _window.Utf8Bytes.Span;
+                        var bytes = _window.Span;
                         var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
                         if (remaining >= 0)
                         {
-                            end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, remaining));
-                            remaining -= CountRunes(_windowConsumed, end);
+                            end = WindowEndAfterRunes(end, remaining, out var taken);
+                            remaining -= taken;
                         }
 
                         // A line ending exactly at the window edge may continue past it;
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                         {
                             if (builder is null)
                             {
-                                var line = _window.SliceByByteRange(_windowConsumed, end);
+                                var line = CopyWindowRange(_windowConsumed, end);
                                 Advance(end);
                                 _services.CheckExecution(null);
                                 return line;
@@ -214,19 +214,19 @@ internal sealed partial class LythonRuntime
                             return EmitAccumulated(builder);
                         }
 
-                        var bytes = _window.Utf8Bytes.Span;
+                        var bytes = _window.Span;
                         var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
                         if (remaining >= 0)
                         {
-                            end = Math.Min(end, _window.GetByteIndexAfterRunes(_windowConsumed, remaining));
-                            remaining -= CountRunes(_windowConsumed, end);
+                            end = WindowEndAfterRunes(end, remaining, out var taken);
+                            remaining -= taken;
                         }
 
                         if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
                         {
                             if (builder is null)
                             {
-                                var line = _window.SliceByByteRange(_windowConsumed, end);
+                                var line = CopyWindowRange(_windowConsumed, end);
                                 Advance(end);
                                 _services.CheckExecution(null);
                                 return line;
@@ -279,12 +279,12 @@ internal sealed partial class LythonRuntime
                             return EmitAccumulated(builder);
                         }
 
-                        var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
-                        if (take < _window.Utf8Bytes.Length)
+                        var take = WindowEndAfterRunes(_window.Length, remaining, out var got);
+                        if (take < _window.Length)
                         {
                             if (builder is null)
                             {
-                                var piece = _window.SliceByByteRange(_windowConsumed, take);
+                                var piece = CopyWindowRange(_windowConsumed, take);
                                 Advance(take);
                                 _services.CheckExecution(null);
                                 return piece;
@@ -296,7 +296,6 @@ internal sealed partial class LythonRuntime
 
                         // Reaching the window end may mean an exact fit or a shortfall;
                         // counting runes disambiguates without an extra pull.
-                        var got = CountRunes(_windowConsumed, take);
                         builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
                         AppendRange(builder, _windowConsumed, take);
                         if (got >= remaining)
@@ -324,12 +323,12 @@ internal sealed partial class LythonRuntime
                             return EmitAccumulated(builder);
                         }
 
-                        var take = _window.GetByteIndexAfterRunes(_windowConsumed, remaining);
-                        if (take < _window.Utf8Bytes.Length)
+                        var take = WindowEndAfterRunes(_window.Length, remaining, out var got);
+                        if (take < _window.Length)
                         {
                             if (builder is null)
                             {
-                                var piece = _window.SliceByByteRange(_windowConsumed, take);
+                                var piece = CopyWindowRange(_windowConsumed, take);
                                 Advance(take);
                                 _services.CheckExecution(null);
                                 return piece;
@@ -339,7 +338,6 @@ internal sealed partial class LythonRuntime
                             return EmitAccumulated(builder);
                         }
 
-                        var got = CountRunes(_windowConsumed, take);
                         builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
                         AppendRange(builder, _windowConsumed, take);
                         if (got >= remaining)
@@ -367,7 +365,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        var bytes = _window.Utf8Bytes.Span;
+                        var bytes = _window.Span;
                         AppendRange(builder, _windowConsumed, bytes.Length);
                     }
                 }
@@ -388,7 +386,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        var bytes = _window.Utf8Bytes.Span;
+                        var bytes = _window.Span;
                         AppendRange(builder, _windowConsumed, bytes.Length);
                     }
                 }
@@ -404,7 +402,7 @@ internal sealed partial class LythonRuntime
             }
 
             private bool Drained()
-                => _eof && _rawLength == 0 && _windowConsumed >= _window.Utf8Bytes.Length;
+                => _eof && _rawLength == 0 && _windowConsumed >= _window.Length;
 
             // A terminator ending exactly at the window edge is complete: the
             // carriage-return holdback reunites split CRLF pairs, so a trailing
@@ -413,7 +411,7 @@ internal sealed partial class LythonRuntime
             // and merge with the following line.
             private bool EndsWithTerminator()
             {
-                var bytes = _window.Utf8Bytes.Span;
+                var bytes = _window.Span;
                 var length = bytes.Length;
                 if (length == _windowConsumed || bytes[length - 1] != (byte)'\n')
                 {
@@ -432,7 +430,7 @@ internal sealed partial class LythonRuntime
             // UTF-8 window; no second UTF-16 cursor or decoding pass is needed.
             private void Advance(int byteEnd)
             {
-                var bytes = _window.Utf8Bytes.Span;
+                var bytes = _window.Span;
                 Debug.Assert(byteEnd >= _windowConsumed && byteEnd <= bytes.Length, "chunked reader advanced outside its window");
                 Debug.Assert(byteEnd == bytes.Length || (bytes[byteEnd] & 0xC0) != 0x80, "chunked reader crossed a rune boundary");
                 _position += byteEnd - _windowConsumed;
@@ -443,33 +441,40 @@ internal sealed partial class LythonRuntime
             {
                 Debug.Assert(byteStart == _windowConsumed, "chunked reader appends out of order");
                 // Admission and copying finish before this append changes the cursor.
-                builder.Append(_window.Utf8Bytes.Span.Slice(byteStart, byteEnd - byteStart));
+                builder.Append(_window.Span.Slice(byteStart, byteEnd - byteStart));
                 Advance(byteEnd);
             }
 
-            private int CountRunes(int byteStart, int byteEnd)
+            private PyString CopyWindowRange(int start, int end)
+                => start >= end ? PyString.Empty
+                    : PyString.CopyFromUtf8(_window.Span[start..end], _services.MemoryGovernor, null);
+
+            private int WindowEndAfterRunes(int limit, int maximum, out int count)
             {
-                // Window content is decoded and valid by construction, so every
-                // unit decodes; the fallback only guards the impossible.
-                var count = 0;
-                var span = _window.Utf8Bytes.Span[byteStart..byteEnd];
-                while (!span.IsEmpty)
+                var bytes = _window.Span[..limit];
+                var offset = _windowConsumed;
+                count = 0;
+                while (offset < bytes.Length && count < maximum)
                 {
-                    if (Rune.DecodeFromUtf8(span, out _, out var consumed) != OperationStatus.Done)
+                    var scanLength = Math.Min(maximum - count, bytes.Length - offset);
+                    var prefix = bytes.Slice(offset, scanLength).IndexOfAnyExceptInRange((byte)0, (byte)0x7f);
+                    if (prefix != 0)
                     {
-                        consumed = 1;
+                        var take = prefix < 0 ? scanLength : prefix;
+                        count += take;
+                        offset += take;
+                        continue;
                     }
-
+                    var lead = bytes[offset];
+                    offset += lead < 0xe0 ? 2 : lead < 0xf0 ? 3 : 4;
                     count++;
-                    span = span[consumed..];
                 }
-
-                return count;
+                return offset;
             }
 
             private void Refill()
             {
-                while (_windowConsumed >= _window.Utf8Bytes.Length)
+                while (_windowConsumed >= _window.Length)
                 {
                     ReleaseWindow();
                     if (_eof && _rawLength == 0)
@@ -483,7 +488,7 @@ internal sealed partial class LythonRuntime
 
             private async ValueTask RefillAsync()
             {
-                while (_windowConsumed >= _window.Utf8Bytes.Length)
+                while (_windowConsumed >= _window.Length)
                 {
                     ReleaseWindow();
                     if (_eof && _rawLength == 0)
@@ -723,25 +728,36 @@ internal sealed partial class LythonRuntime
                 ReleaseWindow();
                 if (head == 0)
                 {
-                    _window = PyString.Empty;
+                    _window = default;
                     return;
                 }
 
                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
-                _window = _encoding switch
+                if (_encoding is TextEncodingMode.Utf8 or TextEncodingMode.Utf8Bom
+                    && IsUnchangedUtf8Text(source, _newline))
                 {
-                    TextEncodingMode.Ascii => DecodeAsciiText(source, _services, null, _errors, _newline),
-                    TextEncodingMode.Windows1252 => DecodeWindows1252Text(source, _services, null, _errors, _newline),
-                    TextEncodingMode.Latin1 => DecodeLatin1Text(source, _services, null, _newline),
-                    _ when IsUtf16Encoding(_encoding) => DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline),
-                    _ => DecodeUtf8Text(new ReadOnlyMemory<byte>(_raw!, 0, head), _services.MemoryGovernor,
-                        null, _errors, _newline, _services, copyInput: true),
-                };
-                _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
+                    _services.CheckExecution(null);
+                    // The raw prefix cannot move or be refilled while this view
+                    // is active. Returned values acquire their independent copy.
+                    _window = _raw.AsMemory(0, head);
+                }
+                else
+                {
+                    var decoded = _encoding switch
+                    {
+                        TextEncodingMode.Ascii => DecodeAsciiText(source, _services, null, _errors, _newline),
+                        TextEncodingMode.Windows1252 => DecodeWindows1252Text(source, _services, null, _errors, _newline),
+                        TextEncodingMode.Latin1 => DecodeLatin1Text(source, _services, null, _newline),
+                        _ when IsUtf16Encoding(_encoding) => DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline),
+                        _ => DecodeUtf8Text(_raw.AsMemory(0, head), _services.MemoryGovernor,
+                            null, _errors, _newline, _services),
+                    };
+                    _window = decoded.Utf8Bytes;
+                    _windowCharge = decoded.OwnerMemoryGovernor is null ? 0 : decoded.CommittedOwnedBytes;
+                }
                 _windowConsumed = 0;
-                Buffer.BlockCopy(_raw!, head, _raw!, 0, _rawLength - head);
-                _rawLength -= head;
+                _rawWindowLength = head;
             }
 
             private void ReleaseWindow()
@@ -752,8 +768,16 @@ internal sealed partial class LythonRuntime
                     _windowCharge = 0;
                 }
 
-                _window = PyString.Empty;
+                // Retire the decoded view before compacting its raw prefix.
+                // The same rule applies to borrowed and transformed windows.
+                _window = default;
                 _windowConsumed = 0;
+                if (_rawWindowLength > 0)
+                {
+                    Buffer.BlockCopy(_raw!, _rawWindowLength, _raw!, 0, _rawLength - _rawWindowLength);
+                    _rawLength -= _rawWindowLength;
+                    _rawWindowLength = 0;
+                }
             }
 
         }

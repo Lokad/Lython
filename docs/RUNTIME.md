@@ -60,11 +60,13 @@ translation and supported positioning remain in Lython. Unchanged UTF-8 output
 borrows admitted writer storage; other encodings fund their replacement overlap
 through actual publication. Path helpers, local imports and archive input use the
 same owned-file capability. Whole-file reads grow admitted storage in bounded
-windows and fund final-copy overlap before publishing the value. Text helpers use
-the shared whole-buffer decoder, retaining input funding until the result is charged.
+chunks and fund capacity and construction overlap before publication. Text helpers
+use the shared decoder, retaining input funding until the result is charged.
 UTF-8 and Latin-1 decoding produces admitted native text directly, including
-UTF-8 error handling and newline translation. Mutable raw windows are copied into
-independent owned text before the next read reuses them. UTF-8 replacement, ignored
+UTF-8 error handling and newline translation. Text readers borrow unchanged valid
+UTF-8 from the admitted raw prefix; transformed windows retain codec output funding.
+Carry compaction and refill wait until the current window is relinquished. Returned
+text always owns independent immutable storage before raw-buffer reuse. UTF-8 replacement, ignored
 bytes and backslash escapes preserve Python malformed-unit grouping; newline
 translation follows error handling. Output is sized before its allocation and
 remains charged to its owner, without an intermediate UTF-16 string/builder.

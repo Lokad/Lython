@@ -7,6 +7,13 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [reader-owned window milestone](results/2026-11-03-reader-owned-windows/README.md)
+borrows unchanged UTF-8 directly until window retirement, removing an intermediate
+string/copy and reader rune-offset cache. Whole-script allocation falls1–2.75%,
+block-read allocation10–15%. Elapsed is mixed, some async identical-source controls
+differ53%, and sync CSV/JSON changes remain provisional regression debt. All
+observations remain; the combined storage/CPython checkpoint decides the tradeoffs.
+
 The [direct casing storage milestone](results/2026-11-03-direct-casing-storage/README.md)
 replaces mutable casing builders with one admitted immutable backing and static
 UTF-8 expansions. Exact two-pass mapping initially ran48–55% slower in the long

@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "3eee2a0e plus B183 source patch",
+  "coreSHA256": {
+    "before-control": "1daa28e48982052e006ce3a6b00ceebdc153b2cc874be72d4dbd0ea70d52d2cb",
+    "candidate": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9",
+    "after-control": "1daa28e48982052e006ce3a6b00ceebdc153b2cc874be72d4dbd0ea70d52d2cb"
+  }
+}

@@ -16,7 +16,7 @@ public sealed class CasingStorageLifetimeTests
         using var cancellation = new CancellationTokenSource();
         using (var owner = root.CreateScope())
         {
-            var hook = new AdmissionHook(owner);
+            var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var input = PyString.FromString("aBcD", context.MemoryGovernor, Span);
@@ -41,7 +41,7 @@ public sealed class CasingStorageLifetimeTests
         var root = new LythonMemoryBudget(1024 * 1024);
         using (var owner = root.CreateScope())
         {
-            var hook = new AdmissionHook(owner);
+            var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
             var input = PyString.FromString("aBcD", context.MemoryGovernor, Span);
             var before = root.ReservedBytes;
@@ -101,7 +101,7 @@ public sealed class CasingStorageLifetimeTests
         using var cancellation = new CancellationTokenSource();
         using (var owner = root.CreateScope())
         {
-            var hook = new AdmissionHook(owner);
+            var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var input = PyString.FromString(new string('A', 256 * 1024), context.MemoryGovernor, Span);
@@ -127,7 +127,7 @@ public sealed class CasingStorageLifetimeTests
         using var cancellation = new CancellationTokenSource();
         using (var owner = root.CreateScope())
         {
-            var hook = new AdmissionHook(owner);
+            var hook = new AdmissionHookMemoryBudget(owner);
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
             { MemoryBudget = hook, CancellationToken = cancellation.Token });
             var text = ExpansionInput(upper);
@@ -182,31 +182,4 @@ public sealed class CasingStorageLifetimeTests
     private static PyString Apply(PyString input, bool upper, LythonRuntime.ExecutionContext context)
         => upper ? PyStringOps.Upper(input, context, Span) : PyStringOps.Lower(input, context, Span);
 
-    private sealed class AdmissionHook(ILythonMemoryBudget parent) : ILythonMemoryBudget
-    {
-        internal Action<long>? AfterGrowth;
-        internal Func<long, bool>? RefuseGrowth;
-        public ILythonMemoryScope CreateScope() => parent.CreateScope();
-        public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
-        {
-            if (bytes > 0 && RefuseGrowth?.Invoke(bytes) == true) { reservation = null; return false; }
-            if (!parent.TryReserve(bytes, out var admitted)) { reservation = null; return false; }
-            reservation = new ProbeReservation(this, admitted);
-            AfterGrowth?.Invoke(bytes);
-            return true;
-        }
-        private sealed class ProbeReservation(AdmissionHook hook, ILythonMemoryReservation inner) : ILythonMemoryReservation
-        {
-            public long Bytes => inner.Bytes;
-            public bool TryResize(long bytes)
-            {
-                var old = inner.Bytes;
-                if (bytes > old && hook.RefuseGrowth?.Invoke(bytes - old) == true) return false;
-                if (!inner.TryResize(bytes)) return false;
-                if (bytes > old) hook.AfterGrowth?.Invoke(bytes - old);
-                return true;
-            }
-            public void Dispose() => inner.Dispose();
-        }
-    }
 }
