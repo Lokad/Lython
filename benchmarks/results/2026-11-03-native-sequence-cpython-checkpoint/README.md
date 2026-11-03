@@ -51,7 +51,8 @@ The authoritative guide is updated with these four current rows while retaining
 older config/filesystem cases under their own source/storage labels. No changed
 runtime is inferred from observer source identities; exact core hashes are checked
 at worker readiness. Core delivery qualification belongs to the separately tracked
-B171 source checkpoint, not this timing collection. Publication remains postponed.
+B171 source checkpoint, not this timing collection: full 41682308042 GREEN at
+exact b7a0f40a, [cached receipt](../2026-11-03-native-sequence-operands/delivery-ci-status.json). Publication remains postponed.
 
 [Assessment](assessment.json), [complete observations](observations.tgz),
 [source identity](identity.json), [exact scripts/fixtures](representative.json),

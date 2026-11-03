@@ -2116,7 +2116,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   SOURCE-ROLE-SWAPPED report confirmation reproduces sync elapsed +1.33–1.36%,
   CPU +1.37–1.62%, allocation +0.33%. Explicit accepted tradeoff/debt for later
   complete activation work, no claim every script improves. Both-framework focused
-  802 public/214 internal PASS; full 41682308042 active. All original observations,
+  802 public/214 internal PASS; full 41682308042 GREEN at exact b7a0f40a; terminal receipt cached. All original observations,
   confirmation, semantics, balances, gates and joined users retained.
 
 - [Current native-sequence CPython checkpoint, B172](results/2026-11-03-native-sequence-cpython-checkpoint/README.md):

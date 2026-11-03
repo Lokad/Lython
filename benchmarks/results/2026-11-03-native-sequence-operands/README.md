@@ -1,8 +1,9 @@
 # B171: private native sequence iteration
 
 2026-11-03. **Retain with the documented synchronous report tradeoff.** Source **b7a0f40a**, committed/pushed. Focused Release 802 public/214 white-box
-per actual .NET 11/.NET 10 pass. Full Windows/Ubuntu, both-framework, installed
-consumer and original stress delivery **41682308042 ACTIVE**. Publication postponed; whole-script performance stays open.
+per actual .NET 11/.NET 10 pass. Full delivery **41682308042 GREEN** at exact source: Windows/Ubuntu, actual
+.NET 11/.NET 10, installed package consumers and original stress scales.
+[Cached exact-source receipt](delivery-ci-status.json). Publication postponed; whole-script performance stays open.
 
 Exact list/tuple loops keep their source in the existing private operand slot,
 with one lazily admitted fixed-size position array. This removes recurring general
