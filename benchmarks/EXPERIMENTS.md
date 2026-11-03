@@ -2030,7 +2030,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   retained b3f1e9c3; one encoder/codec, unpublished producer strings removed.
   Config warm/fresh −19.6/−16.3%, allocation −37.8%; CSV allocation −10.2%, elapsed
   flat. Preserve control drift, small allocation uncertainty and the successful
-  VM service followed by a trailing-CR controller error. Full delivery pending.
+  VM service followed by a trailing-CR controller error. Full delivery41625654805 GREEN.
 
 - [Current call-cost source gate, B159](results/2026-11-03-current-call-costs/README.md):
   exact B158 source, two complete-script CPU captures. Binding-only storage

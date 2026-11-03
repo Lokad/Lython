@@ -114,9 +114,10 @@ The encoder-continuation regression first exposed the class-method global-fact
 bug, fixed separately inca4822f4 with214 focused public cases per target.
 
 Full Windows/Ubuntu .NET11/.NET10, original Stress and installed Release consumers
-are **pending** in [41625654805](https://github.com/Lokad/Lython/actions/runs/41625654805)
-for exactb3f1e9c3. This receipt is not a claim that those steps passed. B157 is
-already fully qualified separately; publication remains postponed.
+are **complete/GREEN** in [41625654805](https://github.com/Lokad/Lython/actions/runs/41625654805)
+for exactb3f1e9c3. Every required step in both jobs is verified in the
+[cached receipt](delivery-ci-status.json). B157 is independently qualified;
+publication remains postponed.
 
 The owned VM service exited0 in216.279 seconds. The outer PowerShell text pipe
 then fed a trailing carriage-return line to bash and returned127; retain
