@@ -138,8 +138,7 @@ internal sealed partial class LythonRuntime
                 // the whole record at its admitted capacity, preserving first
                 // insertion order and the last value for duplicate names.
                 var capacity = checked(names.Count + (row.Count > names.Count ? 1 : 0));
-                var storage = PyDictStorage.Create(capacity, _context.MemoryGovernor, _span);
-                var record = new PyDict(storage, _context.MemoryGovernor, _span);
+                var record = new PyDict(capacity, _context.MemoryGovernor, _span);
                 using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
                 for (var i = 0; i < names.Count; i++)
                 {

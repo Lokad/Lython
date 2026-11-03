@@ -46,15 +46,20 @@ public sealed class DictStorageOriginalAccountingTests
     {
         var dictionary = new PyDict();
         dictionary.SetItem(new BigInteger(1), new BigInteger(2));
+        var values = dictionary.Values;
         var denied = new MemoryGovernor(new LythonMemoryBudget(1));
         var error = Assert.Throws<LythonRuntimeException>(() => dictionary.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(dictionary.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
+        Assert.Equal(new BigInteger(2), dictionary.GetItem(BigInteger.One));
         var funded = new MemoryGovernor(new LythonMemoryBudget(4096));
         dictionary.AttachMemoryGovernor(funded);
         Assert.Same(funded, dictionary.OwnerMemoryGovernor);
         Assert.True(dictionary.CommittedStorageBytes > 0);
         Assert.Equal(dictionary.CommittedStorageBytes, funded.CurrentCommittedBytes);
+        Assert.Equal(new BigInteger(2), dictionary.GetItem(BigInteger.One));
+        dictionary.SetItem(BigInteger.One, new BigInteger(3));
+        Assert.Equal(new BigInteger(3), Assert.Single(values));
     }
 }

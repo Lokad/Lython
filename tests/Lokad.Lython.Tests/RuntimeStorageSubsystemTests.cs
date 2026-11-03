@@ -167,7 +167,7 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void DictionaryStorage_SetItemReportsAddVersusUpdate()
     {
-        var storage = PyDictStorage.Create();
+        IPyDictStorage storage = new PyDict();
         var key = PyString.FromString("name");
 
         Assert.True(storage.SetItem(key, PyString.FromString("lokad")));

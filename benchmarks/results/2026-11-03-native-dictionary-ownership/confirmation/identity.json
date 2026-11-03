@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "B186 same-bit SOURCE ROLES SWAPPED: before/after-control=NEW4a64, candidate=qualified OLD0f14; six jobs target original adverse compile/config and report execution; normal profile unchanged",
+  "coreSHA256": {
+    "before-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "candidate": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9",
+    "after-control": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371"
+  }
+}

@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
+internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyDictStorage, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
@@ -32,10 +32,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     internal const long ProtocolEntryBytes = 64;
 
-    public PyDict()
-    {
-        _items = PyDictStorage.Create();
-    }
+    public PyDict() : this(0, null, null) { }
 
     public PyDict(MemoryGovernor governor) : this(governor, null) { }
 
@@ -46,11 +43,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _allocationSpan = allocationSpan;
     }
 
-    public PyDict(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    public PyDict(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(0, governor, allocationSpan) { }
+
+    internal PyDict(int capacity, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = PyDictStorage.Create(0, governor, allocationSpan);
+        InitializeNativeStorage(capacity, governor, allocationSpan);
+        _items = this;
     }
 
     public PyDict(PyDict other) : this(other, other._memoryGovernor, other._allocationSpan) { }
@@ -61,7 +61,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = PyDictStorage.Create(other._items, governor, allocationSpan);
+        InitializeNativeStorage(other.Count, governor, allocationSpan);
+        _items = this;
+        CopyNativeEntries(other._items.Entries, governor, allocationSpan);
         _protocolSeq = other._protocolSeq;
         try
         {
@@ -247,7 +249,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     internal void AddKeysFrom(PyDict source, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
         using var ambient = context is null ? default : PyStructuralGuard.PushAmbient(context, span);
-        using var entries = source._items.GetEnumerator();
+        using var entries = source._items.Entries.GetEnumerator();
         var expectedVersion = source._version;
         var protocolIndex = 0;
         while (true)
@@ -302,14 +304,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
         var span = _allocationSpan ?? allocationSpan;
-        IPyDictStorage? storage = null;
+        PyDict? storage = null;
         ProtocolSideIndex? sideIndex = null;
         var protocolBytes = checked((long)(_protocol?.Count ?? 0) * ProtocolEntryBytes);
         governor.Reserve(protocolBytes, span);
         try
         {
             using var scratch = governor.ReserveTemporary(checked(16L * Count), span);
-            storage = PyDictStorage.Create(_items, governor, span);
+            storage = CopyStorage(_items, governor, span);
             if (_sideIndex is not null)
             {
                 sideIndex = new ProtocolSideIndex();
@@ -319,12 +321,19 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         catch
         {
             governor.ReleaseReserved(protocolBytes);
-            if (storage is not null) governor.Release(storage.ReleaseCommittedBytes());
+            if (storage is not null) governor.Release(((IPyDictStorage)storage).ReleaseCommittedBytes());
             sideIndex?.ReleaseAll(governor);
             throw;
         }
         governor.Commit(protocolBytes);
-        _items = storage;
+        _nativeItems = storage._nativeItems;
+        _nativeCapacity = storage._nativeCapacity;
+        _nativeCommittedBytes = storage._nativeCommittedBytes;
+        storage._nativeItems = null;
+        storage._nativeCapacity = 0;
+        storage._nativeCommittedBytes = 0;
+        storage._items = null!;
+        _items = this;
         _sideIndex = sideIndex;
         _protocolBytes = protocolBytes;
         _memoryGovernor = governor;
@@ -452,7 +461,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         var storeHit = -1;
         var probe = 0;
-        foreach (var pair in _items)
+        foreach (var pair in _items.Entries)
         {
             if ((++work & 63) == 0)
             {
@@ -471,7 +480,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (storeHit >= 0)
         {
             using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
-            var storeSnapshot = _items.ToArray();
+            var storeSnapshot = _items.Entries.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
                 // The hit entry already consumed its budget check above.
@@ -591,7 +600,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         var storeHit = -1;
         var probe = 0;
-        foreach (var pair in _items)
+        foreach (var pair in _items.Entries)
         {
             if ((++work & 63) == 0)
             {
@@ -610,7 +619,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (storeHit >= 0)
         {
             using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
-            var storeSnapshot = _items.ToArray();
+            var storeSnapshot = _items.Entries.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
                 // The hit entry already consumed its budget check above.
@@ -703,7 +712,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private int StorageKeyIndex(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_items is OrderedPyDictStorage ordered) return ordered.IndexOf(key);
+        if (_nativeItems is { } native) return native.IndexOf(key);
         // Live namespace bridges expose their existing order, without adding
         // another index or materializing their values.
         var index = 0;
@@ -805,7 +814,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             // Protocol entries were already examined through the index. Only
             // native keys can require the structural-store fallback now.
             var nativeMatch = false;
-            foreach (var pair in _items)
+            foreach (var pair in _items.Entries)
             {
                 context.CheckExecution(useSpan);
                 if (!PyHashProtocols.NeedsProtocolKey(pair.Key) &&
@@ -820,7 +829,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             if (nativeMatch)
             {
                 using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + 16L * _items.Count), useSpan);
-                var storeSnapshot = _items.ToArray();
+                var storeSnapshot = _items.Entries.ToArray();
                 foreach (var pair in storeSnapshot)
                 {
                     context.CheckExecution(useSpan);
@@ -880,7 +889,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _sideIndex!.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
             try
             {
-                _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+                _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
                 _items.AddNew(storageKey, storageValue);
                 _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
             }
@@ -951,7 +960,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         var storeHit = -1;
         var probe = 0;
-        foreach (var pair in _items)
+        foreach (var pair in _items.Entries)
         {
             if ((++work & 63) == 0)
             {
@@ -970,7 +979,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         if (storeHit >= 0)
         {
             using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
-            var storeSnapshot = _items.ToArray();
+            var storeSnapshot = _items.Entries.ToArray();
             for (var i = storeHit; i < storeSnapshot.Length; i++)
             {
                 if (i > storeHit && (++work & 63) == 0)
@@ -1237,7 +1246,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private IEnumerable<KeyValuePair<object, object>> EnumerateItems(int expectedVersion)
     {
-        using var enumerator = _items.GetEnumerator();
+        using var enumerator = _items.Entries.GetEnumerator();
         while (true)
         {
             EnsureUnmodified(expectedVersion);
@@ -1266,7 +1275,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             // Replacement retains the original equal key and changes no size.
             // Only a missing entry requires capacity admission and insertion.
             if (_items.TrySetExisting(storageKey, storageValue)) return;
-            _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+            _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
             _items.AddNew(storageKey, storageValue);
         }
         finally
@@ -1285,6 +1294,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         RefundAbortedConstruction();
         _items = null!;
+        _nativeItems = null;
         _protocol = null;
     }
 

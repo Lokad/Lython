@@ -131,6 +131,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Native dictionary ownership |CSV/JSON/report allocation−1.7–2.4% /−1.1%; confirmed report elapsed−4–5% Run/−1.6–2.1% RunAsync|[B186 versus7a3a8afe; compilation near/slightly above controls, config async variable; original adverse points retained](../benchmarks/results/2026-11-03-native-dictionary-ownership/README.md)|
 | Combined loop/string/casing/reader storage |Report elapsed−2.7–4.5% warm /−3.7–4.3% fresh versus pre-loop B166|[Direct coupled pair; sync report debt offset; CSV+1–2% and fresh JSON+1.8–1.9% accepted, fresh text uncertain](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)|
 | Reader-owned UTF-8 windows |Complete-script allocation−1–2.75%; block reads−10–15%|[Fewer copies/cache storage; mixed elapsed, unstable async controls and provisional CSV/JSON debt](../benchmarks/results/2026-11-03-reader-owned-windows/README.md)|
 | Direct casing storage |Text allocation−5.92%; warm elapsed−3.7% Run/−9.8% RunAsync against old roles|[Conservative capacity; moving controls, Unicode near unchanged, long ASCII inconclusive](../benchmarks/results/2026-11-03-direct-casing-storage/README.md)|

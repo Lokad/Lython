@@ -30,7 +30,7 @@ public sealed class DictionaryCopyLifetimeTests
         using (var owner = root.CreateScope())
         {
             var governor = new MemoryGovernor(owner);
-            var failure = Assert.Throws<LythonRuntimeException>(() => PyDictStorage.Create(Pairs(), governor, Span));
+            var failure = Assert.Throws<LythonRuntimeException>(() => PyDict.CopyStorage(Pairs(), governor, Span));
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.InRange(produced, 1, 63);
             Assert.True(disposed);
@@ -38,7 +38,7 @@ public sealed class DictionaryCopyLifetimeTests
             Assert.Equal(0, root.ReservedBytes);
         }
         using (var owner = root.CreateScope())
-            Assert.Equal(0, PyDictStorage.Create(0, new MemoryGovernor(owner), Span).Count);
+            Assert.Equal(0, new PyDict(0, new MemoryGovernor(owner), Span).Count);
         Assert.Equal(0, root.ReservedBytes);
     }
 
@@ -69,7 +69,7 @@ public sealed class DictionaryCopyLifetimeTests
             var baseline = root.ReservedBytes;
             using var ambient = PyStructuralGuard.PushAmbient(context, Span);
             var failure = Assert.Throws<LythonRuntimeException>(() =>
-                PyDictStorage.Create(Pairs(), context.MemoryGovernor, Span));
+                PyDict.CopyStorage(Pairs(), context.MemoryGovernor, Span));
             Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
             Assert.InRange(produced, 10, 138);
             Assert.True(disposed);

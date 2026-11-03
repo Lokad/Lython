@@ -27,7 +27,7 @@ internal static partial class PyDataclass
                     return PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, backing);
                 }
                 PyDict? result = !tuple && factory is null
-                    ? new PyDict(PyDictStorage.Create(fields.Items.Count, context.MemoryGovernor, span), context.MemoryGovernor, span) : null;
+                    ? new PyDict(fields.Items.Count, context.MemoryGovernor, span) : null;
                 var arguments = result is null ? new PyList(fields.Items.Count, context.MemoryGovernor, span) : null;
                 var exposed = false;
                 try
@@ -72,7 +72,7 @@ internal static partial class PyDataclass
             }
             if (value is PyDict dict)
             {
-                var result = new PyDict(PyDictStorage.Create(dict.Count, context.MemoryGovernor, span), context.MemoryGovernor, span);
+                var result = new PyDict(dict.Count, context.MemoryGovernor, span);
                 try
                 {
                     foreach (var pair in dict)

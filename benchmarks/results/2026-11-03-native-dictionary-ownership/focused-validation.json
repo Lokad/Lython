@@ -1,0 +1,12 @@
+{
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "internalPerFramework": 206,
+  "publicPerFramework": 2021,
+  "status": "PASS",
+  "warnings": 0,
+  "errors": 0,
+  "coverage": "native/protocol/ordered storage, copy/attach rollback, retained aliases, live namespaces/environment, CSV/JSON/dataclasses, real async callbacks, cancellation and shared admission"
+}

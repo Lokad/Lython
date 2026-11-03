@@ -275,6 +275,12 @@ Dictionary write-key equality also requires synchronous completion. Native-key
 lookup equality can suspend under RunAsync; string, integer and tuple lookups
 share the same resolution and current execution context.
 
+Ordinary dictionaries own their ordered table and retained-capacity accounting
+directly. Namespace and environment views forward to their live backing instead.
+Raw storage scans remain separate from Python's mutation-checked iteration.
+Copies and ownership attachment admit a private destination before publishing it;
+capacity growth keeps the previous table funded through replacement.
+
 `str.format` and `format_map` scan field structure and nested specifications as
 borrowed UTF-8. Names, suffixes and the final specification decode only at the
 existing resolver/formatter boundary. Temporary metadata and nested working

@@ -51,8 +51,8 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
             return newName;
         }
         var added = !ContainsKey(key);
-        _extra ??= PyDictStorage.Create(0, _governor, _span);
-        _extra = PyDictStorage.EnsureCapacity(_extra, _extra.Count + (added ? 1 : 0), _governor, _span);
+        _extra ??= new PyDict(_governor, _span);
+        _extra.EnsureCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
         _extra.SetItem(key, value);
         return added;
     }
@@ -75,7 +75,8 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
         foreach (var name in _values.Keys.ToArray()) _instance!.RemoveAttribute(name);
         _extra?.Clear();
     }
-    public IPyDictStorage Clone() => PyDictStorage.Create(this);
+    public IEnumerable<KeyValuePair<object, object>> Entries => this;
+    public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
     public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live attribute namespace retains its backing.");
     private void RequireWritable()
     {
@@ -98,7 +99,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
     {
         foreach (var pair in _values) yield return new(Label(pair.Key), pair.Value);
-        if (_extra is not null) foreach (var pair in _extra) yield return pair;
+        if (_extra is not null) foreach (var pair in _extra.Entries) yield return pair;
     }
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

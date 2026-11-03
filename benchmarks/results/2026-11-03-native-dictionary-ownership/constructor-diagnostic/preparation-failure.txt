@@ -1,0 +1,1 @@
+Initial diagnostic launcher failed before measuring: Expression.Constant inferred BigInteger expression type for object-typed SetItem arguments. Corrected by specifying typeof(object) for already boxed constants. No runtime source change, no failed observation discarded.

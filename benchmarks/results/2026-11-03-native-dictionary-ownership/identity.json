@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "7b63896e plus B186 native dictionary owner patch",
+  "coreSHA256": {
+    "before-control": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9",
+    "candidate": "4a64c429c3590bc29bb08a42c829fdee354604a8d50c7673bb0843d78b2c8371",
+    "after-control": "0f143a6c68393a6149202e6238e8e6e4d62e61e775b545bd2868bc4d38aa47a9"
+  }
+}

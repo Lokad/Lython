@@ -307,11 +307,8 @@ internal sealed partial class LythonRuntime
         void IPyDictStorage.AddNew(object key, object value) => SetSubscript(key, value, _allocationSpan);
         bool IPyDictStorage.Remove(object key) => RemoveKey(key, _allocationSpan);
         void IPyDictStorage.Clear() => Clear();
-        IPyDictStorage IPyDictStorage.Clone()
-        {
-            using var working = _governor.ReserveTemporary(64L + 16L * Count, _allocationSpan);
-            return PyDictStorage.Create((IEnumerable<KeyValuePair<object, object>>)this, _governor, _allocationSpan);
-        }
+        IEnumerable<KeyValuePair<object, object>> IPyDictStorage.Entries => this;
+        void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
         long IPyDictStorage.CommittedBytes => 0; // The shared execution owner retains native backing.
         long IPyDictStorage.ReleaseCommittedBytes() => throw new InvalidOperationException("A live environment retains its backing.");
         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()

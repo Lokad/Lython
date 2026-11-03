@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
             root.MemoryGovernor.Commit(BridgeBytes);
             _root = root;
             _span = span;
-            _entries = PyDictStorage.Create(0, root.MemoryGovernor, span);
+            _entries = new PyDict(root.MemoryGovernor, span);
             _ownedVariables = CountOwnedModuleVariables(root);
         }
 
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
             var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Bytes.Span);
             using var entryFunding = _root.MemoryGovernor.ReserveTemporary(entryBytes, _span);
             var name = textKey?.ToString();
-            _entries = PyDictStorage.EnsureCapacity(_entries, Count + 1, _root.MemoryGovernor, _span);
+            _entries.EnsureCapacity(Count + 1, _root.MemoryGovernor, _span);
             if (name is not null)
             {
                 // All funding checks precede changing the visible module binding.
@@ -168,11 +168,12 @@ internal sealed partial class LythonRuntime
             _names.Clear();
         }
 
-        public IPyDictStorage Clone() => PyDictStorage.Create(this, null);
+        public IEnumerable<KeyValuePair<object, object>> Entries => this;
+        public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
         public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live namespace keeps its bridge storage.");
         public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
         {
-            foreach (var pair in _entries)
+            foreach (var pair in _entries.Entries)
                 if (TryGetValue(pair.Key, out var value)) yield return new(pair.Key, value);
         }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
