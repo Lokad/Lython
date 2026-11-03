@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Read evaluated call targets once and share ordinary call selection and result
+  transfer across both APIs. Keep native values outside async call wrappers and
+  preserve dynamic binding, suspended users and argument-storage cleanup.
+
 - Share the synchronous instruction loop with asynchronous execution, resuming
   after incomplete operations and awaited cleanup. Preserve original error spans,
   cancellation, memory ownership and dynamic member behavior.

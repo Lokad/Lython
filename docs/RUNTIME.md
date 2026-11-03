@@ -200,6 +200,11 @@ Large native-call argument packets acquire separate working admission before
 allocation, even when the operand buffer already has capacity. Their reservation
 lasts through the awaited call and cleanup; construction observes cancellation.
 The existing tiny cleared argument pools use control headroom.
+Each call opcode reads its evaluated target once and offers it to the executable
+frame runner. Other calls share native/general target selection and completed
+stack-value transfer across both APIs. Native results travel as objects;
+potentially asynchronous branches retain operands and argument funding until
+their actual completion. Dynamic calls keep the general binder.
 Return values and failures resume the existing instruction
 and exception routing. Prepared operations route directly to their existing
 handler; native stores do not traverse asynchronous display and definition

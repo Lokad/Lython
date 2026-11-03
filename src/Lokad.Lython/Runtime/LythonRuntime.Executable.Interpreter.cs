@@ -451,18 +451,7 @@ internal sealed partial class LythonRuntime
                     catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
 
-                case ExecutableOpCode.Call:
-                    ExecuteExecutableCall(
-                        _codeObject.CallSites[instruction.CallSiteIndex],
-                        ref _stack,
-                        _context);
-                    break;
-
-                case ExecutableOpCode.Subscript:
                 case ExecutableOpCode.Slice:
-                case ExecutableOpCode.Binary:
-                case ExecutableOpCode.Augmented:
-                case ExecutableOpCode.Unary:
                     ExecuteOperandValueOperation(instruction);
                     break;
 

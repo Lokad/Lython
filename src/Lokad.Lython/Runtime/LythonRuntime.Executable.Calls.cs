@@ -49,11 +49,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private bool TrySuspendForExecutableCall(ExecutableInstruction instruction)
+        private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
         {
-            var site = _codeObject.CallSites[instruction.CallSiteIndex];
             if (!site.IsPositionalOnly) return false;
-            var start = ReadExecutableCallTarget(site, ref _stack, out var target);
             var function = target as PyExecutableFunction;
             object? receiver = null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)

@@ -160,13 +160,22 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Call:
-                            if (TrySuspendForExecutableCall(instruction)) return InstructionPause.Boundary;
-                            goto case ExecutableOpCode.GetIter;
+                            var call = _codeObject.CallSites[instruction.CallSiteIndex];
+                            var callStart = ReadExecutableCallTarget(call, ref _stack, out var target);
+                            if (TrySuspendForExecutableCall(call, callStart, target)) return InstructionPause.Boundary;
+                            if (!asynchronous) ExecuteOrdinaryCall(call, callStart, target, false).GetAwaiter().GetResult();
+                            else
+                            {
+                                pending = WithoutJump(ExecuteOrdinaryCall(call, callStart, target, true));
+                                if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
+                                _ = ConsumeOperation(ref pending);
+                            }
+                            break;
                         case ExecutableOpCode.GetIter:
                             if (!asynchronous) ExecuteValueOperation(instruction);
                             else
                             {
-                                pending = WithoutJump(ExecuteValueOperationAsync(instruction));
+                                pending = WithoutJump(ExecuteGetIteratorAsync(instruction));
                                 if (!pending.IsCompletedSuccessfully) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }
