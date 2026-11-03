@@ -3,8 +3,9 @@
 2026-11-03. **Retain the refined version.** Retained source **2323ccebc8d526e5a5e0214d85d2de9feba5bff2**, frozen before its commit; baseline **433f7e36b769999dafaa08a5440082328e5ccdb6** is fully
 qualified by cached 41663811073. Candidate core
 **3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc**.
-Focused Release passes; full Windows/Ubuntu, both-framework, original stress and
-installed-package delivery **41672373384 is active**. Publication postponed.
+Focused Release and full delivery **41672373384 PASS** at exact retained source:
+Windows/Ubuntu, .NET 11/.NET 10, installed package consumers and original stress
+scales. [Cached exact-source receipt](delivery-ci-status.json). Publication postponed.
 
 The runtime no longer maintains an execution-wide UTF-8 name dictionary, its
 custom comparer, capacity admission/growth or unique-name inventory. Instead, one

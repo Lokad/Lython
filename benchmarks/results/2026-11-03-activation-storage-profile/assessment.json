@@ -1,0 +1,254 @@
+{
+  "text": {
+    "sampledBytes": 1697072120,
+    "ticks": 15912,
+    "unresolvedBytes": 0,
+    "guestTids": [
+      "3069119"
+    ],
+    "instrumentedSeconds": 1.932241413,
+    "types": [
+      {
+        "type": "Lokad.Lython.Runtime.Text.PyString",
+        "percent": 26.934219860968547,
+        "approximateBytesPerInvocation": 892760.03125
+      },
+      {
+        "type": "System.Byte[]",
+        "percent": 15.53506400187636,
+        "approximateBytesPerInvocation": 514924.296875
+      },
+      {
+        "type": "System.Numerics.BigInteger",
+        "percent": 12.076728006114436,
+        "approximateBytesPerInvocation": 400294.5
+      },
+      {
+        "type": "TemporaryMemoryReservation",
+        "percent": 11.897465854309127,
+        "approximateBytesPerInvocation": 394352.6875
+      },
+      {
+        "type": "Cursor",
+        "percent": 8.776052251686275,
+        "approximateBytesPerInvocation": 290890.5
+      },
+      {
+        "type": "System.Object[]",
+        "percent": 7.7388051133619475,
+        "approximateBytesPerInvocation": 256509.96875
+      },
+      {
+        "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+        "percent": 4.861441009354393,
+        "approximateBytesPerInvocation": 161137.03125
+      },
+      {
+        "type": "Lokad.Lython.Runtime.PyList",
+        "percent": 4.214973256410576,
+        "approximateBytesPerInvocation": 139709.25
+      },
+      {
+        "type": "<GetEnumerator>d__51",
+        "percent": 3.555146495483056,
+        "approximateBytesPerInvocation": 117838.671875
+      },
+      {
+        "type": "Lokad.Lython.Runtime.SmallPyListStorage",
+        "percent": 3.5118413235142887,
+        "approximateBytesPerInvocation": 116403.28125
+      },
+      {
+        "type": "BuiltinCallable",
+        "percent": 0.2010050109125592,
+        "approximateBytesPerInvocation": 6662.5
+      },
+      {
+        "type": "<>c__DisplayClass10_0",
+        "percent": 0.14449403599889438,
+        "approximateBytesPerInvocation": 4789.390625
+      },
+      {
+        "type": "Entry[System.String,System.Object][]",
+        "percent": 0.14447235159340194,
+        "approximateBytesPerInvocation": 4788.671875
+      },
+      {
+        "type": "System.Collections.Generic.OrderedDictionary`2[System.Object,System.Object]",
+        "percent": 0.09422109886526213,
+        "approximateBytesPerInvocation": 3123.046875
+      },
+      {
+        "type": "System.IO.FileInfo",
+        "percent": 0.06909547250119223,
+        "approximateBytesPerInvocation": 2290.234375
+      },
+      {
+        "type": "System.Collections.Generic.Dictionary`2[System.String,System.Int32]",
+        "percent": 0.04396984613712233,
+        "approximateBytesPerInvocation": 1457.421875
+      },
+      {
+        "type": "ExceptionTypeValue",
+        "percent": 0.04396984613712233,
+        "approximateBytesPerInvocation": 1457.421875
+      },
+      {
+        "type": "Reservation",
+        "percent": 0.03768843954610485,
+        "approximateBytesPerInvocation": 1249.21875
+      },
+      {
+        "type": "System.String",
+        "percent": 0.03140703295508738,
+        "approximateBytesPerInvocation": 1041.015625
+      },
+      {
+        "type": "Lokad.Lython.Runtime.PyType",
+        "percent": 0.03140703295508738,
+        "approximateBytesPerInvocation": 1041.015625
+      },
+      {
+        "type": "ChunkedTextFileReadState",
+        "percent": 0.0251256263640699,
+        "approximateBytesPerInvocation": 832.8125
+      },
+      {
+        "type": "System.Boolean",
+        "percent": 0.018844219773052426,
+        "approximateBytesPerInvocation": 624.609375
+      },
+      {
+        "type": "System.SZGenericArrayEnumerator`1[Lokad.Lython.Frontend.LoweredFunctionParameter]",
+        "percent": 0.006281406591017475,
+        "approximateBytesPerInvocation": 208.203125
+      },
+      {
+        "type": "<>c__DisplayClass172_0",
+        "percent": 0.006281406591017475,
+        "approximateBytesPerInvocation": 208.203125
+      }
+    ]
+  },
+  "report": {
+    "sampledBytes": 3689878952,
+    "ticks": 31944,
+    "unresolvedBytes": 0,
+    "guestTids": [
+      "3069148"
+    ],
+    "instrumentedSeconds": 3.189560811,
+    "types": [
+      {
+        "type": "System.Byte[]",
+        "percent": 38.66531782097333,
+        "approximateBytesPerInvocation": 2786530.125
+      },
+      {
+        "type": "ExecutableFrameInterpreter",
+        "percent": 11.123260284122187,
+        "approximateBytesPerInvocation": 801630.546875
+      },
+      {
+        "type": "Lokad.Lython.Runtime.Text.PyString",
+        "percent": 7.6544908836890215,
+        "approximateBytesPerInvocation": 551643.453125
+      },
+      {
+        "type": "ExecutionContext",
+        "percent": 6.713024335547363,
+        "approximateBytesPerInvocation": 483793.890625
+      },
+      {
+        "type": "TemporaryMemoryReservation",
+        "percent": 6.189920996627859,
+        "approximateBytesPerInvocation": 446094.90625
+      },
+      {
+        "type": "System.Object[]",
+        "percent": 4.516674995792654,
+        "approximateBytesPerInvocation": 325507.5
+      },
+      {
+        "type": "System.Numerics.BigInteger",
+        "percent": 3.8974564171556594,
+        "approximateBytesPerInvocation": 280881.6875
+      },
+      {
+        "type": "Entry[System.Object,System.Object][]",
+        "percent": 3.6224704858556565,
+        "approximateBytesPerInvocation": 261064.015625
+      },
+      {
+        "type": "Lokad.Lython.Runtime.PyDict",
+        "percent": 3.3831368894184797,
+        "approximateBytesPerInvocation": 243815.734375
+      },
+      {
+        "type": "System.Collections.Generic.OrderedDictionary`2[System.Object,System.Object]",
+        "percent": 2.89831838364328,
+        "approximateBytesPerInvocation": 208875.859375
+      },
+      {
+        "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+        "percent": 2.2888724833160867,
+        "approximateBytesPerInvocation": 164954.34375
+      },
+      {
+        "type": "System.String",
+        "percent": 2.1322353666196907,
+        "approximateBytesPerInvocation": 153665.828125
+      },
+      {
+        "type": "System.Text.StringBuilder",
+        "percent": 1.938456218495484,
+        "approximateBytesPerInvocation": 139700.5625
+      },
+      {
+        "type": "System.Int32[]",
+        "percent": 1.834527822743601,
+        "approximateBytesPerInvocation": 132210.65625
+      },
+      {
+        "type": "Lokad.Lython.Runtime.OrderedPyDictStorage",
+        "percent": 1.7088335097232208,
+        "approximateBytesPerInvocation": 123152.125
+      },
+      {
+        "type": "System.Char[]",
+        "percent": 1.3925482290455364,
+        "approximateBytesPerInvocation": 100358.09375
+      },
+      {
+        "type": "<>c__DisplayClass10_0",
+        "percent": 0.020231991610330746,
+        "approximateBytesPerInvocation": 1458.078125
+      },
+      {
+        "type": "Entry[System.String,System.Object][]",
+        "percent": 0.005777967320159396,
+        "approximateBytesPerInvocation": 416.40625
+      },
+      {
+        "type": "<>c__DisplayClass6_0",
+        "percent": 0.005777967320159396,
+        "approximateBytesPerInvocation": 416.40625
+      },
+      {
+        "type": "System.Boolean",
+        "percent": 0.002888983660079698,
+        "approximateBytesPerInvocation": 208.203125
+      },
+      {
+        "type": "BuiltinCallable",
+        "percent": 0.002888983660079698,
+        "approximateBytesPerInvocation": 208.203125
+      },
+      {
+        "type": "System.Func`1[System.Threading.Tasks.ValueTask`1[Lokad.Lython.LythonFileWriteResult]]",
+        "percent": 0.002888983660079698,
+        "approximateBytesPerInvocation": 208.203125
+      }
+    ]
+  }
+}

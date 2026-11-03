@@ -2090,7 +2090,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   allocation; original bits/data retained. Sorted refinement preserves reuse across
   order: unique elapsed −31.7–35.1%, allocation −14.64%, accounted peak −834,737 B;
   unknown/reordered near controls, config timing variable. Both APIs, 767 public/
-  181 internal per framework PASS. Full 41672373384 active. Changed-key snapshot
+  181 internal per framework PASS. Full 41672373384 GREEN at exact 2323cceb; terminal receipt cached. Changed-key snapshot
   metadata stays batch-owned; no new owner graph or interning guarantee.
 
 - [Native JSON object staging, B169](results/2026-11-03-json-object-staging/README.md):
@@ -2100,3 +2100,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Both APIs, controls/goldens/gates/balances/joins retained; no contract promotion,
   extra retime or full qualification. Restore B166 and assess complete activation/
   operand storage rather than another staging or name-index variation.
+
+- [Current activation/storage allocation gate, B170](results/2026-11-03-activation-storage-profile/README.md):
+  exact retained B166; two existing complete text/report scripts, 512 invocations
+  each. Sampled allocation: text cursor/enumerator 12.33%; report interpreter/
+  execution context 17.84%, with operand arrays additional. Not CPU shares or live
+  storage; no runtime prototype/speedup claim. Select private exact-sequence loop
+  transport in existing operand workspace; keep complete activation as separate
+  substantial work, without reviving slower call-control designs.
