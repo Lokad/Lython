@@ -122,4 +122,7 @@ and .NET 10 PASS**, zero build warnings. Production source hashes still match th
 measured snapshot. Rebuilt binaries carry newer revision metadata; the frozen
 measurement image and its original hash remain immutable. No runtime change or
 source-pair/CPython replay is justified by test-only edits. Corrected full delivery
-**41693945867** at 7e96843b is ACTIVE; terminal outcome will be a separate receipt.
+**41693945867** is FULLY GREEN at exact **7e96843b5875de444ae479d87ab5f1341ddd050e**:
+Windows/Ubuntu, actual .NET 11/.NET 10 Release, installed consumers and original
+stress scales all pass. [Terminal receipt](delivery-ci-status.json) cached once;
+never re-query. Original failed run/conditions remain above. Publication postponed.
