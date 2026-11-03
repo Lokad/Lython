@@ -9,91 +9,6 @@ namespace Lokad.Lython.Tests;
 public sealed class JsonLiteralDispatchBoundaryTests
 {
 
-    // Captured on 527ff833 before changing literal dispatch.
-    private static readonly string[] ScalarCheckpoints =
-    [
-        "-:",
-        "0,11,1,1:",
-        "-:",
-        "19,4,2,8:",
-        "19,10,2,8:",
-        "30,6,2,19:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "12,25,2,1:",
-    ];
-    private static readonly string[] PairsCheckpoints =
-    [
-        "-:",
-        "0,11,1,1:",
-        "-:",
-        "19,4,2,8:",
-        "19,10,2,8:",
-        "30,6,2,19:",
-        "55,4,2,44:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "19,41,2,8:",
-        "12,48,2,1:hook:3,0",
-    ];
-
-    // Captured on df1ab51f before removing the prefix wrapper.
-    private static readonly string[] WhitespaceCheckpoints =
-    [
-        "-:",
-        "0,11,1,1:",
-        "-:",
-        "19,4,2,8:",
-        "19,10,2,8:",
-        "30,6,2,19:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "19,18,2,8:",
-        "12,25,2,1:",
-    ];
-
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(false, true, false)]
@@ -101,7 +16,7 @@ public sealed class JsonLiteralDispatchBoundaryTests
     [InlineData(true, true, false)]
     [InlineData(false, false, true)]
     [InlineData(true, false, true)]
-    public async Task LiteralCheckpointsPreserveEffectsAndUnwind(bool asynchronous, bool pairs, bool padded)
+    public async Task LiteralsPreserveEffectsAndUnwind(bool asynchronous, bool pairs, bool padded)
     {
         var source = "import json\nreturn json.loads(source" + (pairs ? ",object_pairs_hook=hook)" : ")");
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;

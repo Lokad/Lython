@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text.Json;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -20,7 +19,7 @@ public sealed class JsonDefaultDumpsBoundaryTests
     [InlineData(true, "unsupported")]
     [InlineData(false, "cycle")]
     [InlineData(true, "cycle")]
-    public async Task DefaultCallPreservesCheckpointsErrorsAndUnwind(bool asynchronous, string shape)
+    public async Task DefaultCallPreservesEffectsErrorsAndUnwind(bool asynchronous, string shape)
     {
         const string source = "import json\nreturn json.dumps(make())";
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
@@ -46,19 +45,16 @@ public sealed class JsonDefaultDumpsBoundaryTests
             AssertUnwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        // Frozen on22648c5a before removing default-call packaging.
-        var expected = shape switch
+        var expectedOutcome = shape switch
         {
-            "cycle" => "{\"steps\":19,\"outcome\":\"ValueError:Circular reference detected.\",\"effects\":[\"make:2,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,4,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\"]}",
-            "unsupported" => "{\"steps\":21,\"outcome\":\"TypeError:Object of type set is not JSON serializable\",\"effects\":[\"make:2,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,4,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\"]}",
-            "scalar" => "{\"steps\":21,\"outcome\":\"7\",\"effects\":[\"make:2,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,4,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"12,25,2,1:make:2,0\"]}",
-            "sequence" => "{\"steps\":22,\"outcome\":\"[\\\"\\\\u00e9\\\\ud83d\\\\ude00\\\", null]\",\"effects\":[\"make:2,0\"],\"checkpoints\":[\"-:\",\"0,11,1,1:\",\"-:\",\"19,4,2,8:\",\"19,10,2,8:\",\"30,4,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"30,6,2,19:\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"19,18,2,8:make:2,0\",\"12,25,2,1:make:2,0\"]}",
+            "cycle" => "ValueError:Circular reference detected.",
+            "unsupported" => "TypeError:Object of type set is not JSON serializable",
+            "scalar" => "7",
+            "sequence" => "[\"\\u00e9\\ud83d\\ude00\", null]",
             _ => throw new InvalidOperationException(shape),
         };
-        // Compare decoded fields so JSON escaping choice is not an assertion.
-        using var frozen = JsonDocument.Parse(expected);
-        Assert.Equal(frozen.RootElement.GetProperty("outcome").GetString(), outcome);
-        Assert.Equal(frozen.RootElement.GetProperty("effects").EnumerateArray().Select(x => x.GetString()), effects);
+        Assert.Equal(expectedOutcome, outcome);
+        Assert.Equal(["make:2,0"], effects);
     }
 
     private static (Context Context, Make Make) Prepare(ILythonMemoryBudget owner, string shape)
