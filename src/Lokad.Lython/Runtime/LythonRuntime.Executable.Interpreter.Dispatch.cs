@@ -151,7 +151,17 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.ForNext:
-                            if (!asynchronous) jumped = ExecuteForNext(instruction);
+                            if (_stack.TryAdvanceNativeIteration(out var nativeNext))
+                            {
+                                if (nativeNext.HasValue) _stack.Push(nativeNext.Value);
+                                else
+                                {
+                                    _ = _stack.Pop();
+                                    _instructionIndex = instruction.TargetIndex;
+                                    jumped = true;
+                                }
+                            }
+                            else if (!asynchronous) jumped = ExecuteForNext(instruction);
                             else
                             {
                                 pending = ExecuteForNextAsync(instruction);
@@ -172,6 +182,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.GetIter:
+                            if (_stack.TryPrepareNativeIteration(instruction.Span)) break;
                             if (!asynchronous) ExecuteValueOperation(instruction);
                             else
                             {

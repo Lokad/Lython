@@ -248,6 +248,7 @@ internal sealed partial class LythonRuntime
     private struct ExecutableValueStack
     {
         private object?[] _items;
+        private int[]? _nativeIterationPositions;
         private readonly ExecutionContext _context;
         private long _frameStorageBytes;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
@@ -259,6 +260,7 @@ internal sealed partial class LythonRuntime
         {
             _context = context;
             _frameStorageBytes = frameStorageBytes;
+            _nativeIterationPositions = null;
             var governor = context.MemoryGovernor;
             capacity = Math.Max(4, capacity);
             var bytes = checked(EstimateObjectArrayBytes(capacity) + frameStorageBytes);
@@ -274,6 +276,7 @@ internal sealed partial class LythonRuntime
         {
             var bytes = checked(RetainedBytes + _frameStorageBytes);
             _items = Array.Empty<object?>();
+            _nativeIterationPositions = null;
             _frameStorageBytes = 0;
             _context.MemoryGovernor.Release(bytes);
         }
@@ -311,6 +314,48 @@ internal sealed partial class LythonRuntime
         }
 
         public object Peek() => _items[Count - 1].RequireNotNull();
+
+        internal bool TryPrepareNativeIteration(LythonSourceSpan span)
+        {
+            var slot = Count - 1;
+            if (_items[slot] is not (PyList or PyTuple)) return false;
+            if (_nativeIterationPositions is null)
+            {
+                // The existing private operand keeps the source alive. One
+                // admitted position array replaces repeated native cursor and
+                // enumerator objects; it shares this frame's storage lifetime.
+                var bytes = checked(32L + 4L * _items.Length);
+                var frameBytes = checked(_frameStorageBytes + bytes);
+                using var storage = _context.MemoryGovernor.ReserveTemporary(bytes, span);
+                var positions = new int[_items.Length];
+                storage.Commit(bytes);
+                _nativeIterationPositions = positions;
+                _frameStorageBytes = frameBytes;
+            }
+            _nativeIterationPositions[slot] = 0;
+            return true;
+        }
+
+        internal bool TryAdvanceNativeIteration(out PyIterationResult next)
+        {
+            var slot = Count - 1;
+            switch (_items[slot])
+            {
+                case PyList list:
+                    var listIndex = _nativeIterationPositions![slot];
+                    next = listIndex < list.Count ? PyIterationResult.Yield(list[listIndex]) : PyIterationResult.End;
+                    if (next.HasValue) _nativeIterationPositions[slot] = listIndex + 1;
+                    return true;
+                case PyTuple tuple:
+                    var tupleIndex = _nativeIterationPositions![slot];
+                    next = tupleIndex < tuple.Count ? PyIterationResult.Yield(tuple[tupleIndex]) : PyIterationResult.End;
+                    if (next.HasValue) _nativeIterationPositions[slot] = tupleIndex + 1;
+                    return true;
+                default:
+                    next = PyIterationResult.End;
+                    return false;
+            }
+        }
 
         public ReadOnlyMemory<object?> Slice(int start, int count) => _items.AsMemory(start, count);
 

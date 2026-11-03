@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep private builtin list/tuple loop state in admitted operand storage, removing
+  repeated general cursor and enumerator construction. Preserve live list mutation,
+  generators, cancellation and asynchronous protocol/resource cleanup. Position
+  storage stays funded through suspension and releases with its frame.
+
 - Replace the execution-wide JSON property-name index with an immutable previous-
   object key snapshot. Reuse names independently of field order without indexing
   every unique name. Preserve owned bytes, dictionary order/duplicate replacement,

@@ -170,6 +170,15 @@ Successful loop advances and true conditional arms continue at the next
 instruction; they need no unconditional entry jump. Exception routing restores
 the compiler-prepared protected-entry depth.
 
+Private loops over exact builtin lists and tuples keep the sequence in its operand
+slot and advance by index. One fixed-size position array is admitted on first use
+and shares the operand workspace's lifetime, including generator suspension;
+terminal frame cleanup releases it. List iteration observes live replacement,
+growth and removal. These private loop states never escape as Python iterators.
+Exposed iterators, generator-expression outer acquisition, user protocols and
+resource-bearing/asynchronous iteration retain their ordinary cursors and cleanup.
+The additional workspace can reject a tighter allowance earlier.
+
 Both public APIs advance the same non-async instruction loop. Completed operations,
 including failures and cancellation, stay in that loop; asynchronous execution awaits incomplete operations and cursor
 disposal before resuming it. Suspended failures keep their original instruction
