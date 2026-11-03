@@ -101,6 +101,9 @@ Final focused checks:29 internal/203 public per actual target, plus16 new glob
 goldens and the search/end semantic regression per target (all PASS). The final
 UTF8-bound admission adjustment passes97 focused public cases per target.
 
-Full Windows/Ubuntu, both actual targets, original Stress and installed consumers
-will be recorded at the combined delivery boundary. Cached41554275552 covers the
-previous802 runtime only; it is terminal and must not be queried/replayed.
+Full delivery **41566551688** is GREEN at exact **f7dd0d3a**: Windows/Ubuntu
+ordinary Release.NET11/10, original Stress and installed consumers all PASS.
+Every required step in both jobs is verified in [cached CI](delivery-ci-status.json).
+No unchanged qualification replay or terminal-run polling is needed.
+The [final-source CPython checkpoint](../2026-11-03-wildcard-cpython-checkpoint/README.md)
+measures the retained B141/B142 source separately from this original source pair.
