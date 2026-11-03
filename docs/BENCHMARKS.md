@@ -111,6 +111,11 @@ removes runtime buffer growth, frame-depth tables and nested block dispatch.
 Range execution improves about4% against control; report allocation falls1.51%.
 Other complete-script timings are mixed, and compilation costs about2% more.
 Do not compare independently collected medians to infer an optimization speedup.
+The [shared JSON-name comparison](../benchmarks/results/2026-11-03-shared-json-property-names/README.md)
+records13.8% less report allocation and21.5% less JSON-lines allocation; report warm
+execution improves about9–13% against controls. This is an intermediate milestone:
+all-unique names cost aboutone-third more elapsed and28% more allocation. That
+regression remains open; these source pairs do not update the CPython table.
 
 The [previous representative checkpoint](../benchmarks/results/2026-11-01-representative-checkpoint/README.md)
 and [earlier file workloads](../benchmarks/results/2026-10-30-native-json-writer/README.md)

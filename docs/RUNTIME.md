@@ -499,6 +499,12 @@ including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.
 Plain JSON strings use the native scan's validated boundary/control facts and an
 independent admitted UTF-8 copy, without a second token parse or decoding scratch.
+Property names share immutable decoded storage by UTF-8 content within an execution,
+including separate decoder calls and reentrant hooks. Table keys own their bytes;
+they never borrow an input document. Mutable records remain independent; value
+strings use the ordinary decoder. The names and conservative index capacity/replacement headroom remain
+charged to the execution/result owner. Many unique names add index storage and can
+reject earlier; there is no separate cache allowance or admission fallback.
 Lenient plain control characters need no rewrite. Escaped tokens retain direct
 UTF-8 decoding and admitted scratch where necessary, including genuine lenient
 rewrites. Input aliases and results stay funded across callbacks/source reuse.

@@ -1,0 +1,8 @@
+{
+  "reference": "CPython 3.13.2 isolated -I -S -X utf8; captured Windows CRLF normalized to LF",
+  "sourceSHA256": "54c4caed66f18a025619749c56334fbf3c5533effb3bf8e58a8e15b565911137",
+  "fixtureSHA256": "2a0cb00fd8e63ab3307d596f8349f0c2afa4937ea8e892a854a21a14b065b0fa",
+  "expectedOutput": "8386560\n",
+  "actual": "8386560\n",
+  "passed": true
+}

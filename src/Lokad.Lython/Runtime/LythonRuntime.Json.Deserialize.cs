@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
             finally { numericFrame?.LeaveInterpreterFrame(); }
         }
 
-        private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span)
+        private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, bool propertyName = false)
         {
             // Lenient rewriting affects only the token; coordinates keep the original document.
             var original = input.Utf8Bytes.Span;
@@ -221,7 +221,9 @@ internal sealed partial class LythonRuntime
                 // The scan already established a complete plain string. No
                 // backend decoding scratch or second token parse is needed.
                 context.CheckExecution(span);
-                var value = PyString.CopyFromUtf8(token.Span[1..^1], context.MemoryGovernor, span);
+                var value = propertyName
+                    ? context.State.GetJsonPropertyName(token.Slice(1, token.Length - 2), span)
+                    : PyString.CopyFromUtf8(token.Span[1..^1], context.MemoryGovernor, span);
                 context.CheckExecution(span);
                 return (value, end);
             }
@@ -288,6 +290,7 @@ internal sealed partial class LythonRuntime
                 }
                 else value = CreateString(reader.GetString() ?? string.Empty, context, span);
                 context.CheckExecution(span);
+                if (propertyName) value = context.State.GetJsonPropertyName(value.Utf8Bytes, span, value);
                 return (value, end);
             }
             catch (JsonException ex)
@@ -336,7 +339,7 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             context.EnterInterpreterFrame(span);
-            try { return ReadJsonString(input, (bool)options.Strict, position, context, span); }
+            try { return ReadJsonString(input, (bool)options.Strict, position, context, span, propertyName: true); }
             finally { context.LeaveInterpreterFrame(); }
         }
 

@@ -1,0 +1,308 @@
+[
+  {
+    "block": 0,
+    "case": "scripts.report-render.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 8.41449547826087,
+        "iqrPercent": 8.786115653135122,
+        "weightedCpuMilliseconds": 7.101449275362318,
+        "totalCpuTicks": 147,
+        "completedInvocations": 207
+      },
+      "candidate": {
+        "medianMilliseconds": 7.74894732,
+        "iqrPercent": 2.35066922612657,
+        "weightedCpuMilliseconds": 6.177777777777778,
+        "totalCpuTicks": 139,
+        "completedInvocations": 225
+      },
+      "before-control": {
+        "medianMilliseconds": 8.57725139130435,
+        "iqrPercent": 4.24686063664603,
+        "weightedCpuMilliseconds": 7.004830917874396,
+        "totalCpuTicks": 145,
+        "completedInvocations": 207
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -7.909543239762096,
+      "cpuPercent": -13.006802721088428,
+      "controlElapsedPercent": 1.934232580716988,
+      "controlCpuPercent": -1.3605442176870652
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 7.347143714285714,
+        "iqrPercent": 2.1348174643417215,
+        "weightedCpuMilliseconds": 6.111111111111111,
+        "totalCpuTicks": 154,
+        "completedInvocations": 252
+      },
+      "candidate": {
+        "medianMilliseconds": 7.189368142857143,
+        "iqrPercent": 3.0612321643128038,
+        "weightedCpuMilliseconds": 5.9523809523809526,
+        "totalCpuTicks": 150,
+        "completedInvocations": 252
+      },
+      "before-control": {
+        "medianMilliseconds": 7.267117888888889,
+        "iqrPercent": 4.139497800704867,
+        "weightedCpuMilliseconds": 6.049382716049383,
+        "totalCpuTicks": 147,
+        "completedInvocations": 243
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -2.1474409316615595,
+      "cpuPercent": -2.597402597402587,
+      "controlElapsedPercent": -1.0892100183262143,
+      "controlCpuPercent": -1.0101010101010055
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.report-render.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 8.479145541666666,
+        "iqrPercent": 3.155551842087397,
+        "weightedCpuMilliseconds": 6.9907407407407405,
+        "totalCpuTicks": 151,
+        "completedInvocations": 216
+      },
+      "candidate": {
+        "medianMilliseconds": 7.780936400000001,
+        "iqrPercent": 2.894752873188888,
+        "weightedCpuMilliseconds": 6.355555555555555,
+        "totalCpuTicks": 143,
+        "completedInvocations": 225
+      },
+      "before-control": {
+        "medianMilliseconds": 8.455191227272728,
+        "iqrPercent": 8.726486681740388,
+        "weightedCpuMilliseconds": 7.070707070707071,
+        "totalCpuTicks": 140,
+        "completedInvocations": 198
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -8.23442808282573,
+      "cpuPercent": -9.086092715231786,
+      "controlElapsedPercent": -0.28250858858627215,
+      "controlCpuPercent": 1.14388922335944
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 7.256144642857143,
+        "iqrPercent": 2.1142529201236075,
+        "weightedCpuMilliseconds": 6.111111111111111,
+        "totalCpuTicks": 154,
+        "completedInvocations": 252
+      },
+      "candidate": {
+        "medianMilliseconds": 7.150766035714286,
+        "iqrPercent": 1.260129727659684,
+        "weightedCpuMilliseconds": 5.912698412698413,
+        "totalCpuTicks": 149,
+        "completedInvocations": 252
+      },
+      "before-control": {
+        "medianMilliseconds": 7.194490142857142,
+        "iqrPercent": 1.2554811041806915,
+        "weightedCpuMilliseconds": 6.071428571428571,
+        "totalCpuTicks": 153,
+        "completedInvocations": 252
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -1.4522671794668596,
+      "cpuPercent": -3.246753246753231,
+      "controlElapsedPercent": -0.8496867556339605,
+      "controlCpuPercent": -0.649350649350644
+    }
+  },
+  {
+    "block": 0,
+    "case": "scripts.config-edit.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 3.400446532258064,
+        "iqrPercent": 7.326837554564999,
+        "weightedCpuMilliseconds": 0.6451612903225806,
+        "totalCpuTicks": 36,
+        "completedInvocations": 558
+      },
+      "candidate": {
+        "medianMilliseconds": 3.4105242631578947,
+        "iqrPercent": 2.977741504093378,
+        "weightedCpuMilliseconds": 0.6432748538011696,
+        "totalCpuTicks": 33,
+        "completedInvocations": 513
+      },
+      "before-control": {
+        "medianMilliseconds": 3.4250448644067797,
+        "iqrPercent": 5.0457624340806015,
+        "weightedCpuMilliseconds": 0.6591337099811676,
+        "totalCpuTicks": 35,
+        "completedInvocations": 531
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 0.2963649274949409,
+      "cpuPercent": -0.29239766081872176,
+      "controlElapsedPercent": 0.7233853529342582,
+      "controlCpuPercent": 2.165725047080991
+    }
+  },
+  {
+    "block": 1,
+    "case": "scripts.json-unique-keys.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 1.9348834807692308,
+        "iqrPercent": 1.2287869729702772,
+        "weightedCpuMilliseconds": 1.3034188034188035,
+        "totalCpuTicks": 122,
+        "completedInvocations": 936
+      },
+      "candidate": {
+        "medianMilliseconds": 2.6446804266666666,
+        "iqrPercent": 4.648620129185922,
+        "weightedCpuMilliseconds": 2.2222222222222223,
+        "totalCpuTicks": 150,
+        "completedInvocations": 675
+      },
+      "before-control": {
+        "medianMilliseconds": 1.9962621941747571,
+        "iqrPercent": 3.903814782856844,
+        "weightedCpuMilliseconds": 1.2513484358144553,
+        "totalCpuTicks": 116,
+        "completedInvocations": 927
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 36.68422170906383,
+      "cpuPercent": 70.49180327868854,
+      "controlElapsedPercent": 3.1722175529207863,
+      "controlCpuPercent": -3.994906891612282
+    }
+  },
+  {
+    "block": 1,
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 4.9071688571428576,
+        "iqrPercent": 2.157195266097873,
+        "weightedCpuMilliseconds": 3.7830687830687832,
+        "totalCpuTicks": 143,
+        "completedInvocations": 378
+      },
+      "candidate": {
+        "medianMilliseconds": 5.061734282051282,
+        "iqrPercent": 1.2272346890004182,
+        "weightedCpuMilliseconds": 3.96011396011396,
+        "totalCpuTicks": 139,
+        "completedInvocations": 351
+      },
+      "before-control": {
+        "medianMilliseconds": 5.113806692307692,
+        "iqrPercent": 0.8482471191953438,
+        "weightedCpuMilliseconds": 3.9316239316239314,
+        "totalCpuTicks": 138,
+        "completedInvocations": 351
+      }
+    },
+    "deltas": {
+      "elapsedPercent": 3.149788185573432,
+      "cpuPercent": 4.679935449166206,
+      "controlElapsedPercent": 4.210937939583093,
+      "controlCpuPercent": 3.9268423883808357
+    }
+  },
+  {
+    "block": 1,
+    "case": "scripts.report-render.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 8.528105130434781,
+        "iqrPercent": 3.652974177688014,
+        "weightedCpuMilliseconds": 9.033816425120772,
+        "totalCpuTicks": 187,
+        "completedInvocations": 207
+      },
+      "candidate": {
+        "medianMilliseconds": 7.62859272,
+        "iqrPercent": 2.427370903083161,
+        "weightedCpuMilliseconds": 6.711111111111111,
+        "totalCpuTicks": 151,
+        "completedInvocations": 225
+      },
+      "before-control": {
+        "medianMilliseconds": 8.622582,
+        "iqrPercent": 3.9664594362953505,
+        "weightedCpuMilliseconds": 8.16425120772947,
+        "totalCpuTicks": 169,
+        "completedInvocations": 207
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -10.547623377960424,
+      "cpuPercent": -25.71122994652406,
+      "controlElapsedPercent": 1.1078295602624966,
+      "controlCpuPercent": -9.625668449197844
+    }
+  },
+  {
+    "block": 1,
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "compile-run",
+    "values": {
+      "baseline": {
+        "medianMilliseconds": 7.479973384615385,
+        "iqrPercent": 3.024568557185521,
+        "weightedCpuMilliseconds": 7.3931623931623935,
+        "totalCpuTicks": 173,
+        "completedInvocations": 234
+      },
+      "candidate": {
+        "medianMilliseconds": 7.235108178571429,
+        "iqrPercent": 2.2374924604370463,
+        "weightedCpuMilliseconds": 6.944444444444445,
+        "totalCpuTicks": 175,
+        "completedInvocations": 252
+      },
+      "before-control": {
+        "medianMilliseconds": 7.501214285714285,
+        "iqrPercent": 2.31562985040518,
+        "weightedCpuMilliseconds": 7.142857142857143,
+        "totalCpuTicks": 180,
+        "completedInvocations": 252
+      }
+    },
+    "deltas": {
+      "elapsedPercent": -3.2736106594655645,
+      "cpuPercent": -6.069364161849711,
+      "controlElapsedPercent": 0.2839702764529495,
+      "controlCpuPercent": -3.3856317093311272
+    }
+  }
+]

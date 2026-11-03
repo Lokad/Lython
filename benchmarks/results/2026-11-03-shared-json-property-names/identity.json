@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "1e73f72fffb199a0a8bce8b7dfd40e7d94d7f577 + B138 execution-owned JSON property names",
+  "baselineRuntime": "fd7bc7e4",
+  "coreSHA256": {
+    "baseline": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+    "candidate": "c8c8b49f8357f00e34fec05394279320d2f0293f474c779a34d932de2a905d17",
+    "before-control": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42"
+  },
+  "boundary": "Warm excludes compile/startup; compile-run compiles/disposes each invocation. Complete worker/reset/staging/actual mediated I/O/output-check/prior-result cleanup; final owners/results/process/fixtures joined outside batch.",
+  "cpuMetric": "External Linux/proc TGID user+system through response, weighted batch means; includes runtime/JIT/response, not guest-only CPU."
+}
