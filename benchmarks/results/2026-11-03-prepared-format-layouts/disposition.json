@@ -1,5 +1,5 @@
 {
-  "status": "retained, committed, focused qualified; full delivery active",
+  "status": "retained, committed, fully qualified",
   "runtimeCommit": "873ae62548d4b62f803878a2ee031e072d640cad",
   "deliveryRun": 41632382342,
   "publicApiChange": false,

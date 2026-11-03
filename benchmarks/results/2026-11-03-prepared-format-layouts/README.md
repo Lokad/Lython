@@ -116,8 +116,10 @@ native type errors; single/appended fields and conversions. One compilation runs
 repeated sync/delayed async calls with allowance returning to baseline, then zero
 on disposal. Existing cancellation, terminal refusal, identity and cleanup controls
 pass. Full delivery [41632382342](https://github.com/Lokad/Lython/actions/runs/41632382342)
-is pending: Windows/Ubuntu .NET11/.NET10, original Stress and installed consumers.
-Publication remains postponed. B158's independent full delivery is already GREEN.
+is COMPLETE/GREEN for exact873ae625: Windows/Ubuntu .NET11/.NET10, original Stress
+and installed consumers. All required steps verified in the
+[cached receipt](delivery-ci-status.json). Publication remains postponed.
+B158's independent full delivery is also GREEN.
 
 Both owned VM units exit0 and are inactive/dead; the shared lease is free. No
 background work is abandoned. [Timing/initial allocation observations](initial-observations.tar.gz),
