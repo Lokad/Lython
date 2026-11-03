@@ -1,0 +1,16 @@
+{
+  "baselineRevision": "2323ccebc8d526e5a5e0214d85d2de9feba5bff2",
+  "baselineCoreSHA256": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+  "candidateCoreSHA256": "6d4b0c32961c01a1fe1f975585ceb01b3791ca24f1cd24b5750f60dac01161ed",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "dcebbf59ccc95e3d1f1f001dbde6405e179254c2c1ed0ee9717836efa621b01d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "87bcb41cf98fc1e112127cda4591d25e7d729868007089fd7efdd4bc0785a369",
+    "tests/Lokad.Lython.PublicApi.Tests/NativeSequenceIterationTests.cs": "0196bfd677b6afdfb387f0dd5f8c5db9bcb573ada974c3dca73e0313deb11d60",
+    "tests/Lokad.Lython.Tests/NativeSequenceAdmissionTests.cs": "699d1e8df9c4269fa0e5f06d563e85b3b3cc4e36ac410131b74f662f547dbf51"
+  },
+  "focusedPerActualFramework": {
+    "public": 802,
+    "internal": 214
+  },
+  "publication": "postponed"
+}

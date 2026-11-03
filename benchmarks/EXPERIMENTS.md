@@ -2108,3 +2108,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   storage; no runtime prototype/speedup claim. Select private exact-sequence loop
   transport in existing operand workspace; keep complete activation as separate
   substantial work, without reviving slower call-control designs.
+
+- [Private native sequence iteration, B171](results/2026-11-03-native-sequence-operands/README.md):
+  retained b7a0f40a. Source + admitted per-slot positions replace repeated private
+  native-loop cursor/enumerator objects, no pool/owner layer. Text allocation
+  −12.58%, sync CPU −4.05% /control +0.36%; other controls retain their drift.
+  SOURCE-ROLE-SWAPPED report confirmation reproduces sync elapsed +1.33–1.36%,
+  CPU +1.37–1.62%, allocation +0.33%. Explicit accepted tradeoff/debt for later
+  complete activation work, no claim every script improves. Both-framework focused
+  802 public/214 internal PASS; full 41682308042 active. All original observations,
+  confirmation, semantics, balances, gates and joined users retained.
