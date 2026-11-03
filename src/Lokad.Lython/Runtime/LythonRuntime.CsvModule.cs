@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
             finally { if (cursor is not null) await cursor.DisposeAsync().ConfigureAwait(false); }
         }
 
-        private static CsvWriterObject CreateWriter(CsvOptions options, ICallable? write, LythonSourceSpan span, ExecutionContext context)
+        private static CsvWriterObject CreateWriter(CsvOptions options, object? write, LythonSourceSpan span, ExecutionContext context)
             => new(options, write, context.MemoryGovernor, span);
 
         private static async ValueTask<object> NormalizeFieldNamesAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
@@ -120,8 +120,9 @@ internal sealed partial class LythonRuntime
 
         // CPython captures write once at construction. Ordinary attribute lookup
         // can execute a descriptor; callability itself is a type-slot check.
-        private static ICallable ResolveWrite(object stream, LythonSourceSpan span, ExecutionContext context)
+        private static object ResolveWrite(object stream, LythonSourceSpan span, ExecutionContext context)
         {
+            if (stream is ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle) return stream;
             try
             {
                 return RequireWriteMethod(PyTextStream.ResolveMember(stream, "write", span, context), span);
@@ -132,8 +133,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static async ValueTask<ICallable> ResolveWriteAsync(object stream, LythonSourceSpan span, ExecutionContext context)
+        private static async ValueTask<object> ResolveWriteAsync(object stream, LythonSourceSpan span, ExecutionContext context)
         {
+            if (stream is ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle) return stream;
             try
             {
                 return RequireWriteMethod(await PyTextStream.ResolveMemberAsync(stream, "write", span, context).ConfigureAwait(false), span);

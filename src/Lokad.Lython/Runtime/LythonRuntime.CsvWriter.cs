@@ -65,17 +65,19 @@ internal sealed partial class LythonRuntime
                 AppendBytes(builder, writer.Options.LineTerminator.Utf8Bytes.Span, context, span);
                 context.CheckExecution(span);
                 var rendered = builder.ToPyStringAndRelease();
-                if (writer.WriteMethod is null)
+                if (writer.WriteTarget is null)
                 {
                     try { writer.AppendHistory(rendered, span); }
                     catch { context.MemoryGovernor.RefundUnpublishedValue(rendered); throw; }
                     return new BigInteger(rendered.Length);
                 }
                 context.CheckExecution(span);
+                if (writer.WriteTarget is ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle)
+                    return InvokeFileWrite(writer.WriteTarget, rendered, span, context);
                 return asynchronous
-                    ? await InvokeCallableTargetAsync(writer.WriteMethod, span, span, context,
+                    ? await InvokeCallableTargetAsync(writer.WriteTarget, span, span, context,
                         () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(rendered)])).ConfigureAwait(false)
-                    : InvokeCallableTarget(writer.WriteMethod, span, span, context, () => [CallArgumentValue.Positional(rendered)]);
+                    : InvokeCallableTarget(writer.WriteTarget, span, span, context, () => [CallArgumentValue.Positional(rendered)]);
             }
             finally { builder.Release(); }
 

@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
 
     // Exact native file writes stage governed output synchronously. Publication
     // remains on the existing flush/close and execution cleanup paths.
-    private static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
+    internal static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
         try

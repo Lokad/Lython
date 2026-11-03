@@ -528,6 +528,12 @@ more headroom between yields. Reentrant advancement raises Python's generator
 ValueError while preserving the active operation. Large integer and Python float formatting still use managed invariant
 text renderers. Hooks, circular-reference checks and cancellation remain active.
 
+Native JSON and CSV file output share the executable engine's guarded write
+operation, including stack admission, cancellation, type checks and error handling.
+JSON resolves guest writers for each chunk; CSV captures a guest write callable
+at construction. Native file handles have immutable methods and can be retained
+directly. Output remains staged and funded through existing flush/close cleanup.
+
 Any refused admission fails the command, including cache admission. Guest code
 cannot catch, suppress or return over it. There is no retry, waiting, algorithm
 fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.

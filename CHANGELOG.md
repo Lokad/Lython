@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share guarded native file writes with JSON and CSV producers, eliminating repeated
+  method/argument binding. Preserve per-chunk guest JSON lookup, captured guest CSV
+  callables, cancellation, memory admission and asynchronous publication cleanup.
+
 - Reuse JSON iterator working storage across chunks while keeping yielded strings
   independent. Retained largest-chunk capacity can require more admission headroom.
   Reject reentrant encoder advancement with Python's ValueError, fixing silent

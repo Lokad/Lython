@@ -2,8 +2,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-// Ordinary attribute dispatch keeps text files, standard streams and guest
-// objects on one protocol. It also gives in-memory streams the same boundary
+// Native file writes share the executable engine's guarded operation. Other
+// streams use ordinary attribute dispatch, preserving guest lookup and effects
 // without introducing a CLR stream or an ambient capability.
 internal static class PyTextStream
 {
@@ -24,6 +24,11 @@ internal static class PyTextStream
 
     internal static void Write(object stream, object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        if (stream is LythonRuntime.ExecutionContext.TextFileHandle or LythonRuntime.ExecutionContext.BinaryFileHandle)
+        {
+            _ = LythonRuntime.InvokeFileWrite(stream, value, span, context);
+            return;
+        }
         // Custom encoders may yield arbitrary objects: the writer, as in Python,
         // decides whether a chunk is acceptable. Standard text writers reject
         // non-strings; the writer's return value is ignored.
@@ -33,6 +38,11 @@ internal static class PyTextStream
 
     internal static async ValueTask WriteAsync(object stream, object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        if (stream is LythonRuntime.ExecutionContext.TextFileHandle or LythonRuntime.ExecutionContext.BinaryFileHandle)
+        {
+            _ = LythonRuntime.InvokeFileWrite(stream, value, span, context);
+            return;
+        }
         var method = await ResolveMemberAsync(stream, "write", span, context).ConfigureAwait(false);
         _ = await LythonRuntime.InvokeCallableTargetAsync(method, span, span, context,
             () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(value)])).ConfigureAwait(false);

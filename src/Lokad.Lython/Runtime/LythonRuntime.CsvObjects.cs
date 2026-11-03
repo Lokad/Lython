@@ -202,18 +202,19 @@ internal sealed partial class LythonRuntime
 
     internal sealed class CsvWriterObject
     {
-        public CsvWriterObject(CsvOptions options, ICallable? writeMethod, MemoryGovernor governor, LythonSourceSpan span)
+        public CsvWriterObject(CsvOptions options, object? writeTarget, MemoryGovernor governor, LythonSourceSpan span)
         {
             // Own the shell beside the governed row history.
             governor.Reserve(128L, span);
             governor.Commit(128L);
             MemoryGovernor = governor;
             Options = options;
-            WriteMethod = writeMethod;
+            WriteTarget = writeTarget;
         }
 
         public readonly CsvOptions Options;
-        public readonly ICallable? WriteMethod;
+        // Native immutable handle or a callable captured once from a guest stream.
+        public readonly object? WriteTarget;
         public readonly List<PyString> Rows = new();
         internal MemoryGovernor MemoryGovernor { get; }
 
