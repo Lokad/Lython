@@ -91,8 +91,11 @@ all102 expansion goldens, five-method contextual/digraph/astral/unassigned/sigma
 cases, logical prefixes with invalid unused tails, refusal/first attribution,
 input/result funding, cleanup/reuse and cancellation BEFORE a256KiB allocation
 when admission cancels. Copy/growth-stage-only casing fixtures were consolidated
-onto real output admission; independent assertions remain. Full delivery status
-is recorded separately when available; publication remains postponed.
+onto real output admission; independent assertions remain. Full delivery qualification is GREEN on exact737a67e9: Windows/Ubuntu, actual
+.NET11/.NET10 Release, installed package consumers and original Stress.
+[Terminal run41709980798](https://github.com/Lokad/Lython/actions/runs/41709980798)
+and delivery-ci-status.json retain the eight passed gates. No terminal re-query.
+Publication remains postponed. This receipt does not qualify later prototypes.
 
 Exact/refined owned collections203.164/207.448s; final confirmation67.038s.
 All final quiet gates/goldens/joins passed. Evidence is persistent, RAM is only
