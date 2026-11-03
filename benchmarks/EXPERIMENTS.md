@@ -2031,3 +2031,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Config warm/fresh −19.6/−16.3%, allocation −37.8%; CSV allocation −10.2%, elapsed
   flat. Preserve control drift, small allocation uncertainty and the successful
   VM service followed by a trailing-CR controller error. Full delivery pending.
+
+- [Current call-cost source gate, B159](results/2026-11-03-current-call-costs/README.md):
+  exact B158 source, two complete-script CPU captures. Binding-only storage
+  removal is not shown dominant; no prototype promoted. Complete activation and
+  formatting remain the design target; proposal/evidence stay available.

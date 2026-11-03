@@ -1,0 +1,52 @@
+[
+  {
+    "case": "text-warm",
+    "samples": 1417,
+    "guestCpuSeconds": 7.12,
+    "namedBindingLeaves": [
+      {
+        "symbol": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindPositionalFunctionArguments(valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,object,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+        "samples": 11
+      },
+      {
+        "symbol": "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ReturnBoundValues(object[])[OptimizedTier1]",
+        "samples": 6
+      },
+      {
+        "symbol": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RentFunctionArgumentStorage(class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+        "samples": 3
+      }
+    ],
+    "namedBindingSamplePercent": 1.4114326040931546,
+    "unknownSamples": 86,
+    "workerExitCode": 0,
+    "closed": "Closed",
+    "before": "Equivalent",
+    "after": "Equivalent"
+  },
+  {
+    "case": "report-warm",
+    "samples": 2223,
+    "guestCpuSeconds": 11.18,
+    "namedBindingLeaves": [
+      {
+        "symbol": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::BindPositionalFunctionArguments(valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,object,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+        "samples": 16
+      },
+      {
+        "symbol": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::RentFunctionArgumentStorage(class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.MemoryGovernor,valuetype [System.Runtime]System.Nullable`1<int32>)[OptimizedTier1]",
+        "samples": 5
+      },
+      {
+        "symbol": "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ReturnBoundValues(object[])[OptimizedTier1]",
+        "samples": 1
+      }
+    ],
+    "namedBindingSamplePercent": 0.9896536212325686,
+    "unknownSamples": 350,
+    "workerExitCode": 0,
+    "closed": "Closed",
+    "before": "Equivalent",
+    "after": "Equivalent"
+  }
+]
