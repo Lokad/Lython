@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "qualifiedf6e51d1c; docs d5ba1756; frozen precommit metadata878894a3",
+  "files": {
+    "Lokad.Lython.dll": "df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd"
+  },
+  "diagnosticOverrides": {
+    "DOTNET_PerfMapEnabled": "1",
+    "DOTNET_JitDisasm": "ExecuteInstructionPrefix",
+    "DOTNET_JitStdOutFile": "/home/lokad/lython-bench-checks/instruction-prefix-source-gate-b230-20261104/prefix-jit.txt"
+  }
+}

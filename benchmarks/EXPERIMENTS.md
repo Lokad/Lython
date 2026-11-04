@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [qualified instruction-prefix source gate](results/2026-11-04-instruction-prefix-source-gate/README.md)
+closes after17s/6.13s guestCPU:1,218samples,201prefix samples mapped to the exact
+Tier1 listing. Loop/guard/dispatch includes useful work, not predicted savings.
+Existing argument/local sharing and escaped/pending-owner constraints are explicit;
+next map whole compiler operand lifetimes before selecting a redesign. No prototype
+or new speedup/ownership-balance claim; unknowns and raw code remain preserved.
+
 The [qualified f6e51d1c CPython checkpoint](results/2026-11-04-runtime-cpython-declaration-checkpoint/README.md)
 completes14jobs385.53s. Fresh CSV/JSON/text/report/config ratios1.44/1.28/2.43/1.70/1.07;
 long-field CSV0.17×. Full identities/goldens/quiet/joins pass; report remains variable

@@ -1,0 +1,17 @@
+{
+  "ownedCollectionSeconds": 17.0,
+  "capturedGuestCpuSeconds": 6.13,
+  "samples": 1218,
+  "prefixLeafSamples": 201,
+  "exactSizeTier1Bytes": 8716,
+  "allPrefixSamplesMapped": true,
+  "unknownLeafSamples": 80,
+  "malformedFinalMapLineRetained": true,
+  "workerExitCode": 0,
+  "workerClosed": true,
+  "quietGatesPassed": true,
+  "ownedFixturesRemoved": true,
+  "serviceTerminalSuccess": true,
+  "sourceRevision": "qualifiedf6e51d1c/frozendf206f47; documentationd5ba1756",
+  "limitation": "No source-pair elapsed/CPU claim, memory/RSS or ownership-balance measurement. Diagnostic overrides explicitly recorded. Samples skid; blocks contain useful work."
+}
