@@ -208,26 +208,29 @@ public sealed class UnclosedWriterEndOfRunTests
     public async Task CancelledRunLeavesOpenedOutputEmpty(bool asynchronous)
     {
         using var cts = new CancellationTokenSource();
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("f = open('/out.txt', 'w')\nf.write('yes')\nprint('buffered')\nwhile True:\n    pass");
-        Assert.True(script.IsValid);
-        var buffered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var host = new MockLythonHost { OnStandardOutputWrite = () => buffered.TrySetResult(true) };
-        var options = new LythonRunOptions { CancellationToken = cts.Token };
-        var runTask = asynchronous ? script.RunAsync(host, options) : Task.Run(() => script.Run(host, options));
-        try
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            "f = open('/out.txt', 'w')\nf.write('yes')\nprint('buffered')\nprint('after')", budget))
         {
-            // Rendezvous after the writer holds bytes, before canceling the run.
-            await buffered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            cts.Cancel();
-            var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("execution canceled", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-            Assert.Empty(host.ReadBytes("/out.txt"));
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            // The real host callback runs after the file writer accepts bytes.
+            // This finite fixture tests cancelled publication; active pure-loop
+            // cancellation has its own quiet-scheduler coverage.
+            var host = new MockLythonHost { OnStandardOutputWrite = cts.Cancel };
+            var options = new LythonRunOptions { CancellationToken = cts.Token };
+            using (var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options))
+            {
+                Assert.True(cts.IsCancellationRequested);
+                Assert.False(result.Success);
+                Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.DoesNotContain("after", result.StandardOutput);
+                Assert.True(host.Exists("/out.txt"));
+                Assert.Empty(host.ReadBytes("/out.txt"));
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
-        finally
-        {
-            cts.Cancel();
-        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

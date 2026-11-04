@@ -123,6 +123,10 @@ callback entry and CLR wait states do not establish idle-cache membership. Separ
 completed-async calls check sequential reuse. Caller/suspended contexts, cancellation,
 nested calls and awaited cleanup retain their independent assertions.
 
+Writer-publication cancellation uses finite guest programs and cancels from a
+real host callback after buffering. Pure-loop interruption remains in the quiet
+RuntimeStress collection, with independently started callers and joined cleanup.
+
 Qualify allocation traffic in optimized Release builds; Debug async state machines
 have different allocation costs. Keep semantic, admission, balance and cleanup
 assertions active in both. Per-thread counters must measure the actual operation

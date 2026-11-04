@@ -1,0 +1,16 @@
+2026-11-04T02:26:45.6412488Z A total of 1 test files matched the specified pattern.
+2026-11-04T02:26:45.8899112Z Blame: Attaching crash dump utility to process testhost (9164).
+2026-11-04T02:26:45.9586527Z Blame: Attaching crash dump utility to process testhost (6496).
+2026-11-04T02:27:17.3105144Z [xUnit.net 00:00:30.71]     Lokad.Lython.PublicApi.Tests.UnclosedWriterEndOfRunTests.CancelledRunLeavesOpenedOutputEmpty(asynchronous: False) [FAIL]
+2026-11-04T02:27:17.3110337Z   Failed Lokad.Lython.PublicApi.Tests.UnclosedWriterEndOfRunTests.CancelledRunLeavesOpenedOutputEmpty(asynchronous: False) [5 s]
+2026-11-04T02:27:17.3111682Z   Error Message:
+2026-11-04T02:27:17.3113205Z    System.TimeoutException : The operation has timed out.
+2026-11-04T02:27:17.3114989Z   Stack Trace:
+2026-11-04T02:27:17.3119560Z      at Lokad.Lython.PublicApi.Tests.UnclosedWriterEndOfRunTests.CancelledRunLeavesOpenedOutputEmpty(Boolean asynchronous) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\UnclosedWriterEndOfRunTests.cs:line 220
+2026-11-04T02:27:17.3121980Z --- End of stack trace from previous location ---
+2026-11-04T02:27:24.4856637Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-04T02:27:24.5408020Z 
+2026-11-04T02:27:24.5409977Z Passed!  - Failed:     0, Passed:  4079, Skipped:     0, Total:  4079, Duration: 35 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-04T02:31:24.6545471Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-04T02:31:24.6728024Z 
+2026-11-04T02:31:24.6929527Z Failed!  - Failed:     1, Passed: 15852, Skipped:     0, Total: 15853, Duration: 4 m 27 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
