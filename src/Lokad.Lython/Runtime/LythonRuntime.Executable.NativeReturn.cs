@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     internal static bool TryExecuteNativeReturn(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        BoundCallArguments arguments,
+        ReadOnlySpan<object?> arguments,
         LythonSourceSpan entrySpan,
         out object result)
     {
@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static bool TryExecuteNativeModuleFunction(ExecutableCodeObject code, ExecutionContext module,
-        BoundCallArguments arguments, string name, LythonSourceSpan span, out object result)
+        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
     {
         result = PyNone.Instance;
         if (!GuardNativeBody(code, arguments, module, out var instructions)) return false;
@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
         finally { module.LeaveFunctionCall(); }
     }
 
-    private static bool GuardNativeBody(ExecutableCodeObject codeObject, BoundCallArguments arguments,
+    private static bool GuardNativeBody(ExecutableCodeObject codeObject, ReadOnlySpan<object?> arguments,
         ExecutionContext context, out ExecutableInstruction[] instructions)
     {
         instructions = codeObject.Instructions;
@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object ExecuteNativeBody(ExecutableCodeObject codeObject, ExecutionContext context,
-        BoundCallArguments arguments, LythonSourceSpan entrySpan, ExecutableInstruction[] instructions)
+        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, ExecutableInstruction[] instructions)
     {
         context.EnterInterpreterFrame(entrySpan);
         try
@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
         _ => NativeReturnShape.Other,
     };
 
-    private static bool GuardNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, BoundCallArguments arguments,
+    private static bool GuardNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, out NativeReturnShape shape, out object? value)
     {
         var node = code.NativeReturn![index];
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, BoundCallArguments arguments,
+    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, PyException? entryException)
     {
         var node = code.NativeReturn![index];
@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, ExecutableInstruction instruction,
-        BoundCallArguments arguments, ExecutionContext context, out object? value)
+        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
     {
         if (instruction.OpCode == ExecutableOpCode.LoadConst)
         {
@@ -253,8 +253,8 @@ internal sealed partial class LythonRuntime
             return TryResolveExecutableGlobal(name, context, out value);
         }
         var index = instruction.LocalSlot;
-        var bound = (uint)index < (uint)arguments.Assigned.Length;
-        value = bound ? arguments.Values[index] : null;
+        var bound = (uint)index < (uint)arguments.Length;
+        value = bound ? arguments[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
         return bound;
     }

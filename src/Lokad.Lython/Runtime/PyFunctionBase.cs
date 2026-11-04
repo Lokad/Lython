@@ -59,26 +59,32 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     internal bool SupportsPositionalBinding { get; }
 
-    // Copy operands (and an optional bound receiver) straight into the existing
-    // invocation-owned values. Frame entry, mirroring and body dispatch stay shared.
+    // Closed native bodies consume caller operands synchronously. Other bodies
+    // bind invocation-owned values before they can capture locals or suspend.
     internal object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
+        var nativeAttempted = callSite is null && CanBorrowPositionalArguments(arguments.Length, receiver);
+        if (nativeAttempted && TryExecuteWithoutFrame(arguments, span, out var result))
+            return result;
         var bound = callSite is null
             ? BindPositionalOperands(arguments, span, context, receiver)
             : LythonRuntime.BindFunctionArguments([], span, _bindingPlan, context, receiver, callSite, arguments, storageCapacity: _storageCapacity);
-        return InvokeBound(bound, span);
+        return InvokeBound(bound, span, nativeAttempted);
     }
 
     internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.CheckExecution(span);
+        var nativeAttempted = callSite is null && CanBorrowPositionalArguments(arguments.Length, receiver);
+        if (nativeAttempted && TryExecuteWithoutFrame(arguments, span, out var result))
+            return new ValueTask<object>(result);
         var binding = callSite is null
             ? new ValueTask<BoundCallArguments>(BindPositionalOperands(arguments, span, context, receiver))
             : LythonRuntime.BindFunctionArgumentsAsync([], span, _bindingPlan, context, receiver, callSite, arguments, _storageCapacity);
-        return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+        return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span, nativeAttempted) : BindAndInvokeAsync(binding, span);
     }
 
     public PyType? OwnerType { get; private set; }
@@ -87,6 +93,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext context, object? receiver = null)
         => LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver,
             context.MemoryGovernor, _storageCapacity);
+
+    // No defaults, receiver insertion or dynamic binding during the borrow.
+    internal bool CanBorrowPositionalArguments(int count, object? receiver)
+        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalParameters.Count;
 
     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
     protected abstract bool RequiresArgumentMirroring { get; }
@@ -108,12 +118,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         return InvokeBound(boundArguments, span);
     }
 
-    protected object InvokeBound(BoundCallArguments boundArguments, LythonSourceSpan span)
+    protected object InvokeBound(BoundCallArguments boundArguments, LythonSourceSpan span, bool nativeAttempted = false)
     {
         LythonRuntime.ExecutionContext frame;
         try
         {
-            if (TryExecuteWithoutFrame(boundArguments, span, out var result))
+            if (!nativeAttempted && TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             {
                 LythonRuntime.ReturnBoundArguments(boundArguments);
                 return result;
@@ -174,12 +184,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private async ValueTask<object> BindAndInvokeAsync(ValueTask<BoundCallArguments> binding, LythonSourceSpan span)
         => await InvokeBoundAsync(await binding.ConfigureAwait(false), span).ConfigureAwait(false);
 
-    protected async ValueTask<object> InvokeBoundAsync(BoundCallArguments boundArguments, LythonSourceSpan span)
+    protected async ValueTask<object> InvokeBoundAsync(BoundCallArguments boundArguments, LythonSourceSpan span, bool nativeAttempted = false)
     {
         LythonRuntime.ExecutionContext frame;
         try
         {
-            if (TryExecuteWithoutFrame(boundArguments, span, out var result))
+            if (!nativeAttempted && TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             {
                 LythonRuntime.ReturnBoundArguments(boundArguments);
                 return result;
@@ -411,7 +421,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonSourceSpan span)
         => ValueTask.FromResult(ExecuteBody(frame, boundArguments, span));
 
-    internal virtual bool TryExecuteWithoutFrame(BoundCallArguments arguments, LythonSourceSpan span, out object result)
+    internal virtual bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
     {
         result = PyNone.Instance;
         return false;

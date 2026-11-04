@@ -36,7 +36,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal ExecutableCodeObject CodeObject => _codeObject;
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
 
-    internal override bool TryExecuteWithoutFrame(BoundCallArguments arguments, LythonSourceSpan span, out object result)
+    internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
     {
         // Closed native bodies cannot observe a function namespace or suspend.
         // Class and nested definitions keep their lexical/class-cell machinery.
@@ -55,7 +55,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments, span, out var result))
+        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span)
             ?? PyNone.Instance;
@@ -67,7 +67,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         // Only statically proven bodies without callbacks use this shared shortcut.
-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments, span, out var result))
+        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
             _codeObject, frame, boundArguments, _closureCells, _argumentsAreLocals, span).ConfigureAwait(false)

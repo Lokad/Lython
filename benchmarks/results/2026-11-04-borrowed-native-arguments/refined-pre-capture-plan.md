@@ -1,0 +1,7 @@
+# One B192 refinement
+
+Initial borrowed-argument image4f4d9dd0: helper elapsed-5.9..7.7%, allocations flat from existing tiny pools, report adverse+2.3..4.2% versus old controls with4-5%IQR. Text control spread4.5-5.1%; all other complete jobs within~2%,12 normal closes/goldens/balances/quiet gates pass236.020s. Retain original archivebeb089b1 and exact patch.
+
+Source explains an avoidable new cost: a failed borrowed native guard ran again after owned binding with identical fully supplied operands. Refine the same boundary to remember the attempted guard per call, not new retained metadata; no second module-native attempt after binding. Real lexical-frame/native execution remains as before. The binder cannot call guest code for the selected fully supplied positional shape. No replay after effects. Recheck same27 internal/148 public cases per actual.NET11/.NET10.
+
+One controlled refined candidate versus same fully qualified B19080e9a32d baseline and two independent old images. Text/report/helper, both APIs;5s each warmup,11x~250ms rotated rounds,1s settle. Same protocol, physical bootstrap, normal GC/tiering, tmpfs guest fixtures, persistent evidence/global parent lease/owned420s service. Separate eight-case allocation diagnostic as initial. No third unchanged retiming now; retain all adverse points, explicitly accept remaining debt or withdraw if costs invalidate the boundary. A source explanation alone is not proof of cause or magnitude. This does not close the fresh-JSON2-5% debt or whole-script objective.

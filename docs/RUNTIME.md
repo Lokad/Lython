@@ -223,7 +223,12 @@ forwarders. Genuine suspension retains the original operand cleanup.
 Guarded native return expressions retain binding and function/interpreter entry
 checks while omitting resumable interpreter storage. Closed module-level helpers
 also borrow their defining module's state and globals directly: they cannot
-observe a separate lexical context, so none is constructed. Class/nested definitions
+observe a separate lexical context, so none is constructed. Fully supplied positional
+calls without a bound receiver borrow their admitted caller operands synchronously,
+without constructing bound argument storage. The native evaluator reads a readonly
+span; it cannot retain that span or suspend. Returning an argument object preserves
+its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
+bindings. Class/nested definitions
 and other lexical cases retain their function contexts. Native conversions,
 dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime

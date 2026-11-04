@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Let closed native helpers read fully supplied positional arguments directly from
+  admitted caller operands, removing temporary binding storage and its copy/cleanup.
+  Keep owned arguments for defaults, dynamic calls and genuine suspension, and
+  preserve funding for returned aliases.
+
 - Share numeric grouping/padding across general/default/percentage floats,
   Decimal and native span fields, fixing sign-aware zero fill at all widths.
   Format complex components into a governed UTF-8 body and remove separate

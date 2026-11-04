@@ -2254,3 +2254,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   close and raw-data verification. Select removal of transient bound storage/
   ownership-record transport from existing closed helpers; no new engine/arena.
   Reader views deferred by lifetime/metadata costs, not permanently rejected.
+
+- [Borrowed native arguments, B192](results/2026-11-04-borrowed-native-arguments/README.md):
+  RETAINED: existing guarded native helpers consume caller operands before binding;
+  native evaluation carries a readonly span. Remove eligible rent/copy/presence/
+  clear work; real suspension and dynamic binding retain owned inputs. Initial
+  report+2–4% is preserved. One refinement removes a repeated failed guard; report
+  then lies within control variation, helpers improve6.6–10%, async text~7%.
+  Sync text remains uncertain; allocation is flat because small arrays were pooled.
+  Both actual targets27 internal/148 public pass; full delivery pending. Fresh-JSON
+  debt and the whole-script goal stay OPEN. No general CPU or CPython-ratio claim.

@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            // The span is consumed synchronously into owned bound values.
+            // Native bodies finish synchronously; other bodies bind owned values.
             // The caller keeps its operand array alive until this call finishes.
             var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
             return RuntimeValue(await pending.ConfigureAwait(false));

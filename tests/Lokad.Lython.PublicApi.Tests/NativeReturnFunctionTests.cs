@@ -66,6 +66,37 @@ public sealed class NativeReturnFunctionTests
     }
 
     [Fact]
+    public async Task BorrowedReturnSurvivesOperandReuseAndCodeDisposal()
+    {
+        const string source = "def keep(value):return value\npayload='é'*4096\nheld=keep(payload)\n" +
+            "for i in range(16):keep(str(i))\nprint(held is payload)\nreturn held\n";
+        foreach (var asynchronous in new[] { false, true })
+        {
+            var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+            using var script = new LythonEngine().Compile(source, budget);
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            using (var retained = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(retained.Success, retained.Failure?.Message);
+                Assert.Equal("True\n", retained.StandardOutput);
+                var held = budget.ReservedBytes;
+                Assert.True(held > baseline);
+                using (var second = script.Run(new MockLythonHost()))
+                {
+                    Assert.True(second.Success, second.Failure?.Message);
+                    Assert.Equal(retained.ReturnValue, second.ReturnValue);
+                }
+                Assert.Equal(held, budget.ReservedBytes);
+                script.Dispose();
+                Assert.True(budget.ReservedBytes > 0);
+                Assert.Equal(new string('é', 4096), retained.ReturnValue);
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Fact]
     public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup()
     {
         const string source = "def count(value):\n result=len(value.lower().split())\n return result\n" +

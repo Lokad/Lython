@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "0ca0944a plus B192 single-attempt borrowed native argument patch",
+  "baselineRuntimeRevision": "334c7cc7",
+  "coreSHA256": {
+    "before-control": "80e9a32df6a11178b824d9dc229585dc817d0c85ec21d2f8c83bdae215db2e56",
+    "candidate": "659fa32aade2cfcafecfa2f42f4e3dad5812e9240f6608abdfa989b280fefbcc",
+    "after-control": "80e9a32df6a11178b824d9dc229585dc817d0c85ec21d2f8c83bdae215db2e56"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "b2e2673466361a45f772eb9c4d00e389ff075918392ab4642a24351184e8e2eb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "7eea5e916c896890670531f5f7dc766da9ab95ae7d5e4cce8b78ed52add381ce",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "0e85b8150f3210ab92a76cbf809f0c9ed9402c1d1a2d0e0be9aaabdb6469fee7",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "bad92ed7ea9605ca55d42dfe24b00880245d32b9a9ac844981569a3216d0e936",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "479730ba2d48f332c557d3123826cabb411b47c67dd5484f4938364116990888"
+  }
+}

@@ -174,15 +174,23 @@ internal sealed partial class LythonRuntime
                     callEntered = true;
                 }
                 _context.CheckExecution(span);
+                var operands = _stack.Slice(argumentStart, argumentCount).Span;
+                var nativeAttempted = ordinaryCall && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
+                if (nativeAttempted && function.TryExecuteWithoutFrame(operands, span, out var borrowedValue))
+                {
+                    CompletePendingCall(borrowedValue, null);
+                    return this;
+                }
                 bound = function.BindPositionalOperands(
-                    _stack.Slice(argumentStart, argumentCount).Span, span, _context, _pendingReceiver);
-                if (function.TryExecuteWithoutFrame(bound, span, out var nativeValue))
+                    operands, span, _context, _pendingReceiver);
+                var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
+                if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, out var nativeValue))
                 {
                     CompletePendingCall(nativeValue, null);
                     return this;
                 }
                 frame = function.EnterInvocationFrame(bound, span);
-                if (TryExecuteNativeReturn(function.CodeObject, frame, bound, span, out var value))
+                if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value))
                 {
                     CompletePendingCall(value, null);
                     return this;
