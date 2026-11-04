@@ -1,0 +1,89 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 278459df..8cd69f74 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -376,16 +376,26 @@ internal sealed partial class LythonRuntime
+             finally { context.LeaveInterpreterFrame(); }
+         }
+ 
+-        private async ValueTask<(object Value, int End)> ReadJsonContainerAsync(
++        private ValueTask<(object Value, int End)> ReadJsonContainerAsync(
+             PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
+             int depth, int opening, bool isObject, bool asynchronous)
+         {
+-            var bytes = input.Utf8Bytes;
+             var expected = isObject ? context.State.JsonRecordKeys : Array.Empty<PyString>();
+-            var matched = true;
+             object result = isObject && options.ObjectPairsHook is null
+                 ? new PyDict(context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
+-            var valueEnd = -1;
++            return ReadJsonContainerRemainder(input, options, context, span, depth, opening,
++                isObject, asynchronous, result, expected, true, -1);
++        }
++
++        // Completed values stay in this ordinary loop. Only an actually pending
++        // callback/child materializes continuation state; nesting and storage
++        // remain the same recursive parser and execution-owned containers.
++        private ValueTask<(object Value, int End)> ReadJsonContainerRemainder(
++            PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
++            int depth, int opening, bool isObject, bool asynchronous, object result,
++            PyString[] expected, bool matched, int valueEnd)
++        {
++            var bytes = input.Utf8Bytes;
+             while (true)
+             {
+                 // A closer here follows an empty container or a completed value.
+@@ -401,8 +411,11 @@ internal sealed partial class LythonRuntime
+                             ? finishedDictionary.Keys : JsonPairKeys((PyList)result), count, span);
+                     }
+                     var hook = isObject ? options.ObjectPairsHook ?? options.ObjectHook : null;
+-                    return hook is null ? (result, peek + 1)
+-                        : (await InvokeJsonCallbackCoreAsync(hook, result, context, span, asynchronous).ConfigureAwait(false), peek + 1);
++                    if (hook is null) return new((result, peek + 1));
++                    var converted = InvokeJsonCallbackCoreAsync(hook, result, context, span, asynchronous);
++                    return converted.IsCompleted
++                        ? new((converted.GetAwaiter().GetResult(), peek + 1))
++                        : CompleteJsonScalarAsync(converted, peek + 1, null);
+                 }
+ 
+                 var start = peek;
+@@ -434,14 +447,35 @@ internal sealed partial class LythonRuntime
+                     start = EnsureJsonColon(bytes.Span, property.End, input, span, context) + 1;
+                 }
+ 
+-                var (value, end) = await ReadJsonValueAsync(input, options, context, span, depth, start, asynchronous).ConfigureAwait(false);
+-                if (result is PyDict dictionary) dictionary.SetItem(key!, value);
+-                else ((PyList)result).Add(isObject ? PyTuple.FromOwnedArray([key!, value], context.MemoryGovernor, span) : value);
+-                context.CheckExecution(span);
++                var pending = ReadJsonValueAsync(input, options, context, span, depth, start, asynchronous);
++                if (!pending.IsCompleted)
++                    return CompleteJsonContainerValueAsync(pending, input, options, context, span,
++                        depth, opening, isObject, asynchronous, result, expected, matched, key);
++                var (value, end) = pending.GetAwaiter().GetResult();
++                AppendJsonContainerValue(result, key, value, context, span);
+                 valueEnd = end;
+             }
+         }
+ 
++        private async ValueTask<(object Value, int End)> CompleteJsonContainerValueAsync(
++            ValueTask<(object Value, int End)> pending, PyString input, JsonLoadOptions options,
++            ExecutionContext context, LythonSourceSpan span, int depth, int opening,
++            bool isObject, bool asynchronous, object result, PyString[] expected, bool matched, PyString? key)
++        {
++            var (value, end) = await pending.ConfigureAwait(false);
++            AppendJsonContainerValue(result, key, value, context, span);
++            return await ReadJsonContainerRemainder(input, options, context, span, depth, opening,
++                isObject, asynchronous, result, expected, matched, end).ConfigureAwait(false);
++        }
++
++        private static void AppendJsonContainerValue(object result, PyString? key, object value,
++            ExecutionContext context, LythonSourceSpan span)
++        {
++            if (result is PyDict dictionary) dictionary.SetItem(key!, value);
++            else ((PyList)result).Add(key is null ? value : PyTuple.FromOwnedArray([key, value], context.MemoryGovernor, span));
++            context.CheckExecution(span);
++        }
++
+         private static IEnumerable<object> JsonPairKeys(PyList pairs)
+         {
+             foreach (var pair in pairs) yield return ((PyTuple)pair)[0];

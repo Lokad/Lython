@@ -1,0 +1,18 @@
+{
+  "build": "Full nonincremental Release,0 warnings/errors,46.13s",
+  "sourceBase": "9788ebca; qualified runtime5c827e68",
+  "prototypeCoreSHA256": "9588b3c8c9e3a516555605c869311620f55d3195ed40c83786bfa1a8257e8a58",
+  "checks": {
+    "net11.0": {
+      "internal": 181,
+      "public": 815,
+      "failed": 0
+    },
+    "net10.0": {
+      "internal": 181,
+      "public": 815,
+      "failed": 0
+    }
+  },
+  "focus": "All nonstress JSON families plus shared-memory/refusal controls, real pending hooks/reentry/ownership/cleanup; existing tests unchanged."
+}

@@ -46,8 +46,9 @@
   construction for proven bodies. Reuse shared formatting and deterministic working
   storage cleanup; keep custom protocols and real suspension on the ordinary path.
 
-- Share recursive JSON container grammar across arrays, dictionaries and pairs,
-  preserving hooks, duplicate replacement, cancellation and owned construction.
+- Share recursive JSON container grammar across arrays, dictionaries and pairs.
+  Keep completed parsing outside async state machines and resume the same loop
+  after actual suspension. Preserve hooks, duplicates, cancellation and ownership.
 
 - Share ordered lexical binding facts across frontend and executable construction,
   removing duplicate scope/local/pattern scans. Preserve module namespaces and

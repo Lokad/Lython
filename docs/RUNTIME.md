@@ -634,6 +634,9 @@ preflights, exact parsing and retained-payload funding; there is no digit ceilin
 Parse hooks still receive independently funded text before invocation.
 
 Arrays, dictionaries and pairs-hook output share one recursive container grammar.
+Completed parsing runs in an ordinary loop for both APIs. An incomplete child or
+hook enters an await helper and resumes that same loop after completion; pending
+input, keys and containers retain their execution ownership throughout.
 Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
 

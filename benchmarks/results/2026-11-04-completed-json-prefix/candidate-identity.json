@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "5c827e68 fully qualified source; terminal41889236498 all eight gates green",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "21cddae73e75128c7f012d7bd1bffff9cbf98e39ce0be265ba3aa77451cb0177",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "4cb02edc + exact JSON completed-prefix prototype snapshot",
+  "candidateCoreSHA256": "9588b3c8c9e3a516555605c869311620f55d3195ed40c83786bfa1a8257e8a58",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "669d7eb6fe8a4bd2c0ef372ae3b22f728bb893d304e438d5d89c9535cd487361"
+  }
+}

@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [shared completed JSON loop](results/2026-11-04-completed-json-prefix/README.md)
+retains the existing grammar/storage and CLR nesting, entering continuation state
+only for actual suspension.181 internal/815 public per actual target pass. Eight
+whole-script jobs222s: JSON elapsed−2.1–3.8%, sync report−2.0–2.7%, allocation and
+admitted peaks unchanged. Text controls move5.6–6.5% and remain inconclusive; no
+broad CPU or pending-I/O performance claim. Full new-source qualification pending.
+
 Current delivery update: **5c827e68** is fully qualified; **41889236498** completed
 successfully with all eight platform/framework/original Stress/installed consumer
 gates. [Cached result](results/2026-11-04-csv-boundary-state/delivery-ci-status.json).
