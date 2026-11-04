@@ -1,0 +1,566 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+index 9003b402..a727830b 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs
+@@ -178,7 +178,8 @@ internal sealed partial class ExecutableScript
+                 _statementFallbacks.ToArray(),
+                 requiresLocalVariableMirroring,
+                 isFunctionScope: _functionParameters is not null,
+-                operandLayout: operandLayout);
++                operandLayout: operandLayout,
++                functionParameters: _functionParameters);
+ 
+             int[] CollectCapturedLocalSlots()
+             {
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index e5fa7a01..2ab48258 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -430,13 +430,15 @@ internal sealed partial class ExecutableCodeObject
+         IReadOnlyList<LoweredStatement> statementFallbacks,
+         bool requiresLocalVariableMirroring,
+         bool isFunctionScope,
+-        ExecutableStackLayout operandLayout)
++        ExecutableStackLayout operandLayout,
++        IReadOnlyList<LoweredFunctionParameter>? functionParameters = null)
+     {
+         Name = name;
+         Constants = constants;
+         Names = names;
+         LocalNames = localNames;
+         LocalNameToSlot = localNameToSlot;
++        ParameterLayout = FunctionBindingPlan.PrepareParameterLayout(functionParameters ?? []);
+         CapturedLocalSlots = capturedLocalSlots;
+         ClosureNames = closureNames;
+         ClosureNameToSlot = closureNameToSlot;
+@@ -475,6 +477,9 @@ internal sealed partial class ExecutableCodeObject
+ 
+     public IReadOnlyDictionary<string, int> LocalNameToSlot { get; }
+ 
++    public (int PositionalCount, int PositionalOnlyCount, int KeywordOnlyCount,
++        int VariadicListIndex, int VariadicDictionaryIndex) ParameterLayout { get; }
++
+     public IReadOnlyList<int> CapturedLocalSlots { get; }
+ 
+     public IReadOnlyList<string> ClosureNames { get; }
+diff --git a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+index 283ce612..24f5bb24 100644
+--- a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
++++ b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+@@ -10,113 +10,77 @@ internal sealed class FunctionBindingPlan
+         PythonCallableKind callableKind,
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         IReadOnlyDictionary<string, object> defaultValues,
+-        LythonRuntime.ExecutionContext? context = null)
++        LythonRuntime.ExecutionContext? context = null,
++        ExecutableCodeObject? codeObject = null)
+     {
+         var governor = context?.MemoryGovernor;
+-        // The slot map and positional/keyword/layout arrays are owned by
+-        // this plan. Admit conservative capacity and construction overlap before
+-        // allocating, even though final arrays no longer need working lists.
+-        var layoutBytes = parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
++        // Executable parameter slots are already the compiler's local prefix.
++        // Only runtime-generated/lowered signatures need a new names/map owner.
++        var layoutBytes = codeObject is not null || parameters.Count == 0 ? 0 : 128L + 128L * parameters.Count;
+         governor?.Reserve(layoutBytes, null);
+         try
+         {
+             CallableName = callableName;
+             CallableKind = callableKind;
+-
+-            var positionalCount = 0;
+-            var keywordOnlyCount = 0;
+-            foreach (var parameter in parameters)
+-            {
+-                switch (parameter.Kind)
+-                {
+-                    case FunctionParameterKind.PositionalOnly:
+-                        positionalCount++;
+-                        PositionalOnlyCount++;
+-                        break;
+-                    case FunctionParameterKind.Positional:
+-                        positionalCount++;
+-                        break;
+-                    case FunctionParameterKind.KeywordOnly:
+-                        keywordOnlyCount++;
+-                        break;
+-                    case FunctionParameterKind.VariadicList:
+-                        VariadicList = parameter;
+-                        break;
+-                    case FunctionParameterKind.VariadicDictionary:
+-                        VariadicDictionary = parameter;
+-                        break;
+-                }
+-            }
+-
+-            LoweredFunctionParameter[] positional = positionalCount == 0 ? [] : new LoweredFunctionParameter[positionalCount];
+-            LoweredFunctionParameter[] keywordOnly = keywordOnlyCount == 0 ? [] : new LoweredFunctionParameter[keywordOnlyCount];
+-            var positionalIndex = 0;
+-            var keywordOnlyIndex = 0;
+-            foreach (var parameter in parameters)
+-            {
+-                if (parameter.Kind is FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional)
+-                    positional[positionalIndex++] = parameter;
+-                else if (parameter.Kind == FunctionParameterKind.KeywordOnly)
+-                    keywordOnly[keywordOnlyIndex++] = parameter;
+-            }
+-
+-            PositionalParameters = positional;
+-            KeywordOnlyParameters = keywordOnly;
+-            NamedLayoutCount = positionalCount + keywordOnlyCount;
+-            var layoutCount = NamedLayoutCount + (VariadicList is null ? 0 : 1) + (VariadicDictionary is null ? 0 : 1);
+-            var layoutNames = layoutCount == 0 ? [] : new string[layoutCount];
+-            var layoutIndex = new Dictionary<string, int>(parameters.Count, StringComparer.Ordinal);
+-            var slot = 0;
+-            foreach (var parameter in positional)
++            var layout = codeObject?.ParameterLayout ?? PrepareParameterLayout(parameters);
++            PositionalCount = layout.PositionalCount;
++            PositionalOnlyCount = layout.PositionalOnlyCount;
++            KeywordOnlyCount = layout.KeywordOnlyCount;
++            VariadicListIndex = layout.VariadicListIndex;
++            VariadicDictionaryIndex = layout.VariadicDictionaryIndex;
++            NamedLayoutCount = PositionalCount + KeywordOnlyCount;
++            ParameterCount = NamedLayoutCount + (VariadicListIndex < 0 ? 0 : 1) + (VariadicDictionaryIndex < 0 ? 0 : 1);
++            if (codeObject is not null)
+             {
+-                layoutIndex[parameter.Name] = slot;
+-                layoutNames[slot++] = parameter.Name;
++                ParameterNames = codeObject.LocalNames;
++                LayoutParameterIndex = codeObject.LocalNameToSlot;
+             }
+-
+-            foreach (var parameter in keywordOnly)
++            else
+             {
+-                layoutIndex[parameter.Name] = slot;
+-                layoutNames[slot++] = parameter.Name;
+-            }
+-
+-            if (VariadicList is not null)
+-            {
+-                layoutIndex[VariadicList.Name] = slot;
+-                layoutNames[slot++] = VariadicList.Name;
+-            }
+-
+-            if (VariadicDictionary is not null)
+-            {
+-                layoutIndex[VariadicDictionary.Name] = slot;
+-                layoutNames[slot++] = VariadicDictionary.Name;
++                var names = ParameterCount == 0 ? [] : new string[ParameterCount];
++                var indexes = new Dictionary<string, int>(ParameterCount, StringComparer.Ordinal);
++                var positional = 0;
++                var keywordOnly = PositionalCount;
++                foreach (var parameter in parameters)
++                {
++                    var slot = parameter.Kind switch
++                    {
++                        FunctionParameterKind.PositionalOnly or FunctionParameterKind.Positional => positional++,
++                        FunctionParameterKind.KeywordOnly => keywordOnly++,
++                        FunctionParameterKind.VariadicList => VariadicListIndex,
++                        FunctionParameterKind.VariadicDictionary => VariadicDictionaryIndex,
++                        _ => throw new InvalidOperationException("Unknown function parameter kind.")
++                    };
++                    names[slot] = parameter.Name;
++                    indexes.Add(parameter.Name, slot);
++                }
++                ParameterNames = names;
++                LayoutParameterIndex = indexes;
+             }
+ 
+-            LayoutParameterNames = layoutNames;
+-            LayoutParameterIndex = layoutIndex;
+-
+-            var nameStorageBytes = KeywordOnlyParameters.Count == 0 ? 0 : 32L + 8L * KeywordOnlyParameters.Count;
++            var nameStorageBytes = KeywordOnlyCount == 0 ? 0 : 32L + 8L * KeywordOnlyCount;
+             governor?.Reserve(nameStorageBytes, null);
+-            try { KeywordDefaultNames = KeywordOnlyParameters.Count == 0 ? [] : new PyString[KeywordOnlyParameters.Count]; }
++            try { KeywordDefaultNames = KeywordOnlyCount == 0 ? [] : new PyString[KeywordOnlyCount]; }
+             catch { governor?.ReleaseReserved(nameStorageBytes); throw; }
+             governor?.Commit(nameStorageBytes);
+             try
+             {
+                 for (var i = 0; i < KeywordDefaultNames.Length; i++)
+                     KeywordDefaultNames[i] = context is null
+-                        ? PyString.FromString(KeywordOnlyParameters[i].Name)
+-                        : PyString.FromString(KeywordOnlyParameters[i].Name, context.MemoryGovernor, null);
++                        ? PyString.FromString(ParameterNames[PositionalCount + i])
++                        : PyString.FromString(ParameterNames[PositionalCount + i], context.MemoryGovernor, null);
+ 
+-                var firstDefault = PositionalParameters.Count;
+-                while (firstDefault > 0 && defaultValues.ContainsKey(PositionalParameters[firstDefault - 1].Name)) firstDefault--;
+-                var count = PositionalParameters.Count - firstDefault;
++                var firstDefault = PositionalCount;
++                while (firstDefault > 0 && defaultValues.ContainsKey(ParameterNames[firstDefault - 1])) firstDefault--;
++                var count = PositionalCount - firstDefault;
+                 if (count != 0)
+                     PositionalDefaults = context is null
+-                        ? new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[PositionalParameters[i].Name]))
+-                        : new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[PositionalParameters[i].Name]), context.MemoryGovernor);
++                        ? new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[ParameterNames[i]]))
++                        : new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[ParameterNames[i]]), context.MemoryGovernor);
+ 
+-                for (var i = 0; i < KeywordOnlyParameters.Count; i++)
++                for (var i = 0; i < KeywordOnlyCount; i++)
+                 {
+-                    if (!defaultValues.TryGetValue(KeywordOnlyParameters[i].Name, out var value)) continue;
++                    if (!defaultValues.TryGetValue(ParameterNames[PositionalCount + i], out var value)) continue;
+                     var dictionary = KeywordDefaultStorage;
+                     if (dictionary is null)
+                     {
+@@ -153,29 +117,45 @@ internal sealed class FunctionBindingPlan
+ 
+     public PythonCallableKind CallableKind { get; }
+ 
+-    public IReadOnlyList<LoweredFunctionParameter> PositionalParameters { get; }
+-
+-    public IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters { get; }
+-
+-    // Flat call-time layout: positional, then keyword-only, then variadic
+-    // names. Built once per plan and shared across invocations; per-call
+-    // binding fills values in this order with presence bits instead of a
+-    // per-call name dictionary.
+-    public IReadOnlyList<string> LayoutParameterNames { get; }
+-
+-    public IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
+-
+-    // Number of positional plus keyword-only slots. Keyword matching must
+-    // stay below this count and at or above PositionalOnlyCount: a keyword
+-    // equal to a positional-only or variadic name is overflow,
+-    // exactly like a name the plan never declared.
+-    public int NamedLayoutCount { get; }
+-
++    public int PositionalCount { get; }
++    public int KeywordOnlyCount { get; }
+     public int PositionalOnlyCount { get; }
++    public int NamedLayoutCount { get; }
++    public int ParameterCount { get; }
++    public int VariadicListIndex { get; }
++    public int VariadicDictionaryIndex { get; }
++
++    // Only the first ParameterCount names bind arguments. A compiled map also
++    // contains body locals; keyword matching must exclude those, positional-only
++    // parameters and variadic slots. Mutable defaults belong to this function.
++    public IReadOnlyList<string> ParameterNames { get; }
++    public IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
+ 
+-    public LoweredFunctionParameter? VariadicList { get; }
+-
+-    public LoweredFunctionParameter? VariadicDictionary { get; }
++    internal static (int PositionalCount, int PositionalOnlyCount, int KeywordOnlyCount,
++        int VariadicListIndex, int VariadicDictionaryIndex) PrepareParameterLayout(
++        IReadOnlyList<LoweredFunctionParameter> parameters)
++    {
++        var positional = 0;
++        var positionalOnly = 0;
++        var keywordOnly = 0;
++        var variadicList = false;
++        var variadicDictionary = false;
++        foreach (var parameter in parameters)
++        {
++            switch (parameter.Kind)
++            {
++                case FunctionParameterKind.PositionalOnly: positional++; positionalOnly++; break;
++                case FunctionParameterKind.Positional: positional++; break;
++                case FunctionParameterKind.KeywordOnly: keywordOnly++; break;
++                case FunctionParameterKind.VariadicList: variadicList = true; break;
++                case FunctionParameterKind.VariadicDictionary: variadicDictionary = true; break;
++                default: throw new InvalidOperationException("Unknown function parameter kind.");
++            }
++        }
++        var named = positional + keywordOnly;
++        return (positional, positionalOnly, keywordOnly, variadicList ? named : -1,
++            variadicDictionary ? named + (variadicList ? 1 : 0) : -1);
++    }
+ 
+     public object? PositionalDefaults { get; private set; }
+     public object? KeywordDefaults { get; private set; }
+@@ -193,7 +173,7 @@ internal sealed class FunctionBindingPlan
+     {
+         if (PositionalDefaults is { } defaults && PyTupleLike.TryGetItems(defaults, out var items))
+         {
+-            var index = parameterIndex - (PositionalParameters.Count - items.Count);
++            var index = parameterIndex - (PositionalCount - items.Count);
+             if (index >= 0 && index < items.Count)
+             {
+                 value = items[index];
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index bdcb0cbb..33c75ce5 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
+     private static BoundCallArguments RentFunctionArgumentStorage(
+         FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor? governor, int? storageCapacity)
+     {
+-        var parameterCount = plan.LayoutParameterNames.Count;
++        var parameterCount = plan.ParameterCount;
+         var capacity = storageCapacity ?? parameterCount;
+         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
+         // Existing one/two/three-slot cleared pools are bounded control storage.
+@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
+         try
+         {
+             var offset = receiver is null ? 0 : 1;
+-            if (arguments.Length > plan.PositionalParameters.Count - offset)
++            if (arguments.Length > plan.PositionalCount - offset)
+                 throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+             var assigned = storage.Assigned;
+             if (receiver is not null)
+@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
+             for (var i = arguments.Length + offset; i < assigned.Length; i++)
+             {
+                 if (!plan.TryGetPositionalDefault(i, out var value))
+-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.PositionalParameters[i].Name, span);
++                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.ParameterNames[i], span);
+                 values[i] = value;
+             }
+             return storage with { Assigned = assigned };
+@@ -209,16 +209,16 @@ internal sealed partial class LythonRuntime
+         var values = bound.Values;
+         try
+         {
+-            for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
++            for (var k = 0; k < plan.KeywordOnlyCount; k++)
+             {
+-                var index = plan.PositionalParameters.Count + k;
++                var index = plan.PositionalCount + k;
+                 if (bound.Assigned[index]) continue;
+                 var defaults = plan.KeywordDefaultStorage;
+                 if (defaults is null)
+-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
++                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.ParameterNames[plan.PositionalCount + k], span);
+                 var value = await defaults.TryGetBuiltinKeyAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
+                 if (!value.Found)
+-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
++                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.ParameterNames[plan.PositionalCount + k], span);
+                 values[index] = value.Value;
+             }
+             return bound;
+@@ -264,9 +264,9 @@ internal sealed partial class LythonRuntime
+                 : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].RequireNotNull());
+             if (argument.IsPositional)
+             {
+-                if (positionalIndex >= plan.PositionalParameters.Count)
++                if (positionalIndex >= plan.PositionalCount)
+                 {
+-                    if (plan.VariadicList is null)
++                    if (plan.VariadicListIndex < 0)
+                     {
+                         throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
+                     }
+@@ -290,7 +290,7 @@ internal sealed partial class LythonRuntime
+             if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
+                 keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
+             {
+-                if (plan.VariadicDictionary is null)
++                if (plan.VariadicDictionaryIndex < 0)
+                 {
+                     throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
+                 }
+@@ -313,14 +313,14 @@ internal sealed partial class LythonRuntime
+             assigned[keywordIndex] = true;
+         }
+ 
+-        for (var i = 0; i < plan.PositionalParameters.Count; i++)
++        for (var i = 0; i < plan.PositionalCount; i++)
+         {
+             if (assigned[i])
+             {
+                 continue;
+             }
+ 
+-            var parameterName = plan.PositionalParameters[i].Name;
++            var parameterName = plan.ParameterNames[i];
+             if (plan.TryGetPositionalDefault(i, out var defaultValue))
+             {
+                 values[i] = defaultValue;
+@@ -330,15 +330,15 @@ internal sealed partial class LythonRuntime
+             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+         }
+ 
+-        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyParameters.Count; k++)
++        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyCount; k++)
+         {
+-            var i = plan.PositionalParameters.Count + k;
++            var i = plan.PositionalCount + k;
+             if (assigned[i])
+             {
+                 continue;
+             }
+ 
+-            var parameterName = plan.KeywordOnlyParameters[k].Name;
++            var parameterName = plan.ParameterNames[plan.PositionalCount + k];
+             var keywordDefaults = plan.KeywordDefaultStorage;
+             if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
+             {
+@@ -349,9 +349,9 @@ internal sealed partial class LythonRuntime
+             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+         }
+ 
+-        if (plan.VariadicList is not null)
++        if (plan.VariadicListIndex >= 0)
+         {
+-            var variadicIndex = plan.LayoutParameterIndex[plan.VariadicList.Name];
++            var variadicIndex = plan.VariadicListIndex;
+             var overflow = extraPositional;
+             if (overflow is null || overflow.Count == 0)
+             {
+@@ -366,7 +366,7 @@ internal sealed partial class LythonRuntime
+             assigned[variadicIndex] = true;
+         }
+ 
+-        if (plan.VariadicDictionary is not null)
++        if (plan.VariadicDictionaryIndex >= 0)
+         {
+             var keywordDict = new PyDict(context.MemoryGovernor, span);
+             if (extraKeywords is not null)
+@@ -377,7 +377,7 @@ internal sealed partial class LythonRuntime
+                     keywordDict.SetItem(keyword, pair.Value);
+                 }
+             }
+-            var keywordDictIndex = plan.LayoutParameterIndex[plan.VariadicDictionary.Name];
++            var keywordDictIndex = plan.VariadicDictionaryIndex;
+             values[keywordDictIndex] = keywordDict;
+             assigned[keywordDictIndex] = true;
+         }
+@@ -385,10 +385,9 @@ internal sealed partial class LythonRuntime
+         return storage with { Assigned = assigned };
+     }
+ 
+-    // Constructed function objects retain a wrapper plus binding plan and
+-    // default containers per evaluation. Defs and lambdas execute per evaluation,
+-    // so each constructed value charges once built.
+-    private const long FunctionValueBytes = 128;
++    // Cover the function, its binding/default metadata and initially empty
++    // attribute dictionary. Default containers are charged separately.
++    private const long FunctionValueBytes = 320;
+ 
+     // Constructed class objects retain a type record plus one namespace slot per
+     // member; admit the base plus per-member slots before construction. Member values
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index a43687ad..e1ce0e7a 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -18,7 +18,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+         : base(name, parameters, closure, defaultValues, scopeFacts, callableKind,
+-            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.ValueStorageCapacity)
++            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.ValueStorageCapacity, codeObject: codeObject)
+     {
+         _codeObject = codeObject;
+         _closureCells = closureCells;
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index 59387ebe..35a668f8 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -35,7 +35,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         Dictionary<string, object> defaultValues,
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function,
+-        int? storageCapacity = null)
++        int? storageCapacity = null,
++        ExecutableCodeObject? codeObject = null)
+     {
+         Name = name;
+         _storageCapacity = storageCapacity;
+@@ -43,9 +44,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         _memoryGovernor = closure.MemoryGovernor;
+         _nameValue = callableKind == PythonCallableKind.Lambda
+             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
+-        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameters, defaultValues, closure);
+-        SupportsPositionalBinding = _bindingPlan.KeywordOnlyParameters.Count == 0 &&
+-            _bindingPlan.VariadicList is null && _bindingPlan.VariadicDictionary is null;
++        _bindingPlan = new FunctionBindingPlan(name, callableKind, parameters, defaultValues, closure, codeObject);
++        SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
++            _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
+         _scopeFacts = scopeFacts;
+     }
+ 
+@@ -53,8 +54,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+ 
+     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
+ 
+-    protected FunctionBindingPlan BindingPlan => _bindingPlan;
+-
+     protected LythonRuntime.ExecutionContext Closure => _closure;
+ 
+     internal bool SupportsPositionalBinding { get; }
+@@ -96,7 +95,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+ 
+     // No defaults, receiver insertion or dynamic binding during the borrow.
+     internal bool CanBorrowPositionalArguments(int count, object? receiver)
+-        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalParameters.Count;
++        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalCount;
+ 
+     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
+     protected abstract bool RequiresArgumentMirroring { get; }
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBinding.cs b/src/Lokad.Lython/Runtime/PyFunctionBinding.cs
+index 39b88edf..54aac1e5 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBinding.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBinding.cs
+@@ -15,12 +15,12 @@ internal static class PyFunctionBinding
+     {
+         var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
+         frame.FunctionName = bindingPlan.CallableName;
+-        frame.FirstPositionalParameterName = bindingPlan.PositionalParameters.Count == 0
+-            ? null : bindingPlan.PositionalParameters[0].Name;
++        frame.FirstPositionalParameterName = bindingPlan.PositionalCount == 0
++            ? null : bindingPlan.ParameterNames[0];
+         if (mirrorBoundArguments)
+         {
+-            var layoutNames = bindingPlan.LayoutParameterNames;
+-            for (var i = 0; i < layoutNames.Count; i++)
++            var layoutNames = bindingPlan.ParameterNames;
++            for (var i = 0; i < bindingPlan.ParameterCount; i++)
+             {
+                 frame.Variables[layoutNames[i]] = boundArguments.Values[i];
+             }
+diff --git a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+index ec0d5509..148f18f4 100644
+--- a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+@@ -18,7 +18,7 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
+         Dictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
+         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+-        : base(name, parameters, closure, defaults, scopeFacts, callableKind)
++        : base(name, parameters, closure, defaults, scopeFacts, callableKind, codeObject: code)
+     {
+         _code = code;
+         _closureCells = closureCells;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs
+index 7d49673d..a095cabd 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs
+@@ -35,6 +35,30 @@ public sealed class BindingPlanConstructionTests
+     public async Task ExistingBindingErrorMessagesRemainStable(bool asynchronous)
+         => await Check(asynchronous, "legacy messages", "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(str(error))\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(str(error))", "Function 'f' is missing argument 'a'.\nFunction 'f' got multiple values for argument 'c'.\n");
+ 
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task BodyLocalKeywordsRemainOverflowAndFactoryDefaultsStayIndependent(bool asynchronous)
++        => await Check(asynchronous, "shared declaration, separate defaults", """
++            def make(value):
++                def f(a=value, /, *args, key=value, **kw):
++                    local = a + key
++                    return local, args, kw
++                return f
++            first = make(1)
++            second = make(2)
++            first.__defaults__ = (10,)
++            first.__kwdefaults__['key'] = 20
++            print(first(local=7, a=8, args=9, kw=10))
++            print(second())
++            print(first.__defaults__ is second.__defaults__, first.__kwdefaults__ is second.__kwdefaults__)
++            def reject(value):
++                local = value
++                return local
++            try: reject(1, local=2)
++            except TypeError: print('unexpected')
++            """, "(30, (), {'local': 7, 'a': 8, 'args': 9, 'kw': 10})\n(4, (), {})\nFalse False\nunexpected\n");
++
+     private static async Task Check(bool asynchronous, string name, string source, string expected)
+     {
+         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);

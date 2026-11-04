@@ -1,0 +1,22 @@
+{
+  "build": "Final nonincremental Release38.04seconds,0warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 744,
+      "public": 3013,
+      "coreSHA256": "d6fd5e6b81bc1319547149e9d19d68b4eafde4b81d1b6968fbfef7496cb14dfc"
+    },
+    "net10.0": {
+      "internal": 744,
+      "public": 3013,
+      "coreSHA256": "f3b9b63ebcc6c523dd25627329fcb67affa0cbd2fede4ef7f1a743c20e0f1740"
+    }
+  },
+  "independentRegression": {
+    "python": "CPython3.13.2 isolated local",
+    "stdout": "(30, (), {'local': 7, 'a': 8, 'args': 9, 'kw': 10})\n(4, (), {})\nFalse False\nunexpected\n",
+    "sourceSHA256": "8fb559910b271f396a21074b31ec6dea7e3f39c50ea9912a73415a95afd2f230",
+    "harnessCorrection": "Initial raw-byte assertion saw Windows CRLF; use explicit UTF8 text capture with ordinary newline translation. Original content matched, no guest change or timing ran."
+  },
+  "limitations": "Focused checks only; platform/original Stress/installed package qualification remains batched at delivery. No performance claim before frozen comparison."
+}

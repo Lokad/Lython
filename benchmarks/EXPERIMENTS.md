@@ -1,5 +1,11 @@
 # Benchmark experimental history
 
+The [compiler parameter-count/layout revision](results/2026-11-04-function-layout-reuse-withdrawn/README.md)
+also remains withdrawn: six-case164s, text warm+2.9–3.2%, old spread0.27%; tiny
+allocation benefit. Restoring separate plan/function objects did not remove the
+adverse text result. A final simpler design deletes the new code-object metadata
+and compiler pass; no CPU cause or speedup is claimed, all evidence preserved.
+
 The [combined function/binding representation](results/2026-11-04-function-construction-withdrawn/README.md)
 is withdrawn. Nine-case244s collection exposes9.18%warm-text old-role spread;
 one bounded57s confirmation establishes text+2.6–3.1% with0.52%old spread.
