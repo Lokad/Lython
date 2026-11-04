@@ -2,12 +2,14 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private int? PrepareNativeReturn()
+    private int? PrepareNativeReturn(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount)
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
-            || ClosureNames.Count != 0 || ExceptionRegions.Count != 0)
+            || ClosureNames.Count != 0 || exceptionRegionCount != 0 || blocks.Count != 1)
             return null;
-        var instructions = Instructions;
+        // A second reachable block requires control flow, exception routing or
+        // implicit completion; none belongs to this straight-line proof.
+        var instructions = blocks[0].InstructionArray;
         if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
             return -1;
         if (instructions.Length < 2 || instructions[^1].OpCode != ExecutableOpCode.Return)

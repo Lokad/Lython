@@ -34,7 +34,7 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private IReadOnlyList<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, IReadOnlyDictionary<int, int> indexMap)
+        private List<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, IReadOnlyDictionary<int, int> indexMap)
         {
             var normalized = new List<ExecutableBasicBlock>(ordered.Count);
             foreach (var originalIndex in ordered)

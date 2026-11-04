@@ -133,19 +133,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
     // plain local directly. Other consumers keep their evaluated contiguous
     // packets. Only adjacent leaf reads are removed: callbacks and failable
     // reads retain their original order and source attribution.
-    internal static ExecutableInstruction[] ForwardValues(ExecutableCodeObject code, int[] blockOffsets,
-        out int[]? positions)
+    internal static void ForwardValues(ExecutableCodeObject code, List<ExecutableBasicBlock> blocks)
     {
-        var instructions = code.Instructions;
-        var map = new int[instructions.Length + 1];
         var initialized = code.IsFunctionScope && !code.RequiresLocalVariableMirroring
             ? new bool[code.LocalNames.Count] : [];
-        var removed = 0;
-        for (var block = 0; block + 1 < blockOffsets.Length; block++)
+        for (var block = 0; block < blocks.Count; block++)
         {
             Array.Clear(initialized);
-            var start = blockOffsets[block];
-            for (var index = start; index < blockOffsets[block + 1]; index++)
+            var instructions = blocks[block].InstructionArray;
+            var kept = 0;
+            for (var index = 0; index < instructions.Length; index++)
             {
                 var instruction = instructions[index];
                 var count = instruction.OpCode switch
@@ -156,10 +153,11 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 };
                 var first = instruction.InputStart;
                 var second = instruction.SecondInput;
+                var inputBase = kept - count;
                 for (var input = count - 1; input >= 0; input--)
                 {
-                    var previous = index - (count - input);
-                    if (previous < start) break;
+                    var previous = inputBase + input;
+                    if (previous < 0) break;
                     var leaf = instructions[previous];
                     if (leaf.OpCode is not (ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal)
                         || leaf.ResultSlot != instruction.ResultSlot + input) break;
@@ -169,10 +167,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     else continue;
                     if (input == 0) first = source;
                     else second = source;
-                    map[previous] = -1;
-                    removed++;
+                    // At most one later leaf remains. Preserve that failable
+                    // read in order while dropping the infallible input copy.
+                    if (previous < kept - 1) instructions[previous] = instructions[kept - 1];
+                    kept--;
                 }
-                if (count != 0) instructions[index] = instruction.WithValueInputs(first, second);
+                instructions[kept++] = count == 0 ? instruction : instruction.WithValueInputs(first, second);
                 if (initialized.Length != 0)
                 {
                     if (instruction.OpCode == ExecutableOpCode.StoreLocal
@@ -184,31 +184,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                         Array.Clear(initialized);
                 }
             }
+            if (kept != instructions.Length)
+                blocks[block] = blocks[block] with { InstructionArray = instructions[..kept] };
         }
-        if (removed == 0) { positions = null; return instructions; }
-        var next = 0;
-        for (var index = 0; index < instructions.Length; index++)
-        {
-            var discard = map[index] == -1;
-            map[index] = next;
-            if (!discard) next++;
-        }
-        map[^1] = next;
-        var compact = new ExecutableInstruction[next];
-        for (var index = 0; index < instructions.Length; index++)
-        {
-            if (map[index] == map[index + 1]) continue;
-            var instruction = instructions[index];
-            compact[map[index]] = instruction.OpCode switch
-            {
-                ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
-                    ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(map[instruction.TargetIndex]),
-                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(map[instruction.FailureIndex]),
-                _ => instruction
-            };
-        }
-        positions = map;
-        return compact;
     }
 
     private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,

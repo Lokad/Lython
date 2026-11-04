@@ -419,7 +419,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<string> closureNames,
         IReadOnlyDictionary<string, int> closureNameToSlot,
         ScopeDirectiveFacts scopeFacts,
-        IReadOnlyList<ExecutableBasicBlock> blocks,
+        List<ExecutableBasicBlock> blocks,
         int entryBlockIndex,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
@@ -441,6 +441,17 @@ internal sealed partial class ExecutableCodeObject
         ClosureNames = closureNames;
         ClosureNameToSlot = closureNameToSlot;
         ScopeFacts = scopeFacts;
+        Imports = imports;
+        CallSites = callSites;
+        MemberCacheCount = memberCacheCount;
+        Functions = functions;
+        MatchCases = matchCases;
+        StatementFallbacks = statementFallbacks;
+        RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
+        IsFunctionScope = isFunctionScope;
+        OperandCapacity = operandLayout.MaximumDepth;
+        NativeReturnRoot = PrepareNativeReturn(blocks, exceptionRegions.Count);
+        if (NativeReturnRoot is null) ExecutableStackLayout.ForwardValues(this, blocks);
         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
         EntryIndex = offsets[entryBlockIndex];
         ExceptionRegions = exceptionRegions.Select(region => region with
@@ -452,33 +463,6 @@ internal sealed partial class ExecutableCodeObject
             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
-        Imports = imports;
-        CallSites = callSites;
-        MemberCacheCount = memberCacheCount;
-        Functions = functions;
-        MatchCases = matchCases;
-        StatementFallbacks = statementFallbacks;
-        RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
-        IsFunctionScope = isFunctionScope;
-        OperandCapacity = operandLayout.MaximumDepth;
-        NativeReturnRoot = PrepareNativeReturn();
-        if (NativeReturnRoot is null)
-        {
-            Instructions = ExecutableStackLayout.ForwardValues(this, offsets, out var positions);
-            if (positions is not null)
-            {
-                EntryIndex = positions[EntryIndex];
-                ExceptionRegions = ExceptionRegions.Select(region => region with
-                {
-                    ProtectedStartIndex = positions[region.ProtectedStartIndex],
-                    ProtectedEndIndex = positions[region.ProtectedEndIndex + 1] - 1,
-                    ExceptIndex = region.ExceptIndex is int handler ? positions[handler] : null,
-                    FinallyIndex = region.FinallyIndex is int cleanup ? positions[cleanup] : null,
-                    SuiteStartIndex = region.SuiteStartIndex is int start ? positions[start] : null,
-                    SuiteEndIndex = region.SuiteEndIndex is int end ? positions[end + 1] - 1 : null
-                }).ToArray();
-            }
-        }
     }
 
     public string Name { get; }
