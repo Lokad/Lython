@@ -69,3 +69,8 @@ bindings/identities are correct. Raw observations stay unchanged. [Label correct
 Full Windows/Ubuntu actual11/10/original Stress/installed consumer qualification of
 this new source is pending; prior41889236498 qualifies baseline5c827e68 only.
 Publication remains postponed.
+
+Delivery update: committed runtime **eff471b3**, full **41896187873** completed
+successfully. Windows/Ubuntu actual11/10 ordinary, original Stress and installed
+Release consumers pass. [Cached terminal result](delivery-ci-status.json).
+No repeat of unchanged qualification. This receipt excludes later prototypes.

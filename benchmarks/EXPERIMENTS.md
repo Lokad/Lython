@@ -1,5 +1,9 @@
 # Benchmark experimental history
 
+Delivery update: **eff471b3** completed full **41896187873** successfully; all eight
+platform/framework/original Stress/installed consumer gates pass. [Cached result](results/2026-11-04-completed-json-prefix/delivery-ci-status.json).
+Historical pending states below retain their observation time.
+
 The [shared completed JSON loop](results/2026-11-04-completed-json-prefix/README.md)
 retains the existing grammar/storage and CLR nesting, entering continuation state
 only for actual suspension.181 internal/815 public per actual target pass. Eight
