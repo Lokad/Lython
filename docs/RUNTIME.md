@@ -152,6 +152,8 @@ without a cross-script cache. One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix; module stores retain their dynamic namespace.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
+Each abstract binding state caches resolutions by syntax-node identity and clears
+them when its facts change; clones and branch joins have independent caches.
 Container and callback queries inspect shared fact payloads
 once per query with an iterative traversal; repeated tuple aliases do not expand
 into a recursive tree. Temporary traversal state ends with the query and does not

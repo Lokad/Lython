@@ -1,0 +1,14 @@
+{
+  "candidateRuntime": "7535e07a plus AbstractState patch",
+  "nativeCasesPerTarget": 109,
+  "publicCasesPerTarget": 807,
+  "targets": [
+    "actual .NET11RC3",
+    "actual .NET10.0.8"
+  ],
+  "build": "Release nonincremental, zero warnings/errors",
+  "newTests": false,
+  "semanticCoverage": "existing resolver mutation/withdrawal/clone/replace/join; frontend/annotation/directives; missing regex-provider errors and order; parser/compiler cancellation; admission and retained owners",
+  "initialFailure": "one probe subprocess used Program Files dotnet without .NET11; corrected PATH to pinned host; unchanged rerun247 per target pass",
+  "sourceOrAssertionRelaxation": false
+}

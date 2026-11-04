@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Simplify frontend resolution caching to syntax-node identity with clearing on
+  binding changes. Remove recursive structural key hashing, version counters and
+  per-entry versions while preserving diagnostic flow, cancellation and ownership.
+
 - Keep copy hashing, equality and memo lookups on the active caller's allowance
   after asynchronous hooks. Reuse native shallow copies to preserve stored
   hashes and aliases; prevent unrelated thread provenance from selecting an

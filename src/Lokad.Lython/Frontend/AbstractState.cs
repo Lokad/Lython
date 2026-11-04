@@ -63,11 +63,13 @@ internal readonly struct AbstractValueResolution
 
 internal sealed class AbstractState
 {
-    private readonly Dictionary<ExpressionSyntax, CachedAbstractValue> _abstractValueCache;
+    // Resolutions belong to this binding state and this exact immutable syntax
+    // node. Every mutation clears the cache; no version or structural hash is
+    // needed, including for recursively nested syntax records.
+    private readonly Dictionary<ExpressionSyntax, AbstractValueResolution> _abstractValueCache;
     private readonly Dictionary<string, AbstractSequenceLengthBounds> _sequenceLengths;
     private readonly Dictionary<string, AbstractValue> _values;
     private bool _containerFactsInvalidated;
-    private int _version;
 
     internal StaticAnalysisContext? AnalysisContext { get; }
 
@@ -76,7 +78,7 @@ internal sealed class AbstractState
         AnalysisContext = analysisContext;
         _values = new Dictionary<string, AbstractValue>(StringComparer.Ordinal);
         _sequenceLengths = new Dictionary<string, AbstractSequenceLengthBounds>(StringComparer.Ordinal);
-        _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
+        _abstractValueCache = new(ReferenceEqualityComparer.Instance);
     }
 
     private AbstractState(
@@ -87,7 +89,7 @@ internal sealed class AbstractState
         AnalysisContext = analysisContext;
         _values = values;
         _sequenceLengths = sequenceLengths;
-        _abstractValueCache = new Dictionary<ExpressionSyntax, CachedAbstractValue>();
+        _abstractValueCache = new(ReferenceEqualityComparer.Instance);
     }
 
     public bool TryGet(string name, out AbstractValue value) => _values.TryGetValue(name, out value);
@@ -401,27 +403,11 @@ internal sealed class AbstractState
     }
 
     public bool TryGetCachedAbstractValue(ExpressionSyntax expression, out AbstractValueResolution resolution)
-    {
-        if (_abstractValueCache.TryGetValue(expression, out var cached) && cached.Version == _version)
-        {
-            resolution = cached.Resolution;
-            return true;
-        }
-
-        resolution = default;
-        return false;
-    }
+        => _abstractValueCache.TryGetValue(expression, out resolution);
 
     public void SetCachedAbstractValue(ExpressionSyntax expression, AbstractValueResolution resolution)
-    {
-        _abstractValueCache[expression] = new CachedAbstractValue(_version, resolution);
-    }
+        => _abstractValueCache[expression] = resolution;
 
     private void InvalidateCachedFacts()
-    {
-        _version++;
-        _abstractValueCache.Clear();
-    }
-
-    private readonly record struct CachedAbstractValue(int Version, AbstractValueResolution Resolution);
+        => _abstractValueCache.Clear();
 }

@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [binding-state cache reassessment](results/2026-11-04-resolution-cache/README.md)
+removes recursive record hashing and redundant versions from the existing cache.
+Current-source compilation elapsed improves3.9–6.5% CSV,8.4% text and3.1% report;
+fresh/warm execution effects remain small or control-limited. Original B87 fixed-
+threshold rejection and drifting config controls remain intact. All focused checks
+pass; full delivery qualification is pending. This does not close the whole-script
+objective or establish a broad CPU gain.
+
 The [ordinary-call construction gate](results/2026-11-04-call-construction-gate/README.md)
 finds about 544 extra allocated bytes per guarded helper call, including its
 additional comparison/branch work. Complete-text CPU attribution confirms real
