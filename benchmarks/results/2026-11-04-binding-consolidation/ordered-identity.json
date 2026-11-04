@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "e3f83430 plus B197 explicit binding order and canonical snapshots",
+  "baselineRuntimeRevision": "2d46dc8e",
+  "coreSHA256": {
+    "before-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "candidate": "1b9b3230ca075b32ac8fbd3e117605f93499b9356b4afcd768c76ca4a535ca07",
+    "after-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ClassCellSyntaxFacts.cs": "deaab31c428acae189b6c1a3037cafa6c3455d7c776000d29234d88ad641f798",
+    "src/Lokad.Lython/Frontend/ComprehensionSyntaxFacts.cs": "3349a72518a05171a6574b9936f27e1310b23e769f13e1a2efaeb47c536dd44f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "804005d70c88182354b50ade57d475ea2d2fca79ad3bb240f16a53dfd9ab5535",
+    "src/Lokad.Lython/Frontend/ImplicitSuperSyntaxFacts.cs": "5c837db0bb029e239d6b2b13583d95f99db4ed8535016d95902e7c13ccdead9f",
+    "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs": "af4351d2a6e800b2d2895f0caa5d63b5bd38c209e163b43d69c39e88176a6635",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": "e22dc606e6092e5275711d6315f2f7f45f6f59c1575c9506562b04dbe67d1183"
+  }
+}

@@ -2306,3 +2306,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   No table, policy or truncating lookup remains in production. Independent public
   alias/value/budget regression passes both actual runtimes on restored source.
   Continue coherent frontend binding consolidation; whole-script objective OPEN.
+
+- [Ordered lexical binding consolidation, B197](results/2026-11-04-binding-consolidation/README.md):
+  RETAINED, 127 net production lines removed. One scope walk and explicit binding
+  order replace duplicate collectors; module lifetimes and canonical local snapshots
+  preserve semantics. Initial namespace/order failures and pre-order timing remain.
+  Final 776 internal/3,871 public cases per actual target pass. Compilation allocation
+  +0.6–0.9% on representative scripts is accepted; small possible compile/fresh cost
+  and favorable but variable warm report remain explicit. No general CPU claim.
+  Full delivery follows source commit; whole-script performance work remains OPEN.

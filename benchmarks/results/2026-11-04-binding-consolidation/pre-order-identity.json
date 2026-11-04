@@ -1,0 +1,13 @@
+{
+  "sourceRevision": "e3f83430 plus B197 corrected binding consolidation",
+  "baselineRuntimeRevision": "2d46dc8e",
+  "coreSHA256": {
+    "before-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "candidate": "9cc05a38a0ec98f9b178a771d137c5aa0cba69755da5a18e7024489c823cfdf5",
+    "after-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "4a4d7094ce0fd71f5dfa6d83b3925bb7a7232aae2a39e95de013ea5ac9fd2b33",
+    "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs": "bbfba9a1d1e41ced8c82a474df0a6e927ceb1563fa896e45abffbffebab05b22"
+  }
+}

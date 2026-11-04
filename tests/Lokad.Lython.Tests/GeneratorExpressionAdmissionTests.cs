@@ -16,7 +16,7 @@ public sealed class GeneratorExpressionAdmissionTests
         var root = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
         var function = new Context(root, new ScopeDirectiveFacts(
-            new HashSet<string>(), new HashSet<string>(), new HashSet<string> { "total" }));
+            new HashSet<string>(), new HashSet<string>(), new HashSet<string> { "total" }, ["total"]));
         function.Variables["total"] = BigInteger.Zero;
         var frontend = LythonFrontend.Compile("(i for i in (7,) if (total:=i)<0)",regexProvider:Utf8RegexProvider.Instance);
         var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;

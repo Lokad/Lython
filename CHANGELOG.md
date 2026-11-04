@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share ordered lexical binding facts across frontend and executable construction,
+  removing duplicate scope/local/pattern scans. Preserve module namespaces and
+  parameter order, and keep partial mirrors from reordering function local snapshots.
+
 - Remove temporary reservation objects from fixed UTF-8 copying, casing and
   padding, and duplicate admission of fresh string slices. Keep conservative
   capacity preflights, cancellation and rollback before publication.

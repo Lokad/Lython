@@ -1,0 +1,11 @@
+2
+3
+rebound module
+7
+9
+11
+missing helper
+rebound class
+['parser', 'Widget']
+['p', 'k', 'args', 'kw', 'zebra', 'apple']
+['manager', 'resource', 'first', 'before', 'handler', 'after', 'subject', 'capture', 'guard', 'matched']

@@ -5,7 +5,7 @@ internal static class ClassCellSyntaxFacts
     internal static readonly ScopeDirectiveFacts Scope = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),
-        new HashSet<string>(["__class__"], StringComparer.Ordinal));
+        new HashSet<string>(["__class__"], StringComparer.Ordinal), ["__class__"]);
 
     public static bool RequiresCell(ClassDefinitionStatementSyntax definition)
     {

@@ -1,0 +1,62 @@
+{
+  "purpose": "Inactive generated MSBuild obj directories in two explicit old checkouts only; no source/bin/frozen images/evidence",
+  "freeBefore": 864256,
+  "targets": [
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/benchmarks/Lokad.Lython.Benchmarks/obj",
+      "bytes": 989940,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/tools/LythonProbe/obj",
+      "bytes": 251872,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/tests/Lokad.Lython.Tests/obj",
+      "bytes": 10324832,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/tests/Lokad.Lython.WorkerFixture/obj",
+      "bytes": 233279,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/tests/Lokad.Lython.PublicApi.Tests/obj",
+      "bytes": 11668970,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/benchmarks/Lokad.Lython.Benchmarks/obj",
+      "bytes": 989272,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/src/Lokad.Lython/obj",
+      "bytes": 8894430,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/tools/LythonProbe/obj",
+      "bytes": 251782,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/tests/Lokad.Lython.Tests/obj",
+      "bytes": 11076546,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/tests/Lokad.Lython.WorkerFixture/obj",
+      "bytes": 237927,
+      "removed": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-list-numeric-baseline-20261011/tests/Lokad.Lython.PublicApi.Tests/obj",
+      "bytes": 12062412,
+      "removed": true
+    }
+  ],
+  "freeAfter": 58703872
+}

@@ -18,13 +18,15 @@ internal static class ComprehensionSyntaxFacts
 
     public static ScopeDirectiveFacts Bindings(IEnumerable<LoopTargetSyntax> targets, bool generator = false)
     {
-        var names = new HashSet<string>(StringComparer.Ordinal);
+        var names = new List<string>();
         foreach (var target in targets) CollectNames(target, names);
         if (generator) names.Add(".0");
-        return new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames, ScopeDirectiveFacts.Empty.NonlocalNames, names);
+        var order = names.Distinct(StringComparer.Ordinal).ToArray();
+        return new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames, ScopeDirectiveFacts.Empty.NonlocalNames,
+            new HashSet<string>(order, StringComparer.Ordinal), order);
     }
 
-    private static void CollectNames(LoopTargetSyntax target, HashSet<string> names)
+    private static void CollectNames(LoopTargetSyntax target, ICollection<string> names)
     {
         switch (target)
         {

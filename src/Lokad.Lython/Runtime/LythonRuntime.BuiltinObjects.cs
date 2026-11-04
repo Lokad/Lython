@@ -969,9 +969,17 @@ internal sealed partial class LythonRuntime
         if (context.IncludeCallerLocals && (context.ParentContext is null || context.IsClassBody))
             return context.GlobalNamespace ?? CreateGlobalNamespace(context, span);
         var scope = new PyDict(context.MemoryGovernor, span);
+        var frame = includeFrameLocals && context.IncludeCallerLocals ? context.CurrentExecutableFrame : null;
+        // Optimized locals follow their declaration order. A protocol/fallback
+        // may also mirror a subset into Variables; that must neither move those
+        // names to the front nor replace their current frame/cell values.
+        if (frame is not null)
+            foreach (var pair in frame.EnumerateVisibleLocals())
+                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
         foreach (var pair in context.IncludeCallerLocals ? context.Variables : [])
         {
-            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
+            if (!ExecutionState.BuiltinNames.Contains(pair.Key) &&
+                (frame is null || !frame.TryResolveLocalOrClosure(pair.Key, out _)))
             {
                 scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
             }
@@ -991,17 +999,9 @@ internal sealed partial class LythonRuntime
             context.TryResolveImplicitClassValue(out var owner) && !ReferenceEquals(owner, UninitializedLocal))
             scope.SetItem(PyString.FromString("__class__", context.MemoryGovernor, span), owner);
 
-        if (includeFrameLocals && context.IncludeCallerLocals && context.CurrentExecutableFrame is not null)
-        {
-            foreach (var pair in context.CurrentExecutableFrame.EnumerateVisibleLocals())
-            {
-                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-            }
-        }
-
         if (includeFrameLocals)
             foreach (var binding in context.EnumerateInlinedBindings())
-                foreach (var name in binding.ScopeFacts.LocalNames)
+                foreach (var name in binding.ScopeFacts.LocalBindingOrder)
                 {
                     var key = PyString.FromString(name, context.MemoryGovernor, span);
                     if (binding.Variables.TryGetValue(name, out var value)) scope.SetItem(key, value);

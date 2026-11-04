@@ -148,7 +148,11 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. Container and callback queries inspect shared fact payloads
+without a cross-script cache. One scope walk collects directives, local bindings
+and annotations, retaining explicit first-binding order. Function slots reuse these
+facts after the parameter prefix; module stores retain their dynamic namespace.
+Optimized local snapshots use current frame/cell values before extra mirrored names.
+Container and callback queries inspect shared fact payloads
 once per query with an iterative traversal; repeated tuple aliases do not expand
 into a recursive tree. Temporary traversal state ends with the query and does not
 trace guest storage. Shared syntax walks use value enumerators for

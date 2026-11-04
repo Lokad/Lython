@@ -137,9 +137,12 @@ internal static class ImplicitSuperSyntaxFacts
     }
 
     private static Scope TypeParameterScope(Scope parent, IReadOnlyList<TypeParameterSyntax>? parameters)
-        => parameters is not { Count: > 0 } ? parent : new Scope(parent,
-            new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames, ScopeDirectiveFacts.Empty.NonlocalNames,
-                new HashSet<string>(parameters.Select(p => p.Name), StringComparer.Ordinal)));
+    {
+        if (parameters is not { Count: > 0 }) return parent;
+        var names = parameters.Select(p => p.Name).ToArray();
+        return new Scope(parent, new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames,
+            ScopeDirectiveFacts.Empty.NonlocalNames, new HashSet<string>(names, StringComparer.Ordinal), names));
+    }
 
     private static ExpressionSyntax Unwrap(ExpressionSyntax expression)
     {

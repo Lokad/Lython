@@ -105,15 +105,12 @@ internal sealed partial class ExecutableScript
                         && IsLocalBindingName(parameter.Name))
                         InternLocal(parameter.Name);
             }
-            CollectLocals(statements);
+            // Function locals include bindings in dead control-flow bodies.
+            // Keep the argument prefix above; no second binding walk. Modules
+            // retain their dynamic namespace; actual stores intern needed slots.
             if (_functionParameters is not null)
-            {
-                // Binding anywhere in a function makes the name local throughout
-                // that function, including bindings in unexecuted loop/try bodies.
-                // Append after parameter collection to preserve argument slots.
-                foreach (var localName in _scopeFacts.LocalNames.Order(StringComparer.Ordinal))
+                foreach (var localName in _scopeFacts.LocalBindingOrder)
                     InternLocal(localName);
-            }
 
             var entryBlock = CreateBlock();
             var exitBlock = generatorExpression is null ? CompileStatements(statements, entryBlock)
@@ -232,117 +229,5 @@ internal sealed partial class ExecutableScript
             }
         }
 
-        private void CollectLocals(IReadOnlyList<LoweredStatement> statements)
-        {
-            foreach (var statement in statements)
-            {
-                switch (statement)
-                {
-                    case LoweredAssignmentStatement assignment:
-                        CollectAssignmentLocals(assignment.Syntax);
-                        break;
-                    case LoweredIfStatement ifStatement:
-                        CollectLocals(ifStatement.ThenStatements);
-                        if (ifStatement.ElseStatements is not null)
-                        {
-                            CollectLocals(ifStatement.ElseStatements);
-                        }
-                        break;
-                    case LoweredWhileStatement whileStatement:
-                        CollectLocals(whileStatement.Body);
-                        if (whileStatement.ElseStatements is not null)
-                        {
-                            CollectLocals(whileStatement.ElseStatements);
-                        }
-                        break;
-                    case LoweredMatchStatement matchStatement:
-                        foreach (var matchCase in matchStatement.Cases)
-                        {
-                            CollectPatternLocals(matchCase.Syntax.Pattern);
-                            CollectLocals(matchCase.Body);
-                        }
-                        break;
-                    case LoweredWithStatement withStatement:
-                        foreach (var name in withStatement.Syntax.BoundNames)
-                            if (IsLocalBindingName(name)) InternLocal(name);
-                        CollectLocals(withStatement.Body);
-                        break;
-                }
-            }
-        }
-
-        private void CollectAssignmentLocals(StatementSyntax syntax)
-        {
-            switch (syntax)
-            {
-                case AssignmentStatementSyntax assignment:
-                    if (IsLocalBindingName(assignment.Name)) InternLocal(assignment.Name);
-                    break;
-                case AnnotatedAssignmentStatementSyntax annotated:
-                    if (annotated.Target is NameAssignmentTargetSyntax targetName && IsLocalBindingName(targetName.Name)) InternLocal(targetName.Name);
-                    break;
-                case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
-                    if (IsLocalBindingName(nameTarget.Name)) InternLocal(nameTarget.Name);
-                    break;
-                case ChainedAssignmentStatementSyntax chained:
-                    foreach (var target in chained.Targets)
-                    {
-                        if (target is NameAssignmentTargetSyntax name)
-                        {
-                            if (IsLocalBindingName(name.Name)) InternLocal(name.Name);
-                        }
-                    }
-                    break;
-            }
-        }
-
-        private void CollectPatternLocals(PatternSyntax pattern)
-        {
-            switch (pattern)
-            {
-                case MatchCapturePatternSyntax capture:
-                    if (IsLocalBindingName(capture.Name)) InternLocal(capture.Name);
-                    break;
-                case MatchSequencePatternSyntax sequence:
-                    foreach (var item in sequence.Items)
-                    {
-                        CollectPatternLocals(item);
-                    }
-                    break;
-                case MatchMappingPatternSyntax mapping:
-                    foreach (var item in mapping.Items)
-                    {
-                        CollectPatternLocals(item.Pattern);
-                    }
-                    if (mapping.RestName is not null)
-                    {
-                        if (IsLocalBindingName(mapping.RestName)) InternLocal(mapping.RestName);
-                    }
-                    break;
-                case MatchClassPatternSyntax classPattern:
-                    foreach (var item in classPattern.PositionalPatterns)
-                    {
-                        CollectPatternLocals(item);
-                    }
-                    foreach (var item in classPattern.KeywordPatterns)
-                    {
-                        CollectPatternLocals(item.Pattern);
-                    }
-                    break;
-                case MatchStarPatternSyntax star when star.Name is not null:
-                    if (IsLocalBindingName(star.Name)) InternLocal(star.Name);
-                    break;
-                case MatchAsPatternSyntax asPattern:
-                    CollectPatternLocals(asPattern.Pattern);
-                    if (IsLocalBindingName(asPattern.Name)) InternLocal(asPattern.Name);
-                    break;
-                case MatchOrPatternSyntax orPattern:
-                    foreach (var item in orPattern.Patterns)
-                    {
-                        CollectPatternLocals(item);
-                    }
-                    break;
-            }
-        }
     }
 }
