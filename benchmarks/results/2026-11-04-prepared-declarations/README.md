@@ -3,7 +3,9 @@
 2026-11-04, quiet AzureF4as_v7 Ubuntu24.04.4/.NET11RC3. Baseline fully qualified
 ee8020f0/core38c03e5e; candidate base878894a3 plus recorded patch, frozen core
 `df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd`.
-No public API/Python contract change. Full new-source delivery pending; publication held.
+No public API/Python contract change. Full delivery41919086629 for exact f6e51d1c
+passed all eight platform/framework/original Stress/installed-consumer gates,
+terminal observed22:15:11UTC. [Cached result](delivery-ci-status.json). Publication held.
 
 Retain this coherent simplification:
 - Executable bindings hold their real immutable header and prepared code, not a

@@ -5,7 +5,8 @@ removes executable lowered-body retention, duplicate default maps/clones and thr
 construction routes.744internal/1677public plus14hosting cases per actual target
 pass. Eight-case221s collection passes all gates: fresh text−1.7–3.4%, warm text
 control-limited, report compile+1.2–1.3% (~0.7µs) retained as explicit debt. Tiny
-allocation changes, no general CPU/RSS claim. Full delivery pending; CPU roadmap open.
+allocation changes, no general CPU/RSS claim. Full41919086629/f6e51d1c delivery
+now passes all eight gates; CPU roadmap remains open.
 
 The [final borrowed-layout revision](results/2026-11-04-function-layout-borrow-withdrawn/README.md)
 is also withdrawn after110s: fresh text−1.5–1.9%, warm text control-limited, config
