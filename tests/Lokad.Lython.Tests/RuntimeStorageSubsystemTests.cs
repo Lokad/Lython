@@ -8,10 +8,10 @@ namespace Lokad.Lython.Tests;
 public sealed class RuntimeStorageSubsystemTests
 {
     [Fact]
-    public void ArrayPyListStorage_ClonesIndependently()
+    public void PyList_ClonesIndependently()
     {
-        IPyListStorage storage = new ArrayPyListStorage([new BigInteger(1), PyString.FromString("x")]);
-        var clone = storage.Clone();
+        var storage = new PyList([new BigInteger(1), PyString.FromString("x")]);
+        var clone = new PyList(storage);
 
         clone[0] = new BigInteger(9);
         clone.Add(true);
@@ -23,20 +23,20 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyList_UpgradesFromSmallStorageWhenCapacityIsExceeded()
+    public void PyList_GrowsWithoutLosingValues()
     {
-        var list = new PyList(Enumerable.Range(0, PyListStorage.SmallCapacity).Select(i => (object)new BigInteger(i)));
+        var list = new PyList(Enumerable.Range(0, PyList.InitialCapacity).Select(i => (object)new BigInteger(i)));
 
         list.Add(new BigInteger(99));
 
-        Assert.Equal(PyListStorage.SmallCapacity + 1, list.Count);
+        Assert.Equal(PyList.InitialCapacity + 1, list.Count);
         Assert.Equal(new BigInteger(99), list[list.Count - 1]);
     }
 
     [Fact]
     public void PyList_GovernorAttachmentPreflightsExistingCapacity()
     {
-        var list = new PyList(Enumerable.Range(0, PyListStorage.SmallCapacity).Select(i => (object)new BigInteger(i)));
+        var list = new PyList(Enumerable.Range(0, PyList.InitialCapacity).Select(i => (object)new BigInteger(i)));
         var governor = new MemoryGovernor(new LythonMemoryBudget(32));
 
         var ex = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor, null));
@@ -44,7 +44,7 @@ public sealed class RuntimeStorageSubsystemTests
         Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("shared memory budget exceeded", ex.Message, StringComparison.Ordinal);
         Assert.Null(list.OwnerMemoryGovernor);
-        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(PyList.InitialCapacity, list.Count);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -52,25 +52,25 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void PyList_BooleanAttachmentIsPreflighted()
     {
-        var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity));
+        var list = new PyList(Enumerable.Repeat<object>(true, PyList.InitialCapacity));
         var governor = new MemoryGovernor(new LythonMemoryBudget(32));
         var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
-        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(PyList.InitialCapacity, list.Count);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
     [Fact]
-    public void PyList_NonnumericPromotionIsPreflighted()
+    public void PyList_NonnumericGrowthIsPreflighted()
     {
-        var list = new PyList(Enumerable.Repeat<object>(PyNone.Instance, PyListStorage.SmallCapacity));
-        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(PyListStorage.SmallCapacity)));
+        var list = new PyList(Enumerable.Repeat<object>(PyNone.Instance, PyList.InitialCapacity));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(PyList.InitialCapacity)));
         list.AttachMemoryGovernor(governor);
         var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(PyNone.Instance));
         Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(PyList.InitialCapacity, list.Count);
         Assert.Equal(list.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }

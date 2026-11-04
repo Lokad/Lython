@@ -44,7 +44,7 @@ public sealed class ListCapacityOwnershipTests
     [InlineData("repeat")]
     public void DeniedCapacityGrowthPreservesContentsAndFunding(string operation)
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8)));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8)));
         object value = new BigInteger(7);
         var list = new PyList(Enumerable.Repeat(value, 8), governor);
         var before = governor.CurrentCommittedBytes;
@@ -74,7 +74,7 @@ public sealed class ListCapacityOwnershipTests
         var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         list.AttachMemoryGovernor(governor);
         var before = governor.CurrentCommittedBytes;
-        Assert.True(before >= PyListStorage.EstimateCapacityBytes(count));
+        Assert.True(before >= PyList.EstimateCapacityBytes(count));
         list.RemoveAt(0);
         Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Same(value, list[0]);
@@ -91,7 +91,7 @@ public sealed class ListCapacityOwnershipTests
     {
         var value = new object();
         var list = new PyList([value]);
-        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8) - 1));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8) - 1));
         var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
         Assert.Same(governor.AdmissionFailure, failure);
         Assert.Null(list.OwnerMemoryGovernor);

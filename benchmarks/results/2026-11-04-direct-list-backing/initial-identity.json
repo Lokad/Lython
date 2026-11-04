@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "0e516365 (ffc01134 runtime) plus B203 direct list backing; full patch includes deleted PyListStorage.cs",
+  "baselineRuntimeRevision": "ffc01134, frozen71879656 unchanged through0e516365",
+  "coreSHA256": {
+    "before-control": "718796567fc8e36c597eddd1d92c87b93573b833f3cf69a85ee345aa05686c14",
+    "candidate": "d8859af9c4520cad9597c02caf34f1239bd7ddb23c4729b67e2ab70a4c3699a8",
+    "after-control": "718796567fc8e36c597eddd1d92c87b93573b833f3cf69a85ee345aa05686c14"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "13bdb8441becf5443805c65f2bd53d11d98aebfbdc40d22b01d62fffcadeb470",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "40052848f359efc55dcba9b99f4a82f8e64d2178a119fe943721ed08631ca9a9",
+    "src/Lokad.Lython/Runtime/PyList.cs": "066368ac4892f8fc443620cc9f2d174036cebe39445bf0f177fda2229ade5b3c",
+    "src/Lokad.Lython/Runtime/PyListStorage.cs": null
+  }
+}

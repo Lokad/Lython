@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Store list backing directly in each list, removing separate small/large storage
+  implementations and their promotion. Keep replacement preflights, rollback,
+  live iteration and funded sort cleanup; growth uses conservative geometric capacity.
+
 - Extend native helper returns to static builtin formatting, removing full frame
   construction for proven bodies. Reuse shared formatting and deterministic working
   storage cleanup; keep custom protocols and real suspension on the ordinary path.

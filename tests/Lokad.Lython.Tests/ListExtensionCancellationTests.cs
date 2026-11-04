@@ -43,7 +43,7 @@ public sealed class ListExtensionCancellationTests
     [Fact]
     public void UnderestimatedKnownCountCannotGrowPastAdmittedCapacity()
     {
-        var budget = new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(9) + PyListStorage.EstimateCapacityBytes(18));
+        var budget = new LythonMemoryBudget(PyList.EstimateCapacityBytes(9) + PyList.EstimateCapacityBytes(18));
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         var alias = new object();

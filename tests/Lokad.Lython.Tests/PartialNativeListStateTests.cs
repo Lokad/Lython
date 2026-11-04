@@ -140,7 +140,7 @@ public sealed class PartialNativeListStateTests
         {
             // Exhaust the admitted small capacity before applying pressure.
             // In-capacity stores intentionally need no further admission.
-            for (var i = 0; i < PyListStorage.SmallCapacity; i++) yield return BigInteger.One;
+            for (var i = 0; i < PyList.InitialCapacity; i++) yield return BigInteger.One;
             Completed = true;
             Funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentAccountedBytes;
             context.MemoryGovernor.Reserve(Funding, Span);

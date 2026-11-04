@@ -610,7 +610,7 @@ internal sealed partial class LythonRuntime
             currentValue is PyList multipliedList &&
             TryRepeatCount(right, context, span, out var repeatCount))
         {
-            multipliedList.RepeatInPlace(ToListRepeatCount(repeatCount, span), span);
+            multipliedList.RepeatInPlace(ToListRepeatCount(repeatCount, span), span, context);
             context.CheckExecution(span);
             return multipliedList;
         }

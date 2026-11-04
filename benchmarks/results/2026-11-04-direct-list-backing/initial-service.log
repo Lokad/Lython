@@ -1,0 +1,19 @@
+Running as unit: lython-b203-list-backing-20261104.service; invocation ID: 30d77cf6963e41d680a20f130e16d32e
+Initial machine gate passed; a campaign still needs every sampling gate.
+warm scripts.text-summary-helpers.large complete
+warm scripts.config-edit.large complete
+warm scripts.csv-summary-helpers.large complete
+warm scripts.report-render.large complete
+warm-async scripts.text-summary-helpers.large complete
+warm-async scripts.config-edit.large complete
+warm-async scripts.csv-summary-helpers.large complete
+warm-async scripts.report-render.large complete
+allocation sync complete
+allocation async complete
+Initial machine gate passed; a campaign still needs every sampling gate.
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 4min 17.341s
+CPU time consumed: 4min 58.285s
+Memory peak: 256.0K
+Memory swap peak: 0B

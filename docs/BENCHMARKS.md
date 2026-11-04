@@ -2,11 +2,11 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.396 ms|3.502 ms|1.54×|Current ffc01134;RAM;Diagnostic;2.0% control /1.4% IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.525 ms|4.197 ms|1.32×|Current ffc01134;RAM;Diagnostic;0.9% control /0.5% IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.213 ms|1.288 ms|2.49×|Current ffc01134;RAM;Diagnostic;1.8% control /0.6% IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|4.836 ms|2.748 ms|1.76×|Current ffc01134;RAM;Variable;0.7% control /3.7% IQR|
-| Config read/edit/write |1,024 paths /7,177 B|0.295 ms|0.252 ms|1.17×|Current ffc01134;RAM;Diagnostic;2.6% control /1.0% IQR|
+| CSV summary/helpers |4,096 records /57,361 B|5.396 ms|3.502 ms|1.54×|ffc01134;RAM;Diagnostic;2.0% control /1.4% IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.525 ms|4.197 ms|1.32×|ffc01134;RAM;Diagnostic;0.9% control /0.5% IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.213 ms|1.288 ms|2.49×|ffc01134;RAM;Diagnostic;1.8% control /0.6% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|4.836 ms|2.748 ms|1.76×|ffc01134;RAM;Variable;0.7% control /3.7% IQR|
+| Config read/edit/write |1,024 paths /7,177 B|0.295 ms|0.252 ms|1.17×|ffc01134;RAM;Diagnostic;2.6% control /1.0% IQR|
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
@@ -21,7 +21,9 @@ range/median; control is the absolute spread between identical-source Lython rol
 Four explicitly earlier rows use2026-11-03 bd3f9dee and the ordinary VM filesystem.
 Filename scripts filter768 names and write/check256 selections, not traverse768 files.
 
-Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
+Later [list-storage consolidation](../benchmarks/results/2026-11-04-direct-list-backing/README.md)
+is not included in these external ratios; its allocation benefit and text timing
+debt are separate source-pair results. Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
 warm text has4.5% same-bits control spread and warm report7.8% CPython IQR. These
 are useful diagnostic ratios, not guaranteed multipliers. Startup, genuinely
 suspended I/O, equal heap/RSS and embedding latency are unmeasured. Config's

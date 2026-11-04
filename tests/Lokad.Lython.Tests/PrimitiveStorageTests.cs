@@ -59,7 +59,7 @@ public sealed class PrimitiveStorageTests
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
-        var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity), governor);
+        var list = new PyList(Enumerable.Repeat<object>(true, PyList.InitialCapacity), governor);
         var before = governor.CurrentCommittedBytes;
         using (governor.ReserveTemporary(65536 - governor.CurrentAccountedBytes, span))
         {
@@ -75,7 +75,7 @@ public sealed class PrimitiveStorageTests
             Assert.Equal(before, governor.CurrentCommittedBytes);
             var error = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+            Assert.Equal(PyList.InitialCapacity, list.Count);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -111,12 +111,12 @@ public sealed class PrimitiveStorageTests
     public void ListAttachmentPublishesOnlyAfterCapacityAdmission()
     {
         var list = new PyList(new object[] { true, (byte)1 });
-        var denied = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8) - 1));
+        var denied = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8) - 1));
         var error = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var admitted = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8)));
+        var admitted = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8)));
         list.AttachMemoryGovernor(admitted);
         Assert.Same(admitted, list.OwnerMemoryGovernor);
         Assert.Equal(list.CommittedStorageBytes, admitted.CurrentCommittedBytes);

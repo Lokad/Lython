@@ -9,15 +9,15 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [Fact]
     public void GrowthFundsReplacementWhileOldStorageRemainsOwned()
     {
-        var budget = new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(32));
+        var budget = new LythonMemoryBudget(PyList.EstimateCapacityBytes(32));
         using var owner = budget.CreateScope();
         var governor = new MemoryGovernor(owner);
         var alias = new object();
-        var storage = new ArrayPyListStorage(16, governor, null);
+        var storage = new PyList(16, governor, null);
         storage.Add(alias);
         var held = budget.ReservedBytes;
         var committed = governor.CurrentCommittedBytes;
-        var failure = Assert.Throws<LythonRuntimeException>(() => storage.EnsureCapacity(17, governor, null));
+        var failure = Assert.Throws<LythonRuntimeException>(() => storage.EnsureCapacity(17));
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
             failure.Attribution?.Reason);
         Assert.Same(governor.AdmissionFailure, failure);
@@ -41,15 +41,15 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
             var governor = new MemoryGovernor(owner);
             var alias = new object();
             var live = new PyList([alias], governor);
-            var storage = new ArrayPyListStorage(16, governor, null);
+            var storage = new PyList(16, governor, null);
             storage.Add(alias);
             var committed = governor.CurrentCommittedBytes;
             var held = budget.ReservedBytes;
             var before = GC.GetAllocatedBytesForCurrentThread();
             var error = Assert.Throws<LythonRuntimeException>(() =>
             {
-                if (grow) storage.EnsureCapacity(8192, governor, null);
-                else _ = new ArrayPyListStorage(8192, governor, null);
+                if (grow) storage.EnsureCapacity(8192);
+                else _ = new PyList(8192, governor, null);
             });
             var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
             if (measured) output.WriteLine($"LIST_STORAGE_ADMISSION:{grow}:{allocated}");
@@ -120,7 +120,7 @@ public sealed class ListConstructionAbortAccountingTests(ITestOutputHelper outpu
     [Fact]
     public void UnderestimatedCountStillPreflightsGrowth()
     {
-        var governor = new MemoryGovernor(new LythonMemoryBudget(PyListStorage.EstimateCapacityBytes(8) + PyListStorage.EstimateCapacityBytes(9) - 1));
+        var governor = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8) + PyList.EstimateCapacityBytes(9) - 1));
         var source = new GrowingSource();
         var failure = Assert.Throws<LythonRuntimeException>(() => new PyList(source, governor));
         Assert.Equal("MemoryError", failure.ExceptionType);

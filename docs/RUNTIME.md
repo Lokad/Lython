@@ -288,6 +288,14 @@ Dictionary write-key equality also requires synchronous completion. Native-key
 lookup equality can suspend under RunAsync; string, integer and tuple lookups
 share the same resolution and current execution context.
 
+Lists own their backing array, count and retained-capacity accounting directly.
+Growth admits the complete replacement while the old array remains funded;
+geometric capacity can require headroom beyond the immediate element count.
+Construction failures refund private backing, while failed live extension keeps
+its successful prefix charged. Sorting keeps the detached backing funded through
+callbacks and awaited cleanup, then restores it before releasing callback storage.
+In-place repetition fills the admitted array in bounded, cancellation-checked copies.
+
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.
 Raw storage scans remain separate from Python's mutation-checked iteration.

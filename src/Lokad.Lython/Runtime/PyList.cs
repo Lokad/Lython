@@ -4,64 +4,64 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    private IPyListStorage _items;
+    internal const int InitialCapacity = 8;
+    private object[] _items;
+    private int _count;
+    private long _committedBytes;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
 
+    // Major capacity includes metadata and scalar-box headroom. Contents and
+    // removals never change this charge; large numeric payloads keep their owners.
+    internal static long EstimateCapacityBytes(int capacity)
+        => checked(64L + ((16L + RuntimeMemoryEstimates.ScalarStorageBytes) * capacity));
 
-    public PyList()
-    {
-        _items = PyListStorage.Create();
-    }
-
-    public PyList(IEnumerable<object> items)
-    {
-        _items = PyListStorage.Create(items);
-    }
-
+    public PyList() : this(InitialCapacity, null, null) { }
+    public PyList(IEnumerable<object> items) : this(items, null, null) { }
     public PyList(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
 
-    // The native constructor publishes this owner before it starts consuming
-    // arbitrary iterables. Known capacity keeps the existing upfront preflight.
-    internal PyList(int capacity, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    internal PyList(int capacity, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = capacity <= PyListStorage.SmallCapacity
-            ? new SmallPyListStorage(governor, allocationSpan)
-            : new ArrayPyListStorage(capacity, governor, allocationSpan);
+        var actualCapacity = Math.Max(InitialCapacity, capacity);
+        var bytes = EstimateCapacityBytes(actualCapacity);
+        using var backing = governor?.ReserveTemporary(bytes, allocationSpan);
+        _items = new object[actualCapacity];
+        backing?.Commit(bytes);
+        if (backing is not null) _committedBytes = bytes;
     }
 
-    // Only a fresh constructor result that has never been exposed or registered.
-    // Drop its actual backing before refunding; guest values keep their owners.
+    public PyList(IEnumerable<object> items, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+        : this(items is IReadOnlyCollection<object> known ? known.Count : 0, governor, allocationSpan)
+    {
+        try
+        {
+            if (items is object[] array)
+            {
+                array.CopyTo(_items, 0);
+                _count = array.Length;
+            }
+            else foreach (var item in items) Add(item);
+        }
+        catch { DiscardUnpublishedStorage(); throw; }
+    }
+
+    public PyList(PyList other) : this(other, other._memoryGovernor, other._allocationSpan) { }
+
+    // Only unpublished constructor storage can be refunded; contained aliases
+    // retain their independent owners. Drop the backing before returning funding.
     internal void DiscardUnpublishedStorage()
     {
-        var charge = _items.ReleaseCommittedBytes();
-        _items = null!;
-        _memoryGovernor!.Release(charge);
+        _items = [];
+        _count = 0;
+        var bytes = _committedBytes;
+        _committedBytes = 0;
+        _memoryGovernor?.Release(bytes);
     }
 
-    public PyList(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        _memoryGovernor = governor;
-        _allocationSpan = allocationSpan;
-        _items = PyListStorage.Create(items, governor, allocationSpan);
-    }
-
-    public PyList(PyList other)
-    {
-        _memoryGovernor = other._memoryGovernor;
-        _allocationSpan = other._allocationSpan;
-        _items = other._memoryGovernor is null
-            ? other._items.Clone()
-            : PyListStorage.Create(other._items, other._memoryGovernor, other._allocationSpan);
-    }
-
-    public int Count => _items.Count;
-
-    // Current backing funding for unpublished rollback and explicit replacement.
-    // Capacity includes numeric-box headroom independent of its current contents.
-    internal long CommittedStorageBytes => _items.CommittedBytes;
+    public int Count => _count;
+    internal long CommittedStorageBytes => _committedBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -80,8 +80,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void Add(object value)
     {
-        _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
-        _items.Add(value);
+        EnsureCapacity(checked(_count + 1));
+        _items[_count++] = value;
     }
 
     public void AddRange(IEnumerable<object> values) => AddRange(values, null, null);
@@ -89,7 +89,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         context?.CheckExecution(span);
-        if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
+        if (values is PyIteration.CheckedSequence { Source: PyList or IReadOnlyCollection<object> } checkedSequence)
         {
             values = checkedSequence.Source;
         }
@@ -102,19 +102,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             return;
         }
 
-        if (values is IPyListStorage sourceStorage)
-        {
-            AddRange(sourceStorage.ToArray(), context, span);
-            return;
-        }
-
         // List-backed inputs are snapshotted above (PyList implements this interface
         // through its sequence interfaces, so it must never reach this live count).
         if (values is IReadOnlyCollection<object> known)
         {
             // Admit the reported count before mutation. A changing collection
             // can yield more, so each store also ensures its actual capacity.
-            _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
+            EnsureCapacity(checked(_count + known.Count));
 
             foreach (var value in known)
             {
@@ -151,7 +145,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         // In-memory fast paths ride the sync bulk path unchanged (no suspension
         // possible, self-extension stays snapshotted); only lazy sources await.
-        if (source is PyList || source is IPyListStorage || source is IReadOnlyCollection<object>)
+        if (source is PyList || source is IReadOnlyCollection<object>)
         {
             AddRange(LythonRuntime.ToSequence(source, span, context), context, span);
             return;
@@ -177,8 +171,10 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         var normalized = index < 0 ? index + Count : index;
         normalized = Math.Clamp(normalized, 0, Count);
-        _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
-        _items.InsertAt(normalized, value);
+        EnsureCapacity(checked(_count + 1));
+        Array.Copy(_items, normalized, _items, normalized + 1, _count - normalized);
+        _items[normalized] = value;
+        _count++;
     }
 
     public void Reverse()
@@ -194,44 +190,65 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         }
     }
 
-    // The original backing remains funded until restoration. Callbacks observe
-    // an empty list; its zero capacity also detects append/pop mutations without
-    // adding mutation counters to every ordinary list operation.
-    internal IPyListStorage DetachForSort()
+    // A sort owns the detached backing through every callback and awaited user.
+    // This value snapshot does not allocate a second collection/backend.
+    internal readonly record struct SortBacking(object[] Items, int Count, long Bytes)
     {
-        var original = _items;
-        _items = new ArrayPyListStorage(0, _memoryGovernor, _allocationSpan);
+        internal ArraySegment<object> Values => new(Items, 0, Count);
+    }
+
+    internal SortBacking DetachForSort()
+    {
+        var bytes = EstimateCapacityBytes(0);
+        _memoryGovernor?.Reserve(bytes, _allocationSpan);
+        var original = new SortBacking(_items, _count, _committedBytes);
+        _items = [];
+        _count = 0;
+        _committedBytes = _memoryGovernor is null ? 0 : bytes;
+        _memoryGovernor?.Commit(bytes);
         return original;
     }
 
-    internal bool RestoreAfterSort(IPyListStorage original, PyStableSort.Buffer? sorted)
+    internal bool RestoreAfterSort(SortBacking original, PyStableSort.Buffer? sorted)
     {
-        var modified = _items is not ArrayPyListStorage { Capacity: 0 };
-        // This allocation-free cleanup completes even after cancellation. It
-        // restores the complete permutation before releasing callback storage.
+        var modified = _items.Length != 0;
         if (sorted is not null)
-            for (var i = 0; i < original.Count; i++) original[i] = sorted[i].Value;
-        var discarded = _items;
-        _items = original;
-        _memoryGovernor?.Release(discarded.ReleaseCommittedBytes());
+            for (var i = 0; i < original.Count; i++) original.Items[i] = sorted[i].Value;
+        var discardedBytes = _committedBytes;
+        _items = original.Items;
+        _count = original.Count;
+        _committedBytes = original.Bytes;
+        _memoryGovernor?.Release(discardedBytes);
         return modified;
     }
 
-    public void RepeatInPlace(int count, LythonSourceSpan span)
+    public void RepeatInPlace(int count, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
-        if (_items is ArrayPyListStorage { Count: 0, Capacity: 0 }) return;
-        if (count <= 0 || Count == 0)
+        if (_items.Length == 0) return; // Empty callback view while sorting.
+        if (count <= 0 || _count == 0)
         {
-            ReplaceStorage([]);
+            ReplaceWithEmpty();
             return;
         }
-        var totalLength = (long)Count * count;
+        var totalLength = (long)_count * count;
         if (totalLength > int.MaxValue)
             throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
         var total = (int)totalLength;
-        var originalCount = Count;
-        _items = PyListStorage.EnsureCapacity(_items, total, _memoryGovernor, _allocationSpan);
-        _items.RepeatFill(originalCount, total);
+        EnsureCapacity(total);
+        while (_count < total)
+        {
+            // The populated prefix already is a whole number of repetitions.
+            // Reuse it in bounded copies, rather than call Array.Copy per item.
+            var chunk = Math.Min(_count, total - _count);
+            for (var copied = 0; copied < chunk;)
+            {
+                context?.CheckExecution(span);
+                var length = Math.Min(4096, chunk - copied);
+                Array.Copy(_items, copied, _items, _count + copied, length);
+                copied += length;
+            }
+            _count += chunk;
+        }
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -243,18 +260,23 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         {
             // Prepaid producer storage retains its original funding. Admission
             // here conservatively funds this backing before governed mutation.
-            _items.AttachMemoryGovernor(governor, allocationSpan);
+            var bytes = EstimateCapacityBytes(_items.Length);
+            governor.Reserve(bytes, allocationSpan);
+            governor.Commit(bytes);
+            _committedBytes = bytes;
             _memoryGovernor = governor;
         }
         _allocationSpan ??= allocationSpan;
     }
 
-    public void RemoveAt(int index) => _items.RemoveAt(index);
+    public void RemoveAt(int index) => RemoveRange(index, 1);
 
     public void RemoveRange(int index, int count)
     {
         if (count <= 0) return;
-        _items.RemoveRangeAt(index, count);
+        Array.Copy(_items, index + count, _items, index, _count - index - count);
+        Array.Clear(_items, _count - count, count);
+        _count -= count;
     }
 
     public void DeleteSlice(PyIndexing.SliceBounds bounds)
@@ -275,7 +297,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 destination++;
             }
         }
-        if (destination < count) _items.RemoveRangeAt(destination, count - destination);
+        if (destination < count) RemoveRange(destination, count - destination);
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)
@@ -285,9 +307,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             var removeCount = Math.Max(bounds.End - bounds.Start, 0);
             IReadOnlyList<object> staged = values;
             if (values is PyList sourceList) staged = sourceList.ToArray();
-            else if (values is IPyListStorage sourceStorage) staged = sourceStorage.ToArray();
-            _items = PyListStorage.EnsureCapacity(_items, checked(Count - removeCount + staged.Count), _memoryGovernor, _allocationSpan);
-            _items.ReplaceRange(bounds.Start, removeCount, staged);
+            var total = checked(_count - removeCount + staged.Count);
+            EnsureCapacity(total);
+            Array.Copy(_items, bounds.Start + removeCount, _items, bounds.Start + staged.Count,
+                _count - bounds.Start - removeCount);
+            for (var index = 0; index < staged.Count; index++) _items[bounds.Start + index] = staged[index];
+            if (total < _count) Array.Clear(_items, total, _count - total);
+            _count = total;
             return;
         }
         if (bounds.Count != values.Count)
@@ -298,23 +324,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void Clear()
     {
-        if (_items is ArrayPyListStorage { Count: 0, Capacity: 0 }) return;
-        if (_memoryGovernor is not null)
+        if (_items.Length == 0) return;
+        if (_memoryGovernor is not null) ReplaceWithEmpty();
+        else
         {
-            // Admit replacement while the old backing remains retained. A
-            // refusal must leave both contents and their funding unchanged.
-            var replacement = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
-            var released = _items.ReleaseCommittedBytes();
-            _items = replacement;
-            if (released > 0)
-            {
-                _memoryGovernor.Release(released);
-            }
-
-            return;
+            Array.Clear(_items, 0, _count);
+            _count = 0;
         }
-
-        _items.Clear();
     }
 
     public object GetItem(int index) => _items[index];
@@ -328,8 +344,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     public object GetIndex(int index) => _items[index];
 
     public object GetSlice(IEnumerable<int> indices) => _memoryGovernor is null
-        ? new PyList(PySequenceMaterialization.MaterializeSlice(_items, indices, null, _allocationSpan))
-        : new PyList(PySequenceMaterialization.MaterializeSlice(_items, indices, _memoryGovernor, _allocationSpan), _memoryGovernor, _allocationSpan);
+        ? new PyList(PySequenceMaterialization.MaterializeSlice(this, indices, null, _allocationSpan))
+        : new PyList(PySequenceMaterialization.MaterializeSlice(this, indices, _memoryGovernor, _allocationSpan), _memoryGovernor, _allocationSpan);
 
     public void SetIndex(int index, object value) => _items[index] = value;
 
@@ -337,7 +353,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         var bytes = EstimateArrayBytes(Count);
         using var storage = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var result = _items.ToArray();
+        var result = new object[_count];
+        Array.Copy(_items, result, _count);
         storage?.Commit(bytes);
         return result;
     }
@@ -352,13 +369,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     public PyString RenderInterpolated(PyRenderingContext context)
         => PyRendering.ToReprPyString(this, context);
 
-    // Python list iteration follows the live list by index: replacements are
-    // visible, appends are visited when reached, and removals shift or end the
-    // loop like CPython. This must not bind the origin storage: growing past the
-    // small-list capacity swaps the backing store mid-iteration, and a stale
-    // storage enumerator would miss the new elements. It also must not use the
-    // array storage version-checked enumerator, which throws a CLR exception on
-    // same-length replacement instead of iterating.
+    // Live indexed iteration sees replacements, appends and removals, including
+    // backing replacement. No CLR version-checked storage enumerator is exposed.
     public IEnumerator<object> GetEnumerator()
     {
         for (var index = 0; index < Count; index++)
@@ -369,17 +381,40 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private void ReplaceStorage(IEnumerable<object> values)
+    internal void EnsureCapacity(int targetCount)
     {
-        if (_memoryGovernor is not null)
+        if (targetCount <= _items.Length) return;
+        // The first expansion uses observed demand; subsequent growth is geometric.
+        var capacity = _items.Length == InitialCapacity ? targetCount : Math.Max(targetCount, (int)Math.Min(
+            _items.Length == 0 ? InitialCapacity : (long)_items.Length * 2, Array.MaxLength));
+        var bytes = EstimateCapacityBytes(capacity);
+        using var backing = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
+        var replacement = new object[capacity];
+        Array.Copy(_items, replacement, _count);
+        _items = replacement;
+        if (backing is not null)
         {
-            // Admit replacement while existing backing and its aliases stay funded.
-            var replacement = PyListStorage.Create(values, _memoryGovernor, _allocationSpan);
-            _memoryGovernor.Release(_items.ReleaseCommittedBytes());
-            _items = replacement;
-            return;
+            backing.Commit(bytes);
+            _memoryGovernor!.Release(_committedBytes);
+            _committedBytes = bytes;
         }
-        _items = PyListStorage.Create(values);
+    }
+
+    private void ReplaceWithEmpty()
+    {
+        // Refusal leaves the original backing/content intact. Old capacity
+        // remains charged through allocation of the replacement, even if empty.
+        var bytes = EstimateCapacityBytes(InitialCapacity);
+        using var backing = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
+        var replacement = new object[InitialCapacity];
+        _items = replacement;
+        _count = 0;
+        if (backing is not null)
+        {
+            backing.Commit(bytes);
+            _memoryGovernor!.Release(_committedBytes);
+            _committedBytes = bytes;
+        }
     }
 
     private static long EstimateArrayBytes(int count) => 32L + (16L * count);
