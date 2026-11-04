@@ -1,0 +1,139 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "function": "parse_amount",
+    "currentPayloadBytes": 168,
+    "proposedWithPacketCopiesBytes": 128,
+    "packets": [
+      {
+        "originalInstruction": 2,
+        "receiver": false,
+        "argumentCount": 1,
+        "producerInstructionIndexes": [
+          0,
+          1
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      }
+    ]
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "function": "words_from_line",
+    "currentPayloadBytes": 216,
+    "proposedWithPacketCopiesBytes": 192,
+    "packets": [
+      {
+        "originalInstruction": 2,
+        "receiver": true,
+        "argumentCount": 0,
+        "producerInstructionIndexes": [
+          0,
+          1
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      },
+      {
+        "originalInstruction": 4,
+        "receiver": true,
+        "argumentCount": 0,
+        "producerInstructionIndexes": [
+          2,
+          3
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      }
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "function": "record_amount",
+    "currentPayloadBytes": 168,
+    "proposedWithPacketCopiesBytes": 128,
+    "packets": []
+  },
+  {
+    "case": "scripts.report-render.large",
+    "function": "render",
+    "currentPayloadBytes": 888,
+    "proposedWithPacketCopiesBytes": 608,
+    "packets": []
+  },
+  {
+    "case": "design.nested-two-arguments",
+    "function": "helper",
+    "currentPayloadBytes": 408,
+    "proposedWithPacketCopiesBytes": 384,
+    "packets": [
+      {
+        "originalInstruction": 3,
+        "receiver": false,
+        "argumentCount": 1,
+        "producerInstructionIndexes": [
+          1,
+          2
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      },
+      {
+        "originalInstruction": 6,
+        "receiver": false,
+        "argumentCount": 1,
+        "producerInstructionIndexes": [
+          4,
+          5
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      },
+      {
+        "originalInstruction": 7,
+        "receiver": false,
+        "argumentCount": 2,
+        "producerInstructionIndexes": [
+          0,
+          3,
+          6
+        ],
+        "contiguous": false,
+        "requiredCopyUpperBound": 3
+      }
+    ]
+  },
+  {
+    "case": "design.nested-three-arguments",
+    "function": "helper",
+    "currentPayloadBytes": 360,
+    "proposedWithPacketCopiesBytes": 384,
+    "packets": [
+      {
+        "originalInstruction": 3,
+        "receiver": false,
+        "argumentCount": 1,
+        "producerInstructionIndexes": [
+          1,
+          2
+        ],
+        "contiguous": true,
+        "requiredCopyUpperBound": 0
+      },
+      {
+        "originalInstruction": 6,
+        "receiver": false,
+        "argumentCount": 3,
+        "producerInstructionIndexes": [
+          0,
+          3,
+          4,
+          5
+        ],
+        "contiguous": false,
+        "requiredCopyUpperBound": 4
+      }
+    ]
+  }
+]

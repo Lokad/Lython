@@ -115,3 +115,29 @@ and a completion decision. Timing percentages inform that decision, not veto it.
 If32B encoding/native packet copies/snapshot attribution or reuse cannot satisfy
 these invariants, revise or defer precisely before shipping. No open-ended audit,
 unchanged retiming or new profiler/framework campaign is authorized by this gate.
+
+## Follow-up: actual native call-packet census
+
+The next implementation step inspects actual source-producer links, not just
+instruction counts. Both runtimes produce identical code/packet observations on
+this same454 source; original managed-model evidence remains unchanged. Current
+CSV parse_amount and text words_from_line call inputs are already contiguous:
+no extra packet copies in those helpers. JSON record_amount and report render
+have no ordinary calls. Keeping all original instructions (without optimistic
+leaf/store elimination),32B instructions plus removal of the old native-node
+array would change payload168->128B,216->192B,168->128B and888->608B respectively.
+These are calculated compile-storage payloads, not observed runtime allocations.
+
+Two structural native controls expose the necessary counterexample:
+max(int(a),int(b)) needs at most3 explicit packet copies, payload408->384B;
+pow(int(a),2,3) needs4, payload360->384B. The latter is a real proposed metadata
+increase. Copies snapshot existing values, never repeat their side effects.
+Before implementing, preserve member lookup BEFORE argument effects, callback
+snapshots and the existing three-argument native eligibility. Actual frame extent,
+source spans, copy retirement and native guard/evaluation costs remain unvalidated.
+Do not mistake these compile-only observations for execution or semantic tests.
+
+Preserve native-packet-census.tgz and its separate summary. They extend the design
+gate without rewriting original evidence. Next implement the complete opcode/
+prepared-operation role and edge model, then the existing-engine replacement;
+no further unchanged layout census is needed.
