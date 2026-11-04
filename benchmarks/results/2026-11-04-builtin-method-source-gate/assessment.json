@@ -1,0 +1,175 @@
+{
+  "source": "a00fe76d/frozen1dcca6f2",
+  "purpose": "Bounded attribution, not a source-pair speedup",
+  "rows": [
+    {
+      "workload": "search",
+      "guestSamples": 810,
+      "guestCpuSeconds": 4.13,
+      "unknownSamples": 53,
+      "malformedMapLines": [
+        "0x7671dae0c820 5 instance string [Lokad.Lyt"
+      ],
+      "topLeafs": [
+        {
+          "method": "instance class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState::ReadLine(int32)[OptimizedTier1]",
+          "samples": 239,
+          "percent": 29.506172839506174
+        },
+        {
+          "method": "instance valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteInstructionPrefix(bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+          "samples": 63,
+          "percent": 7.777777777777778
+        },
+        {
+          "method": "[unknown]",
+          "samples": 53,
+          "percent": 6.54320987654321
+        },
+        {
+          "method": "int32 [System.Private.CoreLib] System.SpanHelpers::IndexOf(uint8&,int32,uint8&,int32)[OptimizedTier1]",
+          "samples": 23,
+          "percent": 2.8395061728395063
+        },
+        {
+          "method": "_copy_to_iter",
+          "samples": 20,
+          "percent": 2.4691358024691357
+        },
+        {
+          "method": "__tls_get_addr",
+          "samples": 15,
+          "percent": 1.8518518518518519
+        },
+        {
+          "method": "uint8* [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::GetPointerToFirstInvalidByte(uint8*,int32,int32&,int32&)[OptimizedTier1]",
+          "samples": 14,
+          "percent": 1.728395061728395
+        },
+        {
+          "method": "valuetype Lokad.Lython.Runtime.BoundCallArguments [Lokad.Lython] Lokad.Lython.Runtime.CallBinder::BindNamedArgumentsCore(valuetype Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,string,valuetype Lokad.Lython.Runtime.PythonCallableKind,class Lokad.Lython.Runtime.CallableParameterLayout,bool)[OptimizedTier1]",
+          "samples": 13,
+          "percent": 1.6049382716049383
+        },
+        {
+          "method": "object [System.Private.CoreLib] System.Runtime.CompilerServices.CastHelpers::IsInstanceOfInterface(void*,object)[OptimizedTier1]",
+          "samples": 13,
+          "percent": 1.6049382716049383
+        },
+        {
+          "method": "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,object,bool)[OptimizedTier1]",
+          "samples": 13,
+          "percent": 1.6049382716049383
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          "samples": 12,
+          "percent": 1.4814814814814814
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::StoreExecutableLocal(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          "samples": 12,
+          "percent": 1.4814814814814814
+        },
+        {
+          "method": "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          "samples": 11,
+          "percent": 1.3580246913580247
+        },
+        {
+          "method": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::InvokeStringAffix(class Lokad.Lython.Runtime.Text.PyString,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+          "samples": 11,
+          "percent": 1.3580246913580247
+        }
+      ],
+      "exitCode": 0,
+      "coreSHA256": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8"
+    },
+    {
+      "workload": "csv",
+      "guestSamples": 2000,
+      "guestCpuSeconds": 10.07,
+      "unknownSamples": 119,
+      "malformedMapLines": [
+        "0x71f47b9d3d90 2ab instanc"
+      ],
+      "topLeafs": [
+        {
+          "method": "instance valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteInstructionPrefix(bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+          "samples": 232,
+          "percent": 11.6
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser::Feed(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>)[OptimizedTier1]",
+          "samples": 146,
+          "percent": 7.3
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvDictReaderObject+<NextAsync>d__21::MoveNext()[OptimizedTier1]",
+          "samples": 123,
+          "percent": 6.15
+        },
+        {
+          "method": "[unknown]",
+          "samples": 119,
+          "percent": 5.95
+        },
+        {
+          "method": "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+          "samples": 72,
+          "percent": 3.6
+        },
+        {
+          "method": "__tls_get_addr",
+          "samples": 69,
+          "percent": 3.45
+        },
+        {
+          "method": "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+          "samples": 64,
+          "percent": 3.2
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+CsvRecordParser::FinishRecord()[OptimizedTier1]",
+          "samples": 63,
+          "percent": 3.15
+        },
+        {
+          "method": "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::GuardNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,valuetype Lokad.Lython.Frontend.ExecutableInstruction[],valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.LythonRuntime/NativeReturnShape&,object&)[OptimizedTier1]",
+          "samples": 62,
+          "percent": 3.1
+        },
+        {
+          "method": "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+          "samples": 54,
+          "percent": 2.7
+        },
+        {
+          "method": "object [Lokad.Lython] Lokad.Lython.Runtime.PyIndexing::ReadIndex(object,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+          "samples": 54,
+          "percent": 2.7
+        },
+        {
+          "method": "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,valuetype Lokad.Lython.Frontend.ExecutableInstruction[],valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.PyException)[OptimizedTier1]",
+          "samples": 45,
+          "percent": 2.25
+        },
+        {
+          "method": "bool [Lokad.Lython] Lokad.Lython.Runtime.Numbers.PyNumberOps::TryAsNumber(object,valuetype Lokad.Lython.Runtime.Numbers.PyNumber&)[OptimizedTier1]",
+          "samples": 44,
+          "percent": 2.2
+        },
+        {
+          "method": "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+          "samples": 37,
+          "percent": 1.85
+        }
+      ],
+      "exitCode": 0,
+      "coreSHA256": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8"
+    }
+  ],
+  "allLoadedCoreGoldenJoinQuietGatesPassed": true,
+  "sourceDecision": "Prioritize existing shared per-byte newline loop: ReadLine29.5% search leaf samples includes inlined work, not all newline cost. Builtin binding1.6% leaf visible but no dominant general-method overhead established. No descriptor/runtime cleanup framework selected.",
+  "archiveSHA256": "58fb13501a2f641440472b8425a9e2812f588a8f72de597656934b692f16fd9e"
+}
