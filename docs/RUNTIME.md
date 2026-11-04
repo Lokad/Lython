@@ -65,6 +65,8 @@ use the shared decoder, retaining input funding until the result is charged.
 UTF-8 and Latin-1 decoding produces admitted native text directly, including
 UTF-8 error handling and newline translation. Text readers borrow unchanged valid
 UTF-8 from the admitted raw prefix; transformed windows retain codec output funding.
+Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
+CRLF/window holdback and scalar read limits stay with the caller.
 Carry compaction and refill wait until the current window is relinquished. Returned
 text always owns independent immutable storage before raw-buffer reuse. UTF-8 replacement, ignored
 bytes and backslash escapes preserve Python malformed-unit grouping; newline

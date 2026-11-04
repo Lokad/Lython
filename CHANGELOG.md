@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use managed bulk byte searches for shared line boundaries, preserving newline
+  modes, chunk-edge handling and scalar read limits with less scanning work.
+
 - Share normalized UTF-8 windows across string search and prefix/suffix operations.
   Reject empty searches starting beyond the string and invalid start bounds before
   invoking end-bound hooks, matching Python. Preserve scalar indexes and cancellation.

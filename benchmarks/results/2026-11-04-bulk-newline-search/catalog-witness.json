@@ -1,0 +1,73 @@
+[
+  {
+    "id": "scripts.prefix-count-ascii",
+    "expectedOutput": "256 768\n",
+    "mode": "warm",
+    "sourceSha256": "3bdfa17c6cf1647e355aab4fc1f728360fb03645667bd0d483ba879761307d30",
+    "fixtureSha256": "806341f89d3c076f5db3c5d840de61d17d805f75ff959a11d5e9171a02e084b8",
+    "expectedOutputSha256": "90224a7801bb02b508f687bc1520d285db40e885f9c808055af9c87d2da197d0",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 262144
+  },
+  {
+    "id": "scripts.prefix-count-unicode",
+    "expectedOutput": "256 768\n",
+    "mode": "warm",
+    "sourceSha256": "3bdfa17c6cf1647e355aab4fc1f728360fb03645667bd0d483ba879761307d30",
+    "fixtureSha256": "3c91aa4af3983df60708a655100aa9571df2e3434a0ed17cb911af55e1a10cda",
+    "expectedOutputSha256": "90224a7801bb02b508f687bc1520d285db40e885f9c808055af9c87d2da197d0",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 263168
+  },
+  {
+    "id": "scripts.csv-summary-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "expectedOutput": "3072\n",
+    "sourceUtf8Bytes": 599,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+    "fixtureSha256": "fc82e829995d41c283a7da3dd6509c72d8fe3d390f9df19f04cc9c8a5b510175",
+    "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+    "expectedFilesSha256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014",
+    "mode": "warm"
+  },
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "expectedOutput": "6144\n",
+    "sourceUtf8Bytes": 424,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+    "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+    "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+    "expectedFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488",
+    "mode": "warm"
+  },
+  {
+    "id": "scripts.csv-summary-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "expectedOutput": "3072\n",
+    "sourceUtf8Bytes": 599,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+    "fixtureSha256": "fc82e829995d41c283a7da3dd6509c72d8fe3d390f9df19f04cc9c8a5b510175",
+    "expectedOutputSha256": "6da7b40bc621d6b5969e894e786e4571df5c635eb906ed732bbbe4855ad82cc1",
+    "expectedFilesSha256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014",
+    "mode": "compile"
+  }
+]

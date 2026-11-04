@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [shared bulk newline scan](results/2026-11-04-bulk-newline-search/README.md)
+replaces scalar mode/terminator branches with managed span search,17 net lines
+deleted. Complete long-line scripts take23–27% less elapsed; allocation unchanged.
+PossibleCSVwarm+1.2–2.8% debt accepted; text remains control-limited/inconclusive.
+All focused actual11/10 checks and155s source-pair gates pass. New helper full
+qualification is pending the next runtime checkpoint; no broad CPU or new CPython
+ratio claimed. Earliera00 delivery remains fully qualified/terminal green.
+
 The [a00fe76d current CPython checkpoint](results/2026-11-04-utf8-runtime-cpython-checkpoint/README.md)
 completes12 jobs in328.59s with exact loaded cores, quiet gates and joined cleanup.
 FreshCSV/JSON/text/report/config ratios1.46/1.25/2.45/1.70/1.09; warm

@@ -11,40 +11,23 @@ internal static class TextLineScanning
 {
     public static int FindLineEndByte(ReadOnlySpan<byte> source, int startByte, LythonRuntime.TextNewlineMode newline)
     {
-        for (var i = startByte; i < source.Length; i++)
+        if (startByte >= source.Length) return source.Length;
+        var remaining = source[startByte..];
+        var offset = newline switch
         {
-            if (source[i] == (byte)'\n' &&
-                newline is LythonRuntime.TextNewlineMode.TranslateUniversal or LythonRuntime.TextNewlineMode.PreserveUniversal or LythonRuntime.TextNewlineMode.PreserveLineFeed)
-            {
-                return i + 1;
-            }
+            LythonRuntime.TextNewlineMode.TranslateUniversal or LythonRuntime.TextNewlineMode.PreserveLineFeed
+                => remaining.IndexOf((byte)'\n'),
+            LythonRuntime.TextNewlineMode.PreserveCarriageReturn => remaining.IndexOf((byte)'\r'),
+            LythonRuntime.TextNewlineMode.PreserveCarriageReturnLineFeed => remaining.IndexOf("\r\n"u8),
+            LythonRuntime.TextNewlineMode.PreserveUniversal => remaining.IndexOfAny((byte)'\r', (byte)'\n'),
+            _ => -1,
+        };
+        if (offset < 0) return source.Length;
+        if (newline == LythonRuntime.TextNewlineMode.PreserveCarriageReturnLineFeed)
+            return startByte + offset + 2;
 
-            if (source[i] != (byte)'\r')
-            {
-                continue;
-            }
-
-            if (newline == LythonRuntime.TextNewlineMode.PreserveCarriageReturn)
-            {
-                return i + 1;
-            }
-
-            if (newline == LythonRuntime.TextNewlineMode.PreserveCarriageReturnLineFeed)
-            {
-                if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
-                {
-                    return i + 2;
-                }
-
-                continue;
-            }
-
-            if (newline == LythonRuntime.TextNewlineMode.PreserveUniversal)
-            {
-                return i + 1 < source.Length && source[i + 1] == (byte)'\n' ? i + 2 : i + 1;
-            }
-        }
-
-        return source.Length;
+        var end = startByte + offset + 1;
+        return newline == LythonRuntime.TextNewlineMode.PreserveUniversal && remaining[offset] == (byte)'\r'
+            && end < source.Length && source[end] == (byte)'\n' ? end + 1 : end;
     }
 }

@@ -1,0 +1,34 @@
+{
+  "build": "Full solution Release nonincremental zero warnings/errors; core/public-test/benchmark images match",
+  "tests": [
+    {
+      "target": "net11.0",
+      "selection": "internal",
+      "passed": 45,
+      "failed": 0,
+      "sha256": "138f83b23564dda0391b6d4852927dbb7fa394ffbee69b9f22a263044517c4d5"
+    },
+    {
+      "target": "net11.0",
+      "selection": "public",
+      "passed": 193,
+      "failed": 0,
+      "sha256": "450f39fac5143aea6a1b1be559b4984ade15a9d8c0c88c8e59fe076262a4c039"
+    },
+    {
+      "target": "net10.0",
+      "selection": "internal",
+      "passed": 45,
+      "failed": 0,
+      "sha256": "7ca214bb19de9c10c2323e46e89f412a78014a943168e09a1d58748e318b742c"
+    },
+    {
+      "target": "net10.0",
+      "selection": "public",
+      "passed": 193,
+      "failed": 0,
+      "sha256": "8816352082de1f7a41fe983f154f969b9d21f45ac9109c813df5466189e6dc87"
+    }
+  ],
+  "scope": "Existing shared-scanner modes/UTF8 byte offsets, real text/gzip/ZIP reads, window/EOF/newline/callback/lifetime/cancellation/refusal and retained owners. Tests unchanged."
+}
