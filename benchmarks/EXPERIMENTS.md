@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [owner-capacity admission assessment](results/2026-11-04-owner-capacity-assessment/README.md)
+is shelved with production restored. Several complete scripts improve, but a
+13–16% text regression does not reproduce in the bounded five-image confirmation.
+Allocation stays flat; substantial-capacity fixture migration remains incomplete.
+Sources, failed checks and adverse conditions are preserved separately from the
+qualified runtime. A public result-lifetime test correction is retained.
+
 Historical records preserved on 2026-10-12. Revision-specific findings below
 must not be read as measurements of current HEAD. See [BENCHMARKS.md](../docs/BENCHMARKS.md)
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.

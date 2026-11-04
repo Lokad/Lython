@@ -1,0 +1,24 @@
+{
+  "elapsedSeconds": 48.26195242675021,
+  "medianMilliseconds": {
+    "after-control": 3.0086599264705884,
+    "initial": 2.971778865671642,
+    "candidate": 3.0503589696969695,
+    "completion": 2.855787366197183,
+    "before-control": 2.9738545882352945
+  },
+  "iqrPercent": {
+    "after-control": 0.7151828270232037,
+    "initial": 0.8114821564433822,
+    "candidate": 0.6842994911895418,
+    "completion": 2.460854595819182,
+    "before-control": 1.0640483272175538
+  },
+  "deltaVsBefore": {
+    "after-control": 1.1703779456125885,
+    "initial": -0.06979906051439722,
+    "candidate": 2.5725663172748936,
+    "completion": -3.970174685244887,
+    "before-control": 0.0
+  }
+}

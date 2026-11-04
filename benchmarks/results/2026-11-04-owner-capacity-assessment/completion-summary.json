@@ -1,0 +1,660 @@
+{
+  "complete": true,
+  "elapsedSeconds": 239.32166724232957,
+  "timing": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.078853948717948,
+        "candidate": 4.943628552631579,
+        "after-control": 5.194522243243243
+      },
+      "cpuMilliseconds": {
+        "before-control": 5.128205128205129,
+        "candidate": 5.2631578947368425,
+        "after-control": 5.405405405405405
+      },
+      "iqrPercent": {
+        "before-control": 1.0996754547452132,
+        "candidate": 0.8169364304298475,
+        "after-control": 0.6927971103947177
+      },
+      "deltaPercent": -2.662517911555695,
+      "versusAfterPercent": -4.829966623745108,
+      "oldControlPercent": 2.277448725504172
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 3.01976459375,
+        "candidate": 3.5043235999999998,
+        "after-control": 3.0900634032258067
+      },
+      "cpuMilliseconds": {
+        "before-control": 3.125,
+        "candidate": 3.6363636363636362,
+        "after-control": 3.225806451612903
+      },
+      "iqrPercent": {
+        "before-control": 0.44305166088742354,
+        "candidate": 0.6585706141563419,
+        "after-control": 0.5428404118088561
+      },
+      "deltaPercent": 16.04625099760724,
+      "versusAfterPercent": 13.406203780211602,
+      "oldControlPercent": 2.32795661030345
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.310260289473685,
+        "candidate": 5.136301846153846,
+        "after-control": 5.365873432432433
+      },
+      "cpuMilliseconds": {
+        "before-control": 5.526315789473684,
+        "candidate": 5.384615384615385,
+        "after-control": 5.675675675675675
+      },
+      "iqrPercent": {
+        "before-control": 1.1009134248454417,
+        "candidate": 0.7997770140635829,
+        "after-control": 1.5493291369501019
+      },
+      "deltaPercent": -3.2758929663894154,
+      "versusAfterPercent": -4.2783637961158245,
+      "oldControlPercent": 1.0472771564322025
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.016488394736842,
+        "candidate": 4.76603341025641,
+        "after-control": 5.2271081052631585
+      },
+      "cpuMilliseconds": {
+        "before-control": 5.2631578947368425,
+        "candidate": 4.871794871794871,
+        "after-control": 5.7894736842105265
+      },
+      "iqrPercent": {
+        "before-control": 2.071105946994515,
+        "candidate": 2.697436356028458,
+        "after-control": 2.5793511626142918
+      },
+      "deltaPercent": -4.992635580363391,
+      "versusAfterPercent": -8.8208371765354,
+      "oldControlPercent": 4.198548744721364
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 0.19811446153846154,
+        "candidate": 0.19087726589595375,
+        "after-control": 0.20233859393939396
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.2958579881656805,
+        "candidate": 0.23121387283236994,
+        "after-control": 0.24242424242424243
+      },
+      "iqrPercent": {
+        "before-control": 1.5106069218726803,
+        "candidate": 1.598388117752755,
+        "after-control": 1.1652385374554368
+      },
+      "deltaPercent": -3.6530375351234934,
+      "versusAfterPercent": -5.664430013224864,
+      "oldControlPercent": 2.1321676207429974
+    },
+    {
+      "case": "scripts.scalar-above-range.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 0.45370217155756204,
+        "candidate": 0.4545868371040724,
+        "after-control": 0.452683309255079
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.47404063205417607,
+        "candidate": 0.4751131221719457,
+        "after-control": 0.47404063205417607
+      },
+      "iqrPercent": {
+        "before-control": 0.3633398550819746,
+        "candidate": 0.3923487143230826,
+        "after-control": 0.5170323578332
+      },
+      "deltaPercent": 0.194988166680643,
+      "versusAfterPercent": 0.4204987924396386,
+      "oldControlPercent": -0.22456632706545632
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 5.8933915882352945,
+        "candidate": 5.748709142857143,
+        "after-control": 6.07882675
+      },
+      "cpuMilliseconds": {
+        "before-control": 6.176470588235294,
+        "candidate": 6.0,
+        "after-control": 6.5625
+      },
+      "iqrPercent": {
+        "before-control": 1.2938385214457986,
+        "candidate": 0.6566082760840559,
+        "after-control": 0.8717998604747142
+      },
+      "deltaPercent": -2.454994602207916,
+      "versusAfterPercent": -5.430613845720433,
+      "oldControlPercent": 3.1464931353769376
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 3.3558605625,
+        "candidate": 3.2285176530612243,
+        "after-control": 3.4907354400000004
+      },
+      "cpuMilliseconds": {
+        "before-control": 3.5416666666666665,
+        "candidate": 3.4693877551020407,
+        "after-control": 3.6
+      },
+      "iqrPercent": {
+        "before-control": 2.0243205501182073,
+        "candidate": 2.0607445010225174,
+        "after-control": 0.8793903327145213
+      },
+      "deltaPercent": -3.794642449146035,
+      "versusAfterPercent": -7.51182068781403,
+      "oldControlPercent": 4.01908467256229
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 5.875159617647059,
+        "candidate": 5.858357441176471,
+        "after-control": 6.0527861212121215
+      },
+      "cpuMilliseconds": {
+        "before-control": 6.176470588235294,
+        "candidate": 6.176470588235294,
+        "after-control": 6.363636363636363
+      },
+      "iqrPercent": {
+        "before-control": 0.6032219089596954,
+        "candidate": 1.9641253789903599,
+        "after-control": 1.2356701228027516
+      },
+      "deltaPercent": -0.2859867231541968,
+      "versusAfterPercent": -3.2122179132395012,
+      "oldControlPercent": 3.0233477066994086
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 5.464839514285714,
+        "candidate": 4.969035487804878,
+        "after-control": 5.242308676470588
+      },
+      "cpuMilliseconds": {
+        "before-control": 6.0,
+        "candidate": 5.365853658536586,
+        "after-control": 5.588235294117647
+      },
+      "iqrPercent": {
+        "before-control": 4.898969899432363,
+        "candidate": 2.8307601335303474,
+        "after-control": 4.620069867623146
+      },
+      "deltaPercent": -9.072618238554808,
+      "versusAfterPercent": -5.212840477941727,
+      "oldControlPercent": -4.072047079029584
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 0.23359803846153845,
+        "candidate": 0.21177937575757574,
+        "after-control": 0.23548830921052633
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.38461538461538464,
+        "candidate": 0.36363636363636365,
+        "after-control": 0.32894736842105265
+      },
+      "iqrPercent": {
+        "before-control": 16.8410238121621,
+        "candidate": 19.675483036277004,
+        "after-control": 17.97826006727396
+      },
+      "deltaPercent": -9.340259382167337,
+      "versusAfterPercent": -10.067987465040062,
+      "oldControlPercent": 0.8091980401192966
+    },
+    {
+      "case": "scripts.scalar-above-range.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 0.5025860149253731,
+        "candidate": 0.5042613684210526,
+        "after-control": 0.5070303274111675
+      },
+      "cpuMilliseconds": {
+        "before-control": 0.572139303482587,
+        "candidate": 0.6015037593984962,
+        "after-control": 0.583756345177665
+      },
+      "iqrPercent": {
+        "before-control": 1.5891911039331006,
+        "candidate": 1.258142595284385,
+        "after-control": 0.4124053713403909
+      },
+      "deltaPercent": 0.33334662046420327,
+      "versusAfterPercent": -0.5461130903653855,
+      "oldControlPercent": 0.8842889284243816
+    }
+  ],
+  "allocation": {
+    "sync": [
+      {
+        "case": "scripts.csv-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 5182251.5,
+          "candidate": 5182259.5,
+          "before-control": 5182251.5
+        },
+        "deltaPercent": 0.00015437305580512373,
+        "versusControlPercent": 0.00015437305580512373,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 8415453,
+            "PeakRootBytes": 8511805
+          },
+          "candidate": {
+            "PeakExecutionBytes": 8417280,
+            "PeakRootBytes": 8513632
+          },
+          "before": {
+            "PeakExecutionBytes": 8415453,
+            "PeakRootBytes": 8511805
+          }
+        }
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 2499017.0,
+          "candidate": 2499025.0,
+          "before-control": 2498884.0
+        },
+        "deltaPercent": 0.0003201258734986112,
+        "versusControlPercent": 0.005642518820403453,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 3861479,
+            "PeakRootBytes": 3941031
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3862528,
+            "PeakRootBytes": 3942080
+          },
+          "before": {
+            "PeakExecutionBytes": 3861479,
+            "PeakRootBytes": 3941031
+          }
+        }
+      },
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 3567428.5,
+          "candidate": 3567248.0,
+          "before-control": 3567406.0
+        },
+        "deltaPercent": -0.005059666928153295,
+        "versusControlPercent": -0.004428988458282657,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5103222,
+            "PeakRootBytes": 5200470
+          },
+          "candidate": {
+            "PeakExecutionBytes": 5103616,
+            "PeakRootBytes": 5200864
+          },
+          "before": {
+            "PeakExecutionBytes": 5103222,
+            "PeakRootBytes": 5200470
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "medianBytesPerJob": {
+          "before": 6022618.5,
+          "candidate": 6022680.0,
+          "before-control": 6022234.0
+        },
+        "deltaPercent": 0.0010211505178325808,
+        "versusControlPercent": 0.007405889575196056,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 4706207,
+            "PeakRootBytes": 4788639
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4706304,
+            "PeakRootBytes": 4788736
+          },
+          "before": {
+            "PeakExecutionBytes": 4706207,
+            "PeakRootBytes": 4788639
+          }
+        }
+      },
+      {
+        "case": "scripts.config-edit.large",
+        "medianBytesPerJob": {
+          "before": 233362.0,
+          "candidate": 233354.5,
+          "before-control": 233362.0
+        },
+        "deltaPercent": -0.003213890864839364,
+        "versusControlPercent": -0.003213890864839364,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 253951,
+            "PeakRootBytes": 327199
+          },
+          "candidate": {
+            "PeakExecutionBytes": 253952,
+            "PeakRootBytes": 327200
+          },
+          "before": {
+            "PeakExecutionBytes": 253951,
+            "PeakRootBytes": 327199
+          }
+        }
+      },
+      {
+        "case": "scripts.scalar-above-range.large",
+        "medianBytesPerJob": {
+          "before": 543080.5,
+          "candidate": 543088.5,
+          "before-control": 543080.5
+        },
+        "deltaPercent": 0.001473078116420723,
+        "versusControlPercent": 0.001473078116420723,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 367,
+            "PeakRootBytes": 45556
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4096,
+            "PeakRootBytes": 47136
+          },
+          "before": {
+            "PeakExecutionBytes": 367,
+            "PeakRootBytes": 45556
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-padding.large",
+        "medianBytesPerJob": {
+          "before": 564496.5,
+          "candidate": 564504.5,
+          "before-control": 564482.5
+        },
+        "deltaPercent": 0.0014171921349337424,
+        "versusControlPercent": 0.0038973750293491705,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 291469,
+            "PeakRootBytes": 337485
+          },
+          "candidate": {
+            "PeakExecutionBytes": 294912,
+            "PeakRootBytes": 340928
+          },
+          "before": {
+            "PeakExecutionBytes": 291469,
+            "PeakRootBytes": 337485
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-slices.large",
+        "medianBytesPerJob": {
+          "before": 338298.5,
+          "candidate": 338306.5,
+          "before-control": 338298.5
+        },
+        "deltaPercent": 0.0023647754867406334,
+        "versusControlPercent": 0.0023647754867406334,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 570956,
+            "PeakRootBytes": 613708
+          },
+          "candidate": {
+            "PeakExecutionBytes": 573440,
+            "PeakRootBytes": 616192
+          },
+          "before": {
+            "PeakExecutionBytes": 570956,
+            "PeakRootBytes": 613708
+          }
+        }
+      }
+    ],
+    "async": [
+      {
+        "case": "scripts.csv-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 5544773.5,
+          "candidate": 5544914.5,
+          "before-control": 5543483.5
+        },
+        "deltaPercent": 0.0025429352524586335,
+        "versusControlPercent": 0.025814093250220438,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 8415453,
+            "PeakRootBytes": 8511805
+          },
+          "candidate": {
+            "PeakExecutionBytes": 8417280,
+            "PeakRootBytes": 8513632
+          },
+          "before": {
+            "PeakExecutionBytes": 8415453,
+            "PeakRootBytes": 8511805
+          }
+        }
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 2499820.5,
+          "candidate": 2499785.0,
+          "before-control": 2499777.0
+        },
+        "deltaPercent": -0.001420101963323095,
+        "versusControlPercent": 0.0003200285465521091,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 3861479,
+            "PeakRootBytes": 3941031
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3862528,
+            "PeakRootBytes": 3942080
+          },
+          "before": {
+            "PeakExecutionBytes": 3861479,
+            "PeakRootBytes": 3941031
+          }
+        }
+      },
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "medianBytesPerJob": {
+          "before": 3568576.0,
+          "candidate": 3568584.0,
+          "before-control": 3568532.5
+        },
+        "deltaPercent": 0.00022417905629623647,
+        "versusControlPercent": 0.0014431702667794255,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5103222,
+            "PeakRootBytes": 5200470
+          },
+          "candidate": {
+            "PeakExecutionBytes": 5103616,
+            "PeakRootBytes": 5200864
+          },
+          "before": {
+            "PeakExecutionBytes": 5103222,
+            "PeakRootBytes": 5200470
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "medianBytesPerJob": {
+          "before": 6023654.0,
+          "candidate": 6023984.5,
+          "before-control": 6023956.0
+        },
+        "deltaPercent": 0.005486702921508879,
+        "versusControlPercent": 0.00047311102537861416,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 4706207,
+            "PeakRootBytes": 4788639
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4706304,
+            "PeakRootBytes": 4788736
+          },
+          "before": {
+            "PeakExecutionBytes": 4706207,
+            "PeakRootBytes": 4788639
+          }
+        }
+      },
+      {
+        "case": "scripts.config-edit.large",
+        "medianBytesPerJob": {
+          "before": 233818.0,
+          "candidate": 233826.0,
+          "before-control": 233818.0
+        },
+        "deltaPercent": 0.0034214645578956038,
+        "versusControlPercent": 0.0034214645578956038,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 253951,
+            "PeakRootBytes": 327199
+          },
+          "candidate": {
+            "PeakExecutionBytes": 253952,
+            "PeakRootBytes": 327200
+          },
+          "before": {
+            "PeakExecutionBytes": 253951,
+            "PeakRootBytes": 327199
+          }
+        }
+      },
+      {
+        "case": "scripts.scalar-above-range.large",
+        "medianBytesPerJob": {
+          "before": 543458.5,
+          "candidate": 543480.5,
+          "before-control": 543472.5
+        },
+        "deltaPercent": 0.004048147190638396,
+        "versusControlPercent": 0.0014720156033654064,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 367,
+            "PeakRootBytes": 45556
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4096,
+            "PeakRootBytes": 47136
+          },
+          "before": {
+            "PeakExecutionBytes": 367,
+            "PeakRootBytes": 45556
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-padding.large",
+        "medianBytesPerJob": {
+          "before": 564880.5,
+          "candidate": 564882.5,
+          "before-control": 564880.5
+        },
+        "deltaPercent": 0.000354057185547596,
+        "versusControlPercent": 0.000354057185547596,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 291469,
+            "PeakRootBytes": 337485
+          },
+          "candidate": {
+            "PeakExecutionBytes": 294912,
+            "PeakRootBytes": 340928
+          },
+          "before": {
+            "PeakExecutionBytes": 291469,
+            "PeakRootBytes": 337485
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-slices.large",
+        "medianBytesPerJob": {
+          "before": 338690.5,
+          "candidate": 338704.5,
+          "before-control": 338690.5
+        },
+        "deltaPercent": 0.004133567371988889,
+        "versusControlPercent": 0.004133567371988889,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 570956,
+            "PeakRootBytes": 613708
+          },
+          "candidate": {
+            "PeakExecutionBytes": 573440,
+            "PeakRootBytes": 616192
+          },
+          "before": {
+            "PeakExecutionBytes": 570956,
+            "PeakRootBytes": 613708
+          }
+        }
+      }
+    ]
+  }
+}

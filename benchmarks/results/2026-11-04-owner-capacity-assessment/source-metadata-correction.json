@@ -1,0 +1,8 @@
+{
+  "coreSHA256": "3718cb89d1d23f7b491731c6e9c2b620d999bab45f816a716e3c44134ee422b9",
+  "note": "Text-confirmation identity sourceFiles was inherited from initial identity and is stale. Core hashes, Ready witnesses and source.patch are authoritative. This correction records actual refinement source hashes before restoring production.",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "7312d3a71718eb1d9ef605ff756d090ba20f8fb8bac685cc47e788808a0b366c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "3ae6287a0df2e777e068a4ea0cf4a9fe2e947e3237dc1a45d6c6e4ce5c7a0910"
+  }
+}

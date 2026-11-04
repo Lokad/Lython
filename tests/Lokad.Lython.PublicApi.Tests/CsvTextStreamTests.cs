@@ -308,14 +308,22 @@ public sealed class CsvTextStreamTests : LifetimeScenario
             else:
                 print('unfunded')
             """);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1048576) };
-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
+        var budget = new LythonMemoryBudget(1048576);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        foreach (var asynchronous in new[] { false, true })
         {
-            Assert.False(result.Success);
-            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-            var published = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            Assert.InRange(published.Length, 2, 999);
-            Assert.All(published, line => Assert.Equal("row", line));
+            // A failed result still owns its captured output/diagnostics. End
+            // that owner before the next API draws from the shared allowance.
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                var published = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                Assert.InRange(published.Length, 2, 999);
+                Assert.All(published, line => Assert.Equal("row", line));
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 
