@@ -6,7 +6,8 @@ complete report rendering. Allocation falls26.1% on both APIs; report elapsed is
 7-12% lower warm and8-10% lower fresh, with approximately2% more compilation cost.
 Other helper controls and all adverse observations remain separate. The shared
 JSON grammar's95-line deletion is retained: earlier async-report cost is not
-reproduced; async-text remains accepted uncertainty. Full delivery is pending.
+reproduced; async-text remains accepted uncertainty. Exactffc01134 passes all
+eight delivery gates in cached run41788586642.
 
 The [owner-capacity admission assessment](results/2026-11-04-owner-capacity-assessment/README.md)
 is shelved with production restored. Several complete scripts improve, but a

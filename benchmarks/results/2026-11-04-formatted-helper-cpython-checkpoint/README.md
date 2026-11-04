@@ -64,8 +64,10 @@ The [earlier checkpoint](../2026-11-04-current-cpython-checkpoint/README.md)
 retains its actual2d46 source, failed ending gate and justified confirmation.
 No percentages from independent conditions are added.
 
-Full runtime delivery for ffc01134 is running separately, run41788586642;
-this comparison does not imply Windows/Ubuntu/stress/package qualification.
+Full runtime delivery for exactffc01134 passes separately:
+[cached run41788586642](../2026-11-04-native-formatted-returns/delivery-ci-status.json),
+Windows/Ubuntu, actual11/10 ordinary suites, original stress and installed consumers.
+Timing evidence and correctness qualification remain distinct.
 Publication/tagging remain postponed. The whole-script performance roadmap stays open.
 
 Raw archive SHA256:

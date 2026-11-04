@@ -85,8 +85,10 @@ and corrected expectation are preserved; no runtime change, timeout relaxation
 or weakened containment assertion followed. CPython3.13.2 isolated semantic
 goldens are separate from performance evidence.
 
-Full Windows/Ubuntu, original stress and installed-consumer delivery is pending;
-focused checks do not imply full qualification. Publication/tagging stay postponed.
+Full delivery PASS on exactffc01134: [cached run41788586642](delivery-ci-status.json),
+Windows/Ubuntu, actual.NET11/10 ordinary suites, original stress and installed Release
+consumers (all eight gates). This also qualifies the retained B200 JSON grammar.
+No unchanged qualification replay; publication/tagging stay postponed.
 
 Raw archive SHA256:
 `973a342dccc1c668328710ccff6d88eed241baae0471949bb33e01ed13cdd8ed`.
