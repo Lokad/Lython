@@ -1,12 +1,19 @@
 # Benchmark experimental history
 
+The [combined function/binding representation](results/2026-11-04-function-construction-withdrawn/README.md)
+is withdrawn. Nine-case244s collection exposes9.18%warm-text old-role spread;
+one bounded57s confirmation establishes text+2.6–3.1% with0.52%old spread.
+Whole-script allocation savings~0.01–0.03%, no CPU attribution. Preserve all
+original/adverse conditions. A narrower compiler-layout reuse revision restores
+separate plan/function objects and requires its own source qualification.
+
 The [native dictionary ownership refinement](results/2026-11-04-dictionary-owner-operations/README.md)
 retains baseline data dispatch, removes view capacity/release stubs and fixes
 refund-before-rejection for live aliases.770internal/2258public per actual target
 pass. Final-source four-case111s collection passes all gates: text/asyncJSON near
 unchanged, syncCSV−5.0–5.1%, fresh config control-limited, allocation flat. Initial
 warm setup peaks are not fresh-run/RSS peaks. No broad CPU claim; full delivery
-pending. The complete self-dispatch deletion remains withdrawn, not silently promoted.
+41904808069/ee8020f0 is now terminal GREEN on all eight gates. The complete self-dispatch deletion remains withdrawn, not silently promoted.
 
 The [dictionary self-dispatch prototype](results/2026-11-04-dictionary-dispatch-withdrawn/README.md)
 is withdrawn:276s/all gates, sync text+3.8–4.4% and asyncJSON+1.2–1.8% beyond stable
