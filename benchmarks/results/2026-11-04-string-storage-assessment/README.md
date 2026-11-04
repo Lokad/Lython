@@ -110,9 +110,11 @@ subject identity against the normal optional0.4 adapter. Trusted CPython3.13.2
 confirms the script goldens; this is semantic validation, not backend timing.
 Existing cancellation/refusal/rollback/shared-budget checks remain.
 
-Full Windows/Ubuntu, original stress and installed consumers pending on final
-retained commit. Baselineae9b82b7 is independently all-eight green in cached
-41793317194; that receipt does not qualify this change. Publication postponed.
+Final retained commitbf0d38f3 is fully qualified in
+[cached run41807227386](delivery-ci-status.json): Windows/Ubuntu ordinary actual
+.NET11/10, original stress on both runtimes and installed Release consumers,
+all eight gates GREEN. Baselineae9b82b7's independent41793317194 receipt remains
+historical. No unchanged qualification replay. Publication postponed.
 
 Raw archives preserve plans, exact source, every sample, machine gates and worker
 identities; focused-qualification.tgz preserves all original/corrected logs/TRX,

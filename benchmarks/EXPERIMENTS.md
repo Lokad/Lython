@@ -2355,7 +2355,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Initial same-bits text drift justified one longer-warmup confirmation: sync
   text+3.5–5.8% remains explicit accepted debt, async−2.9–5.9%; no broad CPU gain.
   Preserve offset-copy failures, corrected semantics and all original measurements.
-  Focused444 internal/2667 public per actual.NET11/10 pass; full delivery pending.
+  Focused444 internal/2667 public per actual.NET11/10 pass; full eight-gate
+  delivery GREEN41807227386 on exactbf0d38f3, terminal receipt cached.
   No dormant windows remain. Continue the coherent operand/call redesign objective.
 
 - [Flat operand replacement design, B206](results/2026-11-04-flat-operand-design/README.md):
