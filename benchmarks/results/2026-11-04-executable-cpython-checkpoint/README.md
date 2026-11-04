@@ -83,5 +83,7 @@ Initial full31339f0b delivery41831306188 fails13 old buffer fixtures on both OS,
 plus one Ubuntu copy-context failure. c6ac2ae5 preserves semantic/funding assertions
 while correcting fixtures and native copy provenance; five expired-context cases
 reproduce then pass, new hash/IO goldens match CPython. Corrected full delivery
-41838965356 is pending. The performance samples above verify these five scripts'
+41838965356 passes all eight logical gates (Windows/Ubuntu actual11/10 ordinary,
+original Stress and installed consumers); its terminal receipt is cached in B207.
+The performance samples above verify these five scripts'
 outputs; they do not claim to qualify every runtime path. Publication is postponed.

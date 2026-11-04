@@ -1,0 +1,68 @@
+{
+  "performanceQualified": false,
+  "allocationOnly": true,
+  "rows": [
+    {
+      "case": "construction.native.128",
+      "bytesPerJob": {
+        "before": 33234.5,
+        "candidate": 33234.5,
+        "before-control": 33234.5
+      }
+    },
+    {
+      "case": "construction.ordinary.128",
+      "bytesPerJob": {
+        "before": 102866.5,
+        "candidate": 102866.5,
+        "before-control": 102866.5
+      }
+    },
+    {
+      "case": "construction.native.512",
+      "bytesPerJob": {
+        "before": 70106.5,
+        "candidate": 70106.5,
+        "before-control": 70106.5
+      }
+    },
+    {
+      "case": "construction.ordinary.512",
+      "bytesPerJob": {
+        "before": 348634.5,
+        "candidate": 348648.5,
+        "before-control": 348648.5
+      }
+    },
+    {
+      "case": "construction.native.2048",
+      "bytesPerJob": {
+        "before": 217604.0,
+        "candidate": 217562.5,
+        "before-control": 217562.5
+      }
+    },
+    {
+      "case": "construction.ordinary.2048",
+      "bytesPerJob": {
+        "before": 1331716.5,
+        "candidate": 1331702.5,
+        "before-control": 1331702.5
+      }
+    }
+  ],
+  "bytesPerCallSlopes": {
+    "native": {
+      "before": 96.02578125,
+      "candidate": 96.00416666666666,
+      "before-control": 96.00416666666666
+    },
+    "ordinary": {
+      "before": 640.0260416666666,
+      "candidate": 640.01875,
+      "before-control": 640.01875
+    }
+  },
+  "ordinaryDifferenceIncludesExtraComparisonAndBranch": true,
+  "allGoldensAndBalances": true
+}

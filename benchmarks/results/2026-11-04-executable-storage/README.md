@@ -1,7 +1,7 @@
 # Executable storage and native-source consolidation B207
 
 2026-11-04. Runtime commits cee1f4a6,238ec0b7,e2653ea5,05bbf29f,2e0f14d9,0ffc9ac6;
-delivery qualification is pending. Original frozen core dfd4b5da; final readonly
+delivery is qualified through copy/fixture correction c6ac2ae5. Original frozen core dfd4b5da; final readonly
 refinement adb70567. Qualified baseline bf0d38f3/frozen454cd98c. Full hashes and
 source snapshots are in the identities/archives. None is a CPython comparison.
 
@@ -97,7 +97,21 @@ borrowing505/2750 per target passes. Nonincremental benchmark rebuild has zero
 warnings/errors and matching core/test/worker hashes. Original15/14 buffer-fixture
 failures, one opcode-choreography fixture and five missing-probe-build failures
 are preserved privately; corrected tests keep independent ownership/cleanup assertions.
-Full platform, original stress and installed consumers belong to the delivery boundary.
+Full platform, original stress and installed consumers pass on c6ac2ae5 in
+[delivery41838965356](https://github.com/Lokad/Lython/actions/runs/41838965356),
+Windows/Ubuntu actual11/10. [Cached terminal receipt](delivery-ci-status.json);
+do not re-query unchanged qualification.
+
+Initial31339f0b full41831306188 fails13 older buffer fixtures on both platforms
+and one Ubuntu copy-context case. Corrections keep actual local-prefix/receiver/
+default aliases, admission and full-buffer cleanup assertions. Native copy writes
+after hooks could select unrelated thread-local provenance. Five expired-context
+regressions reproduce then pass with explicit caller memo lookup and short
+synchronous mutation scopes; native shallow constructors preserve stored hashes.
+New shallow-hash/real-IO rehash goldens match CPython; focused259 internal/202 public
+pass per target. No reservation error is ignored and no ownership guarantee relaxed.
+Custom hashing and write-key equality retain their documented synchronous completion
+requirement. Publication is postponed; these correctness fixes are preserved.
 
 Before delivery,0ffc9ac6 moves compaction onto owned blocks before linearization.
 Delete the global compaction map, extra full instruction copy and duplicate
@@ -108,8 +122,10 @@ active instructions/spans/arguments/slots/protected ranges across17 cases,
 Consolidated focused1121 internal/3527 public per target passes, with matching
 nonincremental core/test/benchmark hashes. [Source gate](compiler-source-gate.json),
 [complete metadata and read-only diagnostic](compiler-source-gate.tgz).
-The later CPython checkpoint will measure this source's compilation separately;
-the initial compiler costs above are not silently withdrawn.
+The [coupled CPython checkpoint](../2026-11-04-executable-cpython-checkpoint/README.md)
+measures this source's CSV/report compilation separately. Possible compilation
+cost remains; text compilation alone was not retimed. The initial compiler costs
+above are not silently withdrawn.
 
 Whole-script performance remains open. Earlier CPython ratios describe their
 recorded source; do not add these source-pair deltas to them.

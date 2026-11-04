@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [ordinary-call construction gate](results/2026-11-04-call-construction-gate/README.md)
+finds about 544 extra allocated bytes per guarded helper call, including its
+additional comparison/branch work. Complete-text CPU attribution confirms real
+construction and dispatch costs without establishing a dominant removable frame
+mechanism. General frame redesign is deferred pending a concrete deletion and
+lifetime design; bulk storage/text assessment comes next. This is diagnostic
+evidence, with no runtime change or speedup claimed.
+
 The [executable-storage CPython checkpoint](results/2026-11-04-executable-cpython-checkpoint/README.md)
 measures0ffc9ac6 with current controls and a qualified454 reference. Fresh ratios
 remain1.13–2.46x; warm1.05–2.53x. Some source pairs improve modestly, while CSV and
@@ -14,7 +22,8 @@ Block consolidation deletes duplicate compiler remapping before delivery. A conf
 async-report prototype regression is corrected by managed readonly instruction
 borrowing; the final focused comparison is close to its qualified baseline.
 Original adverse timings, allocation-tool failure and failed disk-full profile
-remain visible. Platform delivery is pending; the whole-script objective is open.
+remain visible. c6ac2ae5 corrects copy provenance and old fixtures, then passes
+all eight delivery gates41838965356. The whole-script objective is open.
 
 The [earlier text-storage source gate](results/2026-11-04-text-storage-source-gate/README.md)
 uses one short allocation profile of ae9b82b7. Split byte arrays are8.06% of sampled
