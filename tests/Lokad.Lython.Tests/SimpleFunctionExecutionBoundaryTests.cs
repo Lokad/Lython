@@ -101,7 +101,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         foreach (var driver in Enum.GetValues<Driver>())
         {
             var (function, context, code) = Function("def f(value):\n    " + body + "\n", new LythonRunOptions());
-            Assert.NotNull(code.NativeReturn);
+            Assert.NotNull(code.NativeReturnRoot);
             Assert.Equal(new BigInteger(expected), Invoke(function,
                 [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
             Assert.Null(context.CurrentExecutableFrame);

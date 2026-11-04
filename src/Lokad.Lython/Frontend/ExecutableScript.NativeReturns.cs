@@ -1,32 +1,26 @@
 namespace Lokad.Lython.Frontend;
 
-// Links into the existing executable instructions, not a second copy of code.
-// First is the receiver/target/left operand; the remaining links are arguments.
-internal readonly record struct NativeReturnNode(
-    int Instruction, int First = -1, int Second = -1, int Third = -1, int Fourth = -1,
-    int MemberInstruction = -1);
-
 internal sealed partial class ExecutableCodeObject
 {
-    private NativeReturnNode[]? PrepareNativeReturn()
+    private int? PrepareNativeReturn()
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
             || ClosureNames.Count != 0 || ExceptionRegions.Count != 0)
             return null;
         var instructions = Instructions;
         if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
-            return [];
+            return -1;
         if (instructions.Length < 2 || instructions[^1].OpCode != ExecutableOpCode.Return)
             return null;
 
-        var nodes = new List<NativeReturnNode>();
-        var stack = new List<(int Node, int Member, int Depth)>();
+        var stack = new List<(int Instruction, int Member, int Depth)>();
         HashSet<int>? forwardedLocals = null;
         var hasFormattedBuilder = false;
         for (var index = 0; index < instructions.Length - 1; index++)
         {
             var instruction = instructions[index];
-            NativeReturnNode node;
+            var first = -1;
+            var second = -1;
             var depth = 1;
             switch (instruction.OpCode)
             {
@@ -37,7 +31,6 @@ internal sealed partial class ExecutableCodeObject
                 case ExecutableOpCode.LoadConst:
                 case ExecutableOpCode.LoadName:
                 case ExecutableOpCode.LoadGlobal:
-                    node = new(index);
                     break;
                 case ExecutableOpCode.StoreLocal:
                     // Forward the operand only inside this closed native proof.
@@ -55,12 +48,13 @@ internal sealed partial class ExecutableCodeObject
                 case ExecutableOpCode.LoadCallMember:
                     if (stack.Count == 0 || stack[^1].Member >= 0) return null;
                     // Fold receiver+method into the call; no exposed bound value.
-                    stack[^1] = (stack[^1].Node, index, stack[^1].Depth);
+                    stack[^1] = (stack[^1].Instruction, index, stack[^1].Depth);
                     continue;
                 case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
                 case ExecutableOpCode.Subscript:
                     if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                    node = new(index, stack[^2].Node, stack[^1].Node);
+                    first = stack[^2].Instruction;
+                    second = stack[^1].Instruction;
                     depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                     stack.RemoveRange(stack.Count - 2, 2);
                     break;
@@ -72,20 +66,20 @@ internal sealed partial class ExecutableCodeObject
                             // Nested multi-part strings keep their ordinary frames.
                             if (hasFormattedBuilder || index != 0) return null;
                             hasFormattedBuilder = true;
-                            node = new(index);
                             break;
                         case ExecutableAppendFormattedText:
                         case ExecutableFinishFormattedString:
                         case ExecutableConvertFormattedValue:
                         case ExecutableFormatField { DynamicSpecifier: false, Append: false }:
                             if (stack.Count == 0 || stack[^1].Member >= 0) return null;
-                            node = new(index, stack[^1].Node);
+                            first = stack[^1].Instruction;
                             depth = 1 + stack[^1].Depth;
                             stack.RemoveAt(stack.Count - 1);
                             break;
                         case ExecutableFormatField { DynamicSpecifier: false, Append: true }:
                             if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                            node = new(index, stack[^2].Node, stack[^1].Node);
+                            first = stack[^2].Instruction;
+                            second = stack[^1].Instruction;
                             depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                             stack.RemoveRange(stack.Count - 2, 2);
                             break;
@@ -106,10 +100,13 @@ internal sealed partial class ExecutableCodeObject
                         depth = Math.Max(depth, stack[a].Depth);
                     }
                     depth = 1 + Math.Max(depth, target.Depth);
-                    node = new(index, target.Node,
-                        site.ArgumentCount > 0 ? stack[start + 1].Node : -1,
-                        site.ArgumentCount > 1 ? stack[start + 2].Node : -1,
-                        site.ArgumentCount > 2 ? stack[start + 3].Node : -1, target.Member);
+                    first = target.Instruction;
+                    second = target.Member;
+                    for (var a = 0; a < site.ArgumentCount; a++)
+                        site.Arguments[a] = site.Arguments[a] with
+                        {
+                            NativeSourceInstruction = stack[start + 1 + a].Instruction
+                        };
                     stack.RemoveRange(start, site.ArgumentCount + 1);
                     break;
                 default:
@@ -118,13 +115,13 @@ internal sealed partial class ExecutableCodeObject
             // Eligibility bound for CLR-recursive evaluation, never a guest limit.
             // Deeper expressions still execute through the ordinary engine.
             if (depth > 16) return null;
-            stack.Add((nodes.Count, -1, depth));
-            nodes.Add(node);
+            instructions[index] = instruction.WithNativeSources(first, second);
+            stack.Add((index, -1, depth));
         }
         if (stack.Count != 1 || stack[0].Member >= 0) return null;
-        if (hasFormattedBuilder && (instructions[nodes[^1].Instruction].OpCode != ExecutableOpCode.ApplyOperation
-            || Constants[instructions[nodes[^1].Instruction].ConstantIndex] is not ExecutableFinishFormattedString))
+        if (hasFormattedBuilder && (instructions[stack[0].Instruction].OpCode != ExecutableOpCode.ApplyOperation
+            || Constants[instructions[stack[0].Instruction].ConstantIndex] is not ExecutableFinishFormattedString))
             return null;
-        return nodes.ToArray();
+        return stack[0].Instruction;
     }
 }

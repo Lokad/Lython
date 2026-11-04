@@ -10,15 +10,14 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeFormattedReturn(int index, ExecutableCodeObject code,
         ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments, ExecutionContext context)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
         if (instruction.OpCode != ExecutableOpCode.ApplyOperation) return false;
         return code.Constants[instruction.ConstantIndex] switch
         {
             ExecutableStartFormattedString => true,
-            ExecutableAppendFormattedText => GuardNativeFormattedReturn(node.First, code, instructions, arguments, context),
-            ExecutableFormatField { Append: true } => GuardNativeFormattedReturn(node.First, code, instructions, arguments, context)
-                && GuardNativeFormattedValue(node.Second, code, instructions, arguments, context),
+            ExecutableAppendFormattedText => GuardNativeFormattedReturn(instruction.NativeFirst, code, instructions, arguments, context),
+            ExecutableFormatField { Append: true } => GuardNativeFormattedReturn(instruction.NativeFirst, code, instructions, arguments, context)
+                && GuardNativeFormattedValue(instruction.NativeSecond, code, instructions, arguments, context),
             _ => false,
         };
     }
@@ -26,12 +25,11 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
         ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments, ExecutionContext context)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
         if (instruction.OpCode == ExecutableOpCode.ApplyOperation)
             return code.Constants[instruction.ConstantIndex] is ExecutableConvertFormattedValue
                 or ExecutableFormatField { Append: false }
-                && GuardNativeFormattedValue(node.First, code, instructions, arguments, context);
+                && GuardNativeFormattedValue(instruction.NativeFirst, code, instructions, arguments, context);
 
         // Only this formatting proof needs the actual field type. Ordinary
         // native subscript returns retain their existing single lookup.
@@ -45,13 +43,12 @@ internal sealed partial class LythonRuntime
     private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
         ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
-        if (node.First < 0) return TryReadNativeOperand(code, instruction, arguments, context, out value);
+        var instruction = instructions[index];
+        if (instruction.NativeFirst < 0) return TryReadNativeOperand(code, instruction, arguments, context, out value);
         if (instruction.OpCode == ExecutableOpCode.Subscript
-            && TryReadNativeFormattedValue(node.First, code, instructions, arguments, context, out var target)
+            && TryReadNativeFormattedValue(instruction.NativeFirst, code, instructions, arguments, context, out var target)
             && target is PyDict dictionary
-            && TryReadNativeFormattedValue(node.Second, code, instructions, arguments, context, out var key)
+            && TryReadNativeFormattedValue(instruction.NativeSecond, code, instructions, arguments, context, out var key)
             && key is PyString text)
             return dictionary.TryReadNativeStringValue(text, out value);
         value = null;
@@ -61,8 +58,8 @@ internal sealed partial class LythonRuntime
     private static object EvaluateNativeFormattedReturn(ExecutableCodeObject code, ExecutableInstruction[] instructions,
         ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
     {
-        var root = code.NativeReturn!.Length - 1;
-        var instruction = instructions[code.NativeReturn[root].Instruction];
+        var root = code.NativeReturnRoot!.Value;
+        var instruction = instructions[root];
         if (code.Constants[instruction.ConstantIndex] is not ExecutableFinishFormattedString)
             return EvaluateNativeFormattedValue(root, code, instructions, arguments, context, entryException);
 
@@ -72,7 +69,7 @@ internal sealed partial class LythonRuntime
         var output = new GovernedByteBuilder(context.MemoryGovernor, instructions[0].Span);
         try
         {
-            AppendNativeFormattedReturn(code.NativeReturn[root].First, output, code, instructions, arguments, context, entryException);
+            AppendNativeFormattedReturn(instructions[root].NativeFirst, output, code, instructions, arguments, context, entryException);
             context.State.CheckExecution(instruction.Span);
             try { return output.ToPyStringAndRelease(); }
             catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
@@ -83,12 +80,11 @@ internal sealed partial class LythonRuntime
     private static void AppendNativeFormattedReturn(int index, GovernedByteBuilder output, ExecutableCodeObject code,
         ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
         var operation = code.Constants[instruction.ConstantIndex];
         if (operation is ExecutableStartFormattedString) return;
-        AppendNativeFormattedReturn(node.First, output, code, instructions, arguments, context, entryException);
-        var value = node.Second < 0 ? null : EvaluateNativeFormattedValue(node.Second, code, instructions, arguments, context, entryException);
+        AppendNativeFormattedReturn(instruction.NativeFirst, output, code, instructions, arguments, context, entryException);
+        var value = instruction.NativeSecond < 0 ? null : EvaluateNativeFormattedValue(instruction.NativeSecond, code, instructions, arguments, context, entryException);
         context.State.CheckExecution(instruction.Span);
         try
         {
@@ -105,11 +101,10 @@ internal sealed partial class LythonRuntime
     private static object EvaluateNativeFormattedValue(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions,
         ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
         if (instruction.OpCode != ExecutableOpCode.ApplyOperation)
             return EvaluateNativeReturn(index, code, instructions, arguments, context, entryException);
-        var value = EvaluateNativeFormattedValue(node.First, code, instructions, arguments, context, entryException);
+        var value = EvaluateNativeFormattedValue(instruction.NativeFirst, code, instructions, arguments, context, entryException);
         context.State.CheckExecution(instruction.Span);
         try
         {

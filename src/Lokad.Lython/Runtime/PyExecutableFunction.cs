@@ -40,7 +40,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         // Closed native bodies cannot observe a function namespace or suspend.
         // Class and nested definitions keep their lexical/class-cell machinery.
-        if (_codeObject.NativeReturn is null || OwnerType is not null || Closure.ParentContext is not null
+        if (_codeObject.NativeReturnRoot is null || OwnerType is not null || Closure.ParentContext is not null
             || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.ClassCell is not null
             || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
         {

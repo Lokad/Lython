@@ -95,18 +95,21 @@ internal enum ExecutableSliceParts
 
 internal readonly record struct ExecutableInstruction
 {
-    // Operand meaning is fixed by the opcode. Indexes and the mutually
-    // exclusive operator families share these two slots; no duplicate domain
-    // tags or unused per-family fields travel with every instruction.
+    // Opcode metadata, physical storage and source instructions share one
+    // immutable instruction. Native helpers follow source links directly;
+    // ordinary execution keeps its compact physical slots.
     private readonly int _primaryOperand;
     private readonly int _secondaryOperand;
     private readonly int _inputStart;
     private readonly int _resultSlot;
     private readonly int _liveExtent;
+    private readonly int _nativeFirst;
+    private readonly int _nativeSecond;
 
     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
         int primaryOperand = 0, int secondaryOperand = 0,
-        int inputStart = -1, int resultSlot = -1, int liveExtent = -1)
+        int inputStart = -1, int resultSlot = -1, int liveExtent = -1,
+        int nativeFirst = -1, int nativeSecond = -1)
     {
         OpCode = opCode;
         Span = span;
@@ -115,6 +118,8 @@ internal readonly record struct ExecutableInstruction
         _inputStart = inputStart;
         _resultSlot = resultSlot;
         _liveExtent = liveExtent;
+        _nativeFirst = nativeFirst;
+        _nativeSecond = nativeSecond;
     }
 
     public ExecutableOpCode OpCode { get; }
@@ -126,9 +131,16 @@ internal readonly record struct ExecutableInstruction
     public int InputStart => _inputStart;
     public int ResultSlot => _resultSlot;
     public int LiveExtent => _liveExtent;
+    public int NativeFirst => _nativeFirst;
+    public int NativeSecond => _nativeSecond;
 
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
-        => new(OpCode, Span, _primaryOperand, _secondaryOperand, inputStart, resultSlot, liveExtent);
+        => new(OpCode, Span, _primaryOperand, _secondaryOperand, inputStart, resultSlot, liveExtent,
+            _nativeFirst, _nativeSecond);
+
+    internal ExecutableInstruction WithNativeSources(int first, int second)
+        => new(OpCode, Span, _primaryOperand, _secondaryOperand, _inputStart, _resultSlot, _liveExtent,
+            first, second);
 
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
@@ -311,12 +323,12 @@ internal readonly record struct ExecutableInstruction
     public ExecutableInstruction WithTargetIndex(int targetBlockIndex)
         => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
             or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
-            ? new(OpCode, Span, targetBlockIndex, _secondaryOperand, _inputStart, _resultSlot, _liveExtent)
+            ? new(OpCode, Span, targetBlockIndex, _secondaryOperand, _inputStart, _resultSlot, _liveExtent, _nativeFirst, _nativeSecond)
             : throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.");
 
     public ExecutableInstruction WithFailureIndex(int failureBlockIndex)
         => OpCode == ExecutableOpCode.MatchCase
-            ? new(OpCode, Span, _primaryOperand, failureBlockIndex, _inputStart, _resultSlot, _liveExtent)
+            ? new(OpCode, Span, _primaryOperand, failureBlockIndex, _inputStart, _resultSlot, _liveExtent, _nativeFirst, _nativeSecond)
             : throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.");
 
     public static ExecutableInstruction Complete(LythonSourceSpan span)
@@ -346,9 +358,26 @@ internal sealed record ExecutableExceptionRegion(
     int? CleanupId = null,
     int StackDepth = 0);
 
+// Replaces the syntax form in the existing executable argument array. The
+// extra integer records its producing instruction without another graph/array.
+internal readonly record struct ExecutableCallArgument
+{
+    private readonly string _keywordName;
+    public ExecutableCallArgument(CallArgumentForm form)
+    {
+        Kind = form.Kind;
+        _keywordName = form.Kind == CallArgumentKind.Keyword ? form.KeywordName : string.Empty;
+        NativeSourceInstruction = -1;
+    }
+    public CallArgumentKind Kind { get; }
+    public string KeywordName => Kind == CallArgumentKind.Keyword ? _keywordName
+        : throw new InvalidOperationException("Only a keyword argument has a keyword name.");
+    public int NativeSourceInstruction { get; init; }
+}
+
 internal sealed record ExecutableCallSite(
     int ArgumentCount,
-    IReadOnlyList<CallArgumentForm> Arguments,
+    ExecutableCallArgument[] Arguments,
     LythonSourceSpan TargetSpan,
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)
@@ -356,6 +385,8 @@ internal sealed record ExecutableCallSite(
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
+    public int NativeArgumentIndex(int index) => (uint)index < (uint)Arguments.Length
+        ? Arguments[index].NativeSourceInstruction : -1;
 }
 
 internal sealed record ExecutableFunctionBinding(
@@ -422,7 +453,7 @@ internal sealed partial class ExecutableCodeObject
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         OperandCapacity = operandLayout.MaximumDepth;
-        NativeReturn = PrepareNativeReturn();
+        NativeReturnRoot = PrepareNativeReturn();
     }
 
     public string Name { get; }
@@ -467,5 +498,6 @@ internal sealed partial class ExecutableCodeObject
 
     public int OperandCapacity { get; }
 
-    public NativeReturnNode[]? NativeReturn { get; }
+    // Null is ineligible; -1 is the body containing only ReturnNone.
+    public int? NativeReturnRoot { get; }
 }

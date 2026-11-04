@@ -17,8 +17,8 @@ internal sealed partial class LythonRuntime
         out object result)
     {
         result = PyNone.Instance;
-        var nodes = codeObject.NativeReturn;
-        if (nodes is null || context.MirrorLocalStores
+        var root = codeObject.NativeReturnRoot;
+        if (root is null || context.MirrorLocalStores
             || context.CurrentExecutableFrame is not null || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
 
@@ -51,14 +51,13 @@ internal sealed partial class LythonRuntime
         ExecutionContext context, out ExecutableInstruction[] instructions)
     {
         instructions = codeObject.Instructions;
-        var nodes = codeObject.NativeReturn!;
+        var root = codeObject.NativeReturnRoot!.Value;
         // All type/callable guards precede work. No retry through the ordinary
         // engine is allowed once any operation (including admission) has begun.
-        if (nodes.Length == 0) return true;
-        var root = nodes.Length - 1;
-        if (instructions[nodes[root].Instruction].OpCode == ExecutableOpCode.ApplyOperation)
-            return codeObject.Constants[instructions[nodes[root].Instruction].ConstantIndex] is ExecutableFinishFormattedString
-                ? GuardNativeFormattedReturn(nodes[root].First, codeObject, instructions, arguments, context)
+        if (root < 0) return true;
+        if (instructions[root].OpCode == ExecutableOpCode.ApplyOperation)
+            return codeObject.Constants[instructions[root].ConstantIndex] is ExecutableFinishFormattedString
+                ? GuardNativeFormattedReturn(instructions[root].NativeFirst, codeObject, instructions, arguments, context)
                 : GuardNativeFormattedValue(root, codeObject, instructions, arguments, context);
         return GuardNativeReturn(root, codeObject, instructions, arguments, context, out _, out _);
     }
@@ -69,18 +68,18 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(entrySpan);
         try
         {
-            var nodes = codeObject.NativeReturn!;
+            var root = codeObject.NativeReturnRoot!.Value;
             object result = PyNone.Instance;
             var entryException = context.State.CurrentException;
-            if (nodes.Length == 0)
+            if (root < 0)
             {
                 context.State.CheckExecution(instructions[0].Span);
             }
             else
             {
-                result = instructions[nodes[^1].Instruction].OpCode == ExecutableOpCode.ApplyOperation
+                result = instructions[root].OpCode == ExecutableOpCode.ApplyOperation
                     ? EvaluateNativeFormattedReturn(codeObject, instructions, arguments, context, entryException)
-                    : EvaluateNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, entryException);
+                    : EvaluateNativeReturn(root, codeObject, instructions, arguments, context, entryException);
                 context.State.CheckExecution(instructions[^1].Span);
             }
             // No stack temporaries or handler variables exist in these bodies.
@@ -111,11 +110,15 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, out NativeReturnShape shape, out object? value)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
+        var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
+        var memberIndex = call is null ? -1 : instruction.NativeSecond;
+        var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
+        var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
+        var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
         value = null;
         shape = NativeReturnShape.Other;
-        if (node.First < 0)
+        if (instruction.NativeFirst < 0)
         {
             if (!TryReadNativeOperand(code, instruction, arguments, context, out value)) return false;
             shape = ReturnShape(value);
@@ -124,31 +127,31 @@ internal sealed partial class LythonRuntime
         // A builtin target is a resolved operand, not a computed native value.
         // Classifying its value shape would do work whose result is discarded.
         var first = NativeReturnShape.Other;
-        var builtinCall = instruction.OpCode == ExecutableOpCode.Call && node.MemberInstruction < 0;
+        var builtinCall = instruction.OpCode == ExecutableOpCode.Call && memberIndex < 0;
         if (builtinCall)
         {
             if (code.CallSites[instruction.CallSiteIndex].ArgumentCount != 1) return false;
-            var callable = code.NativeReturn[node.First];
-            if (callable.First >= 0 || !TryReadNativeOperand(code, instructions[callable.Instruction], arguments, context, out var target)
+            var callable = instructions[instruction.NativeFirst];
+            if (callable.NativeFirst >= 0 || !TryReadNativeOperand(code, callable, arguments, context, out var target)
                 || target is not BuiltinCallable) return false;
-            var input = code.NativeReturn[node.Second];
+            var input = instructions[secondIndex];
             object? valueInput = null;
             var inputShape = NativeReturnShape.Other;
-            if (input.First < 0)
+            if (input.NativeFirst < 0)
             {
-                if (!TryReadNativeOperand(code, instructions[input.Instruction], arguments, context, out valueInput)) return false;
+                if (!TryReadNativeOperand(code, input, arguments, context, out valueInput)) return false;
             }
-            else if (!GuardNativeReturn(node.Second, code, instructions, arguments, context, out inputShape, out _)) return false;
+            else if (!GuardNativeReturn(secondIndex, code, instructions, arguments, context, out inputShape, out _)) return false;
             return SelectNativeUnaryOperation(target, valueInput, inputShape, out shape) is not null
                 && shape != NativeReturnShape.Other;
         }
-        else if (!GuardNativeReturn(node.First, code, instructions, arguments, context, out first, out _)) return false;
+        else if (!GuardNativeReturn(instruction.NativeFirst, code, instructions, arguments, context, out first, out _)) return false;
         var second = NativeReturnShape.None;
         var third = NativeReturnShape.None;
         var fourth = NativeReturnShape.None;
-        if (node.Second >= 0 && !GuardNativeReturn(node.Second, code, instructions, arguments, context, out second, out _)) return false;
-        if (node.Third >= 0 && !GuardNativeReturn(node.Third, code, instructions, arguments, context, out third, out _)) return false;
-        if (node.Fourth >= 0 && !GuardNativeReturn(node.Fourth, code, instructions, arguments, context, out fourth, out _)) return false;
+        if (secondIndex >= 0 && !GuardNativeReturn(secondIndex, code, instructions, arguments, context, out second, out _)) return false;
+        if (thirdIndex >= 0 && !GuardNativeReturn(thirdIndex, code, instructions, arguments, context, out third, out _)) return false;
+        if (fourthIndex >= 0 && !GuardNativeReturn(fourthIndex, code, instructions, arguments, context, out fourth, out _)) return false;
         switch (instruction.OpCode)
         {
             case ExecutableOpCode.Binary:
@@ -157,7 +160,7 @@ internal sealed partial class LythonRuntime
             case ExecutableOpCode.Subscript:
                 return first == NativeReturnShape.Dictionary && second == NativeReturnShape.String;
             case ExecutableOpCode.Call when first == NativeReturnShape.String:
-                var member = code.Names[instructions[node.MemberInstruction].NameIndex];
+                var member = code.Names[instructions[memberIndex].NameIndex];
                 var count = code.CallSites[instruction.CallSiteIndex].ArgumentCount;
                 if (count == 0 && StringMembers.GetNoArgumentsOperation(member) is not null)
                 {
@@ -190,23 +193,27 @@ internal sealed partial class LythonRuntime
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, PyException? entryException)
     {
-        var node = code.NativeReturn![index];
-        var instruction = instructions[node.Instruction];
+        var instruction = instructions[index];
+        var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
+        var memberIndex = call is null ? -1 : instruction.NativeSecond;
+        var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
+        var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
+        var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
         object? first = null, second = null, third = null, fourth = null;
-        if (node.First >= 0)
+        if (instruction.NativeFirst >= 0)
         {
-            first = EvaluateNativeReturn(node.First, code, instructions, arguments, context, entryException);
-            if (node.MemberInstruction >= 0) context.State.CheckExecution(instructions[node.MemberInstruction].Span);
-            if (node.Second >= 0) second = EvaluateNativeReturn(node.Second, code, instructions, arguments, context, entryException);
-            if (node.Third >= 0) third = EvaluateNativeReturn(node.Third, code, instructions, arguments, context, entryException);
-            if (node.Fourth >= 0) fourth = EvaluateNativeReturn(node.Fourth, code, instructions, arguments, context, entryException);
+            first = EvaluateNativeReturn(instruction.NativeFirst, code, instructions, arguments, context, entryException);
+            if (memberIndex >= 0) context.State.CheckExecution(instructions[memberIndex].Span);
+            if (secondIndex >= 0) second = EvaluateNativeReturn(secondIndex, code, instructions, arguments, context, entryException);
+            if (thirdIndex >= 0) third = EvaluateNativeReturn(thirdIndex, code, instructions, arguments, context, entryException);
+            if (fourthIndex >= 0) fourth = EvaluateNativeReturn(fourthIndex, code, instructions, arguments, context, entryException);
         }
         // As in the instruction loop, checkpoint failures are outside operation
         // exception routing; operation failures restore the caller's exception.
         context.State.CheckExecution(instruction.Span);
         try
         {
-            if (node.First < 0)
+            if (instruction.NativeFirst < 0)
             {
                 TryReadNativeOperand(code, instruction, arguments, context, out var operand);
                 return RuntimeValue(operand);
@@ -216,10 +223,10 @@ internal sealed partial class LythonRuntime
             if (instruction.OpCode == ExecutableOpCode.Subscript)
                 return ReadSubscriptValue(first!, second!, instruction.Span, context);
             var site = code.CallSites[instruction.CallSiteIndex];
-            if (node.MemberInstruction < 0)
+            if (memberIndex < 0)
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
-            var member = code.Names[instructions[node.MemberInstruction].NameIndex];
+            var member = code.Names[instructions[memberIndex].NameIndex];
             if (site.ArgumentCount == 0 && StringMembers.GetNoArgumentsOperation(member) is { } operation)
                 return InvokeSingleInput(receiver, operation, site.CallSpan, context);
             return member switch
