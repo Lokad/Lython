@@ -52,3 +52,9 @@ No CPython timing claim. [Metrics](assessment.json), [plan](pre-measurement-plan
 [raw observations](observations.tgz), SHA256
 `26ebb18162accf3bf91dbb8c6a97bacfadfbcc166e249f6e758dfcaf94bbd6fe`.
 All earlier adverse conditions/source snapshots remain linked, not replaced.
+
+Restoration verified: nonincremental Release38.81s,0warnings/errors;38 focused
+public binding/default checks pass on each actual.NET11/.NET10, including the new
+keyword/factory-isolation regression. Production diff against ee8020f0 is empty.
+See [restored build](restored-build.log) and target logs alongside it. All prototype
+production machinery is removed; no source variant or compatibility switch ships.
