@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "3e863f40 plus B196 refined typed integer creation patch",
+  "baselineRuntimeRevision": "2d46dc8e",
+  "coreSHA256": {
+    "before-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "candidate": "71406c3f783cc0c5793540fc9c0f5931ad88e1cec8ae83b56b4a2ff845005b1d",
+    "after-control": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "initial": "a6b2bfb45d47c5d74560add06ebcc1b816de494415f1d804b4c472f63fe60447"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.Rounding.cs": "f04c13608dc4cc2673dca01b09fc4b2ddd3f918999e1711b62b94117a655cc3a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "5411b271401b507e9636969293ee6db0e0ccc86ea1a61570f400fa52064b08b0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs": "e9a668302528f8879818d59b57a9e7d0f63422ca47cb37d6a4cd6373768680e8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.cs": "e739b36c685b86139b865fcfe7f3310931cb4a9a26730206e4c18fca067ae184",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "c54d06284f25f8388704115332bf760d3dc4a4720f59112c564b0d1bba700de2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.MathModule.cs": "4122918fb44f3bd4874bc2b80347e4a028bf3b3b655dafcbfbc4086dbbff061c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "6a08797a047f029de5f9d86f048081e05f14e453c03dc2d7fa448303488bb565",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Modules.cs": "95783cea8b5bfbf70ac4b443483a7e4dc9bfe16a2ab272d1d06eaad345f2fd58",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "53b4cbc3dacfeabc96e4997709885d9509c480b16fdbe42826539d5e5f581bb6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.cs": "60cb232763b348f92f59fbef7bfa97bf8de95f6a998f8926a99de594a034fbe2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Statistics.Moments.cs": "a3889539907c8f5d0d96293008a272a7cf85c4657d6e0222310182a31209c7b9",
+    "src/Lokad.Lython/Runtime/Numbers/PyNumberOps.cs": "f5571a7f6735b0e2ad95f6d53be930bfca41e07bbdfa681c0a3486e88ca00fca",
+    "src/Lokad.Lython/Runtime/PyCoreIterators.cs": "d3130c2758ec46ac8a519c8080aa5b69ee37087b53b15c2185d2fc52bdb56ca8"
+  }
+}

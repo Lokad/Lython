@@ -2296,3 +2296,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   debt under these conditions; all earlier points retained. Text/report paired gains
   are substantial, CSV/config magnitude still control-limited. Async debt remains
   separate; whole objective OPEN. Writer-fixture repair qualifies runtime separately.
+
+- [Typed integer creation, B196](results/2026-11-04-integer-creation-withdrawn/README.md):
+  BOTH PROTOTYPES WITHDRAWN. One fresh-value boundary and fixed immutable constants
+  reduce CSV/JSON allocation 2.6–4.1%, but miss-heavy counters cost 3–6%. One managed
+  index/inlining refinement retains that cost against stable controls and does not
+  establish a useful general script improvement. Original and refined sources,
+  four-image observations, adverse points and ownership/cancellation checks remain.
+  No table, policy or truncating lookup remains in production. Independent public
+  alias/value/budget regression passes both actual runtimes on restored source.
+  Continue coherent frontend binding consolidation; whole-script objective OPEN.

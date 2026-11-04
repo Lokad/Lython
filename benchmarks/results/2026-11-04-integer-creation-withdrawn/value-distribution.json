@@ -1,0 +1,47 @@
+{
+  "status": "untimed distribution only",
+  "conditions": "CPython 3.13 AST probes after arithmetic and int(); default JSON parse_int callback. Original fixtures, stdout and output-file bytes verified. Not a Lython allocation/CPU trace; int(existing) is absent from these catalog sources. No range calls in these five scripts; the one config subscript += is not instrumented.",
+  "cases": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "counts": {
+        "int-call:total": 4096,
+        "int-call:small": 4096,
+        "arithmetic:total": 6144,
+        "arithmetic:small": 414
+      }
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "counts": {
+        "arithmetic:total": 12288,
+        "arithmetic:small": 1280
+      }
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "counts": {
+        "json-default-int:total": 4096,
+        "json-default-int:small": 4096,
+        "arithmetic:total": 6144,
+        "arithmetic:small": 414
+      }
+    },
+    {
+      "id": "scripts.report-render.large",
+      "counts": {
+        "json-default-int:total": 3072,
+        "json-default-int:small": 1024,
+        "arithmetic:total": 3072,
+        "arithmetic:small": 256
+      }
+    },
+    {
+      "id": "scripts.config-edit.large",
+      "counts": {
+        "json-default-int:total": 2,
+        "json-default-int:small": 2
+      }
+    }
+  ]
+}

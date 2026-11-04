@@ -1,0 +1,8 @@
+{
+  "target": "/home/lokad/lython-bench-checks/checkout-function-frame-baseline-20261010/src/Lokad.Lython/obj",
+  "purpose": "Inactive generated MSBuild intermediates only; preserve source/bin/frozen images/evidence",
+  "bytes": 8775500,
+  "freeBefore": 471040,
+  "removed": true,
+  "freeAfter": 9314304
+}

@@ -1,6 +1,6 @@
 # Fixed immutable UTF-8 construction — B194
 
-RETAINED source: `9a4af031` plus the exact archived complete patch. Measured complete core `ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783`; baseline B192 `659fa32a`, matching fully qualified runtime9a4af031. Full delivery of this new runtime is pending. Publication/tagging postponed. Receipt commits are not measured binaries.
+RETAINED source: `9a4af031` plus the exact archived complete patch. Measured complete core `ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783`; baseline B192 `659fa32a`, matching fully qualified runtime9a4af031. Full delivery is GREEN in [41763540856](https://github.com/Lokad/Lython/actions/runs/41763540856), exact test repair5d8c7239 with unchanged runtime2d46dc8e: all eight Windows/Ubuntu/actual11+10/Stress/installed-consumer gates pass. [Cached terminal receipt](delivery-ci-status.json). Initial failed delivery and correction remain preserved. Publication/tagging postponed. Receipt commits are not measured binaries.
 
 ## Removed work and ownership
 
