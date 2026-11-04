@@ -149,14 +149,14 @@ internal sealed partial class ExecutableScript
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
             var operandLayout = ExecutableStackLayout.Prepare(normalizedBlocks, _constants, _callSites,
-                normalizedRegions, 0, generatorExpression is null ? 0 : 1);
+                normalizedRegions, 0, generatorExpression is null ? 0 : 1, _locals.Count);
             // Syntactic reachability retains handler tails even after an
             // unconditional raise. Such regions have no executable entry.
             normalizedRegions = normalizedRegions
                 .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
                 .Select(region => region with
             {
-                StackDepth = operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value
+                StackDepth = checked(_locals.Count + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value)
             }).ToArray();
 
             // This builder is single-use; its completed slot maps become code metadata.

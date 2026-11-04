@@ -34,41 +34,43 @@ public sealed class PositionalCallTransportTests
         var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
-        var storage = new object[width];
-        var tap = new StorageTap(storage);
+        var tap = new StorageTap(marker, width);
         context.Variables["value"] = marker;
         context.Variables["tap"] = tap;
-        var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneBoundValue" : width == 2 ? "_pooledTwoBoundValues" : "_pooledThreeBoundValues",
-            BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        var previous = field.GetValue(null);
-        field.SetValue(null, storage);
-        try
-        {
-            var result = asynchronous
-                ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
-            Assert.Same(marker, result);
-            Assert.True(tap.Invoked);
-            Assert.All(storage, value => Assert.Null(value));
-            Assert.Null(tap.Frame!.CurrentExecutableFrame);
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.State.CurrentRecursionDepth);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        }
-        finally { field.SetValue(null, previous); }
+        var result = asynchronous
+            ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context)
+            : LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
+        Assert.Same(marker, result);
+        Assert.True(tap.Invoked);
+        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
+        Assert.Null(tap.Frame!.CurrentExecutableFrame);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class StorageTap(object[] storage) : LythonRuntime.ICallable
+    private static object[] FrameStorage(LythonRuntime.ExecutionContext context)
+    {
+        var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
+        var locals = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var values = Assert.IsType<object[]>(locals.GetValue(frame));
+        var stack = frame.GetType().GetField("_stack", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(frame)!;
+        Assert.Same(values, stack.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(stack));
+        return values;
+    }
+
+    private sealed class StorageTap(object marker, int width) : LythonRuntime.ICallable
     {
         internal bool Invoked;
         internal LythonRuntime.ExecutionContext? Frame;
+        internal object[]? Storage;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Invoked = true;
             Frame = context;
-            var field = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.Instance | BindingFlags.NonPublic).RequireNotNull();
-            Assert.Same(storage, field.GetValue(context.CurrentExecutableFrame));
+            Storage = FrameStorage(context);
+            for (var i = 0; i < width; i++) Assert.Same(marker, Storage[i]);
             return PyNone.Instance;
         }
     }
@@ -82,21 +84,15 @@ public sealed class PositionalCallTransportTests
         var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
-        var storage = new object[1];
-        var tap = new SuspendedStorageTap(storage);
+        var tap = new SuspendedStorageTap(marker);
         context.Variables["value"] = marker;
         context.Variables["tap"] = tap;
-        var field = typeof(LythonRuntime).GetField("_pooledOneBoundValue", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        var previous = field.GetValue(null);
-        Task<object?> pending;
-        field.SetValue(null, storage);
-        try { pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context).AsTask(); }
-        finally { field.SetValue(null, previous); }
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context).AsTask();
         try
         {
             Assert.NotNull(tap.Frame);
             Assert.False(pending.IsCompleted);
-            Assert.Same(marker, storage[0]);
+            Assert.Same(marker, Assert.IsType<object[]>(tap.Storage)[0]);
             Assert.NotNull(tap.Frame.CurrentExecutableFrame);
             if (cancel)
             {
@@ -115,7 +111,7 @@ public sealed class PositionalCallTransportTests
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
         }
-        Assert.Null(storage[0]);
+        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
         Assert.Null(tap.Frame!.CurrentExecutableFrame);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
@@ -123,17 +119,18 @@ public sealed class PositionalCallTransportTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class SuspendedStorageTap(object[] storage) : LythonRuntime.ICallable
+    private sealed class SuspendedStorageTap(object marker) : LythonRuntime.ICallable
     {
         internal LythonRuntime.ExecutionContext? Frame;
+        internal object[]? Storage;
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => throw new InvalidOperationException("Expected async call.");
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context;
-            var field = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.Instance | BindingFlags.NonPublic).RequireNotNull();
-            Assert.Same(storage, field.GetValue(context.CurrentExecutableFrame));
+            Storage = FrameStorage(context);
+            Assert.Same(marker, Storage[0]);
             await Release.Task.ConfigureAwait(false);
             return PyNone.Instance;
         }
@@ -242,25 +239,20 @@ public sealed class PositionalCallTransportTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner },regexProvider:Utf8RegexProvider.Instance);
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
         var marker = Runtime.Text.PyString.FromString("owned", context.MemoryGovernor, null);
-        var storage = new object[2];
-        var tap = new SuspendedMethodTap(storage);
+        var tap = new SuspendedMethodTap(context.Variables["box"], marker);
         context.Variables["value"] = marker;
         context.Variables["tap"] = tap;
         var baseline = budget.ReservedBytes;
         var call = LythonFrontend.Compile("return method(value)",regexProvider:Utf8RegexProvider.Instance);
         code = ExecutableScript.Compile(LoweredScript.Lower(call.Script.RequireNotNull())).EntryPoint;
-        var field = typeof(LythonRuntime).GetField("_pooledTwoBoundValues", BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        var previous = field.GetValue(null);
-        Task<object?> pending;
-        field.SetValue(null, storage);
-        try { pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask(); }
-        finally { field.SetValue(null, previous); }
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
         try
         {
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.NotNull(tap.Frame);
             Assert.NotNull(tap.Frame.CurrentExecutableFrame);
+            var storage = Assert.IsType<object[]>(tap.Storage);
             Assert.Same(context.Variables["box"], storage[0]);
             Assert.Same(marker, storage[1]);
             Assert.Same(storage[0], LythonRuntime.ResolveName("self", Span, tap.Frame));
@@ -283,7 +275,7 @@ public sealed class PositionalCallTransportTests
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
         }
-        Assert.All(storage, Assert.Null);
+        Assert.All(Assert.IsType<object[]>(tap.Storage), Assert.Null);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -293,9 +285,10 @@ public sealed class PositionalCallTransportTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class SuspendedMethodTap(object[] storage) : LythonRuntime.ICallable
+    private sealed class SuspendedMethodTap(object receiver, object value) : LythonRuntime.ICallable
     {
         internal LythonRuntime.ExecutionContext? Frame;
+        internal object[]? Storage;
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -303,8 +296,12 @@ public sealed class PositionalCallTransportTests
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context;
-            Assert.Same(storage[0], LythonRuntime.ResolveName("self", span, context));
-            Assert.Same(storage[1], LythonRuntime.ResolveName("value", span, context));
+            var locals = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            Storage = Assert.IsType<object[]>(locals.GetValue(context.CurrentExecutableFrame));
+            Assert.Same(receiver, Storage[0]);
+            Assert.Same(value, Storage[1]);
+            Assert.Same(receiver, LythonRuntime.ResolveName("self", span, context));
+            Assert.Same(value, LythonRuntime.ResolveName("value", span, context));
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);
             return PyNone.Instance;

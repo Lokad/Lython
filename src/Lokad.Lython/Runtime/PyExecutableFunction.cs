@@ -18,7 +18,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(name, parameters, closure, defaultValues, scopeFacts, callableKind,
-            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.LocalNames.Count)
+            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.ValueStorageCapacity)
     {
         _codeObject = codeObject;
         _closureCells = closureCells;

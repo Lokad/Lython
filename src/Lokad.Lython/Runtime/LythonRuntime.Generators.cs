@@ -92,17 +92,17 @@ internal sealed partial class LythonRuntime
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
             // EstimateStorage already funds this retained frame's metadata.
-            var stack = new ExecutableValueStorage(code.OperandCapacity, frame, span, 0);
+            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot, frame, span, 0, null);
             try
             {
-                var locals = new object[code.LocalNames.Count];
-                Array.Fill(locals, UninitializedLocal);
-                for (var i = 0; i < locals.Length; i++)
+                var locals = stack.Values;
+                Array.Fill(locals, UninitializedLocal, 0, code.LocalNames.Count);
+                for (var i = 0; i < code.LocalNames.Count; i++)
                     if (frame.Variables.TryGetValue(code.LocalNames[i], out var value)) locals[i] = value;
                 ExecutableCell?[]? cells = null;
                 if (code.CapturedLocalSlots.Count != 0)
                 {
-                    cells = new ExecutableCell[locals.Length];
+                    cells = new ExecutableCell[code.LocalNames.Count];
                     foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
                 }
                 _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells, stack);

@@ -113,8 +113,9 @@ public sealed class ExecutableValueTransferTests
         var stack = frame.GetType().GetField("_stack", flags)!.GetValue(frame)!;
         var items = (object?[])stack.GetType().GetField("_items", flags)!.GetValue(stack)!;
         var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
+        var first = (int)stack.GetType().GetField("_firstTemporarySlot", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
         Assert.All(items.Skip(count), Assert.Null);
-        return items.Take(count).Select(item => item!).ToArray();
+        return items.Skip(first).Take(count - first).Select(item => item!).ToArray();
     }
 
     private sealed class Factory(object value) : LythonRuntime.ICallable

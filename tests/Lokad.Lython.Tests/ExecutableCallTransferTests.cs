@@ -84,9 +84,10 @@ public sealed class ExecutableCallTransferTests
         var stack = frame.GetType().GetField("_stack", Fields)!.GetValue(frame)!;
         var items = (object?[])stack.GetType().GetField("_items", Fields)!.GetValue(stack)!;
         var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
+        var first = (int)stack.GetType().GetField("_firstTemporarySlot", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
         // The physical tail must not retain withdrawn values either.
         Assert.All(items.Skip(count), Assert.Null);
-        return items.Take(count).Select(item => item!).ToArray();
+        return items.Skip(first).Take(count - first).Select(item => item!).ToArray();
     }
 
     private sealed class Probe(bool fail) : LythonRuntime.ICallable

@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
-        internal int LocalCapacity => _locals.Length;
+        internal int LocalCapacity => _codeObject.LocalNames.Count;
 
 
 
@@ -247,37 +247,38 @@ internal sealed partial class LythonRuntime
 
     private struct ExecutableValueStorage
     {
-        private object?[] _items;
+        private object[] _items;
         private int[]? _nativeIterationPositions;
         private readonly ExecutionContext _context;
-        private long _frameStorageBytes;
+        private long _ownedStorageBytes;
+        private readonly int _firstTemporarySlot;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
-        public ExecutableValueStorage(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan,
-            long frameStorageBytes)
+        public ExecutableValueStorage(int capacity, int firstTemporarySlot, ExecutionContext context,
+            LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
         {
             _context = context;
-            _frameStorageBytes = frameStorageBytes;
+            _firstTemporarySlot = firstTemporarySlot;
             _nativeIterationPositions = null;
+            var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
-            capacity = Math.Max(4, capacity);
-            var bytes = checked(EstimateObjectArrayBytes(capacity) + frameStorageBytes);
             governor.Reserve(bytes, allocationSpan);
-            try { _items = new object[capacity]; governor.Commit(bytes); }
+            try { _items = borrowedValues ?? new object[capacity]; governor.Commit(bytes); }
             catch { governor.ReleaseReserved(bytes); throw; }
-            LiveExtent = 0;
+            _ownedStorageBytes = bytes;
+            LiveExtent = firstTemporarySlot;
         }
 
-        internal long RetainedBytes => _items.Length == 0 ? 0 : EstimateObjectArrayBytes(_items.Length);
+        internal object[] Values => _items;
 
         internal void ReleaseStorage()
         {
-            var bytes = checked(RetainedBytes + _frameStorageBytes);
-            _items = Array.Empty<object?>();
+            _items = [];
             _nativeIterationPositions = null;
-            _frameStorageBytes = 0;
+            var bytes = _ownedStorageBytes;
+            _ownedStorageBytes = 0;
             _context.MemoryGovernor.Release(bytes);
         }
 
@@ -311,7 +312,7 @@ internal sealed partial class LythonRuntime
         internal object TakeValue(int inputSlot, int liveExtent)
         {
             var value = _items[inputSlot].RequireNotNull();
-            _items[inputSlot] = null;
+            _items[inputSlot] = null!;
             LiveExtent = liveExtent;
             return value;
         }
@@ -324,15 +325,15 @@ internal sealed partial class LythonRuntime
                 // The existing private operand keeps the source alive. One
                 // admitted position array replaces repeated native cursor and
                 // enumerator objects; it shares this frame's storage lifetime.
-                var bytes = checked(32L + 4L * _items.Length);
-                var frameBytes = checked(_frameStorageBytes + bytes);
+                var bytes = checked(32L + 4L * (_items.Length - _firstTemporarySlot));
+                var frameBytes = checked(_ownedStorageBytes + bytes);
                 using var storage = _context.MemoryGovernor.ReserveTemporary(bytes, span);
-                var positions = new int[_items.Length];
+                var positions = new int[_items.Length - _firstTemporarySlot];
                 storage.Commit(bytes);
                 _nativeIterationPositions = positions;
-                _frameStorageBytes = frameBytes;
+                _ownedStorageBytes = frameBytes;
             }
-            _nativeIterationPositions[slot] = 0;
+            _nativeIterationPositions[slot - _firstTemporarySlot] = 0;
             return true;
         }
 
@@ -341,14 +342,14 @@ internal sealed partial class LythonRuntime
             switch (_items[slot])
             {
                 case PyList list:
-                    var listIndex = _nativeIterationPositions![slot];
+                    var listIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
                     next = listIndex < list.Count ? PyIterationResult.Yield(list[listIndex]) : PyIterationResult.End;
-                    if (next.HasValue) _nativeIterationPositions[slot] = listIndex + 1;
+                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = listIndex + 1;
                     return true;
                 case PyTuple tuple:
-                    var tupleIndex = _nativeIterationPositions![slot];
+                    var tupleIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
                     next = tupleIndex < tuple.Count ? PyIterationResult.Yield(tuple[tupleIndex]) : PyIterationResult.End;
-                    if (next.HasValue) _nativeIterationPositions[slot] = tupleIndex + 1;
+                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = tupleIndex + 1;
                     return true;
                 default:
                     next = PyIterationResult.End;
@@ -375,7 +376,7 @@ internal sealed partial class LythonRuntime
                     _pendingDisposalTail = cursor;
                     // Ownership moved to the pending chain. A later synchronous
                     // disposal can fail; retrying the trim must not enqueue twice.
-                    _items[i] = null;
+                    _items[i] = null!;
                 }
                 else if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
             }
@@ -519,8 +520,7 @@ internal sealed partial class LythonRuntime
         // is needed for nonmirrored executable functions.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
-        var bytes = argumentsAreLocals || codeObject.LocalNames.Count == 0 ? 0
-            : EstimateObjectArrayBytes(codeObject.LocalNames.Count);
+        long bytes = 0;
         if (codeObject.CapturedLocalSlots.Count != 0)
             bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.LocalNames.Count)
                 + 48L * codeObject.CapturedLocalSlots.Count);
@@ -528,13 +528,13 @@ internal sealed partial class LythonRuntime
             bytes = checked(bytes + 32L + 64L * codeObject.MemberCacheCount);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
-        var stack = new ExecutableValueStorage(codeObject.OperandCapacity, context, span, bytes);
+        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot,
+            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null);
         try
         {
-            var locals = argumentsAreLocals ? boundArguments.Values
-                : codeObject.LocalNames.Count == 0 ? [] : new object[codeObject.LocalNames.Count];
+            var locals = stack.Values;
             Array.Fill(locals, UninitializedLocal, argumentsAreLocals ? boundArguments.Assigned.Length : 0,
-                locals.Length - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
+                codeObject.LocalNames.Count - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
             var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
             ExecutableCell?[]? localCells = null;
             if (needsLocalCells)

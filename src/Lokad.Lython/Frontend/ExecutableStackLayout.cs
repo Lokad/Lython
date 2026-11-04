@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
-internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths)
+internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot)
 {
     internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
         ExecutableStackLayout layout, out int[] offsets)
@@ -31,7 +31,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // distinctly from a guest top-level return (not legal in imports).
             if (Completes(blocks[i]))
             {
-                var extent = source.Length == 0 ? layout.EntryDepths[i] ?? 0 : source[^1].LiveExtent;
+                var extent = source.Length == 0 ? checked(layout.FirstTemporarySlot + (layout.EntryDepths[i] ?? 0)) : source[^1].LiveExtent;
                 instructions[offsets[i + 1] - 1] = ExecutableInstruction.Complete(
                     source.Length == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
                     .WithStorageSlots(extent, extent, extent);
@@ -46,7 +46,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     internal static ExecutableStackLayout Prepare(IReadOnlyList<ExecutableBasicBlock> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
-        IReadOnlyList<ExecutableExceptionRegion> regions, int entryBlock, int initialDepth)
+        IReadOnlyList<ExecutableExceptionRegion> regions, int entryBlock, int initialDepth, int firstTemporarySlot)
     {
         var depths = new int?[blocks.Count];
         var pending = new Queue<int>();
@@ -78,7 +78,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 depth = checked(resultSlot + push);
                 // Prepare the owned instruction array in this existing shape
                 // pass; linearization preserves these facts while retargeting.
-                instructions[instructionIndex] = instruction.WithStorageSlots(inputStart, resultSlot, depth);
+                instructions[instructionIndex] = instruction.WithStorageSlots(
+                    checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
+                    checked(firstTemporarySlot + depth));
                 maximum = Math.Max(maximum, depth);
                 switch (instruction.OpCode)
                 {
@@ -110,7 +112,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // existing interpreter never falls through to the next stored block.
         CompleteBlock:;
         }
-        return new(maximum, depths);
+        return new(maximum, depths, firstTemporarySlot);
 
         void Enter(int block, int depth)
         {

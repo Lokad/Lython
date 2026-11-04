@@ -214,7 +214,8 @@ public sealed class DirectStringStartsWithTests
         var stack = frame.GetType().GetField("_stack", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(frame)!;
         var items = (object[])stack.GetType().GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
         var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
-        return items[..count];
+        var first = (int)stack.GetType().GetField("_firstTemporarySlot", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
+        return items.Skip(first).Take(count - first).ToArray();
     }
 
     private sealed class SuspendedArgument : LythonRuntime.ICallable

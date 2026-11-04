@@ -497,6 +497,8 @@ internal sealed partial class ExecutableCodeObject
     public bool IsFunctionScope { get; }
 
     public int OperandCapacity { get; }
+    public int FirstTemporarySlot => LocalNames.Count;
+    public int ValueStorageCapacity => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
 
     // Null is ineligible; -1 is the body containing only ReturnNone.
     public int? NativeReturnRoot { get; }

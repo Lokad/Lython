@@ -79,7 +79,7 @@ internal sealed partial class LythonRuntime
         internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
         {
             _locals[_codeObject.LocalNameToSlot[".0"]] = iterator;
-            _stack.PublishValue(0, 1, cursor);
+            _stack.PublishValue(_codeObject.FirstTemporarySlot, _codeObject.FirstTemporarySlot + 1, cursor);
         }
 
         internal async ValueTask ReleaseGeneratorTemporariesAsync(bool asynchronous)
@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
             _stack.DeferAsyncDisposal = asynchronous;
             try
             {
-                _stack.RetireTo(0);
+                _stack.RetireTo(_codeObject.FirstTemporarySlot);
                 try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
                 finally { _stack.ReleaseStorage(); }
             }
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
         // names and restoring the previous exception on frame exit.
         private void AbandonFrame(LythonSourceSpan span)
         {
-            _stack.RetireTo(0);
+            _stack.RetireTo(_codeObject.FirstTemporarySlot);
             _savedActiveExceptions?.Clear();
             AbandonActiveHandlerVars(_context, span);
             _context.State.SetCurrentException(_entryActiveException);
@@ -700,7 +700,7 @@ internal sealed partial class LythonRuntime
                     if (!HasYield && !HasPendingCall)
                     {
                         _preparedTypeSubscription = null;
-                        _stack.RetireTo(0);
+                        _stack.RetireTo(_codeObject.FirstTemporarySlot);
                     }
                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
                     finally { if (!HasYield && !HasPendingCall) _stack.ReleaseStorage(); }

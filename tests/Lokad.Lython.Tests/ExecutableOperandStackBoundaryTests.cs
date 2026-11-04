@@ -106,7 +106,7 @@ public sealed class ExecutableOperandStackBoundaryTests
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         private readonly object _stack;
-        public StackView(int capacity) => _stack = Activator.CreateInstance(StackType, [capacity, _context, null, 0L])!;
+        public StackView(int capacity) => _stack = Activator.CreateInstance(StackType, [capacity, 0, _context, null, 0L, null])!;
         public void Dispose()
         {
             RemoveTail(Count);

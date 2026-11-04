@@ -159,11 +159,13 @@ trace guest storage. Shared syntax walks use value enumerators for
 ordinary fields/lists and the existing nested walkers for recursive target/header
 shapes; no retained child-edge cache is built. Exception header expressions
 execute through those instructions; bare handlers need no second type-name resolver.
-Instructions store an opcode, source span and two integer operands. The opcode
-determines each operand's domain, including mutually exclusive operator families;
+Instructions store an opcode, source span, opcode metadata and compiler-prepared
+storage positions. The opcode determines each metadata operand's domain;
 operand projections and control-flow retargeting keep explicit validity checks.
-Compiler operand-shape analysis prepares a maximum workspace and exception-entry
-depths. The retained code is one instruction array with absolute branch and
+The existing shape pass prepares input/result positions, live temporary extents,
+maximum workspace and exception-entry depths. Execution uses those positions
+directly. Native-return source links share the instructions and call metadata;
+there is no separate retained expression graph. The retained code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.
 The executable engine runs both public APIs and local imports, using local/closure
@@ -203,10 +205,12 @@ Ordinary positional calls to executable functions with slot-local storage advanc
 an explicit caller/callee chain in the same interpreter. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
-bound local array until its body and awaited cleanup finish; suspended callers
-retain their operands. Operand ownership admits the fixed whole-frame maximum
-workspace and fresh local/cell/cache/control capacities before construction and
-retains them through suspension. Operand buffers do not grow. Terminal cleanup refunds private working storage;
+value array until its body and awaited cleanup finish. Local bindings occupy its
+prefix and temporary operands its suffix; binding writes directly into that
+storage where locals need no mirroring. Suspended callers retain their operands.
+Ownership admits the fixed whole-frame capacity and fresh cell/cache/control
+storage before construction and retains them through suspension. Arrays do not
+grow. Temporary retirement never clears the local prefix. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
 once. Generators keep their existing retained metadata owner and admit their
 workspace before first advancement. These conservative estimates can reject
