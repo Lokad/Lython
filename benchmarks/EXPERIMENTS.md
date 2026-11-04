@@ -6,7 +6,8 @@ reconstruction and nullable builder facts. Exact metadata matches across27 scrip
 71 code objects and focused checks pass on both runtimes. Compilation allocation
 falls4.25–4.83%; text/report compilation elapsed improves4–7%, while CSV controls
 shift and fresh scripts remain near unchanged. All observations remain; this is
-not a broad CPU or updated CPython claim. Delivery qualification is separate.
+not a broad CPU or updated CPython claim. Full41863346055 is GREEN on97bc43b2,
+all eight Windows/Ubuntu11/10 ordinary/Stress/installed-consumer gates cached.
 
 The [binding-state cache reassessment](results/2026-11-04-resolution-cache/README.md)
 removes recursive record hashing and redundant versions from the existing cache.

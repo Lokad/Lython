@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "97bc43b21aa25e4aa35ef445d47ad23a3af5437d",
+  "run": 41863346055,
+  "url": "https://github.com/Lokad/Lython/actions/runs/41863346055",
+  "status": "completed",
+  "conclusion": "success",
+  "gates": [
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test original stress scales",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test original stress scales",
+      "conclusion": "success"
+    }
+  ],
+  "observationNote": "Workflow terminal success, all eight required logical gates verified. Windows job status was stale in_progress although all required steps complete/success. Do not re-query terminal run."
+}

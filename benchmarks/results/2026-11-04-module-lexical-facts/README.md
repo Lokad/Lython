@@ -65,5 +65,9 @@ protected regions and native provenance, including ten explicit module/super
 controls. [Source gate](source-gate.json), [validation scope](validation.json),
 [exact sources, metadata and all initial/final logs](source-and-validation.tgz).
 Release nonincremental builds have zero warnings/errors and matching core/test/
-benchmark images. Full platform/Stress/installed consumers belong to the delivery
-checkpoint; no replay of unchanged cache qualification is claimed. Publication held.
+benchmark images. Main97bc43b2 passes [full41863346055](delivery-ci-status.json):
+Windows/Ubuntu actual11/10 ordinary, original Stress and installed consumers, all
+eight logical gates GREEN/cached. Do not re-query/replay this terminal run. The
+cherry-picked source has identical canonical LF text, with working-tree CRLF
+normalization recorded in [source equivalence](main-source-equivalence.json);
+original frozen binary/source identities are unchanged. Publication held.
