@@ -2236,7 +2236,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 
 - [Shared numeric layout / UTF-8 complex body, B190](results/2026-11-04-shared-numeric-layout/README.md):
-  RETAINED, delivery pending. Seven legacy grouping failures corrected; native and
+  RETAINED334c7cc7, delivery41748908560 pending. Seven legacy grouping failures corrected; native and
   real CLR text use one final admitted window/layout. Remove grouped CLR assembly,
   orphan F/E text bridge and helpers;71 fewer production lines. Prototypes allocate
   general/Decimal−11.3%, complex−16.9%, with native/complex elapsed adverse2–5% and
@@ -2244,3 +2244,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   refinement preserves costs, no broad CPU gain. Final boundary correction fixes
   six short-width failures inherited from B188; not separately timed. Final per-target
   focused136 internal/1,051 public checks; full delivery pending. Whole objective OPEN.
+
+
+- [Current CPU / call transport source gate, B191](results/2026-11-04-current-cpu-call-transport/README.md):
+  COMPLETE diagnostic gate on334c7cc7/frozen80e9a32d. Text prefix17.5–19.2%,
+  call/native/binding leaf buckets9.5–11.1%; report monitors10.4%/JSON string4.5%.
+  Unknown/inlined work remains, no causal speedup. Failed CRLF/disk conditions and
+  partial first text retained; final report/text captures pass full gates/normal
+  close and raw-data verification. Select removal of transient bound storage/
+  ownership-record transport from existing closed helpers; no new engine/arena.
+  Reader views deferred by lifetime/metadata costs, not permanently rejected.

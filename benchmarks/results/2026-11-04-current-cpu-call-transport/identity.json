@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "Committed334c7cc7 source, actual frozen b4de9833+final patch80e9a32d",
+  "files": {
+    "Lokad.Lython.dll": "80e9a32df6a11178b824d9dc229585dc817d0c85ec21d2f8c83bdae215db2e56"
+  },
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs": "b8065137e6f3af88496b501c660a3770e763179ed6b3cbea074d8cc4d8a43461",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "d5c7652e7230a5edaf4a9a9ebf380395b4f955103b85f447fc836ba466649195",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.NumericFormatting.cs": "b5c52e38f675f35053aa6a3dedd78b889b690938e73157a4a200f41d4b1f8054"
+  },
+  "purpose": "B191 bounded on-CPU diagnostics to choose coherent whole-script redesign; no performance comparison"
+}

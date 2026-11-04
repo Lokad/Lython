@@ -1,6 +1,6 @@
 # Shared numeric layout and UTF-8 complex body — B190
 
-2026-11-04. RETAINED source, full delivery pending. Measured readonly-layout prototype
+2026-11-04. RETAINED334c7cc7; full delivery41748908560 pending. Measured readonly-layout prototype
 `f967b9460a8b924780a5ba6be252923a8f7b84193be8fdbb198642157443beb2` is
 b4de9833 plus the archived source patch. Qualified B188 source9ce21533/frozen
 `cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e`
