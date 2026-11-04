@@ -5,8 +5,17 @@ removes recursive record hashing and redundant versions from the existing cache.
 Current-source compilation elapsed improves3.9–6.5% CSV,8.4% text and3.1% report;
 fresh/warm execution effects remain small or control-limited. Original B87 fixed-
 threshold rejection and drifting config controls remain intact. All focused checks
-pass; full delivery qualification is pending. This does not close the whole-script
-objective or establish a broad CPU gain.
+pass; full delivery qualification41853526333 is running. A direct older454
+comparison finds CSV compilation near unchanged, text5.5–5.8%/report1.2–1.8%
+lower elapsed, with net3.3–5.0% more compiler allocation accepted explicitly.
+This does not close the whole-script objective or establish a broad CPU gain.
+
+The [dev.26 optional-adapter qualification](results/2026-11-04-adapter-dev26/README.md)
+passes existing84 internal/421 public controls per actual11/10, including real
+backend in-flight compile/match/cursor cancellation and owner cleanup. Exact new
+immutable producer images and private fixture identities are verified; normal0.4.0
+pin/core decoupling remain. This is Windows development compatibility, not a
+released promotion, producer safety certification or performance result.
 
 The [ordinary-call construction gate](results/2026-11-04-call-construction-gate/README.md)
 finds about 544 extra allocated bytes per guarded helper call, including its

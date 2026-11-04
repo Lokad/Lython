@@ -66,7 +66,32 @@ One initial probe subprocess used the system dotnet without.NET11; the corrected
 PATH rerun passes unchanged. Preserve that failure in [validation logs](validation-logs.tgz)
 and [validation scope](focused-validation.json).
 
-Full Windows/Ubuntu, original Stress and installed Release consumers are pending
-at this coherent delivery boundary. Earlier D1 compilation debt versus454 is
-not erased by these separate source-pair percentages; any direct confirmation
-must retain the exact older image and its own controls. Publication postponed.
+Commit123f9ff1 is retained. Full Windows/Ubuntu, original Stress and installed
+Release consumers are running in delivery41853526333 at this coherent boundary;
+do not repeat unchanged qualification. Publication postponed.
+
+## Direct decision on earlier compilation debt
+
+A separate81-second comparison directly pairs exact qualified bf0d38f3/core454cd98c
+twice with the same159744bd candidate. Same current auxiliary bits, CoreLib/hash
+witnesses, complete scripts and compile-only boundary; six-second warmups and
+nine rotated200ms batches. This fills the older-reference gap without adding
+independent source-pair percentages or retiming the successful first comparison.
+All goldens, identities, per-job/final allowance, quiet gates and joined fixture/
+process cleanup pass. The150-second owned service finishes normally, lease free.
+
+| Compilation versus qualified454 | Candidate elapsed | Change vs both older roles | Older spread | Candidate IQR |
+| --- | ---: | ---: | ---: | ---: |
+| CSV helpers |87.307µs|+0.07% /−1.45%|1.54%|2.53%|
+| Text helpers |64.710µs|−5.50% /−5.75%|0.26%|1.32%|
+| JSON-to-Markdown |63.318µs|−1.18% /−1.75%|0.58%|0.81%|
+
+Earlier elapsed compilation debt is not reproduced net in this comparison.
+CSV is near unchanged within2.5–2.7%IQR, not a proven gain. Text/report improve
+against both roles. Compilation allocation remains+4.56% CSV/+4.96% text/+3.29%
+report versus454: accept that explicit net storage cost alongside D1's instruction
+positions/provenance and transport deletion. The smaller current cache saving
+does not erase this. Original adverse timings and unqualified conditions remain.
+[Exact debt metrics](debt/assessment.json), [plan](debt/pre-measurement-plan.md),
+[identity](debt/candidate-identity.json), [all observations](debt/observations.tgz),
+SHA256 `ffb8580d836bca02a9150899c076f38510949f9a59f5c07a9484b2c7476076f3`.

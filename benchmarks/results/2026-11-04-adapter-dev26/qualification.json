@@ -1,0 +1,115 @@
+{
+  "developmentOnly": true,
+  "releasedAdapterPromotion": false,
+  "runtimeSource": "123f9ff1, source cache implementation matches frozen159744bd; private build has its own exact assembly identity",
+  "packageIdentity": {
+    "developmentOnly": true,
+    "version": "0.5.0-dev.26",
+    "normalPin": "0.4.0 unchanged",
+    "runtimeSource": "123f9ff1 cache consolidation",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.26.nupkg": {
+        "sha256": "798ca9a64a7ae4d3625e39a0c5faba7d4e61ee6d03fdbd22231158db1a33529d",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/Lokad/Utf8Regex.git",
+          "branch": "refs/heads/master",
+          "commit": "e731a4526f4b2c3071f37876fb8c0285c3be17b4"
+        },
+        "libraries": {
+          "lib/net10.0/Lokad.Utf8Regex.dll": "32e44073b008c31a7e0b02547f8f6e7b71ca8c8211d717e0396d786c67a6adf6",
+          "lib/net11.0/Lokad.Utf8Regex.dll": "bed0965e3ac6f58c8e14f1fe036ab9f5074189f7976fba848a98bcf5d94cebf1"
+        }
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.26.nupkg": {
+        "sha256": "ab7176ba7b400feccbc4356ee0bab9948d00e306d23ae5192d51b0e57ea8d9d0",
+        "repository": {
+          "type": "git",
+          "url": "https://github.com/Lokad/Utf8Regex.git",
+          "branch": "refs/heads/master",
+          "commit": "e731a4526f4b2c3071f37876fb8c0285c3be17b4"
+        },
+        "libraries": {
+          "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "17ccdfc3a98445080251328e32ec1d6be48c380d97a9446ce7623cdce3938650",
+          "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "c6b8c6e689488732481f85fbdb8aa26750f427c574864e0112613846f2f25bf9"
+        }
+      }
+    }
+  },
+  "declaredMainClassSurfaceMembers": 143,
+  "surfaceChangeVersusDev20": {
+    "added": [],
+    "removed": []
+  },
+  "tests": {
+    "net11.0": {
+      "internalPassed": 84,
+      "publicPassed": 421,
+      "lifetimeCasesIncluded": 6,
+      "actualInFlightCompileMatchCursorCasesIncluded": 3,
+      "fixturePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter26\\out\\Lokad.Lython.WorkerFixture\\Release\\net11.0",
+      "fixtureRuntimeConfig": {
+        "runtimeOptions": {
+          "tfm": "net11.0",
+          "framework": {
+            "name": "Microsoft.NETCore.App",
+            "version": "11.0.0-rc.3.26522.148"
+          },
+          "configProperties": {
+            "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+            "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false
+          }
+        }
+      },
+      "packageDllSHA256": {
+        "Lokad.Utf8Regex.dll": "bed0965e3ac6f58c8e14f1fe036ab9f5074189f7976fba848a98bcf5d94cebf1",
+        "Lokad.Utf8Regex.PythonRe.dll": "c6b8c6e689488732481f85fbdb8aa26750f427c574864e0112613846f2f25bf9"
+      },
+      "coreDllSHA256": "5982d9f04c16db22b740d3859c8d22bd3b7e00c131a8ef04d218b89f6adae33c",
+      "adapterDllSHA256": "fb053fe59e093b206eaad47ea8f3110d8e5211e89329c3386dd635b5e26b3ba9",
+      "coreDependencyEntries": [
+        "Lokad.Lython/0.11.0",
+        "Microsoft.SourceLink.GitHub/10.0.401",
+        "System.IO.Hashing/10.0.12"
+      ]
+    },
+    "net10.0": {
+      "internalPassed": 84,
+      "publicPassed": 421,
+      "lifetimeCasesIncluded": 6,
+      "actualInFlightCompileMatchCursorCasesIncluded": 3,
+      "fixturePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter26\\out\\Lokad.Lython.WorkerFixture\\Release\\net10.0",
+      "fixtureRuntimeConfig": {
+        "runtimeOptions": {
+          "tfm": "net10.0",
+          "framework": {
+            "name": "Microsoft.NETCore.App",
+            "version": "10.0.0"
+          },
+          "configProperties": {
+            "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+            "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false
+          }
+        }
+      },
+      "packageDllSHA256": {
+        "Lokad.Utf8Regex.dll": "32e44073b008c31a7e0b02547f8f6e7b71ca8c8211d717e0396d786c67a6adf6",
+        "Lokad.Utf8Regex.PythonRe.dll": "17ccdfc3a98445080251328e32ec1d6be48c380d97a9446ce7623cdce3938650"
+      },
+      "coreDllSHA256": "eb4bf13588aff2d0a9a85d37c2031a7e0e7580b85ab5aa9a1ae39393f35dfa31",
+      "adapterDllSHA256": "913aab3603bc73e5629ba31500ae51d03246458e1ee24276b84a087254c8710b",
+      "coreDependencyEntries": [
+        "Lokad.Lython/0.11.0",
+        "Microsoft.SourceLink.GitHub/10.0.401",
+        "System.IO.Hashing/10.0.12"
+      ]
+    }
+  },
+  "fixtureLayout": "private tracked Fixtures junction and exact private WorkerFixture Release junction; DOTNET_HOST_PATH and PATH use pinned SDK host",
+  "limitations": [
+    "Windows development-package qualification only, no released promotion or cross-platform producer safety/performance claim",
+    "Normal0.4.0 adapter and core backend-dependency edges unchanged",
+    "Main-class declared surface only; no native capability added by this receipt",
+    "String-name/detailed capture bridges, conservative working funding and unsupported reversed match remain"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "bf0d38f3 qualified454 older reference; duplicated controls, same current auxiliary bits",
+  "sourceSHA256": "86c7f065182f2f71f602d562c0416a3d61bc92f10b5fa1cc0e0c297ca950106b",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "454cd98c3a16d303290f08052089130574d5b914bffa8c07d8251b10f3e9b719",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "7535e07a plus AbstractState.cs patch",
+  "candidateCoreSHA256": "159744bdbed6914dbfbab71e032828a167b73de6401cf27532ef7f1db175226f",
+  "candidateSourceSHA256": "a71995e9cd2ebd1ab643dc4f427a45faa1e2d22365c7593cf8a765dff49865a0",
+  "comparisonPurpose": "Resolve earlier D1 compilation debt directly; no independent percent chaining"
+}

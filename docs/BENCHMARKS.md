@@ -127,7 +127,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Compiler resolution cache |Compilation elapsed−3.9–6.5% CSV,−8.4% text,−3.1% report|[Current-source reassessment; fresh/warm effects small or control-limited; no broad CPU gain](../benchmarks/results/2026-11-04-resolution-cache/README.md)|
+| Compiler resolution cache |Compilation elapsed−3.9–6.5% CSV,−8.4% text,−3.1% report|[Current-source pair; direct older454 comparison: CSV near unchanged, text/report faster, compiler allocation+3.3–5.0%; no broad CPU gain](../benchmarks/results/2026-11-04-resolution-cache/README.md)|
 | Executable storage |Duplicate transport, native graph and frame arrays removed; warm allocation flat; possible compile cost remains|[B207/B208; corrected prototype report cost, modest/control-limited source pairs, no broad CPU gain](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)|
 | String cache accounting |Whole-script allocation−1.5–4.1%; sync text elapsed+3.5–5.8%, async−2.9–5.9%|[B205 versusae9b82b7; sync regression accepted, original drifting controls and withdrawn windows preserved; no broad CPU gain](../benchmarks/results/2026-11-04-string-storage-assessment/README.md)|
 | Native formatted helpers |Report allocation-26.12% both APIs; warm elapsed-7..12%, fresh-8..10%|[B201 versus B197/B200; compile+2% accepted, admitted peaks unchanged, unrelated text uncertainty preserved](../benchmarks/results/2026-11-04-native-formatted-returns/README.md)|
