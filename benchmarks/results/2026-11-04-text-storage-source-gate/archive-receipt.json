@@ -1,0 +1,8 @@
+{
+  "coreSHA256": "67373996909a8b55239d5895e4a7ab7b6f13a5b53f46627fd1b61e1afb61aa7a",
+  "traceBytes": 4891918,
+  "allWorkersAndCollectorJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archiveSHA256": "0c7097567796665c736aa72dee3a23e24b2f8dfac4042c3a8173cbe0f7656d1c"
+}

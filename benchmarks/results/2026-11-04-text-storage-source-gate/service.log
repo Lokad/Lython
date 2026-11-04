@@ -1,0 +1,10 @@
+Running as unit: lython-b204-text-cost-20261104.service; invocation ID: c274dc996312426cb0c7ffc89ead49c8
+Initial machine gate passed; a campaign still needs every sampling gate.
+{"name": "text-warm", "seconds": 0.822989488, "threadCpuSeconds": [{"tid": "3127987", "name": "dotnet", "seconds": 0.0}, {"tid": "3127988", "name": ".NET EventPipe", "seconds": 0.0}, {"tid": "3127989", "name": ".NET DebugPipe", "seconds": 0.0}, {"tid": "3127990", "name": ".NET Debugger", "seconds": 0.0}, {"tid": "3127991", "name": ".NET Finalizer", "seconds": 0.0}, {"tid": "3127992", "name": ".NET Tiered JIT", "seconds": 0.050000000000000044}, {"tid": "3127993", "name": ".NET BGC", "seconds": 0.0}, {"tid": "3127994", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "3127995", "name": ".NET TP Gate", "seconds": 0.0}, {"tid": "3127996", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "3127997", "name": ".NET SigHandler", "seconds": 0.0}, {"tid": "3127998", "name": ".NET TP Worker", "seconds": 0.05000000000000002}, {"tid": "3127999", "name": "Lython executio", "seconds": 0.8000000000000007}, {"tid": "3128000", "name": ".NET TP Worker", "seconds": 0.0}, {"tid": "3128009", "name": ".NET EventPipe", "seconds": 0.01}, {"tid": "3128010", "name": ".NET EventPipe", "seconds": 0.0}]}
+Initial machine gate passed; a campaign still needs every sampling gate.
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 15.773s
+CPU time consumed: 7.140s
+Memory peak: 256.0K
+Memory swap peak: 0B

@@ -1,0 +1,6 @@
+{
+  "revision": "ae9b82b7",
+  "coreSHA256": "67373996909a8b55239d5895e4a7ab7b6f13a5b53f46627fd1b61e1afb61aa7a",
+  "purpose": "one current whole-text sampled-allocation gate; no CPU/timing/heap claim, no runtime instrumentation or forced GC",
+  "publication": "postponed"
+}

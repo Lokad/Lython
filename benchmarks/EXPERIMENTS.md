@@ -1,5 +1,11 @@
 # Benchmark experimental history
 
+The [current text-storage source gate](results/2026-11-04-text-storage-source-gate/README.md)
+uses one short allocation profile of ae9b82b7. Split byte arrays are8.06% of sampled
+guest-thread allocation; string objects remain necessary. A compact-payload/window
+proposal is selected, with normal-string metadata and ownership costs still to
+validate. This is no runtime optimization or CPU improvement claim.
+
 The [direct-list representation](results/2026-11-04-direct-list-backing/README.md)
 removes366 net runtime lines and separate storage wrappers. CSV/text allocation
 falls1.8-1.9%/2.95%. An initial config allocation/peak regression is corrected
