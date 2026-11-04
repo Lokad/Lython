@@ -2236,14 +2236,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 
 - [Shared numeric layout / UTF-8 complex body, B190](results/2026-11-04-shared-numeric-layout/README.md):
-  RETAINED334c7cc7, delivery41748908560 pending. Seven legacy grouping failures corrected; native and
+  RETAINED334c7cc7, full GREEN41748908560. Seven legacy grouping failures corrected; native and
   real CLR text use one final admitted window/layout. Remove grouped CLR assembly,
   orphan F/E text bridge and helpers;71 fewer production lines. Prototypes allocate
   general/Decimal−11.3%, complex−16.9%, with native/complex elapsed adverse2–5% and
   report variable/slightly adverse; all original points retained. One readonly-layout
   refinement preserves costs, no broad CPU gain. Final boundary correction fixes
   six short-width failures inherited from B188; not separately timed. Final per-target
-  focused136 internal/1,051 public checks; full delivery pending. Whole objective OPEN.
+  focused136 internal/1,051 public checks; full delivery GREEN41748908560. Whole objective OPEN.
 
 
 - [Current CPU / call transport source gate, B191](results/2026-11-04-current-cpu-call-transport/README.md):
