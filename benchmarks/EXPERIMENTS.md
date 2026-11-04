@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [CSV boundary/state parser](results/2026-11-04-csv-boundary-state/README.md)
+removes20 net production lines, four overlapping flags and duplicate option/matcher
+plumbing; preserves admitted batched record construction. Two skipped-space bugs
+are fixed. All101 internal/347 public per target and84 CPython Unicode cases per
+API/target pass. Combined newline/parser long-field script−86.99%, allocation
+−2.54%; typical CSV warm remains possible+1–3.5% debt amid dispersion, fresh
+slightly better and ragged near unchanged. All193s gates pass, adverse data retained.
+Full combined runtime delivery qualification pending; publication held.
+
 The [shared bulk newline scan](results/2026-11-04-bulk-newline-search/README.md)
 replaces scalar mode/terminator branches with managed span search,17 net lines
 deleted. Complete long-line scripts take23–27% less elapsed; allocation unchanged.

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate CSV parsing into explicit record/field states and bounded UTF-8
+  boundary searches. Preserve batched storage and cleanup; correct ignored-space
+  records and repeated space delimiters with `skipinitialspace`.
+
 - Use managed bulk byte searches for shared line boundaries, preserving newline
   modes, chunk-edge handling and scalar read limits with less scanning work.
 

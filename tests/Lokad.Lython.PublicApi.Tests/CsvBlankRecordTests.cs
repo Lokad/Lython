@@ -7,6 +7,8 @@ public sealed class CsvBlankRecordTests
     // Complete stdout goldens from isolated CPython 3.13.2.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "ignored-space-record", "import csv\nlines=['   \\n','  ','\\n','x\\n']\nr=csv.reader(lines,skipinitialspace=True)\nprint(list(r),r.line_num)\nd=csv.DictReader(lines,fieldnames=['a','b'],skipinitialspace=True)\nprint(list(d),d.line_num)", "[[''], [''], [], ['x']] 4\n[{'a': '', 'b': None}, {'a': '', 'b': None}, {'a': 'x', 'b': None}] 4\n" },
+        { "space-delimiter", "import csv\nfor line in ['a  b\\n','  a b \\n',' \\n']:\n r=csv.reader([line],delimiter=' ',skipinitialspace=True)\n print(list(r),r.line_num)", "[['a', 'b']] 1\n[['a', 'b', '']] 1\n[['']] 1\n" },
         { "empty-fragment", "import csv\nlines=['']\nr=csv.reader(lines)\nprint(list(r),r.line_num)\nd=csv.DictReader(lines,fieldnames=['a','b'])\nprint(list(d),d.line_num)", "[[]] 1\n[] 1\n" },
         { "newline", "import csv\nlines=['\\n']\nr=csv.reader(lines)\nprint(list(r),r.line_num)\nd=csv.DictReader(lines,fieldnames=['a','b'])\nprint(list(d),d.line_num)", "[[]] 1\n[] 1\n" },
         { "crlf", "import csv\nlines=['\\r\\n']\nr=csv.reader(lines)\nprint(list(r),r.line_num)\nd=csv.DictReader(lines,fieldnames=['a','b'])\nprint(list(d),d.line_num)", "[[]] 1\n[] 1\n" },

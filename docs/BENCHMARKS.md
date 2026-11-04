@@ -19,7 +19,7 @@ RAM-file I/O, full checks and prior-result cleanup, excluding fixture staging/re
 Ratio=Lython elapsed/CPython elapsed; above one means slower. IQR=interquartile
 range/median; control is identical-source Lython-role spread. Exact measured
 precommit core**1dcca6f2** and source snapshots distinguish source from build metadata.
-Later bulk-newline changes are excluded.
+Later bulk-newline/CSV-parser changes are excluded.
 Four explicitly earlier file rows use2026-11-03 bd3f9dee and the ordinary filesystem;
 filename scripts filter768 names/write256 selections, not traverse768 files.
 
@@ -90,6 +90,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Combined bulk newline/CSV state parser |Complete long-field CSV−86.99%, allocation−2.54%|[20 parser lines removed/two Python fixes; typical warm debt uncertain, full new-source qualification pending](../benchmarks/results/2026-11-04-csv-boundary-state/README.md)|
 | Managed bulk newline scan |Complete long-line scripts−23–27%; allocation unchanged|[17 net lines removed; possibleCSVwarm+1.2–2.8% debt, full new-source qualification pending](../benchmarks/results/2026-11-04-bulk-newline-search/README.md)|
 | Shared UTF8 search windows |Complete long-line prefix/count−22–23%; allocation unchanged|[59 net lines removed; possibleCSVwarm+0.6–3.6% debt retained, delivery qualified](../benchmarks/results/2026-11-04-utf8-search-window/README.md)|
 | Native UTF8 existence / EOF |Complete1MiB chunk scans−49–53%, line filter−32–34%; allocation unchanged|[Controlled source pair; small text-helper+0.9–1.4% retained, delivery qualified](../benchmarks/results/2026-11-04-utf8-existence/README.md)|

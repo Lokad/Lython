@@ -1,0 +1,240 @@
+{
+  "performanceQualified": false,
+  "purpose": "Combined D10 bulk newline and D11 CSV boundary/state parser versus qualifieda00; complete scripts, elapsed/allocation distinct",
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 4.997674675,
+          "iqrPercent": 2.6066497615713837,
+          "processAllocatedBytes": 4943519.0,
+          "minimumBatchMilliseconds": 195.782982
+        },
+        "candidate": {
+          "milliseconds": 5.171754325,
+          "iqrPercent": 3.0416361666599556,
+          "processAllocatedBytes": 4943495.0,
+          "minimumBatchMilliseconds": 203.976711
+        },
+        "before-control": {
+          "milliseconds": 5.121462725,
+          "iqrPercent": 3.163067539459627,
+          "processAllocatedBytes": 4944584.4,
+          "minimumBatchMilliseconds": 203.723491
+        }
+      },
+      "candidateElapsedChangePercent": [
+        3.483212920416845,
+        0.981977272908896
+      ],
+      "candidateProcessAllocationChangePercent": [
+        -0.0004854841257784237,
+        -0.022032185354148304
+      ],
+      "unchangedSpreadPercent": 2.476912925509711
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "phase": "fresh",
+      "metrics": {
+        "before": {
+          "milliseconds": 5.16958276923077,
+          "iqrPercent": 1.0737874952642112,
+          "processAllocatedBytes": 5130036.512820513,
+          "minimumBatchMilliseconds": 200.242724
+        },
+        "candidate": {
+          "milliseconds": 5.1479734102564105,
+          "iqrPercent": 0.3023758968571788,
+          "processAllocatedBytes": 5130012.512820513,
+          "minimumBatchMilliseconds": 199.7717
+        },
+        "before-control": {
+          "milliseconds": 5.287592025641026,
+          "iqrPercent": 0.7121398757591476,
+          "processAllocatedBytes": 5131129.230769231,
+          "minimumBatchMilliseconds": 205.102011
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.4180097299723573,
+        -2.6404952331338327
+      ],
+      "candidateProcessAllocationChangePercent": [
+        -0.00046783292750873784,
+        -0.02176359040075848
+      ],
+      "unchangedSpreadPercent": 2.2827617174957515
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large.ragged",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 8.196015280000001,
+          "iqrPercent": 0.5815860314013411,
+          "processAllocatedBytes": 15721558.08,
+          "minimumBatchMilliseconds": 203.714775
+        },
+        "candidate": {
+          "milliseconds": 8.19162012,
+          "iqrPercent": 0.8590188383882154,
+          "processAllocatedBytes": 15723739.52,
+          "minimumBatchMilliseconds": 202.226433
+        },
+        "before-control": {
+          "milliseconds": 8.2638544,
+          "iqrPercent": 0.3951182876600606,
+          "processAllocatedBytes": 15723741.12,
+          "minimumBatchMilliseconds": 205.353819
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.05362557108362642,
+        -0.8740991370806306
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.013875469523427775,
+        -1.017569538630525e-05
+      ],
+      "unchangedSpreadPercent": 0.8277085593720201
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large.long-fields",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 2.144160446808511,
+          "iqrPercent": 0.33711602699310134,
+          "processAllocatedBytes": 2554107.063829787,
+          "minimumBatchMilliseconds": 200.879207
+        },
+        "candidate": {
+          "milliseconds": 0.2788624574468085,
+          "iqrPercent": 1.0208380391599523,
+          "processAllocatedBytes": 2489214.8085106383,
+          "minimumBatchMilliseconds": 25.389107
+        },
+        "before-control": {
+          "milliseconds": 2.1442657340425533,
+          "iqrPercent": 0.20921857102112604,
+          "processAllocatedBytes": 2554106.2978723403,
+          "minimumBatchMilliseconds": 201.241943
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -86.99432881238515,
+        -86.99496741380682
+      ],
+      "candidateProcessAllocationChangePercent": [
+        -2.54070223751095,
+        -2.5406730101937725
+      ],
+      "unchangedSpreadPercent": 0.004910417697479019
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 3.079340196969697,
+          "iqrPercent": 2.7045413944515184,
+          "processAllocatedBytes": 2326266.6666666665,
+          "minimumBatchMilliseconds": 201.45842
+        },
+        "candidate": {
+          "milliseconds": 2.9802713333333335,
+          "iqrPercent": 1.1840761417757455,
+          "processAllocatedBytes": 2326266.6666666665,
+          "minimumBatchMilliseconds": 195.798452
+        },
+        "before-control": {
+          "milliseconds": 3.0835250454545453,
+          "iqrPercent": 3.0478665127519258,
+          "processAllocatedBytes": 2326266.6666666665,
+          "minimumBatchMilliseconds": 198.435747
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -3.217210743192811,
+        -3.3485608386226384
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.0,
+        0.0
+      ],
+      "unchangedSpreadPercent": 0.135900816966128
+    },
+    {
+      "case": "scripts.report-render.large",
+      "phase": "fresh",
+      "metrics": {
+        "before": {
+          "milliseconds": 4.976957073170731,
+          "iqrPercent": 3.6144781187682353,
+          "processAllocatedBytes": 4527951.219512195,
+          "minimumBatchMilliseconds": 195.78403
+        },
+        "candidate": {
+          "milliseconds": 4.952646634146341,
+          "iqrPercent": 1.9984609165263774,
+          "processAllocatedBytes": 4527901.658536585,
+          "minimumBatchMilliseconds": 195.721605
+        },
+        "before-control": {
+          "milliseconds": 4.948138365853659,
+          "iqrPercent": 2.330521713381707,
+          "processAllocatedBytes": 4527886.634146341,
+          "minimumBatchMilliseconds": 197.283068
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.48845988958675646,
+        0.09111039262348353
+      ],
+      "candidateProcessAllocationChangePercent": [
+        -0.0010945563061026675,
+        0.00033181904623980074
+      ],
+      "unchangedSpreadPercent": 0.5790427141199483
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "phase": "compile",
+      "metrics": {
+        "before": {
+          "milliseconds": 0.08112397488861887,
+          "iqrPercent": 0.15642120520435882,
+          "processAllocatedBytes": 186536.0,
+          "minimumBatchMilliseconds": 199.432328
+        },
+        "candidate": {
+          "milliseconds": 0.08198725759416768,
+          "iqrPercent": 0.2179491889647912,
+          "processAllocatedBytes": 186536.0,
+          "minimumBatchMilliseconds": 201.725128
+        },
+        "before-control": {
+          "milliseconds": 0.08287327217496963,
+          "iqrPercent": 0.46376371826833557,
+          "processAllocatedBytes": 186536.0,
+          "minimumBatchMilliseconds": 203.467574
+        }
+      },
+      "candidateElapsedChangePercent": [
+        1.0641523750951176,
+        -1.0691198230127985
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.0,
+        0.0
+      ],
+      "unchangedSpreadPercent": 2.156325905815759
+    }
+  ],
+  "ownedCollectionSeconds": 193.0,
+  "allGoldenBalanceFixtureIdentityQuietGatesPassed": true,
+  "archiveSHA256": "32d07c941dd35068796b9b3130db17d01dc249e2c4ee811085462c88b6c403b9"
+}

@@ -1,0 +1,70 @@
+{
+  "build": "Full solution Release nonincremental zero warnings/errors; matching built core/test/benchmark images",
+  "testSelections": [
+    {
+      "target": "net11.0",
+      "selection": "internal",
+      "passed": 101,
+      "failed": 0,
+      "sha256": "793e73074ba0659cb56d776ee228b58216bb48ec800e36b740bb0cdb1b9703ff"
+    },
+    {
+      "target": "net11.0",
+      "selection": "public",
+      "passed": 347,
+      "failed": 0,
+      "sha256": "6ef78b9e6ffb54e73c4991fb0269770ebc86a5ee31e55d84394785e1e5d4a020"
+    },
+    {
+      "target": "net10.0",
+      "selection": "internal",
+      "passed": 101,
+      "failed": 0,
+      "sha256": "176c388ff5455469aee2f1f9b3735e28ee0ee1a32baf9e310eb529a0ea333fe0"
+    },
+    {
+      "target": "net10.0",
+      "selection": "public",
+      "passed": 347,
+      "failed": 0,
+      "sha256": "eb9562fd664022b15662d8c7a20bd39439c78aa19098c99d55bfbd8a72c3645e"
+    }
+  ],
+  "regressions": {
+    "baselineFrozen": "5b36b41d4b1bda00c61cf20dd983ee81e8d0220be66034b5fa282c97ebaea038",
+    "baselineFailed": 2,
+    "baselineOtherBlankCasesPassed": 13,
+    "currentBothApisPass": true
+  },
+  "unicodeMatrix": {
+    "reference": "CPython 3.13.2 csv.writer/reader independent outputs",
+    "cases": 84,
+    "rows": [
+      {
+        "target": "net11.0",
+        "asynchronous": false,
+        "cases": 84,
+        "allMatch": true
+      },
+      {
+        "target": "net11.0",
+        "asynchronous": true,
+        "cases": 84,
+        "allMatch": true
+      },
+      {
+        "target": "net10.0",
+        "asynchronous": false,
+        "cases": 84,
+        "allMatch": true
+      },
+      {
+        "target": "net10.0",
+        "asynchronous": true,
+        "cases": 84,
+        "allMatch": true
+      }
+    ]
+  },
+  "scope": "Existing CSV contracts, numeric conversion/error timing, live input mutation, retained/header aliases, source/cursor cleanup, real suspended callbacks, growth cancellation, terminal refusal, shared allowance reuse; two public independent skipped-space regressions added."
+}

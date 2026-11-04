@@ -326,6 +326,11 @@ window. Whole-string windows use the byte extent directly; explicit bounds and
 returned indexes retain scalar coordinates. Tuple affixes reuse the prepared
 window, preserving validation and early-match behavior.
 
+CSV parsing searches bounded UTF-8 spans for structural byte candidates and
+verifies complete dialect characters at each boundary. One record/field state
+preserves empty, quoted and ignored-space records; field bytes and returned rows
+keep the existing admitted staging and retained ownership.
+
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.
 Raw storage scans remain separate from Python's mutation-checked iteration.

@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "a00fe76d fully qualified source/frozen1dcca6f2; terminal41874093956 all eight gates GREEN",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "9562510b including managed bulk newline scan plus CSV boundary/state rewrite and skipped-space fixes; exact snapshot authoritative",
+  "candidateCoreSHA256": "21cddae73e75128c7f012d7bd1bffff9cbf98e39ce0be265ba3aa77451cb0177",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "ac2eb3208382dba2c204f8b8bc16132bfd12550a84499144aa4ce8b4789ae8a0",
+    "src/Lokad.Lython/Runtime/Text/TextLineScanning.cs": "9e3d8f287fb88bd7b1e51b23e8b78be93acb9869c548f7b55c9e9281bbcfa674"
+  }
+}
