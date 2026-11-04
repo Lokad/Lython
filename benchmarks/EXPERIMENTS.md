@@ -12,7 +12,8 @@ falls1.8-1.9%/2.95%. An initial config allocation/peak regression is corrected
 by keeping established first-growth sizing; all adverse evidence remains.
 Synchronous text1.2-2.9% elapsed cost is explicit accepted debt; async text remains
 control-limited. Config elapsed improves in this comparison, not a general CPU
-claim. Full delivery is pending; whole-script performance work continues.
+claim. Exactae9b82b7 passes all eight delivery gates in cached41793317194;
+whole-script performance work continues.
 
 The [native formatted-helper milestone](results/2026-11-04-native-formatted-returns/README.md)
 extends the existing return proof and removes full invocation construction from

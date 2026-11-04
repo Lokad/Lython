@@ -3,7 +3,9 @@
 2026-11-04, committedae9b82b7 production source, frozen core
 `67373996909a8b55239d5895e4a7ab7b6f13a5b53f46627fd1b61e1afb61aa7a`.
 This is a bounded design gate, not a runtime change, timing comparison or completed
-performance milestone. Full list delivery41793317194 is independent and running.
+performance milestone. Full list delivery is independently green on exactae9b82b7, all eight gates in
+[cached41793317194](../2026-11-04-direct-list-backing/delivery-ci-status.json).
+This qualifies the list runtime, not the unimplemented window proposal.
 
 Reuse the existing checked worker and EventPipe collector on the quiet Azure
 F4as_v7/Ubuntu24.04.4/.NET11 RC3 VM. One complete text-helper script, four-second

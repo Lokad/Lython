@@ -89,8 +89,10 @@ odd-period alias case was strengthened from9,003 to18,003 items to cross actual
 copy blocks, then the complete focused selection reran on the refined source.
 
 Earlier baselineffc01134 passes all eight delivery gates in cached41788586642.
-Final B203 Windows/Ubuntu, original stress and installed-consumer checks are
-pending. Publication/tagging remain postponed; the performance objective is open.
+Final B203 exactae9b82b7 passes all eight gates in
+[cached run41793317194](delivery-ci-status.json): Windows/Ubuntu ordinary actual
+.NET11/10 suites, original stress and installed Release consumers. No unchanged
+qualification replay. Publication/tagging remain postponed; performance work is open.
 
 Initial raw SHA256:
 `4af35d1f63714ec071af770c0a22bcef11fc03944e45e8a509b9acb070391628`.
