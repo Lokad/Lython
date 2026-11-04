@@ -1,0 +1,39 @@
+{
+  "revision": "97bc43b2 plus archived source patch; frozen candidate authoritative",
+  "build": "Full solution Release nonincremental: zero warnings/errors, matching core/public-test/benchmark images",
+  "tests": [
+    {
+      "target": "net11.0",
+      "family": "internal",
+      "passed": 49,
+      "failed": 0,
+      "log": "internal-net11.0.log",
+      "sha256": "fada76c24a08245c94ff2f428c28760b220ef72cb5a31cd762515d896780a2a0"
+    },
+    {
+      "target": "net11.0",
+      "family": "public",
+      "passed": 241,
+      "failed": 0,
+      "log": "public-net11.0.log",
+      "sha256": "10c6090ad6b7b8969f4121f59b156a9b5cfcd961c261e292177a6c0525044afd"
+    },
+    {
+      "target": "net10.0",
+      "family": "internal",
+      "passed": 49,
+      "failed": 0,
+      "log": "internal-net10.0.log",
+      "sha256": "dd4bbe94c75734e9d4145e634a6cc1be1c36d1cb22a079950913dc6140ebfa89"
+    },
+    {
+      "target": "net10.0",
+      "family": "public",
+      "passed": 241,
+      "failed": 0,
+      "log": "public-net10.0.log",
+      "sha256": "70fefef0cbc2ded25f8ed19cad7a22e1eca5b9c7d9637e49d663d44fadf368f6"
+    }
+  ],
+  "scope": "String values/operations, native truth/protocols, real text streams/retained file owners, host path/readlines behavior, shared admission/terminal refusal, cancellation and ownership. No test changes."
+}

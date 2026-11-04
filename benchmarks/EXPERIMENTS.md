@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [native string-existence correction](results/2026-11-04-utf8-existence/README.md)
+removes scalar-count traversals from truth/text EOF and unhinted readlines. Complete
+1MiB chunk scans take49–53% less elapsed, line filtering32–34%, allocation unchanged.
+Existing small text helpers move adversely0.9–1.4%, near dispersion; preserve this
+accepted uncertainty. All goldens/owners/quiet gates pass;213s owned collection.
+Focused actual11/10 checks pass; broader runtime delivery qualification pending.
+
 The [module lexical consolidation](results/2026-11-04-module-lexical-facts/README.md)
 deletes57 net frontend lines: duplicate module-super traversal, lowered-to-syntax
 reconstruction and nullable builder facts. Exact metadata matches across27 scripts/

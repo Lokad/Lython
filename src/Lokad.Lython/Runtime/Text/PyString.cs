@@ -115,7 +115,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     internal static long EstimateApproximateBytes(int utf8Length) => 128L + utf8Length;
 
-    public bool IsTruthy() => Length != 0;
+    public bool IsTruthy() => _byteLength != 0;
 
     public static PyString FromString(string text)
     {

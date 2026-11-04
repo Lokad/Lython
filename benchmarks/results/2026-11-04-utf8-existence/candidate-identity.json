@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "97bc43b2 fully qualified module facts; frozen0d452f95",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "0d452f955bcbb09b4e877767ba373f5582d9cee2e7e25d5ad2a9e08a1bfc3190",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "97bc43b2 plus archived native string truth/text EOF patch; final source snapshot authoritative",
+  "candidateCoreSHA256": "7cf2623c4da3d303b3816a29cc71f0bb6b84d2cd065229fbfbb0ca28db6e8dca",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "a457c1f877ca908db9ba1d06f7e0d1ea012775180bf0a2780aae7f0e6203d374",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs": "df29812c704e78d7e73193ed25195a11e07f8321c31da289e1902e27c73912fb"
+  }
+}

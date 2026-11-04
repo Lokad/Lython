@@ -1,0 +1,76 @@
+[
+  {
+    "id": "scripts.chunk-ascii",
+    "expectedOutput": "128 128\n",
+    "mode": "warm",
+    "sourceSha256": "632321821a3cbd04ce7d93b8532d71d9cf3725cf48360f4efb9c8ce629c1d500",
+    "fixtureSha256": "4cd684557292d0a40a5bd86f140843f20d092e92e6ba12486f2d5d0a5e939112",
+    "expectedOutputSha256": "cdf1d7023ca9e130962ff4c2890631040717962340525d4613911936ee19d1ac",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 1048576
+  },
+  {
+    "id": "scripts.chunk-unicode",
+    "expectedOutput": "128 128\n",
+    "mode": "warm",
+    "sourceSha256": "632321821a3cbd04ce7d93b8532d71d9cf3725cf48360f4efb9c8ce629c1d500",
+    "fixtureSha256": "91f01bd19df37f649d773567ef8830b393e694e59d475688fefb8aacd97b75a2",
+    "expectedOutputSha256": "cdf1d7023ca9e130962ff4c2890631040717962340525d4613911936ee19d1ac",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 1052672
+  },
+  {
+    "id": "scripts.lines-ascii",
+    "expectedOutput": "1024\n",
+    "mode": "warm",
+    "sourceSha256": "d26177eb6c793195ecfe3bbfd2fa43e34093b7b209b9fc9441c1a0de0bea1a4b",
+    "fixtureSha256": "4cd684557292d0a40a5bd86f140843f20d092e92e6ba12486f2d5d0a5e939112",
+    "expectedOutputSha256": "4f71bb761ace37c88826cd8cc1c948e1cf5b5d0cd153dc651a6efdb3dfb9f2b1",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 1048576
+  },
+  {
+    "id": "scripts.config-edit.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "expectedOutput": "1025\n",
+    "sourceUtf8Bytes": 357,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+    "fixtureSha256": "e261baadebe395fbe92736d09c3e6775c3f69e33cb66f72c560d42812040d0d3",
+    "expectedOutputSha256": "6407f57599ea19aaefd71b13c2771ad25998686a6a2d1b142cfc3060ef008129",
+    "expectedFilesSha256": "169232bbc12cd6018bd299bc07ef44654a65cd45e32f37ebc3b79cc028d16440",
+    "mode": "fresh"
+  },
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "family": "scripts",
+    "category": "whole-script",
+    "scale": "large",
+    "size": 1024,
+    "expectedOutput": "6144\n",
+    "sourceUtf8Bytes": 424,
+    "expectedOutputUtf8Bytes": 5,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+    "fixtureSha256": "3726c0fb2eb795b8bca37d52fbcb607b16d8fedd50a3500ca898c928a527aebe",
+    "expectedOutputSha256": "ed9df96af944d40bcff60d76167d3dd363b5859a5a6b6764f982f4b766aee3de",
+    "expectedFilesSha256": "dff39609cc19185b62c0083ce2b51d5a052848b6e3a562977e11abba09505488",
+    "mode": "warm"
+  },
+  {
+    "id": "scripts.chunk-ascii",
+    "expectedOutput": "128 128\n",
+    "mode": "compile",
+    "sourceSha256": "632321821a3cbd04ce7d93b8532d71d9cf3725cf48360f4efb9c8ce629c1d500",
+    "fixtureSha256": "4cd684557292d0a40a5bd86f140843f20d092e92e6ba12486f2d5d0a5e939112",
+    "expectedOutputSha256": "cdf1d7023ca9e130962ff4c2890631040717962340525d4613911936ee19d1ac",
+    "expectedFilesSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+    "inputBytes": 1048576
+  }
+]

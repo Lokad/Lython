@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use constant-time UTF-8 string emptiness in truth and text-file EOF checks.
+  Avoid unused character counts in unhinted `readlines()`; preserve scalar lengths.
+
 - Share module scope facts through lexical preparation and executable construction.
   Fold implicit-super discovery into the existing walk and remove lowered-to-syntax
   reconstruction and nullable builder-fact fallback. Preserve class cells, delayed

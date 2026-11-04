@@ -316,7 +316,10 @@ In-place repetition fills the admitted array in bounded, cancellation-checked co
 Immutable strings retain their independent UTF-8 backing. Their optional scalar
 offset table admits its capacity before allocation and refunds the reservation
 if construction fails. The retained table describes its own charge; no separate
-cache-charge accumulator is maintained.
+cache-charge accumulator is maintained. String truth and text-file EOF checks
+use the logical byte extent; they do not count scalars. `readlines()` counts
+characters only for a positive hint. Lengths and indexed positions retain Python
+scalar semantics.
 
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.

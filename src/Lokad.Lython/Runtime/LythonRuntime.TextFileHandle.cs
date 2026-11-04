@@ -265,14 +265,13 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var line = reader.ReadLine(-1);
-                    if (line.Length == 0)
+                    if (!line.IsTruthy())
                     {
                         break;
                     }
 
                     items.Add(line);
-                    totalCharacters += line.Length;
-                    if (hint > 0 && totalCharacters > hint)
+                    if (hint > 0 && (totalCharacters += line.Length) > hint)
                     {
                         break;
                     }
@@ -288,7 +287,7 @@ internal sealed partial class LythonRuntime
             public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 var line = ReadLine();
-                if (line.Length == 0)
+                if (!line.IsTruthy())
                 {
                     value = PyNone.Instance;
                     return false;
@@ -301,7 +300,7 @@ internal sealed partial class LythonRuntime
             public async ValueTask<PyIterationResult> TryMoveNextAsync()
             {
                 var line = await ReadLineAsync(-1).ConfigureAwait(false);
-                if (line.Length == 0)
+                if (!line.IsTruthy())
                 {
                     return PyIterationResult.End;
                 }
@@ -330,14 +329,13 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     var line = await reader.ReadLineAsync(-1).ConfigureAwait(false);
-                    if (line.Length == 0)
+                    if (!line.IsTruthy())
                     {
                         break;
                     }
 
                     items.Add(line);
-                    totalCharacters += line.Length;
-                    if (hint > 0 && totalCharacters > hint)
+                    if (hint > 0 && (totalCharacters += line.Length) > hint)
                     {
                         break;
                     }
