@@ -3,7 +3,8 @@
 2026-11-04. Current runtime9ce21533 (B188), frozen precommit
 `cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e`.
 Source files/patch are preserved in the adjacent admitted-numeric-formatting evidence;
-full delivery is independently running41742152264, not claimed green here.
+exact-source9ce21533 full Windows/Ubuntu, both runtimes, original Stress and
+installed consumers GREEN41742152264. [Cached receipt](../2026-11-04-admitted-numeric-formatting/delivery-ci-status.json); do not re-query.
 The frozen build hasb09b259e SourceLink plus that patch; do not relabel its bits.
 
 Direct pre-loop B166 baseline, qualified2323cceb:

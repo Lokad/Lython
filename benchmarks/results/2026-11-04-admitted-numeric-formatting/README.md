@@ -1,6 +1,6 @@
 # Admitted numeric UTF-8 output — B188
 
-2026-11-04, retained source; full delivery pending. Core b09b259e plus the source
+2026-11-04. RETAINED9ce21533; FULLY QUALIFIED41742152264. Core b09b259e plus the source
 patch in observations.tgz; frozen corrected SHA256
 `cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e`.
 Qualified B186 baseline SHA256
@@ -30,7 +30,10 @@ is not a contract. No hidden cap or default allowance.
 Actual runtime probe: .NET11 generic constrained BigInteger UTF-8 formatting has
 zero allocation for4,096 warmed small values; .NET10's inherited interface would
 allocate131,072B. Production uses a stack/admitted char bridge on.NET10 instead.
-Both actual targets pass130 focused internal and1,031 public tests. Existing
+Both actual targets pass130 focused internal and1,031 public tests. Exact-source9ce21533
+Windows/Ubuntu, actual .NET11/.NET10 Release, original Stress and installed consumers
+all GREEN41742152264; see [cached terminal receipt](delivery-ci-status.json). Do not
+re-query or repeat unchanged qualification. Existing
 protocol/suspension/refusal/alias/cleanup assertions are retained. Ten independent
 CPython3.13.2 cases add grouping of sign-aware padding zeros through three format
 entry points, both invocation APIs, with ownership cleanup/budget reuse.

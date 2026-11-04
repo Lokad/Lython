@@ -7,5 +7,5 @@
   "internalPassedPerTarget": 130,
   "publicPassedPerTarget": 1031,
   "scope": "native major-allocation refusal, cancellation at scratch admission, format protocols/lifetimes/alias/cleanup, numeric/complex/Decimal/parity; no claim of in-flight BCL cancellation",
-  "fullDelivery": "pending"
+  "fullDelivery": "9ce21533 Windows/Ubuntu actual .NET11/.NET10, original Stress and installed consumers all GREEN41742152264; exact-source receipt cached"
 }

@@ -2214,7 +2214,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   No permanent analysis-design ban, full prototype qualification or debt closure.
 
 - [Admitted numeric UTF-8 output, B188](results/2026-11-04-admitted-numeric-formatting/README.md):
-  RETAINED, delivery pending. Delete integer CLR digit/sign/group strings and
+  RETAINED9ce21533, full GREEN41742152264. Delete integer CLR digit/sign/group strings and
   per-digit DivRem; share integer/base/percent and fixed/scientific span output.
   Demonstrated denied construction allocated162–170KB decimal/~17MB hex before
   admission; focused checks now preflight. Independent golden exposed old zero-fill
