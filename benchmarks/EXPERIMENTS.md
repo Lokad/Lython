@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [executable-storage CPython checkpoint](results/2026-11-04-executable-cpython-checkpoint/README.md)
+measures0ffc9ac6 with current controls and a qualified454 reference. Fresh ratios
+remain1.13–2.46x; warm1.05–2.53x. Some source pairs improve modestly, while CSV and
+report variability and possible compilation cost limit claims. All12 jobs finish
+328.72s with goldens/gates/joins. Later copy-context correctness work is separate;
+the substantial performance objective remains open.
+
 The [executable storage consolidation](results/2026-11-04-executable-storage/README.md)
 removes dynamic operand transport, the separate native-return graph and duplicate
 frame arrays. Warm allocation is flat; initial compilation costs remain visible.
