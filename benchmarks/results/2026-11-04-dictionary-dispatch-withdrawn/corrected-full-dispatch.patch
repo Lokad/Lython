@@ -1,0 +1,906 @@
+diff --git a/src/Lokad.Lython/Runtime/IPyDictStorage.cs b/src/Lokad.Lython/Runtime/IPyDictStorage.cs
+index 05009327..6d58c0e3 100644
+--- a/src/Lokad.Lython/Runtime/IPyDictStorage.cs
++++ b/src/Lokad.Lython/Runtime/IPyDictStorage.cs
+@@ -1,5 +1,7 @@
+ namespace Lokad.Lython.Runtime;
+ 
++// Raw storage for live namespace/environment bridges. Ordinary dictionaries
++// own their table directly and expose typed raw methods to those bridges.
+ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
+ {
+     int Count { get; }
+@@ -14,8 +16,6 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
+ 
+     bool ContainsKey(object key);
+ 
+-    bool SetItem(object key, object value);
+-
+     bool TrySetExisting(object key, object value);
+ 
+     void AddNew(object key, object value);
+@@ -27,10 +27,6 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
+     // Raw storage traversal is separate from Python mutation-checked iteration.
+     IEnumerable<KeyValuePair<object, object>> Entries { get; }
+ 
+-    void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span);
+-
+     long CommittedBytes { get; }
+ 
+-    long ReleaseCommittedBytes();
+-
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+index f3777c1d..4c6edef9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
+         private const long BridgeBytes = 256, NameEntryBytes = 80;
+         private readonly ExecutionContext _root;
+         private readonly LythonSourceSpan _span;
+-        private IPyDictStorage _entries;
++        private PyDict _entries;
+         private Dictionary<string, NameEntry> _names = new(StringComparer.Ordinal);
+         private int _nameCapacity;
+         private long _nameIndexBytes;
+@@ -35,9 +35,9 @@ internal sealed partial class LythonRuntime
+         }
+ 
+         public int Count => _entries.Count;
+-        public IEnumerable<object> Keys => _entries.Keys;
++        public IEnumerable<object> Keys => _entries.StoredKeys;
+         public IEnumerable<object> Values => this.Select(pair => pair.Value);
+-        public long CommittedBytes => BridgeBytes + _entries.CommittedBytes + _nameBytes + _nameIndexBytes;
++        public long CommittedBytes => BridgeBytes + _entries.StoredCommittedBytes + _nameBytes + _nameIndexBytes;
+ 
+         internal object NameKey(string name)
+         {
+@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
+ 
+         public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
+         {
+-            if (_entries.TryGetValue(key, out var entry))
++            if (_entries.TryGetStoredValue(key, out var entry))
+             {
+                 if (entry is NameEntry named) return _root.Variables.TryGetValue(named.Name, out value);
+                 value = entry;
+@@ -69,19 +69,12 @@ internal sealed partial class LythonRuntime
+             => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException();
+         public bool ContainsKey(object key) => TryGetValue(key, out _);
+ 
+-        public bool SetItem(object key, object value)
+-        {
+-            if (TrySetExisting(key, value)) return false;
+-            AddNew(key, value);
+-            return true;
+-        }
+-
+         public bool TrySetExisting(object key, object value)
+         {
+-            if (_entries.TryGetValue(key, out var existing))
++            if (_entries.TryGetStoredValue(key, out var existing))
+             {
+                 if (existing is NameEntry named) StoreModuleValue(named.Name, value);
+-                else _ = _entries.SetItem(key, value);
++                else _ = _entries.SetNativeItem(key, value);
+                 return true;
+             }
+             return false;
+@@ -94,7 +87,7 @@ internal sealed partial class LythonRuntime
+             var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Bytes.Span);
+             using var entryFunding = _root.MemoryGovernor.ReserveTemporary(entryBytes, _span);
+             var name = textKey?.ToString();
+-            _entries.EnsureCapacity(Count + 1, _root.MemoryGovernor, _span);
++            _entries.EnsureStoredCapacity(Count + 1, _root.MemoryGovernor, _span);
+             if (name is not null)
+             {
+                 // All funding checks precede changing the visible module binding.
+@@ -102,7 +95,7 @@ internal sealed partial class LythonRuntime
+                 using var namespaceFunding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
+                 EnsureNameCapacity(_names.Count + 1);
+                 var named = new NameEntry(key, name, entryBytes);
+-                _entries.AddNew(key, named);
++                _entries.AddStoredItem(key, named);
+                 _names.Add(name, named);
+                 _ownedVariables += OwnedChange(name);
+                 _root.Variables[name] = value;
+@@ -112,7 +105,7 @@ internal sealed partial class LythonRuntime
+                 entryFunding.Commit(entryBytes);
+                 _nameBytes += entryBytes;
+             }
+-            else _entries.AddNew(key, value);
++            else _entries.AddStoredItem(key, value);
+         }
+ 
+         private void EnsureNameCapacity(int count)
+@@ -146,7 +139,7 @@ internal sealed partial class LythonRuntime
+ 
+         public bool Remove(object key)
+         {
+-            if (!_entries.TryGetValue(key, out var entry)) return false;
++            if (!_entries.TryGetStoredValue(key, out var entry)) return false;
+             if (entry is NameEntry named)
+             {
+                 if (_root.Variables.Remove(named.Name)) _ownedVariables--;
+@@ -155,25 +148,23 @@ internal sealed partial class LythonRuntime
+                 _root.MemoryGovernor.Release(named.Bytes);
+                 _nameBytes -= named.Bytes;
+             }
+-            return _entries.Remove(key);
++            return _entries.RemoveStoredItem(key);
+         }
+ 
+         public void Clear()
+         {
+             using var scratch = _root.MemoryGovernor.ReserveTemporary(8L * Count, _span);
+-            foreach (var key in _entries.Keys.ToArray()) _ = Remove(key);
++            foreach (var key in _entries.StoredKeys.ToArray()) _ = Remove(key);
+             // Clear reuses admitted capacity; no refund/readmission follows
+             // visible mutation, including through retained namespace views.
+-            _entries.Clear();
++            _entries.ClearStoredItems();
+             _names.Clear();
+         }
+ 
+         public IEnumerable<KeyValuePair<object, object>> Entries => this;
+-        public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+-        public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live namespace keeps its bridge storage.");
+         public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+         {
+-            foreach (var pair in _entries.Entries)
++            foreach (var pair in _entries.StoredEntries)
+                 if (TryGetValue(pair.Key, out var value)) yield return new(pair.Key, value);
+         }
+         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
+index 06cedc0f..89f09186 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
+@@ -293,12 +293,6 @@ internal sealed partial class LythonRuntime
+             using var decoding = KeyScratch(key, _allocationSpan);
+             return _items.ContainsKey(GetEnvironmentKey(key, "os.environ", _allocationSpan));
+         }
+-        bool IPyDictStorage.SetItem(object key, object value)
+-        {
+-            var added = !((IPyDictStorage)this).ContainsKey(key);
+-            SetSubscript(key, value, _allocationSpan);
+-            return added;
+-        }
+         bool IPyDictStorage.TrySetExisting(object key, object value)
+         {
+             if (!((IPyDictStorage)this).ContainsKey(key)) return false;
+@@ -308,9 +302,7 @@ internal sealed partial class LythonRuntime
+         bool IPyDictStorage.Remove(object key) => RemoveKey(key, _allocationSpan);
+         void IPyDictStorage.Clear() => Clear();
+         IEnumerable<KeyValuePair<object, object>> IPyDictStorage.Entries => this;
+-        void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+         long IPyDictStorage.CommittedBytes => 0; // The shared execution owner retains native backing.
+-        long IPyDictStorage.ReleaseCommittedBytes() => throw new InvalidOperationException("A live environment retains its backing.");
+         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()
+             => _items.Select(pair => new KeyValuePair<object, object>(EnvString(pair.Key), EnvString(pair.Value))).GetEnumerator();
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Storage.cs b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+index 6147f45d..bc5ee7d2 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Storage.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+@@ -3,7 +3,7 @@ namespace Lokad.Lython.Runtime;
+ internal sealed partial class PyDict
+ {
+     // The Python dictionary is the native table's owner. Live namespace views
+-    // instead forward _items to their existing bridge and have no native table.
++    // instead forward to their existing bridge and have no native table.
+     private OrderedDictionary<object, object>? _nativeItems;
+     private int _nativeCapacity;
+     private long _nativeCommittedBytes;
+@@ -35,10 +35,10 @@ internal sealed partial class PyDict
+         return copy;
+     }
+ 
+-    private static PyDict CopyStorage(IPyDictStorage source, MemoryGovernor governor, LythonSourceSpan? span)
++    private static PyDict CopyStorage(PyDict source, MemoryGovernor governor, LythonSourceSpan? span)
+     {
+         var copy = new PyDict(source.Count, governor, span);
+-        copy.CopyNativeEntries(source.Entries, governor, span);
++        copy.CopyNativeEntries(source.StoredEntries, governor, span);
+         return copy;
+     }
+ 
+@@ -56,7 +56,7 @@ internal sealed partial class PyDict
+         }
+         catch
+         {
+-            var released = ((IPyDictStorage)this).ReleaseCommittedBytes();
++            var released = ReleaseStoredCommittedBytes();
+             if (released > 0) governor!.Release(released);
+             throw;
+         }
+@@ -76,7 +76,7 @@ internal sealed partial class PyDict
+         _nativeCapacity = newCapacity;
+     }
+ 
+-    private bool SetNativeItem(object key, object value)
++    internal bool SetNativeItem(object key, object value)
+     {
+         if (TrySetNativeExisting(key, value)) return false;
+         _nativeItems!.Add(key, value);
+@@ -117,35 +117,33 @@ internal sealed partial class PyDict
+         for (var index = 0; index < _nativeItems!.Count; index++) yield return _nativeItems.GetAt(index).Value;
+     }
+ 
+-    int IPyDictStorage.Count => _nativeItems?.Count ?? _items.Count;
+-    IEnumerable<object> IPyDictStorage.Keys => _nativeItems is not null ? NativeKeys() : _items.Keys;
+-    IEnumerable<object> IPyDictStorage.Values => _nativeItems is not null ? NativeValues() : _items.Values;
+-    IEnumerable<KeyValuePair<object, object>> IPyDictStorage.Entries => _nativeItems is not null ? NativeEntries() : _items.Entries;
+-    object IPyDictStorage.GetRequired(object key) => _nativeItems is { } native ? native[key] : _items.GetRequired(key);
+-    bool IPyDictStorage.TryGetValue(object key, [MaybeNullWhen(false)] out object value)
+-        => _nativeItems is { } native ? native.TryGetValue(key, out value) : _items.TryGetValue(key, out value);
+-    bool IPyDictStorage.ContainsKey(object key) => _nativeItems is { } native ? native.ContainsKey(key) : _items.ContainsKey(key);
+-    bool IPyDictStorage.SetItem(object key, object value) => _nativeItems is not null ? SetNativeItem(key, value) : _items.SetItem(key, value);
+-    bool IPyDictStorage.TrySetExisting(object key, object value) => _nativeItems is not null ? TrySetNativeExisting(key, value) : _items.TrySetExisting(key, value);
+-    void IPyDictStorage.AddNew(object key, object value)
++    internal IEnumerable<object> StoredKeys => _nativeItems is not null ? NativeKeys() : _viewStorage!.Keys;
++    private IEnumerable<object> StoredValues => _nativeItems is not null ? NativeValues() : _viewStorage!.Values;
++    internal IEnumerable<KeyValuePair<object, object>> StoredEntries => _nativeItems is not null ? NativeEntries() : _viewStorage!.Entries;
++    private object GetStoredItem(object key) => _nativeItems is { } native ? native[key] : _viewStorage!.GetRequired(key);
++    internal bool TryGetStoredValue(object key, [MaybeNullWhen(false)] out object value)
++        => _nativeItems is { } native ? native.TryGetValue(key, out value) : _viewStorage!.TryGetValue(key, out value);
++    private bool ContainsStoredKey(object key) => _nativeItems is { } native ? native.ContainsKey(key) : _viewStorage!.ContainsKey(key);
++    internal bool TrySetStoredValue(object key, object value) => _nativeItems is not null ? TrySetNativeExisting(key, value) : _viewStorage!.TrySetExisting(key, value);
++    internal void AddStoredItem(object key, object value)
+     {
+         if (_nativeItems is { } native) native.Add(key, value);
+-        else _items.AddNew(key, value);
++        else _viewStorage!.AddNew(key, value);
+     }
+-    bool IPyDictStorage.Remove(object key) => _nativeItems is { } native ? native.Remove(key) : _items.Remove(key);
+-    void IPyDictStorage.Clear()
++    internal bool RemoveStoredItem(object key) => _nativeItems is { } native ? native.Remove(key) : _viewStorage!.Remove(key);
++    internal void ClearStoredItems()
+     {
+         if (_nativeItems is { } native) native.Clear();
+-        else _items.Clear();
++        else _viewStorage!.Clear();
+     }
+-    void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
++    internal void EnsureStoredCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
+     {
+         if (_nativeItems is not null) EnsureNativeCapacity(targetCount, governor, span);
+     }
+-    long IPyDictStorage.CommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _items.CommittedBytes;
+-    long IPyDictStorage.ReleaseCommittedBytes()
++    internal long StoredCommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _viewStorage!.CommittedBytes;
++    private long ReleaseStoredCommittedBytes()
+     {
+-        if (_nativeItems is null) return _items.ReleaseCommittedBytes();
++        if (_nativeItems is null) throw new InvalidOperationException("A live dictionary view retains its backing.");
+         var released = _nativeCommittedBytes;
+         _nativeCommittedBytes = 0;
+         _nativeCapacity = 0;
+diff --git a/src/Lokad.Lython/Runtime/PyDict.cs b/src/Lokad.Lython/Runtime/PyDict.cs
+index 694bb4c0..4d4054c3 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.cs
+@@ -2,9 +2,9 @@ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+-internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyDictStorage, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
++internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
+ {
+-    private IPyDictStorage _items;
++    private IPyDictStorage? _viewStorage;
+     private MemoryGovernor? _memoryGovernor;
+     private LythonSourceSpan? _allocationSpan;
+     private int _version;
+@@ -38,7 +38,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     internal PyDict(IPyDictStorage storage, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+     {
+-        _items = storage;
++        _viewStorage = storage;
+         _memoryGovernor = governor;
+         _allocationSpan = allocationSpan;
+     }
+@@ -50,7 +50,6 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         _memoryGovernor = governor;
+         _allocationSpan = allocationSpan;
+         InitializeNativeStorage(capacity, governor, allocationSpan);
+-        _items = this;
+     }
+ 
+     public PyDict(PyDict other) : this(other, other._memoryGovernor, other._allocationSpan) { }
+@@ -62,8 +61,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         _memoryGovernor = governor;
+         _allocationSpan = allocationSpan;
+         InitializeNativeStorage(other.Count, governor, allocationSpan);
+-        _items = this;
+-        CopyNativeEntries(other._items.Entries, governor, allocationSpan);
++        CopyNativeEntries(other.StoredEntries, governor, allocationSpan);
+         _protocolSeq = other._protocolSeq;
+         try
+         {
+@@ -88,7 +86,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     // The side index holds shadows of fast-store entries, never additional
+     // entries, so only the fast store counts. Its backing bytes still add
+     // to CommittedStorageBytes below.
+-    public int Count => _items.Count;
++    public int Count => _nativeItems?.Count ?? _viewStorage!.Count;
+ 
+     object IChainMapSource.Underlying => this;
+ 
+@@ -96,7 +94,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     // Dropping a guest reference does not refund this batch-owned storage.
+     // Retained table capacity includes pair headroom. Larger payloads keep
+     // their separate owners; aliases never require identity bookkeeping.
+-    internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0);
++    internal long CommittedStorageBytes => StoredCommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0);
+ 
+     public int Length => Count;
+ 
+@@ -116,7 +114,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     private IEnumerable<object> EnumerateKeys(int expectedVersion)
+     {
+-        using var enumerator = _items.Keys.GetEnumerator();
++        using var enumerator = StoredKeys.GetEnumerator();
+         while (true)
+         {
+             EnsureUnmodified(expectedVersion);
+@@ -136,7 +134,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     private IEnumerable<object> EnumerateValues(int expectedVersion)
+     {
+-        using var enumerator = _items.Values.GetEnumerator();
++        using var enumerator = StoredValues.GetEnumerator();
+         while (true)
+         {
+             EnsureUnmodified(expectedVersion);
+@@ -151,7 +149,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     public IEnumerable<KeyValuePair<object, object>> Items => this;
+ 
+-    public object GetItem(object key) => _items.GetRequired(key);
++    public object GetItem(object key) => GetStoredItem(key);
+ 
+     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
+     {
+@@ -159,7 +157,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+             return TryGetBuiltinValue(key, context, span, out value);
+ 
+-        if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
++        if (TryGetStoredValue(key, out var stored)) { value = stored; return true; }
+         if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValue(key, out value);
+         value = PyNone.Instance;
+         return false;
+@@ -172,7 +170,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     {
+         if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key))
+             return TryGetBuiltinValue(key, context, span, out value);
+-        if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
++        if (TryGetStoredValue(key, out var stored)) { value = stored; return true; }
+         if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValueExplicit(key, context, span, out value);
+         value = PyNone.Instance;
+         return false;
+@@ -184,7 +182,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+     {
+         if (!HasProtocolKeys)
+-            return new(_items.TryGetValue(key, out var value) ? (true, value) : (false, PyNone.Instance));
++            return new(TryGetStoredValue(key, out var value) ? (true, value) : (false, PyNone.Instance));
+         return LookupAsync();
+ 
+         async ValueTask<(bool Found, object Value)> LookupAsync()
+@@ -249,7 +247,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     internal void AddKeysFrom(PyDict source, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
+     {
+         using var ambient = context is null ? default : PyStructuralGuard.PushAmbient(context, span);
+-        using var entries = source._items.Entries.GetEnumerator();
++        using var entries = source.StoredEntries.GetEnumerator();
+         var expectedVersion = source._version;
+         var protocolIndex = 0;
+         while (true)
+@@ -287,7 +285,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             }
+         }
+         if (TryGetValue(key, out var found)) return found;
+-        if (_items.TryGetValue(key, out var stored)) return stored;
++        if (TryGetStoredValue(key, out var stored)) return stored;
+         AttachMemoryGovernor(governor, span);
+         SetItem(key, value);
+         return value;
+@@ -311,7 +309,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         try
+         {
+             using var scratch = governor.ReserveTemporary(checked(16L * Count), span);
+-            storage = CopyStorage(_items, governor, span);
++            storage = CopyStorage(this, governor, span);
+             if (_sideIndex is not null)
+             {
+                 sideIndex = new ProtocolSideIndex();
+@@ -321,7 +319,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         catch
+         {
+             governor.ReleaseReserved(protocolBytes);
+-            if (storage is not null) governor.Release(((IPyDictStorage)storage).ReleaseCommittedBytes());
++            if (storage is not null) governor.Release(storage.ReleaseStoredCommittedBytes());
+             sideIndex?.ReleaseAll(governor);
+             throw;
+         }
+@@ -332,8 +330,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         storage._nativeItems = null;
+         storage._nativeCapacity = 0;
+         storage._nativeCommittedBytes = 0;
+-        storage._items = null!;
+-        _items = this;
++        _viewStorage = null;
+         _sideIndex = sideIndex;
+         _protocolBytes = protocolBytes;
+         _memoryGovernor = governor;
+@@ -344,7 +341,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     // guest hash/equality callbacks after cancellation or refused admission.
+     internal void RemoveStoredKey(object key)
+     {
+-        if (_items.TryGetValue(key, out var stored))
++        if (TryGetStoredValue(key, out var stored))
+             RemoveResolvedEntry(key);
+     }
+ 
+@@ -353,9 +350,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+             ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
+             return TryRemoveBuiltinValue(key, context, span, out _);
+-        if (_items.TryGetValue(key, out var storedValue))
++        if (TryGetStoredValue(key, out var storedValue))
+         {
+-            _ = _items.Remove(key);
++            _ = RemoveStoredItem(key);
+             RemoveProtocolShadow(key);
+             _version++;
+             return true;
+@@ -381,7 +378,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             return TryRemoveBuiltinValue(key, context, span, out value);
+         // Ordinary storage probes stay direct; mixed native keys have already
+         // resolved any earlier protocol candidates above.
+-        if (_items.TryGetValue(key, out var stored))
++        if (TryGetStoredValue(key, out var stored))
+         {
+             value = stored;
+             RemoveResolvedEntry(key);
+@@ -402,7 +399,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     // of the identity or type of the lookup argument.
+     private void RemoveResolvedEntry(object key)
+     {
+-        _ = _items.Remove(key);
++        _ = RemoveStoredItem(key);
+         RemoveProtocolShadow(key);
+         _version++;
+     }
+@@ -449,7 +446,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                     // The match may have been deleted by an earlier callback in
+                     // this same scan (CPython then reports the key missing, so
+                     // the scan continues instead of failing).
+-                    if (_items.TryGetValue(entry.Key, out var stored))
++                    if (TryGetStoredValue(entry.Key, out var stored))
+                     {
+                         value = stored;
+                         RemoveResolvedEntry(entry.Key);
+@@ -461,7 +458,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         var storeHit = -1;
+         var probe = 0;
+-        foreach (var pair in _items.Entries)
++        foreach (var pair in StoredEntries)
+         {
+             if ((++work & 63) == 0)
+             {
+@@ -479,8 +476,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         if (storeHit >= 0)
+         {
+-            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
+-            var storeSnapshot = _items.Entries.ToArray();
++            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * Count)), useSpan);
++            var storeSnapshot = StoredEntries.ToArray();
+             for (var i = storeHit; i < storeSnapshot.Length; i++)
+             {
+                 // The hit entry already consumed its budget check above.
+@@ -492,7 +489,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                 var pair = storeSnapshot[i];
+                 if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
+                 {
+-                    if (_items.TryGetValue(pair.Key, out var stored))
++                    if (TryGetStoredValue(pair.Key, out var stored))
+                     {
+                         value = stored;
+                         RemoveResolvedEntry(pair.Key);
+@@ -523,7 +520,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             for (var i = 0; i < _protocol.Count; i++)
+             {
+                 var entry = _protocol[i];
+-                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(entry.Key, out var stored))
++                if (ReferenceEquals(entry.Key, key) && TryGetStoredValue(entry.Key, out var stored))
+                 {
+                     value = stored;
+                     RemoveResolvedEntry(entry.Key);
+@@ -589,7 +586,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                 var entry = candidates[i];
+                 if (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan))
+                 {
+-                    if (_items.TryGetValue(entry.Key, out var stored))
++                    if (TryGetStoredValue(entry.Key, out var stored))
+                     {
+                         value = stored;
+                         return true;
+@@ -600,7 +597,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         var storeHit = -1;
+         var probe = 0;
+-        foreach (var pair in _items.Entries)
++        foreach (var pair in StoredEntries)
+         {
+             if ((++work & 63) == 0)
+             {
+@@ -618,8 +615,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         if (storeHit >= 0)
+         {
+-            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
+-            var storeSnapshot = _items.Entries.ToArray();
++            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * Count)), useSpan);
++            var storeSnapshot = StoredEntries.ToArray();
+             for (var i = storeHit; i < storeSnapshot.Length; i++)
+             {
+                 // The hit entry already consumed its budget check above.
+@@ -650,7 +647,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         {
+             foreach (var entry in _protocol)
+             {
+-                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(entry.Key, out var stored))
++                if (ReferenceEquals(entry.Key, key) && TryGetStoredValue(entry.Key, out var stored))
+                 {
+                     value = stored;
+                     return true;
+@@ -695,18 +692,18 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                 if (candidateIndex < 0) continue;
+                 var nativeIndex = StorageKeyIndex(key, context, span);
+                 if (nativeIndex >= 0 && nativeIndex < candidateIndex)
+-                    return (key, _items.GetRequired(key));
++                    return (key, GetStoredItem(key));
+                 var matches = ReferenceEquals(entry.Key, key) || (asynchronous
+                     ? await LythonRuntime.ElementEqualsAsync(entry.Key, key, context, span).ConfigureAwait(false)
+                     : LythonRuntime.ElementEquals(entry.Key, key, context, span));
+                 context.CheckExecution(span);
+                 // Removal/reinsertion of the same key object is a new entry.
+                 // Do not return its value using an earlier comparison's rank.
+-                if (matches && IsCurrentProtocolEntry(entry) && _items.TryGetValue(entry.Key, out var value))
++                if (matches && IsCurrentProtocolEntry(entry) && TryGetStoredValue(entry.Key, out var value))
+                     return (entry.Key, value);
+             }
+             if (_protocolSeq != sequenceBefore) continue;
+-            return _items.TryGetValue(key, out var native) ? (key, native) : (null, PyNone.Instance);
++            return TryGetStoredValue(key, out var native) ? (key, native) : (null, PyNone.Instance);
+         }
+     }
+ 
+@@ -716,7 +713,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         // Live namespace bridges expose their existing order, without adding
+         // another index or materializing their values.
+         var index = 0;
+-        foreach (var stored in _items.Keys)
++        foreach (var stored in StoredKeys)
+         {
+             context.CheckExecution(span);
+             if (PyValueComparer.Instance.Equals(stored, key)) return index;
+@@ -778,7 +775,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         context.CheckExecution(useSpan);
+         // Queries hash once; native merges can supply a stored hash. CLR probing
+         // never invokes guest code, and a callback may already have inserted it.
+-        if (!replaceExisting && _items.TryGetValue(key, out var same))
++        if (!replaceExisting && TryGetStoredValue(key, out var same))
+             return same;
+ 
+         // Existing insertion sequence numbers let a callback append replacement
+@@ -799,10 +796,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                     if (entry.Seq <= lastSequence) continue;
+                     lastSequence = entry.Seq;
+                     var storageKey = entry.Key;
+-                    if (!_items.ContainsKey(storageKey)) continue;
++                    if (!ContainsStoredKey(storageKey)) continue;
+                     var match = ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
+                     context.CheckExecution(useSpan);
+-                    if (match && _items.TryGetValue(storageKey, out var stored))
++                    if (match && TryGetStoredValue(storageKey, out var stored))
+                     {
+                         if (replaceExisting) StoreItem(storageKey, storageValue);
+                         return replaceExisting ? value : stored;
+@@ -814,7 +811,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             // Protocol entries were already examined through the index. Only
+             // native keys can require the structural-store fallback now.
+             var nativeMatch = false;
+-            foreach (var pair in _items.Entries)
++            foreach (var pair in StoredEntries)
+             {
+                 context.CheckExecution(useSpan);
+                 if (!PyHashProtocols.NeedsProtocolKey(pair.Key) &&
+@@ -828,8 +825,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             var removedNativeMatch = false;
+             if (nativeMatch)
+             {
+-                using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + 16L * _items.Count), useSpan);
+-                var storeSnapshot = _items.Entries.ToArray();
++                using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + 16L * Count), useSpan);
++                var storeSnapshot = StoredEntries.ToArray();
+                 foreach (var pair in storeSnapshot)
+                 {
+                     context.CheckExecution(useSpan);
+@@ -838,7 +835,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                     var match = ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan);
+                     context.CheckExecution(useSpan);
+                     if (!match) continue;
+-                    if (_items.TryGetValue(pair.Key, out var stored))
++                    if (TryGetStoredValue(pair.Key, out var stored))
+                     {
+                         if (replaceExisting) StoreItem(pair.Key, storageValue);
+                         return replaceExisting ? value : stored;
+@@ -889,8 +886,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             _sideIndex!.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
+             try
+             {
+-                _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+-                _items.AddNew(storageKey, storageValue);
++                EnsureStoredCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
++                AddStoredItem(storageKey, storageValue);
+                 _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
+             }
+             catch
+@@ -960,7 +957,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         var storeHit = -1;
+         var probe = 0;
+-        foreach (var pair in _items.Entries)
++        foreach (var pair in StoredEntries)
+         {
+             if ((++work & 63) == 0)
+             {
+@@ -978,8 +975,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+         if (storeHit >= 0)
+         {
+-            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * _items.Count)), useSpan);
+-            var storeSnapshot = _items.Entries.ToArray();
++            using var snapshot = _memoryGovernor?.ReserveTemporary(checked(32L + (16L * Count)), useSpan);
++            var storeSnapshot = StoredEntries.ToArray();
+             for (var i = storeHit; i < storeSnapshot.Length; i++)
+             {
+                 if (i > storeHit && (++work & 63) == 0)
+@@ -990,7 +987,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+                 var pair = storeSnapshot[i];
+                 if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
+                 {
+-                    _items.Remove(pair.Key);
++                    RemoveStoredItem(pair.Key);
+                     RemoveProtocolShadow(pair.Key);
+                     return true;
+                 }
+@@ -1042,7 +1039,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     {
+         // An equality callback may already have removed the matched entry.
+         // Only a successful deletion can remove this entry's protocol shadow.
+-        if (!_items.Remove(key)) return;
++        if (!RemoveStoredItem(key)) return;
+         RemoveProtocolShadow(key);
+     }
+ 
+@@ -1074,9 +1071,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             return;
+         }
+ 
+-        if (_items is LythonRuntime.GlobalNamespaceStorage or ObjectNamespaceStorage)
++        if (_viewStorage is LythonRuntime.GlobalNamespaceStorage or ObjectNamespaceStorage)
+         {
+-            _items.Clear();
++            ClearStoredItems();
+             _version++;
+             if (_protocolBytes != 0) _memoryGovernor!.Release(_protocolBytes);
+             _sideIndex?.ReleaseAll(_memoryGovernor!);
+@@ -1086,7 +1083,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             return;
+         }
+ 
+-        _items.Clear();
++        ClearStoredItems();
+         _version++;
+         if (_protocolBytes != 0) _memoryGovernor!.Release(_protocolBytes);
+         _sideIndex?.ReleaseAll(_memoryGovernor!);
+@@ -1246,7 +1243,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     private IEnumerable<KeyValuePair<object, object>> EnumerateItems(int expectedVersion)
+     {
+-        using var enumerator = _items.Entries.GetEnumerator();
++        using var enumerator = StoredEntries.GetEnumerator();
+         while (true)
+         {
+             EnsureUnmodified(expectedVersion);
+@@ -1274,9 +1271,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         {
+             // Replacement retains the original equal key and changes no size.
+             // Only a missing entry requires capacity admission and insertion.
+-            if (_items.TrySetExisting(storageKey, storageValue)) return;
+-            _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+-            _items.AddNew(storageKey, storageValue);
++            if (TrySetStoredValue(storageKey, storageValue)) return;
++            EnsureStoredCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
++            AddStoredItem(storageKey, storageValue);
+         }
+         finally
+         {
+@@ -1293,23 +1290,21 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+     internal void DiscardUnpublishedStorage()
+     {
+         RefundAbortedConstruction();
+-        _items = null!;
++        _viewStorage = null;
+         _nativeItems = null;
+         _protocol = null;
+     }
+ 
+     private void RefundAbortedConstruction()
+     {
+-        if (_memoryGovernor is not null)
++        var release = CommittedStorageBytes;
++        // Validate private native ownership before returning any allowance.
++        // A live view must keep its backing funded even when rollback is misused.
++        _ = ReleaseStoredCommittedBytes();
++        if (_memoryGovernor is not null && release > 0)
+         {
+-            var release = CommittedStorageBytes;
+-            if (release > 0)
+-            {
+-                _memoryGovernor.Release(release);
+-            }
++            _memoryGovernor.Release(release);
+         }
+-
+-        _ = _items.ReleaseCommittedBytes();
+         _protocolBytes = 0;
+         _sideIndex = null;
+     }
+diff --git a/src/Lokad.Lython/Runtime/PyNamespaceView.cs b/src/Lokad.Lython/Runtime/PyNamespaceView.cs
+index 8018ddf9..8bd2555e 100644
+--- a/src/Lokad.Lython/Runtime/PyNamespaceView.cs
++++ b/src/Lokad.Lython/Runtime/PyNamespaceView.cs
+@@ -13,7 +13,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+     private readonly Dictionary<string, PyString> _labels = new(StringComparer.Ordinal);
+     private int _labelCapacity;
+     private long _decodedNameBytes;
+-    private IPyDictStorage? _extra;
++    private PyDict? _extra;
+ 
+     internal ObjectNamespaceStorage(Dictionary<string, object> values, PyInstance? instance, MemoryGovernor governor, LythonSourceSpan span)
+     {
+@@ -24,7 +24,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+     public int Count => _values.Count + (_extra?.Count ?? 0);
+     public IEnumerable<object> Keys => this.Select(x => x.Key);
+     public IEnumerable<object> Values => this.Select(x => x.Value);
+-    public long CommittedBytes => 384L + 32L * _labelCapacity + _decodedNameBytes + (_extra?.CommittedBytes ?? 0);
++    public long CommittedBytes => 384L + 32L * _labelCapacity + _decodedNameBytes + (_extra?.StoredCommittedBytes ?? 0);
+     public object GetRequired(object key) => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException();
+     public bool ContainsKey(object key) => TryGetValue(key, out _);
+     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
+@@ -34,10 +34,10 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+             using var decoding = _governor.ReserveTemporary(24L + 2L * name.GetUtf16CodeUnitCount(), _span);
+             return _values.TryGetValue(name.AsString(), out value);
+         }
+-        if (_extra is not null) return _extra.TryGetValue(key, out value);
++        if (_extra is not null) return _extra.TryGetStoredValue(key, out value);
+         value = null; return false;
+     }
+-    public bool SetItem(object key, object value)
++    private bool SetItem(object key, object value)
+     {
+         RequireWritable();
+         if (key is PyString name)
+@@ -52,8 +52,8 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+         }
+         var added = !ContainsKey(key);
+         _extra ??= new PyDict(_governor, _span);
+-        _extra.EnsureCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
+-        _extra.SetItem(key, value);
++        _extra.EnsureStoredCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
++        _extra.SetNativeItem(key, value);
+         return added;
+     }
+     public void AddNew(object key, object value) => SetItem(key, value);
+@@ -66,18 +66,16 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+             using var decoding = _governor.ReserveTemporary(24L + 2L * name.GetUtf16CodeUnitCount(), _span);
+             return _instance!.RemoveAttribute(name.AsString());
+         }
+-        return _extra?.Remove(key) == true;
++        return _extra?.RemoveStoredItem(key) == true;
+     }
+     public void Clear()
+     {
+         RequireWritable();
+         using var scratch = _governor.ReserveTemporary(32L + 8L * _values.Count, _span);
+         foreach (var name in _values.Keys.ToArray()) _instance!.RemoveAttribute(name);
+-        _extra?.Clear();
++        _extra?.ClearStoredItems();
+     }
+     public IEnumerable<KeyValuePair<object, object>> Entries => this;
+-    public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+-    public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live attribute namespace retains its backing.");
+     private void RequireWritable()
+     {
+         if (_instance is null) throw RuntimeErrors.Type("namespace is read-only", _span);
+@@ -99,7 +97,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+     {
+         foreach (var pair in _values) yield return new(Label(pair.Key), pair.Value);
+-        if (_extra is not null) foreach (var pair in _extra.Entries) yield return pair;
++        if (_extra is not null) foreach (var pair in _extra.StoredEntries) yield return pair;
+     }
+     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+ }
+diff --git a/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs b/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
+index f0fcf44b..4ecb845f 100644
+--- a/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
+@@ -6,6 +6,36 @@ namespace Lokad.Lython.Tests;
+ public sealed class NamespaceAdmissionTests
+ {
+     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public void PrivateRollbackCannotRefundRetainedNamespaceView(bool module)
++    {
++        var budget = new LythonMemoryBudget(65536);
++        using (var owner = budget.CreateScope())
++        {
++            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
++            var view = module
++                ? new PyDict(new LythonRuntime.GlobalNamespaceStorage(context, Span), context.MemoryGovernor, Span)
++                : new PyInstance(new PyType("C", [], new()), context.MemoryGovernor, Span).GetNamespace(context, Span);
++            var key = PyString.FromString("value", context.MemoryGovernor, Span);
++            var payload = new PyList([PyNone.Instance], context.MemoryGovernor, Span);
++            view.SetItem(key, payload);
++            var retained = view;
++            var baseline = budget.ReservedBytes;
++            var committed = context.MemoryGovernor.CurrentCommittedBytes;
++
++            Assert.Throws<InvalidOperationException>(() => view.DiscardUnpublishedStorage());
++
++            Assert.Equal(baseline, budget.ReservedBytes);
++            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
++            Assert.Same(payload, retained.GetItem(key));
++            Assert.Single(retained);
++            Assert.Null(context.MemoryGovernor.AdmissionFailure);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Fact]
+     public void FreshClassProxyIsAdmittedWithoutRebuildingItsBacking()
+     {
+diff --git a/tests/Lokad.Lython.Tests/RuntimeStorageSubsystemTests.cs b/tests/Lokad.Lython.Tests/RuntimeStorageSubsystemTests.cs
+index 6fb5f70c..43d35940 100644
+--- a/tests/Lokad.Lython.Tests/RuntimeStorageSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/RuntimeStorageSubsystemTests.cs
+@@ -167,12 +167,12 @@ public sealed class RuntimeStorageSubsystemTests
+     [Fact]
+     public void DictionaryStorage_SetItemReportsAddVersusUpdate()
+     {
+-        IPyDictStorage storage = new PyDict();
++        var storage = new PyDict();
+         var key = PyString.FromString("name");
+ 
+-        Assert.True(storage.SetItem(key, PyString.FromString("lokad")));
+-        Assert.False(storage.SetItem(key, PyString.FromString("updated")));
+-        Assert.Equal(PyString.FromString("updated"), storage.GetRequired(key));
++        Assert.True(storage.SetNativeItem(key, PyString.FromString("lokad")));
++        Assert.False(storage.SetNativeItem(key, PyString.FromString("updated")));
++        Assert.Equal(PyString.FromString("updated"), storage.GetItem(key));
+         Assert.Equal(1, storage.Count);
+     }
+ 

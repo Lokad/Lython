@@ -1,0 +1,19 @@
+{
+  "build": "nonincremental Release,33.11seconds,0warnings/errors",
+  "checks": {
+    "net11.0": {
+      "internal": 768,
+      "public": 2258,
+      "failed": 0,
+      "coreSHA256": "a6adcfe92d7d51bf1ee4aaac2f31b69a5ea6768bb0349b80aece6406c942ad78"
+    },
+    "net10.0": {
+      "internal": 768,
+      "public": 2258,
+      "failed": 0,
+      "coreSHA256": "cc4f38b0f1ff6efe5c77dcf7048fca5693326a43bb6b41697316c971a0d907d2"
+    }
+  },
+  "focus": "mapping/protocol/hash/namespace/environment/copy/raw-storage/retained-ownership/admission/cancellation/JSON/CSV families; both APIs/real suspension retained",
+  "publicContractsChanged": false
+}

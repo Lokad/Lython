@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "eff471b3 current committed JSON prefix source; full41896187873 in progress, six ordinary/consumer gates pass",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "9588b3c8c9e3a516555605c869311620f55d3195ed40c83786bfa1a8257e8a58",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "eff471b3 + direct dictionary dispatch, exact snapshot authoritative",
+  "candidateCoreSHA256": "a6adcfe92d7d51bf1ee4aaac2f31b69a5ea6768bb0349b80aece6406c942ad78",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/IPyDictStorage.cs": "b98379e0cfbae21c94cd339ad2a184bd4e593deee3638a0e5c646824e3f80083",
+    "src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs": "fdb6049aa33eec55a34c98c6b48a0bf0bd689c3e9664d742e806ac61a319a009",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs": "9a90710f5a62158f6cd088c9c4f20829850de1bd55d7323ae7272fe90c22f4a0",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "04c6f284c4a44ff30dfe60bb305ff2c4ef37ec82b38675c42c96fe4fcf61bea6",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "8afc47bef0db89bc6e2b92209da6b58829bc061b05201cc2827ab25de4dcbf6a",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "a70d1374afec6af897a838df446aa3d127a557471cbb995da8db74eec7a8d6ae"
+  }
+}

@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [dictionary self-dispatch prototype](results/2026-11-04-dictionary-dispatch-withdrawn/README.md)
+is withdrawn:276s/all gates, sync text+3.8–4.4% and asyncJSON+1.2–1.8% beyond stable
+old-role spreads, allocation flat. Warm VM JIT already inlines typed lookups; no
+blind hint series. Preserve adverse/moving controls and original failed diagnostic
+conditions. A pre-existing live-view rollback refund bug is independently RED on
+the committed baseline/GREEN corrected; the narrower owner-interface refinement
+retains that fix and needs its own source qualification.
+
 Delivery update: **eff471b3** completed full **41896187873** successfully; all eight
 platform/framework/original Stress/installed consumer gates pass. [Cached result](results/2026-11-04-completed-json-prefix/delivery-ci-status.json).
 Historical pending states below retain their observation time.
