@@ -2265,3 +2265,22 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Both actual targets27 internal/148 public pass; full delivery41754575737 GREEN
   all eight gates on9a4af031, terminal receipt cached. Fresh-JSON
   debt and the whole-script goal stay OPEN. No general CPU or CPython-ratio claim.
+
+- [Activation source gate / fixed UTF-8 construction, B193/B194](results/2026-11-04-fixed-text-construction/README.md):
+  RETAINED complete constructor family. Remove fixed reservation heap carriers and
+  duplicate slice-copy admission; preserve actual growing/shared/async transactions.
+  Complete-script allocation CSV−3%,text−7.3%,JSON−10.7%,report−4.2%,config−12.4%.
+  One same-bit long-warm confirmation gives sync text−7–8%; async text has accepted
+  possible1–2% debt and asyncJSON direction stays uncertain. All adverse/partial
+  source/controls preserved. Both actual targets213 internal/557 public pass; new
+  cross-owner copy coverage and full delivery pending. Activation merging remains
+  precisely deferred, not permanently banned. Next coupled checkpoint must decide
+  fresh-JSON debt; whole objective OPEN.
+
+- [Immutable dev.20 adapter qualification](results/2026-11-04-adapter-dev20/README.md):
+  Exact supplied0.5.0-dev.20 images, producerfe169a8f;84 internal/421 public per
+  actual runtime pass, six real private-artifact in-flight checks across targets.
+  Lifetime cases are INCLUDED in421, not additional. Preserve initial isolated
+  fixture-layout failures; corrected staging only. Main declared PythonRe surface
+  unchanged versusdev.14. Development evidence only: normal pin0.4.0, nonpackable
+  adapter, no new core dependency/backend performance/safety/released-package claim.

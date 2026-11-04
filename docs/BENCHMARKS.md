@@ -124,6 +124,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Fixed UTF-8 construction |Whole-script allocation−3–12%; controlled sync text elapsed−7–8%|[B194 versus9a4af031; async text possible1–2% debt, async JSON uncertain; all original conditions retained](../benchmarks/results/2026-11-04-fixed-text-construction/README.md)|
 | Borrowed native helper arguments |Helper elapsed−6.6–10%; async text≈−7%; allocation flat|[B192 versus334c7cc7; sync text uncertain, refined report within control variation; original adverse report retained](../benchmarks/results/2026-11-04-borrowed-native-arguments/README.md)|
 | Shared numeric layout prototype |General/Decimal allocation−11.3%, complex−16.9%; affected elapsed mixed/adverse|[B190 prototypes versus9ce21533; final narrow-width correctness correction was not separately timed; no general CPU gain](../benchmarks/results/2026-11-04-shared-numeric-layout/README.md)|
 | Admitted numeric UTF-8 output |Report allocation−6.1%; float control elapsed/CPU−6–8%; large-base control elapsed−85–88%|[B188 versus978b51b5; report sync timing inconclusive, async elapsed about−3% with near-flat CPU; original adverse float profile retained](../benchmarks/results/2026-11-04-admitted-numeric-formatting/README.md)|

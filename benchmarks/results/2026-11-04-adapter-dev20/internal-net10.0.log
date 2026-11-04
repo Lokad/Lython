@@ -1,0 +1,6 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    84, Skipped:     0, Total:    84, Duration: 566 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)

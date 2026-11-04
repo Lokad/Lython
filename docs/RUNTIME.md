@@ -872,6 +872,12 @@ between bounded input windows; contextual scans keep their own checks. Input
 storage stays borrowed and funded until completion. Cancelled admission or
 construction returns only private output funding and preserves input aliases.
 
+Fixed-capacity UTF-8 copies, casing and padding reserve their final capacity and
+metadata directly through the governor. Private construction refunds that balance
+on failure; successful strings retain the full backing charge. Copies into a
+different owner keep the source funded independently. Growing, shared and
+asynchronous working storage retains its scoped reservations.
+
 ### Streaming and approximation
 
 Shlex reads its exposed text stream on demand and shares that stream's cursor.

@@ -96,17 +96,21 @@ internal static partial class PyStringOps
         context?.CheckExecution(span);
         if (capacity == 0) return PyString.Empty;
         var governor = context?.MemoryGovernor ?? value.OwnerMemoryGovernor;
-        using var storage = governor?.ReserveTemporary(PyString.EstimateApproximateBytes(capacity), span);
-        // Admission can itself cancel the command. Keep the input funded and
-        // check before allocating the one, conservative final backing.
-        context?.CheckExecution(span);
-        var output = new byte[capacity];
-        var written = WriteCaseUtf8(source, output, mapping, context, span);
-        context?.CheckExecution(span);
-        var result = governor is null
-            ? PyString.FromTransferredUtf8(output, written, null, span)
-            : PyString.FromOwnedUtf8(output, governor, span, storage!, written);
-        return CompleteOwnedString(result, context, span);
+        var uncommittedBytes = PyString.EstimateApproximateBytes(capacity);
+        governor?.Reserve(uncommittedBytes, span);
+        try
+        {
+            // Admission can itself cancel the command. Keep the input funded and
+            // check before allocating the one, conservative final backing.
+            context?.CheckExecution(span);
+            var output = new byte[capacity];
+            var written = WriteCaseUtf8(source, output, mapping, context, span);
+            context?.CheckExecution(span);
+            var result = PyString.FromReservedUtf8(output, written, governor, span);
+            uncommittedBytes = 0;
+            return CompleteOwnedString(result, context, span);
+        }
+        finally { if (uncommittedBytes != 0) governor?.ReleaseReserved(uncommittedBytes); }
     }
 
     private static int CaseOutputCapacity(ReadOnlySpan<byte> source, CaseMapping mapping,
@@ -442,17 +446,21 @@ internal static partial class PyStringOps
     {
         var bytes = checked((long)value.Length + ((long)left + right) * fill.Length);
         if (bytes > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
-        using var storage = governor?.ReserveTemporary(PyString.EstimateApproximateBytes((int)bytes), span);
-        context?.CheckExecution(span);
-        cancellationToken.ThrowIfCancellationRequested();
-        var output = new byte[(int)bytes];
-        WritePaddedUtf8(output, value, fill, left, cancellationToken);
-        context?.CheckExecution(span);
-        cancellationToken.ThrowIfCancellationRequested();
-        var result = governor is null
-            ? PyString.FromOwnedUtf8(output)
-            : PyString.FromOwnedUtf8(output, governor, span, storage!);
-        return CompleteOwnedString(result, context, span, cancellationToken);
+        var uncommittedBytes = PyString.EstimateApproximateBytes((int)bytes);
+        governor?.Reserve(uncommittedBytes, span);
+        try
+        {
+            context?.CheckExecution(span);
+            cancellationToken.ThrowIfCancellationRequested();
+            var output = new byte[(int)bytes];
+            WritePaddedUtf8(output, value, fill, left, cancellationToken);
+            context?.CheckExecution(span);
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = PyString.FromReservedUtf8(output, output.Length, governor, span);
+            uncommittedBytes = 0;
+            return CompleteOwnedString(result, context, span, cancellationToken);
+        }
+        finally { if (uncommittedBytes != 0) governor?.ReleaseReserved(uncommittedBytes); }
     }
 
     private static void WritePaddedUtf8(Span<byte> output, ReadOnlySpan<byte> value, ReadOnlySpan<byte> fill,
@@ -512,9 +520,6 @@ internal static partial class PyStringOps
     private static PyString FromString(string text, MemoryGovernor? governor, LythonSourceSpan? span)
         => governor is null ? PyString.FromString(text) : PyString.FromString(text, governor, span);
 
-    private static PyString FromUtf8(byte[] utf8, MemoryGovernor? governor, LythonSourceSpan? span)
-        => governor is null ? PyString.FromUtf8(utf8) : PyString.FromUtf8(utf8, governor, span);
-
     private static PyString SliceUtf8(PyString value, int startByte, int endByte, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (startByte >= endByte)
@@ -524,15 +529,7 @@ internal static partial class PyStringOps
 
         return governor is null || ReferenceEquals(governor, value.OwnerMemoryGovernor)
             ? value.SliceByByteRange(startByte, endByte)
-            : CopyUtf8Slice(value, startByte, endByte, governor, span);
-    }
-
-    private static PyString CopyUtf8Slice(PyString value, int startByte, int endByte, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        var length = endByte - startByte;
-        using var preflight10543 = governor.ReserveTemporary(PyString.EstimateApproximateBytes(length), span);
-        var copy = value.Utf8Bytes.Span[startByte..endByte].ToArray();
-        return FromUtf8(copy, governor, span);
+            : PyString.CopyFromUtf8(value.Utf8Bytes.Span[startByte..endByte], governor, span);
     }
 
     private static int GetPreviousRuneStart(ReadOnlySpan<byte> source, int endByte)

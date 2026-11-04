@@ -163,6 +163,23 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return result;
     }
 
+    // Consume one fixed construction admission. The caller keeps its exact
+    // reserved-byte balance until this method succeeds; no buffer escapes early.
+    internal static PyString FromReservedUtf8(byte[] utf8, int byteLength,
+        MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    {
+        if ((uint)byteLength > (uint)utf8.Length) throw new ArgumentOutOfRangeException(nameof(byteLength));
+        var charge = EstimateApproximateBytes(utf8.Length);
+        if (byteLength == 0)
+        {
+            governor?.ReleaseReserved(charge);
+            return Empty;
+        }
+        var result = new PyString(utf8, byteLength, governor, allocationSpan);
+        governor?.Commit(charge);
+        return result;
+    }
+
     // The caller relinquishes this backing only after success. Its full capacity
     // is already committed to the same owner; only new string metadata is admitted.
     internal static PyString FromTransferredUtf8(byte[] utf8, int byteLength,
@@ -171,10 +188,18 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         if (byteLength <= 0 || byteLength > utf8.Length)
             throw new ArgumentOutOfRangeException(nameof(byteLength));
         var metadataBytes = EstimateApproximateBytes(0);
-        using var metadata = governor?.ReserveTemporary(metadataBytes, allocationSpan);
-        var result = new PyString(utf8, byteLength, governor, allocationSpan);
-        metadata?.Commit(metadataBytes);
-        return result;
+        governor?.Reserve(metadataBytes, allocationSpan);
+        try
+        {
+            var result = new PyString(utf8, byteLength, governor, allocationSpan);
+            governor?.Commit(metadataBytes);
+            return result;
+        }
+        catch
+        {
+            governor?.ReleaseReserved(metadataBytes);
+            throw;
+        }
     }
 
     public static PyString FromUtf8(ReadOnlyMemory<byte> utf8)
@@ -760,10 +785,18 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         var charge = EstimateApproximateBytes(length);
-        using var admission = governor.ReserveTemporary(charge, allocationSpan);
-        var storage = new byte[length];
-        admission.Commit(charge);
-        return storage;
+        governor.Reserve(charge, allocationSpan);
+        try
+        {
+            var storage = new byte[length];
+            governor.Commit(charge);
+            return storage;
+        }
+        catch
+        {
+            governor.ReleaseReserved(charge);
+            throw;
+        }
     }
 
     private static int CheckedByteLength(long length, LythonSourceSpan? span)

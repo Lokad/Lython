@@ -1,0 +1,86 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "match") [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "compile") [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "cursor") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "match") [1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(String stage) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexAdapterLifetimeTests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "compile") [< 1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(String stage) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexAdapterLifetimeTests.cs:line 41
+   at InvokeStub_RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(stage: "cursor") [< 1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(String stage) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexAdapterLifetimeTests.cs:line 41
+   at InvokeStub_RegexAdapterLifetimeTests.ActualBackendWorkObservesInFlightCancellationAndUnwinds(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:02.41]     Lokad.Lython.PublicApi.Tests.FnmatchScenarioTests.FilterAndUppercaseFixture_RunsSuccessfully [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.FnmatchScenarioTests.FilterAndUppercaseFixture_RunsSuccessfully [3 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Fixture directory does not exist: Workflows\Fnmatch\FilterAndUppercase (searched D:\code\Lython\.git\agent-notes\review-20261031\adapter20\out\Lokad.Lython.PublicApi.Tests\Release\net11.0\Fixtures).
+  Stack Trace:
+     at Lokad.Lython.Tests.Harness.FixtureLoader.FindFixtureDirectory(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 67
+   at Lokad.Lython.Tests.Harness.FixtureLoader.Load(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 9
+   at Lokad.Lython.PublicApi.Tests.FnmatchScenarioTests.FilterAndUppercaseFixture_RunsSuccessfully() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\FnmatchScenarioTests.cs:line 10
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.82]     Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.InvalidRegexFixture_ReturnsExpectedFailure [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.InvalidRegexFixture_ReturnsExpectedFailure [< 1 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Fixture directory does not exist: Workflows\RegexRewrite\InvalidPattern (searched D:\code\Lython\.git\agent-notes\review-20261031\adapter20\out\Lokad.Lython.PublicApi.Tests\Release\net11.0\Fixtures).
+  Stack Trace:
+     at Lokad.Lython.Tests.Harness.FixtureLoader.FindFixtureDirectory(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 67
+   at Lokad.Lython.Tests.Harness.FixtureLoader.Load(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 9
+   at Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.InvalidRegexFixture_ReturnsExpectedFailure() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexRewriteScenarioTests.cs:line 33
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.87]     Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.BasicSubstitutionFixture_RunsSuccessfully [FAIL]
+[xUnit.net 00:00:02.87]     Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.SearchSplitAndEscapeFixture_RunsSuccessfully [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.BasicSubstitutionFixture_RunsSuccessfully [< 1 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Fixture directory does not exist: Workflows\RegexRewrite\BasicSubstitution (searched D:\code\Lython\.git\agent-notes\review-20261031\adapter20\out\Lokad.Lython.PublicApi.Tests\Release\net11.0\Fixtures).
+  Stack Trace:
+     at Lokad.Lython.Tests.Harness.FixtureLoader.FindFixtureDirectory(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 67
+   at Lokad.Lython.Tests.Harness.FixtureLoader.Load(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 9
+   at Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.BasicSubstitutionFixture_RunsSuccessfully() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexRewriteScenarioTests.cs:line 10
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.SearchSplitAndEscapeFixture_RunsSuccessfully [< 1 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Fixture directory does not exist: Workflows\RegexRewrite\SearchSplitAndEscape (searched D:\code\Lython\.git\agent-notes\review-20261031\adapter20\out\Lokad.Lython.PublicApi.Tests\Release\net11.0\Fixtures).
+  Stack Trace:
+     at Lokad.Lython.Tests.Harness.FixtureLoader.FindFixtureDirectory(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 67
+   at Lokad.Lython.Tests.Harness.FixtureLoader.Load(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 9
+   at Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.SearchSplitAndEscapeFixture_RunsSuccessfully() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexRewriteScenarioTests.cs:line 65
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.87]     Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.MultiFileCompiledPatternFixture_RunsSuccessfully [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.MultiFileCompiledPatternFixture_RunsSuccessfully [< 1 ms]
+  Error Message:
+   System.IO.DirectoryNotFoundException : Fixture directory does not exist: Workflows\RegexRewrite\MultiFileCompiledPattern (searched D:\code\Lython\.git\agent-notes\review-20261031\adapter20\out\Lokad.Lython.PublicApi.Tests\Release\net11.0\Fixtures).
+  Stack Trace:
+     at Lokad.Lython.Tests.Harness.FixtureLoader.FindFixtureDirectory(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 67
+   at Lokad.Lython.Tests.Harness.FixtureLoader.Load(String relativePath) in D:\code\Lython\tests\Lokad.Lython.Tests\Harness\FixtureLoader.cs:line 9
+   at Lokad.Lython.PublicApi.Tests.RegexRewriteScenarioTests.MultiFileCompiledPatternFixture_RunsSuccessfully() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\RegexRewriteScenarioTests.cs:line 83
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     8, Passed:   413, Skipped:     0, Total:   421, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

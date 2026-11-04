@@ -1,0 +1,13 @@
+{
+  "sourceRevision": "9a4af031 plus B194 complete fixed immutable UTF8 constructor family patch",
+  "baselineRuntimeRevision": "9a4af031",
+  "coreSHA256": {
+    "before-control": "659fa32aade2cfcafecfa2f42f4e3dad5812e9240f6608abdfa989b280fefbcc",
+    "candidate": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "after-control": "659fa32aade2cfcafecfa2f42f4e3dad5812e9240f6608abdfa989b280fefbcc"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "e6947bfb62bb1c7db988a696fa27738339a237240db6a541b35ed3f211afdda0",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "c2c37959dd4f9529adb66aa60b172574bb17c3ab40c46e0d43424b463225aef8"
+  }
+}

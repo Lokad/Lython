@@ -1,0 +1,53 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm",
+    "medianMilliseconds": {
+      "before-control": 3.1765393684210523,
+      "candidate": 2.9284424807692306,
+      "after-control": 3.1519882291666668
+    },
+    "deltaPercent": -7.810288457880565,
+    "versusAfterPercent": -7.0922139343311486,
+    "oldControlPercent": -0.7728895003932923,
+    "iqrPercent": {
+      "before-control": 0.38488641263494255,
+      "candidate": 1.0582072411569081,
+      "after-control": 0.5262115145773911
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "lane": "warm-async",
+    "medianMilliseconds": {
+      "before-control": 3.5046954,
+      "candidate": 3.5636653095238096,
+      "after-control": 3.522096188235294
+    },
+    "deltaPercent": 1.682597281458742,
+    "versusAfterPercent": 1.180238104438125,
+    "oldControlPercent": 0.49649930305766254,
+    "iqrPercent": {
+      "before-control": 2.771388282332873,
+      "candidate": 1.381900021168021,
+      "after-control": 1.2449227427987077
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "lane": "warm-async",
+    "medianMilliseconds": {
+      "before-control": 6.03438218,
+      "candidate": 5.868598557692308,
+      "after-control": 6.237171285714286
+    },
+    "deltaPercent": -2.7473172457845862,
+    "versusAfterPercent": -5.909293029456519,
+    "oldControlPercent": 3.3605611919377276,
+    "iqrPercent": {
+      "before-control": 1.0670436190370682,
+      "candidate": 1.0774438760400502,
+      "after-control": 0.6531956027044016
+    }
+  }
+]

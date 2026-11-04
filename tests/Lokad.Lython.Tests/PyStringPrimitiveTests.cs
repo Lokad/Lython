@@ -8,6 +8,32 @@ namespace Lokad.Lython.Tests;
 public sealed class PyStringPrimitiveTests
 {
     [Fact]
+    public void SplitCopiesRemainFundedAfterTheSourceOwnerEnds()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        var span = new LythonSourceSpan(0, 1, 1, 1);
+        using (var outputOwner = root.CreateScope())
+        {
+            var outputGovernor = new MemoryGovernor(outputOwner);
+            PyList parts;
+            using (var inputOwner = root.CreateScope())
+            {
+                var inputGovernor = new MemoryGovernor(inputOwner);
+                var input = PyString.FromString(new string('é', 32) + "|" + string.Concat(Enumerable.Repeat("😀", 64)), inputGovernor, span);
+                parts = PyStringOps.Split(input, PyString.FromString("|"), 1, outputGovernor, span);
+                Assert.All(parts.Cast<PyString>(), part => Assert.Same(outputGovernor, part.OwnerMemoryGovernor));
+                Assert.True(inputGovernor.CurrentCommittedBytes > 0);
+                Assert.True(outputGovernor.CurrentCommittedBytes > 0);
+                Assert.Equal(0, outputGovernor.CurrentReservedBytes);
+            }
+            Assert.True(root.ReservedBytes > 0);
+            Assert.Equal(new string('é', 32), Assert.IsType<PyString>(parts[0]).AsString());
+            Assert.Equal(string.Concat(Enumerable.Repeat("😀", 64)), Assert.IsType<PyString>(parts[1]).AsString());
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Fact]
     public void LengthIndexAndSlice_AreRuneBased()
     {
         var text = PyString.FromString("a😀bé");

@@ -1,0 +1,6 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   421, Skipped:     0, Total:   421, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)

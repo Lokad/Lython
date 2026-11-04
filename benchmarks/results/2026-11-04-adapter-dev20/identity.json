@@ -1,0 +1,33 @@
+{
+  "developmentOnly": true,
+  "version": "0.5.0-dev.20",
+  "ordinaryPin": "0.4.0 unchanged",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.20.nupkg": {
+      "sha256": "c2c7187367886cbdd73057e1f537af1a80fd7290ae0436a0b7c40009a19480d6",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "fe169a8fc3b0952ef14a96453366c9649b04c8e9"
+      },
+      "libraries": [
+        "lib/net10.0/Lokad.Utf8Regex.dll",
+        "lib/net11.0/Lokad.Utf8Regex.dll"
+      ]
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.20.nupkg": {
+      "sha256": "6fc0b58c71d5904acd3e54f94af3498c7070c5deb75e7d3d762b7bbb1f809154",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "fe169a8fc3b0952ef14a96453366c9649b04c8e9"
+      },
+      "libraries": [
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll"
+      ]
+    }
+  }
+}

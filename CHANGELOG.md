@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Remove temporary reservation objects from fixed UTF-8 copying, casing and
+  padding, and duplicate admission of fresh string slices. Keep conservative
+  capacity preflights, cancellation and rollback before publication.
+
 - Let closed native helpers read fully supplied positional arguments directly from
   admitted caller operands, removing temporary binding storage and its copy/cleanup.
   Keep owned arguments for defaults, dynamic calls and genuine suspension, and
