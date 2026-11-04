@@ -319,7 +319,10 @@ if construction fails. The retained table describes its own charge; no separate
 cache-charge accumulator is maintained. String truth and text-file EOF checks
 use the logical byte extent; they do not count scalars. `readlines()` counts
 characters only for a positive hint. Lengths and indexed positions retain Python
-scalar semantics.
+scalar semantics. Search and prefix/suffix operations prepare one borrowed UTF-8
+window. Whole-string windows use the byte extent directly; explicit bounds and
+returned indexes retain scalar coordinates. Tuple affixes reuse the prepared
+window, preserving validation and early-match behavior.
 
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.

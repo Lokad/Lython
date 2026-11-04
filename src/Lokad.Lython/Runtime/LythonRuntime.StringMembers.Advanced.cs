@@ -135,8 +135,8 @@ internal sealed partial class LythonRuntime
                             throw new LythonRuntimeException("TypeError", $"{methodName}() argument 1 must be str, not {needleType}", span);
                         }
 
-                        var (start, end, _) = ParseStringBounds(text.Length, arguments, span, context, signature);
-                        if (end < start)
+                        var bounds = ParseStringBounds(text, arguments, span, context, signature);
+                        if (!bounds.CanMatch)
                         {
                             if (methodName == "count")
                             {
@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
                             return new BigInteger(-1);
                         }
 
-                        var result = operation(text, needle, start, end);
+                        var result = operation(text, needle, bounds.StartByte, bounds.EndByte);
                         if (throwWhenMissing && result < 0)
                         {
                             throw new LythonRuntimeException("ValueError", "substring not found", span);

@@ -1,0 +1,102 @@
+{
+  "build": "Full solution Release nonincremental;zero warnings/errors;matching core/public test/benchmark images",
+  "testSelections": [
+    {
+      "target": "net11.0",
+      "selection": "internal",
+      "passed": 50,
+      "failed": 0,
+      "sha256": "395a05a01471b3ea263dd7977403257e901cad8d7b96238a6881347f2f690474"
+    },
+    {
+      "target": "net11.0",
+      "selection": "public",
+      "passed": 350,
+      "failed": 0,
+      "sha256": "19d7a284619069f17ac2a27823a5558a51821251156ecf914e6d9140dae214f3"
+    },
+    {
+      "target": "net11.0",
+      "selection": "public-search-extra",
+      "passed": 3,
+      "failed": 0,
+      "sha256": "eadb699e4e5ca1b1002f904b8eb59b43c004d37c3065c8efdcb71e43ca49350c"
+    },
+    {
+      "target": "net11.0",
+      "selection": "public-ownership-extra",
+      "passed": 34,
+      "failed": 0,
+      "sha256": "3cc56784901d9f134240345d606ba0875498646ecc3ccec0cca0d987437997e7"
+    },
+    {
+      "target": "net10.0",
+      "selection": "internal",
+      "passed": 50,
+      "failed": 0,
+      "sha256": "3414df706fae46ceb64710cc05142161fb9bde50b6f5ca9554421831eabc6ff5"
+    },
+    {
+      "target": "net10.0",
+      "selection": "public",
+      "passed": 350,
+      "failed": 0,
+      "sha256": "270834900089740f1219aa5acdd8837b97c6e4149240f0dac90c1a4c93dc5c1b"
+    },
+    {
+      "target": "net10.0",
+      "selection": "public-search-extra",
+      "passed": 3,
+      "failed": 0,
+      "sha256": "e1d8c3801a84cc762bed2045e80101414f6577289605e8a67791209dbd3e8cbc"
+    },
+    {
+      "target": "net10.0",
+      "selection": "public-ownership-extra",
+      "passed": 34,
+      "failed": 0,
+      "sha256": "c4b28fd2941c4ef2290aa8cda2ecc1dba1db8e511bb9fcb499b55fd9653dd8d3"
+    }
+  ],
+  "regressions": {
+    "baselineCoreSHA256": "7cf2623c4da3d303b3816a29cc71f0bb6b84d2cd065229fbfbb0ca28db6e8dca",
+    "baselineFailed": 2,
+    "currentPassed": 2,
+    "APIs": "Both invocation APIs in each public case"
+  },
+  "matrix": {
+    "reference": "CPython 3.13.2 local independent goldens",
+    "sourceSHA256": "e96c434fa481e703d43189989c75ef9766fd6bb9b11815730db4663b2a52b085",
+    "rows": [
+      {
+        "target": "net11.0",
+        "asynchronous": false,
+        "comparisons": 13608,
+        "stdoutSHA256": "109092d639109a82406938dd701c8110f90b33f8451ba1a3b716c81004637312",
+        "equal": true
+      },
+      {
+        "target": "net11.0",
+        "asynchronous": true,
+        "comparisons": 13608,
+        "stdoutSHA256": "109092d639109a82406938dd701c8110f90b33f8451ba1a3b716c81004637312",
+        "equal": true
+      },
+      {
+        "target": "net10.0",
+        "asynchronous": false,
+        "comparisons": 13608,
+        "stdoutSHA256": "109092d639109a82406938dd701c8110f90b33f8451ba1a3b716c81004637312",
+        "equal": true
+      },
+      {
+        "target": "net10.0",
+        "asynchronous": true,
+        "comparisons": 13608,
+        "stdoutSHA256": "109092d639109a82406938dd701c8110f90b33f8451ba1a3b716c81004637312",
+        "equal": true
+      }
+    ]
+  },
+  "note": "Selections can overlap; do not sum as unique tests. Matrix independent of xUnit case counts. Existing real suspended affix hooks/cancellation/refusal/cache funding remain covered."
+}

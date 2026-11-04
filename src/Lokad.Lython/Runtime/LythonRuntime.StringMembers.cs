@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature StrAddSignature = LythonCallableSignature.Create("str.__add__", ["value"]);
         private static readonly LythonCallableSignature StrMulSignature = LythonCallableSignature.Create("str.__mul__", ["value"]);
         private static readonly LythonCallableSignature StrRMulSignature = LythonCallableSignature.Create("str.__rmul__", ["value"]);
-        private readonly record struct StringSearchBounds(int Start, int End, bool StartBeyondLength);
+        private readonly record struct StringSearchBounds(int StartByte, int EndByte, bool CanMatch);
 
         private static readonly IStringMemberProvider[] Providers =
         [
@@ -304,10 +304,10 @@ internal sealed partial class LythonRuntime
                 (arguments.Length == 3 && arguments.Span[2] is PyInstance))
                 return InvokeStringAffixWithGuestBoundsAsync(text, arguments, span, context, isStart, asynchronous);
 
-            var bounds = NormalizeStringBounds(text.Length,
+            var bounds = NormalizeStringBounds(text,
                 arguments.Length >= 2 ? arguments.Span[1] : null,
                 arguments.Length == 3 ? arguments.Span[2] : null, span);
-            return new(StartsOrEndsWith(text, arguments.Span[0]!, bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span));
+            return new(StartsOrEndsWith(text, arguments.Span[0]!, bounds.StartByte, bounds.EndByte, bounds.CanMatch, isStart, span));
         }
 
         private static async ValueTask<object> InvokeStringAffixWithGuestBoundsAsync(
@@ -317,16 +317,16 @@ internal sealed partial class LythonRuntime
             var start = await CoerceTypeIndexAsync(arguments.Span[1]!, context, span, asynchronous).ConfigureAwait(false);
             // A rejected start must prevent the end hook, including descriptor
             // binding, rather than validating only after both conversions.
-            _ = NormalizeStringBounds(text.Length, start, null, span);
+            _ = PyIndexing.NormalizeSliceBound(start, span);
             var end = arguments.Length == 3
                 ? await CoerceTypeIndexAsync(arguments.Span[2]!, context, span, asynchronous).ConfigureAwait(false)
                 : null;
-            var bounds = NormalizeStringBounds(text.Length, start, end, span);
-            return StartsOrEndsWith(text, arguments.Span[0]!, bounds.Start, bounds.End, bounds.StartBeyondLength, isStart, span);
+            var bounds = NormalizeStringBounds(text, start, end, span);
+            return StartsOrEndsWith(text, arguments.Span[0]!, bounds.StartByte, bounds.EndByte, bounds.CanMatch, isStart, span);
         }
 
         private static StringSearchBounds ParseStringBounds(
-            int textLength,
+            PyString text,
             object[] arguments,
             LythonSourceSpan span,
             ExecutionContext context,
@@ -339,6 +339,7 @@ internal sealed partial class LythonRuntime
             if (start is not null)
             {
                 start = CoerceIndexProtocol(start, context, span);
+                _ = PyIndexing.NormalizeSliceBound(start, span);
             }
 
             if (end is not null)
@@ -346,13 +347,17 @@ internal sealed partial class LythonRuntime
                 end = CoerceIndexProtocol(end, context, span);
             }
 
-            return NormalizeStringBounds(textLength, start, end, span);
+            return NormalizeStringBounds(text, start, end, span);
         }
 
-        private static StringSearchBounds NormalizeStringBounds(int textLength, object? start, object? end, LythonSourceSpan span)
+        private static StringSearchBounds NormalizeStringBounds(PyString text, object? start, object? end, LythonSourceSpan span)
         {
             try
             {
+                if ((start is null or PyNone) && (end is null or PyNone))
+                    return new(0, text.Utf8Bytes.Length, true);
+
+                var textLength = text.Length;
                 var normalized = PyStringOps.NormalizeRange(textLength, start, end);
                 var startBeyondLength = start switch
                 {
@@ -361,7 +366,10 @@ internal sealed partial class LythonRuntime
                     bool flag => flag && textLength == 0,
                     _ => false
                 };
-                return new StringSearchBounds(normalized.Start, normalized.End, startBeyondLength);
+                return startBeyondLength || normalized.End < normalized.Start
+                    ? new(0, 0, false)
+                    : new(text.GetByteIndexForRuneBoundary(normalized.Start),
+                        text.GetByteIndexForRuneBoundary(normalized.End), true);
             }
             catch (InvalidOperationException)
             {
@@ -372,19 +380,18 @@ internal sealed partial class LythonRuntime
         internal static bool StartsOrEndsWith(
             PyString text,
             object prefixOrTuple,
-            int start,
-            int end,
-            bool startBeyondLength,
+            int startByte,
+            int endByte,
+            bool canMatch,
             bool isStart,
             LythonSourceSpan span)
         {
             // An impossible range still validates the affix and tuple entries.
             // Only a real earlier match can skip a later invalid tuple item.
-            var canMatch = end >= start && !startBeyondLength;
             if (PyStringOps.TryAsString(prefixOrTuple, out var single))
             {
                 return canMatch &&
-                    (isStart ? PyStringOps.StartsWith(text, single, start, end) : PyStringOps.EndsWith(text, single, start, end));
+                    (isStart ? PyStringOps.StartsWith(text, single, startByte, endByte) : PyStringOps.EndsWith(text, single, startByte, endByte));
             }
 
             if (prefixOrTuple is not PyTuple tuple)
@@ -408,7 +415,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 if (canMatch &&
-                    (isStart ? PyStringOps.StartsWith(text, textItem, start, end) : PyStringOps.EndsWith(text, textItem, start, end)))
+                    (isStart ? PyStringOps.StartsWith(text, textItem, startByte, endByte) : PyStringOps.EndsWith(text, textItem, startByte, endByte)))
                 {
                     return true;
                 }

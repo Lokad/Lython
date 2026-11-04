@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [shared UTF8 search window](results/2026-11-04-utf8-search-window/README.md)
+removes59 net production lines and corrects out-of-range empty searches/index-hook
+ordering.13,608 CPython combinations match through both APIs/targets. Complete
+long-line scripts improve22–23%; reversed-role confirmation preserves that result.
+PossibleCSVwarm0.6–3.6% debt remains control-limited; config direction reverses and
+compile regression is unconfirmed. All original/adverse data retained; no broad
+CPU gain. Focused checks pass; combined runtime delivery qualification pending.
+
 The [native string-existence correction](results/2026-11-04-utf8-existence/README.md)
 removes scalar-count traversals from truth/text EOF and unhinted readlines. Complete
 1MiB chunk scans take49–53% less elapsed, line filtering32–34%, allocation unchanged.

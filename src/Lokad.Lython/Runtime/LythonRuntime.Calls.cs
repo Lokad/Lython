@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(span);
-            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Length, false, isStart, span);
+            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Utf8Bytes.Length, true, isStart, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share normalized UTF-8 windows across string search and prefix/suffix operations.
+  Reject empty searches starting beyond the string and invalid start bounds before
+  invoking end-bound hooks, matching Python. Preserve scalar indexes and cancellation.
+
 - Use constant-time UTF-8 string emptiness in truth and text-file EOF checks.
   Avoid unused character counts in unhinted `readlines()`; preserve scalar lengths.
 
