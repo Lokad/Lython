@@ -291,6 +291,10 @@ precedence; RunAsync awaits supported descriptor and method callbacks. Sequence
 repetition uses the same type-index conversion for expressions, in-place updates,
 `operator.mul` and direct native methods, preserving callback order and aliases.
 Custom key hashing still requires synchronous completion, including under RunAsync.
+Copy operations scope hash/equality mutations to their active caller after awaited
+hooks, and pass that caller to memo lookups. Thread-local provenance from another
+execution cannot select the allowance. Shallow native copies preserve stored
+hashes and key identities without calling those protocols again.
 Dictionary write-key equality also requires synchronous completion. Native-key
 lookup equality can suspend under RunAsync; string, integer and tuple lookups
 share the same resolution and current execution context.

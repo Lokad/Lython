@@ -155,7 +155,7 @@ public sealed class OwnedFunctionLocalsTests
             await tap.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.True(budget.ReservedBytes > baseline);
-            Assert.All(tap.Storage!, item => Assert.Same(value, item));
+            Assert.All(tap.Storage!.Take(4), item => Assert.Same(value, item));
             if (route == "cancel") cancellation.Cancel();
             if (route == "admission")
                 Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(
@@ -233,7 +233,9 @@ public sealed class OwnedFunctionLocalsTests
             Calls++;
             Storage = (object[])typeof(LythonRuntime.ExecutableFrameState)
                 .GetField("_locals", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(context.CurrentExecutableFrame)!;
-            Assert.Equal(4, Storage.Length);
+            var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
+            Assert.Equal(4, frame.LocalCapacity);
+            Assert.True(Storage.Length >= frame.LocalCapacity);
             return PyNone.Instance;
         }
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)

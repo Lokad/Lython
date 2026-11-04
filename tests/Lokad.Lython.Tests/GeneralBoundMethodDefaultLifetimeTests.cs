@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -13,7 +12,7 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
     [InlineData(true)]
     public async Task ProtocolDefaultsKeepTheReceiverOwnedBeforeBodyEntry(bool cancel)
     {
-        const string source = "class Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  tap()\n  return other=='value'\nclass Box:\n def method(self,*,value):return value\nbox=Box()\nBox.method.__kwdefaults__={Key():value}\nmethod=box.method";
+        const string source = "class Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):\n  tap()\n  return other=='value'\nclass Box:\n def method(self,*,value):return self,value\nbox=Box()\nBox.method.__kwdefaults__={Key():value}\nmethod=box.method";
         var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var call = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile("return method()",regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -23,23 +22,15 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
         context.Variables["value"] = value;
         await LythonRuntime.ExecuteExecutableCodeObjectAsync(definition, context);
         var receiver = context.Variables["box"];
-        var storage = new object[2];
-        var tap = new DefaultTap(receiver, storage);
-        context.Variables["tap"] = tap;
         var baseline = budget.ReservedBytes;
-        var field = typeof(LythonRuntime).GetField("_pooledTwoBoundValues", BindingFlags.NonPublic | BindingFlags.Static)!;
-        var previous = field.GetValue(null);
-        Task<object?> pending;
-        field.SetValue(null, storage);
-        try { pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(call, context).AsTask(); }
-        finally { field.SetValue(null, previous); }
+        var tap = new DefaultTap(budget, baseline);
+        context.Variables["tap"] = tap;
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(call, context).AsTask();
         try
         {
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
-            Assert.Same(receiver, storage[0]);
-            Assert.Null(storage[1]); // Keyword default is still being resolved.
-            Assert.True(budget.ReservedBytes >= baseline);
+            Assert.True(budget.ReservedBytes > baseline);
             if (cancel)
             {
                 tap.Release.TrySetCanceled();
@@ -48,7 +39,9 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
             else
             {
                 tap.Release.TrySetResult();
-                Assert.Same(value, await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+                var result = Assert.IsType<PyTuple>(await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.Same(receiver, result[0]);
+                Assert.Same(value, result[1]);
             }
         }
         finally
@@ -57,7 +50,6 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
             try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
             catch (OperationCanceledException) { }
         }
-        Assert.All(storage, Assert.Null);
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.State.CurrentRecursionDepth);
@@ -67,7 +59,7 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class DefaultTap(object receiver, object[] storage) : LythonRuntime.ICallable
+    private sealed class DefaultTap(LythonMemoryBudget budget, long baseline) : LythonRuntime.ICallable
     {
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -75,8 +67,7 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
             => throw new InvalidOperationException("Expected a genuinely suspended default lookup.");
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            Assert.Same(receiver, storage[0]);
-            Assert.Null(storage[1]);
+            Assert.True(budget.ReservedBytes > baseline);
             Assert.NotNull(context.CurrentExecutableFrame);
             Started.TrySetResult();
             await Release.Task.ConfigureAwait(false);

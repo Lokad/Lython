@@ -148,11 +148,14 @@ internal sealed partial class LythonRuntime
             => value is PyDict dict ? new CopyMemo(dict, context, span)
                 : throw RuntimeErrors.Type("copy.deepcopy(..., memo=...) expects a dict or None.", span);
 
-        public bool TryGet(object original, [MaybeNullWhen(false)] out object copied)
-            => Values.TryGetValue(_state.GetObjectId(original), out copied);
+        public bool TryGet(object original, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object copied)
+            => Values.TryGetValue(_state.GetObjectId(original), out copied, context, span);
 
-        public void Remember(object original, object copied)
-            => Values.SetItem(_state.GetObjectId(original), copied);
+        public void Remember(object original, object copied, ExecutionContext context, LythonSourceSpan span)
+        {
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            Values.SetItem(_state.GetObjectId(original), copied);
+        }
     }
 
     internal enum CopyDepth
@@ -184,7 +187,7 @@ internal sealed partial class LythonRuntime
 
         if (value is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance)
         {
-            if (memo is not null && memo.TryGet(value, out var existing))
+            if (memo is not null && memo.TryGet(value, context, span, out var existing))
             {
                 return existing;
             }
@@ -209,7 +212,7 @@ internal sealed partial class LythonRuntime
                 // runs again per occurrence instead of aliasing through the memo.
                 if (!ReferenceEquals(copied, instance))
                 {
-                    memo?.Remember(value, copied);
+                    memo?.Remember(value, copied, context, span);
                 }
 
                 return copied;
@@ -218,7 +221,7 @@ internal sealed partial class LythonRuntime
             await RejectUnsupportedCopyProtocolsAsync(instance, context, span, asynchronous).ConfigureAwait(false);
 
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
-            memo?.Remember(value, clone);
+            memo?.Remember(value, clone, context, span);
             if (depth == CopyDepth.Shallow)
             {
                 foreach (var pair in instance.EnumerateOwnAttributes())
@@ -248,13 +251,28 @@ internal sealed partial class LythonRuntime
             return clone;
         }
 
+        if (depth == CopyDepth.Shallow && value is PyDict or PySet or PyDefaultDict or PyCounter)
+        {
+            // Native copies preserve stored hashes and aliases. Re-inserting
+            // entries would unnecessarily invoke guest hash/equality protocols.
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            return value switch
+            {
+                PyDict dict => new PyDict(dict, context.MemoryGovernor, span),
+                PySet set => new PySet(set, context.MemoryGovernor, span),
+                PyDefaultDict dict => new PyDefaultDict(dict.DefaultFactory, dict.InnerDict, context.MemoryGovernor, span),
+                PyCounter counter => new PyCounter(counter, context.MemoryGovernor, span),
+                _ => throw new InvalidOperationException("Expected a native copy container.")
+            };
+        }
+
         return value switch
         {
             PyList list => await CopyListAsync(list, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
-            PyDict dict => await CopyDictAsync(dict, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
-            PySet set => await CopySetAsync(set, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
-            PyDefaultDict defaultDict => await CopyDefaultDictAsync(defaultDict, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
-            PyCounter counter => await CopyCounterAsync(counter, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyDict dict => await CopyDictAsync(dict, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PySet set => await CopySetAsync(set, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyDefaultDict defaultDict => await CopyDefaultDictAsync(defaultDict, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
+            PyCounter counter => await CopyCounterAsync(counter, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             PyDeque deque => await CopyDequeAsync(deque, depth, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             PyTuple tuple when depth == CopyDepth.Deep => await CopyTupleAsync(tuple, context, span, memo, graphDepth, asynchronous).ConfigureAwait(false),
             OpenPyxlStyleValue style => style.Copy(depth, context, span),
@@ -268,7 +286,7 @@ internal sealed partial class LythonRuntime
         using var backing = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(tuple.Count), span);
         var items = new object[tuple.Count];
         var clone = PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, backing);
-        memo?.Remember(tuple, clone);
+        memo?.Remember(tuple, clone, context, span);
         var changed = false;
         for (var i = 0; i < tuple.Count; i++)
         {
@@ -278,7 +296,7 @@ internal sealed partial class LythonRuntime
 
         if (!changed)
         {
-            memo?.Remember(tuple, tuple);
+            memo?.Remember(tuple, tuple, context, span);
             return tuple;
         }
 
@@ -288,7 +306,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> CopyListAsync(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
-        memo?.Remember(list, clone);
+        memo?.Remember(list, clone, context, span);
         foreach (var item in list)
         {
             clone.Add(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);
@@ -298,43 +316,47 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static async ValueTask<object> CopyDictAsync(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyDictAsync(PyDict dict, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
-        memo?.Remember(dict, clone);
+        memo?.Remember(dict, clone, context, span);
         foreach (var pair in dict)
         {
-            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
-            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
+            var value = await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            var key = await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            // Await hooks before entering this synchronous protocol scope.
+            // A pool thread's previous ambient context can belong to another run.
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
 
         return clone;
     }
-    private static async ValueTask<object> CopySetAsync(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopySetAsync(PySet set, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PySet(context.MemoryGovernor, span);
-        memo?.Remember(set, clone);
+        memo?.Remember(set, clone, context, span);
         foreach (var item in set)
         {
-            clone.Add(ValidateSetItem(
-                depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item,
-                span));
+            var copied = await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            clone.Add(ValidateSetItem(copied, span));
             context.CheckExecution(span);
         }
 
         return clone;
     }
 
-    private static async ValueTask<object> CopyDefaultDictAsync(PyDefaultDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyDefaultDictAsync(PyDefaultDict dict, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDefaultDict(dict.DefaultFactory, context.MemoryGovernor, span);
-        memo?.Remember(dict, clone);
+        memo?.Remember(dict, clone, context, span);
         foreach (var pair in dict.Items)
         {
-            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
-            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
+            var key = await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            var value = await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
@@ -342,14 +364,15 @@ internal sealed partial class LythonRuntime
         return clone;
     }
 
-    private static async ValueTask<object> CopyCounterAsync(PyCounter counter, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
+    private static async ValueTask<object> CopyCounterAsync(PyCounter counter, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyCounter(context.MemoryGovernor, span);
-        memo?.Remember(counter, clone);
+        memo?.Remember(counter, clone, context, span);
         foreach (var pair in counter.Items)
         {
-            var value = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Value;
-            var key = depth == CopyDepth.Deep ? await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : pair.Key;
+            var value = await CopyValueAsync(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            var key = await CopyValueAsync(pair.Key, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false);
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.CheckExecution(span);
         }
@@ -359,7 +382,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> CopyDequeAsync(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo? memo, int graphDepth, bool asynchronous)
     {
         var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
-        memo?.Remember(deque, clone);
+        memo?.Remember(deque, clone, context, span);
         foreach (var item in deque)
         {
             clone.Append(depth == CopyDepth.Deep ? await CopyValueAsync(item, CopyDepth.Deep, context, span, memo, graphDepth + 1, asynchronous).ConfigureAwait(false) : item);

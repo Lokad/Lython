@@ -13,5 +13,10 @@
     "name": "copy-hook-io-control",
     "source": "import copy\nclass C:\n def __copy__(self):\n  with open('/input') as f:return f.read(1)\nprint(copy.copy(C()))",
     "output": "a\n"
+  },
+  {
+    "name": "deepcopy-rehash-after-io",
+    "source": "import copy\nevents=[]\nclass K:\n def __hash__(self):events.append('hash');return 1\n def __deepcopy__(self,memo):\n  with open('/input') as f:events.append('key'+f.read(1))\n  return self\nclass V:\n def __deepcopy__(self,memo):\n  with open('/input') as f:events.append('value'+f.read(1))\n  return self\ncopy.deepcopy({K():V()});print(events)\n",
+    "output": "['hash', 'valuea', 'keya', 'hash']\n"
   }
 ]

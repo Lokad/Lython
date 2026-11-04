@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep copy hashing, equality and memo lookups on the active caller's allowance
+  after asynchronous hooks. Reuse native shallow copies to preserve stored
+  hashes and aliases; prevent unrelated thread provenance from selecting an
+  expired allowance.
+
 - Share executable locals and temporaries in invocation-owned storage, use
   compiler-prepared input positions and retain native-return provenance in the
   instructions. Remove duplicate graph/array transport; preserve failable reads,

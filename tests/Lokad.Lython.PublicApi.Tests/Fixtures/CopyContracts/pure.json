@@ -73,5 +73,10 @@
     "name": "copy-copy-shares-child-control",
     "source": "import copy\nchild=[];source=[child,child];result=copy.copy(source)\nprint(result is not source,result[0] is child,result[1] is child)",
     "output": "True True True\n"
+  },
+  {
+    "name": "shallow-native-copies-reuse-stored-hashes",
+    "source": "import copy\nfrom collections import defaultdict,Counter\nevents=[]\nclass K:\n def __hash__(self):events.append('hash');return 1\nkey=K()\nfor source in ({key:1},{key},defaultdict(None,{key:1}),Counter({key:1})):\n before=len(events)\n result=copy.copy(source)\n print(type(result) is type(source),len(events)-before,next(iter(result)) is key)\n",
+    "output": "True 0 True\nTrue 0 True\nTrue 0 True\nTrue 0 True\n"
   }
 ]

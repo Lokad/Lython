@@ -46,7 +46,7 @@ public sealed class CopyContractTests
             using (var result = mode == "sync" ? script.Run(immediate, new LythonRunOptions { MemoryBudget = budget })
                 : await script.RunAsync(mode == "delayed" ? delayed : immediate, new LythonRunOptions { MemoryBudget = budget }))
             {
-                Assert.True(result.Success, name + ": " + result.Failure?.Message);
+                Assert.True(result.Success, name + "/" + mode + ": " + result.Failure?.Message);
                 Assert.Equal(output, result.StandardOutput);
                 if (mode == "delayed") Assert.True(delayed.CompletedAsynchronously > 0);
             }
