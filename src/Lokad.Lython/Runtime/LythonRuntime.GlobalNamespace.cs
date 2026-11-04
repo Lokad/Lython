@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
             var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Bytes.Span);
             using var entryFunding = _root.MemoryGovernor.ReserveTemporary(entryBytes, _span);
             var name = textKey?.ToString();
-            _entries.EnsureCapacity(Count + 1, _root.MemoryGovernor, _span);
+            ((PyDict)_entries).EnsureNativeCapacity(Count + 1, _root.MemoryGovernor, _span);
             if (name is not null)
             {
                 // All funding checks precede changing the visible module binding.
@@ -169,8 +169,6 @@ internal sealed partial class LythonRuntime
         }
 
         public IEnumerable<KeyValuePair<object, object>> Entries => this;
-        public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
-        public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live namespace keeps its bridge storage.");
         public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
         {
             foreach (var pair in _entries.Entries)

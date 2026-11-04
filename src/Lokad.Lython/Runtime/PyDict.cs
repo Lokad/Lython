@@ -321,7 +321,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         catch
         {
             governor.ReleaseReserved(protocolBytes);
-            if (storage is not null) governor.Release(((IPyDictStorage)storage).ReleaseCommittedBytes());
+            if (storage is not null) governor.Release(storage.ReleaseNativeStorage());
             sideIndex?.ReleaseAll(governor);
             throw;
         }
@@ -889,7 +889,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             _sideIndex!.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
             try
             {
-                _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+                if (_nativeItems is not null) EnsureNativeCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
                 _items.AddNew(storageKey, storageValue);
                 _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
             }
@@ -1275,7 +1275,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             // Replacement retains the original equal key and changes no size.
             // Only a missing entry requires capacity admission and insertion.
             if (_items.TrySetExisting(storageKey, storageValue)) return;
-            _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+            if (_nativeItems is not null) EnsureNativeCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
             _items.AddNew(storageKey, storageValue);
         }
         finally
@@ -1300,16 +1300,13 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     private void RefundAbortedConstruction()
     {
-        if (_memoryGovernor is not null)
+        var release = CommittedStorageBytes;
+        // Reject a live view before refunding any of its retained backing.
+        _ = ReleaseNativeStorage();
+        if (_memoryGovernor is not null && release > 0)
         {
-            var release = CommittedStorageBytes;
-            if (release > 0)
-            {
-                _memoryGovernor.Release(release);
-            }
+            _memoryGovernor.Release(release);
         }
-
-        _ = _items.ReleaseCommittedBytes();
         _protocolBytes = 0;
         _sideIndex = null;
     }

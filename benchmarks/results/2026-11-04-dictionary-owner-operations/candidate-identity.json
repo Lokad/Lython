@@ -1,0 +1,21 @@
+{
+  "sourceRevision": "eff471b3/9588b3c8 fully qualified41896187873; current documentation1519dee3",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "9588b3c8c9e3a516555605c869311620f55d3195ed40c83786bfa1a8257e8a58",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "1519dee3 + native capacity/release ownership cleanup and live-view rollback ordering correction; full self-dispatch prototype withdrawn",
+  "candidateCoreSHA256": "38c03e5e7c88b33eaffef6414063db74ebc5e69677662c9940b440e726dd0d7e",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/IPyDictStorage.cs": "e70f9e4fd2b82f7336f0a870f48216b0cbaf147d7beccdc381aa3145ccd85c51",
+    "src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs": "dc32656fbdd8075e04a2201ec658e71f8a269271f64168e2d147f2ef8a0c7c6c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs": "2a07b5fd5bf5955e68d7806baa7197dfc957b8718018ddd429e731e691e8b93b",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "53e545c9b4739ea425c5442d78687be9644888605ba221203658829ac754ff90",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "a26e9e97ad8168efa6ddcbfd54c40b968c2712f424da7038109a73ac490c985d",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "80ec1ea3af00d08feb23ad59804287bf98145e7b2d117e329b3ddc3670699d8d",
+    "tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs": "179728a98f188935ffd2296880ac54281b62d27812308d8ea218815ffc77ec04"
+  }
+}

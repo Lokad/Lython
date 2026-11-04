@@ -52,7 +52,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
         }
         var added = !ContainsKey(key);
         _extra ??= new PyDict(_governor, _span);
-        _extra.EnsureCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
+        ((PyDict)_extra).EnsureNativeCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
         _extra.SetItem(key, value);
         return added;
     }
@@ -76,8 +76,6 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
         _extra?.Clear();
     }
     public IEnumerable<KeyValuePair<object, object>> Entries => this;
-    public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
-    public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live attribute namespace retains its backing.");
     private void RequireWritable()
     {
         if (_instance is null) throw RuntimeErrors.Type("namespace is read-only", _span);

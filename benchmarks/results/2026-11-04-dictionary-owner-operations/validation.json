@@ -1,0 +1,18 @@
+{
+  "build": "nonincremental Release39.35seconds0warnings/errors",
+  "checks": {
+    "net11.0": {
+      "internal": 770,
+      "public": 2258,
+      "failed": 0,
+      "coreSHA256": "38c03e5e7c88b33eaffef6414063db74ebc5e69677662c9940b440e726dd0d7e"
+    },
+    "net10.0": {
+      "internal": 770,
+      "public": 2258,
+      "failed": 0,
+      "coreSHA256": "3c89fb7c395682c7f4fb29584f8a45cf452ddaa96aed91626faf9e172dda34ec"
+    }
+  },
+  "ownershipRegression": "Two cases RED on committedbaseline9588b3c8 and originala6adcfe9; GREEN both actual targets; no refund of retained attribute/module view."
+}

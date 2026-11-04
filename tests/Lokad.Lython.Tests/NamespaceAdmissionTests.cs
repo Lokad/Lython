@@ -6,6 +6,36 @@ namespace Lokad.Lython.Tests;
 public sealed class NamespaceAdmissionTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PrivateRollbackCannotRefundRetainedNamespaceView(bool module)
+    {
+        var budget = new LythonMemoryBudget(65536);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var view = module
+                ? new PyDict(new LythonRuntime.GlobalNamespaceStorage(context, Span), context.MemoryGovernor, Span)
+                : new PyInstance(new PyType("C", [], new()), context.MemoryGovernor, Span).GetNamespace(context, Span);
+            var key = PyString.FromString("value", context.MemoryGovernor, Span);
+            var payload = new PyList([PyNone.Instance], context.MemoryGovernor, Span);
+            view.SetItem(key, payload);
+            var retained = view;
+            var baseline = budget.ReservedBytes;
+            var committed = context.MemoryGovernor.CurrentCommittedBytes;
+
+            Assert.Throws<InvalidOperationException>(() => view.DiscardUnpublishedStorage());
+
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Same(payload, retained.GetItem(key));
+            Assert.Single(retained);
+            Assert.Null(context.MemoryGovernor.AdmissionFailure);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void FreshClassProxyIsAdmittedWithoutRebuildingItsBacking()
     {

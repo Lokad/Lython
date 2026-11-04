@@ -335,7 +335,9 @@ Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.
 Raw storage scans remain separate from Python's mutation-checked iteration.
 Copies and ownership attachment admit a private destination before publishing it;
-capacity growth keeps the previous table funded through replacement.
+capacity growth keeps the previous table funded through replacement. Native
+owners perform growth admission and private rollback; live view interfaces expose
+mapping access. Rollback rejects live views before refunding their retained backing.
 
 `str.format` and `format_map` scan field structure and nested specifications as
 borrowed UTF-8. Names, suffixes and the final specification decode only at the

@@ -1,0 +1,211 @@
+diff --git a/src/Lokad.Lython/Runtime/IPyDictStorage.cs b/src/Lokad.Lython/Runtime/IPyDictStorage.cs
+index 05009327..8634c06b 100644
+--- a/src/Lokad.Lython/Runtime/IPyDictStorage.cs
++++ b/src/Lokad.Lython/Runtime/IPyDictStorage.cs
+@@ -1,5 +1,6 @@
+ namespace Lokad.Lython.Runtime;
+ 
++// Raw mapping access. Capacity and rollback belong to the actual storage owner.
+ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
+ {
+     int Count { get; }
+@@ -27,10 +28,6 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
+     // Raw storage traversal is separate from Python mutation-checked iteration.
+     IEnumerable<KeyValuePair<object, object>> Entries { get; }
+ 
+-    void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span);
+-
+     long CommittedBytes { get; }
+ 
+-    long ReleaseCommittedBytes();
+-
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+index f3777c1d..fd86235f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs
+@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
+             var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Bytes.Span);
+             using var entryFunding = _root.MemoryGovernor.ReserveTemporary(entryBytes, _span);
+             var name = textKey?.ToString();
+-            _entries.EnsureCapacity(Count + 1, _root.MemoryGovernor, _span);
++            ((PyDict)_entries).EnsureNativeCapacity(Count + 1, _root.MemoryGovernor, _span);
+             if (name is not null)
+             {
+                 // All funding checks precede changing the visible module binding.
+@@ -169,8 +169,6 @@ internal sealed partial class LythonRuntime
+         }
+ 
+         public IEnumerable<KeyValuePair<object, object>> Entries => this;
+-        public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+-        public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live namespace keeps its bridge storage.");
+         public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+         {
+             foreach (var pair in _entries.Entries)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
+index 06cedc0f..c36e580e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs
+@@ -308,9 +308,7 @@ internal sealed partial class LythonRuntime
+         bool IPyDictStorage.Remove(object key) => RemoveKey(key, _allocationSpan);
+         void IPyDictStorage.Clear() => Clear();
+         IEnumerable<KeyValuePair<object, object>> IPyDictStorage.Entries => this;
+-        void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+         long IPyDictStorage.CommittedBytes => 0; // The shared execution owner retains native backing.
+-        long IPyDictStorage.ReleaseCommittedBytes() => throw new InvalidOperationException("A live environment retains its backing.");
+         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()
+             => _items.Select(pair => new KeyValuePair<object, object>(EnvString(pair.Key), EnvString(pair.Value))).GetEnumerator();
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Storage.cs b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+index 6147f45d..eaadb4e7 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Storage.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+@@ -56,13 +56,13 @@ internal sealed partial class PyDict
+         }
+         catch
+         {
+-            var released = ((IPyDictStorage)this).ReleaseCommittedBytes();
++            var released = ReleaseNativeStorage();
+             if (released > 0) governor!.Release(released);
+             throw;
+         }
+     }
+ 
+-    private void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
++    internal void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
+     {
+         if (targetCount <= _nativeCapacity) return;
+         using var replacement = governor?.ReserveTemporary(checked(96L + 2L * NativeSlotBytes * Math.Max(3, targetCount)), span);
+@@ -138,14 +138,10 @@ internal sealed partial class PyDict
+         if (_nativeItems is { } native) native.Clear();
+         else _items.Clear();
+     }
+-    void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
+-    {
+-        if (_nativeItems is not null) EnsureNativeCapacity(targetCount, governor, span);
+-    }
+     long IPyDictStorage.CommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _items.CommittedBytes;
+-    long IPyDictStorage.ReleaseCommittedBytes()
++    private long ReleaseNativeStorage()
+     {
+-        if (_nativeItems is null) return _items.ReleaseCommittedBytes();
++        if (_nativeItems is null) throw new InvalidOperationException("A live dictionary view retains its backing.");
+         var released = _nativeCommittedBytes;
+         _nativeCommittedBytes = 0;
+         _nativeCapacity = 0;
+diff --git a/src/Lokad.Lython/Runtime/PyDict.cs b/src/Lokad.Lython/Runtime/PyDict.cs
+index 694bb4c0..530502f4 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.cs
+@@ -321,7 +321,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+         catch
+         {
+             governor.ReleaseReserved(protocolBytes);
+-            if (storage is not null) governor.Release(((IPyDictStorage)storage).ReleaseCommittedBytes());
++            if (storage is not null) governor.Release(storage.ReleaseNativeStorage());
+             sideIndex?.ReleaseAll(governor);
+             throw;
+         }
+@@ -889,7 +889,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             _sideIndex!.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
+             try
+             {
+-                _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
++                if (_nativeItems is not null) EnsureNativeCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+                 _items.AddNew(storageKey, storageValue);
+                 _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
+             }
+@@ -1275,7 +1275,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             // Replacement retains the original equal key and changes no size.
+             // Only a missing entry requires capacity admission and insertion.
+             if (_items.TrySetExisting(storageKey, storageValue)) return;
+-            _items.EnsureCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
++            if (_nativeItems is not null) EnsureNativeCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
+             _items.AddNew(storageKey, storageValue);
+         }
+         finally
+@@ -1300,16 +1300,13 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+ 
+     private void RefundAbortedConstruction()
+     {
+-        if (_memoryGovernor is not null)
++        var release = CommittedStorageBytes;
++        // Reject a live view before refunding any of its retained backing.
++        _ = ReleaseNativeStorage();
++        if (_memoryGovernor is not null && release > 0)
+         {
+-            var release = CommittedStorageBytes;
+-            if (release > 0)
+-            {
+-                _memoryGovernor.Release(release);
+-            }
++            _memoryGovernor.Release(release);
+         }
+-
+-        _ = _items.ReleaseCommittedBytes();
+         _protocolBytes = 0;
+         _sideIndex = null;
+     }
+diff --git a/src/Lokad.Lython/Runtime/PyNamespaceView.cs b/src/Lokad.Lython/Runtime/PyNamespaceView.cs
+index 8018ddf9..a423ceaf 100644
+--- a/src/Lokad.Lython/Runtime/PyNamespaceView.cs
++++ b/src/Lokad.Lython/Runtime/PyNamespaceView.cs
+@@ -52,7 +52,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+         }
+         var added = !ContainsKey(key);
+         _extra ??= new PyDict(_governor, _span);
+-        _extra.EnsureCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
++        ((PyDict)_extra).EnsureNativeCapacity(_extra.Count + (added ? 1 : 0), _governor, _span);
+         _extra.SetItem(key, value);
+         return added;
+     }
+@@ -76,8 +76,6 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
+         _extra?.Clear();
+     }
+     public IEnumerable<KeyValuePair<object, object>> Entries => this;
+-    public void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span) { }
+-    public long ReleaseCommittedBytes() => throw new InvalidOperationException("A live attribute namespace retains its backing.");
+     private void RequireWritable()
+     {
+         if (_instance is null) throw RuntimeErrors.Type("namespace is read-only", _span);
+diff --git a/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs b/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
+index f0fcf44b..4ecb845f 100644
+--- a/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/NamespaceAdmissionTests.cs
+@@ -6,6 +6,36 @@ namespace Lokad.Lython.Tests;
+ public sealed class NamespaceAdmissionTests
+ {
+     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public void PrivateRollbackCannotRefundRetainedNamespaceView(bool module)
++    {
++        var budget = new LythonMemoryBudget(65536);
++        using (var owner = budget.CreateScope())
++        {
++            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
++            var view = module
++                ? new PyDict(new LythonRuntime.GlobalNamespaceStorage(context, Span), context.MemoryGovernor, Span)
++                : new PyInstance(new PyType("C", [], new()), context.MemoryGovernor, Span).GetNamespace(context, Span);
++            var key = PyString.FromString("value", context.MemoryGovernor, Span);
++            var payload = new PyList([PyNone.Instance], context.MemoryGovernor, Span);
++            view.SetItem(key, payload);
++            var retained = view;
++            var baseline = budget.ReservedBytes;
++            var committed = context.MemoryGovernor.CurrentCommittedBytes;
++
++            Assert.Throws<InvalidOperationException>(() => view.DiscardUnpublishedStorage());
++
++            Assert.Equal(baseline, budget.ReservedBytes);
++            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
++            Assert.Same(payload, retained.GetItem(key));
++            Assert.Single(retained);
++            Assert.Null(context.MemoryGovernor.AdmissionFailure);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Fact]
+     public void FreshClassProxyIsAdmittedWithoutRebuildingItsBacking()
+     {

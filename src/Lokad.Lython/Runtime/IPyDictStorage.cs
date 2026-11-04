@@ -1,5 +1,6 @@
 namespace Lokad.Lython.Runtime;
 
+// Raw mapping access. Capacity and rollback belong to the actual storage owner.
 internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 {
     int Count { get; }
@@ -27,10 +28,6 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
     // Raw storage traversal is separate from Python mutation-checked iteration.
     IEnumerable<KeyValuePair<object, object>> Entries { get; }
 
-    void EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span);
-
     long CommittedBytes { get; }
-
-    long ReleaseCommittedBytes();
 
 }

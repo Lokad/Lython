@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Reject private rollback of live dictionary views before returning allowance.
+  Keep capacity and rollback on native owners; remove unused view memory hooks.
+
 - Consolidate CSV parsing into explicit record/field states and bounded UTF-8
   boundary searches. Preserve batched storage and cleanup; correct ignored-space
   records and repeated space delimiters with `skipinitialspace`.

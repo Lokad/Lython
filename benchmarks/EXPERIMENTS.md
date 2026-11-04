@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [native dictionary ownership refinement](results/2026-11-04-dictionary-owner-operations/README.md)
+retains baseline data dispatch, removes view capacity/release stubs and fixes
+refund-before-rejection for live aliases.770internal/2258public per actual target
+pass. Final-source four-case111s collection passes all gates: text/asyncJSON near
+unchanged, syncCSV−5.0–5.1%, fresh config control-limited, allocation flat. Initial
+warm setup peaks are not fresh-run/RSS peaks. No broad CPU claim; full delivery
+pending. The complete self-dispatch deletion remains withdrawn, not silently promoted.
+
 The [dictionary self-dispatch prototype](results/2026-11-04-dictionary-dispatch-withdrawn/README.md)
 is withdrawn:276s/all gates, sync text+3.8–4.4% and asyncJSON+1.2–1.8% beyond stable
 old-role spreads, allocation flat. Warm VM JIT already inlines typed lookups; no

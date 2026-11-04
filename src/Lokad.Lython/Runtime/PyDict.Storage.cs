@@ -56,13 +56,13 @@ internal sealed partial class PyDict
         }
         catch
         {
-            var released = ((IPyDictStorage)this).ReleaseCommittedBytes();
+            var released = ReleaseNativeStorage();
             if (released > 0) governor!.Release(released);
             throw;
         }
     }
 
-    private void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         if (targetCount <= _nativeCapacity) return;
         using var replacement = governor?.ReserveTemporary(checked(96L + 2L * NativeSlotBytes * Math.Max(3, targetCount)), span);
@@ -138,14 +138,10 @@ internal sealed partial class PyDict
         if (_nativeItems is { } native) native.Clear();
         else _items.Clear();
     }
-    void IPyDictStorage.EnsureCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        if (_nativeItems is not null) EnsureNativeCapacity(targetCount, governor, span);
-    }
     long IPyDictStorage.CommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _items.CommittedBytes;
-    long IPyDictStorage.ReleaseCommittedBytes()
+    private long ReleaseNativeStorage()
     {
-        if (_nativeItems is null) return _items.ReleaseCommittedBytes();
+        if (_nativeItems is null) throw new InvalidOperationException("A live dictionary view retains its backing.");
         var released = _nativeCommittedBytes;
         _nativeCommittedBytes = 0;
         _nativeCapacity = 0;
