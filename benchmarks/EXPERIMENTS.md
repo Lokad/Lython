@@ -2,12 +2,12 @@
 
 The [binding-state cache reassessment](results/2026-11-04-resolution-cache/README.md)
 removes recursive record hashing and redundant versions from the existing cache.
-Current-source compilation elapsed improves3.9â€“6.5% CSV,8.4% text and3.1% report;
+Current-source compilation elapsed improves3.9–6.5% CSV,8.4% text and3.1% report;
 fresh/warm execution effects remain small or control-limited. Original B87 fixed-
 threshold rejection and drifting config controls remain intact. All focused checks
 pass; full delivery41853526333 is GREEN on123f9ff1, all eight gates cached. A direct older454
-comparison finds CSV compilation near unchanged, text5.5â€“5.8%/report1.2â€“1.8%
-lower elapsed, with net3.3â€“5.0% more compiler allocation accepted explicitly.
+comparison finds CSV compilation near unchanged, text5.5–5.8%/report1.2–1.8%
+lower elapsed, with net3.3–5.0% more compiler allocation accepted explicitly.
 This does not close the whole-script objective or establish a broad CPU gain.
 
 The [dev.26 optional-adapter qualification](results/2026-11-04-adapter-dev26/README.md)
@@ -27,7 +27,7 @@ evidence, with no runtime change or speedup claimed.
 
 The [executable-storage CPython checkpoint](results/2026-11-04-executable-cpython-checkpoint/README.md)
 measures0ffc9ac6 with current controls and a qualified454 reference. Fresh ratios
-remain1.13â€“2.46x; warm1.05â€“2.53x. Some source pairs improve modestly, while CSV and
+remain1.13–2.46x; warm1.05–2.53x. Some source pairs improve modestly, while CSV and
 report variability and possible compilation cost limit claims. All12 jobs finish
 328.72s with goldens/gates/joins. Later copy-context correctness work is separate;
 the substantial performance objective remains open.
@@ -69,7 +69,7 @@ eight delivery gates in cached run41788586642.
 
 The [owner-capacity admission assessment](results/2026-11-04-owner-capacity-assessment/README.md)
 is shelved with production restored. Several complete scripts improve, but a
-13â€“16% text regression does not reproduce in the bounded five-image confirmation.
+13–16% text regression does not reproduce in the bounded five-image confirmation.
 Allocation stays flat; substantial-capacity fixture migration remains incomplete.
 Sources, failed checks and adverse conditions are preserved separately from the
 qualified runtime. A public result-lifetime test correction is retained.
@@ -83,25 +83,25 @@ their reproduction sources are evidence and are outside the supported runtime.
 
 The [combined storage/CPython checkpoint](results/2026-11-03-combined-storage-cpython-checkpoint/README.md)
 directly compares7a3a8afe with pre-loop B166 and a same-bits control. Synchronous
-report elapsed is net2.7â€“4.5% lower warm /3.7â€“4.3% fresh, offsetting the earlier
-individual report debt. CSV remains1â€“2% slower and fresh JSON1.8â€“1.9% slower;
+report elapsed is net2.7–4.5% lower warm /3.7–4.3% fresh, offsetting the earlier
+individual report debt. CSV remains1–2% slower and fresh JSON1.8–1.9% slower;
 those are accepted current tradeoffs, not erased by allocation results. Fresh
 text straddles old roles (10% unchanged-control spread). Current CPython ratios
 and all limits are in the authoritative performance guide; no async debt is closed.
 
 The [reader-owned window milestone](results/2026-11-03-reader-owned-windows/README.md)
 borrows unchanged UTF-8 directly until window retirement, removing an intermediate
-string/copy and reader rune-offset cache. Whole-script allocation falls1â€“2.75%,
-block-read allocation10â€“15%. Elapsed is mixed, some async identical-source controls
+string/copy and reader rune-offset cache. Whole-script allocation falls1–2.75%,
+block-read allocation10–15%. Elapsed is mixed, some async identical-source controls
 differ53%, and sync CSV/JSON changes remain provisional regression debt. All
 observations remain; the combined storage/CPython checkpoint decides the tradeoffs.
 
 The [direct casing storage milestone](results/2026-11-03-direct-casing-storage/README.md)
 replaces mutable casing builders with one admitted immutable backing and static
-UTF-8 expansions. Exact two-pass mapping initially ran48â€“55% slower in the long
+UTF-8 expansions. Exact two-pass mapping initially ran48–55% slower in the long
 Unicode diagnostic; a byte-only conservative sizing refinement preserves text
-allocationâˆ’5.92% and useful complete-text elapsed results. Separate-worker Unicode
-confirmation is near unchanged. Long-ASCII identical-source controls differ38â€“63%
+allocation−5.92% and useful complete-text elapsed results. Separate-worker Unicode
+confirmation is near unchanged. Long-ASCII identical-source controls differ38–63%
 and remain inconclusive. Original sources, adverse samples, ownership tradeoffs
 and measurement boundaries are retained; no general CPU gain is asserted.
 
@@ -309,7 +309,7 @@ correctness is separate from final backend performance; no speedup is claimed.
 
 The [compiler traversal redesign](results/2026-10-31-compiler-traversal/README.md)
 removes ordinary per-node iterator objects without a syntax cache or pass rewrite.
-Complete public compilation allocates 35â€“41% less across six existing scripts.
+Complete public compilation allocates 35–41% less across six existing scripts.
 Two fixed VM observations show lower compilation point medians, with noisy rows
 and inconclusive complete-script timings retained. Warm execution gaps remain.
 
@@ -334,7 +334,7 @@ targets. No runtime improvement or new CPython comparison is claimed.
 
 The [compact instruction representation](results/2026-10-31-compact-instructions/README.md)
 removes duplicate operand tags/operator fields and halves measured instruction
-array elements (48 to 24 bytes). Complete compilation allocates 3.4â€“3.8% less;
+array elements (48 to 24 bytes). Complete compilation allocates 3.4–3.8% less;
 the fixed sixteen-job comparison has no repeatable material script regression,
 with noisy/reversing compilation and control rows retained. This is no qualified
 overall elapsed improvement or update to the primary CPython table.
@@ -374,7 +374,7 @@ The [funded development adapter](results/2026-10-31-funded-development-adapter/R
 replaces fixed program/cursor estimates with producer admission through existing
 Lython owners and reuses borrowed current-capture storage. Semantic, first-refusal,
 retained-program, independent-borrow and actual cancellation checks pass. The
-fixed allocation comparison costs 0.7â€“1.3% for split/sub and 0.2% for expand,
+fixed allocation comparison costs 0.7–1.3% for split/sub and 0.2% for expand,
 with text unchanged; no timing gain is claimed or VM comparison repeated. One-shot
 detailed matching retains conservative funding because its API cannot select a
 working allowance. The retained-program fixture now creates distinct programs.
@@ -412,7 +412,7 @@ governor attribution or favorable retiming.
 
 The [2026-10-29 prepared-scope consolidation](results/2026-10-29-prepared-scope-facts/README.md)
 reuses lexical metadata across compilation and class creation, replacing separate
-class-cell flags. Five representative sources allocate 1.7â€“3.7% less during
+class-cell flags. Five representative sources allocate 1.7–3.7% less during
 compilation. Its sole nine-job timing collection has mixed compilation medians
 and very noisy complete scripts; no elapsed speedup is established. Existing
 lexical/diagnostic checks pass on both platforms/TFMs. No class-engine migration,
@@ -578,8 +578,8 @@ is native frontend/lowering/executable construction, not public compile-to-resul
 
 The [2026-10-18 complete manifest helper checkpoint](results/2026-10-18-manifest-checkpoint/README.md)
 compares immutable `3ea431fd` with CPython 3.13.16 using two identical Lython
-controls. Fresh complete jobs measure 2.027â€“2.251 ms versus 0.597 ms, nominal
-3.40â€“3.77Ã—; 30.37%/31.64% Lython spreads and 11.02% control difference leave
+controls. Fresh complete jobs measure 2.027–2.251 ms versus 0.597 ms, nominal
+3.40–3.77×; 30.37%/31.64% Lython spreads and 11.02% control difference leave
 the result inconclusive. All 39 responses/3,670 invocations and complete file
 goldens match; cleanup/lease release pass. One 7.649-second capture, no retry.
 The previous leading comparison table is preserved behind its evidence link.
@@ -614,7 +614,7 @@ The [2026-10-18 reused function scope facts](results/2026-10-18-scope-facts/READ
 replace repeated runtime/compilation collection with the existing facts stored on
 the lowered definition. One frozen pair saves 108,544B per 64 class-method creations;
 ordinary controls and all native step arrays match. Elapsed is inconclusive,
-including 47% control IQR and 12â€“16% slower fresh controls; no recapture. All 423
+including 47% control IQR and 12–16% slower fresh controls; no recapture. All 423
 focused checks and 58 complete jobs pass. Upfront metadata retention is explicit;
 no new cache/analyzer/owner or architecture-only tests.
 
@@ -623,7 +623,7 @@ remove unconditional definition/body fallbacks while retaining existing TypeScop
 captured cells and metadata order. Shadowing is pinned before edits. Source/lifetime
 checks precede one short native/public-fresh pair: about 55 KB less per 128-call job,
 stable ordinary allocation controls and unqualified elapsed observations. All 423
-focused checks and 58 complete jobs pass. Generic steps change 2,204â†’2,460, explicitly
+focused checks and 58 complete jobs pass. Generic steps change 2,204→2,460, explicitly
 documented; recursion/work/cancellation/admission remain bounded. Existing class/
 generator/contextual routes remain. No new closure/owner machinery or retiming.
 
@@ -644,7 +644,7 @@ precede runtime edits and remain visible. No shared defaults or elapsed claim.
 
 The [2026-10-18 binding-plan constructor](results/2026-10-18-binding-plan/README.md)
 removes three working lists/backings/copies, retaining per-function defaults and
-conservative admission. One native pair saves 96â€“304 bytes per plan; context
+conservative admission. One native pair saves 96–304 bytes per plan; context
 controls, metadata and 27 admission/rollback records are identical. All 306 focused
 checks and 58 complete jobs pass. Existing CPython binding-error wording differences
 remain explicit. No layout cache, new owner, elapsed or CPython speedup claim.
@@ -659,8 +659,8 @@ receipts retained. No new owner/cache, timing capture or CPython speedup claim.
 
 The [2026-10-19 complete JSON helper refresh](results/2026-10-19-json-checkpoint/README.md)
 uses qualified immutable a22c11b8 and identical Lython controls against CPython
-3.13.16. Fresh compile/run takes 9.261â€“9.541 ms versus 4.461 ms: a diagnostic
-2.076â€“2.139Ã— ratio, unqualified with 18.70%/6.52% Lython spreads and 2.48% CPython.
+3.13.16. Fresh compile/run takes 9.261–9.541 ms versus 4.461 ms: a diagnostic
+2.076–2.139× ratio, unqualified with 18.70%/6.52% Lython spreads and 2.48% CPython.
 All 35 responses / 424 invocations match complete goldens. Exact source/binary/
 fixture identities, all worker/fixture cleanup and lease release are verified.
 One 8.660-second capture; no rerun, new framework, profile or ten-minute lane.
@@ -669,7 +669,7 @@ finite-budget or embedding-latency claim.
 
 The [2026-10-18 complete JSON helper comparison](results/2026-10-18-json-checkpoint/README.md)
 uses immutable 6584ddd7 and identical Lython controls against CPython 3.13.16.
-Fresh compile/run takes 9.466â€“9.607 ms versus 4.441 ms; nominal 2.132â€“2.163Ã—
+Fresh compile/run takes 9.466–9.607 ms versus 4.441 ms; nominal 2.132–2.163×
 remains unqualified with 13.11% spread in one control. All 35 responses and 432
 invocations match complete goldens; source/input identities and all worker,
 fixture and lease cleanup are verified. One 8.659-second capture, no runtime or
@@ -695,14 +695,14 @@ iteration framework, retiming, elapsed or CPython speedup claim.
 The [2026-10-18 small JSON result conversion](results/2026-10-18-json-result-copy/README.md)
 shares eager and iterator finalization, replacing eligible UTF-16 heap copies with
 fixed managed control spans and the existing funded UTF-8 factory. One capture
-pair saves 40â€“280 bytes per call; large controls and all 560 exact work records
+pair saves 40–280 bytes per call; large controls and all 560 exact work records
 remain unchanged. 788 focused checks pass, including 58 complete jobs. Tiny
 admission thresholds can change; retained-result funding and large-output
 accounting remain. No elapsed or CPython speedup claim.
 
 The [2026-10-18 complete configuration comparison](results/2026-10-18-config-checkpoint/README.md)
 uses immutable 348998dc, two identical Lython controls and CPython 3.13.16. Fresh
-compile/run takes 2.584â€“2.769 ms versus 1.399 ms; nominal 1.847â€“1.980Ã— remains diagnostic
+compile/run takes 2.584–2.769 ms versus 1.399 ms; nominal 1.847–1.980× remains diagnostic
 with 6.69% control divergence and 16.63% spread in one control. All 39 responses/
 2,456 invocations match independent complete goldens; source/inputs, all workers/
 fixtures and shared lease are verified. One 8.074-second capture, no runtime or
@@ -791,8 +791,8 @@ CPython timing improvement is claimed; no repeat comparison or long lane.
 
 The [2026-10-18 complete text comparison](results/2026-10-18-text-milestone/README.md)
 closes one short capture at immutable `4acd532f`, using unchanged runtime73deb8dc
-and two identical Lython controls. Fresh compile/run takes7.354â€“7.451ms versus
-CPython1.527ms; nominal4.818â€“4.881Ã— remains unqualified with16.27% spread in one
+and two identical Lython controls. Fresh compile/run takes7.354–7.451ms versus
+CPython1.527ms; nominal4.818–4.881× remains unqualified with16.27% spread in one
 control. All35responses/1,074invocations match complete goldens; immutable source,
 inputs, all three worker/fixture cleanups and shared lease are verified. No
 runtime/framework change, repeat timing, trace or ten-minute lane.
@@ -806,7 +806,7 @@ No repeated timing, relaxed gate, JIT attribution or whole-job/CPython claim.
 
 The [2026-10-18 complete CSV comparison](results/2026-10-18-csv-milestone/README.md)
 closes two short captures at immutable `34d4da35`: fresh compile/run 8.549 ms vs
-CPython 3.962 ms, warm RunAsync 9.321 ms vs 3.759 ms. Ratios 2.158Ã—/2.480Ã— remain
+CPython 3.962 ms, warm RunAsync 9.321 ms vs 3.759 ms. Ratios 2.158×/2.480× remain
 diagnostic. Earlier-Lython nominal reductions 6.92%/5.66% are separate and
 unqualified. All 70 responses / 957 invocations preserve full goldens; immutable
 sources, input hashes, all six worker/fixture cleanups and shared lease are
@@ -816,8 +816,8 @@ The [2026-10-18 lowered-module lifetime change](results/2026-10-18-lowered-root/
 removes unconditional whole-module lowering retention from executable programs
 and runners. Three native lifetime failures on4d3c90f9 become passing cases;
 ten final sync/async/annotation/lowered controls and543focused checks pass.
-A temporary diagnostic confirms lowered runner fields1â†’0 and executable root
-retentionYesâ†’No while original syntax remains. Needed lowered subtrees and
+A temporary diagnostic confirms lowered runner fields1→0 and executable root
+retentionYes→No while original syntax remains. Needed lowered subtrees and
 conservative compilation charges remain. The shared async body is equivalent
 apart from syntax/statement input substitution. Diagnostic removed;no time/byte/
 RSS claim,profile,comparison lane or runtime reclamation mechanism is added.
@@ -840,7 +840,7 @@ omits ordinary default-call binding/constructor/member packaging and reuses the
 existing serializer with stateless builtin metadata. Native scalar counts save
 1,840 bytes per default call and 64 bytes per general control through both APIs.
 Eight frozen fuel/error/effect cases and 645 focused checks pass. One7.631s bridge
-file-job capture records1.514â†’1.571ms vs CPython0.16484ms;3.80%higher lies within
+file-job capture records1.514→1.571ms vs CPython0.16484ms;3.80%higher lies within
 spread,with no qualified gain/regression.41responses/10,839invocations match full
 goldens;input/frozen-file hashes and cleanup are verified. Temporary diagnostic
 removed;no repeat capture/profile/full lane. The first launch preflight used a
@@ -851,7 +851,7 @@ The [2026-10-18 governed text reads](results/2026-10-18-text-read/README.md)
 admit accumulated working storage before growth and correct cross-window
 readline character limits. Empty ownership hooks, duplicate UTF-16 storage/cursor
 traversal and CLR accumulation/re-encoding are removed. One 9.309 s capture
-records 11.042 â†’ 10.854 ms versus CPython 4.283 ms; the 1.71% decrease is within
+records 11.042 → 10.854 ms versus CPython 4.283 ms; the 1.71% decrease is within
 spread, with no qualified speedup. All 35 responses / 441 invocations match
 goldens; input/frozen-file hashes and cleanup are verified. Ten failed baseline
 witnesses, isolated CPython controls and 428 passing focused checks are retained.
@@ -862,7 +862,7 @@ accepts identical keys and omits general equality/suppression for builtin string
 Independent probes exposed an existing NaN-key bug in the immutable aa9fc0ea
 package; the final source fixes it while preserving ordinary NaN inequality.
 The first string-only prototype's native/timing/failure evidence is retained
-separately. One required final-source capture records 11.700 â†’ 10.953 ms versus
+separately. One required final-source capture records 11.700 → 10.953 ms versus
 CPython 4.259 ms: nominal 6.4% lower, unqualified. Its 9.317 s run preserves all
 36 responses / 456 invocations, inputs, frozen files and cleanup. Native fixed-
 operand timings permit optimizer folding; zero allocations and outcome controls
@@ -873,14 +873,14 @@ removes generic binding storage from a single-positional default call. A precedi
 ten-second JSON-helper profile has 7,952 samples, no lost events/missing stacks
 and source aligned to 6c9a51df; inclusive costs select the boundary, not a gain
 prediction. Native128-call counts save 11,264 bytes through both APIs. One 9.662 s
-whole-job capture records 11.893 â†’ 11.631 ms versus CPython 4.245 ms: nominal
+whole-job capture records 11.893 → 11.631 ms versus CPython 4.245 ms: nominal
 2.2% lower, unqualified. All 37 responses / 469 invocations match goldens; inputs,
 frozen binaries and cleanup are verified. No repeat trace/capture or new framework.
 
 The [2026-10-17 JSON numeric scratch placement](results/2026-10-17-json-number-scratch/README.md)
 keeps token-sized scratch only around the allocating integer fallback. Separate
 native counts remove 32 bytes per ordinary conversion/hook, with the large-integer
-control unchanged. One 9.473 s complete-job comparison records 12.283 â†’ 12.438 ms
+control unchanged. One 9.473 s complete-job comparison records 12.283 → 12.438 ms
 versus CPython 4.288 ms; the 1.26% higher median is within 1.57%/5.45% spread.
 All 37 responses / 471 invocations match goldens, twelve inputs and 55 baseline
 files remain unchanged, workers/fixtures are gone and the lease is released.
@@ -888,18 +888,18 @@ No latency gain, repeated capture or new benchmark framework is claimed.
 
 The [2026-10-17 JSON helper controls](results/2026-10-17-json-helper-warm-async/README.md)
 measure identical f728636a binaries through warm completed-host RunAsync:
-12.223â€“12.340 ms versus CPython 3.13.16 4.309 ms, unqualified. One 9.495 s run,
+12.223–12.340 ms versus CPython 3.13.16 4.309 ms, unqualified. One 9.495 s run,
 37 responses / 466 invocations, independent full goldens and cleanup are retained.
 The separate [shared-defaults candidate](results/2026-10-17-json-default-options/README.md)
-removes 11,264 â†’ 0 bytes per 128 native default bindings. Its one 9.945 s complete
-job records 13.007 â†’ 12.993 ms versus CPython 4.520 ms, spreads 2.39%/2.23%:
+removes 11,264 → 0 bytes per 128 native default bindings. Its one 9.945 s complete
+job records 13.007 → 12.993 ms versus CPython 4.520 ms, spreads 2.39%/2.23%:
 no elapsed gain established. All 37 responses / 442 invocations match goldens;
 twelve inputs and frozen sources unchanged, workers/fixtures gone. Native probes
 are removed; no recapture or variant campaign.
 
 The [2026-10-17 CSV pull consolidation](results/2026-10-17-csv-pull/README.md)
 deletes one single-use async forwarding method. The sole affected complete-job
-capture records 10.007 â†’ 10.194 ms versus CPython 3.783 ms; 4.31%/2.43% spreads
+capture records 10.007 → 10.194 ms versus CPython 3.783 ms; 4.31%/2.43% spreads
 leave the 1.87% higher median inconclusive. BW retains the working file/patch,
 all 36 responses / 510 invocations, unchanged inputs and terminal cleanup. A
 preceding ten-second all-thread profile of immutable 1b6a1531 supplies attribution,
@@ -907,8 +907,8 @@ not a gain prediction. Two staging failures occurred before timing; evidence is
 preserved. No repeated timing or profiling campaign ran.
 
 The [2026-10-17 complete CSV helper RunAsync snapshot](results/2026-10-17-csv-helper-warm-async/README.md)
-compares clean VM Release builds 5b546b2e â†’ 1b6a1531 with CPython 3.13.16.
-Warm medians are 10.379/10.346/3.756 ms; the nominal 2.755Ã— external ratio is
+compares clean VM Release builds 5b546b2e → 1b6a1531 with CPython 3.13.16.
+Warm medians are 10.379/10.346/3.756 ms; the nominal 2.755× external ratio is
 unqualified and the 0.31% earlier-Lython change is within spread. All 37 responses /
 519 invocations preserve exact stdout/file goldens. The sole capture took 9.320 s;
 input hashes, clean sources, exited workers/fixtures and released lease are
@@ -958,17 +958,17 @@ comparison table now leads with complete jobs, retaining every prior warm/core
 row in a separate visible table.
 
 The [2026-10-17 bounded integer parser checkpoint](results/2026-10-17-utf8-small-integer/README.md)
-reuses the complete fresh CSV job at e01d45c6â†’27a61681:8.181â†’7.503ms, CPython
+reuses the complete fresh CSV job at e01d45c6→27a61681:8.181→7.503ms, CPython
 3.849ms; spreads7.54%/6.44%/1.14%. The nominal8.3% lower median remains unqualified
 and inconclusive. One8.197s capture; independent three-size goldens and both604-file
 source manifests pass, seven workers/fixtures gone and lease free. Separate native
-128-call allocation is11,576â†’4,408bytes through both APIs/text/bytes.86CPython
+128-call allocation is11,576→4,408bytes through both APIs/text/bytes.86CPython
 cases and80frozen traces pass; temporary probe removed. No elapsed gain is inferred
 from allocations. BP refreshes the fresh CSV row; BO remains historical.
 
 The [2026-10-17 native integer-text call diagnostic](results/2026-10-17-integer-text-calls/README.md)
 compares8505c40d with production sources committed asdada7c9c. For128fixed native
-calls, allocation is20,792â†’11,576bytes synchronously and32,056â†’11,576bytes through
+calls, allocation is20,792→11,576bytes synchronously and32,056→11,576bytes through
 asynchronous hosting, for both text and bytes. Four warmups/eight samples per case,
 80exact fuel/span traces and pending-input ownership controls preserve the boundary.
 The temporary diagnostic is removed; raw evidence/source are archived. Complete
@@ -980,13 +980,13 @@ Two identical Lython controls observed 8.114/8.133 ms, CPython 3.8777 ms,
 with 14.79%/7.15%/0.89% spread: one diagnostic, no qualified ratio.
 Independent three-size file/stdout goldens pass; 1,954 frozen files match;
 five workers/fixtures are gone and the lease is free. Separate native context
-setup allocation is 27,568 â†’ 26,088 bytes; the CSV controls do not time that change.
+setup allocation is 27,568 → 26,088 bytes; the CSV controls do not time that change.
 
 The [2026-10-17 replacement consolidation](results/2026-10-17-string-replacement/README.md)
 removes the duplicate bounded algorithm and per-scalar intermediates. A separate
-bounded Unicode member-call witness allocates 115,032 â†’ 4,392 bytes; its 32 KiB
+bounded Unicode member-call witness allocates 115,032 → 4,392 bytes; its 32 KiB
 both-API working-set script now passes. Existing unlimited Unicode pipeline:
-3.621 â†’ 2.981 ms, CPython 0.5404 ms; spreads 80.79%/12.69%/0.52%. The 17.7%
+3.621 → 2.981 ms, CPython 0.5404 ms; spreads 80.79%/12.69%/0.52%. The 17.7%
 lower median is inconclusive within baseline spread, with no elapsed benefit or
 qualified ratio. One 7.759 s capture; no retry/retuning/new producer. Frozen
 sources/independent three-size goldens match; seven workers/fixtures gone,
@@ -995,7 +995,7 @@ leading table; AZ's original evidence and historical identities remain here.
 
 The [2026-10-16 cursor dispatch change](results/2026-10-16-cursor-sync-dispatch/README.md)
 removes async forwarding for synchronous builtin pulls and existing user/async
-iterator tasks. One unchanged branch loop observed 5.979 â†’ 5.889 ms, CPython
+iterator tasks. One unchanged branch loop observed 5.979 → 5.889 ms, CPython
 1.0203 ms; spreads 4.74%/0.70%/0.37%. The 1.5% lower median is within baseline
 spread: inconclusive, no speedup/qualified ratio. One 7.257 s capture, no retry,
 retuning or new producer. Frozen manifests and independent three-size arithmetic
@@ -1004,7 +1004,7 @@ refreshes the same branch-loop row; BG remains historical. No later HEAD claim.
 
 The [2026-10-16 JSON forwarding deletion](results/2026-10-16-json-container-forwarding/README.md)
 removes container forwarding awaits and the redundant prefix decoder/result
-record. One unchanged JSON transform observed 2.626 â†’ 2.691 ms, CPython 0.4439 ms;
+record. One unchanged JSON transform observed 2.626 → 2.691 ms, CPython 0.4439 ms;
 spreads 8.42%/12.68%/0.33%. The 2.5% higher median is within spread, inconclusive.
 One 7.516 s capture, no retry/retuning/new producer; frozen sources and independent
 three-size goldens match, seven workers/fixtures gone, services inactive, lease
@@ -1016,7 +1016,7 @@ The [2026-10-16 JSON literal change](results/2026-10-16-json-literal-dispatch/RE
 removes true/false/null from the generic async token route, preserving the existing
 scalar admission and actual callback suspension. Both roles include the preceding
 parser-error correction. One unchanged JSON parse/edit/dump case observed
-2.365 â†’ 2.380 ms, CPython 0.4414 ms; spreads 17.11%/22.15%/0.15%. The 0.6% change
+2.365 → 2.380 ms, CPython 0.4414 ms; spreads 17.11%/22.15%/0.15%. The 0.6% change
 is within spread: no benefit or qualified ratio established. One 7.385 s capture,
 no retry/retuning/new producer. Independent three-size row goldens and frozen
 sources match; seven workers/fixtures gone, services inactive, lease free. BK keeps
@@ -1024,7 +1024,7 @@ this in-memory case separate from historical complete file jobs and later HEAD.
 
 The [2026-10-16 invocation-owned locals change](results/2026-10-16-owned-function-locals/README.md)
 consolidates executable parameter/local storage and admits unpooled capacity
-before binding. One unchanged starred-list helper observed26.602 â†’27.550ms,
+before binding. One unchanged starred-list helper observed26.602 →27.550ms,
 CPython2.9739ms; spreads2.29%/2.36%/2.13%. The3.6%higher median demonstrates no
 performance benefit. One8.503s unqualified capture, no retry or retuning. Both
 roles pass three-size goldens, frozen manifests match, seven workers/fixtures are
@@ -1033,7 +1033,7 @@ gone and the lease is free. BJ preserves this source pair; no HEAD timing claim.
 The [2026-10-16 direct split change](results/2026-10-16-direct-string-split/README.md)
 removes per-receiver callable/binder work from ordinary zero-argument exact-string
 split and reuses the governed kernel. One unchanged complete text job observed
-7.018 â†’ 6.405 ms, CPython 1.3426 ms; spreads10.70%/10.08%/0.87%. The 8.7%
+7.018 → 6.405 ms, CPython 1.3426 ms; spreads10.70%/10.08%/0.87%. The 8.7%
 change is within spread: no speedup or qualified ratio established. One8.094s
 capture after corrected catalog-profile setup; original failure occurred before
 timing. Three-size independent file/stdout goldens and frozen manifests match;
@@ -1043,7 +1043,7 @@ leading text snapshot; AN remains separate history. No repeat/tuning/new produce
 The [2026-10-16 synchronous advancement change](results/2026-10-16-generator-sync-advance/README.md)
 removes the async advancement wrapper from ordinary synchronous generator pulls,
 sharing managed admissions, frame entry/exit and result reading. One unchanged
-warm reduction observed 4.118 â†’ 3.912 ms (5.0% lower median), CPython 0.5586 ms;
+warm reduction observed 4.118 → 3.912 ms (5.0% lower median), CPython 0.5586 ms;
 spreads 3.67%/1.55%/0.39%. This remains one unqualified diagnostic. Both roles
 pass three-size goldens; frozen sources match, seven workers/fixtures are gone,
 services inactive and lease free. AX refreshes the leading snapshot; AW and AV
@@ -1052,17 +1052,17 @@ remain separate historical source pairs. No repeat/tuning/new producer/full lane
 The [2026-10-16 executable generator migration](results/2026-10-16-executable-generators/README.md)
 uses genuine child instructions and existing frames/cells; ordinary lowered
 creation/overlay and fallback-only parent mirroring are removed. One unchanged
-warm numeric reduction observed 4.330 â†’ 4.252 ms, CPython 0.5611 ms; spread
+warm numeric reduction observed 4.330 → 4.252 ms, CPython 0.5611 ms; spread
 1.45%/3.83%/0.26%. The 1.8% change is inconclusive: no established speedup or
 qualified ratio. One 7.219 s capture, no repeat/tuning/new producer. Both roles
 pass three-size independent goldens, frozen manifests match, seven workers and
-fixtures are gone, services inactive and lease free. AW preserved that revisionâ€™s
+fixtures are gone, services inactive and lease free. AW preserved that revision’s
 numeric snapshot; AV and its earlier binding result remain historical evidence.
 
 The [2026-10-16 generator-binding correction](results/2026-10-16-generator-bindings/README.md)
 removes per-yield binding scans, preserving walrus writes through rejected filters,
 errors and suspended captured cells. One unchanged warm numeric reduction observed
-4.919 â†’ 4.077 ms (17.1% lower median), CPython 0.5695 ms; spreads
+4.919 → 4.077 ms (17.1% lower median), CPython 0.5695 ms; spreads
 0.64%/1.11%/0.22%. This is an unqualified single diagnostic; generator-expression
 bodies remain lowered. Frozen sources match, seven workers/fixtures are gone,
 services inactive and lease free. Failed CRLF shell setup stopped before timing;
@@ -1071,7 +1071,7 @@ its evidence is retained. No repeat, retuning, new producer or full lane.
 The [2026-10-16 terminal-admission correction](results/2026-10-16-terminal-admission/README.md)
 ends the command after refused admission while preserving native cleanup,
 retained funding and later commands. One unchanged complete JSON aggregation
-observed 9.713 â†’ 9.492 ms, CPython 4.175 ms. The 2.3% difference is within baseline
+observed 9.713 → 9.492 ms, CPython 4.175 ms. The 2.3% difference is within baseline
 spread; no speed change, qualified ratio or host-latency result. One 9.533 s owned
 capture, no repeat or retuning; frozen sources match and all workers exited. The
 initial catalog-profile preparation failure occurred before timing and is preserved.
@@ -1079,7 +1079,7 @@ initial catalog-profile preparation failure occurred before timing and is preser
 The [2026-10-16 builtin setup change](results/2026-10-16-builtin-setup/README.md)
 shares three fixed plain definitions, retaining private type graphs and current
 caller module resolution. One existing empty warm invocation control observed
-23.318 -> 23.445 Âµs, CPython 1.506 Âµs; spread 3.7%/2.9%/1.0%. The 0.5% higher
+23.318 -> 23.445 µs, CPython 1.506 µs; spread 3.7%/2.9%/1.0%. The 0.5% higher
 median is inconclusive. No improvement, useful-workload ratio or gap attribution
 is established. Source removes three wrappers, two temporary parameter arrays
 and three catalog lock/lookups per root execution. One 7.186 s owned capture;
@@ -1109,7 +1109,7 @@ replaces AS's warm row; the earlier string-token evidence remains:
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Complete JSON-lines aggregation [AS], warm | 4,096 records / 110,592 UTF-8 bytes | 10.548 ms | 4.651 ms | â€” | Short diagnostic at b85fdde9; candidate median 2.9% higher, within 17.2% baseline spread; inconclusive |
+| Complete JSON-lines aggregation [AS], warm | 4,096 records / 110,592 UTF-8 bytes | 10.548 ms | 4.651 ms | — | Short diagnostic at b85fdde9; candidate median 2.9% higher, within 17.2% baseline spread; inconclusive |
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
@@ -1127,7 +1127,7 @@ and lease free. No repeat or tuning. AS replaces AC's warm row; original evidenc
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | â€” | Historical warm diagnostic; elapsed change within spread |
+| Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | — | Historical warm diagnostic; elapsed change within spread |
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
@@ -1146,7 +1146,7 @@ The prior warm evidence remains:
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | â€” | One candidate diagnostic; inconclusive (56.4% spread) |
+| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
 
 The [2026-10-16 subscript-augmented delivery](results/2026-10-16-augmented-subscript-stores/README.md)
 retains receiver/key in existing frame slots and deletes their prepared read/store
@@ -1188,7 +1188,7 @@ The leading text snapshot AN replaces AM; AM's original row and identity remain:
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Complete text-summary file job [AM], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.831 ms | 1.322 ms | â€” | Short baseline diagnostic at 72856c8c; 5.7% spread; wrapper candidate inconclusive and removed |
+| Complete text-summary file job [AM], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.831 ms | 1.322 ms | — | Short baseline diagnostic at 72856c8c; 5.7% spread; wrapper candidate inconclusive and removed |
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
@@ -1428,7 +1428,7 @@ timing lane or favorable recollection ran.
 
 The [lowered operation-selection round](results/2026-10-11-lowered-kind-dispatch/README.md)
 rejects preselected node dispatch: method time changes +3.2%/-3.4%, with the
-second gain inside its 3.9% spread. Fourteen paired micros take 8.04â€“8.05s
+second gain inside its 3.9% spread. Fourteen paired micros take 8.04–8.05s
 including cleanup; separate allocation/native groups take about four seconds.
 Both producers pass 9,466 matching Windows Debug and Linux Release tests plus
 seven complete canonical CPython cases each. Eight existing fixed checkpoint
@@ -1439,7 +1439,7 @@ method-body compiler remains pending. No full timing lane or recollection ran.
 The [prepared augmented-target round](results/2026-10-11-prepared-augmented-target/README.md)
 rejected; the prototype remains isolated. It compares identical slice-protocol/governance corrections
 on both producers, with 42 independent pre-prototype checks. Fourteen paired
-micros take 8.04â€“8.05s including cleanup; separate allocation/native
+micros take 8.04–8.05s including cleanup; separate allocation/native
 checks and all controls remain visible. No full lane or favorable recollection
 is added; the next milestone remains deferred.
 Initial delivery CI exposes a Linux `/proc` read race in an existing test helper.
@@ -1459,7 +1459,7 @@ publication and exception-propagation corrections. Its original measurements,
 failed qualification and diagnostic trials remain visible in the reports.
 
 The [current class-method design assessment](results/2026-10-11-class-method-design/README.md)
-adds two ten-second CPU traces (14â€“17s including cleanup) and 23 independent
+adds two ten-second CPU traces (14–17s including cleanup) and 23 independent
 checks on unchanged production. Attribute lookup, assignment and method invocation
 remain substantial sampled costs. Real class-factory checks pin fuel/funding/cell
 boundaries and genuine async suspension with same-run reentry. Executable
@@ -1479,17 +1479,17 @@ qualified comparative multipliers.
 
 The [first synchronous dispatch improvement](results/2026-10-09-sync-dispatch/README.md)
 used two short collections of about seven seconds each. Their diagnostic medians
-show 13.4â€“14.0% less time on the 16,384-iteration loop, with correctness checks
+show 13.4–14.0% less time on the 16,384-iteration loop, with correctness checks
 passing and milestone qualification deferred.
 
 The [subsequent short experiments](results/2026-10-09-integer-addition/README.md)
-accepted guarded exact integer addition after 10.7â€“14.1% less loop time in two
+accepted guarded exact integer addition after 10.7–14.1% less loop time in two
 seven-second collections, and rejected direct loop-name storage after inconsistent
 results. Every collection is retained. A separate operator-fallback correctness
 fix preserves the measured integer guard.
 
 The [bound loop-name compiler change](results/2026-10-09-bound-loop-names/README.md)
-showed 20.2â€“22.4% less loop time in two collections of about seven seconds each
+showed 20.2–22.4% less loop time in two collections of about seven seconds each
 against a baseline with the same independently tested function-scope fix.
 Simple targets reuse existing bound stores; complete outputs and checkpoints
 remain checked. Both receipts are retained, with milestone qualification pending.
@@ -1510,7 +1510,7 @@ the basic-loop comparison still withholds a certified multiplier.
 The [second consolidated milestone](results/2026-10-10-second-milestone/README.md)
 completed two warm lanes in 6m00s and 6m17s. The current basic loop, keyword
 calls, stable sort, JSON and zlib qualify against CPython. The basic loop takes
-about 2.6â€“2.8 times CPython's time. The reference tiny control failed spread,
+about 2.6–2.8 times CPython's time. The reference tiny control failed spread,
 so no old/new improvement ratio qualifies. The current ASCII pipeline falls
 below the unchanged invocation floor. Every exclusion remains final; ordinary
 rounds keep using seconds-long micros.
@@ -1518,8 +1518,8 @@ rounds keep using seconds-long micros.
 The [string reclamation round](results/2026-10-09-string-reclamation/README.md)
 used five short decomposition jobs and a separate 15-second CPU trace, followed
 by two repetitions each of the pipeline and split/count. Direct string ownership
-registrations reduced pipeline medians by 65â€“67% and split/count by 63â€“66% in
-7â€“8-second collections. These remain diagnostic results; the next full milestone
+registrations reduced pipeline medians by 65–67% and split/count by 63–66% in
+7–8-second collections. These remain diagnostic results; the next full milestone
 is deferred.
 
 The [module completion experiment](results/2026-10-09-module-completion/README.md)
@@ -1529,7 +1529,7 @@ longer in both repetitions, so that candidate remains isolated. An independent
 writer publication cleanup correction is retained; no full lane was collected.
 
 The [lazy string cache experiment](results/2026-10-10-string-cache-metadata/README.md)
-used ten micros of 6.4â€“7.0 seconds and separate fixed-count allocation checks.
+used ten micros of 6.4–7.0 seconds and separate fixed-count allocation checks.
 It reduced pipeline managed allocation by 5.11% but gave no repeatable target
 latency improvement, so the candidate remains isolated. No full lane ran.
 
@@ -1559,18 +1559,18 @@ uses twelve baseline variant micros, a separate bounded CPU capture and eight
 old/new micros. Tuple-owned reclamation metadata reduces construction time by
 about 25% in both replicas and isolated constructor/registration allocation by
 18.7%. The change is integrated; high-variance sort results and the remaining
-CPython gap stay visible. All micros take 6.4â€“7.5 seconds; no full lanes run.
+CPython gap stay visible. All micros take 6.4–7.5 seconds; no full lanes run.
 
 The [exact integer sort-key round](results/2026-10-10-integer-sort-keys/README.md)
 refreshes current construction/sort CPU leads with two bounded captures, then
-accepts a guarded integer comparison after ten 6.4â€“7.3-second micros. Scalar-sort
-time falls about 28% in both replicas; full sort/output falls 22â€“26%, retaining
+accepts a guarded integer comparison after ten 6.4–7.3-second micros. Scalar-sort
+time falls about 28% in both replicas; full sort/output falls 22–26%, retaining
 its spread. Mixed keys retain Python dispatch, and all 9,140 Debug checks pass.
 Full lanes remain deferred to a declared consolidated milestone.
 
 The [small immutable tuple round](results/2026-10-10-small-tuple-adoption/README.md)
 removes temporary adoption collections for tuples of up to two items while
-preserving logical charges and rollback. Eight 6.4â€“7.3-second micros show 24â€“26%
+preserving logical charges and rollback. Eight 6.4–7.3-second micros show 24–26%
 less construction time; complete sort observations remain noisy. Separate retained
 constructor/registration diagnostics show about 67% less allocation for scalar
 pairs, with the larger-tuple control essentially unchanged. All 9,152 Debug checks
@@ -1585,7 +1585,7 @@ Every untraced diagnostic process takes less than a second. There are no normal
 timing samples, full lanes or speed claims; namespace qualification remains open.
 
 The [new combined lazy-namespace round](results/2026-10-10-function-frame-namespaces/README.md)
-passes its own full 9,161-check Debug gate before ten 6.4â€“7.3-second micros.
+passes its own full 9,161-check Debug gate before ten 6.4–7.3-second micros.
 Complete-call managed allocation falls about 11%; the change is integrated as an
 allocation improvement. Call timing changes remain below spread or mixed, so no
 reliable throughput gain is claimed. The original failed namespace receipt stays
@@ -1593,29 +1593,29 @@ preserved. No full lanes run; future milestones keep their ten-minute cap.
 
 The [direct instruction-array round](results/2026-10-10-instruction-arrays/README.md)
 uses compiler-owned arrays directly in dispatch, with readonly synchronous reads.
-Twelve 6.4â€“7.2-second micros show 13â€“15% less loop time, 7â€“8% less positional-call
-time and 9â€“12% less keyword-call time. Empty/pipeline controls have small mixed
+Twelve 6.4–7.2-second micros show 13–15% less loop time, 7–8% less positional-call
+time and 9–12% less keyword-call time. Empty/pipeline controls have small mixed
 changes; sort remains too noisy for a reliable claim. All 9,161 Debug checks pass
 before timing. No full lanes run; qualification waits for a declared milestone.
 
 The [execution-check cold-path round](results/2026-10-10-checkpoint-cold-paths/README.md)
 keeps sweep/exception work separate from an inlined checkpoint body. Twelve
-6.4â€“7.1-second micros show 11% less loop time, 6â€“9% less positional-call time and
-3â€“4% less keyword-call time. Sort medians rise with substantial spread and remain
+6.4–7.1-second micros show 11% less loop time, 6–9% less positional-call time and
+3–4% less keyword-call time. Sort medians rise with substantial spread and remain
 visible as a limitation; empty/pipeline changes are small and mixed. All 9,164
 Debug checks pass before timing. No full lanes run.
 
 The [embedded operand-stack round](results/2026-10-10-frame-stack-storage/README.md)
 places stack state inside each interpreter and borrows it by reference. Separate
 fixed-count diagnostics show about 3.7% less managed call allocation; the change
-is integrated as a storage improvement. Twelve 6.4â€“7.1-second micros retain mixed
+is integrated as a storage improvement. Twelve 6.4–7.1-second micros retain mixed
 call timings, so no reliable throughput gain is established. All 9,164 Debug checks
 pass before collection. Retained helper-launcher/declaration errors precede any
 allocation worker; the successful helper build is rehashed and reused. No full lanes run.
 
 The [shared frame-owner round](results/2026-10-10-shared-frame-owner/README.md)
 combines interpreter and slot state, removing a separate object and duplicate
-references. Two fixed-count passes show about 6.3â€“6.4% less managed call allocation.
+references. Two fixed-count passes show about 6.3–6.4% less managed call allocation.
 The change is integrated for storage savings; timing varies between replicas, so
 no reliable throughput gain is established. Twelve paired micros stop in about
 eight seconds each, and separate allocation groups in about four seconds, all
@@ -1633,7 +1633,7 @@ pass before collection, including concurrent namespace aliases through both view
 Every observation is retained. No full lanes run; qualification remains deferred.
 
 The [shared locals/stack-buffer experiment](results/2026-10-10-shared-frame-buffer/README.md)
-remains isolated. It reduces complete-call managed allocation by 4.18â€“4.29%,
+remains isolated. It reduces complete-call managed allocation by 4.18–4.29%,
 but both replicas show slower positional calls (2.64%/1.99%), keyword calls
 (3.55%/1.46%) and integer loops (3.74%/1.35%). Fourteen paired micros include a
 prospective stack-growth control and stop in about eight seconds each. Separate
@@ -1687,7 +1687,7 @@ combines range advancement and checked pulls in one active enumerator, preservin
 the original checkpoint/ownership boundaries and materializer source shape.
 Loop time falls 3.53%/4.50% in two repeats against roughly 1% spreads; call decreases
 are small, sort is mixed and pipeline changes are small. Loop managed allocation
-increases 8â€“22 bytes per complete job; final interpreter code grows 9 native bytes.
+increases 8–22 bytes per complete job; final interpreter code grows 9 native bytes.
 Eighteen exact boundary regressions pass the unchanged runtime first; all 9,196
 Debug checks pass before collection. Twelve micros take about eight seconds each,
 with separate allocation/native groups about four seconds under 30-second caps.
@@ -1695,7 +1695,7 @@ Every result and native body/tier remains visible. No full lanes run.
 
 The [direct iterator-dispatch round](results/2026-10-10-direct-for-next-dispatch/README.md)
 routes synchronous ForNext through its original operations from the main switch.
-Loop time falls 3.50%/3.73% in two repeats against 0.5â€“0.9% spreads; calls and
+Loop time falls 3.50%/3.73% in two repeats against 0.5–0.9% spreads; calls and
 pipeline reverse, and full-sort increases remain within their retained spreads.
 Allocation is effectively unchanged. Final Tier1 main code grows 24 bytes;
 early OSR grows 1,231 bytes. Every body/tier remains visible. A separate
@@ -1707,7 +1707,7 @@ a 30-second cap. No full lanes run; milestone qualification remains pending.
 The [simple compiled-return improvement](results/2026-10-10-simple-return-functions/README.md)
 removes transient interpreter and array allocations from guarded return-only
 functions, while retaining their actual context, binder, checkpoints and funding.
-Two paired short replicas show 16.6â€“18.1% less positional-call time and 13.0â€“20.1%
+Two paired short replicas show 16.6–18.1% less positional-call time and 13.0–20.1%
 less keyword-call time, with about 53% less managed job allocation. All controls
 remain visible, including an unexplained first-loop increase of 7.61% that does
 not repeat in replica two (-0.29%). Native code grows with different emitted
@@ -1718,7 +1718,7 @@ Full frozen Debug passes 9,232 checks and VM Release 204 white/296 public, with
 six complete CPython goldens before timing. Milestone qualification remains pending.
 
 The [inline operand-stack experiment](results/2026-10-10-inline-operand-stack/README.md)
-remains isolated. It saves about 9.86â€“10.01% of managed call allocation, but both
+remains isolated. It saves about 9.86–10.01% of managed call allocation, but both
 repetitions show slower loops (11.99%/15.69%), positional calls (10.19%/6.93%)
 and keyword calls (2.12%/8.33%), beyond their spreads. Fifteen independent
 growth/reference/disposal checks pass on unchanged production first and are
@@ -1732,7 +1732,7 @@ The [context-parent consolidation](results/2026-10-10-context-parent-link/README
 derives ancestry from the existing frame link while retaining real function
 contexts, namespaces, lexical services and containment checks. Nine independent
 constructor/namespace/nonlocal checks pass original production first. Complete-call
-managed allocation falls about 3.0â€“3.1%; keyword time falls 2.5â€“5.6% in both short
+managed allocation falls about 3.0–3.1%; keyword time falls 2.5–5.6% in both short
 replicas, while positional time stays within its spreads. The loop +3.91%/-1.43%
 reversal and all sort/pipeline controls remain visible without speedup claims.
 The checked getter grows from 5 to 39 native bytes; every body/tier is retained.
@@ -1745,7 +1745,7 @@ in the preceding CPU trace; complete-job byte measurements support its saving.
 The [module-function discovery improvement](results/2026-10-10-module-super-discovery/README.md)
 skips implicit-super receiver/class-cell discovery for unowned module-root functions,
 retaining owner binding and nested/live class-cell barriers. Eighteen independent
-checks pass unchanged production first. Keyword calls take 8.8â€“10.2% less time in
+checks pass unchanged production first. Keyword calls take 8.8–10.2% less time in
 both short replicas, beyond their spreads; the first positional result overlaps
 its spread, so no repeatable positional gain is claimed. All sort/control changes
 and the first-pass sort allocation increase remain visible. Full Debug passes
@@ -1757,12 +1757,12 @@ Python multiplier; all emitted native bodies/tiers stay retained.
 The [unused super-anchor experiment](results/2026-10-10-super-anchor-state/README.md)
 keeps its production change isolated. Positional/keyword allocation falls about
 3.1%, but owned-method allocation falls only 0.46%, below the prospective 0.5%
-floor required across all three call cases. Positional timing improves 2.8â€“3.3%;
+floor required across all three call cases. Positional timing improves 2.8–3.3%;
 keyword/method timing has no repeated benefit. Every control remains visible,
 including opposite sort changes. Thirteen independent funding/parity checks are
 retained; all 58 selected checks pass original production first. The candidate
 passes 9,272 Debug tests, VM Release 239 white/331 public and seven canonical
-CPython outputs before fourteen micros taking 8.04â€“8.06 seconds each. Separate
+CPython outputs before fourteen micros taking 8.04–8.06 seconds each. Separate
 allocation/native groups take about four seconds, all under 30-second caps.
 No full lanes run and no observations are recollected to chase acceptance.
 
@@ -1786,7 +1786,7 @@ and matches twenty trusted CPython snippets in both run modes.
 The [direct synchronous lowered-dispatch experiment](results/2026-10-10-lowered-sync-dispatch/README.md)
 passes 9,335 Debug tests and fresh Release/CPython gates for both producers.
 Fourteen paired micros take about eight seconds each. Method jobs improve
-4.8â€“6.6%, but the loop control repeatedly regresses 2.6â€“3.2%, failing the frozen
+4.8–6.6%, but the loop control repeatedly regresses 2.6–3.2%, failing the frozen
 acceptance rule. The candidate stays isolated. Separate allocation/native
 diagnostics retain all observations; no full lane or recollection runs.
 
@@ -1802,7 +1802,7 @@ The [exact default object-slot round](results/2026-10-10-default-object-attribut
 integrates direct descriptor-aware handling after method jobs improve 31.0% /
 28.3% and process-wide complete-job allocation drops 48.4% in both passes.
 Both fresh Release producers pass 276 white/390 public checks and seven canonical
-CPython comparisons before fourteen paired micros taking 8.04â€“8.06 seconds each.
+CPython comparisons before fourteen paired micros taking 8.04–8.06 seconds each.
 All controls remain visible: positional calls change +4.39%/-3.67%, while full
 sort/output changes +6.62%/+3.09% within 12.1%/18.9% retained maximum spreads.
 The unchanged prospective repeated-regression rule passes. Separate allocation
@@ -1812,7 +1812,7 @@ external caps. No full lanes, recollection or milestone qualification.
 The [current method CPU refresh and scoped-dispatch baseline](results/2026-10-11-function-scoped-dispatch-baseline/README.md)
 uses two 10-second captures on accepted attribute-slot production, with whole
 groups taking 14.07/16.08 seconds. Shared async statement dispatch remains in
-33.5â€“35.6% of inclusive sampled stacks; these overlapping shares are design leads,
+33.5–35.6% of inclusive sampled stacks; these overlapping shares are design leads,
 not predicted savings. Twenty-seven independent invocation checks precede an
 isolated function-body strategy. Baseline and candidate each pass 9,395 Debug
 tests, 181 selected checks and 58 CPython comparisons. Fresh Release gates and
@@ -1868,7 +1868,7 @@ preserve the distinct CPython and earlier-Lython comparisons.
 
 ## Diagnostic comparisons by revision
 
-- [Complete CSV helper checkpoint](results/2026-10-17-csv-checkpoint/README.md): exact Release runtime 463b7a7a on the dedicated VM, fresh compile/run. Lython 8.581 ms versus CPython 3.13.16 at 3.718 ms, nominally 2.308Ã— in one unqualified diagnostic. Earlier Lython at 8.432 ms is a separate control; the 1.77% median difference is within observed spread. Complete stdout/file checks and cleanup pass; no byte-kernel attribution or repeated capture.
+- [Complete CSV helper checkpoint](results/2026-10-17-csv-checkpoint/README.md): exact Release runtime 463b7a7a on the dedicated VM, fresh compile/run. Lython 8.581 ms versus CPython 3.13.16 at 3.718 ms, nominally 2.308× in one unqualified diagnostic. Earlier Lython at 8.432 ms is a separate control; the 1.77% median difference is within observed spread. Complete stdout/file checks and cleanup pass; no byte-kernel attribution or repeated capture.
 
 - [Ordinary function operand transport](results/2026-10-16-ordinary-function-transport/README.md): keyword/variadic Python calls consume existing operands through the shared binder, removing temporary transport and the async preparation closure. Mutable defaults and actual protocol suspension keep invocation-owned slots. Sixteen frozen guard/effect matrices match. One unchanged keyword loop has a 1.8% lower median within 13.3% baseline spread; inconclusive, no speedup established.
 
@@ -1898,50 +1898,50 @@ measurement-status labels retain their original meaning; see the
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| Stable sort with lambda key [AO], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.550 ms | 0.3033 ms | â€” | Short diagnostic at 155843d0; target stores compiled; timing change inconclusive (baseline spread 3.5%) |
-| Stable sort with lambda key [AL], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.595 ms | 0.3020 ms | â€” | One diagnostic; observed 10.2% lower Lython median; executable lambda bodies; comprehension unchanged; precedes the final name-label fix |
-| Expanded-call forwarding helper [AK], warm `Run` | 2,048 calls; tuple and keyword mapping | 2.077 ms | 0.2443 ms | â€” | One diagnostic; observed 13.9% lower Lython median; fallback/mirroring removed; general binder remains |
-| Formatted report helper [AJ], warm `Run` | 2,048 calls; padded row and computed next value | 2.125 ms | 0.4201 ms | â€” | One diagnostic; observed 13.4% lower Lython median; ordinary f-string fallback removed |
-| Expanded set/dictionary helper [AI], warm `Run` | 2,048 calls; mixed literal/expanded entries | 4.963 ms | 0.6326 ms | â€” | One diagnostic; observed 8.8% lower Lython median; fallbacks/mirroring removed |
-| Ordinary starred-tuple helper [AH], warm `Run` | 2,048 calls; six-element immutable results | 2.629 ms | 0.3477 ms | â€” | One diagnostic; elapsed change within spread; fallback removed, conservative overlap funded |
-| Ordinary starred-list helper [AG], warm `Run` | 2,048 calls; six-element merged lists | 2.179 ms | 0.3541 ms | â€” | One diagnostic; observed 18.2% lower Lython median; fallback/mirroring removed |
-| JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | â€” | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
-| Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | â€” | One diagnostic; observed 35.8% lower Lython median; remaining gap substantial |
-| Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | â€” | One diagnostic; difference within spread; byte-allocation removal only |
-| Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | â€” | One diagnostic; elapsed change within spread; redundant wrapper removed |
-| Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | â€” | One diagnostic; elapsed change within spread; allocation removal only |
-| Complete text-summary file job [AA], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.553 ms | 1.231 ms | â€” | One diagnostic; observed improvement near baseline spread; no qualified ratio |
-| Default-argument helper [Z], fresh compile/run | 256 calls | 0.186 ms | 0.0373 ms | â€” | Historical diagnostic at 3b34fad2; sharing prototype was slower and removed; final cleanup unmeasured |
-| Split lines, strip and sum lengths [X], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes | 23.464 ms | 3.132 ms | â€” | One default-strip diagnostic on 88e0992b; inconclusive, baseline/candidate spread 16.5%/23.3% |
-| Unicode string-key word counts [W], warm `RunAsync` | 16,384 updates / four keys; completed host operations | 15.146 ms | 1.313 ms | â€” | One direct-get diagnostic on 7e2c1f27; observed 16.0% lower Lython median; remaining gap substantial |
-| Append to distinct lists and total values [N], warm `RunAsync` | 16,384 lists/appends; completed host operations | 7.819 ms | 1.132 ms | â€” | One direct-append diagnostic on 99e8701f; observed 21.8% lower Lython median; no qualified speedup |
-| Full-body parameter-update helper [B], warm `RunAsync` | 16,384 calls; completed host operations | 10.372 ms | 1.287 ms | â€” | One matching-local-storage diagnostic on f93e9258; observed 3.6% lower Lython median; no qualified speedup |
-| Keyword helper [K], warm `Run` | 16,384 calls | 4.262 ms | 1.174 ms | â€” | One call-cache deletion diagnostic on 6262ea94; difference within spread; no timing claim |
-| Helper using positional/keyword defaults [V], warm `RunAsync` | 16,384 calls; completed host operations | 9.555 ms | 1.258 ms | â€” | One correctness/admission diagnostic on 96596466; candidate median 4.2% higher; spreads 3.0%/3.9% |
-| Tuple-key dictionary updates [D], warm `Run` | 16,384 updates | 30.573 ms | 2.418 ms | â€” | One method-identity diagnostic on 0eb587a9; difference from earlier Lython is within spread |
-| Integer reduction loop [I], warm `RunAsync` | 16,384 iterations; completed host operations | 2.660 ms | 0.579 ms | â€” | One diagnostic on 88f78106; 14.4% lower median than earlier async Lython; candidate spread 6.0% |
-| Integer helper calls [E], warm `Run` | 16,384 calls | 3.289 ms | 0.965 ms | â€” | One candidate diagnostic on 015184e6; sync change within spread |
-| Same helper calls [R], warm `RunAsync` | Same input; completed host operations | 5.378 ms | 1.001 ms | â€” | One positional-transport diagnostic on 1f2ef306; 13.7% lower Lython median; baseline spread 9.4% |
-| Helper with nested filtered list comprehension [H] | 1,024 inputs / 1,364 results | 0.816â€“0.825 ms | 0.0793â€“0.0990 ms | â€” | Warm diagnostics at 3cad4157; both executable candidates rejected; CPython spread 23.7â€“38.2% |
-| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | â€” | One candidate diagnostic; inconclusive (56.4% spread) |
-| Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | â€” | Fresh code per job; inconclusive (42.4% spread); startup excluded |
-| Complete file copy/checksum manifest [F] | 2 files / 4,107 bytes | 6.103â€“6.254 ms | 0.442 ms | â€” | One warm diagnostic; two identical Lython controls, up to15.1% spread |
-| Complete Unicode text summary [T] | 6,144 words / 35,840 UTF-8 bytes | 8.018 ms | 1.258 ms | â€” | One warm diagnostic at ca432c22; noisy ASCII candidate rejected |
-| Complete JSON-lines summary [J] | 4,096 records / 110,592 UTF-8 bytes | 11.537 ms | 4.225 ms | â€” | One warm candidate diagnostic; timing inconclusive (11.8% spread), allocation reduction measured |
-| Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | â€” | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
-| CSV parse and discard [G] | 16 data rows | 0.0780 ms | 0.0285 ms | â€” | One short governed-memory diagnostic; uncommitted source, unqualified |
-| Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | â€” | One short diagnostic at 09d81bb1 source; no qualified multiplier |
-| Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | â€” | Short diagnostic at b43664e0; one run, no qualified multiplier |
-| Integer reduction loop [L] | 16,384 iterations | 3.58â€“3.72 ms | 0.578â€“0.666 ms | â€” | Historical diagnostic; failed control and cross-session stability |
-| Keyword calls [Q] | 2,048 calls | 1.378â€“1.404 ms | 0.137â€“0.145 ms | â€” | Historical diagnostic; failed invocation control |
-| Stable sort and output [Q] | 2,048 items | 5.150â€“7.889 ms | 0.306â€“0.313 ms | â€” | Historical diagnostic; spread/order checks also failed |
-| ASCII text pipeline [Q] | 1,024 eleven-character blocks | 0.618 ms | 0.0415 ms | â€” | Historical diagnostic; only one session before idle gate failed |
-| JSON transform and round trip [Q] | 128 records | 0.674â€“0.741 ms | 0.0610â€“0.0618 ms | â€” | Historical diagnostic; control floor/spread/interval checks failed |
-| CSV parse and retain [Q] | 128 data rows | 1.037â€“1.185 ms | 0.102â€“0.108 ms | â€” | Historical diagnostic; control/spread/order/interval checks failed |
-| Other CSV summary sizes [S] | 0 / 16 fixture repeats | â€” | â€” | â€” | Output correctness verified; timing pending |
-| Other Unicode text summary sizes [S] | 0 / 16 fixture repeats | â€” | â€” | â€” | Output correctness verified; timing pending |
-| Other JSON-lines summary sizes [S] | 0 / 16 fixture repeats | â€” | â€” | â€” | Output correctness verified; timing pending |
-| Other file copy/checksum manifest sizes [S] | 0 / 16 fixture repeats | â€” | â€” | â€” | Output correctness verified; timing pending |
+| Stable sort with lambda key [AO], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.550 ms | 0.3033 ms | — | Short diagnostic at 155843d0; target stores compiled; timing change inconclusive (baseline spread 3.5%) |
+| Stable sort with lambda key [AL], warm `Run` | 2,048 tuples; build, stable-sort and print | 1.595 ms | 0.3020 ms | — | One diagnostic; observed 10.2% lower Lython median; executable lambda bodies; comprehension unchanged; precedes the final name-label fix |
+| Expanded-call forwarding helper [AK], warm `Run` | 2,048 calls; tuple and keyword mapping | 2.077 ms | 0.2443 ms | — | One diagnostic; observed 13.9% lower Lython median; fallback/mirroring removed; general binder remains |
+| Formatted report helper [AJ], warm `Run` | 2,048 calls; padded row and computed next value | 2.125 ms | 0.4201 ms | — | One diagnostic; observed 13.4% lower Lython median; ordinary f-string fallback removed |
+| Expanded set/dictionary helper [AI], warm `Run` | 2,048 calls; mixed literal/expanded entries | 4.963 ms | 0.6326 ms | — | One diagnostic; observed 8.8% lower Lython median; fallbacks/mirroring removed |
+| Ordinary starred-tuple helper [AH], warm `Run` | 2,048 calls; six-element immutable results | 2.629 ms | 0.3477 ms | — | One diagnostic; elapsed change within spread; fallback removed, conservative overlap funded |
+| Ordinary starred-list helper [AG], warm `Run` | 2,048 calls; six-element merged lists | 2.179 ms | 0.3541 ms | — | One diagnostic; observed 18.2% lower Lython median; fallback/mirroring removed |
+| JSON configuration read/edit/write [AF], fresh compile/run | 16 existing paths / 181 UTF-8 input bytes | 2.817-3.142 ms | 1.572 ms | — | Two identical Lython controls differ by 11.5%; one diagnostic; no qualified ratio |
+| Branch/integer loop [AE], warm `RunAsync` | 16,384 iterations; modulo/comparison/add/subtract | 6.321 ms | 0.9599 ms | — | One diagnostic; observed 35.8% lower Lython median; remaining gap substantial |
+| Complete copy/checksum/manifest job [AD], warm | Two files / 4,107 input bytes | 6.080 ms | 0.4382 ms | — | One diagnostic; difference within spread; byte-allocation removal only |
+| Complete JSON-lines aggregation [AC], warm | 4,096 records / 110,592 UTF-8 bytes | 9.692 ms | 4.260 ms | — | One diagnostic; elapsed change within spread; redundant wrapper removed |
+| Complete uppercase-report file job [AB], warm | 1,024 lines / 23,552 UTF-8 bytes | 2.651 ms | 0.2444 ms | — | One diagnostic; elapsed change within spread; allocation removal only |
+| Complete text-summary file job [AA], warm | 3,072 lines / 35,840 UTF-8 bytes | 6.553 ms | 1.231 ms | — | One diagnostic; observed improvement near baseline spread; no qualified ratio |
+| Default-argument helper [Z], fresh compile/run | 256 calls | 0.186 ms | 0.0373 ms | — | Historical diagnostic at 3b34fad2; sharing prototype was slower and removed; final cleanup unmeasured |
+| Split lines, strip and sum lengths [X], warm `RunAsync` | 32,768 lines / 425,984 UTF-8 bytes | 23.464 ms | 3.132 ms | — | One default-strip diagnostic on 88e0992b; inconclusive, baseline/candidate spread 16.5%/23.3% |
+| Unicode string-key word counts [W], warm `RunAsync` | 16,384 updates / four keys; completed host operations | 15.146 ms | 1.313 ms | — | One direct-get diagnostic on 7e2c1f27; observed 16.0% lower Lython median; remaining gap substantial |
+| Append to distinct lists and total values [N], warm `RunAsync` | 16,384 lists/appends; completed host operations | 7.819 ms | 1.132 ms | — | One direct-append diagnostic on 99e8701f; observed 21.8% lower Lython median; no qualified speedup |
+| Full-body parameter-update helper [B], warm `RunAsync` | 16,384 calls; completed host operations | 10.372 ms | 1.287 ms | — | One matching-local-storage diagnostic on f93e9258; observed 3.6% lower Lython median; no qualified speedup |
+| Keyword helper [K], warm `Run` | 16,384 calls | 4.262 ms | 1.174 ms | — | One call-cache deletion diagnostic on 6262ea94; difference within spread; no timing claim |
+| Helper using positional/keyword defaults [V], warm `RunAsync` | 16,384 calls; completed host operations | 9.555 ms | 1.258 ms | — | One correctness/admission diagnostic on 96596466; candidate median 4.2% higher; spreads 3.0%/3.9% |
+| Tuple-key dictionary updates [D], warm `Run` | 16,384 updates | 30.573 ms | 2.418 ms | — | One method-identity diagnostic on 0eb587a9; difference from earlier Lython is within spread |
+| Integer reduction loop [I], warm `RunAsync` | 16,384 iterations; completed host operations | 2.660 ms | 0.579 ms | — | One diagnostic on 88f78106; 14.4% lower median than earlier async Lython; candidate spread 6.0% |
+| Integer helper calls [E], warm `Run` | 16,384 calls | 3.289 ms | 0.965 ms | — | One candidate diagnostic on 015184e6; sync change within spread |
+| Same helper calls [R], warm `RunAsync` | Same input; completed host operations | 5.378 ms | 1.001 ms | — | One positional-transport diagnostic on 1f2ef306; 13.7% lower Lython median; baseline spread 9.4% |
+| Helper with nested filtered list comprehension [H] | 1,024 inputs / 1,364 results | 0.816–0.825 ms | 0.0793–0.0990 ms | — | Warm diagnostics at 3cad4157; both executable candidates rejected; CPython spread 23.7–38.2% |
+| File search with helper and protected early exit [P], warm | 2,049 lines / 42,010 UTF-8 bytes | 4.249 ms | 0.265 ms | — | One candidate diagnostic; inconclusive (56.4% spread) |
+| Same file search [P], fresh compile and run | Same input; stop after line 1,025 | 6.041 ms | 0.395 ms | — | Fresh code per job; inconclusive (42.4% spread); startup excluded |
+| Complete file copy/checksum manifest [F] | 2 files / 4,107 bytes | 6.103–6.254 ms | 0.442 ms | — | One warm diagnostic; two identical Lython controls, up to15.1% spread |
+| Complete Unicode text summary [T] | 6,144 words / 35,840 UTF-8 bytes | 8.018 ms | 1.258 ms | — | One warm diagnostic at ca432c22; noisy ASCII candidate rejected |
+| Complete JSON-lines summary [J] | 4,096 records / 110,592 UTF-8 bytes | 11.537 ms | 4.225 ms | — | One warm candidate diagnostic; timing inconclusive (11.8% spread), allocation reduction measured |
+| Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
+| CSV parse and discard [G] | 16 data rows | 0.0780 ms | 0.0285 ms | — | One short governed-memory diagnostic; uncommitted source, unqualified |
+| Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | — | One short diagnostic at 09d81bb1 source; no qualified multiplier |
+| Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | — | Short diagnostic at b43664e0; one run, no qualified multiplier |
+| Integer reduction loop [L] | 16,384 iterations | 3.58–3.72 ms | 0.578–0.666 ms | — | Historical diagnostic; failed control and cross-session stability |
+| Keyword calls [Q] | 2,048 calls | 1.378–1.404 ms | 0.137–0.145 ms | — | Historical diagnostic; failed invocation control |
+| Stable sort and output [Q] | 2,048 items | 5.150–7.889 ms | 0.306–0.313 ms | — | Historical diagnostic; spread/order checks also failed |
+| ASCII text pipeline [Q] | 1,024 eleven-character blocks | 0.618 ms | 0.0415 ms | — | Historical diagnostic; only one session before idle gate failed |
+| JSON transform and round trip [Q] | 128 records | 0.674–0.741 ms | 0.0610–0.0618 ms | — | Historical diagnostic; control floor/spread/interval checks failed |
+| CSV parse and retain [Q] | 128 data rows | 1.037–1.185 ms | 0.102–0.108 ms | — | Historical diagnostic; control/spread/order/interval checks failed |
+| Other CSV summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
+| Other Unicode text summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
+| Other JSON-lines summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
+| Other file copy/checksum manifest sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 
 
 ### Archived qualification notes
@@ -2064,13 +2064,13 @@ embedding model; Windows impact and GC-independent reclamation remain open.
 The [bound/exposed/retained-error model at `7f5fbf70`](results/2026-10-13-embedding-exception-pressure/README.md)
 also meets those latency targets in 24 original samples, but incurs 128 Gen2
 collections per completed job versus one for unbound catches. These cases
-complete 12â€“14 jobs per nominal four-second window versus 1,250â€“1,267 for unbound catches;
+complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
 each window finishes its last complete job.
 The report also records failed memory recovery after reference withdrawal.
 
 The [compiled operator-operand attempt](results/2026-11-03-operand-transport-withdrawn/README.md)
 was withdrawn after bounded source-backed refinement. Steadier controls confirm a
-roughly14â€“15% range-loop gain, but representative scripts remain flat/adverse and
+roughly14–15% range-loop gain, but representative scripts remain flat/adverse and
 allocation unchanged. The compiler/runtime plan layer is removed; independent
 capture, suspension, cancellation and refusal regressions remain. All variants,
 controls and failed initial conditions are preserved; operand work is not banned.
@@ -2090,7 +2090,7 @@ Both source variants, original CRLF-golden failure and all controls remain; inde
 ownership regressions survive. Global string sharing is not permanently ruled out.
 
 The [CSV record admission migration](results/2026-11-03-csv-record-admission/README.md)
-is retained after a bounded same-source confirmation. It reduces allocation4.5â€“13.6%
+is retained after a bounded same-source confirmation. It reduces allocation4.5–13.6%
 and improves variable-width CSV elapsed/CPU about10%. Canonical timings vary; a
 single wide record demonstrates additional working-memory headroom. Both tradeoffs
 and all adverse data remain explicit, separately from CPython comparisons.
@@ -2126,7 +2126,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 - [Native producer UTF-8 handoff, B158](results/2026-11-03-native-utf8-handoff/README.md):
   retained b3f1e9c3; one encoder/codec, unpublished producer strings removed.
-  Config warm/fresh âˆ’19.6/âˆ’16.3%, allocation âˆ’37.8%; CSV allocation âˆ’10.2%, elapsed
+  Config warm/fresh −19.6/−16.3%, allocation −37.8%; CSV allocation −10.2%, elapsed
   flat. Preserve control drift, small allocation uncertainty and the successful
   VM service followed by a trailing-CR controller error. Full delivery41625654805 GREEN.
 
@@ -2137,14 +2137,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 - [Prepared constant format layouts, B160](results/2026-11-03-prepared-format-layouts/README.md):
   retained873ae625, shared parser/formatter and compilation-owned metadata.
-  Report allocationâˆ’10.47%, warm/fresh elapsedâˆ’6.4/âˆ’4.9%, compilation flat.
-  Initial CSV+2.26%/controlâˆ’0.85% remains unresolved; shared-hash diagnostic does
+  Report allocation−10.47%, warm/fresh elapsed−6.4/−4.9%, compilation flat.
+  Initial CSV+2.26%/control−0.85% remains unresolved; shared-hash diagnostic does
   not consistently reproduce it. All adverse conditions retained; no speculative
   helper-parameter refinement. Full delivery41632382342 GREEN.
 
 - [Run versus RunAsync on identical runtime, B161](results/2026-11-03-async-execution-strategy/README.md):
   four complete scripts, synchronous-completion host, shared CLR hash and exact
-  B160 source. Async elapsed+21â€“23% CSV/text/JSON and+11%report; allocation nearly
+  B160 source. Async elapsed+21–23% CSV/text/JSON and+11%report; allocation nearly
   unchanged except CSV+6.6%. No source prototype or CPython-gap attribution.
   Select shared native instruction dispatch and real-suspension continuation.
 
@@ -2157,11 +2157,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 - [Current b087 CPython checkpoint, B163](results/2026-11-03-shared-driver-cpython-checkpoint/README.md):
   four complete RAM file scripts, warm/fresh and two compilation-only cases.
-  Fresh CSV/JSON1.61/1.37Ã—, text/report3.02/2.39Ã—. Identical-current control drift
+  Fresh CSV/JSON1.61/1.37×, text/report3.02/2.39×. Identical-current control drift
   remains visible; startup excluded and no source-pair gain inferred.
 
 - [Current complete call transport, B164](results/2026-11-03-call-transport-profile/README.md):
-  four bounded CPU captures through existing workers, both APIs. Prefix14â€“20%leaf;
+  four bounded CPU captures through existing workers, both APIs. Prefix14–20%leaf;
   binding-only work about1%, async value wrapper about2% is not a substantial-cost
   proof. Source identifies duplicated target reading/native selection/transfer;
   next coherent migration removes the complete duplicated route, not only a wrapper.
@@ -2169,14 +2169,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Complete ordinary-call transport, B165](results/2026-11-03-ordinary-call-transport/README.md):
   d3261a39 deletes duplicate selectors/second target read and net77 production lines.
   Four-image BOTH-API comparison closes the provisional B162 sync blocker without
-  erasing adverse data; async1.7â€“5.7%lower versus B162. Allocation/peaks unchanged.
+  erasing adverse data; async1.7–5.7%lower versus B162. Allocation/peaks unchanged.
   Original Windows direct-Sum allocation outlier preserved; test-only76725065
   isolates/warms the control with the same8192 items/4096B bound. Full B167 delivery41663811073 GREEN; no production retiming for the fixture-only change.
 
 - [Completed-fault driver, B167](results/2026-11-03-completed-fault-driver/README.md):
   433f7e36 consumes all completed outcomes in the native prefix; genuine pending
   operations still await. Original Ubuntu25s copyhook failure retained. Unchanged
-  three-rejection fixture11.06â†’8.97s in one quiet-VM pair; normal control uncertainty
+  three-rejection fixture11.06→8.97s in one quiet-VM pair; normal control uncertainty
   and flat allocation/peaks retained. No deadline/fixture/stack-policy relaxation.
 
   Full41663811073 GREEN at exact433f7e36: both platforms/frameworks, installed
@@ -2184,17 +2184,17 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 - [Immutable previous-record JSON keys, B166](results/2026-11-03-json-record-key-snapshots/README.md):
   retained 2323cceb; execution-wide name dictionary/comparer/capacity machinery
-  removed. Ordered hint was withdrawn after reordered +37â€“40% elapsed/+46.6%
+  removed. Ordered hint was withdrawn after reordered +37–40% elapsed/+46.6%
   allocation; original bits/data retained. Sorted refinement preserves reuse across
-  order: unique elapsed âˆ’31.7â€“35.1%, allocation âˆ’14.64%, accounted peak âˆ’834,737 B;
+  order: unique elapsed −31.7–35.1%, allocation −14.64%, accounted peak −834,737 B;
   unknown/reordered near controls, config timing variable. Both APIs, 767 public/
   181 internal per framework PASS. Full 41672373384 GREEN at exact 2323cceb; terminal receipt cached. Changed-key snapshot
   metadata stays batch-owned; no new owner graph or interning guarantee.
 
 - [Native JSON object staging, B169](results/2026-11-03-json-object-staging/README.md):
   WITHDRAWN. Final capacity once from member count adds a pair representation;
-  report allocation +5.02%, duplicate-heavy +10â€“11% elapsed/+18.98% allocation,
-  accounted peak +655,360 B. Unique/unknown allocation âˆ’2â€“3%, CPU inconclusive.
+  report allocation +5.02%, duplicate-heavy +10–11% elapsed/+18.98% allocation,
+  accounted peak +655,360 B. Unique/unknown allocation −2–3%, CPU inconclusive.
   Both APIs, controls/goldens/gates/balances/joins retained; no contract promotion,
   extra retime or full qualification. Restore B166 and assess complete activation/
   operand storage rather than another staging or name-index variation.
@@ -2210,24 +2210,24 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Private native sequence iteration, B171](results/2026-11-03-native-sequence-operands/README.md):
   retained b7a0f40a. Source + admitted per-slot positions replace repeated private
   native-loop cursor/enumerator objects, no pool/owner layer. Text allocation
-  âˆ’12.58%, sync CPU âˆ’4.05% /control +0.36%; other controls retain their drift.
-  SOURCE-ROLE-SWAPPED report confirmation reproduces sync elapsed +1.33â€“1.36%,
-  CPU +1.37â€“1.62%, allocation +0.33%. Explicit accepted tradeoff/debt for later
+  −12.58%, sync CPU −4.05% /control +0.36%; other controls retain their drift.
+  SOURCE-ROLE-SWAPPED report confirmation reproduces sync elapsed +1.33–1.36%,
+  CPU +1.37–1.62%, allocation +0.33%. Explicit accepted tradeoff/debt for later
   complete activation work, no claim every script improves. Both-framework focused
   802 public/214 internal PASS; full 41682308042 GREEN at exact b7a0f40a; terminal receipt cached. All original observations,
   confirmation, semantics, balances, gates and joined users retained.
 
 - [Current native-sequence CPython checkpoint, B172](results/2026-11-03-native-sequence-cpython-checkpoint/README.md):
   exact b7a0f40a; four complete RAM-file scripts warm/fresh and CSV/report compile-
-  only. Fresh CSV/JSON1.57/1.39Ã—, text/report2.71/2.31Ã—CPython. Fresh text control
+  only. Fresh CSV/JSON1.57/1.39×, text/report2.71/2.31×CPython. Fresh text control
   +2.7%, report3.8%IQR remain visible. All30 workers/goldens/gates/joins pass in
   166.214s owned service. No source-pair gain or subtraction of phase medians.
 
 - [Terminal UTF-8 ownership, B174](results/2026-11-03-terminal-utf8-storage/README.md):
   transfer partial-capacity arrays into immutable strings, retaining full capacity.
-  Report allocation âˆ’5.68%, elapsed âˆ’4.1â€“6.6% with controls +1.2/âˆ’1.7%. Managed
+  Report allocation −5.68%, elapsed −4.1–6.6% with controls +1.2/−1.7%. Managed
   object size remains 72 B on the measured runtime. One same-bit role-swapped
-  CSV/JSON confirmation establishes roughly 1â€“4% CSV elapsed debt; JSON uncertain.
+  CSV/JSON confirmation establishes roughly 1–4% CSV elapsed debt; JSON uncertain.
   Retain with explicit peak/timing tradeoffs; no third unchanged retime. All adverse
   controls remain. Next gate uses current CPU evidence for coherent activation/
   transport work, without replaying slower call-control/arena designs.
@@ -2244,12 +2244,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   747 public/172 internal per actual target pass. One loop/lazy admitted parent
   array replaces recursive async containers; initial complete five-script pair
   inconclusive. One justified same-bit role-swapped target confirmation: syncJSON
-  âˆ’1â€“2%, asyncJSON+2â€“3%, report inconsistent, allocation flat. WITHDRAW added state/
+  −1–2%, asyncJSON+2–3%, report inconsistent, allocation flat. WITHDRAW added state/
   parent storage without useful complete-script benefit; restore original source,
   no permanent design ban or third unchanged retime. All adverse controls retained.
 
 - [Standalone allowance gate, B177](results/2026-11-03-allowance-gate-withdrawn/README.md):
-  objectâ†’managed Lock only, both-target focused164 pass. Complete five-script pair
+  object→managed Lock only, both-target focused164 pass. Complete five-script pair
   mixed with identical controls+8.30%CSV/+5.19%async text. One direct resize diagnostic
   26.977 nsold/26.101 nsnew/28.303 nsoldcontrol, no timed allocation. No useful
   whole-script improvement established: withdraw runtime swap, retain independent
@@ -2261,8 +2261,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Direct arithmetic operands, B185](results/2026-11-03-arithmetic-operands-withdrawn/README.md):
   WITHDRAWN. Adjacent pure fetches become arithmetic source metadata; existing
   operator/await/native-return semantics shared. Complete five-script pair both
-  APIs plus compilation: sync text+5% versus both old roles, async report+6â€“9%,
-  allocation flat. Other controls move5â€“13%; preserve every observation. Added
+  APIs plus compilation: sync text+5% versus both old roles, async report+6–9%,
+  allocation flat. Other controls move5–13%; preserve every observation. Added
   source/read/proof machinery is not justified. Qualified runtime restored with
   nonincremental rebuild; retain independent native arithmetic-forwarding control.
   No full prototype delivery qualification, new CPU attribution or permanent ban.
@@ -2272,8 +2272,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   RETAINED978b51b5, full GREEN41730446899. PyDict owns native table/capacity, removes separate
   wrapper/static factory/unused Clone; live namespace/environment bridges remain.
   Both-target206 internal/2,021 public pass. Complete CSV/JSON/report allocation
-  âˆ’1.7â€“2.4% /âˆ’1.1%, local constructorâˆ’24B. Initial adverse compile+14â€“32% retained;
-  same-bit role-swapped confirmation report syncâˆ’4â€“5% /asyncâˆ’1.6â€“2.1%, compile
+  −1.7–2.4% /−1.1%, local constructor−24B. Initial adverse compile+14–32% retained;
+  same-bit role-swapped confirmation report sync−4–5% /async−1.6–2.1%, compile
   near/slightly above controls, config async variable. No general CPU gain, fresh
   debt closure or repeated CPython checkpoint. Exact-source full delivery cached.
 
@@ -2282,7 +2282,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   WITHDRAWN. Initial annotation-pass skip loses existing LA2010 analysis in three
   targeted cases despite main tests passing; corrected source preserves annotation
   binding work and matches eight baseline contracts. Corrected compilation allocation
-  âˆ’0.2â€“0.6%, but fresh text+3â€“4.5% and report+2% versus both controls; warm controls
+  −0.2–0.6%, but fresh text+3–4.5% and report+2% versus both controls; warm controls
   straddle. Metadata/eligibility state not justified. Preserve both full variants,
   all favorable/adverse timings and new capability/diagnostic-order regressions.
   No permanent analysis-design ban, full prototype qualification or debt closure.
@@ -2290,22 +2290,22 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Admitted numeric UTF-8 output, B188](results/2026-11-04-admitted-numeric-formatting/README.md):
   RETAINED9ce21533, full GREEN41742152264. Delete integer CLR digit/sign/group strings and
   per-digit DivRem; share integer/base/percent and fixed/scientific span output.
-  Demonstrated denied construction allocated162â€“170KB decimal/~17MB hex before
+  Demonstrated denied construction allocated162–170KB decimal/~17MB hex before
   admission; focused checks now preflight. Independent golden exposed old zero-fill
   grouping errors; preserve failed run, correct shared output and add parity cases.
-  Both actual targets130 internal/1,031 public PASS. Complete report allocationâˆ’6.1%,
-  numericâˆ’18â€“87%. Initial async float+26â€“31% remains adverse; longer same-bit role-
-  swapped confirmation gives6â€“8% improvement. Report sync inconclusive, async elapsed
-  aboutâˆ’3% with near-flat CPU. No general CPU/fresh debt claim; whole objective OPEN.
+  Both actual targets130 internal/1,031 public PASS. Complete report allocation−6.1%,
+  numeric−18–87%. Initial async float+26–31% remains adverse; longer same-bit role-
+  swapped confirmation gives6–8% improvement. Report sync inconclusive, async elapsed
+  about−3% with near-flat CPU. No general CPU/fresh debt claim; whole objective OPEN.
 
 
 - [Coupled source / CPython checkpoint, B189](results/2026-11-04-coupled-cpython-checkpoint/README.md):
-  COMPLETE on9ce21533. Fresh CSV/JSON1.55/1.37Ã—CPython3.13.16, text/report2.69/2.20Ã—;
-  compilation1.58/1.57Ã—, warm/fresh and actual included I/O/cleanup distinct.
-  Direct pair reportâˆ’5.4â€“8.9% versus pre-loopB166; CSV near flat, text control
-  spread4.6â€“22.3% retains uncertainty. JSON initial warm+2%/fresh flat conflicts
-  with same-bit role-swapped confirmation warm flat/fresh+2.1â€“4.9%,2.7% new control.
-  Fresh-JSON debt remains accepted/open, provisional2â€“5%; preserve every point.
+  COMPLETE on9ce21533. Fresh CSV/JSON1.55/1.37×CPython3.13.16, text/report2.69/2.20×;
+  compilation1.58/1.57×, warm/fresh and actual included I/O/cleanup distinct.
+  Direct pair report−5.4–8.9% versus pre-loopB166; CSV near flat, text control
+  spread4.6–22.3% retains uncertainty. JSON initial warm+2%/fresh flat conflicts
+  with same-bit role-swapped confirmation warm flat/fresh+2.1–4.9%,2.7% new control.
+  Fresh-JSON debt remains accepted/open, provisional2–5%; preserve every point.
   No source change, CPython-speedup attribution or completion of whole objective.
 
 
@@ -2313,7 +2313,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   RETAINED334c7cc7, full GREEN41748908560. Seven legacy grouping failures corrected; native and
   real CLR text use one final admitted window/layout. Remove grouped CLR assembly,
   orphan F/E text bridge and helpers;71 fewer production lines. Prototypes allocate
-  general/Decimalâˆ’11.3%, complexâˆ’16.9%, with native/complex elapsed adverse2â€“5% and
+  general/Decimal−11.3%, complex−16.9%, with native/complex elapsed adverse2–5% and
   report variable/slightly adverse; all original points retained. One readonly-layout
   refinement preserves costs, no broad CPU gain. Final boundary correction fixes
   six short-width failures inherited from B188; not separately timed. Final per-target
@@ -2321,8 +2321,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 
 - [Current CPU / call transport source gate, B191](results/2026-11-04-current-cpu-call-transport/README.md):
-  COMPLETE diagnostic gate on334c7cc7/frozen80e9a32d. Text prefix17.5â€“19.2%,
-  call/native/binding leaf buckets9.5â€“11.1%; report monitors10.4%/JSON string4.5%.
+  COMPLETE diagnostic gate on334c7cc7/frozen80e9a32d. Text prefix17.5–19.2%,
+  call/native/binding leaf buckets9.5–11.1%; report monitors10.4%/JSON string4.5%.
   Unknown/inlined work remains, no causal speedup. Failed CRLF/disk conditions and
   partial first text retained; final report/text captures pass full gates/normal
   close and raw-data verification. Select removal of transient bound storage/
@@ -2333,8 +2333,8 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   RETAINED: existing guarded native helpers consume caller operands before binding;
   native evaluation carries a readonly span. Remove eligible rent/copy/presence/
   clear work; real suspension and dynamic binding retain owned inputs. Initial
-  report+2â€“4% is preserved. One refinement removes a repeated failed guard; report
-  then lies within control variation, helpers improve6.6â€“10%, async text~7%.
+  report+2–4% is preserved. One refinement removes a repeated failed guard; report
+  then lies within control variation, helpers improve6.6–10%, async text~7%.
   Sync text remains uncertain; allocation is flat because small arrays were pooled.
   Both actual targets27 internal/148 public pass; full delivery41754575737 GREEN
   all eight gates on9a4af031, terminal receipt cached. Fresh-JSON
@@ -2343,9 +2343,9 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Activation source gate / fixed UTF-8 construction, B193/B194](results/2026-11-04-fixed-text-construction/README.md):
   RETAINED complete constructor family. Remove fixed reservation heap carriers and
   duplicate slice-copy admission; preserve actual growing/shared/async transactions.
-  Complete-script allocation CSVâˆ’3%,textâˆ’7.3%,JSONâˆ’10.7%,reportâˆ’4.2%,configâˆ’12.4%.
-  One same-bit long-warm confirmation gives sync textâˆ’7â€“8%; async text has accepted
-  possible1â€“2% debt and asyncJSON direction stays uncertain. All adverse/partial
+  Complete-script allocation CSV−3%,text−7.3%,JSON−10.7%,report−4.2%,config−12.4%.
+  One same-bit long-warm confirmation gives sync text−7–8%; async text has accepted
+  possible1–2% debt and asyncJSON direction stays uncertain. All adverse/partial
   source/controls preserved. Both actual targets213 internal/557 public pass; new
   cross-owner copy coverage and full delivery41763540856 GREEN, all eight gates
   on repaired-source5d8c7239 (runtime2d46 unchanged). Initial Windows fixture timeout
@@ -2365,15 +2365,15 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   COMPLETE on2d46dc8e production/frozenba48576a. Original12 blocks end with a
   failed6.47%idle-CPU gate and stay UNQUALIFIED. One longer-warm/swap-role/post-cleanup
   confirmation passes original thresholds/goldens/joins;366.565s capture/367.180s
-  owned service. Fresh CSV/JSON1.50/1.30Ã—, text/report2.54/1.92Ã—, config1.11Ã—CPython;
-  separate compilation1.58Ã—. Coupled freshJSONâˆ’5.6â€“7.3% closes earlier provisional
+  owned service. Fresh CSV/JSON1.50/1.30×, text/report2.54/1.92×, config1.11×CPython;
+  separate compilation1.58×. Coupled freshJSON−5.6–7.3% closes earlier provisional
   debt under these conditions; all earlier points retained. Text/report paired gains
   are substantial, CSV/config magnitude still control-limited. Async debt remains
   separate; whole objective OPEN. Writer-fixture repair qualifies runtime separately.
 
 - [Typed integer creation, B196](results/2026-11-04-integer-creation-withdrawn/README.md):
   BOTH PROTOTYPES WITHDRAWN. One fresh-value boundary and fixed immutable constants
-  reduce CSV/JSON allocation 2.6â€“4.1%, but miss-heavy counters cost 3â€“6%. One managed
+  reduce CSV/JSON allocation 2.6–4.1%, but miss-heavy counters cost 3–6%. One managed
   index/inlining refinement retains that cost against stable controls and does not
   establish a useful general script improvement. Original and refined sources,
   four-image observations, adverse points and ownership/cancellation checks remain.
@@ -2386,7 +2386,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   order replace duplicate collectors; module lifetimes and canonical local snapshots
   preserve semantics. Initial namespace/order failures and pre-order timing remain.
   Final 776 internal/3,871 public cases per actual target pass. Compilation allocation
-  +0.6â€“0.9% on representative scripts is accepted; small possible compile/fresh cost
+  +0.6–0.9% on representative scripts is accepted; small possible compile/fresh cost
   and favorable but variable warm report remain explicit. No general CPU claim.
   Full delivery41771244039 is GREEN on ee2b4529, all eight gates; terminal receipt
   cached. Whole-script performance work remains OPEN.
@@ -2394,9 +2394,9 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [String storage and cache accounting, B205](results/2026-11-04-string-storage-assessment/README.md):
   General shared windows withdrawn after two correct implementations measured
   adverse whole-script costs. Retain the smaller cache-counter deletion and
-  allocation rollback, actual metadata72->64B, whole-job allocationâˆ’1.5â€“4.1%.
+  allocation rollback, actual metadata72->64B, whole-job allocation−1.5–4.1%.
   Initial same-bits text drift justified one longer-warmup confirmation: sync
-  text+3.5â€“5.8% remains explicit accepted debt, asyncâˆ’2.9â€“5.9%; no broad CPU gain.
+  text+3.5–5.8% remains explicit accepted debt, async−2.9–5.9%; no broad CPU gain.
   Preserve offset-copy failures, corrected semantics and all original measurements.
   Focused444 internal/2667 public per actual.NET11/10 pass; full eight-gate
   delivery GREEN41807227386 on exactbf0d38f3, terminal receipt cached.
@@ -2405,7 +2405,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 - [Flat operand replacement design, B206](results/2026-11-04-flat-operand-design/README.md):
   COMPLETE bounded design gate on bf0d38f3. Managed actual11/10: current24B,
   five-int model32B, native node24B. Current report render already native; naive
-  SSA frame growth3â€“4x is rejected. Select one flat representation/reused ordinary
+  SSA frame growth3–4x is rejected. Select one flat representation/reused ordinary
   slots/contiguous call packets/native graph reuse, with explicit snapshot/span
   fences and deletion milestone. Optimistic payload bounds are not a compiler,
   semantic validation or speedup. B207 implementation and timing remain open.
