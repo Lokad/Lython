@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, out NativeReturnShape shape, out object? value)
     {
-        var instruction = instructions[index];
+        ref readonly var instruction = ref instructions[index];
         var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
         var memberIndex = call is null ? -1 : instruction.NativeSecond;
         var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
@@ -131,10 +131,10 @@ internal sealed partial class LythonRuntime
         if (builtinCall)
         {
             if (code.CallSites[instruction.CallSiteIndex].ArgumentCount != 1) return false;
-            var callable = instructions[instruction.NativeFirst];
+            ref readonly var callable = ref instructions[instruction.NativeFirst];
             if (callable.NativeFirst >= 0 || !TryReadNativeOperand(code, callable, arguments, context, out var target)
                 || target is not BuiltinCallable) return false;
-            var input = instructions[secondIndex];
+            ref readonly var input = ref instructions[secondIndex];
             object? valueInput = null;
             var inputShape = NativeReturnShape.Other;
             if (input.NativeFirst < 0)
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
         ExecutionContext context, PyException? entryException)
     {
-        var instruction = instructions[index];
+        ref readonly var instruction = ref instructions[index];
         var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
         var memberIndex = call is null ? -1 : instruction.NativeSecond;
         var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, ExecutableInstruction instruction,
+    private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,
         ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
     {
         if (instruction.OpCode == ExecutableOpCode.LoadConst)
