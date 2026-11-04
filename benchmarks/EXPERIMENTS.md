@@ -2273,8 +2273,10 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   One same-bit long-warm confirmation gives sync text−7–8%; async text has accepted
   possible1–2% debt and asyncJSON direction stays uncertain. All adverse/partial
   source/controls preserved. Both actual targets213 internal/557 public pass; new
-  cross-owner copy coverage and full delivery pending. Activation merging remains
-  precisely deferred, not permanently banned. Next coupled checkpoint must decide
+  cross-owner copy coverage and full delivery41763540856 GREEN, all eight gates
+  on repaired-source5d8c7239 (runtime2d46 unchanged). Initial Windows fixture timeout
+  retained. Activation merging remains
+  precisely deferred, not permanently banned. Later B195 closes measured
   fresh-JSON debt; whole objective OPEN.
 
 - [Immutable dev.20 adapter qualification](results/2026-11-04-adapter-dev20/README.md):
