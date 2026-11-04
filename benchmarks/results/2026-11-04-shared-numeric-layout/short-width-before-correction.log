@@ -1,0 +1,66 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.80]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "-1", spec: "04,d", expected: "-001") [FAIL]
+[xUnit.net 00:00:01.80]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1.25", spec: "06,.3g", expected: "001.25") [FAIL]
+[xUnit.net 00:00:01.80]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1", spec: "03,d", expected: "001") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "-1", spec: "04,d", expected: "-001") [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: -001|-001|-001
+Actual:   -100|-100|-100
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1.25", spec: "06,.3g", expected: "001.25") [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 001.25|001.25|001.25
+Actual:   1.2500|1.2500|1.2500
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1", spec: "03,d", expected: "001") [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 001|001|001
+Actual:   100|100|100
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.82]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1.25", spec: "06,.2f", expected: "001.25") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1.25", spec: "06,.2f", expected: "001.25") [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 001.25|001.25|001.25
+Actual:   1.2500|1.2500|1.2500
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.83]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "decimal.Decimal('1.25')", spec: "06,.2f", expected: "001.25") [FAIL]
+[xUnit.net 00:00:01.83]     Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1", spec: "02,d", expected: "01") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "decimal.Decimal('1.25')", spec: "06,.2f", expected: "001.25") [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 001.25|001.25|001.25
+Actual:   1.2500|1.2500|1.2500
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.GroupingIncludesSignAwarePaddingAcrossEntryPoints(value: "1", spec: "02,d", expected: "01") [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 01|01|01
+Actual:   10|10|10
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NumericFormatPaddingTests.AssertFormats(String value, String spec, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NumericFormatPaddingTests.cs:line 67
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     6, Passed:    24, Skipped:     0, Total:    30, Duration: 221 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)

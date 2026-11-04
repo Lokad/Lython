@@ -2233,3 +2233,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   with same-bit role-swapped confirmation warm flat/fresh+2.1–4.9%,2.7% new control.
   Fresh-JSON debt remains accepted/open, provisional2–5%; preserve every point.
   No source change, CPython-speedup attribution or completion of whole objective.
+
+
+- [Shared numeric layout / UTF-8 complex body, B190](results/2026-11-04-shared-numeric-layout/README.md):
+  RETAINED, delivery pending. Seven legacy grouping failures corrected; native and
+  real CLR text use one final admitted window/layout. Remove grouped CLR assembly,
+  orphan F/E text bridge and helpers;71 fewer production lines. Prototypes allocate
+  general/Decimal−11.3%, complex−16.9%, with native/complex elapsed adverse2–5% and
+  report variable/slightly adverse; all original points retained. One readonly-layout
+  refinement preserves costs, no broad CPU gain. Final boundary correction fixes
+  six short-width failures inherited from B188; not separately timed. Final per-target
+  focused136 internal/1,051 public checks; full delivery pending. Whole objective OPEN.

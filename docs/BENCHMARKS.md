@@ -124,6 +124,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Shared numeric layout prototype |General/Decimal allocation−11.3%, complex−16.9%; affected elapsed mixed/adverse|[B190 prototypes versus9ce21533; final narrow-width correctness correction was not separately timed; no general CPU gain](../benchmarks/results/2026-11-04-shared-numeric-layout/README.md)|
 | Admitted numeric UTF-8 output |Report allocation−6.1%; float control elapsed/CPU−6–8%; large-base control elapsed−85–88%|[B188 versus978b51b5; report sync timing inconclusive, async elapsed about−3% with near-flat CPU; original adverse float profile retained](../benchmarks/results/2026-11-04-admitted-numeric-formatting/README.md)|
 | Native dictionary ownership |CSV/JSON/report allocation−1.7–2.4% /−1.1%; confirmed report elapsed−4–5% Run/−1.6–2.1% RunAsync|[B186 versus7a3a8afe; compilation near/slightly above controls, config async variable; original adverse points retained](../benchmarks/results/2026-11-03-native-dictionary-ownership/README.md)|
 | Combined loop/string/casing/reader storage |Report elapsed−2.7–4.5% warm /−3.7–4.3% fresh versus pre-loop B166|[Direct coupled pair; sync report debt offset; CSV+1–2% and fresh JSON+1.8–1.9% accepted, fresh text uncertain](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)|

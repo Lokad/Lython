@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "b4de9833 plus final B190 source: readonly layout, short-width correction and unused using removal",
+  "finalCoreSHA256": "80e9a32df6a11178b824d9dc229585dc817d0c85ec21d2f8c83bdae215db2e56",
+  "finalSourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Complex.cs": "b8065137e6f3af88496b501c660a3770e763179ed6b3cbea074d8cc4d8a43461",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.Formatting.cs": "d5c7652e7230a5edaf4a9a9ebf380395b4f955103b85f447fc836ba466649195",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.NumericFormatting.cs": "b5c52e38f675f35053aa6a3dedd78b889b690938e73157a4a200f41d4b1f8054"
+  },
+  "measuredPrototypes": [
+    "1cd2e26bc46fcd01521523bf11ab5a3f8fd56a7c5646330ea0d4e700cd69f963",
+    "f967b9460a8b924780a5ba6be252923a8f7b84193be8fdbb198642157443beb2"
+  ],
+  "finalSourceTiming": "not separately retimed after boundary correction; never label prototype elapsed as final HEAD",
+  "focusedRelease": {
+    "actualTargets": [
+      ".NET11 RC3",
+      ".NET10.0.8"
+    ],
+    "internalPerTarget": 136,
+    "publicPerTarget": 1051
+  }
+}

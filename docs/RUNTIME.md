@@ -306,12 +306,17 @@ integer digits and finite fixed/scientific float fields use admitted span storag
 without intermediate CLR strings. Integer base conversion is linear in digit
 count. .NET 10 uses an admitted character bridge for decimal integers; .NET 11
 formats them directly into UTF-8. Scratch and final output overlap remain funded.
-Grouping in these fields includes sign-aware zero fill, which can exceed the requested
-width by one scalar when another grouping separator is required.
-Managed radix, grouping and padding loops check cancellation; opaque BCL decimal
-and float conversion is synchronous and cannot interrupt midway. Other numeric/date
-renderers and user-defined `__format__` results retain their specialized algorithms
-and supported asynchronous callbacks. Private output stays
+General/default/percentage float and Decimal fields retain their rounding/notation
+algorithms, then encode ungrouped ASCII into the end of the final admitted output
+window. They share the same sign, grouping and padding writer as native byte digits,
+without a separate grouped/padded CLR string or encoding buffer. Grouping includes
+sign-aware zero fill, including narrow fields with no separator; adding a separator
+can make output one scalar wider than requested. Nonempty complex formatting uses
+a private governed UTF-8 body, kept funded through final padding/copy and released
+on unwind. That temporary overlap can require additional admission headroom.
+Managed radix, grouping and padding loops check cancellation; opaque BCL conversion
+and encoding is synchronous and cannot interrupt midway. Date renderers and
+user-defined `__format__` results retain their supported algorithms and callbacks. Private output stays
 funded across suspended callbacks and generator yields, and releases on unwind
 or close. Capacity admission can reject before a later field is evaluated.
 

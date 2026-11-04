@@ -1,12 +1,7 @@
-using System.Text.RegularExpressions;
 using Lokad.Lython.Frontend;
 using System.Numerics;
 using System.Globalization;
-using System.IO;
 using System.Text;
-using System.Text.Json;
-using System.Threading;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -272,10 +267,9 @@ internal sealed partial class LythonRuntime
             AppendFloatingFormat(output, floating, spec, context, span, RuntimeErrors.OperandTypeName(floating));
             return true;
         }
-        if (value is PyDecimal decimalValue &&
-            TryFormatDecimalValue(decimalValue, spec, span, context, out var text, out var prefix))
+        if (value is PyDecimal decimalValue)
         {
-            AppendInterpolatedFormatPadding(output, text, spec, prefix, numeric: true, span, context);
+            AppendNumericText(output, FormatDecimalText(decimalValue, spec, span, context), spec, context, span);
             return true;
         }
         return false;
@@ -284,17 +278,12 @@ internal sealed partial class LythonRuntime
     // Decimal has its own format grammar: exact coefficient rendering with
     // the ambient context rounding, per-code default precisions, single-digit
     // exponents and 'invalid format string' failures.
-    private static bool TryFormatDecimalValue(
+    private static string FormatDecimalText(
         PyDecimal decimalValue,
         InterpolatedFormatSpecifier spec,
         LythonSourceSpan span,
-        ExecutionContext context,
-        out string text,
-        out int numericPrefixLength)
+        ExecutionContext context)
     {
-        text = string.Empty;
-        numericPrefixLength = 0;
-
         var type = spec.Type;
         var supported = type is null or 'f' or 'F' or 'e' or 'E' or 'g' or 'G' or 'n' or '%';
         if (!supported || spec.Grouping == '_' || (type == 'n' && spec.Grouping == ','))
@@ -330,15 +319,9 @@ internal sealed partial class LythonRuntime
             body = "-" + body;
         }
 
-        if (spec.Grouping == ',')
-        {
-            body = GroupFloatingDigits(body, ',');
-        }
-
-        text = ApplyNumericSign(body, spec.Sign);
-        numericPrefixLength = GetNumericPrefixLength(text);
+        var text = ApplyNumericSign(body, spec.Sign);
         precisionStorage?.Commit(checked(32L + (2L * text.Length)));
-        return true;
+        return text;
     }
 
     private static string RenderDecimalDefault(PyDecimal decimalValue, InterpolatedFormatSpecifier spec)
@@ -653,22 +636,18 @@ internal sealed partial class LythonRuntime
     private static bool TryGetIntegerFormatValue(object value, out BigInteger integer)
         => Numbers.PyNumberOps.TryAsInteger(value, out integer);
 
-    private static bool TryFormatFloatingValue(
+    private static string FormatFloatingText(
         double value,
         InterpolatedFormatSpecifier spec,
         LythonSourceSpan span,
         MemoryGovernor? governor,
-        out string text,
-        out int numericPrefixLength,
         string typeName)
     {
         var type = spec.Type;
         var precision = spec.Precision;
         if (type is 'b' or 'o' or 'x' or 'X' or 'd' or 'n')
         {
-            text = string.Empty;
-            numericPrefixLength = 0;
-            return false;
+            throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span);
         }
 
         if (spec.Grouping is { } floatGrouping &&
@@ -689,9 +668,7 @@ internal sealed partial class LythonRuntime
                 nonFinite += "%";
             }
 
-            text = ApplyNumericSign(nonFinite, spec.Sign);
-            numericPrefixLength = GetNumericPrefixLength(text);
-            return true;
+            return ApplyNumericSign(nonFinite, spec.Sign);
         }
 
         // Guest-controlled precision scales the output without bound from a
@@ -708,25 +685,15 @@ internal sealed partial class LythonRuntime
         {
             null when precision is null => Numbers.PyNumberOps.RenderFloat(value),
             null => RenderFloatDefaultPrecision(value, precision.Value, spec.Alternate),
-            'f' or 'F' => FormatSimpleFloatingText(value, spec, governor, span),
             'g' => FormatGeneralFloat(value, precision, spec.Alternate, upper: false),
             'G' => FormatGeneralFloat(value, precision, spec.Alternate, upper: true),
-            'e' or 'E' => FormatSimpleFloatingText(value, spec, governor, span),
             '%' => FormatPercentText(value, precision),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span)
         };
 
-        if (type == 'F')
-        {
-            formatted = formatted.ToUpperInvariant();
-        }
-
-        // Alternate form forces a decimal point when the rendering has
-        // none (g/G stay rejected above, like before).
-        // Null-type precision has its own significant-digits rendering
-        // (a separate slice); the point-only rule below covers the
-        // precision-free null type.
-        var hashType = type is 'f' or 'F' or 'e' or 'E' or '%' || (type is null && precision is null);
+        // General and precision-bearing default forms already handle alternate
+        // significant digits. The remaining text forms only need a decimal point.
+        var hashType = type == '%' || (type is null && precision is null);
         if (spec.Alternate && type is null && precision is null)
         {
             // CPython renders the no-type form float-style (lowercase
@@ -753,15 +720,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        if (spec.Grouping is { } grouping)
-        {
-            formatted = GroupFloatingDigits(formatted, grouping);
-        }
-
-        text = ApplyNumericSign(formatted, spec.Sign);
-        numericPrefixLength = GetNumericPrefixLength(text);
+        var text = ApplyNumericSign(formatted, spec.Sign);
         precisionStorage?.Commit(checked(32L + (2L * text.Length)));
-        return true;
+        return text;
     }
 
     // Scaling by 100 can overflow a large finite value to infinity;
@@ -1048,55 +1009,6 @@ internal sealed partial class LythonRuntime
     private static bool IsFormatAlign(char value)
         => value is '<' or '>' or '^' or '=';
 
-    private static void AppendInterpolatedFormatPadding(
-        GovernedByteBuilder output,
-        string text,
-        InterpolatedFormatSpecifier spec,
-        int numericPrefixLength,
-        bool numeric,
-        LythonSourceSpan span,
-        ExecutionContext context)
-    {
-        var length = text.Length;
-        if (spec.Width is not { } width || length >= width)
-        {
-            output.AppendString(text);
-            return;
-        }
-
-        var padding = width - length;
-        var (align, fill, left) = GetInterpolatedPadding(spec, padding, numeric, span);
-        Span<byte> fillBytes = stackalloc byte[4];
-        var fillLength = fill.EncodeToUtf8(fillBytes);
-        var textBytes = Encoding.UTF8.GetByteCount(text);
-        var bytes = checked((long)textBytes + (long)padding * fillLength);
-        if (bytes > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
-        context.CheckExecution(span);
-        // Admit the whole private output window, including replacement overlap,
-        // before rendering. No padded CLR string or temporary encoded body.
-        var destination = output.GetWriteWindow((int)bytes).Span;
-        var token = context.State.CancellationToken;
-        var prefix = align == '=' ? numericPrefixLength : 0;
-        var prefixBytes = Encoding.UTF8.GetBytes(text.AsSpan(0, prefix), destination);
-        var leftBytes = (align == '=' ? padding : left) * fillLength;
-        PyStringOps.FillPadding(destination.Slice(prefixBytes, leftBytes), fillBytes[..fillLength], token);
-        var written = prefixBytes + leftBytes;
-        written += Encoding.UTF8.GetBytes(text.AsSpan(prefix), destination[written..]);
-        PyStringOps.FillPadding(destination[written..], fillBytes[..fillLength], token);
-        context.CheckExecution(span);
-        output.Advance((int)bytes);
-    }
-
-    private static string FormatNumericSign(bool negative, char? sign)
-        => negative
-            ? "-"
-            : sign switch
-            {
-                '+' => "+",
-                ' ' => " ",
-                _ => string.Empty
-            };
-
     private static string ApplyNumericSign(string text, char? sign)
     {
         if (text.StartsWith("-", StringComparison.Ordinal) ||
@@ -1112,43 +1024,6 @@ internal sealed partial class LythonRuntime
             ' ' => " " + text,
             _ => text
         };
-    }
-
-    private static int GetNumericPrefixLength(string text)
-        => text.Length > 0 && text[0] is '-' or '+' or ' ' ? 1 : 0;
-
-    private static string GroupDigits(string digits, char separator)
-    {
-        var builder = new StringBuilder(digits.Length + digits.Length / 3);
-        for (var i = 0; i < digits.Length; i++)
-        {
-            if (i > 0 && (digits.Length - i) % 3 == 0)
-            {
-                builder.Append(separator);
-            }
-
-            builder.Append(digits[i]);
-        }
-
-        return builder.ToString();
-    }
-
-    private static string GroupFloatingDigits(string text, char separator)
-    {
-        // A percent suffix is not part of the grouped digits.
-        var suffix = text.EndsWith('%') ? "%" : string.Empty;
-        var core = suffix.Length == 0 ? text : text[..^1];
-        var signLength = GetNumericPrefixLength(core);
-        var exponentIndex = core.IndexOfAny(['e', 'E']);
-        var mantissaEnd = exponentIndex >= 0 ? exponentIndex : core.Length;
-        var decimalIndex = core.IndexOf('.');
-        if (decimalIndex < 0 || decimalIndex > mantissaEnd)
-        {
-            decimalIndex = mantissaEnd;
-        }
-
-        var grouped = GroupDigits(core[signLength..decimalIndex], separator);
-        return core[..signLength] + grouped + core[decimalIndex..] + suffix;
     }
 
     internal sealed record InterpolatedFormatSpecifier(

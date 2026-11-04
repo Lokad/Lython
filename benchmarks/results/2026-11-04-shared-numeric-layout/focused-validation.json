@@ -1,0 +1,14 @@
+{
+  "configuration": "Release",
+  "targets": [
+    "actual .NET11 RC3",
+    "actual .NET10.0.8"
+  ],
+  "internalPassedPerTarget": 136,
+  "publicPassedPerTarget": 1051,
+  "initialSameCounts": false,
+  "scope": "numeric/Decimal/complex parity, large legacy fields/Unicode fill, major-width refusal at formatting site, protocol/suspension/alias/cleanup and budget reuse; no in-flight BCL interruption claim",
+  "fullDelivery": "pending",
+  "initialPublicPassedPerTarget": 1045,
+  "finalCorrection": "six short-width grouping cases reproduce prototype/B188 defect; corrected writer plus unused using removal; final source not separately retimed"
+}

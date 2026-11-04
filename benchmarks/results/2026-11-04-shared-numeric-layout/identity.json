@@ -1,0 +1,8 @@
+{
+  "sourceRevision": "b4de9833 plus B190 numeric layout/UTF8 complex source patch",
+  "coreSHA256": {
+    "before-control": "cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e",
+    "candidate": "f967b9460a8b924780a5ba6be252923a8f7b84193be8fdbb198642157443beb2",
+    "after-control": "cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e"
+  }
+}

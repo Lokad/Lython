@@ -187,19 +187,51 @@ internal sealed partial class LythonRuntime
         var component = spec with { Width = null, Fill = -1, Align = null, ZeroPad = false,
             Type = spec.Type == 'n' || spec.Type is null && spec.Precision is not null ? 'g' : spec.Type };
         using var scratch = context.MemoryGovernor.ReserveTemporary(2048L + 16L * (spec.Precision ?? 32), span);
-        var imaginaryOnly = spec.Type is null && value.Real == 0 && !double.IsNegative(value.Real);
-        var imaginary = FormatComponent(value.Imaginary, component with { Sign = imaginaryOnly ? spec.Sign : '+' });
-        var text = imaginaryOnly ? imaginary + "j" : FormatComponent(value.Real, component) + imaginary + "j";
-        if (spec.Type is null && !imaginaryOnly) text = "(" + text + ")";
-        AppendInterpolatedFormatPadding(output, text, spec with { Align = spec.Align ?? '>' }, 0, numeric: false, span, context);
-
-        string FormatComponent(double number, InterpolatedFormatSpecifier formatSpec)
+        var working = new Text.GovernedByteBuilder(context.MemoryGovernor, span);
+        try
         {
-            if (!TryFormatFloatingValue(number, formatSpec, span, context.MemoryGovernor, out var result, out _, "complex"))
-                throw new LythonRuntimeException("ValueError", "Unknown format code for complex", span);
-            if (spec.Type is null && spec.Precision is null && result.EndsWith(".0", StringComparison.Ordinal))
-                result = spec.Alternate ? result[..^1] : result[..^2];
-            return result;
+            var imaginaryOnly = spec.Type is null && value.Real == 0 && !double.IsNegative(value.Real);
+            if (spec.Type is null && !imaginaryOnly) working.Append((byte)'(');
+            if (!imaginaryOnly) AppendComponent(value.Real, component);
+            AppendComponent(value.Imaginary, component with { Sign = imaginaryOnly ? spec.Sign : '+' });
+            working.Append((byte)'j');
+            if (spec.Type is null && !imaginaryOnly) working.Append((byte)')');
+            context.CheckExecution(span);
+            var text = working.WrittenSpan;
+            if (spec.Width is not { } width || width <= text.Length)
+                output.Append(text);
+            else
+            {
+                var padding = width - text.Length;
+                var (_, fill, left) = GetNumericPadding(spec, padding, span);
+                Span<byte> fillBytes = stackalloc byte[4];
+                var fillLength = fill.EncodeToUtf8(fillBytes);
+                var size = checked((long)text.Length + (long)padding * fillLength);
+                if (size > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+                // The working body and old parent capacity stay funded through
+                // final-window admission and copy, including refusal/cancellation.
+                var destination = output.GetWriteWindow((int)size).Span;
+                var leftBytes = left * fillLength;
+                Text.PyStringOps.FillPadding(destination[..leftBytes], fillBytes[..fillLength], context.State.CancellationToken);
+                text.CopyTo(destination[leftBytes..]);
+                Text.PyStringOps.FillPadding(destination[(leftBytes + text.Length)..], fillBytes[..fillLength], context.State.CancellationToken);
+                context.CheckExecution(span);
+                output.Advance((int)size);
+            }
+            context.CheckExecution(span);
+        }
+        finally { working.Release(); }
+
+        void AppendComponent(double number, InterpolatedFormatSpecifier formatSpec)
+        {
+            if (spec.Type is null && spec.Precision is null)
+            {
+                var text = FormatFloatingText(number, formatSpec, span, context.MemoryGovernor, "complex").AsSpan();
+                if (text.EndsWith(".0", StringComparison.Ordinal))
+                    text = text[..^(spec.Alternate ? 1 : 2)];
+                AppendNumericText(working, text, formatSpec, context, span);
+            }
+            else AppendFloatingFormat(working, number, formatSpec, context, span, "complex");
         }
 
     }

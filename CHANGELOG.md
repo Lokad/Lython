@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share numeric grouping/padding across general/default/percentage floats,
+  Decimal and native span fields, fixing sign-aware zero fill at all widths.
+  Format complex components into a governed UTF-8 body and remove separate
+  grouped/padded CLR-string assembly. Keep temporary/final overlap funded.
+
 - Format integer and finite fixed/scientific fields into admitted UTF-8 storage,
   sharing digit construction with percent integers and `bin`/`oct`/`hex`.
   Admit large scratch before conversion and remove per-digit large-integer

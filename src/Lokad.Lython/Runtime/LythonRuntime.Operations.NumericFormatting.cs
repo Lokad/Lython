@@ -12,9 +12,8 @@ internal sealed partial class LythonRuntime
     {
         if (!double.IsFinite(value) || spec.Type is not ('f' or 'F' or 'e' or 'E'))
         {
-            if (!TryFormatFloatingValue(value, spec, span, context.MemoryGovernor, out var text, out var prefix, typeName))
-                throw new InvalidOperationException("Unexpected floating format category.");
-            AppendInterpolatedFormatPadding(output, text, spec, prefix, numeric: true, span, context);
+            AppendNumericText(output, FormatFloatingText(value, spec, span, context.MemoryGovernor, typeName),
+                spec, context, span);
             return;
         }
         var capacity = SimpleFloatingCapacity(spec, span);
@@ -36,18 +35,6 @@ internal sealed partial class LythonRuntime
             if (grouped < 0) grouped = body.Length;
         }
         AppendAsciiNumericParts(output, sign[..signLength], body, spec, grouped, context, span);
-    }
-
-    // Complex formatting still needs component text. Keep a representation
-    // bridge, sharing the actual digit and exponent rules with direct output.
-    private static string FormatSimpleFloatingText(double value, InterpolatedFormatSpecifier spec,
-        MemoryGovernor? governor, LythonSourceSpan span)
-    {
-        var capacity = SimpleFloatingCapacity(spec, span);
-        using var working = capacity <= 512 ? null : governor?.ReserveTemporary(32L + capacity, span);
-        Span<byte> digits = capacity <= 512 ? stackalloc byte[512] : new byte[capacity];
-        var count = WriteSimpleFloatingDigits(value, spec, digits);
-        return Encoding.UTF8.GetString(digits[..count]);
     }
 
     private static int SimpleFloatingCapacity(InterpolatedFormatSpecifier spec, LythonSourceSpan span)
@@ -179,83 +166,118 @@ internal sealed partial class LythonRuntime
         => value.TryFormat(destination, out written, format, CultureInfo.InvariantCulture);
 #endif
 
-    // Prefix and digits are ASCII. Grouping concerns only the initial integral
-    // digits; float fractions/exponents therefore share this same output path.
+    // Only layout scalars: no retained buffers, owner or per-format dispatch.
+    private readonly record struct NumericOutputLayout(int Size, Rune Fill, int LeftBytes,
+        int InnerBytes, int Zeroes, int GroupedDigits, int GroupedZeroes);
+
     private static void AppendAsciiNumericParts(GovernedByteBuilder output, ReadOnlySpan<byte> prefix,
         ReadOnlySpan<byte> digits, InterpolatedFormatSpecifier spec, int groupedDigits,
         ExecutionContext context, LythonSourceSpan span, int minimumDigits = 0)
     {
+        var layout = GetNumericOutputLayout(prefix.Length, digits.Length, spec, groupedDigits, minimumDigits, span);
+        context.CheckExecution(span);
+        var destination = output.GetWriteWindow(layout.Size).Span;
+        WriteNumericParts(destination, prefix, digits, spec.Grouping, layout, context, span);
+        output.Advance(layout.Size);
+    }
+
+    private static void AppendNumericText(GovernedByteBuilder output, ReadOnlySpan<char> text,
+        InterpolatedFormatSpecifier spec, ExecutionContext context, LythonSourceSpan span)
+    {
+        // Native invariant renderers produce ASCII. They keep their real
+        // rounding/notation algorithms, leaving grouping and width to one writer.
+        var prefixLength = text.Length > 0 && text[0] is '-' or '+' or ' ' ? 1 : 0;
+        var groupedDigits = 0;
+        if (spec.Grouping is not null)
+            while (prefixLength + groupedDigits < text.Length && char.IsAsciiDigit(text[prefixLength + groupedDigits]))
+            {
+                if ((groupedDigits & 1023) == 0) context.CheckExecution(span);
+                groupedDigits++;
+            }
+        var layout = GetNumericOutputLayout(prefixLength, text.Length - prefixLength, spec, groupedDigits, 0, span);
+        context.CheckExecution(span);
+        var destination = output.GetWriteWindow(layout.Size).Span;
+        context.CheckExecution(span);
+        // Stage at the end of the FINAL admitted window. Every final raw digit
+        // lies at or before its source: forward expansion cannot overwrite a
+        // future input byte, even with grouping, Unicode fill and sign-aware zeros.
+        var staged = destination[^text.Length..];
+        Encoding.UTF8.GetBytes(text, staged);
+        WriteNumericParts(destination, staged[..prefixLength], staged[prefixLength..],
+            spec.Grouping, layout, context, span);
+        output.Advance(layout.Size);
+    }
+
+    private static NumericOutputLayout GetNumericOutputLayout(int prefixLength, int digitLength,
+        InterpolatedFormatSpecifier spec, int groupedDigits, int minimumDigits, LythonSourceSpan span)
+    {
         var separators = groupedDigits == 0 ? 0 : (groupedDigits - 1) / 3;
-        var zeroes = Math.Max(0, minimumDigits - digits.Length);
-        var textLength = (long)prefix.Length + digits.Length + zeroes + separators;
+        var zeroes = Math.Max(0, minimumDigits - digitLength);
+        var textLength = (long)prefixLength + digitLength + zeroes + separators;
         if (textLength > Array.MaxLength) throw RuntimeErrors.Memory("formatted number exceeds supported capacity", span);
-        var length = (int)textLength;
-        var padding = Math.Max(0, spec.Width.GetValueOrDefault() - length);
+        var padding = Math.Max(0, spec.Width.GetValueOrDefault() - (int)textLength);
         var (align, fill, left) = padding == 0 ? ('<', new Rune(' '), 0)
-            : GetInterpolatedPadding(spec, padding, numeric: true, span);
+            : GetNumericPadding(spec, padding, span);
         var groupedZeroes = 0;
         if (groupedDigits != 0 && padding != 0 && align == '=' && fill.Value == '0')
         {
-            // Sign-aware zero fill belongs to the integral group. Invert
-            // n + (n-1)/3 to find the minimum digit count that meets width;
-            // a separator can make the result one scalar wider than requested.
-            var integralWidth = (long)spec.Width!.Value - prefix.Length - (digits.Length - groupedDigits);
+            // Invert n + (n-1)/3 for grouped sign-aware zero fill. A separator
+            // can make the result one scalar wider than the requested width.
+            var integralWidth = (long)spec.Width!.Value - prefixLength - (digitLength - groupedDigits);
             var paddedDigits = integralWidth - (integralWidth - 1) / 4;
             groupedZeroes = (int)(paddedDigits - groupedDigits);
             groupedDigits += groupedZeroes;
             separators = (groupedDigits - 1) / 3;
-            textLength = (long)prefix.Length + digits.Length + zeroes + groupedZeroes + separators;
+            textLength = (long)prefixLength + digitLength + zeroes + groupedZeroes + separators;
             padding = left = 0;
         }
-        Span<byte> fillBytes = stackalloc byte[4];
-        var fillLength = fill.EncodeToUtf8(fillBytes);
+        var fillLength = fill.Utf8SequenceLength;
         var size = checked(textLength + (long)padding * fillLength);
         if (size > Array.MaxLength) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
+        return new((int)size, fill, align == '=' ? 0 : left * fillLength,
+            align == '=' ? padding * fillLength : 0, zeroes, groupedDigits, groupedZeroes);
+    }
+
+    // Prefix/digits may alias the end of destination, as documented above.
+    // Fractions/exponents are copied verbatim; only initial integral digits group.
+    private static void WriteNumericParts(Span<byte> destination, ReadOnlySpan<byte> prefix,
+        ReadOnlySpan<byte> digits, char? grouping, in NumericOutputLayout layout,
+        ExecutionContext context, LythonSourceSpan span)
+    {
         context.CheckExecution(span);
-        var destination = output.GetWriteWindow((int)size).Span;
+        Span<byte> fillBytes = stackalloc byte[4];
+        var fillLength = layout.Fill.EncodeToUtf8(fillBytes);
         var token = context.State.CancellationToken;
-        var offset = 0;
-        if (align != '=')
-        {
-            var bytes = left * fillLength;
-            PyStringOps.FillPadding(destination[..bytes], fillBytes[..fillLength], token);
-            offset += bytes;
-        }
+        PyStringOps.FillPadding(destination[..layout.LeftBytes], fillBytes[..fillLength], token);
+        var offset = layout.LeftBytes;
         prefix.CopyTo(destination[offset..]);
         offset += prefix.Length;
-        if (align == '=')
-        {
-            var bytes = padding * fillLength;
-            PyStringOps.FillPadding(destination.Slice(offset, bytes), fillBytes[..fillLength], token);
-            offset += bytes;
-        }
-        PyStringOps.FillPadding(destination.Slice(offset, zeroes), "0"u8, token);
-        offset += zeroes;
-        if (separators == 0)
+        PyStringOps.FillPadding(destination.Slice(offset, layout.InnerBytes), fillBytes[..fillLength], token);
+        offset += layout.InnerBytes;
+        PyStringOps.FillPadding(destination.Slice(offset, layout.Zeroes), "0"u8, token);
+        offset += layout.Zeroes;
+        if (layout.GroupedDigits < 4 && layout.GroupedZeroes == 0)
         {
             digits.CopyTo(destination[offset..]);
             offset += digits.Length;
         }
-        else for (var index = 0; index < digits.Length + groupedZeroes; index++)
+        else for (var index = 0; index < digits.Length + layout.GroupedZeroes; index++)
         {
             if ((index & 1023) == 0) context.CheckExecution(span);
-            if (index != 0 && index < groupedDigits && (groupedDigits - index) % 3 == 0)
-                destination[offset++] = (byte)spec.Grouping!.Value;
-            destination[offset++] = index < groupedZeroes ? (byte)'0' : digits[index - groupedZeroes];
+            if (index != 0 && index < layout.GroupedDigits && (layout.GroupedDigits - index) % 3 == 0)
+                destination[offset++] = (byte)grouping!.Value;
+            destination[offset++] = index < layout.GroupedZeroes ? (byte)'0' : digits[index - layout.GroupedZeroes];
         }
         PyStringOps.FillPadding(destination[offset..], fillBytes[..fillLength], token);
         context.CheckExecution(span);
-        output.Advance((int)size);
     }
 
-    private static (char Align, Rune Fill, int Left) GetInterpolatedPadding(
-        InterpolatedFormatSpecifier spec, int padding, bool numeric, LythonSourceSpan span)
+    private static (char Align, Rune Fill, int Left) GetNumericPadding(
+        InterpolatedFormatSpecifier spec, int padding, LythonSourceSpan span)
     {
-        var align = spec.Align ?? (numeric ? '>' : '<');
+        var align = spec.Align ?? '>';
         var fill = new Rune(spec.Fill >= 0 ? spec.Fill : spec.ZeroPad ? '0' : ' ');
-        if (numeric && spec.ZeroPad && spec.Align is null) { align = '='; fill = new Rune('0'); }
-        if (align == '=' && !numeric)
-            throw new LythonRuntimeException("ValueError", "'=' alignment requires a numeric value.", span);
+        if (spec.ZeroPad && spec.Align is null) { align = '='; fill = new Rune('0'); }
         var left = align switch
         {
             '<' or '=' => 0, '>' => padding, '^' => padding / 2,

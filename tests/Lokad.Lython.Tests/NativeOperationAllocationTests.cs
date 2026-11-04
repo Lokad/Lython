@@ -118,6 +118,9 @@ public sealed class NativeOperationAllocationTests
     [InlineData("integer-to-bytes", false)] [InlineData("integer-to-bytes", true)]
     [InlineData("float-fixed-format", false)] [InlineData("float-fixed-format", true)]
     [InlineData("float-scientific-format", false)] [InlineData("float-scientific-format", true)]
+    [InlineData("float-general-width", false)] [InlineData("float-general-width", true)]
+    [InlineData("decimal-format-width", false)] [InlineData("decimal-format-width", true)]
+    [InlineData("complex-format-width", false)] [InlineData("complex-format-width", true)]
     [InlineData("decimal-digits", false)] [InlineData("decimal-digits", true)]
     [InlineData("decimal-text", false)] [InlineData("decimal-text", true)]
     [InlineData("decimal-context-text", false)] [InlineData("decimal-context-text", true)]
@@ -186,6 +189,8 @@ public sealed class NativeOperationAllocationTests
             Assert.NotNull(failure);
             Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            if (operation is "float-general-width" or "decimal-format-width" or "complex-format-width")
+                Assert.Equal(operation == "decimal-format-width" ? 3 : 2, failure.Span?.Line);
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             if (operation.StartsWith("random-", StringComparison.Ordinal)) Assert.Equal(randomState, context.State.RandomState.Snapshot());
