@@ -2262,5 +2262,6 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   report+2–4% is preserved. One refinement removes a repeated failed guard; report
   then lies within control variation, helpers improve6.6–10%, async text~7%.
   Sync text remains uncertain; allocation is flat because small arrays were pooled.
-  Both actual targets27 internal/148 public pass; full delivery pending. Fresh-JSON
+  Both actual targets27 internal/148 public pass; full delivery41754575737 GREEN
+  all eight gates on9a4af031, terminal receipt cached. Fresh-JSON
   debt and the whole-script goal stay OPEN. No general CPU or CPython-ratio claim.
