@@ -1,9 +1,12 @@
 # Benchmark experimental history
 
-The [shared recursive JSON grammar](results/2026-11-04-shared-json-container-grammar/README.md)
-removes95 net source lines without an explicit continuation workspace. Focused
-checks pass; allocation stays flat and async report/text timing debt remains
-explicit through the next coherent frame milestone. Full delivery is pending.
+The [native formatted-helper milestone](results/2026-11-04-native-formatted-returns/README.md)
+extends the existing return proof and removes full invocation construction from
+complete report rendering. Allocation falls26.1% on both APIs; report elapsed is
+7-12% lower warm and8-10% lower fresh, with approximately2% more compilation cost.
+Other helper controls and all adverse observations remain separate. The shared
+JSON grammar's95-line deletion is retained: earlier async-report cost is not
+reproduced; async-text remains accepted uncertainty. Full delivery is pending.
 
 The [owner-capacity admission assessment](results/2026-11-04-owner-capacity-assessment/README.md)
 is shelved with production restored. Several complete scripts improve, but a

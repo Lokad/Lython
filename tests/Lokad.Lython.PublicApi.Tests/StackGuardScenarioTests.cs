@@ -22,6 +22,7 @@ public sealed class StackGuardScenarioTests
     [InlineData("dataclass-hash-cycle")]
     [InlineData("dataclass-hash-depth")]
     [InlineData("function")]
+    [InlineData("formatted-helper")]
     [InlineData("function-finally")]
     [InlineData("class-getitem")]
     [InlineData("class-getitem-descriptor")]

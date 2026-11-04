@@ -238,7 +238,11 @@ dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime
 guards pass, before native work. Prepared links share the executable instructions;
 evaluation requires no operand or argument arrays. Deeper or unsupported
-expressions keep the full engine. Adjacent local stores/loads can forward their
+expressions keep the full engine. Static builtin-only formatted returns use the
+same native proof and shared formatter. Plain native dictionary fields can qualify
+through side-effect-free reads; protocol keys and unknown formatting callbacks keep
+ordinary execution. One working UTF-8 builder releases on failure or cancellation
+and transfers retained output with its funding. Adjacent local stores/loads can forward their
 value inside the native proof when no later read needs that binding. Original
 instructions and local metadata remain intact for dynamic behavior and inspection.
 Custom protocols, captures, observable locals and

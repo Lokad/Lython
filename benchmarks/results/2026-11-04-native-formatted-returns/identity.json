@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "48d4bf14 plus B201 native formatted returns; full four-file source-snapshot.tgz authoritative (new NativeFormatting.cs untracked before capture)",
+  "baselineRuntimeRevision": "ee2b4529, unchanged through a805be97",
+  "currentRuntimeRevision": "48d4bf14 B200 shared JSON grammar",
+  "coreSHA256": {
+    "before-control": "1b9b3230ca075b32ac8fbd3e117605f93499b9356b4afcd768c76ca4a535ca07",
+    "current": "68899ba8c4740f7bcd523d8ea3cd548a432f84ccc1dfad7d61a17df0dfae41c2",
+    "candidate": "718796567fc8e36c597eddd1d92c87b93573b833f3cf69a85ee345aa05686c14",
+    "after-control": "1b9b3230ca075b32ac8fbd3e117605f93499b9356b4afcd768c76ca4a535ca07"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "feb0dbc7d4f3ee554b3f479830988105f06a609395be9a304360a28aa8603ec5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "8dae5fd5432dc19be89997ad37fa42c5e4240c5de56f209f8ded82f4a853ca5d",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "0ab679bf476a33a4e9d2daec7535f798a4c77262c2245e1a78f63fac7d5acfb3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeFormatting.cs": "46269fb9a06c29dd12bb9b20a0bc16dbb476262db85066e7f808bb270726532f"
+  }
+}

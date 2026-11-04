@@ -54,7 +54,13 @@ internal sealed partial class LythonRuntime
         var nodes = codeObject.NativeReturn!;
         // All type/callable guards precede work. No retry through the ordinary
         // engine is allowed once any operation (including admission) has begun.
-        return nodes.Length == 0 || GuardNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, out _, out _);
+        if (nodes.Length == 0) return true;
+        var root = nodes.Length - 1;
+        if (instructions[nodes[root].Instruction].OpCode == ExecutableOpCode.ApplyOperation)
+            return codeObject.Constants[instructions[nodes[root].Instruction].ConstantIndex] is ExecutableFinishFormattedString
+                ? GuardNativeFormattedReturn(nodes[root].First, codeObject, instructions, arguments, context)
+                : GuardNativeFormattedValue(root, codeObject, instructions, arguments, context);
+        return GuardNativeReturn(root, codeObject, instructions, arguments, context, out _, out _);
     }
 
     private static object ExecuteNativeBody(ExecutableCodeObject codeObject, ExecutionContext context,
@@ -72,7 +78,9 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                result = EvaluateNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, entryException);
+                result = instructions[nodes[^1].Instruction].OpCode == ExecutableOpCode.ApplyOperation
+                    ? EvaluateNativeFormattedReturn(codeObject, instructions, arguments, context, entryException)
+                    : EvaluateNativeReturn(nodes.Length - 1, codeObject, instructions, arguments, context, entryException);
                 context.State.CheckExecution(instructions[^1].Span);
             }
             // No stack temporaries or handler variables exist in these bodies.

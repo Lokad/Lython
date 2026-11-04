@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -9,6 +10,75 @@ namespace Lokad.Lython.Tests;
 public sealed class SimpleFunctionExecutionBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(100, 6, 20, 3);
+
+    [Fact]
+    public void FormattedHelperErrorsReleaseWorkingStorageAndPreserveTheCallerException()
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var prefix = new string('x', 8192);
+            var (function, context, _) = Function("def f(value):\n    return f'" + prefix + "{value:bad}'\n", new());
+            var active = new PyException("RuntimeError", "outer", PyNone.Instance);
+            context.State.SetCurrentException(active);
+            var baseline = context.MemoryGovernor.CurrentAccountedBytes;
+            for (var pass = 0; pass < 3; pass++)
+            {
+                var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function,
+                    [CallArgumentValue.Positional(new BigInteger(7))], context, driver));
+                Assert.Equal("ValueError", error.ExceptionType);
+                Assert.Same(active, error.PythonContext);
+                Assert.Same(active, context.State.CurrentException);
+                Assert.Equal("/callee.py", error.SourcePath);
+                Assert.Equal("f", Assert.Single(error.Frames).FunctionName);
+                Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(bool cancel)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+            using var cancellation = new CancellationTokenSource();
+            using (var owner = budget.CreateScope())
+            {
+                var hook = new AdmissionHookMemoryBudget(owner);
+                var prefix = new string('x', 8192);
+                var (function, context, _) = Function("def f(value):\n    return f'" + prefix + "{value:>40000s}'\n",
+                    new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+                var input = PyString.FromString("kept", context.MemoryGovernor, CallSpan);
+                var baseline = context.MemoryGovernor.CurrentAccountedBytes;
+                var reached = false;
+                if (cancel) hook.AfterGrowth = bytes => { if (bytes >= 32768) { reached = true; cancellation.Cancel(); } };
+                else hook.RefuseGrowth = bytes => { if (bytes < 32768) return false; reached = true; return true; };
+                Exception error = cancel
+                    ? Assert.ThrowsAny<OperationCanceledException>(() => Invoke(function,
+                        [CallArgumentValue.Positional(input)], context, driver))
+                    : Assert.Throws<LythonRuntimeException>(() => Invoke(function,
+                        [CallArgumentValue.Positional(input)], context, driver));
+                Assert.True(reached);
+                if (!cancel)
+                {
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, ((LythonRuntimeException)error).Attribution?.Reason);
+                    Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                }
+                Assert.Equal("kept", input.AsString());
+                Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                context.State.CloseResources();
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
 
     [Fact]
     public void OrdinaryFunctionDriversReturnTheSameResult()

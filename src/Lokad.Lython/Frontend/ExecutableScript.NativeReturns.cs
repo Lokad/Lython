@@ -22,6 +22,7 @@ internal sealed partial class ExecutableCodeObject
         var nodes = new List<NativeReturnNode>();
         var stack = new List<(int Node, int Member, int Depth)>();
         HashSet<int>? forwardedLocals = null;
+        var hasFormattedBuilder = false;
         for (var index = 0; index < instructions.Length - 1; index++)
         {
             var instruction = instructions[index];
@@ -63,6 +64,35 @@ internal sealed partial class ExecutableCodeObject
                     depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                     stack.RemoveRange(stack.Count - 2, 2);
                     break;
+                case ExecutableOpCode.ApplyOperation:
+                    switch (Constants[instruction.ConstantIndex])
+                    {
+                        case ExecutableStartFormattedString:
+                            // One root builder has one deterministic native lifetime.
+                            // Nested multi-part strings keep their ordinary frames.
+                            if (hasFormattedBuilder || index != 0) return null;
+                            hasFormattedBuilder = true;
+                            node = new(index);
+                            break;
+                        case ExecutableAppendFormattedText:
+                        case ExecutableFinishFormattedString:
+                        case ExecutableConvertFormattedValue:
+                        case ExecutableFormatField { DynamicSpecifier: false, Append: false }:
+                            if (stack.Count == 0 || stack[^1].Member >= 0) return null;
+                            node = new(index, stack[^1].Node);
+                            depth = 1 + stack[^1].Depth;
+                            stack.RemoveAt(stack.Count - 1);
+                            break;
+                        case ExecutableFormatField { DynamicSpecifier: false, Append: true }:
+                            if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
+                            node = new(index, stack[^2].Node, stack[^1].Node);
+                            depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
+                            stack.RemoveRange(stack.Count - 2, 2);
+                            break;
+                        default:
+                            return null;
+                    }
+                    break;
                 case ExecutableOpCode.Call:
                     var site = CallSites[instruction.CallSiteIndex];
                     if (!site.IsPositionalOnly || site.ArgumentCount > 3 || stack.Count < site.ArgumentCount + 1)
@@ -91,6 +121,10 @@ internal sealed partial class ExecutableCodeObject
             stack.Add((nodes.Count, -1, depth));
             nodes.Add(node);
         }
-        return stack.Count == 1 && stack[0].Member < 0 ? nodes.ToArray() : null;
+        if (stack.Count != 1 || stack[0].Member >= 0) return null;
+        if (hasFormattedBuilder && (instructions[nodes[^1].Instruction].OpCode != ExecutableOpCode.ApplyOperation
+            || Constants[instructions[nodes[^1].Instruction].ConstantIndex] is not ExecutableFinishFormattedString))
+            return null;
+        return nodes.ToArray();
     }
 }

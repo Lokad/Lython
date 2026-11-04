@@ -1,0 +1,6846 @@
+{
+  "coreSHA256": "718796567FC8E36C597EDDD1D92C87B93573B833F3CF69A85EE345AA05686C14",
+  "cases": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "sourceSHA256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "totals",
+            "accepted",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "row",
+            "amount",
+            "kind",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target",
+            "writer"
+          ],
+          "operandCapacity": 8,
+          "instructionCount": 109,
+          "opcodes": {
+            "DefineFunction": 1,
+            "Import": 1,
+            "MakeDict": 1,
+            "StoreLocal": 14,
+            "LoadConst": 14,
+            "LoadName": 7,
+            "Call": 10,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 6,
+            "LoadLocal": 22,
+            "LoadCallMember": 2,
+            "GetIter": 2,
+            "ForNext": 2,
+            "Subscript": 3,
+            "Binary": 2,
+            "JumpIfFalse": 1,
+            "LoadCallReceiver": 3,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "MakeList": 2,
+            "PopTop": 3,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "DefineFunction",
+              "span": {
+                "Start": 0,
+                "Length": 55,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "Import",
+              "span": {
+                "Start": 57,
+                "Length": 10,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "MakeDict",
+              "span": {
+                "Start": 78,
+                "Length": 2,
+                "Line": 6,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 69,
+                "Length": 11,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "LoadConst",
+              "span": {
+                "Start": 92,
+                "Length": 1,
+                "Line": 7,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 81,
+                "Length": 12,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "LoadName",
+              "span": {
+                "Start": 99,
+                "Length": 4,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "LoadConst",
+              "span": {
+                "Start": 104,
+                "Length": 11,
+                "Line": 8,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "LoadConst",
+              "span": {
+                "Start": 125,
+                "Length": 2,
+                "Line": 8,
+                "Column": 32
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "Call",
+              "span": {
+                "Start": 99,
+                "Length": 29,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 99,
+                "Length": 29,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "Dup",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 99,
+                "Length": 29,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "Jump",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 16,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "LoadName",
+              "span": {
+                "Start": 155,
+                "Length": 3,
+                "Line": 9,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 155,
+                "Length": 14,
+                "Line": 9,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 170,
+                "Length": 6,
+                "Line": 9,
+                "Column": 31
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 21,
+              "op": "Call",
+              "span": {
+                "Start": 155,
+                "Length": 22,
+                "Line": 9,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 22,
+              "op": "GetIter",
+              "span": {
+                "Start": 155,
+                "Length": 22,
+                "Line": 9,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 23,
+              "op": "Jump",
+              "span": {
+                "Start": 144,
+                "Length": 216,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 24,
+              "operation": null
+            },
+            {
+              "index": 24,
+              "op": "ForNext",
+              "span": {
+                "Start": 155,
+                "Length": 22,
+                "Line": 9,
+                "Column": 16
+              },
+              "slot": null,
+              "target": 55,
+              "operation": null
+            },
+            {
+              "index": 25,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 144,
+                "Length": 216,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 26,
+              "op": "LoadName",
+              "span": {
+                "Start": 196,
+                "Length": 12,
+                "Line": 10,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 27,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 209,
+                "Length": 3,
+                "Line": 10,
+                "Column": 31
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 28,
+              "op": "LoadConst",
+              "span": {
+                "Start": 213,
+                "Length": 8,
+                "Line": 10,
+                "Column": 35
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 29,
+              "op": "Subscript",
+              "span": {
+                "Start": 209,
+                "Length": 13,
+                "Line": 10,
+                "Column": 31
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 30,
+              "op": "Call",
+              "span": {
+                "Start": 196,
+                "Length": 27,
+                "Line": 10,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 31,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 187,
+                "Length": 36,
+                "Line": 10,
+                "Column": 9
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 32,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 235,
+                "Length": 6,
+                "Line": 11,
+                "Column": 12
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 33,
+              "op": "LoadConst",
+              "span": {
+                "Start": 245,
+                "Length": 1,
+                "Line": 11,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 34,
+              "op": "Binary",
+              "span": {
+                "Start": 235,
+                "Length": 11,
+                "Line": 11,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 35,
+              "op": "JumpIfFalse",
+              "span": {
+                "Start": 235,
+                "Length": 11,
+                "Line": 11,
+                "Column": 12
+              },
+              "slot": null,
+              "target": 24,
+              "operation": null
+            },
+            {
+              "index": 36,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 267,
+                "Length": 3,
+                "Line": 12,
+                "Column": 20
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 37,
+              "op": "LoadConst",
+              "span": {
+                "Start": 271,
+                "Length": 6,
+                "Line": 12,
+                "Column": 24
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 38,
+              "op": "Subscript",
+              "span": {
+                "Start": 267,
+                "Length": 11,
+                "Line": 12,
+                "Column": 20
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 39,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 260,
+                "Length": 18,
+                "Line": 12,
+                "Column": 13
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 40,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 306,
+                "Length": 6,
+                "Line": 13,
+                "Column": 28
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 41,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 306,
+                "Length": 10,
+                "Line": 13,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 42,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 317,
+                "Length": 4,
+                "Line": 13,
+                "Column": 39
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 43,
+              "op": "LoadConst",
+              "span": {
+                "Start": 323,
+                "Length": 1,
+                "Line": 13,
+                "Column": 45
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 44,
+              "op": "Call",
+              "span": {
+                "Start": 306,
+                "Length": 19,
+                "Line": 13,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 45,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 328,
+                "Length": 6,
+                "Line": 13,
+                "Column": 50
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 46,
+              "op": "Binary",
+              "span": {
+                "Start": 306,
+                "Length": 28,
+                "Line": 13,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 47,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 291,
+                "Length": 6,
+                "Line": 13,
+                "Column": 13
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 48,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 298,
+                "Length": 4,
+                "Line": 13,
+                "Column": 20
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 49,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 291,
+                "Length": 43,
+                "Line": 13,
+                "Column": 13
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStoreSubscript"
+            },
+            {
+              "index": 50,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 347,
+                "Length": 13,
+                "Line": 14,
+                "Column": 13
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 51,
+              "op": "LoadConst",
+              "span": {
+                "Start": 359,
+                "Length": 1,
+                "Line": 14,
+                "Column": 25
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 52,
+              "op": "Augmented",
+              "span": {
+                "Start": 347,
+                "Length": 13,
+                "Line": 14,
+                "Column": 13
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 53,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 347,
+                "Length": 13,
+                "Line": 14,
+                "Column": 13
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 54,
+              "op": "Jump",
+              "span": {
+                "Start": 232,
+                "Length": 128,
+                "Line": 11,
+                "Column": 9
+              },
+              "slot": null,
+              "target": 24,
+              "operation": null
+            },
+            {
+              "index": 55,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 56,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 57,
+              "op": "EndFinally",
+              "span": {
+                "Start": 94,
+                "Length": 266,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 58,
+              "operation": null
+            },
+            {
+              "index": 58,
+              "op": "LoadName",
+              "span": {
+                "Start": 366,
+                "Length": 4,
+                "Line": 15,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 59,
+              "op": "LoadConst",
+              "span": {
+                "Start": 371,
+                "Length": 12,
+                "Line": 15,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 60,
+              "op": "LoadConst",
+              "span": {
+                "Start": 385,
+                "Length": 3,
+                "Line": 15,
+                "Column": 25
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 61,
+              "op": "LoadConst",
+              "span": {
+                "Start": 398,
+                "Length": 2,
+                "Line": 15,
+                "Column": 38
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 62,
+              "op": "Call",
+              "span": {
+                "Start": 366,
+                "Length": 35,
+                "Line": 15,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 63,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 366,
+                "Length": 35,
+                "Line": 15,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 64,
+              "op": "Dup",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 65,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 66,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 366,
+                "Length": 35,
+                "Line": 15,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 67,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 68,
+              "op": "Jump",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 69,
+              "operation": null
+            },
+            {
+              "index": 69,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 70,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": 10,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 71,
+              "op": "LoadName",
+              "span": {
+                "Start": 426,
+                "Length": 3,
+                "Line": 16,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 72,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 426,
+                "Length": 10,
+                "Line": 16,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 73,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 437,
+                "Length": 6,
+                "Line": 16,
+                "Column": 25
+              },
+              "slot": 10,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 74,
+              "op": "LoadConst",
+              "span": {
+                "Start": 460,
+                "Length": 4,
+                "Line": 16,
+                "Column": 48
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 75,
+              "op": "Call",
+              "span": {
+                "Start": 426,
+                "Length": 39,
+                "Line": 16,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 76,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 417,
+                "Length": 48,
+                "Line": 16,
+                "Column": 5
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 77,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 470,
+                "Length": 6,
+                "Line": 17,
+                "Column": 5
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 78,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 470,
+                "Length": 15,
+                "Line": 17,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 79,
+              "op": "LoadConst",
+              "span": {
+                "Start": 487,
+                "Length": 6,
+                "Line": 17,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 80,
+              "op": "LoadConst",
+              "span": {
+                "Start": 495,
+                "Length": 7,
+                "Line": 17,
+                "Column": 30
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 81,
+              "op": "MakeList",
+              "span": {
+                "Start": 486,
+                "Length": 17,
+                "Line": 17,
+                "Column": 21
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 82,
+              "op": "Call",
+              "span": {
+                "Start": 470,
+                "Length": 34,
+                "Line": 17,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 83,
+              "op": "PopTop",
+              "span": {
+                "Start": 470,
+                "Length": 34,
+                "Line": 17,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 84,
+              "op": "LoadName",
+              "span": {
+                "Start": 521,
+                "Length": 6,
+                "Line": 18,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 85,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 528,
+                "Length": 6,
+                "Line": 18,
+                "Column": 24
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 86,
+              "op": "Call",
+              "span": {
+                "Start": 521,
+                "Length": 14,
+                "Line": 18,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 87,
+              "op": "GetIter",
+              "span": {
+                "Start": 521,
+                "Length": 14,
+                "Line": 18,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 88,
+              "op": "Jump",
+              "span": {
+                "Start": 509,
+                "Length": 73,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 89,
+              "operation": null
+            },
+            {
+              "index": 89,
+              "op": "ForNext",
+              "span": {
+                "Start": 521,
+                "Length": 14,
+                "Line": 18,
+                "Column": 17
+              },
+              "slot": null,
+              "target": 101,
+              "operation": null
+            },
+            {
+              "index": 90,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 509,
+                "Length": 73,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 91,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 545,
+                "Length": 6,
+                "Line": 19,
+                "Column": 9
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 92,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 545,
+                "Length": 15,
+                "Line": 19,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 93,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 562,
+                "Length": 4,
+                "Line": 19,
+                "Column": 26
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 94,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 568,
+                "Length": 6,
+                "Line": 19,
+                "Column": 32
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 95,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 575,
+                "Length": 4,
+                "Line": 19,
+                "Column": 39
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 96,
+              "op": "Subscript",
+              "span": {
+                "Start": 568,
+                "Length": 12,
+                "Line": 19,
+                "Column": 32
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 97,
+              "op": "MakeList",
+              "span": {
+                "Start": 561,
+                "Length": 20,
+                "Line": 19,
+                "Column": 25
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 98,
+              "op": "Call",
+              "span": {
+                "Start": 545,
+                "Length": 37,
+                "Line": 19,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 99,
+              "op": "PopTop",
+              "span": {
+                "Start": 545,
+                "Length": 37,
+                "Line": 19,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 100,
+              "op": "Jump",
+              "span": {
+                "Start": 509,
+                "Length": 73,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 89,
+              "operation": null
+            },
+            {
+              "index": 101,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 102,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 103,
+              "op": "EndFinally",
+              "span": {
+                "Start": 361,
+                "Length": 221,
+                "Line": 15,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 104,
+              "operation": null
+            },
+            {
+              "index": 104,
+              "op": "LoadName",
+              "span": {
+                "Start": 583,
+                "Length": 5,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 105,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 589,
+                "Length": 8,
+                "Line": 20,
+                "Column": 7
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 106,
+              "op": "Call",
+              "span": {
+                "Start": 583,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 107,
+              "op": "PopTop",
+              "span": {
+                "Start": 583,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 108,
+              "op": "Complete",
+              "span": {
+                "Start": 583,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        },
+        {
+          "name": "parse_amount",
+          "nativeReturn": true,
+          "locals": [
+            "value"
+          ],
+          "operandCapacity": 2,
+          "instructionCount": 4,
+          "opcodes": {
+            "LoadName": 1,
+            "LoadLocal": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "LoadName",
+              "span": {
+                "Start": 45,
+                "Length": 3,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 49,
+                "Length": 5,
+                "Line": 2,
+                "Column": 16
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "Call",
+              "span": {
+                "Start": 45,
+                "Length": 10,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "Return",
+              "span": {
+                "Start": 38,
+                "Length": 17,
+                "Line": 2,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "counts",
+            "total",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "line",
+            "word",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target"
+          ],
+          "operandCapacity": 9,
+          "instructionCount": 90,
+          "opcodes": {
+            "DefineFunction": 1,
+            "MakeDict": 1,
+            "StoreLocal": 12,
+            "LoadConst": 10,
+            "LoadName": 6,
+            "Call": 8,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 7,
+            "LoadLocal": 17,
+            "GetIter": 3,
+            "ForNext": 3,
+            "LoadCallReceiver": 2,
+            "Binary": 4,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "Subscript": 1,
+            "PopTop": 2,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "DefineFunction",
+              "span": {
+                "Start": 0,
+                "Length": 68,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "MakeDict",
+              "span": {
+                "Start": 79,
+                "Length": 2,
+                "Line": 4,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 70,
+                "Length": 11,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "LoadConst",
+              "span": {
+                "Start": 90,
+                "Length": 1,
+                "Line": 5,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 82,
+                "Length": 9,
+                "Line": 5,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "LoadName",
+              "span": {
+                "Start": 97,
+                "Length": 4,
+                "Line": 6,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "LoadConst",
+              "span": {
+                "Start": 102,
+                "Length": 11,
+                "Line": 6,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "Call",
+              "span": {
+                "Start": 97,
+                "Length": 17,
+                "Line": 6,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 97,
+                "Length": 17,
+                "Line": 6,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "Dup",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 97,
+                "Length": 17,
+                "Line": 6,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "Jump",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 14,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 142,
+                "Length": 6,
+                "Line": 7,
+                "Column": 17
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "GetIter",
+              "span": {
+                "Start": 142,
+                "Length": 6,
+                "Line": 7,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "Jump",
+              "span": {
+                "Start": 130,
+                "Length": 136,
+                "Line": 7,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 19,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "ForNext",
+              "span": {
+                "Start": 142,
+                "Length": 6,
+                "Line": 7,
+                "Column": 17
+              },
+              "slot": null,
+              "target": 43,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 130,
+                "Length": 136,
+                "Line": 7,
+                "Column": 5
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 21,
+              "op": "LoadName",
+              "span": {
+                "Start": 170,
+                "Length": 15,
+                "Line": 8,
+                "Column": 21
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 22,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 186,
+                "Length": 4,
+                "Line": 8,
+                "Column": 37
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 23,
+              "op": "Call",
+              "span": {
+                "Start": 170,
+                "Length": 21,
+                "Line": 8,
+                "Column": 21
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 24,
+              "op": "GetIter",
+              "span": {
+                "Start": 170,
+                "Length": 21,
+                "Line": 8,
+                "Column": 21
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 25,
+              "op": "Jump",
+              "span": {
+                "Start": 158,
+                "Length": 108,
+                "Line": 8,
+                "Column": 9
+              },
+              "slot": null,
+              "target": 26,
+              "operation": null
+            },
+            {
+              "index": 26,
+              "op": "ForNext",
+              "span": {
+                "Start": 170,
+                "Length": 21,
+                "Line": 8,
+                "Column": 21
+              },
+              "slot": null,
+              "target": 19,
+              "operation": null
+            },
+            {
+              "index": 27,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 158,
+                "Length": 108,
+                "Line": 8,
+                "Column": 9
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 28,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 220,
+                "Length": 6,
+                "Line": 9,
+                "Column": 28
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 29,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 220,
+                "Length": 10,
+                "Line": 9,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 30,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 231,
+                "Length": 4,
+                "Line": 9,
+                "Column": 39
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 31,
+              "op": "LoadConst",
+              "span": {
+                "Start": 237,
+                "Length": 1,
+                "Line": 9,
+                "Column": 45
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 32,
+              "op": "Call",
+              "span": {
+                "Start": 220,
+                "Length": 19,
+                "Line": 9,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 33,
+              "op": "LoadConst",
+              "span": {
+                "Start": 242,
+                "Length": 1,
+                "Line": 9,
+                "Column": 50
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 34,
+              "op": "Binary",
+              "span": {
+                "Start": 220,
+                "Length": 23,
+                "Line": 9,
+                "Column": 28
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 35,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 205,
+                "Length": 6,
+                "Line": 9,
+                "Column": 13
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 36,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 212,
+                "Length": 4,
+                "Line": 9,
+                "Column": 20
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 37,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 205,
+                "Length": 38,
+                "Line": 9,
+                "Column": 13
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStoreSubscript"
+            },
+            {
+              "index": 38,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 256,
+                "Length": 10,
+                "Line": 10,
+                "Column": 13
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 39,
+              "op": "LoadConst",
+              "span": {
+                "Start": 265,
+                "Length": 1,
+                "Line": 10,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 40,
+              "op": "Augmented",
+              "span": {
+                "Start": 256,
+                "Length": 10,
+                "Line": 10,
+                "Column": 13
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 41,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 256,
+                "Length": 10,
+                "Line": 10,
+                "Column": 13
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 42,
+              "op": "Jump",
+              "span": {
+                "Start": 158,
+                "Length": 108,
+                "Line": 8,
+                "Column": 9
+              },
+              "slot": null,
+              "target": 26,
+              "operation": null
+            },
+            {
+              "index": 43,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 44,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 45,
+              "op": "EndFinally",
+              "span": {
+                "Start": 92,
+                "Length": 174,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 46,
+              "operation": null
+            },
+            {
+              "index": 46,
+              "op": "LoadName",
+              "span": {
+                "Start": 272,
+                "Length": 4,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 47,
+              "op": "LoadConst",
+              "span": {
+                "Start": 277,
+                "Length": 12,
+                "Line": 11,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 48,
+              "op": "LoadConst",
+              "span": {
+                "Start": 291,
+                "Length": 3,
+                "Line": 11,
+                "Column": 25
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 49,
+              "op": "LoadConst",
+              "span": {
+                "Start": 304,
+                "Length": 2,
+                "Line": 11,
+                "Column": 38
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 50,
+              "op": "Call",
+              "span": {
+                "Start": 272,
+                "Length": 35,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 51,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 272,
+                "Length": 35,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 52,
+              "op": "Dup",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 53,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 54,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 272,
+                "Length": 35,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 55,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 56,
+              "op": "Jump",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 57,
+              "operation": null
+            },
+            {
+              "index": 57,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 58,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 59,
+              "op": "LoadName",
+              "span": {
+                "Start": 335,
+                "Length": 6,
+                "Line": 12,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 60,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 342,
+                "Length": 6,
+                "Line": 12,
+                "Column": 24
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 61,
+              "op": "Call",
+              "span": {
+                "Start": 335,
+                "Length": 14,
+                "Line": 12,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 62,
+              "op": "GetIter",
+              "span": {
+                "Start": 335,
+                "Length": 14,
+                "Line": 12,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 63,
+              "op": "Jump",
+              "span": {
+                "Start": 323,
+                "Length": 87,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 64,
+              "operation": null
+            },
+            {
+              "index": 64,
+              "op": "ForNext",
+              "span": {
+                "Start": 335,
+                "Length": 14,
+                "Line": 12,
+                "Column": 17
+              },
+              "slot": null,
+              "target": 82,
+              "operation": null
+            },
+            {
+              "index": 65,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 323,
+                "Length": 87,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 66,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 359,
+                "Length": 6,
+                "Line": 13,
+                "Column": 9
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 67,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 359,
+                "Length": 12,
+                "Line": 13,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 68,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 372,
+                "Length": 4,
+                "Line": 13,
+                "Column": 22
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 69,
+              "op": "LoadConst",
+              "span": {
+                "Start": 379,
+                "Length": 3,
+                "Line": 13,
+                "Column": 29
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 70,
+              "op": "Binary",
+              "span": {
+                "Start": 372,
+                "Length": 10,
+                "Line": 13,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 71,
+              "op": "LoadName",
+              "span": {
+                "Start": 385,
+                "Length": 3,
+                "Line": 13,
+                "Column": 35
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 72,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 389,
+                "Length": 6,
+                "Line": 13,
+                "Column": 39
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 73,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 396,
+                "Length": 4,
+                "Line": 13,
+                "Column": 46
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 74,
+              "op": "Subscript",
+              "span": {
+                "Start": 389,
+                "Length": 12,
+                "Line": 13,
+                "Column": 39
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 75,
+              "op": "Call",
+              "span": {
+                "Start": 385,
+                "Length": 17,
+                "Line": 13,
+                "Column": 35
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 76,
+              "op": "Binary",
+              "span": {
+                "Start": 372,
+                "Length": 30,
+                "Line": 13,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 77,
+              "op": "LoadConst",
+              "span": {
+                "Start": 405,
+                "Length": 4,
+                "Line": 13,
+                "Column": 55
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 78,
+              "op": "Binary",
+              "span": {
+                "Start": 372,
+                "Length": 37,
+                "Line": 13,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 79,
+              "op": "Call",
+              "span": {
+                "Start": 359,
+                "Length": 51,
+                "Line": 13,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 80,
+              "op": "PopTop",
+              "span": {
+                "Start": 359,
+                "Length": 51,
+                "Line": 13,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 81,
+              "op": "Jump",
+              "span": {
+                "Start": 323,
+                "Length": 87,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 64,
+              "operation": null
+            },
+            {
+              "index": 82,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 83,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 84,
+              "op": "EndFinally",
+              "span": {
+                "Start": 267,
+                "Length": 143,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 85,
+              "operation": null
+            },
+            {
+              "index": 85,
+              "op": "LoadName",
+              "span": {
+                "Start": 411,
+                "Length": 5,
+                "Line": 14,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 86,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 417,
+                "Length": 5,
+                "Line": 14,
+                "Column": 7
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 87,
+              "op": "Call",
+              "span": {
+                "Start": 411,
+                "Length": 12,
+                "Line": 14,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 88,
+              "op": "PopTop",
+              "span": {
+                "Start": 411,
+                "Length": 12,
+                "Line": 14,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 89,
+              "op": "Complete",
+              "span": {
+                "Start": 411,
+                "Length": 12,
+                "Line": 14,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        },
+        {
+          "name": "words_from_line",
+          "nativeReturn": true,
+          "locals": [
+            "line"
+          ],
+          "operandCapacity": 2,
+          "instructionCount": 6,
+          "opcodes": {
+            "LoadLocal": 1,
+            "LoadCallReceiver": 2,
+            "Call": 2,
+            "Return": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 48,
+                "Length": 4,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 48,
+                "Length": 10,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "Call",
+              "span": {
+                "Start": 48,
+                "Length": 12,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 48,
+                "Length": 18,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "Call",
+              "span": {
+                "Start": 48,
+                "Length": 20,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "Return",
+              "span": {
+                "Start": 41,
+                "Length": 27,
+                "Line": 2,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "sourceSHA256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "totals",
+            "accepted",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "line",
+            "record",
+            "amount",
+            "kind",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target"
+          ],
+          "operandCapacity": 7,
+          "instructionCount": 99,
+          "opcodes": {
+            "DefineFunction": 1,
+            "Import": 1,
+            "MakeDict": 1,
+            "StoreLocal": 13,
+            "LoadConst": 14,
+            "LoadName": 6,
+            "Call": 9,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 5,
+            "LoadLocal": 20,
+            "GetIter": 1,
+            "ForNext": 1,
+            "LoadCallReceiver": 3,
+            "JumpIfFalse": 2,
+            "LoadCallMember": 2,
+            "Binary": 2,
+            "Subscript": 1,
+            "ApplyOperation": 1,
+            "Augmented": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "MakeTuple": 1,
+            "PopTop": 3,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "DefineFunction",
+              "span": {
+                "Start": 0,
+                "Length": 64,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "Import",
+              "span": {
+                "Start": 66,
+                "Length": 11,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "MakeDict",
+              "span": {
+                "Start": 88,
+                "Length": 2,
+                "Line": 6,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 79,
+                "Length": 11,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "LoadConst",
+              "span": {
+                "Start": 102,
+                "Length": 1,
+                "Line": 7,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 91,
+                "Length": 12,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "LoadName",
+              "span": {
+                "Start": 109,
+                "Length": 4,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "LoadConst",
+              "span": {
+                "Start": 114,
+                "Length": 13,
+                "Line": 8,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "Call",
+              "span": {
+                "Start": 109,
+                "Length": 19,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 109,
+                "Length": 19,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "Dup",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 109,
+                "Length": 19,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "Jump",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 15,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 156,
+                "Length": 6,
+                "Line": 9,
+                "Column": 17
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "GetIter",
+              "span": {
+                "Start": 156,
+                "Length": 6,
+                "Line": 9,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "Jump",
+              "span": {
+                "Start": 144,
+                "Length": 281,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 20,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "ForNext",
+              "span": {
+                "Start": 156,
+                "Length": 6,
+                "Line": 9,
+                "Column": 17
+              },
+              "slot": null,
+              "target": 58,
+              "operation": null
+            },
+            {
+              "index": 21,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 144,
+                "Length": 281,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 22,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 175,
+                "Length": 4,
+                "Line": 10,
+                "Column": 12
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 23,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 175,
+                "Length": 10,
+                "Line": 10,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 24,
+              "op": "Call",
+              "span": {
+                "Start": 175,
+                "Length": 12,
+                "Line": 10,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 25,
+              "op": "JumpIfFalse",
+              "span": {
+                "Start": 175,
+                "Length": 12,
+                "Line": 10,
+                "Column": 12
+              },
+              "slot": null,
+              "target": 20,
+              "operation": null
+            },
+            {
+              "index": 26,
+              "op": "LoadName",
+              "span": {
+                "Start": 210,
+                "Length": 4,
+                "Line": 11,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 27,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 210,
+                "Length": 10,
+                "Line": 11,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 28,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 221,
+                "Length": 4,
+                "Line": 11,
+                "Column": 33
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 29,
+              "op": "Call",
+              "span": {
+                "Start": 210,
+                "Length": 16,
+                "Line": 11,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 30,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 201,
+                "Length": 25,
+                "Line": 11,
+                "Column": 13
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 31,
+              "op": "LoadName",
+              "span": {
+                "Start": 248,
+                "Length": 13,
+                "Line": 12,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 32,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 262,
+                "Length": 6,
+                "Line": 12,
+                "Column": 36
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 33,
+              "op": "Call",
+              "span": {
+                "Start": 248,
+                "Length": 21,
+                "Line": 12,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 34,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 239,
+                "Length": 30,
+                "Line": 12,
+                "Column": 13
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 35,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 285,
+                "Length": 6,
+                "Line": 13,
+                "Column": 16
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 36,
+              "op": "LoadConst",
+              "span": {
+                "Start": 295,
+                "Length": 1,
+                "Line": 13,
+                "Column": 26
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 37,
+              "op": "Binary",
+              "span": {
+                "Start": 285,
+                "Length": 11,
+                "Line": 13,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 38,
+              "op": "JumpIfFalse",
+              "span": {
+                "Start": 285,
+                "Length": 11,
+                "Line": 13,
+                "Column": 16
+              },
+              "slot": null,
+              "target": 20,
+              "operation": null
+            },
+            {
+              "index": 39,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 321,
+                "Length": 6,
+                "Line": 14,
+                "Column": 24
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 40,
+              "op": "LoadConst",
+              "span": {
+                "Start": 328,
+                "Length": 6,
+                "Line": 14,
+                "Column": 31
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 41,
+              "op": "Subscript",
+              "span": {
+                "Start": 321,
+                "Length": 14,
+                "Line": 14,
+                "Column": 24
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 42,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 314,
+                "Length": 21,
+                "Line": 14,
+                "Column": 17
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 43,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 367,
+                "Length": 6,
+                "Line": 15,
+                "Column": 32
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 44,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 367,
+                "Length": 10,
+                "Line": 15,
+                "Column": 32
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 45,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 378,
+                "Length": 4,
+                "Line": 15,
+                "Column": 43
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 46,
+              "op": "LoadConst",
+              "span": {
+                "Start": 384,
+                "Length": 1,
+                "Line": 15,
+                "Column": 49
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 47,
+              "op": "Call",
+              "span": {
+                "Start": 367,
+                "Length": 19,
+                "Line": 15,
+                "Column": 32
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 48,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 389,
+                "Length": 6,
+                "Line": 15,
+                "Column": 54
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 49,
+              "op": "Binary",
+              "span": {
+                "Start": 367,
+                "Length": 28,
+                "Line": 15,
+                "Column": 32
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 50,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 352,
+                "Length": 6,
+                "Line": 15,
+                "Column": 17
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 51,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 359,
+                "Length": 4,
+                "Line": 15,
+                "Column": 24
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 52,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 352,
+                "Length": 43,
+                "Line": 15,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStoreSubscript"
+            },
+            {
+              "index": 53,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 412,
+                "Length": 13,
+                "Line": 16,
+                "Column": 17
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 54,
+              "op": "LoadConst",
+              "span": {
+                "Start": 424,
+                "Length": 1,
+                "Line": 16,
+                "Column": 29
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 55,
+              "op": "Augmented",
+              "span": {
+                "Start": 412,
+                "Length": 13,
+                "Line": 16,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 56,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 412,
+                "Length": 13,
+                "Line": 16,
+                "Column": 17
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 57,
+              "op": "Jump",
+              "span": {
+                "Start": 282,
+                "Length": 143,
+                "Line": 13,
+                "Column": 13
+              },
+              "slot": null,
+              "target": 20,
+              "operation": null
+            },
+            {
+              "index": 58,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 59,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 60,
+              "op": "EndFinally",
+              "span": {
+                "Start": 104,
+                "Length": 321,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 61,
+              "operation": null
+            },
+            {
+              "index": 61,
+              "op": "LoadName",
+              "span": {
+                "Start": 431,
+                "Length": 4,
+                "Line": 17,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 62,
+              "op": "LoadConst",
+              "span": {
+                "Start": 436,
+                "Length": 13,
+                "Line": 17,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 63,
+              "op": "LoadConst",
+              "span": {
+                "Start": 451,
+                "Length": 3,
+                "Line": 17,
+                "Column": 26
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 64,
+              "op": "LoadConst",
+              "span": {
+                "Start": 464,
+                "Length": 2,
+                "Line": 17,
+                "Column": 39
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 65,
+              "op": "Call",
+              "span": {
+                "Start": 431,
+                "Length": 36,
+                "Line": 17,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 66,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 431,
+                "Length": 36,
+                "Line": 17,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 67,
+              "op": "Dup",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 68,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 69,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 431,
+                "Length": 36,
+                "Line": 17,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 70,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": 10,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 71,
+              "op": "Jump",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 72,
+              "operation": null
+            },
+            {
+              "index": 72,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": 10,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 73,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 74,
+              "op": "LoadName",
+              "span": {
+                "Start": 483,
+                "Length": 4,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 75,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 483,
+                "Length": 9,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 76,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 493,
+                "Length": 6,
+                "Line": 18,
+                "Column": 15
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 77,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 501,
+                "Length": 6,
+                "Line": 18,
+                "Column": 23
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 78,
+              "op": "LoadConst",
+              "span": {
+                "Start": 519,
+                "Length": 4,
+                "Line": 18,
+                "Column": 41
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 79,
+              "op": "LoadConst",
+              "span": {
+                "Start": 538,
+                "Length": 5,
+                "Line": 18,
+                "Column": 60
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 80,
+              "op": "LoadConst",
+              "span": {
+                "Start": 557,
+                "Length": 3,
+                "Line": 18,
+                "Column": 79
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 81,
+              "op": "LoadConst",
+              "span": {
+                "Start": 562,
+                "Length": 3,
+                "Line": 18,
+                "Column": 84
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 82,
+              "op": "MakeTuple",
+              "span": {
+                "Start": 556,
+                "Length": 10,
+                "Line": 18,
+                "Column": 78
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 83,
+              "op": "Call",
+              "span": {
+                "Start": 483,
+                "Length": 84,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 84,
+              "op": "PopTop",
+              "span": {
+                "Start": 483,
+                "Length": 84,
+                "Line": 18,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 85,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 572,
+                "Length": 6,
+                "Line": 19,
+                "Column": 5
+              },
+              "slot": 11,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 86,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 572,
+                "Length": 12,
+                "Line": 19,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 87,
+              "op": "LoadConst",
+              "span": {
+                "Start": 585,
+                "Length": 4,
+                "Line": 19,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 88,
+              "op": "Call",
+              "span": {
+                "Start": 572,
+                "Length": 18,
+                "Line": 19,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 89,
+              "op": "PopTop",
+              "span": {
+                "Start": 572,
+                "Length": 18,
+                "Line": 19,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 90,
+              "op": "Jump",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 91,
+              "operation": null
+            },
+            {
+              "index": 91,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": 9,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 92,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 93,
+              "op": "EndFinally",
+              "span": {
+                "Start": 426,
+                "Length": 164,
+                "Line": 17,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 94,
+              "operation": null
+            },
+            {
+              "index": 94,
+              "op": "LoadName",
+              "span": {
+                "Start": 591,
+                "Length": 5,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 95,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 597,
+                "Length": 8,
+                "Line": 20,
+                "Column": 7
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 96,
+              "op": "Call",
+              "span": {
+                "Start": 591,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 97,
+              "op": "PopTop",
+              "span": {
+                "Start": 591,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 98,
+              "op": "Complete",
+              "span": {
+                "Start": 591,
+                "Length": 15,
+                "Line": 20,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        },
+        {
+          "name": "record_amount",
+          "nativeReturn": true,
+          "locals": [
+            "record"
+          ],
+          "operandCapacity": 4,
+          "instructionCount": 4,
+          "opcodes": {
+            "LoadLocal": 1,
+            "LoadConst": 1,
+            "Subscript": 1,
+            "Return": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 48,
+                "Length": 6,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "LoadConst",
+              "span": {
+                "Start": 55,
+                "Length": 8,
+                "Line": 2,
+                "Column": 19
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "Subscript",
+              "span": {
+                "Start": 48,
+                "Length": 16,
+                "Line": 2,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "Return",
+              "span": {
+                "Start": 41,
+                "Length": 23,
+                "Line": 2,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.report-render.large",
+      "sourceSHA256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "records",
+            "written",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target",
+            "record"
+          ],
+          "operandCapacity": 5,
+          "instructionCount": 67,
+          "opcodes": {
+            "Import": 1,
+            "DefineFunction": 1,
+            "LoadName": 5,
+            "LoadConst": 7,
+            "Call": 7,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "StoreLocal": 10,
+            "EnterContextManager": 2,
+            "Jump": 5,
+            "LoadLocal": 11,
+            "LoadCallMember": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "LoadCallReceiver": 2,
+            "PopTop": 3,
+            "GetIter": 1,
+            "ForNext": 1,
+            "Augmented": 1,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "Import",
+              "span": {
+                "Start": 0,
+                "Length": 11,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "DefineFunction",
+              "span": {
+                "Start": 14,
+                "Length": 114,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "LoadName",
+              "span": {
+                "Start": 136,
+                "Length": 4,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "LoadConst",
+              "span": {
+                "Start": 141,
+                "Length": 14,
+                "Line": 8,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "Call",
+              "span": {
+                "Start": 136,
+                "Length": 20,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 136,
+                "Length": 20,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "Dup",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 136,
+                "Length": 20,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "Jump",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 11,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "LoadName",
+              "span": {
+                "Start": 182,
+                "Length": 4,
+                "Line": 9,
+                "Column": 15
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 182,
+                "Length": 9,
+                "Line": 9,
+                "Column": 15
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 192,
+                "Length": 6,
+                "Line": 9,
+                "Column": 25
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "Call",
+              "span": {
+                "Start": 182,
+                "Length": 17,
+                "Line": 9,
+                "Column": 15
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 172,
+                "Length": 27,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "Jump",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 19,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 21,
+              "op": "EndFinally",
+              "span": {
+                "Start": 131,
+                "Length": 68,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 22,
+              "operation": null
+            },
+            {
+              "index": 22,
+              "op": "LoadConst",
+              "span": {
+                "Start": 210,
+                "Length": 1,
+                "Line": 10,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 23,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 200,
+                "Length": 11,
+                "Line": 10,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 24,
+              "op": "LoadName",
+              "span": {
+                "Start": 217,
+                "Length": 4,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 25,
+              "op": "LoadConst",
+              "span": {
+                "Start": 222,
+                "Length": 11,
+                "Line": 11,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 26,
+              "op": "LoadConst",
+              "span": {
+                "Start": 235,
+                "Length": 3,
+                "Line": 11,
+                "Column": 24
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 27,
+              "op": "LoadConst",
+              "span": {
+                "Start": 248,
+                "Length": 2,
+                "Line": 11,
+                "Column": 37
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 28,
+              "op": "Call",
+              "span": {
+                "Start": 217,
+                "Length": 34,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 29,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 217,
+                "Length": 34,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 30,
+              "op": "Dup",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 31,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 32,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 217,
+                "Length": 34,
+                "Line": 11,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 33,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 34,
+              "op": "Jump",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 35,
+              "operation": null
+            },
+            {
+              "index": 35,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 36,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 37,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 267,
+                "Length": 6,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 38,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 267,
+                "Length": 12,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 39,
+              "op": "LoadConst",
+              "span": {
+                "Start": 280,
+                "Length": 72,
+                "Line": 12,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 40,
+              "op": "Call",
+              "span": {
+                "Start": 267,
+                "Length": 86,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 41,
+              "op": "PopTop",
+              "span": {
+                "Start": 267,
+                "Length": 86,
+                "Line": 12,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 42,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 372,
+                "Length": 7,
+                "Line": 13,
+                "Column": 19
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 43,
+              "op": "GetIter",
+              "span": {
+                "Start": 372,
+                "Length": 7,
+                "Line": 13,
+                "Column": 19
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 44,
+              "op": "Jump",
+              "span": {
+                "Start": 358,
+                "Length": 80,
+                "Line": 13,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 45,
+              "operation": null
+            },
+            {
+              "index": 45,
+              "op": "ForNext",
+              "span": {
+                "Start": 372,
+                "Length": 7,
+                "Line": 13,
+                "Column": 19
+              },
+              "slot": null,
+              "target": 59,
+              "operation": null
+            },
+            {
+              "index": 46,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 358,
+                "Length": 80,
+                "Line": 13,
+                "Column": 5
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 47,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 389,
+                "Length": 6,
+                "Line": 14,
+                "Column": 9
+              },
+              "slot": 7,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 48,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 389,
+                "Length": 12,
+                "Line": 14,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 49,
+              "op": "LoadName",
+              "span": {
+                "Start": 402,
+                "Length": 6,
+                "Line": 14,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 50,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 409,
+                "Length": 6,
+                "Line": 14,
+                "Column": 29
+              },
+              "slot": 8,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 51,
+              "op": "Call",
+              "span": {
+                "Start": 402,
+                "Length": 14,
+                "Line": 14,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 52,
+              "op": "Call",
+              "span": {
+                "Start": 389,
+                "Length": 28,
+                "Line": 14,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 53,
+              "op": "PopTop",
+              "span": {
+                "Start": 389,
+                "Length": 28,
+                "Line": 14,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 54,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 426,
+                "Length": 12,
+                "Line": 15,
+                "Column": 9
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 55,
+              "op": "LoadConst",
+              "span": {
+                "Start": 437,
+                "Length": 1,
+                "Line": 15,
+                "Column": 20
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 56,
+              "op": "Augmented",
+              "span": {
+                "Start": 426,
+                "Length": 12,
+                "Line": 15,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 57,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 426,
+                "Length": 12,
+                "Line": 15,
+                "Column": 9
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 58,
+              "op": "Jump",
+              "span": {
+                "Start": 358,
+                "Length": 80,
+                "Line": 13,
+                "Column": 5
+              },
+              "slot": null,
+              "target": 45,
+              "operation": null
+            },
+            {
+              "index": 59,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 60,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 61,
+              "op": "EndFinally",
+              "span": {
+                "Start": 212,
+                "Length": 226,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 62,
+              "operation": null
+            },
+            {
+              "index": 62,
+              "op": "LoadName",
+              "span": {
+                "Start": 439,
+                "Length": 5,
+                "Line": 16,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 63,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 445,
+                "Length": 7,
+                "Line": 16,
+                "Column": 7
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 64,
+              "op": "Call",
+              "span": {
+                "Start": 439,
+                "Length": 14,
+                "Line": 16,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 65,
+              "op": "PopTop",
+              "span": {
+                "Start": 439,
+                "Length": 14,
+                "Line": 16,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 66,
+              "op": "Complete",
+              "span": {
+                "Start": 439,
+                "Length": 14,
+                "Line": 16,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        },
+        {
+          "name": "render",
+          "nativeReturn": true,
+          "locals": [
+            "record"
+          ],
+          "operandCapacity": 5,
+          "instructionCount": 19,
+          "opcodes": {
+            "ApplyOperation": 9,
+            "LoadLocal": 3,
+            "LoadConst": 3,
+            "Subscript": 3,
+            "Return": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStartFormattedString"
+            },
+            {
+              "index": 1,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableAppendFormattedText"
+            },
+            {
+              "index": 2,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 50,
+                "Length": 6,
+                "Line": 5,
+                "Column": 17
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "LoadConst",
+              "span": {
+                "Start": 57,
+                "Length": 6,
+                "Line": 5,
+                "Column": 24
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "Subscript",
+              "span": {
+                "Start": 50,
+                "Length": 14,
+                "Line": 5,
+                "Column": 17
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableFormatField"
+            },
+            {
+              "index": 6,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableAppendFormattedText"
+            },
+            {
+              "index": 7,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 77,
+                "Length": 6,
+                "Line": 5,
+                "Column": 44
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "LoadConst",
+              "span": {
+                "Start": 84,
+                "Length": 7,
+                "Line": 5,
+                "Column": 51
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "Subscript",
+              "span": {
+                "Start": 77,
+                "Length": 15,
+                "Line": 5,
+                "Column": 44
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableFormatField"
+            },
+            {
+              "index": 11,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableAppendFormattedText"
+            },
+            {
+              "index": 12,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 101,
+                "Length": 6,
+                "Line": 5,
+                "Column": 68
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "LoadConst",
+              "span": {
+                "Start": 108,
+                "Length": 8,
+                "Line": 5,
+                "Column": 75
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "Subscript",
+              "span": {
+                "Start": 101,
+                "Length": 16,
+                "Line": 5,
+                "Column": 68
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableFormatField"
+            },
+            {
+              "index": 16,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableAppendFormattedText"
+            },
+            {
+              "index": 17,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 45,
+                "Length": 83,
+                "Line": 5,
+                "Column": 12
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableFinishFormattedString"
+            },
+            {
+              "index": 18,
+              "op": "Return",
+              "span": {
+                "Start": 38,
+                "Length": 90,
+                "Line": 5,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-edit.large",
+      "sourceSHA256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "config",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target"
+          ],
+          "operandCapacity": 7,
+          "instructionCount": 80,
+          "opcodes": {
+            "Import": 1,
+            "LoadName": 6,
+            "LoadConst": 16,
+            "Call": 8,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "StoreLocal": 7,
+            "EnterContextManager": 2,
+            "Jump": 4,
+            "LoadLocal": 12,
+            "LoadCallMember": 2,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "ApplyOperation": 3,
+            "Augmented": 1,
+            "Subscript": 2,
+            "LoadCallReceiver": 2,
+            "PopTop": 4,
+            "MakeTuple": 1,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "Import",
+              "span": {
+                "Start": 0,
+                "Length": 11,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "LoadName",
+              "span": {
+                "Start": 18,
+                "Length": 4,
+                "Line": 3,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "LoadConst",
+              "span": {
+                "Start": 23,
+                "Length": 13,
+                "Line": 3,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "Call",
+              "span": {
+                "Start": 18,
+                "Length": 19,
+                "Line": 3,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 18,
+                "Length": 19,
+                "Line": 3,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "Dup",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 18,
+                "Length": 19,
+                "Line": 3,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "Jump",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 10,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "LoadName",
+              "span": {
+                "Start": 62,
+                "Length": 4,
+                "Line": 4,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 62,
+                "Length": 9,
+                "Line": 4,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 72,
+                "Length": 6,
+                "Line": 4,
+                "Column": 24
+              },
+              "slot": 2,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "Call",
+              "span": {
+                "Start": 62,
+                "Length": 17,
+                "Line": 4,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 53,
+                "Length": 26,
+                "Line": 4,
+                "Column": 5
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "Jump",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 18,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "EndFinally",
+              "span": {
+                "Start": 13,
+                "Length": 66,
+                "Line": 3,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 21,
+              "operation": null
+            },
+            {
+              "index": 21,
+              "op": "LoadConst",
+              "span": {
+                "Start": 100,
+                "Length": 4,
+                "Line": 5,
+                "Column": 21
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 22,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 80,
+                "Length": 6,
+                "Line": 5,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 23,
+              "op": "LoadConst",
+              "span": {
+                "Start": 87,
+                "Length": 9,
+                "Line": 5,
+                "Column": 8
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 24,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 80,
+                "Length": 24,
+                "Line": 5,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStoreSubscript"
+            },
+            {
+              "index": 25,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 105,
+                "Length": 6,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 26,
+              "op": "LoadConst",
+              "span": {
+                "Start": 112,
+                "Length": 9,
+                "Line": 6,
+                "Column": 8
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 27,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 105,
+                "Length": 17,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableReadRetainedSubscript"
+            },
+            {
+              "index": 28,
+              "op": "LoadConst",
+              "span": {
+                "Start": 126,
+                "Length": 1,
+                "Line": 6,
+                "Column": 22
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 29,
+              "op": "Augmented",
+              "span": {
+                "Start": 105,
+                "Length": 22,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 30,
+              "op": "ApplyOperation",
+              "span": {
+                "Start": 105,
+                "Length": 22,
+                "Line": 6,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": "ExecutableStoreSubscript"
+            },
+            {
+              "index": 31,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 128,
+                "Length": 6,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 32,
+              "op": "LoadConst",
+              "span": {
+                "Start": 135,
+                "Length": 7,
+                "Line": 7,
+                "Column": 8
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 33,
+              "op": "Subscript",
+              "span": {
+                "Start": 128,
+                "Length": 15,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 34,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 128,
+                "Length": 22,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 35,
+              "op": "LoadConst",
+              "span": {
+                "Start": 151,
+                "Length": 11,
+                "Line": 7,
+                "Column": 24
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 36,
+              "op": "Call",
+              "span": {
+                "Start": 128,
+                "Length": 35,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 37,
+              "op": "PopTop",
+              "span": {
+                "Start": 128,
+                "Length": 35,
+                "Line": 7,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 38,
+              "op": "LoadName",
+              "span": {
+                "Start": 169,
+                "Length": 4,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 39,
+              "op": "LoadConst",
+              "span": {
+                "Start": 174,
+                "Length": 13,
+                "Line": 8,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 40,
+              "op": "LoadConst",
+              "span": {
+                "Start": 189,
+                "Length": 3,
+                "Line": 8,
+                "Column": 26
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 41,
+              "op": "LoadConst",
+              "span": {
+                "Start": 202,
+                "Length": 2,
+                "Line": 8,
+                "Column": 39
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 42,
+              "op": "Call",
+              "span": {
+                "Start": 169,
+                "Length": 36,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 43,
+              "op": "ResolveContextManager",
+              "span": {
+                "Start": 169,
+                "Length": 36,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 44,
+              "op": "Dup",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 45,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 46,
+              "op": "EnterContextManager",
+              "span": {
+                "Start": 169,
+                "Length": 36,
+                "Line": 8,
+                "Column": 6
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 47,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 48,
+              "op": "Jump",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 49,
+              "operation": null
+            },
+            {
+              "index": 49,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 5,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 50,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 51,
+              "op": "LoadName",
+              "span": {
+                "Start": 221,
+                "Length": 4,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 52,
+              "op": "LoadCallMember",
+              "span": {
+                "Start": 221,
+                "Length": 9,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 53,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 231,
+                "Length": 6,
+                "Line": 9,
+                "Column": 15
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 54,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 239,
+                "Length": 6,
+                "Line": 9,
+                "Column": 23
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 55,
+              "op": "LoadConst",
+              "span": {
+                "Start": 260,
+                "Length": 5,
+                "Line": 9,
+                "Column": 44
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 56,
+              "op": "LoadConst",
+              "span": {
+                "Start": 277,
+                "Length": 4,
+                "Line": 9,
+                "Column": 61
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 57,
+              "op": "LoadConst",
+              "span": {
+                "Start": 295,
+                "Length": 3,
+                "Line": 9,
+                "Column": 79
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 58,
+              "op": "LoadConst",
+              "span": {
+                "Start": 300,
+                "Length": 3,
+                "Line": 9,
+                "Column": 84
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 59,
+              "op": "MakeTuple",
+              "span": {
+                "Start": 294,
+                "Length": 10,
+                "Line": 9,
+                "Column": 78
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 60,
+              "op": "Call",
+              "span": {
+                "Start": 221,
+                "Length": 84,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 61,
+              "op": "PopTop",
+              "span": {
+                "Start": 221,
+                "Length": 84,
+                "Line": 9,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 62,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 310,
+                "Length": 6,
+                "Line": 10,
+                "Column": 5
+              },
+              "slot": 6,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 63,
+              "op": "LoadCallReceiver",
+              "span": {
+                "Start": 310,
+                "Length": 12,
+                "Line": 10,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 64,
+              "op": "LoadConst",
+              "span": {
+                "Start": 323,
+                "Length": 4,
+                "Line": 10,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 65,
+              "op": "Call",
+              "span": {
+                "Start": 310,
+                "Length": 18,
+                "Line": 10,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 66,
+              "op": "PopTop",
+              "span": {
+                "Start": 310,
+                "Length": 18,
+                "Line": 10,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 67,
+              "op": "Jump",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 68,
+              "operation": null
+            },
+            {
+              "index": 68,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": 4,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 69,
+              "op": "ExitContextManager",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 70,
+              "op": "EndFinally",
+              "span": {
+                "Start": 164,
+                "Length": 164,
+                "Line": 8,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 71,
+              "operation": null
+            },
+            {
+              "index": 71,
+              "op": "LoadName",
+              "span": {
+                "Start": 329,
+                "Length": 5,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 72,
+              "op": "LoadName",
+              "span": {
+                "Start": 335,
+                "Length": 3,
+                "Line": 11,
+                "Column": 7
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 73,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 339,
+                "Length": 6,
+                "Line": 11,
+                "Column": 11
+              },
+              "slot": 3,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 74,
+              "op": "LoadConst",
+              "span": {
+                "Start": 346,
+                "Length": 7,
+                "Line": 11,
+                "Column": 18
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 75,
+              "op": "Subscript",
+              "span": {
+                "Start": 339,
+                "Length": 15,
+                "Line": 11,
+                "Column": 11
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 76,
+              "op": "Call",
+              "span": {
+                "Start": 335,
+                "Length": 20,
+                "Line": 11,
+                "Column": 7
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 77,
+              "op": "Call",
+              "span": {
+                "Start": 329,
+                "Length": 27,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 78,
+              "op": "PopTop",
+              "span": {
+                "Start": 329,
+                "Length": 27,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 79,
+              "op": "Complete",
+              "span": {
+                "Start": 329,
+                "Length": 27,
+                "Line": 11,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scripts.scalar-above-range.large",
+      "sourceSHA256": "ef92ab8d004fa0e7fb1e12078fe47f46952523c0ef29ccff9aaf3835e82916c6",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "nativeReturn": false,
+          "locals": [
+            "value",
+            "i"
+          ],
+          "operandCapacity": 3,
+          "instructionCount": 21,
+          "opcodes": {
+            "LoadName": 3,
+            "LoadConst": 3,
+            "Call": 3,
+            "StoreLocal": 3,
+            "GetIter": 1,
+            "Jump": 2,
+            "ForNext": 1,
+            "LoadLocal": 2,
+            "Augmented": 1,
+            "PopTop": 1,
+            "Complete": 1
+          },
+          "listing": [
+            {
+              "index": 0,
+              "op": "LoadName",
+              "span": {
+                "Start": 8,
+                "Length": 3,
+                "Line": 1,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 1,
+              "op": "LoadConst",
+              "span": {
+                "Start": 12,
+                "Length": 9,
+                "Line": 1,
+                "Column": 13
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 2,
+              "op": "Call",
+              "span": {
+                "Start": 8,
+                "Length": 14,
+                "Line": 1,
+                "Column": 9
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 3,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 0,
+                "Length": 22,
+                "Line": 1,
+                "Column": 1
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 4,
+              "op": "LoadName",
+              "span": {
+                "Start": 32,
+                "Length": 5,
+                "Line": 2,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 5,
+              "op": "LoadConst",
+              "span": {
+                "Start": 38,
+                "Length": 4,
+                "Line": 2,
+                "Column": 16
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 6,
+              "op": "Call",
+              "span": {
+                "Start": 32,
+                "Length": 11,
+                "Line": 2,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 7,
+              "op": "GetIter",
+              "span": {
+                "Start": 32,
+                "Length": 11,
+                "Line": 2,
+                "Column": 10
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 8,
+              "op": "Jump",
+              "span": {
+                "Start": 23,
+                "Length": 36,
+                "Line": 2,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 9,
+              "operation": null
+            },
+            {
+              "index": 9,
+              "op": "ForNext",
+              "span": {
+                "Start": 32,
+                "Length": 11,
+                "Line": 2,
+                "Column": 10
+              },
+              "slot": null,
+              "target": 16,
+              "operation": null
+            },
+            {
+              "index": 10,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 23,
+                "Length": 36,
+                "Line": 2,
+                "Column": 1
+              },
+              "slot": 1,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 11,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 49,
+                "Length": 10,
+                "Line": 3,
+                "Column": 5
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 12,
+              "op": "LoadConst",
+              "span": {
+                "Start": 58,
+                "Length": 1,
+                "Line": 3,
+                "Column": 14
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 13,
+              "op": "Augmented",
+              "span": {
+                "Start": 49,
+                "Length": 10,
+                "Line": 3,
+                "Column": 5
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 14,
+              "op": "StoreLocal",
+              "span": {
+                "Start": 49,
+                "Length": 10,
+                "Line": 3,
+                "Column": 5
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 15,
+              "op": "Jump",
+              "span": {
+                "Start": 23,
+                "Length": 36,
+                "Line": 2,
+                "Column": 1
+              },
+              "slot": null,
+              "target": 9,
+              "operation": null
+            },
+            {
+              "index": 16,
+              "op": "LoadName",
+              "span": {
+                "Start": 60,
+                "Length": 5,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 17,
+              "op": "LoadLocal",
+              "span": {
+                "Start": 66,
+                "Length": 5,
+                "Line": 4,
+                "Column": 7
+              },
+              "slot": 0,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 18,
+              "op": "Call",
+              "span": {
+                "Start": 60,
+                "Length": 12,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 19,
+              "op": "PopTop",
+              "span": {
+                "Start": 60,
+                "Length": 12,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            },
+            {
+              "index": 20,
+              "op": "Complete",
+              "span": {
+                "Start": 60,
+                "Length": 12,
+                "Line": 4,
+                "Column": 1
+              },
+              "slot": null,
+              "target": null,
+              "operation": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

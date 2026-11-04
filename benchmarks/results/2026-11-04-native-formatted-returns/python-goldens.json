@@ -1,0 +1,32 @@
+[
+  {
+    "name": "fields",
+    "source": "def render(record):\n    return f\"[{record['name']:*^7.1s}] {record['amount']:>9,d} {record['active']!s} {None}\"\nprint(render({'name':'é😀', 'amount':-12345, 'active':True}))\n",
+    "expected": "[***é***]   -12,345 True None\n"
+  },
+  {
+    "name": "identity_and_conversions",
+    "source": "def same(value):\n    return f'{value}'\ndef nested(value):\n    return f'{f\"{value}\"}'\ndef convert(value):\n    return f'P{value!r}Q{value!a}R'\nvalue=''.join(['é','😀'])\nprint(same(value) is value, nested(value) is value)\nprint(convert(value))\n",
+    "expected": "True True\nP'é😀'Q'\\xe9\\U0001f600'R\n"
+  },
+  {
+    "name": "error_order",
+    "source": "def render(record):\n    return f\"{record['first']:bad}{record['missing']}\"\ntry:\n    render({'first':7})\nexcept Exception as error:\n    print(type(error).__name__)\n",
+    "expected": "ValueError\n"
+  },
+  {
+    "name": "protocol_rebinding",
+    "source": "events=[]\nrecord={'later':'before'}\nclass Value:\n    def __format__(self,spec):\n        events.append('format:'+spec)\n        record['later']='after'\n        return 'formatted'\nrecord['first']=Value()\ndef render(value):\n    return f\"A{value['first']:custom}|{value['later']}Z\"\nprint(render(record),events)\n",
+    "expected": "Aformatted|afterZ ['format:custom']\n"
+  },
+  {
+    "name": "protocol_keys",
+    "source": "events=[]\nclass Key:\n    def __hash__(self):return hash('missing')\n    def __eq__(self,other):\n        events.append('equal')\n        return False\nrecord={'first':7}\nrecord[Key()]=9\ndef render(record):\n    return f\"{record['first']:bad}{record['missing']}\"\ntry:render(record)\nexcept ValueError:print(events)\n",
+    "expected": "[]\n"
+  },
+  {
+    "name": "nested_builders",
+    "source": "def render(value):\n    return f\"a{f'b{value:04d}c'}d\"\nprint(render(7))\n",
+    "expected": "ab0007cd\n"
+  }
+]

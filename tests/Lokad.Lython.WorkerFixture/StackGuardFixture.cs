@@ -25,6 +25,20 @@ internal static class StackGuardFixture
             "dataclass-hash-cycle" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nfailures=0\nfor _ in range(3):\n node=Node(0)\n node.value=node\n try:hash(node)\n except RecursionError:failures+=1\n node.value=7\n assert hash(node)==hash(Node(7))\nreturn failures\n",
             "dataclass-hash-depth" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nnode=Node(0)\nfor _ in range(1024):node=Node(node)\nfailures=0\nfor _ in range(3):\n try:hash(node)\n except (RecursionError,RuntimeError):failures+=1\n assert hash(Node(7))==hash(Node(7))\nreturn failures\n",
             "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",
+            "formatted-helper" => """
+                def render(record):
+                    return f"prefix:{record['s']:>8s}:{record['n']:>8d}:suffix"
+                record={'s':'é','n':7}
+                def loop():
+                    render(record)
+                    return loop()
+                failures=0
+                for _ in range(3):
+                    try:loop()
+                    except RuntimeError:failures+=1
+                    assert render(record)=='prefix:       é:       7:suffix'
+                return failures
+                """,
             "function-finally" => "cleanup=0\ndef loop():\n global cleanup\n try:return loop()\n finally:cleanup+=1\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nassert cleanup>0\nreturn failures\n",
             // One default-depth rejection is the fatal stack-safety witness.
             // Real protocol calls afterwards must re-enter guest frames; len()

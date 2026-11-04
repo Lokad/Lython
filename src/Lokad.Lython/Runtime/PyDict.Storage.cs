@@ -91,6 +91,15 @@ internal sealed partial class PyDict
         return true;
     }
 
+    // Speculative native-format proofs cannot enter a namespace bridge, admit
+    // decoding storage or compare guest protocol keys before body execution.
+    internal bool TryReadNativeStringValue(Text.PyString key, [MaybeNullWhen(false)] out object value)
+    {
+        if (_nativeItems is not null && !HasProtocolKeys) return _nativeItems.TryGetValue(key, out value);
+        value = null;
+        return false;
+    }
+
     // Raw storage is distinct from Python iteration: protocol scans perform
     // their own mutation/reentry checks; public iterators remain version checked.
     private IEnumerable<KeyValuePair<object, object>> NativeEntries()

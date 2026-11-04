@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Extend native helper returns to static builtin formatting, removing full frame
+  construction for proven bodies. Reuse shared formatting and deterministic working
+  storage cleanup; keep custom protocols and real suspension on the ordinary path.
+
+- Share recursive JSON container grammar across arrays, dictionaries and pairs,
+  preserving hooks, duplicate replacement, cancellation and owned construction.
+
 - Share ordered lexical binding facts across frontend and executable construction,
   removing duplicate scope/local/pattern scans. Preserve module namespaces and
   parameter order, and keep partial mirrors from reordering function local snapshots.
