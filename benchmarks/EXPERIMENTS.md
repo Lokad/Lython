@@ -1,10 +1,20 @@
 # Benchmark experimental history
 
-The [current text-storage source gate](results/2026-11-04-text-storage-source-gate/README.md)
+The [executable storage consolidation](results/2026-11-04-executable-storage/README.md)
+removes dynamic operand transport, the separate native-return graph and duplicate
+frame arrays. Warm allocation is flat; initial compilation costs remain visible.
+Block consolidation deletes duplicate compiler remapping before delivery. A confirmed
+async-report prototype regression is corrected by managed readonly instruction
+borrowing; the final focused comparison is close to its qualified baseline.
+Original adverse timings, allocation-tool failure and failed disk-full profile
+remain visible. Platform delivery is pending; the whole-script objective is open.
+
+The [earlier text-storage source gate](results/2026-11-04-text-storage-source-gate/README.md)
 uses one short allocation profile of ae9b82b7. Split byte arrays are8.06% of sampled
 guest-thread allocation; string objects remain necessary. A compact-payload/window
-proposal is selected, with normal-string metadata and ownership costs still to
-validate. This is no runtime optimization or CPU improvement claim.
+proposal was selected for investigation. Later windows were withdrawn and only
+[cache-accounting simplification](results/2026-11-04-string-storage-assessment/README.md)
+was retained. This source gate itself is no runtime optimization or CPU claim.
 
 The [direct-list representation](results/2026-11-04-direct-list-backing/README.md)
 removes366 net runtime lines and separate storage wrappers. CSV/text allocation

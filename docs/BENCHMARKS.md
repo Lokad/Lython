@@ -24,7 +24,10 @@ Filename scripts filter768 names and write/check256 selections, not traverse768 
 Later [list-storage consolidation](../benchmarks/results/2026-11-04-direct-list-backing/README.md)
 and [string accounting simplification](../benchmarks/results/2026-11-04-string-storage-assessment/README.md)
 are not included in these external ratios; their allocation benefits and text timing
-debt are separate source-pair results. Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
+debt are separate source-pair results. [Executable storage consolidation](../benchmarks/results/2026-11-04-executable-storage/README.md)
+also has separate evidence: warm allocation is flat, compilation costs remain,
+and a corrected report comparison is close to its qualified baseline. These later
+changes do not establish a broad CPU gain. Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
 warm text has4.5% same-bits control spread and warm report7.8% CPython IQR. These
 are useful diagnostic ratios, not guaranteed multipliers. Startup, genuinely
 suspended I/O, equal heap/RSS and embedding latency are unmeasured. Config's

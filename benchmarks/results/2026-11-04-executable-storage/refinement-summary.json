@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "elapsedSeconds": 102.53251493815333,
+  "archiveSHA256": "138769eae07c2bf00c54143e2edb6fcbe5a211507f46005d23334085e0e46266",
+  "medianMilliseconds": {
+    "before-control": 4.765886353846154,
+    "original": 4.959841161290322,
+    "candidate": 4.674709454545455,
+    "after-control": 4.699981640625
+  },
+  "cpuMilliseconds": {
+    "before-control": 4.923076923076923,
+    "original": 5.161290322580645,
+    "candidate": 4.848484848484849,
+    "after-control": 5.0
+  },
+  "iqrPercent": {
+    "before-control": 3.3857377915525446,
+    "original": 2.1133942921012774,
+    "candidate": 1.9730796816592986,
+    "after-control": 2.6888492666153048
+  },
+  "originalDeltaPercent": {
+    "before-control": 4.0696481838607745,
+    "after-control": 5.5289475690540435
+  },
+  "refinedDeltaPercent": {
+    "before-control": -1.9131152640078808,
+    "after-control": -0.5377081872214529,
+    "original": -5.748807219275742
+  },
+  "oldControlPercent": -1.3828427353910322
+}

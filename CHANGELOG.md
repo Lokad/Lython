@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share executable locals and temporaries in invocation-owned storage, use
+  compiler-prepared input positions and retain native-return provenance in the
+  instructions. Remove duplicate graph/array transport; preserve failable reads,
+  cooperative cancellation and funded cleanup through suspension.
+
 - Derive string cache funding from its retained scalar-offset table, removing a
   redundant charge counter. Preserve allocation preflight and construction rollback.
 

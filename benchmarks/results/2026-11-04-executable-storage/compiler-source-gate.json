@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "0ffc9ac6",
+  "comparison": [
+    {
+      "runtime": ".NET 11.0.0-rc.3.26522.148",
+      "beforeSHA256": "ADB705673A9E4BAA096C6C12F04D3C6B7D64DCACC4AC9D5DB458F45022312A6B",
+      "afterSHA256": "0EE77CD049C269968914077AB2CF8B2F6B015639F7330636A6CBC94C1E8DD761",
+      "cases": 17,
+      "codeObjects": 38,
+      "nativeRoots": 8,
+      "activeMetadataIdentical": true,
+      "ignoredOnlyInactiveNativeProofFields": true
+    },
+    {
+      "runtime": ".NET 10.0.8",
+      "beforeSHA256": "42E38CC0778D19F1EBFAC9B4238786A28E1B304A16E7CCD7BE3427E884350E72",
+      "afterSHA256": "3C20E060AE049B5C33A83C81EB2F27EC6F3A8BCE3CF3FA1493D6EA6D5628BBDB",
+      "cases": 17,
+      "codeObjects": 38,
+      "nativeRoots": 8,
+      "activeMetadataIdentical": true,
+      "ignoredOnlyInactiveNativeProofFields": true
+    }
+  ]
+}
