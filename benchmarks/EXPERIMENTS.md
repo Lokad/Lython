@@ -1,5 +1,11 @@
 # Benchmark experimental history
 
+The [final borrowed-layout revision](results/2026-11-04-function-layout-borrow-withdrawn/README.md)
+is also withdrawn after110s: fresh text−1.5–1.9%, warm text control-limited, config
+control+9–10% unexplained. Tiny allocation benefit does not justify unresolved
+overall debt. Every production prototype is removed; the public semantic regression
+remains. Continue prepared declaration simplification; no permanent design veto.
+
 The [compiler parameter-count/layout revision](results/2026-11-04-function-layout-reuse-withdrawn/README.md)
 also remains withdrawn: six-case164s, text warm+2.9–3.2%, old spread0.27%; tiny
 allocation benefit. Restoring separate plan/function objects did not remove the

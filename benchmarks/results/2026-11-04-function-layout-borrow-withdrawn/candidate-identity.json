@@ -1,0 +1,21 @@
+{
+  "sourceRevision": "ee8020f03db58003fefe114a6bf47ac11dcac548",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "38c03e5e7c88b33eaffef6414063db74ebc5e69677662c9940b440e726dd0d7e",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "ee8020f0 plus borrowed compiler names/map only, definition-time counts, unchanged code-object representation, conservative320B function estimate",
+  "candidateCoreSHA256": "8099b8301f7a570e703b58038d93d9f7c8e5ab56545fdd4057f322764e0ca61f",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs": "19833c0c9e81becc1e619750d4a497c309751b6d8a065a7956a4fb1c944fac53",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "1e570590abad540a0c3aeea0c12534e98a0088fcf2ac0e34f63577315e9519e5",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "41d76e93a2f2e54fe75bbe4a351d775300087bcebd62d05dfd43bc792696a9f8",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "520dcf3184f36c3d94976c8cb2ac623f507f8a03fa39b486975326ab2b2e6758",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "94ee6df2d815eff1e34e274f3a23d6acfd70d7a0911dc3274f698daa5304ad0c",
+    "src/Lokad.Lython/Runtime/PyGeneratorFunction.cs": "73ede2975dbf11b66fd087d6b01768519f1fdac4a6739c13bf265b8e18da2ee5",
+    "tests/Lokad.Lython.PublicApi.Tests/BindingPlanConstructionTests.cs": "97d1ccdb4c64eb629f75e033b280e24ff2a54d3654cef5c9f4ea5ade5c3da01e"
+  }
+}

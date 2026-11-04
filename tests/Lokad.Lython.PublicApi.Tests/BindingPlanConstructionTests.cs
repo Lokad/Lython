@@ -35,6 +35,30 @@ public sealed class BindingPlanConstructionTests
     public async Task ExistingBindingErrorMessagesRemainStable(bool asynchronous)
         => await Check(asynchronous, "legacy messages", "def f(a,b=2,/,c=3,*args,d,e=5,**kw):return [a,b,c,args,d,e,kw]\ntry:f()\nexcept TypeError as error:print(str(error))\ntry:f(1,2,3,**{'c':4,'d':5})\nexcept TypeError as error:print(str(error))", "Function 'f' is missing argument 'a'.\nFunction 'f' got multiple values for argument 'c'.\n");
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BodyLocalKeywordsRemainOverflowAndFactoryDefaultsStayIndependent(bool asynchronous)
+        => await Check(asynchronous, "shared declaration, separate defaults", """
+            def make(value):
+                def f(a=value, /, *args, key=value, **kw):
+                    local = a + key
+                    return local, args, kw
+                return f
+            first = make(1)
+            second = make(2)
+            first.__defaults__ = (10,)
+            first.__kwdefaults__['key'] = 20
+            print(first(local=7, a=8, args=9, kw=10))
+            print(second())
+            print(first.__defaults__ is second.__defaults__, first.__kwdefaults__ is second.__kwdefaults__)
+            def reject(value):
+                local = value
+                return local
+            try: reject(1, local=2)
+            except TypeError: print('unexpected')
+            """, "(30, (), {'local': 7, 'a': 8, 'args': 9, 'kw': 10})\n(4, (), {})\nFalse False\nunexpected\n");
+
     private static async Task Check(bool asynchronous, string name, string source, string expected)
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
