@@ -2223,3 +2223,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   numeric−18–87%. Initial async float+26–31% remains adverse; longer same-bit role-
   swapped confirmation gives6–8% improvement. Report sync inconclusive, async elapsed
   about−3% with near-flat CPU. No general CPU/fresh debt claim; whole objective OPEN.
+
+
+- [Coupled source / CPython checkpoint, B189](results/2026-11-04-coupled-cpython-checkpoint/README.md):
+  COMPLETE on9ce21533. Fresh CSV/JSON1.55/1.37×CPython3.13.16, text/report2.69/2.20×;
+  compilation1.58/1.57×, warm/fresh and actual included I/O/cleanup distinct.
+  Direct pair report−5.4–8.9% versus pre-loopB166; CSV near flat, text control
+  spread4.6–22.3% retains uncertainty. JSON initial warm+2%/fresh flat conflicts
+  with same-bit role-swapped confirmation warm flat/fresh+2.1–4.9%,2.7% new control.
+  Fresh-JSON debt remains accepted/open, provisional2–5%; preserve every point.
+  No source change, CPython-speedup attribution or completion of whole objective.

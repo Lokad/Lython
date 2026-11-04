@@ -130,3 +130,13 @@ stabilization-observations.tgz SHA256:
 `0692bd54a577c2a43fd7217bd083e98c4dc6d6994b79b99043fd75ced02f3244`.
 Raw catalogs/source/worker identities/samples/leases/cleanup/gates are archived;
 source remains tied to its actual frozen precommit image. Publication postponed.
+
+## Remaining known formatter limitation
+
+A follow-up independent probe confirms legacy general/percentage float and Decimal
+paths still group before adding sign-aware padding zeros. These algorithms were
+not migrated by B188; the direct integer/fixed/scientific correction does not cover
+them. See remaining-grouping-probe.json. The next implementation milestone should
+consolidate their layout with the corrected native path, preserving real rounding
+and complex/custom consumers, admission, cancellation and cleanup. No broad claim
+that all grouped numeric formatting is corrected.

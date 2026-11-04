@@ -1,0 +1,41 @@
+{
+  "complete": true,
+  "elapsedSeconds": 49.480983819812536,
+  "sourceRoles": "two NEW controls versus OLD candidate",
+  "timing": [
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.6322768000000005,
+        "candidate": 5.616185333333333,
+        "after-control": 5.599120466666666
+      },
+      "new1VersusOldPercent": 0.2865195094464035,
+      "new2VersusOldPercent": -0.30385155855493506,
+      "newControlPercent": -0.5886843724252744,
+      "iqrPercent": {
+        "before-control": 0.6281357557647772,
+        "candidate": 0.8662768093202488,
+        "after-control": 0.8496511045280214
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 5.903187714285714,
+        "candidate": 5.625065976190476,
+        "after-control": 5.7449159523809525
+      },
+      "new1VersusOldPercent": 4.944328462500858,
+      "new2VersusOldPercent": 2.130641252880805,
+      "newControlPercent": -2.6811236498840096,
+      "iqrPercent": {
+        "before-control": 0.7452549325609731,
+        "candidate": 0.6122044596039752,
+        "after-control": 0.6059291264860406
+      }
+    }
+  ]
+}

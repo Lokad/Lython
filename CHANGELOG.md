@@ -5,7 +5,7 @@
 - Format integer and finite fixed/scientific fields into admitted UTF-8 storage,
   sharing digit construction with percent integers and `bin`/`oct`/`hex`.
   Admit large scratch before conversion and remove per-digit large-integer
-  division. Include sign-aware padding zeros in decimal grouping, as in Python.
+  division. Include sign-aware padding zeros in grouping for these native fields, as in Python.
 
 - Transfer terminal UTF-8 builder storage into immutable strings without a final
   trimming copy. Keep unused backing capacity charged, admit metadata before

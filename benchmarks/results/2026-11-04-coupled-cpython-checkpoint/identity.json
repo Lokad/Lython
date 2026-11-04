@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "Committed9ce21533 B188 production, frozen b09b259e+patch cfdedd95; pre-loop B166 source baseline qualified2323cceb",
+  "coreSHA256": {
+    "candidate": "cfdedd954ad1c040c3c4b1f17e40fb07816247fad5f045259466b26334b4d31e",
+    "before-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+    "after-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc"
+  },
+  "purpose": "One coherent CPython and direct coupled regression-debt checkpoint; publication postponed"
+}
