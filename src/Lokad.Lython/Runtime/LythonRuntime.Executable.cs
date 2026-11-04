@@ -245,7 +245,7 @@ internal sealed partial class LythonRuntime
     {
     }
 
-    private struct ExecutableValueStack
+    private struct ExecutableValueStorage
     {
         private object?[] _items;
         private int[]? _nativeIterationPositions;
@@ -255,7 +255,7 @@ internal sealed partial class LythonRuntime
         internal bool DeferAsyncDisposal;
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
-        public ExecutableValueStack(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan,
+        public ExecutableValueStorage(int capacity, ExecutionContext context, LythonSourceSpan? allocationSpan,
             long frameStorageBytes)
         {
             _context = context;
@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
             governor.Reserve(bytes, allocationSpan);
             try { _items = new object[capacity]; governor.Commit(bytes); }
             catch { governor.ReleaseReserved(bytes); throw; }
-            Count = 0;
+            LiveExtent = 0;
         }
 
         internal long RetainedBytes => _items.Length == 0 ? 0 : EstimateObjectArrayBytes(_items.Length);
@@ -291,7 +291,7 @@ internal sealed partial class LythonRuntime
             return cursor;
         }
 
-        public int Count { get; private set; }
+        public int LiveExtent { get; private set; }
 
         public object this[int index]
         {
@@ -299,25 +299,25 @@ internal sealed partial class LythonRuntime
             set => _items[index] = value;
         }
 
-        public void Push(object value)
+        internal void PublishValue(int resultSlot, int liveExtent, object result)
         {
-            _items[Count++] = value;
+            // Inputs and their owner stay live through callbacks/suspension.
+            // Retire only after success, preserving failed-disposal behavior.
+            if (liveExtent < LiveExtent) RetireTo(liveExtent);
+            _items[resultSlot] = result;
+            LiveExtent = liveExtent;
         }
 
-        public object Pop()
+        internal object TakeValue(int inputSlot, int liveExtent)
         {
-            var index = Count - 1;
-            var value = _items[index].RequireNotNull();
-            _items[index] = null;
-            Count = index;
+            var value = _items[inputSlot].RequireNotNull();
+            _items[inputSlot] = null;
+            LiveExtent = liveExtent;
             return value;
         }
 
-        public object Peek() => _items[Count - 1].RequireNotNull();
-
-        internal bool TryPrepareNativeIteration(LythonSourceSpan span)
+        internal bool TryPrepareNativeIteration(int slot, LythonSourceSpan span)
         {
-            var slot = Count - 1;
             if (_items[slot] is not (PyList or PyTuple)) return false;
             if (_nativeIterationPositions is null)
             {
@@ -336,9 +336,8 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        internal bool TryAdvanceNativeIteration(out PyIterationResult next)
+        internal bool TryAdvanceNativeIteration(int slot, out PyIterationResult next)
         {
-            var slot = Count - 1;
             switch (_items[slot])
             {
                 case PyList list:
@@ -359,15 +358,15 @@ internal sealed partial class LythonRuntime
 
         public ReadOnlyMemory<object?> Slice(int start, int count) => _items.AsMemory(start, count);
 
-        public void RemoveTail(int count)
+        public void RetireTo(int liveExtent)
         {
-            if (count == 0)
+            if (liveExtent == LiveExtent)
             {
                 return;
             }
 
-            var newCount = Count - count;
-            for (var i = Count - 1; i >= newCount; i--)
+            var newCount = liveExtent;
+            for (var i = LiveExtent - 1; i >= newCount; i--)
             {
                 if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
                 {
@@ -380,8 +379,8 @@ internal sealed partial class LythonRuntime
                 }
                 else if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
             }
-            Array.Clear(_items, newCount, count);
-            Count = newCount;
+            Array.Clear(_items, newCount, LiveExtent - newCount);
+            LiveExtent = newCount;
         }
     }
 
@@ -529,7 +528,7 @@ internal sealed partial class LythonRuntime
             bytes = checked(bytes + 32L + 64L * codeObject.MemberCacheCount);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
-        var stack = new ExecutableValueStack(codeObject.OperandCapacity, context, span, bytes);
+        var stack = new ExecutableValueStorage(codeObject.OperandCapacity, context, span, bytes);
         try
         {
             var locals = argumentsAreLocals ? boundArguments.Values

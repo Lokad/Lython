@@ -11,13 +11,15 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ExecutableFrameInterpreter
     {
-        private ValueTask ExecutePreparedOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
+        private ValueTask ExecutePreparedOperationAsync(ExecutableInstruction instruction, bool asynchronous)
         {
+            var operation = (ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!;
+            var span = instruction.Span;
             switch (operation)
             {
                 case ExecutableStartComprehension start:
                 {
-                    var comprehensionOuter = Pop(ref _stack, span);
+                    var comprehensionOuter = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var scope = _context.EnterComprehension(start.ScopeFacts);
                     var onStack = false;
                     try
@@ -28,18 +30,18 @@ internal sealed partial class LythonRuntime
                             ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
                             _ => new PyList([], _context.MemoryGovernor, span),
                         };
-                        _stack.Push(scope);
+                        _stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, scope);
                         onStack = true;
-                        _stack.Push(result);
-                        _stack.Push(comprehensionOuter);
+                        _stack.PublishValue(instruction.ResultSlot + 1, instruction.ResultSlot + 2, result);
+                        _stack.PublishValue(instruction.ResultSlot + 2, instruction.LiveExtent, comprehensionOuter);
                     }
                     catch { if (!onStack) scope.Dispose(); throw; }
                     break;
                 }
                 case ExecutableFinishComprehension:
-                    var completed = Pop(ref _stack, span);
-                    ((IExecutableTemporaryValue)Pop(ref _stack, span)).Dispose();
-                    _stack.Push(completed);
+                    var completed = _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
+                    ((IExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, completed);
                     break;
                 case ExecutableStartDisplay start:
                     object collection = start.Kind switch
@@ -48,31 +50,31 @@ internal sealed partial class LythonRuntime
                         ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
                         _ => new PyList([], _context.MemoryGovernor, span),
                     };
-                    _stack.Push(collection);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, collection);
                     break;
                 case ExecutableFinishTuple:
-                    var expanded = (PyList)Pop(ref _stack, span);
+                    var expanded = (PyList)_stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
-                    _stack.Push(tuple);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, tuple);
                     break;
                 case ExecutableStartCall call:
-                    var targetSlot = _stack.Count - 1;
+                    var targetSlot = instruction.InputStart;
                     try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
-                    catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
+                    catch { _stack.RetireTo(targetSlot); throw; }
                     break;
                 case ExecutableStartFormattedString:
                     var output = new GovernedByteBuilder(_context.MemoryGovernor, span);
-                    try { _stack.Push(output); }
+                    try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, output); }
                     catch { output.Release(); throw; }
                     break;
                 case ExecutableAppendFormattedText text:
-                    ((GovernedByteBuilder)_stack.Peek()).Append(text.Text);
+                    ((GovernedByteBuilder)_stack[instruction.InputStart]).Append(text.Text);
                     break;
                 case ExecutableFinishFormattedString:
-                    var outputSlot = _stack.Count - 1;
+                    var outputSlot = instruction.InputStart;
                     var formattedResult = ((GovernedByteBuilder)_stack[outputSlot]).ToPyStringAndRelease();
-                    _stack.RemoveTail(1);
-                    _stack.Push(formattedResult);
+                    _stack.RetireTo(instruction.ResultSlot);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, formattedResult);
                     break;
                 // Route directly to the handler that owns the operation. In
                 // particular, a target store must not enter display/call and
@@ -80,23 +82,24 @@ internal sealed partial class LythonRuntime
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
                     or ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableFormatField
                     or ExecutableCreateGeneratorExpression:
-                    return ExecutePreparedSuspendingOperationAsync(operation, span, asynchronous);
+                    return ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
                 case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
                     or ExecutableCreateFunction or ExecutableCreateLambda or ExecutableStartClassHeader or ExecutableCreateClass:
-                    return ExecutePreparedDefinitionOperationAsync(operation, span, asynchronous);
+                    return ExecutePreparedDefinitionOperationAsync(operation, instruction, asynchronous);
                 default:
-                    return ExecutePreparedTargetOperationAsync(operation, span, asynchronous);
+                    return ExecutePreparedTargetOperationAsync(operation, instruction, asynchronous);
             }
             return ValueTask.CompletedTask;
         }
 
-        private async ValueTask ExecutePreparedSuspendingOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
+        private async ValueTask ExecutePreparedSuspendingOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
         {
+            var span = instruction.Span;
             switch (operation)
             {
                 case ExecutableAppendDisplay append:
-                    var value = Pop(ref _stack, span);
-                    var destination = _stack[_stack.Count - 1 - append.IteratorDepth];
+                    var value = _stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
+                    var destination = _stack[instruction.InputStart];
                     if (!append.Unpacking) Add(value);
                     else if (asynchronous)
                     {
@@ -117,10 +120,10 @@ internal sealed partial class LythonRuntime
                         }
                     }
                 case ExecutableStoreDictionaryItem item:
-                    var itemValue = Pop(ref _stack, span);
+                    var itemValue = _stack.TakeValue(instruction.ResultSlot + (item.Unpacking ? 0 : 1), instruction.ResultSlot + (item.Unpacking ? 0 : 1));
                     if (!item.Unpacking)
                     {
-                        var key = Pop(ref _stack, span);
+                        var key = _stack.TakeValue(instruction.ResultSlot, instruction.LiveExtent);
                         Put(key, itemValue);
                     }
                     else if (itemValue is PyInstance mapping)
@@ -151,47 +154,47 @@ internal sealed partial class LythonRuntime
                     {
                         _context.CheckExecution(span);
                         using var ambient = PyStructuralGuard.PushAmbient(_context, span);
-                        var dictionary = (PyDict)_stack[_stack.Count - 1 - item.IteratorDepth];
+                        var dictionary = (PyDict)_stack[instruction.InputStart];
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
                         _context.CheckExecution(span);
                     }
                 case ExecutableAppendCall argument:
-                    var argumentSlot = _stack.Count - 1;
-                    try { await ((CallExpansion.CallArgumentAccumulator)_stack[argumentSlot - 1]).AppendAsync(argument.Form, _stack[argumentSlot], span, asynchronous).ConfigureAwait(false); }
-                    finally { _stack.RemoveTail(_stack.Count - argumentSlot); }
+                    var argumentSlot = instruction.ResultSlot;
+                    try { await ((CallExpansion.CallArgumentAccumulator)_stack[instruction.InputStart]).AppendAsync(argument.Form, _stack[argumentSlot], span, asynchronous).ConfigureAwait(false); }
+                    finally { _stack.RetireTo(argumentSlot); }
                     break;
                 case ExecutableFinishCall call:
-                    var accumulatorSlot = _stack.Count - 1;
+                    var accumulatorSlot = instruction.InputStart;
                     try
                     {
                         var accumulator = (CallExpansion.CallArgumentAccumulator)_stack[accumulatorSlot];
                         var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
-                        CompleteExecutableValueTransfer(ref _stack, accumulatorSlot, result);
+                        _stack.PublishValue(accumulatorSlot, accumulatorSlot + 1, result);
                     }
-                    catch { _stack.RemoveTail(_stack.Count - accumulatorSlot); throw; }
+                    catch { _stack.RetireTo(accumulatorSlot); throw; }
                     break;
                 case ExecutableConvertFormattedValue conversion:
-                    var convertedField = await FormatSuspendedFieldAsync(Pop(ref _stack, span), conversion.Conversion,
+                    var convertedField = await FormatSuspendedFieldAsync(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), conversion.Conversion,
                         null, _context, span, asynchronous).ConfigureAwait(false);
-                    _stack.Push(convertedField);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, convertedField);
                     break;
                 case ExecutableFormatField field:
-                    var specifier = field.DynamicSpecifier ? ((PyString)Pop(ref _stack, span)).AsString() : field.FormatSpecifier;
-                    var fieldValue = Pop(ref _stack, span);
+                    var specifier = field.DynamicSpecifier ? ((PyString)_stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString() : field.FormatSpecifier;
+                    var fieldValue = _stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
                     if (field.Append)
                     {
-                        var formattedDestination = (GovernedByteBuilder)_stack.Peek();
+                        var formattedDestination = (GovernedByteBuilder)_stack[instruction.InputStart];
                         if (fieldValue is PyInstance instance)
                             formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
                         else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span, field.PreparedFormat);
                     }
-                    else _stack.Push(await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
+                    else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
-                    var outer = Pop(ref _stack, span);
+                    var outer = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
                         outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
-                    _stack.Push(generatorExpression);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, generatorExpression);
                     break;
                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }

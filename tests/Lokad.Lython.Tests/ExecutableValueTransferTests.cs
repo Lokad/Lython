@@ -112,7 +112,7 @@ public sealed class ExecutableValueTransferTests
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var stack = frame.GetType().GetField("_stack", flags)!.GetValue(frame)!;
         var items = (object?[])stack.GetType().GetField("_items", flags)!.GetValue(stack)!;
-        var count = (int)stack.GetType().GetProperty("Count")!.GetValue(stack)!;
+        var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
         Assert.All(items.Skip(count), Assert.Null);
         return items.Take(count).Select(item => item!).ToArray();
     }

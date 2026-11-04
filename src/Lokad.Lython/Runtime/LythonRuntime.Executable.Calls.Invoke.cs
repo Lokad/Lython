@@ -112,12 +112,12 @@ internal sealed partial class LythonRuntime
                     try { result = InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, _context, arguments); }
                     finally { ReturnCallArguments(arguments); }
                 }
-                CompleteExecutableValueTransfer(ref _stack, start, result);
+                _stack.PublishValue(start, start + 1, result);
                 return default;
             }
             catch
             {
-                _stack.RemoveTail(_stack.Count - start);
+                _stack.RetireTo(start);
                 throw;
             }
         }
@@ -127,14 +127,14 @@ internal sealed partial class LythonRuntime
         private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
         {
             if (!pending.IsCompleted) return AwaitCallValueAsync(pending, start);
-            CompleteExecutableValueTransfer(ref _stack, start, pending.GetAwaiter().GetResult());
+            _stack.PublishValue(start, start + 1, pending.GetAwaiter().GetResult());
             return default;
         }
 
         private async ValueTask AwaitCallValueAsync(ValueTask<object> pending, int start)
         {
-            try { CompleteExecutableValueTransfer(ref _stack, start, await pending.ConfigureAwait(false)); }
-            catch { _stack.RemoveTail(_stack.Count - start); throw; }
+            try { _stack.PublishValue(start, start + 1, await pending.ConfigureAwait(false)); }
+            catch { _stack.RetireTo(start); throw; }
         }
 
         private async ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target)

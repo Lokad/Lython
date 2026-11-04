@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
             // EstimateStorage already funds this retained frame's metadata.
-            var stack = new ExecutableValueStack(code.OperandCapacity, frame, span, 0);
+            var stack = new ExecutableValueStorage(code.OperandCapacity, frame, span, 0);
             try
             {
                 var locals = new object[code.LocalNames.Count];

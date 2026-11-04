@@ -100,19 +100,36 @@ internal readonly record struct ExecutableInstruction
     // tags or unused per-family fields travel with every instruction.
     private readonly int _primaryOperand;
     private readonly int _secondaryOperand;
+    private readonly int _inputStart;
+    private readonly int _resultSlot;
+    private readonly int _liveExtent;
 
     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
-        int primaryOperand = 0, int secondaryOperand = 0)
+        int primaryOperand = 0, int secondaryOperand = 0,
+        int inputStart = -1, int resultSlot = -1, int liveExtent = -1)
     {
         OpCode = opCode;
         Span = span;
         _primaryOperand = primaryOperand;
         _secondaryOperand = secondaryOperand;
+        _inputStart = inputStart;
+        _resultSlot = resultSlot;
+        _liveExtent = liveExtent;
     }
 
     public ExecutableOpCode OpCode { get; }
 
     public LythonSourceSpan Span { get; }
+
+    // Compiler-owned storage positions. They share the existing instruction;
+    // no input-plan table or runtime shape calculation is needed.
+    public int InputStart => _inputStart;
+    public int ResultSlot => _resultSlot;
+    public int LiveExtent => _liveExtent;
+
+    internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
+        => new(OpCode, Span, _primaryOperand, _secondaryOperand, inputStart, resultSlot, liveExtent);
+
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
@@ -292,22 +309,15 @@ internal readonly record struct ExecutableInstruction
         => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
 
     public ExecutableInstruction WithTargetIndex(int targetBlockIndex)
-        => OpCode switch
-        {
-            ExecutableOpCode.AbruptJump => AbruptJump(targetBlockIndex, DiscardIterator, Span),
-            ExecutableOpCode.Jump => Jump(targetBlockIndex, Span),
-            ExecutableOpCode.JumpIfFalse => JumpIfFalse(targetBlockIndex, Span),
-            ExecutableOpCode.ForNext => ForNext(targetBlockIndex, Span),
-            ExecutableOpCode.EndFinally => EndFinally(targetBlockIndex, Span, CleanupId),
-            _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.")
-        };
+        => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+            or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
+            ? new(OpCode, Span, targetBlockIndex, _secondaryOperand, _inputStart, _resultSlot, _liveExtent)
+            : throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.");
 
     public ExecutableInstruction WithFailureIndex(int failureBlockIndex)
-        => OpCode switch
-        {
-            ExecutableOpCode.MatchCase => MatchCase(MatchCaseIndex, failureBlockIndex, Span),
-            _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.")
-        };
+        => OpCode == ExecutableOpCode.MatchCase
+            ? new(OpCode, Span, _primaryOperand, failureBlockIndex, _inputStart, _resultSlot, _liveExtent)
+            : throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.");
 
     public static ExecutableInstruction Complete(LythonSourceSpan span)
         => new(ExecutableOpCode.Complete, span);
@@ -381,7 +391,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope,
-        int operandCapacity)
+        ExecutableStackLayout operandLayout)
     {
         Name = name;
         Constants = constants;
@@ -392,7 +402,7 @@ internal sealed partial class ExecutableCodeObject
         ClosureNames = closureNames;
         ClosureNameToSlot = closureNameToSlot;
         ScopeFacts = scopeFacts;
-        Instructions = ExecutableStackLayout.Linearize(blocks, out var offsets);
+        Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
         EntryIndex = offsets[entryBlockIndex];
         ExceptionRegions = exceptionRegions.Select(region => region with
         {
@@ -411,7 +421,7 @@ internal sealed partial class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
-        OperandCapacity = operandCapacity;
+        OperandCapacity = operandLayout.MaximumDepth;
         NativeReturn = PrepareNativeReturn();
     }
 

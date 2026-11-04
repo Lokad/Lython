@@ -6,7 +6,8 @@ namespace Lokad.Lython.Frontend;
 // suspension change values, never the number of executable operand slots.
 internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths)
 {
-    internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks, out int[] offsets)
+    internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
+        ExecutableStackLayout layout, out int[] offsets)
     {
         offsets = new int[blocks.Count + 1];
         for (var i = 0; i < blocks.Count; i++)
@@ -29,8 +30,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // Stored blocks never fell through. Preserve implicit completion
             // distinctly from a guest top-level return (not legal in imports).
             if (Completes(blocks[i]))
+            {
+                var extent = source.Length == 0 ? layout.EntryDepths[i] ?? 0 : source[^1].LiveExtent;
                 instructions[offsets[i + 1] - 1] = ExecutableInstruction.Complete(
-                    source.Length == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span);
+                    source.Length == 0 ? new LythonSourceSpan(0, 0, 0, 0) : source[^1].Span)
+                    .WithStorageSlots(extent, extent, extent);
+            }
         }
         return instructions;
 
@@ -39,7 +44,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException);
     }
 
-    internal static ExecutableStackLayout Compute(IReadOnlyList<ExecutableBasicBlock> blocks,
+    internal static ExecutableStackLayout Prepare(IReadOnlyList<ExecutableBasicBlock> blocks,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls,
         IReadOnlyList<ExecutableExceptionRegion> regions, int entryBlock, int initialDepth)
     {
@@ -57,8 +62,10 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 if (region.FinallyIndex is int cleanup) Enter(cleanup, depth);
             }
 
-            foreach (var instruction in blocks[blockIndex].InstructionArray)
+            var instructions = blocks[blockIndex].InstructionArray;
+            for (var instructionIndex = 0; instructionIndex < instructions.Length; instructionIndex++)
             {
+                var instruction = instructions[instructionIndex];
                 var (pop, push, minimum) = Effect(instruction, constants, calls);
                 if (depth < minimum)
                     throw new InvalidOperationException($"Executable operand underflow in block {blockIndex}: {instruction.OpCode}, depth {depth}, required {minimum}.");
@@ -66,7 +73,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 // its two protocol arguments above the ordinary subscript inputs.
                 if (instruction.OpCode == ExecutableOpCode.Subscript)
                     maximum = Math.Max(maximum, checked(depth + 2));
-                depth = checked(depth - pop + push);
+                var resultSlot = depth - pop;
+                var inputStart = depth - minimum;
+                depth = checked(resultSlot + push);
+                // Prepare the owned instruction array in this existing shape
+                // pass; linearization preserves these facts while retargeting.
+                instructions[instructionIndex] = instruction.WithStorageSlots(inputStart, resultSlot, depth);
                 maximum = Math.Max(maximum, depth);
                 switch (instruction.OpCode)
                 {

@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
     private static bool TryHandleAbrupt(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        ref ExecutableValueStack stack,
+        ref ExecutableValueStorage stack,
         int currentBlockIndex,
         PendingAbruptSignal abrupt,
         LythonSourceSpan span,
@@ -198,16 +198,16 @@ internal sealed partial class LythonRuntime
 
     private static void RestoreExecutableStackForHandler(
         ExecutableExceptionRegion region,
-        ref ExecutableValueStack stack,
+        ref ExecutableValueStorage stack,
         LythonSourceSpan span)
     {
         var targetDepth = region.StackDepth;
-        if (stack.Count < targetDepth)
+        if (stack.LiveExtent < targetDepth)
         {
             throw RuntimeErrors.Runtime("executable exception handler stack is invalid", span);
         }
 
-        stack.RemoveTail(stack.Count - targetDepth);
+        stack.RetireTo(targetDepth);
     }
 
     private static bool TryExecuteExecutableMatchCase(
@@ -435,24 +435,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static int ReadExecutableCallTarget(
-        ExecutableCallSite callSite,
-        ref ExecutableValueStack stack,
-        out object target)
-    {
-        var valueCount = callSite.ArgumentCount + callSite.ArgumentOffset;
-        if (valueCount < 0 || stack.Count < valueCount)
-        {
-            throw RuntimeErrors.Runtime("executable stack underflow", callSite.CallSpan);
-        }
-
-        var start = stack.Count - valueCount;
-        target = stack[start + callSite.TargetOffset];
-        return start;
-    }
-
     private static CallArgumentValue[] PrepareExecutableCallArguments(
-        ExecutableCallSite callSite, ref ExecutableValueStack stack, int start, ExecutionContext context)
+        ExecutableCallSite callSite, ref ExecutableValueStorage stack, int start, ExecutionContext context)
     {
         var arguments = RentCallArguments(callSite.ArgumentCount);
         try
@@ -486,18 +470,6 @@ internal sealed partial class LythonRuntime
             CallArgumentKind.Keyword => CallArgumentValue.Keyword(spec.KeywordName, value),
             _ => throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.")
         };
-
-    private static void CompleteExecutableValueTransfer(
-        ref ExecutableValueStack stack,
-        int start,
-        object result)
-    {
-        // Operation helpers have admitted any new storage. Reuse the first
-        // input slot for the completed result and withdraw the remaining inputs.
-        // No extra slot, hidden retained extent or per-opcode cleanup is needed.
-        stack.RemoveTail(stack.Count - start - 1);
-        stack[start] = result;
-    }
 
     private static ExecutableCell[] CaptureExecutableClosures(
         ExecutableCodeObject codeObject,

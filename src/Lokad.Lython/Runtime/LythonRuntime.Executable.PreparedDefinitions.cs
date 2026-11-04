@@ -7,18 +7,19 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class ExecutableFrameInterpreter
     {
-        private async ValueTask ExecutePreparedDefinitionOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
+        private async ValueTask ExecutePreparedDefinitionOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
         {
+            var span = instruction.Span;
             switch (operation)
             {
                 case ExecutableAnnotationsEnabled:
-                    _stack.Push(!_context.PostponedAnnotations);
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, !_context.PostponedAnnotations);
                     break;
                 case ExecutablePostponedAnnotation postponed:
-                    _stack.Push(CreatePostponedAnnotationValue(postponed.Annotation, _context));
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, CreatePostponedAnnotationValue(postponed.Annotation, _context));
                     break;
                 case ExecutableStoreModuleAnnotation annotation:
-                    var value = Pop(ref _stack, span);
+                    var value = _stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
                     await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, _context),
                         annotation.Name, value, _context, span, asynchronous).ConfigureAwait(false);
                     break;
@@ -26,7 +27,7 @@ internal sealed partial class LythonRuntime
                     using (var storage = _context.MemoryGovernor.ReserveTemporary(320L + 160L * function.Inputs.Count
                         + 128L * function.Binding.Function.Parameters.Count + 64L * function.Binding.DefaultValues.Count, span))
                     {
-                        var captured = CaptureDefinitionInputs(function.Inputs);
+                        var captured = CaptureDefinitionInputs(function.Inputs, instruction.InputStart);
                         var template = function.Binding.Function;
                         var definition = template with
                         {
@@ -53,7 +54,7 @@ internal sealed partial class LythonRuntime
                         var parameters = lambda.Expression.Parameters;
                         var count = parameters.Count(parameter => parameter.DefaultValue is not null);
                         using var storage = ReserveDefaultArgumentsWorkingStorage(count, _context.MemoryGovernor, span);
-                        var first = _stack.Count - count;
+                        var first = instruction.InputStart;
                         PyFunctionBase function;
                         try
                         {
@@ -66,21 +67,21 @@ internal sealed partial class LythonRuntime
                             }
                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
                         }
-                        finally { _stack.RemoveTail(count); }
-                        _stack.Push(function);
+                        finally { _stack.RetireTo(instruction.ResultSlot); }
+                        _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, function);
                     }
                     break;
                 case ExecutableStartClassHeader header:
-                    _stack.Push(new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
+                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
                     break;
                 case ExecutableCreateClass create:
-                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)Pop(ref _stack, span) : null)
+                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
                     using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
                     {
                         var definition = create.Definition;
                         var decorators = new LoweredExpression[definition.Decorators.Count];
                         for (var i = decorators.Length - 1; i >= 0; i--)
-                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, Pop(ref _stack, span));
+                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _stack.TakeValue(instruction.InputStart + i, instruction.InputStart + i));
                         definition = definition with { Decorators = decorators };
                         if (accumulator is not null)
                         {
@@ -111,11 +112,11 @@ internal sealed partial class LythonRuntime
             _context.MemoryGovernor.Commit(bytes);
         }
 
-        private Dictionary<LoweredExpression, LoweredExpression> CaptureDefinitionInputs(IReadOnlyList<LoweredExpression> inputs)
+        private Dictionary<LoweredExpression, LoweredExpression> CaptureDefinitionInputs(IReadOnlyList<LoweredExpression> inputs, int first)
         {
             var result = new Dictionary<LoweredExpression, LoweredExpression>(inputs.Count);
             for (var i = inputs.Count - 1; i >= 0; i--)
-                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, Pop(ref _stack, inputs[i].Span));
+                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, _stack.TakeValue(first + i, first + i));
             return result;
         }
     }

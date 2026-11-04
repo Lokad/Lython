@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         // then its callable result. Both use the existing admitted frame runner.
         private bool TrySuspendForTypeSubscription(ExecutableInstruction instruction)
         {
-            var start = _stack.Count - 2;
+            var start = instruction.InputStart;
             if (_preparedTypeSubscription is { } prepared)
             {
                 if (!TryPrepareSubscriptionCallable(prepared, instruction.Span, start)) return false;
@@ -86,8 +86,8 @@ internal sealed partial class LythonRuntime
             {
                 // Match raw ternary invocation: prefix self through the binder,
                 // retaining the original receiver and key in their current slots.
-                _stack.Push(PyNone.Instance);
-                _stack.Push(type);
+                _stack.PublishValue(start + 2, start + 3, PyNone.Instance);
+                _stack.PublishValue(start + 3, start + 4, type);
                 _pendingFunction = function;
                 _pendingReceiver = descriptor;
                 _pendingCallStart = start;
@@ -274,7 +274,7 @@ internal sealed partial class LythonRuntime
             _completedCallError = null;
             if (completion == CallCompletion.TypeGetter)
             {
-                _stack.RemoveTail(_stack.Count - start - 2);
+                _stack.RetireTo(start + 2);
                 _context.CheckExecution(span);
                 if (failure is LythonRuntimeException { ExceptionType: "AttributeError" })
                 {
@@ -295,13 +295,13 @@ internal sealed partial class LythonRuntime
             if (completion == CallCompletion.TypeSubscription) _context.CheckExecution(span);
             if (failure is not null)
             {
-                _stack.RemoveTail(_stack.Count - start);
+                _stack.RetireTo(start);
                 if (failure is LythonRuntimeException runtimeError) _injectedException = runtimeError;
                 else ExceptionDispatchInfo.Throw(failure);
             }
             else
             {
-                CompleteExecutableValueTransfer(ref _stack, start, RuntimeValue(value));
+                _stack.PublishValue(start, start + 1, RuntimeValue(value));
                 _instructionIndex++;
             }
         }

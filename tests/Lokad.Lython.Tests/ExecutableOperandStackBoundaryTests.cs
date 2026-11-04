@@ -102,7 +102,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     // real owner required by operand-capacity admission.
     private sealed class StackView : IDisposable
     {
-        private static readonly Type StackType = typeof(LythonRuntime).GetNestedType("ExecutableValueStack", BindingFlags.NonPublic)!;
+        private static readonly Type StackType = typeof(LythonRuntime).GetNestedType("ExecutableValueStorage", BindingFlags.NonPublic)!;
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         private readonly object _stack;
@@ -113,12 +113,12 @@ public sealed class ExecutableOperandStackBoundaryTests
             Invoke("ReleaseStorage");
             Assert.Equal(0, _context.MemoryGovernor.CurrentAccountedBytes);
         }
-        public int Count => (int)StackType.GetProperty("Count")!.GetValue(_stack)!;
+        public int Count => (int)StackType.GetProperty("LiveExtent")!.GetValue(_stack)!;
         public object At(int index) => StackType.GetProperty("Item")!.GetValue(_stack, [index])!;
-        public void Push(object value) => Invoke("Push", value);
-        public object Pop() => Invoke("Pop")!;
-        public object Peek() => Invoke("Peek")!;
-        public void RemoveTail(int count) => Invoke("RemoveTail", count);
+        public void Push(object value) => Invoke("PublishValue", Count, Count + 1, value);
+        public object Pop() => Invoke("TakeValue", Count - 1, Count - 1)!;
+        public object Peek() => At(Count - 1);
+        public void RemoveTail(int count) => Invoke("RetireTo", Count - count);
         private object? Invoke(string method, params object[] arguments)
         {
             try { return StackType.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(_stack, arguments); }

@@ -8,11 +8,15 @@ internal sealed partial class LythonRuntime
     {
         private ValueTask<bool> ExecuteMemberLoadAsync(ExecutableInstruction instruction)
         {
-            var target = Pop(ref _stack, instruction.Span);
+            var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
             if (TryReadMemberCache(instruction, target, out var cached))
             {
-                if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
-                _stack.Push(cached);
+                if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
+                {
+                    _stack[instruction.ResultSlot] = PyNone.Instance;
+                    _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, cached);
+                }
+                else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, cached);
                 return new(false);
             }
             var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
@@ -33,13 +37,17 @@ internal sealed partial class LythonRuntime
             if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target,
                 _codeObject.Names[instruction.NameIndex], instruction.Span, _context);
             PublishMemberCache(instruction, target, member.Value);
-            if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver) _stack.Push(PyNone.Instance);
-            _stack.Push(member.Value);
+            if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
+            {
+                _stack[instruction.ResultSlot] = PyNone.Instance;
+                _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, member.Value);
+            }
+            else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, member.Value);
         }
 
         private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
         {
-            var cursor = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
+            var cursor = (PyIteration.Cursor)_stack[instruction.InputStart];
             var next = cursor.TryMoveNextAsync();
             return next.IsCompleted
                 ? CompleteForNextAsync(next.GetAwaiter().GetResult(), cursor, instruction)
@@ -54,10 +62,10 @@ internal sealed partial class LythonRuntime
         {
             if (next.HasValue)
             {
-                _stack.Push(next.Value);
+                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, next.Value);
                 return new(false);
             }
-            _ = Pop(ref _stack, instruction.Span);
+            _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);
             var disposal = cursor.DisposeAsync();
             if (!disposal.IsCompleted) return AwaitCursorDisposalAsync(disposal, instruction.TargetIndex);
             disposal.GetAwaiter().GetResult();
@@ -74,7 +82,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<bool> ExecuteConditionalJumpAsync(ExecutableInstruction instruction)
         {
-            if (await IsTruthyAsync(Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false))
+            if (await IsTruthyAsync(_stack.TakeValue(instruction.InputStart, instruction.LiveExtent), _context, instruction.Span).ConfigureAwait(false))
                 return false;
             _instructionIndex = instruction.TargetIndex;
             return true;
@@ -84,15 +92,15 @@ internal sealed partial class LythonRuntime
         {
             if (_delegation is null)
             {
-                var source = Pop(ref _stack, instruction.Span);
+                var source = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                 _delegation = new GeneratorDelegation(await IterAsync([source], instruction.Span, _context).ConfigureAwait(false),
                     _context, instruction.Span);
             }
-            CompleteDelegatedStep(await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false));
+            CompleteDelegatedStep(await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false), instruction);
             return false;
         }
 
-        private void CompleteDelegatedStep(PyIterationResult delegated)
+        private void CompleteDelegatedStep(PyIterationResult delegated, ExecutableInstruction instruction)
         {
             _sentValue = PyNone.Instance;
             _injectedException = null;
@@ -103,7 +111,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                _stack.Push(_delegation!.ReturnValue);
+                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, _delegation!.ReturnValue);
                 _delegation = null;
             }
         }
@@ -134,19 +142,19 @@ internal sealed partial class LythonRuntime
         {
             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
             {
-                var target = _stack.Pop();
-                _stack.Push(await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
+                var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
-                var enteredContext = await PyContextManagers.EnterAsync(PopContextManager(ref _stack, instruction.Span), instruction.Span, _context).ConfigureAwait(false);
-                _stack.Push(enteredContext);
+                var enteredContext = await PyContextManagers.EnterAsync(RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span), instruction.Span, _context).ConfigureAwait(false);
+                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, enteredContext);
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
             {
-                var manager = PopContextManager(ref _stack, instruction.Span);
+                var manager = RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span);
                 if (_pendingAbrupt is PendingException { Exception: var exception } pendingException &&
                     (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                 {
@@ -165,7 +173,7 @@ internal sealed partial class LythonRuntime
 
         private ValueTask ExecuteGetIteratorAsync(ExecutableInstruction instruction)
         {
-            var slot = _stack.Count - 1;
+            var slot = instruction.InputStart;
             try
             {
                 var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, _context);
@@ -173,18 +181,18 @@ internal sealed partial class LythonRuntime
                 _stack[slot] = pending.GetAwaiter().GetResult();
                 return default;
             }
-            catch { _stack.RemoveTail(_stack.Count - slot); throw; }
+            catch { _stack.RetireTo(slot); throw; }
         }
 
         private async ValueTask AwaitIteratorCreationAsync(ValueTask<PyIteration.Cursor> pending, int slot)
         {
             try { _stack[slot] = await pending.ConfigureAwait(false); }
-            catch { _stack.RemoveTail(_stack.Count - slot); throw; }
+            catch { _stack.RetireTo(slot); throw; }
         }
 
         private async ValueTask ExecuteOperandValueOperationAsync(ExecutableInstruction instruction)
         {
-            var first = _stack.Count - ValueOperationInputCount(instruction);
+            var first = instruction.InputStart;
             try
             {
                 object result;
@@ -196,7 +204,7 @@ internal sealed partial class LythonRuntime
                             : await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, _context).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Slice:
-                        var (start, end, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, out _);
+                        var (start, end, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, instruction.InputStart + 1);
                         result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, _context).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Binary:
@@ -212,9 +220,9 @@ internal sealed partial class LythonRuntime
                         break;
                     default: throw new InvalidOperationException("Unexpected value operation.");
                 }
-                CompleteExecutableValueTransfer(ref _stack, first, result);
+                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
             }
-            catch { _stack.RemoveTail(_stack.Count - first); throw; }
+            catch { _stack.RetireTo(first); throw; }
         }
 
     }
