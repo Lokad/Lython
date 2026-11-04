@@ -1,0 +1,1 @@
+Initial archive attempt as lokad failed on root-owned perf.data (PermissionError) after all measurements completed. Reran only archive.py under sudo; no resampling or change to runtime/capture. Incomplete local archive replaced by verified complete archive.
