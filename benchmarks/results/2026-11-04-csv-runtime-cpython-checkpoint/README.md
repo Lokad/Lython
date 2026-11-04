@@ -82,6 +82,7 @@ NUL/Unicode payloads, both APIs/actual targets. [Full-content control](retained-
 complements the benchmark's whole-script summary/output goldens.
 
 Windows/Ubuntu actual11/10 ordinary, originalStress and installed Release consumers
-are running on5c827e68 in41889236498; timing does not qualify those gates.
+pass on 5c827e68 in 41889236498. [Cached delivery result](delivery-ci-status.json);
+timing remains separate evidence.
 Publication remains postponed. [Previous exact external checkpoint](../2026-11-04-utf8-runtime-cpython-checkpoint/README.md)
 retains its source, all observations and debt decisions.

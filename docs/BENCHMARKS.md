@@ -27,7 +27,7 @@ The long-field case shows the benefit of bulk scanning; it does not describe all
 CSV work. The usual text/report gaps remain. Long-field Lython 5.31% IQR and report
 control 6.15% IQR limit precision. Startup, genuinely suspended I/O, heap/RSS and
 embedding latency remain unmeasured. Runtime qualification is independent;
-full platform/Stress/package checks on 5c827e68 are running. [Current observations,
+full platform/Stress/package checks on 5c827e68 pass. [Current observations,
 controls and exact identities](../benchmarks/results/2026-11-04-csv-runtime-cpython-checkpoint/README.md).
 
 [Previous a00 checkpoint](../benchmarks/results/2026-11-04-utf8-runtime-cpython-checkpoint/README.md)
@@ -88,8 +88,8 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Bulk newline / CSV state parser | Long-field CSV elapsed −86.99%; allocation −2.54% | [Combined changes](../benchmarks/results/2026-11-04-csv-boundary-state/README.md). Twenty parser lines removed and two Python bugs fixed; typical warm CSV debt remains uncertain. Full qualification pending. |
-| Managed bulk newline scan | Complete long-line scripts elapsed −23–27%; allocation unchanged | [Source pair](../benchmarks/results/2026-11-04-bulk-newline-search/README.md). Seventeen net lines removed; possible warm CSV +1.2–2.8% debt retained. Full qualification pending. |
+| Bulk newline / CSV state parser | Long-field CSV elapsed −86.99%; allocation −2.54% | [Combined changes](../benchmarks/results/2026-11-04-csv-boundary-state/README.md). Twenty parser lines removed and two Python bugs fixed; typical warm CSV debt remains uncertain. Qualified. |
+| Managed bulk newline scan | Complete long-line scripts elapsed −23–27%; allocation unchanged | [Source pair](../benchmarks/results/2026-11-04-bulk-newline-search/README.md). Seventeen net lines removed; possible warm CSV +1.2–2.8% debt retained. Qualified. |
 | Shared UTF-8 search windows | Complete long-line prefix/count elapsed −22–23%; allocation unchanged | [Source pair](../benchmarks/results/2026-11-04-utf8-search-window/README.md). Fifty-nine net lines removed; possible warm CSV +0.6–3.6% debt retained. Qualified. |
 | Shared compiler facts | Compilation allocation −4.25–4.83%; text/report compile elapsed −4–7% | [Module facts](../benchmarks/results/2026-11-04-module-lexical-facts/README.md). CSV control-limited; fresh scripts near unchanged. Qualified. |
 | Native helper returns | CSV/JSON allocation −19.9% / −19.3% | [Original source pair](../benchmarks/results/2026-11-02-native-function-returns/README.md). Elapsed diagnostic; qualified. |

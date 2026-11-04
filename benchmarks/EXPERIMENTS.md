@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+Current delivery update: **5c827e68** is fully qualified; **41889236498** completed
+successfully with all eight platform/framework/original Stress/installed consumer
+gates. [Cached result](results/2026-11-04-csv-boundary-state/delivery-ci-status.json).
+The [current ordinary text/report CPU gate](results/2026-11-04-current-text-report-cpu/README.md)
+selects a pending-only JSON continuation proposal; inclusive useful work is not
+claimed as removable overhead. Earlier pending status below records its observation.
+
 The [5c827e68 external checkpoint](results/2026-11-04-csv-runtime-cpython-checkpoint/README.md)
 completes14 jobs384.53s with all loaded identities/goldens/quiet gates/joins.
 Long-field CSV fresh0.17×/warm0.10×CPython; usual freshCSV/JSON/text/report/config
