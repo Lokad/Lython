@@ -25,7 +25,7 @@ filename scripts filter768 names/write256 selections, not traverse768 files.
 The text/report gaps remain. Current report has3.07%IQR; warm report/control have
 3.65%/6.14%IQR. Startup, genuinely suspended I/O, equal heap/RSS and embedding
 latency are unmeasured. Runtime correctness qualification is independent;
-full platform/Stress/package checks on a00fe76d are pending. [Current observations,
+full platform/Stress/package checks on a00fe76d pass, cached41874093956. [Current observations,
 controls and exact identities](../benchmarks/results/2026-11-04-utf8-runtime-cpython-checkpoint/README.md).
 
 [Previous0ffc checkpoint](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)
@@ -89,8 +89,8 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Shared UTF8 search windows |Complete long-line prefix/count−22–23%; allocation unchanged|[59 net lines removed; possibleCSVwarm+0.6–3.6% debt retained, full delivery pending](../benchmarks/results/2026-11-04-utf8-search-window/README.md)|
-| Native UTF8 existence / EOF |Complete1MiB chunk scans−49–53%, line filter−32–34%; allocation unchanged|[Controlled source pair; small text-helper+0.9–1.4% retained, full delivery pending](../benchmarks/results/2026-11-04-utf8-existence/README.md)|
+| Shared UTF8 search windows |Complete long-line prefix/count−22–23%; allocation unchanged|[59 net lines removed; possibleCSVwarm+0.6–3.6% debt retained, delivery qualified](../benchmarks/results/2026-11-04-utf8-search-window/README.md)|
+| Native UTF8 existence / EOF |Complete1MiB chunk scans−49–53%, line filter−32–34%; allocation unchanged|[Controlled source pair; small text-helper+0.9–1.4% retained, delivery qualified](../benchmarks/results/2026-11-04-utf8-existence/README.md)|
 | Module lexical preparation |Compilation allocation−4.25–4.83%; text/report compile elapsed−4–7%|[Shared module facts/one preparation path; CSV control-limited, fresh scripts near unchanged; no broad CPU claim](../benchmarks/results/2026-11-04-module-lexical-facts/README.md)|
 | Compiler resolution cache |Compilation elapsed−3.9–6.5% CSV,−8.4% text,−3.1% report|[Current-source pair; direct older454 comparison: CSV near unchanged, text/report faster, compiler allocation+3.3–5.0%; no broad CPU gain](../benchmarks/results/2026-11-04-resolution-cache/README.md)|
 | Executable storage |Duplicate transport, native graph and frame arrays removed; warm allocation flat; possible compile cost remains|[B207/B208; corrected prototype report cost, modest/control-limited source pairs, no broad CPU gain](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)|

@@ -51,6 +51,7 @@ source-gate correction is also preserved, never presented as timing evidence.
 Release full-solution nonincremental build has zero warnings/errors and matching
 core/public-test/benchmark images.49 internal/241 public tests per actual11/10
 pass, unchanged tests. [Scope](validation.json), [sources, driver and initial/final
-logs](source-and-validation.tgz). Full platform/Stress/installed-consumer checks are
-pending the next coherent runtime delivery checkpoint; D5's green qualification
-does not qualify this new patch. Publication remains postponed.
+logs](source-and-validation.tgz). Full [41874093956](../2026-11-04-utf8-search-window/delivery-ci-status.json) is GREEN
+on combined runtimea00fe76d: Windows/Ubuntu actual11/10 ordinary, original Stress
+and installed consumers. Terminal success cached; do not repeat unchanged
+qualification. Publication remains postponed.

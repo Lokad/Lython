@@ -7,7 +7,8 @@ FreshCSV/JSON/text/report/config ratios1.46/1.25/2.45/1.70/1.09; warm
 text/report gap remains. A failed executable-symlink identity gate before timing
 is preserved; corrected application directories load exact frozen1dcca6f2 and
 qualified0d452f95. Original source-pair adverse debt is retained, never offset by
-adding percentages. Full runtime platform qualification is independent/pending.
+adding percentages. Full41874093956 is GREEN on a00fe76d: all eight platform/Stress/package gates
+and terminal success cached; no repeat of unchanged qualification.
 
 The [shared UTF8 search window](results/2026-11-04-utf8-search-window/README.md)
 removes59 net production lines and corrects out-of-range empty searches/index-hook
@@ -15,14 +16,15 @@ ordering.13,608 CPython combinations match through both APIs/targets. Complete
 long-line scripts improve22–23%; reversed-role confirmation preserves that result.
 PossibleCSVwarm0.6–3.6% debt remains control-limited; config direction reverses and
 compile regression is unconfirmed. All original/adverse data retained; no broad
-CPU gain. Focused checks pass; combined runtime delivery qualification pending.
+CPU gain. Focused checks pass; combined runtime41874093956 is GREEN on a00fe76d, all eight
+gates/terminal success cached.
 
 The [native string-existence correction](results/2026-11-04-utf8-existence/README.md)
 removes scalar-count traversals from truth/text EOF and unhinted readlines. Complete
 1MiB chunk scans take49–53% less elapsed, line filtering32–34%, allocation unchanged.
 Existing small text helpers move adversely0.9–1.4%, near dispersion; preserve this
 accepted uncertainty. All goldens/owners/quiet gates pass;213s owned collection.
-Focused actual11/10 checks pass; broader runtime delivery qualification pending.
+Focused actual11/10 checks pass; combined runtime41874093956 GREEN on a00fe76d.
 
 The [module lexical consolidation](results/2026-11-04-module-lexical-facts/README.md)
 deletes57 net frontend lines: duplicate module-super traversal, lowered-to-syntax

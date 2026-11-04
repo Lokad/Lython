@@ -1,0 +1,51 @@
+{
+  "sourceRevision": "a00fe76dc939c7e251fc6513ac8107af146b72c0",
+  "run": 41874093956,
+  "url": "https://github.com/Lokad/Lython/actions/runs/41874093956",
+  "status": "completed",
+  "conclusion": "success",
+  "updatedAt": "2026-11-04T17:47:47Z",
+  "gates": [
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (ubuntu-latest)",
+      "check": "Test original stress scales",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "job": "tests (windows-latest)",
+      "check": "Test original stress scales",
+      "conclusion": "success"
+    }
+  ],
+  "observationNote": "Terminal run metadata success and all eight logical gate steps verified. Run metadata lagged completed steps; both observations retained. Never re-query/replay."
+}

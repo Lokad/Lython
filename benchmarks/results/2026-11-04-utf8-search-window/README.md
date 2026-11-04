@@ -66,8 +66,11 @@ Accept possibleCSVwarm0.6–3.6% regression debt with control-limited magnitude;
 text movement remains uncertain. Compilation is not a demonstrated frontend
 regression. Preserve every original/adverse result; stop retiming this source pair.
 No broad CPU, RSS/embedding-latency gain, additive earlier improvement or updated
-CPython ratio. Subsequent external checkpoint and full platform/Stress/installed
-consumers qualify this coherent runtime delivery independently. Publication held.
+CPython ratio. The [current external checkpoint](../2026-11-04-utf8-runtime-cpython-checkpoint/README.md)
+is separate. Full [41874093956](delivery-ci-status.json) is GREEN on a00fe76d:
+all eight Windows/Ubuntu actual11/10 ordinary/original Stress/installed-consumer
+gates verified and terminal success cached. Do not repeat this qualification.
+Publication held.
 
 Both collections use the existing private three-image driver:6sec guest warmup/
 image, alternating preparation,2sec settle,9rotated200ms baseline-sized batches.

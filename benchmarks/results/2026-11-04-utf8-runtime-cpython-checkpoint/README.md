@@ -88,7 +88,8 @@ current/reference Ready identities pass before collection and each worker checks
 again. D6/D7 explicit-ALC identity-qualified collections are independent/unaffected.
 [Pre-measurement plan and setup correction](pre-measurement-plan.md).
 
-Windows/Ubuntu11/10 ordinary/original Stress/installed Release consumers are running
-separately on a00fe76d in41874093956; this timing result does not qualify them.
+Windows/Ubuntu11/10 ordinary/original Stress/installed Release consumers pass
+separately on a00fe76d in [41874093956](../2026-11-04-utf8-search-window/delivery-ci-status.json),
+all eight gates and terminal workflow success cached; timing is separate qualification.
 Publication/tagging remains postponed. [Previous external checkpoint](../2026-11-04-executable-cpython-checkpoint/README.md)
 keeps its original source, conditions, failed measurements and debt decisions.
