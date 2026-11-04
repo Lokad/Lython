@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "qualifiedf6e51d1caeb5c05797c6d0acd694937b4eeaa7e4; documentation9e361df0",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "9e361df0 plus archived D18 checked fixed-arity adjacent read fusion; original spans/native provenance/owners; six production files and two test files",
+  "candidateCoreSHA256": "0d6767cbc3aff339c4a92c837281a0465587ef5d808a0db85a14256f69dbd8fe",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "ae764a7cc96c62bea3333fb38504bb64091e33781f5c1a737b370f5a82c78ea6",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "b56f6fcf41de8d2579328e63c67e801c15e095f52b58bd2b059fdc9a7d95f3af",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "972864e521e141b29ca555e2e3fa188943b12e2a8fae23b860ac6e891ce02cc8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "1943db49e2a3868991568ee8e38971c4ec65bc8b6ecb758d3eba3d8d69f41e73",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "e95d00ada9757cf1d096925ad560b69bf65c0aacc82df6e47ec315d38839547c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "617f5b4e88b0bff4b81b7b354df3dd75851664fbc58eb384412f9efbf6dd6cad",
+    "tests/Lokad.Lython.PublicApi.Tests/OperandReadFailureTests.cs": "c59c3623bf24506d08a72b4c7a3d79e3eb420b5fe814597d9ac2ff0ba5b654d7",
+    "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "a42ea195b65b4e96837fa77034da45cad8e583c80bb6547a71f966bfe8363b4a"
+  }
+}

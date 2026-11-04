@@ -1,0 +1,16 @@
+{
+  "build": "Final direct-span nonincremental Release; exact log archived",
+  "frameworks": {
+    "net11.0": {
+      "internal": 996,
+      "public": 4203,
+      "coreSHA256": "6a488d04a693dd17acc6a2805ead887daf0b7d28f520245add1c9e7b07911eac"
+    },
+    "net10.0": {
+      "internal": 996,
+      "public": 4203,
+      "coreSHA256": "377b195c808fb3fc4ea09c113849f7428c12dbdfd22320c16ef9510bf87ed77c"
+    }
+  },
+  "contract": "Direct original span references; original native links, no tags/constant-pool expansion/read inventories; conservative execution capacity unchanged, instruction56B."
+}

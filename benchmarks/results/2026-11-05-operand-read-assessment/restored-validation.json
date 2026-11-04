@@ -1,0 +1,12 @@
+{
+  "productionSourceMatchesQualifiedF6": true,
+  "nonincrementalBuild": "34.01s,zero warnings/errors",
+  "focusedRestoration": {
+    "net11.0": 17,
+    "net10.0": 17
+  },
+  "newPublicFailureCases": 7,
+  "bothInvocationAPIs": true,
+  "scope": "Original failure spans/order and budget cleanup; original raw getter rebinding, actual pending work, cancellation/refusal/escaped results; no prototype remains.",
+  "qualification": "Unchanged production f6e51d1c full41919086629 green. New public regressions checked locally on actual11/10; no discarded-source full qualification claimed."
+}

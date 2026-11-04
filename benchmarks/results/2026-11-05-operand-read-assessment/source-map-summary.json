@@ -1,0 +1,61 @@
+{
+  "purpose": "Compile-only static counts and managed array storage; not CPU or retained heap",
+  "baselineCore": "DF206F479AB6E016A9B0A54CE68E82FD9E4CDD7FCCA51879E8D2EF1B2179B6CD",
+  "directCore": "6A488D04A693DD17ACC6A2805EAD887DAF0B7D28F520245ADD1C9E7B07911EAC",
+  "instructionArray1024Bytes": {
+    "baseline": 40984,
+    "direct": 57368
+  },
+  "cases": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "modules": {
+        "before": 106,
+        "after": 92
+      },
+      "operandCapacityBefore": 8,
+      "operandCapacityAfter": 8,
+      "helpersUnchanged": true
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "modules": {
+        "before": 85,
+        "after": 76
+      },
+      "operandCapacityBefore": 9,
+      "operandCapacityAfter": 9,
+      "helpersUnchanged": true
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "modules": {
+        "before": 96,
+        "after": 85
+      },
+      "operandCapacityBefore": 7,
+      "operandCapacityAfter": 7,
+      "helpersUnchanged": true
+    },
+    {
+      "id": "scripts.report-render.large",
+      "modules": {
+        "before": 65,
+        "after": 59
+      },
+      "operandCapacityBefore": 5,
+      "operandCapacityAfter": 5,
+      "helpersUnchanged": true
+    },
+    {
+      "id": "scripts.config-edit.large",
+      "modules": {
+        "before": 79,
+        "after": 72
+      },
+      "operandCapacityBefore": 7,
+      "operandCapacityAfter": 7,
+      "helpersUnchanged": true
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "build": "Final nonincremental Release32.79s,zero warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 996,
+      "public": 4203,
+      "coreSHA256": "0d6767cbc3aff339c4a92c837281a0465587ef5d808a0db85a14256f69dbd8fe"
+    },
+    "net10.0": {
+      "internal": 996,
+      "public": 4203,
+      "coreSHA256": "ade6ba31c76be2ba45bbff6fbfb59b48c7eb280cdae885c4799ba478b8bd50e1"
+    }
+  },
+  "contract": "Checked adjacent fixed-arity reads with original spans in existing origin/constant metadata; initialized-local inventory removed, 40B instruction, native roots/call packets unchanged.",
+  "initialChecks": "One stale internal exact constants/instruction-count assertion failed; updated for removed LoadLocal and retained numeric constants. 995other internal and4196public passed before final checks; original logs preserved.",
+  "newChecks": "Seven failure-order/span cases cover both APIs, independent isolatedCPython3.13.2 goldens; budget returns to baseline after each result. Existing class-subscription pending-rebinding/cancellation/refusal/escaped-result cases retained.",
+  "limitations": "Focused checks, no new-source full platform/stress/package qualification until retained delivery; no speedup claim before measurement."
+}

@@ -1,0 +1,54 @@
+{
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "source": "for left in []:pass\nfor right in []:pass\nleft + right",
+      "name": "left",
+      "exceptionType": "NameError",
+      "message": "name 'left' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "for left in []:pass\nfor right in []:pass\nleft[right]",
+      "name": "left",
+      "exceptionType": "NameError",
+      "message": "name 'left' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "class Probe:\n def __getitem__(self,key):print('called')\nleft=Probe()\nfor missing in []:pass\nleft[missing]",
+      "name": "missing",
+      "exceptionType": "NameError",
+      "message": "name 'missing' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "for missing in []:pass\nmissing.value",
+      "name": "missing",
+      "exceptionType": "NameError",
+      "message": "name 'missing' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "for missing in []:pass\nfor item in missing:pass",
+      "name": "missing",
+      "exceptionType": "NameError",
+      "message": "name 'missing' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "for missing in []:pass\nif missing:print('called')",
+      "name": "missing",
+      "exceptionType": "NameError",
+      "message": "name 'missing' is not defined",
+      "noProtocolOutput": true
+    },
+    {
+      "source": "def fail():\n for left in []:pass\n for right in []:pass\n return left + right\nfail()",
+      "name": "left",
+      "exceptionType": "UnboundLocalError",
+      "message": "cannot access local variable 'left' where it is not associated with a value",
+      "noProtocolOutput": true
+    }
+  ]
+}

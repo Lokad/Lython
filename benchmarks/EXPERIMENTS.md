@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [checked operand-read assessment](results/2026-11-05-operand-read-assessment/README.md)
+is withdrawn after three coherent source shapes and bounded controls. Compact218s
+has text+4%; getter-only28s remains inconclusive. Direct spans54s initially give
+warmtext−2.4%, but final217s exposes asynctext/report+3–5%, compile+4–6%/allocation
+~5%, with larger bytecode. All focused semantics pass; no CPU cause is inferred.
+Preserve every original/adverse result, restore production and retain seven public
+failure-order/span/cleanup regressions. Whole-script work continues at JSON native
+construction; no permanent design veto or obsolete runtime scaffolding remains.
+
 The [qualified instruction-prefix source gate](results/2026-11-04-instruction-prefix-source-gate/README.md)
 closes after17s/6.13s guestCPU:1,218samples,201prefix samples mapped to the exact
 Tier1 listing. Loop/guard/dispatch includes useful work, not predicted savings.
