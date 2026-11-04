@@ -1,0 +1,140 @@
+[
+  {
+    "method": "ReadJsonObjectAsync",
+    "fields": [
+      {
+        "Name": "\u003C\u003E1__state",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "\u003C\u003Et__builder",
+        "type": "System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder\u00601[System.ValueTuple\u00602[System.Object,System.Int32]]"
+      },
+      {
+        "Name": "input",
+        "type": "Lokad.Lython.Runtime.Text.PyString"
+      },
+      {
+        "Name": "context",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+      },
+      {
+        "Name": "options",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonLoadOptions"
+      },
+      {
+        "Name": "span",
+        "type": "Lokad.Lython.LythonSourceSpan"
+      },
+      {
+        "Name": "openBrace",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "asynchronous",
+        "type": "System.Boolean"
+      },
+      {
+        "Name": "\u003C\u003E4__this",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule"
+      },
+      {
+        "Name": "depth",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "\u003Cbytes\u003E5__2",
+        "type": "System.ReadOnlyMemory\u00601[System.Byte]"
+      },
+      {
+        "Name": "\u003Cexpected\u003E5__3",
+        "type": "Lokad.Lython.Runtime.Text.PyString[]"
+      },
+      {
+        "Name": "\u003Cmatched\u003E5__4",
+        "type": "System.Boolean"
+      },
+      {
+        "Name": "\u003Cresult\u003E5__5",
+        "type": "Lokad.Lython.Runtime.PyDict"
+      },
+      {
+        "Name": "\u003Cpairs\u003E5__6",
+        "type": "Lokad.Lython.Runtime.PyList"
+      },
+      {
+        "Name": "\u003CpairPeek\u003E5__7",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "\u003CpairKey\u003E5__8",
+        "type": "Lokad.Lython.Runtime.Text.PyString"
+      },
+      {
+        "Name": "\u003C\u003Eu__1",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable\u00601\u002BConfiguredValueTaskAwaiter[System.Object]"
+      },
+      {
+        "Name": "\u003C\u003Eu__2",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable\u00601\u002BConfiguredValueTaskAwaiter[System.ValueTuple\u00602[System.Object,System.Int32]]"
+      }
+    ]
+  },
+  {
+    "method": "ReadJsonArrayAsync",
+    "fields": [
+      {
+        "Name": "\u003C\u003E1__state",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "\u003C\u003Et__builder",
+        "type": "System.Runtime.CompilerServices.AsyncValueTaskMethodBuilder\u00601[System.ValueTuple\u00602[System.Object,System.Int32]]"
+      },
+      {
+        "Name": "input",
+        "type": "Lokad.Lython.Runtime.Text.PyString"
+      },
+      {
+        "Name": "context",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+      },
+      {
+        "Name": "span",
+        "type": "Lokad.Lython.LythonSourceSpan"
+      },
+      {
+        "Name": "openBracket",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "\u003C\u003E4__this",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule"
+      },
+      {
+        "Name": "options",
+        "type": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonLoadOptions"
+      },
+      {
+        "Name": "depth",
+        "type": "System.Int32"
+      },
+      {
+        "Name": "asynchronous",
+        "type": "System.Boolean"
+      },
+      {
+        "Name": "\u003Cbytes\u003E5__2",
+        "type": "System.ReadOnlyMemory\u00601[System.Byte]"
+      },
+      {
+        "Name": "\u003Cresult\u003E5__3",
+        "type": "Lokad.Lython.Runtime.PyList"
+      },
+      {
+        "Name": "\u003C\u003Eu__1",
+        "type": "System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable\u00601\u002BConfiguredValueTaskAwaiter[System.ValueTuple\u00602[System.Object,System.Int32]]"
+      }
+    ]
+  }
+]

@@ -586,6 +586,10 @@ scalar/container headroom. Larger integers retain magnitude and text-workspace
 preflights, exact parsing and retained-payload funding; there is no digit ceiling.
 Parse hooks still receive independently funded text before invocation.
 
+Arrays, dictionaries and pairs-hook output share one recursive container grammar.
+Final containers retain their ordinary storage and admission; callbacks use the
+same awaited path, including reentrant parsing and preserved property-name snapshots.
+
 JSON encoders write UTF-8 directly into governed capacity, including string
 escaping, keys, separators and indentation. Replacement buffers and the final
 independent result are admitted while earlier storage remains funded. Incremental

@@ -1,5 +1,10 @@
 # Benchmark experimental history
 
+The [shared recursive JSON grammar](results/2026-11-04-shared-json-container-grammar/README.md)
+removes95 net source lines without an explicit continuation workspace. Focused
+checks pass; allocation stays flat and async report/text timing debt remains
+explicit through the next coherent frame milestone. Full delivery is pending.
+
 The [owner-capacity admission assessment](results/2026-11-04-owner-capacity-assessment/README.md)
 is shelved with production restored. Several complete scripts improve, but a
 13–16% text regression does not reproduce in the bounded five-image confirmation.

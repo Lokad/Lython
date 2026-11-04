@@ -135,9 +135,7 @@ internal sealed partial class LythonRuntime
                     throw CreateJsonDepthError(input, position, first == (byte)'[', span, context);
                 }
 
-                return first == (byte)'{'
-                    ? ReadJsonObjectAsync(input, options, context, span, depth + 1, position, asynchronous)
-                    : ReadJsonArrayAsync(input, options, context, span, depth + 1, position, asynchronous);
+                return ReadJsonContainerAsync(input, options, context, span, depth + 1, position, first == (byte)'{', asynchronous);
             }
 
             return ReadJsonNumberOrConstantAsync(input, options, context, span, position, asynchronous);
@@ -378,168 +376,75 @@ internal sealed partial class LythonRuntime
             finally { context.LeaveInterpreterFrame(); }
         }
 
-        private async ValueTask<(object Value, int End)> ReadJsonObjectAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBrace, bool asynchronous)
+        private async ValueTask<(object Value, int End)> ReadJsonContainerAsync(
+            PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
+            int depth, int opening, bool isObject, bool asynchronous)
         {
             var bytes = input.Utf8Bytes;
-            var expected = context.State.JsonRecordKeys;
+            var expected = isObject ? context.State.JsonRecordKeys : Array.Empty<PyString>();
             var matched = true;
-            if (options.ObjectPairsHook is not null)
-            {
-                var pairs = new PyList([], context.MemoryGovernor, span);
-                var pairValueEnd = -1;
-                while (true)
-                {
-                    // A closer here follows an empty container or a completed value.
-                    var pairPeek = pairValueEnd < 0
-                        ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
-                        : SkipJsonWhitespace(bytes.Span, pairValueEnd, context, span);
-                    if (pairPeek < bytes.Length && bytes.Span[pairPeek] == (byte)'}')
-                    {
-                        if (matched && pairs.Count == expected.Length) context.State.JsonRecordKeys = expected;
-                        else context.State.RememberJsonRecordKeys(JsonPairKeys(pairs), pairs.Count, span);
-                        return (await InvokeJsonCallbackCoreAsync(options.ObjectPairsHook, pairs, context, span, asynchronous).ConfigureAwait(false), pairPeek + 1);
-                    }
-
-                    int pairKeyStart;
-                    if (pairValueEnd < 0)
-                    {
-                        pairKeyStart = pairPeek;
-                    }
-                    else
-                    {
-                        var pairComma = EnsureJsonComma(bytes.Span, pairValueEnd, input, span, context);
-                        pairKeyStart = SkipJsonWhitespace(bytes.Span, pairComma + 1, context, span);
-                        if (pairKeyStart < bytes.Length && bytes.Span[pairKeyStart] == (byte)'}')
-                        {
-                            throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of object", pairComma, innerException: null, span, context);
-                        }
-                    }
-
-                    if (pairKeyStart >= bytes.Length)
-                    {
-                        throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
-                    }
-
-                    if (bytes.Span[pairKeyStart] != (byte)'"')
-                    {
-                        throw CreateJsonExpectingError(input, pairKeyStart, JsonIncompleteExpectation.PropertyName, span, context);
-                    }
-
-                    context.CheckExecution(span);
-                    var (pairKey, pairKeyEnd, reused) = ReadJsonObjectKey(input, options, pairKeyStart, context, span, expected);
-                    matched &= reused;
-
-                    var pairColon = EnsureJsonColon(bytes.Span, pairKeyEnd, input, span, context);
-                    var (pairValue, pairEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairColon + 1, asynchronous).ConfigureAwait(false);
-                    var pair = PyTuple.FromOwnedArray([pairKey, pairValue], context.MemoryGovernor, span);
-                    pairs.Add(pair);
-                    context.CheckExecution(span);
-                    pairValueEnd = pairEnd;
-                }
-            }
-
-            var result = new PyDict(context.MemoryGovernor, span);
+            object result = isObject && options.ObjectPairsHook is null
+                ? new PyDict(context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
             var valueEnd = -1;
             while (true)
             {
                 // A closer here follows an empty container or a completed value.
-                var peek = valueEnd < 0
-                    ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
-                    : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
-                if (peek < bytes.Length && bytes.Span[peek] == (byte)'}')
+                var peek = SkipJsonWhitespace(bytes.Span, valueEnd < 0 ? opening + 1 : valueEnd, context, span);
+                if (peek < bytes.Length && bytes.Span[peek] == (isObject ? (byte)'}' : (byte)']'))
                 {
-                    var end = peek + 1;
-                    if (matched && result.Count == expected.Length) context.State.JsonRecordKeys = expected;
-                    else context.State.RememberJsonRecordKeys(result.Keys, result.Count, span);
-                    return options.ObjectHook is null
-                        ? ((object)result, end)
-                        : (await InvokeJsonCallbackCoreAsync(options.ObjectHook, result, context, span, asynchronous).ConfigureAwait(false), end);
+                    if (isObject)
+                    {
+                        var finishedDictionary = result as PyDict;
+                        var count = finishedDictionary?.Count ?? ((PyList)result).Count;
+                        if (matched && count == expected.Length) context.State.JsonRecordKeys = expected;
+                        else context.State.RememberJsonRecordKeys(finishedDictionary is not null
+                            ? finishedDictionary.Keys : JsonPairKeys((PyList)result), count, span);
+                    }
+                    var hook = isObject ? options.ObjectPairsHook ?? options.ObjectHook : null;
+                    return hook is null ? (result, peek + 1)
+                        : (await InvokeJsonCallbackCoreAsync(hook, result, context, span, asynchronous).ConfigureAwait(false), peek + 1);
                 }
 
-                int keyStart;
-                if (valueEnd < 0)
+                var start = peek;
+                if (valueEnd >= 0)
                 {
-                    keyStart = peek;
-                }
-                else
-                {
-                    var memberComma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
-                    keyStart = SkipJsonWhitespace(bytes.Span, memberComma + 1, context, span);
-                    if (keyStart < bytes.Length && bytes.Span[keyStart] == (byte)'}')
+                    var comma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
+                    start = SkipJsonWhitespace(bytes.Span, comma + 1, context, span);
+                    if (start < bytes.Length && bytes.Span[start] == (isObject ? (byte)'}' : (byte)']'))
                     {
-                        throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of object", memberComma, innerException: null, span, context);
+                        throw NewJsonDecodeFailure(input, isObject
+                            ? "Illegal trailing comma before end of object" : "Illegal trailing comma before end of array",
+                            comma, innerException: null, span, context);
                     }
                 }
 
-                if (keyStart >= bytes.Length)
+                if (start >= bytes.Length || (isObject && bytes.Span[start] != (byte)'"'))
                 {
-                    throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
-                }
-
-                if (bytes.Span[keyStart] != (byte)'"')
-                {
-                    throw CreateJsonExpectingError(input, keyStart, JsonIncompleteExpectation.PropertyName, span, context);
+                    throw CreateJsonExpectingError(input, start >= bytes.Length ? bytes.Length : start,
+                        isObject ? JsonIncompleteExpectation.PropertyName : JsonIncompleteExpectation.Value, span, context);
                 }
 
                 context.CheckExecution(span);
-                var (memberKey, memberKeyEnd, memberReused) = ReadJsonObjectKey(input, options, keyStart, context, span, expected);
-                matched &= memberReused;
+                PyString? key = null;
+                if (isObject)
+                {
+                    var property = ReadJsonObjectKey(input, options, start, context, span, expected);
+                    key = property.Value;
+                    matched &= property.Reused;
+                    start = EnsureJsonColon(bytes.Span, property.End, input, span, context) + 1;
+                }
 
-                var memberColon = EnsureJsonColon(bytes.Span, memberKeyEnd, input, span, context);
-                var (memberValue, memberEnd) = await ReadJsonValueAsync(input, options, context, span, depth, memberColon + 1, asynchronous).ConfigureAwait(false);
-                result.SetItem(memberKey, memberValue);
+                var (value, end) = await ReadJsonValueAsync(input, options, context, span, depth, start, asynchronous).ConfigureAwait(false);
+                if (result is PyDict dictionary) dictionary.SetItem(key!, value);
+                else ((PyList)result).Add(isObject ? PyTuple.FromOwnedArray([key!, value], context.MemoryGovernor, span) : value);
                 context.CheckExecution(span);
-                valueEnd = memberEnd;
+                valueEnd = end;
             }
         }
 
         private static IEnumerable<object> JsonPairKeys(PyList pairs)
         {
             foreach (var pair in pairs) yield return ((PyTuple)pair)[0];
-        }
-
-        private async ValueTask<(object Value, int End)> ReadJsonArrayAsync(PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBracket, bool asynchronous)
-        {
-            var bytes = input.Utf8Bytes;
-            var result = new PyList([], context.MemoryGovernor, span);
-            var valueEnd = -1;
-            while (true)
-            {
-                // A closer here follows an empty container or a completed value.
-                var peek = valueEnd < 0
-                    ? SkipJsonWhitespace(bytes.Span, openBracket + 1, context, span)
-                    : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
-                if (peek < bytes.Length && bytes.Span[peek] == (byte)']')
-                {
-                    return ((object)result, peek + 1);
-                }
-
-                int elementStart;
-                if (valueEnd < 0)
-                {
-                    elementStart = peek;
-                }
-                else
-                {
-                    var elementComma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
-                    elementStart = SkipJsonWhitespace(bytes.Span, elementComma + 1, context, span);
-                    if (elementStart < bytes.Length && bytes.Span[elementStart] == (byte)']')
-                    {
-                        throw NewJsonDecodeFailure(input, "Illegal trailing comma before end of array", elementComma, innerException: null, span, context);
-                    }
-                }
-
-                if (elementStart >= bytes.Length)
-                {
-                    throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
-                }
-
-                context.CheckExecution(span);
-                var (element, elementEnd) = await ReadJsonValueAsync(input, options, context, span, depth, elementStart, asynchronous).ConfigureAwait(false);
-                result.Add(element);
-                context.CheckExecution(span);
-                valueEnd = elementEnd;
-            }
         }
 
         // Matches a JSON constant literal (NaN/Infinity/-Infinity) like CPython:

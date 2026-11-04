@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "a805be97 plus B200 shared recursive JSON container grammar, final single-owner refinement",
+  "baselineRuntimeRevision": "ee2b4529, source unchanged through a805be97",
+  "coreSHA256": {
+    "before-control": "1b9b3230ca075b32ac8fbd3e117605f93499b9356b4afcd768c76ca4a535ca07",
+    "candidate": "68899ba8c4740f7bcd523d8ea3cd548a432f84ccc1dfad7d61a17df0dfae41c2",
+    "after-control": "1b9b3230ca075b32ac8fbd3e117605f93499b9356b4afcd768c76ca4a535ca07"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "8d1eaf51447f4a2bb0dc6fc2c1df3b2f5c1f6b59afd4bb97fb6ebea508f66e43"
+  }
+}
