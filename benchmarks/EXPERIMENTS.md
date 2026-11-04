@@ -2347,3 +2347,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   and favorable but variable warm report remain explicit. No general CPU claim.
   Full delivery41771244039 is GREEN on ee2b4529, all eight gates; terminal receipt
   cached. Whole-script performance work remains OPEN.
+
+- [String storage and cache accounting, B205](results/2026-11-04-string-storage-assessment/README.md):
+  General shared windows withdrawn after two correct implementations measured
+  adverse whole-script costs. Retain the smaller cache-counter deletion and
+  allocation rollback, actual metadata72->64B, whole-job allocation−1.5–4.1%.
+  Initial same-bits text drift justified one longer-warmup confirmation: sync
+  text+3.5–5.8% remains explicit accepted debt, async−2.9–5.9%; no broad CPU gain.
+  Preserve offset-copy failures, corrected semantics and all original measurements.
+  Focused444 internal/2667 public per actual.NET11/10 pass; full delivery pending.
+  No dormant windows remain. Continue the coherent operand/call redesign objective.

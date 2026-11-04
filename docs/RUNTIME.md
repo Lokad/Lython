@@ -296,6 +296,11 @@ its successful prefix charged. Sorting keeps the detached backing funded through
 callbacks and awaited cleanup, then restores it before releasing callback storage.
 In-place repetition fills the admitted array in bounded, cancellation-checked copies.
 
+Immutable strings retain their independent UTF-8 backing. Their optional scalar
+offset table admits its capacity before allocation and refunds the reservation
+if construction fails. The retained table describes its own charge; no separate
+cache-charge accumulator is maintained.
+
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.
 Raw storage scans remain separate from Python's mutation-checked iteration.

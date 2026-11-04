@@ -18,7 +18,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private readonly LythonSourceSpan? _allocationSpan;
     private int _runeLength = -1;
     private int[]? _runeByteOffsets;
-    private long _committedCacheBytes;
     private int _hashCode;
     private bool _hashCodeComputed;
 
@@ -405,17 +404,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // Borrowed bounded working storage uses the same strict decoder as AsString.
     internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(Utf8Span, destination);
 
-    internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
-
-    private void CommitCacheCharge(long bytes)
-    {
-        if (_memoryGovernor is not null && bytes > 0)
-        {
-            _memoryGovernor.Reserve(bytes, _allocationSpan);
-            _memoryGovernor.Commit(bytes);
-            _committedCacheBytes += bytes;
-        }
-    }
+    internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length)
+        + (_memoryGovernor is not null && _runeByteOffsets is { } offsets ? 32L + 4L * offsets.Length : 0);
 
     public string AsString(int runeIndex)
     {
@@ -719,19 +709,29 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return _runeByteOffsets;
         }
 
-        // The offset table persists as a cache alongside the decoded text.
-        CommitCacheCharge(32L + (4L * ((long)Length + 1)));
-        var offsets = new int[Length + 1];
-        var runeIndex = 0;
-        for (var byteIndex = 0; byteIndex < _byteLength;)
+        // Cache capacity describes its own charge; no separate accumulator.
+        var count = Length;
+        var bytes = 32L + 4L * ((long)count + 1);
+        _memoryGovernor?.Reserve(bytes, _allocationSpan);
+        try
         {
-            offsets[runeIndex++] = byteIndex;
-            byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+            var offsets = new int[count + 1];
+            var runeIndex = 0;
+            for (var byteIndex = 0; byteIndex < _byteLength;)
+            {
+                offsets[runeIndex++] = byteIndex;
+                byteIndex += GetRuneLengthAtByteIndex(byteIndex);
+            }
+            offsets[runeIndex] = _byteLength;
+            _runeByteOffsets = offsets;
+            _memoryGovernor?.Commit(bytes);
+            return offsets;
         }
-
-        offsets[runeIndex] = _byteLength;
-        _runeByteOffsets = offsets;
-        return offsets;
+        catch
+        {
+            _memoryGovernor?.ReleaseReserved(bytes);
+            throw;
+        }
     }
 
     private static PyString[] CreateAsciiCharacters()

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Derive string cache funding from its retained scalar-offset table, removing a
+  redundant charge counter. Preserve allocation preflight and construction rollback.
+
 - Store list backing directly in each list, removing separate small/large storage
   implementations and their promotion. Keep replacement preflights, rollback,
   live iteration and funded sort cleanup; growth uses conservative geometric capacity.

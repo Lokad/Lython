@@ -1,0 +1,51 @@
+{
+  "complete": true,
+  "elapsedSeconds": 151.14153753593564,
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 3.0260880300000004,
+        "candidate": 3.13164844,
+        "after-control": 2.958856028846154
+      },
+      "cpuMilliseconds": {
+        "before-control": 3.1,
+        "candidate": 3.2,
+        "after-control": 2.980769230769231
+      },
+      "iqrPercent": {
+        "before-control": 0.7267729749421761,
+        "candidate": 0.6475353280715037,
+        "after-control": 1.989756780579062
+      },
+      "deltaPercent": 3.4883456447233563,
+      "versusAfterPercent": 5.839838419621546,
+      "oldControlPercent": -2.2217463764213963
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "before-control": 3.463058011363636,
+        "candidate": 3.258679612903226,
+        "after-control": 3.356186177777778
+      },
+      "cpuMilliseconds": {
+        "before-control": 3.6363636363636362,
+        "candidate": 3.4408602150537635,
+        "after-control": 3.4444444444444446
+      },
+      "iqrPercent": {
+        "before-control": 0.4407468235222566,
+        "candidate": 1.1439282598278169,
+        "after-control": 1.3744052789866994
+      },
+      "deltaPercent": -5.901674121246758,
+      "versusAfterPercent": -2.9052787810214364,
+      "oldControlPercent": -3.086053806640554
+    }
+  ],
+  "allocation": {}
+}

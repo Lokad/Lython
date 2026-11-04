@@ -22,7 +22,8 @@ Four explicitly earlier rows use2026-11-03 bd3f9dee and the ordinary VM filesyst
 Filename scripts filter768 names and write/check256 selections, not traverse768 files.
 
 Later [list-storage consolidation](../benchmarks/results/2026-11-04-direct-list-backing/README.md)
-is not included in these external ratios; its allocation benefit and text timing
+and [string accounting simplification](../benchmarks/results/2026-11-04-string-storage-assessment/README.md)
+are not included in these external ratios; their allocation benefits and text timing
 debt are separate source-pair results. Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
 warm text has4.5% same-bits control spread and warm report7.8% CPython IQR. These
 are useful diagnostic ratios, not guaranteed multipliers. Startup, genuinely
@@ -126,6 +127,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| String cache accounting |Whole-script allocation−1.5–4.1%; sync text elapsed+3.5–5.8%, async−2.9–5.9%|[B205 versusae9b82b7; sync regression accepted, original drifting controls and withdrawn windows preserved; no broad CPU gain](../benchmarks/results/2026-11-04-string-storage-assessment/README.md)|
 | Native formatted helpers |Report allocation-26.12% both APIs; warm elapsed-7..12%, fresh-8..10%|[B201 versus B197/B200; compile+2% accepted, admitted peaks unchanged, unrelated text uncertainty preserved](../benchmarks/results/2026-11-04-native-formatted-returns/README.md)|
 | Fixed UTF-8 construction |Whole-script allocation−3–12%; controlled sync text elapsed−7–8%|[B194 versus9a4af031; async text possible1–2% debt, async JSON uncertain; all original conditions retained](../benchmarks/results/2026-11-04-fixed-text-construction/README.md)|
 | Borrowed native helper arguments |Helper elapsed−6.6–10%; async text≈−7%; allocation flat|[B192 versus334c7cc7; sync text uncertain, refined report within control variation; original adverse report retained](../benchmarks/results/2026-11-04-borrowed-native-arguments/README.md)|
