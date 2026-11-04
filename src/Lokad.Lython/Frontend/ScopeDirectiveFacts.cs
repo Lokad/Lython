@@ -25,6 +25,9 @@ internal sealed record ScopeDirectiveFacts(
 
 internal static class ScopeDirectiveFactsCollector
 {
+    public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
+        => script.PreparedScopeFacts ??= ForFunction([], script.Statements);
+
     public static bool ContainsScopeDirective(IReadOnlyList<StatementSyntax> statements)
     {
         foreach (var statement in statements)
@@ -117,38 +120,6 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
-
-    public static ScopeDirectiveFacts ForLoweredStatements(
-        IReadOnlyList<LoweredFunctionParameter>? parameters,
-        IReadOnlyList<LoweredStatement> statements)
-        => ForFunction(parameters ?? [], statements.Select(GetSyntax).ToArray());
-
-    private static StatementSyntax GetSyntax(LoweredStatement statement)
-        => statement switch
-        {
-            LoweredTypeAliasStatement lowered => lowered.Syntax,
-            LoweredImportStatement lowered => lowered.Syntax,
-            LoweredScopeDirectiveStatement lowered => lowered.Syntax,
-            LoweredFunctionDefinitionStatement lowered => lowered.Syntax,
-            LoweredClassDefinitionStatement lowered => lowered.Syntax,
-            LoweredAssignmentStatement lowered => lowered.Syntax,
-            LoweredExpressionStatement lowered => lowered.Syntax,
-            LoweredIfStatement lowered => lowered.Syntax,
-            LoweredForStatement lowered => lowered.Syntax,
-            LoweredWhileStatement lowered => lowered.Syntax,
-            LoweredMatchStatement lowered => lowered.Syntax,
-            LoweredWithStatement lowered => lowered.Syntax,
-            LoweredTryStatement lowered => lowered.Syntax,
-            LoweredPassStatement lowered => lowered.Syntax,
-            LoweredBreakStatement lowered => lowered.Syntax,
-            LoweredContinueStatement lowered => lowered.Syntax,
-            LoweredAssertStatement lowered => lowered.Syntax,
-            LoweredDeleteStatement lowered => lowered.Syntax,
-            LoweredReturnStatement lowered => lowered.Syntax,
-            LoweredRaiseStatement lowered => lowered.Syntax,
-            LoweredOtherStatement lowered => lowered.Syntax,
-            _ => throw new InvalidOperationException($"Unknown lowered statement kind: {statement.GetType().Name}")
-        };
 
     private static bool CollectScopeBindings(IReadOnlyList<StatementSyntax> statements, ICollection<string> names,
         HashSet<string> globalNames, HashSet<string> nonlocalNames)

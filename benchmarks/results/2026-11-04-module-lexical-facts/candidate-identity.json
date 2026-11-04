@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "123f9ff1 fully qualified runtime source, frozen159744bd; later main docs only",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "159744bdbed6914dbfbab71e032828a167b73de6401cf27532ef7f1db175226f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "1d61912b plus lexical module consolidation; frozen final snapshot authoritative",
+  "candidateCoreSHA256": "0d452f955bcbb09b4e877767ba373f5582d9cee2e7e25d5ad2a9e08a1bfc3190",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Frontend/ClassCellSyntaxFacts.cs": "9601859c73b0a6bd72dce43d192a5915c74b650398abd2478406d0638675dc28",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "c77d84a426e6c72612fa212cb2ca164d62798fd30df94440e8f1f9b7f437cfa7",
+    "src/Lokad.Lython/Frontend/LexicalScopePreparation.cs": "ed5723fbe4127b043bdb37209167751f3d4c77ad4b6c42d75be88657edd8b1ae",
+    "src/Lokad.Lython/Frontend/LythonFrontend.cs": "a5807e4fa1864693e177a24c3027e77c75d1b93979b203f125ef35feaa473ca1",
+    "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs": "e942caed72864de0a0d4847562c725e847469be9387bb41832d95b2199ded41b",
+    "src/Lokad.Lython/Frontend/Syntax.cs": "98357d82b6025d21eb19773370109cfa24c8893da5218e10c95ce611d31030f7"
+  }
+}

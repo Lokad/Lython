@@ -1,13 +1,14 @@
 namespace Lokad.Lython.Frontend;
 
-// Python 3.13's direct super().member form reads the class cell and first
-// positional local before calling super. This is a lexical compilation choice,
-// independent of the value that the name resolves to during execution.
-internal static class ImplicitSuperSyntaxFacts
+// Prepare lexical facts once, including Python's direct super().member argument
+// preloads. These depend on the complete lexical tree, not runtime name values.
+internal static class LexicalScopePreparation
 {
     private sealed record Scope(Scope? Parent, ScopeDirectiveFacts Facts,
         bool Function = false, bool Class = false, bool Positional = false)
     {
+        public bool IsModule => !Function && !Class && (Parent?.IsModule ?? true);
+
         public bool CanPreload => Function && Positional &&
             !Facts.IsGlobal("__class__") && !Facts.LocalNames.Contains("__class__") &&
             HasEnclosingClassBinding() && SuperIsImplicitGlobal();
@@ -64,7 +65,12 @@ internal static class ImplicitSuperSyntaxFacts
     {
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
             import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
-        var moduleUsesSuper = ModuleUsesSuper(script.Statements, postponed);
+        // Bind once, but finish the module's class-read facts only after child
+        // scopes are prepared. Their binding facts can then be reused too.
+        var moduleFacts = ScopeDirectiveFactsCollector.ForFunction([], script.Statements, includeClassCellRequirement: false);
+        var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
+        List<CallExpressionSyntax>? preloads = null;
+        // Module bindings do not supply lexical class cells to child functions.
         var root = new Scope(null, ScopeDirectiveFacts.Empty);
         var pending = new Stack<(object Syntax, Scope Scope)>();
         PushStatements(script.Statements, root);
@@ -73,6 +79,10 @@ internal static class ImplicitSuperSyntaxFacts
             var (syntax, scope) = pending.Pop();
             if (syntax is StatementSyntax statement)
             {
+                // Even a later declaration in a sibling function affects the
+                // module symbol table. Decide candidate tags after this walk.
+                if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Global } directive &&
+                    directive.Names.Contains("super", StringComparer.Ordinal)) moduleUsesSuper = true;
                 foreach (var expression in ReadExpressions(statement, postponed)) pending.Push((expression, scope));
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
@@ -92,11 +102,12 @@ internal static class ImplicitSuperSyntaxFacts
                 continue;
             }
             var node = (ExpressionSyntax)syntax;
+            if (node is IdentifierExpressionSyntax { Name: "super" } && scope.IsModule) moduleUsesSuper = true;
             if (node is MemberExpressionSyntax member && member.MemberName != "__class__" &&
                 !moduleUsesSuper && scope.CanPreload &&
                 Unwrap(member.Target) is CallExpressionSyntax { Arguments.Count: 0 } call &&
                 Unwrap(call.Target) is IdentifierExpressionSyntax { Name: "super" })
-                call.PreloadImplicitSuperArguments = true;
+                (preloads ??= []).Add(call);
             if (node is LambdaExpressionSyntax lambda)
             {
                 foreach (var parameter in lambda.Parameters)
@@ -111,6 +122,7 @@ internal static class ImplicitSuperSyntaxFacts
             {
                 pending.Push((clauses[0].Iterable, scope));
                 var facts = ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator);
+                if (!generator && scope.IsModule && facts.LocalNames.Contains("super")) moduleUsesSuper = true;
                 if (generator) facts = scope.BindGeneratorAssignments(node, facts);
                 var bodyScope = new Scope(scope, facts, Function: generator || scope.Function, Positional: generator || scope.Positional);
                 if (generator)
@@ -129,6 +141,14 @@ internal static class ImplicitSuperSyntaxFacts
             }
             else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(node)) pending.Push((child, scope));
         }
+
+        if (!moduleUsesSuper && preloads is not null)
+            foreach (var call in preloads) call.PreloadImplicitSuperArguments = true;
+
+        if (!moduleFacts.IsGlobal("__class__") && !moduleFacts.LocalNames.Contains("__class__") &&
+            ClassCellSyntaxFacts.ReferencesFromFunction(script.Statements))
+            moduleFacts = moduleFacts with { RequiresClassCell = true };
+        script.PreparedScopeFacts = moduleFacts;
 
         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
         {
@@ -186,52 +206,4 @@ internal static class ImplicitSuperSyntaxFacts
         else foreach (var read in ExpressionSyntaxTraversal.EnumerateChildren(target)) yield return read;
     }
 
-    private static bool ModuleUsesSuper(IReadOnlyList<StatementSyntax> statements, bool postponedAnnotations)
-    {
-        var facts = ScopeDirectiveFactsCollector.ForFunction([], statements, includeClassCellRequirement: false);
-        if (facts.LocalNames.Contains("super") || facts.IsGlobal("super")) return true;
-        var pending = new Stack<(object Syntax, bool Module)>();
-        foreach (var statement in statements) pending.Push((statement, true));
-        while (pending.Count != 0)
-        {
-            var (syntax, module) = pending.Pop();
-            if (syntax is StatementSyntax statement)
-            {
-                // A global declaration in any child block also marks the
-                // module's symbol table, including declarations in siblings.
-                if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Global } directive &&
-                    directive.Names.Contains("super", StringComparer.Ordinal)) return true;
-                if (module) foreach (var expression in ReadExpressions(statement, postponedAnnotations)) pending.Push((expression, true));
-                foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
-                    foreach (var child in body) pending.Push((child, module && statement is not (FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax)));
-            }
-            else if (module)
-            {
-                var expression = (ExpressionSyntax)syntax;
-                if (expression is IdentifierExpressionSyntax { Name: "super" }) return true;
-                if (expression is LambdaExpressionSyntax lambda)
-                {
-                    foreach (var parameter in lambda.Parameters)
-                        if (parameter.DefaultValue is { } value) pending.Push((value, true));
-                }
-                else if (ComprehensionSyntaxFacts.TryGetParts(expression, out var items, out var clauses, out var generator))
-                {
-                    pending.Push((clauses[0].Iterable, true));
-                    if (!generator)
-                    {
-                        if (ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target)).LocalNames.Contains("super")) return true;
-                        foreach (var item in items) pending.Push((item, true));
-                        for (var i = 0; i < clauses.Count; i++)
-                        {
-                            if (i != 0) pending.Push((clauses[i].Iterable, true));
-                            if (clauses[i].Condition is { } condition) pending.Push((condition, true));
-                            foreach (var read in AssignmentTargetFacts.Reads(clauses[i].Target)) pending.Push((read, true));
-                        }
-                    }
-                }
-                else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) pending.Push((child, true));
-            }
-        }
-        return false;
-    }
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "target": "net11.0",
+    "catalog": "shape",
+    "cases": 17,
+    "codeObjects": 38,
+    "beforeSHA256": "159744BDBED6914DBFBAB71E032828A167B73DE6401CF27532EF7F1DB175226F",
+    "afterSHA256": "0D452F955BCBB09B4E877767BA373F5582D9CEE2E7E25D5AD2A9E08A1BFC3190",
+    "identical": true
+  },
+  {
+    "target": "net11.0",
+    "catalog": "scope-shape",
+    "cases": 10,
+    "codeObjects": 33,
+    "beforeSHA256": "159744BDBED6914DBFBAB71E032828A167B73DE6401CF27532EF7F1DB175226F",
+    "afterSHA256": "0D452F955BCBB09B4E877767BA373F5582D9CEE2E7E25D5AD2A9E08A1BFC3190",
+    "identical": true
+  },
+  {
+    "target": "net10.0",
+    "catalog": "shape",
+    "cases": 17,
+    "codeObjects": 38,
+    "beforeSHA256": "55B3335E7855C19603E7CF4203466CF025854CD27012A93E75C36481B8D7D4D1",
+    "afterSHA256": "8241C7BFBC7CAD83101367254ED4204E308941FB52A86BADB335DB8A33D29055",
+    "identical": true
+  },
+  {
+    "target": "net10.0",
+    "catalog": "scope-shape",
+    "cases": 10,
+    "codeObjects": 33,
+    "beforeSHA256": "55B3335E7855C19603E7CF4203466CF025854CD27012A93E75C36481B8D7D4D1",
+    "afterSHA256": "8241C7BFBC7CAD83101367254ED4204E308941FB52A86BADB335DB8A33D29055",
+    "identical": true
+  }
+]

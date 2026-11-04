@@ -63,7 +63,7 @@ internal static class LythonFrontend
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Parsing/name rewriting is finished. Prepare the immutable lexical facts
         // once for analysis, lowering and the remaining runtime scope consumers.
-        ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
+        LexicalScopePreparation.Prepare(parsed.Script);
         PythonTokenization.CheckCancellation(cancellationToken, 0);
 
         using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);

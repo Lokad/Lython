@@ -151,6 +151,9 @@ immutable function/class/lambda facts. They belong to the compiled program,
 without a cross-script cache. One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix; module stores retain their dynamic namespace.
+Module facts also pass through lowering into instruction construction. The lexical
+preparation walk decides implicit `super` preloads after seeing later declarations;
+module bindings never supply lexical class cells to child functions.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.

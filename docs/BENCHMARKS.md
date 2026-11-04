@@ -127,6 +127,7 @@ original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Module lexical preparation |Compilation allocation−4.25–4.83%; text/report compile elapsed−4–7%|[Shared module facts/one preparation path; CSV control-limited, fresh scripts near unchanged; no broad CPU claim](../benchmarks/results/2026-11-04-module-lexical-facts/README.md)|
 | Compiler resolution cache |Compilation elapsed−3.9–6.5% CSV,−8.4% text,−3.1% report|[Current-source pair; direct older454 comparison: CSV near unchanged, text/report faster, compiler allocation+3.3–5.0%; no broad CPU gain](../benchmarks/results/2026-11-04-resolution-cache/README.md)|
 | Executable storage |Duplicate transport, native graph and frame arrays removed; warm allocation flat; possible compile cost remains|[B207/B208; corrected prototype report cost, modest/control-limited source pairs, no broad CPU gain](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)|
 | String cache accounting |Whole-script allocation−1.5–4.1%; sync text elapsed+3.5–5.8%, async−2.9–5.9%|[B205 versusae9b82b7; sync regression accepted, original drifting controls and withdrawn windows preserved; no broad CPU gain](../benchmarks/results/2026-11-04-string-storage-assessment/README.md)|

@@ -1,0 +1,19 @@
+{
+  "sourceBase": "1d61912b plus module/lexical consolidation",
+  "netProductionLinesRemoved": 57,
+  "cases": {
+    "net11.0": {
+      "internal": 240,
+      "public": 1889
+    },
+    "net10.0": {
+      "internal": 240,
+      "public": 1889
+    }
+  },
+  "newTests": false,
+  "meaning": "Existing scope/class/super/annotation/import/generator/provider, cancellation/refusal/owner assertions unchanged",
+  "metadata": "27 scripts,71 codeobjects per actual target match scope facts, active instructions, slots, cells, closures, spans, protected regions and native provenance",
+  "initialSource": "valid early module-class fact finalization; same focused checks before deferred finalization correction; no timing collected",
+  "build": "Release nonincremental,0warnings/0errors; core/test/benchmark binaries match"
+}

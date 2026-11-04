@@ -41,7 +41,7 @@ internal static class ClassCellSyntaxFacts
             // Bare deleted names are stores, not lexical class/super reads.
             var expressions = statement is DeleteStatementSyntax deleted
                 ? ReadDeletedTarget(deleted.Target)
-                : ImplicitSuperSyntaxFacts.ReadExpressions(statement, postponedAnnotations);
+                : LexicalScopePreparation.ReadExpressions(statement, postponedAnnotations);
             foreach (var expression in expressions)
                 if (ReferencesFromExpression(expression)) return true;
             if (statement is FunctionDefinitionStatementSyntax function)
@@ -126,7 +126,7 @@ internal static class ClassCellSyntaxFacts
         while (pending.Count != 0)
         {
             var statement = pending.Pop();
-            foreach (var expression in ImplicitSuperSyntaxFacts.ReadExpressions(statement, postponedAnnotations))
+            foreach (var expression in LexicalScopePreparation.ReadExpressions(statement, postponedAnnotations))
                 if (ReadsEnclosingClass(expression)) return true;
             if (statement is FunctionDefinitionStatementSyntax or ClassDefinitionStatementSyntax) continue;
             foreach (var child in StatementSyntaxTraversal.EnumerateChildBodies(statement))

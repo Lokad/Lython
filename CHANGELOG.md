@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share module scope facts through lexical preparation and executable construction.
+  Fold implicit-super discovery into the existing walk and remove lowered-to-syntax
+  reconstruction and nullable builder-fact fallback. Preserve class cells, delayed
+  global shadowing and generator/comprehension scope boundaries.
+
 - Simplify frontend resolution caching to syntax-node identity with clearing on
   binding changes. Remove recursive structural key hashing, version counters and
   per-entry versions while preserving diagnostic flow, cancellation and ownership.

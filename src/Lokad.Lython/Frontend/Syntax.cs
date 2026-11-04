@@ -5,7 +5,10 @@ internal sealed record FrontendResult(
     IReadOnlyList<LythonDiagnostic> Diagnostics);
 
 internal sealed record ScriptSyntax(
-    IReadOnlyList<StatementSyntax> Statements);
+    IReadOnlyList<StatementSyntax> Statements)
+{
+    internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+}
 
 internal abstract record StatementSyntax(
     LythonSourceSpan Span);

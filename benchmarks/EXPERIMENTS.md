@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [module lexical consolidation](results/2026-11-04-module-lexical-facts/README.md)
+deletes57 net frontend lines: duplicate module-super traversal, lowered-to-syntax
+reconstruction and nullable builder facts. Exact metadata matches across27 scripts/
+71 code objects and focused checks pass on both runtimes. Compilation allocation
+falls4.25–4.83%; text/report compilation elapsed improves4–7%, while CSV controls
+shift and fresh scripts remain near unchanged. All observations remain; this is
+not a broad CPU or updated CPython claim. Delivery qualification is separate.
+
 The [binding-state cache reassessment](results/2026-11-04-resolution-cache/README.md)
 removes recursive record hashing and redundant versions from the existing cache.
 Current-source compilation elapsed improves3.9–6.5% CSV,8.4% text and3.1% report;
