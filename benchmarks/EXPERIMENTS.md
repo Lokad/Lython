@@ -1,5 +1,16 @@
 # Benchmark experimental history
 
+The [qualified f6e51d1c CPython checkpoint](results/2026-11-04-runtime-cpython-declaration-checkpoint/README.md)
+completes14jobs385.53s. Fresh CSV/JSON/text/report/config ratios1.44/1.28/2.43/1.70/1.07;
+long-field CSV0.17×. Full identities/goldens/quiet/joins pass; report remains variable
+and independent-source deltas are not additive. Current guide now uses this source.
+
+The [completed prepared-target prototype](results/2026-11-04-completed-targets-withdrawn/README.md)
+is withdrawn: six jobs165s, async text+3.2–4.6% despite async CSV−1.7%, allocation
+flat. Added68lines of manual continuation machinery do not justify mixed results.
+Sync controls remain uncertain. All focused checks pass; source restored before
+continuing. Preserve stale descriptive labels/harness correction and actual hashes.
+
 The [prepared declaration/default cleanup](results/2026-11-04-prepared-declarations/README.md)
 removes executable lowered-body retention, duplicate default maps/clones and three
 construction routes.744internal/1677public plus14hosting cases per actual target

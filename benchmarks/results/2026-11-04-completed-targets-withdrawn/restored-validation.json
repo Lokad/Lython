@@ -1,0 +1,18 @@
+{
+  "sourceRevision": "f2f5cf8f documentation HEAD; production exact f6e51d1c",
+  "nonincrementalReleaseBuild": "40.31s; zero warnings/errors",
+  "sourceMatchesHEAD": true,
+  "canonicalSourceSHA256": "d1bd33f8dafcf7d18a6988429e6e4087f7faa3aa51f1c73f13e39b5d3002f18f",
+  "frameworks": {
+    "net11.0": {
+      "publicChecks": 77,
+      "coreSHA256": "fcc96a81f34b8d5fee7d464e494ce082cb9886d0106f6fb4eb80b3fe35ad6c40"
+    },
+    "net10.0": {
+      "publicChecks": 77,
+      "coreSHA256": "f4457dfb257b39eab333f65e0ea104f71bf0f8fcdcaad521ca1604de18d11579"
+    }
+  },
+  "scope": "MutationAsyncComposition/AugmentedTargetRetention/UserSliceMutationCompatibility/OrdinaryUnpacking; actual pending operations, semantics, retained operands, cancellation/refusal/cleanup",
+  "note": "Discarded prototype is removed. No unchanged full delivery rerun; existing exact production41919086629 remains fully green. New binaries contain later documentation commit metadata, so hashes differ."
+}

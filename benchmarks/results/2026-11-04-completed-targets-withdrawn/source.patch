@@ -1,0 +1,343 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs
+index ad4984d1..b74c8323 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs
+@@ -6,7 +6,9 @@ internal sealed partial class LythonRuntime
+ {
+     private sealed partial class ExecutableFrameInterpreter
+     {
+-        private async ValueTask ExecutePreparedTargetOperationAsync(ExecutableOperation operation, ExecutableInstruction instruction, bool asynchronous)
++        // Completed child operations publish/retire here. Only an incomplete
++        // child enters a continuation, which owns the same operands until done.
++        private ValueTask ExecutePreparedTargetOperationAsync(ExecutableOperation operation, in ExecutableInstruction instruction, bool asynchronous)
+         {
+             var span = instruction.Span;
+             switch (operation)
+@@ -18,30 +20,33 @@ internal sealed partial class LythonRuntime
+                     var value = _stack[first + (member.ValueLast ? 1 : 0)];
+                     try
+                     {
+-                        if (asynchronous)
++                        if (!asynchronous) SetMemberValue(receiver, member.MemberName, value, member.TargetSpan, _context);
++                        else
+                         {
+-                            if (!await PyMemberAccess.TryAssignAsync(receiver, member.MemberName,
+-                                value, _context, member.TargetSpan).ConfigureAwait(false))
++                            var pending = PyMemberAccess.TryAssignAsync(receiver, member.MemberName, value, _context, member.TargetSpan);
++                            if (!pending.IsCompletedSuccessfully)
++                                return CompleteMemberStoreAsync(pending, member.TargetSpan, instruction.LiveExtent);
++                            if (!pending.Result)
+                                 throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.TargetSpan);
+                         }
+-                        else SetMemberValue(receiver, member.MemberName, value, member.TargetSpan, _context);
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    // Retirement itself must not be retried if disposal fails.
++                    _stack.RetireTo(instruction.LiveExtent);
++                    return default;
+                 }
+                 case ExecutableReadRetainedSubscript:
+                 {
+                     var first = instruction.InputStart;
++                    ValueTask<object> pending;
+                     try
+                     {
+-                        // Keep the captured receiver and raw key through RHS and store.
+-                        var value = asynchronous
+-                            ? await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, _context).ConfigureAwait(false)
+-                            : ReadSubscriptValue(_stack[first], _stack[first + 1], span, _context);
+-                        _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++                        pending = asynchronous
++                            ? ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, _context)
++                            : new(ReadSubscriptValue(_stack[first], _stack[first + 1], span, _context));
+                     }
+                     catch { _stack.RetireTo(first); throw; }
+-                    break;
++                    return CompleteTargetRead(pending, instruction);
+                 }
+                 case ExecutableStoreSubscript store:
+                 {
+@@ -49,45 +54,43 @@ internal sealed partial class LythonRuntime
+                     var receiver = _stack[first + (store.ValueLast ? 0 : 1)];
+                     var key = _stack[first + (store.ValueLast ? 1 : 2)];
+                     var value = _stack[first + (store.ValueLast ? 2 : 0)];
++                    ValueTask pending;
+                     try
+                     {
+-                        if (asynchronous)
+-                            await SetHeaderSubscriptAsync(receiver, key, value, store.TargetSpan, _context).ConfigureAwait(false);
+-                        else SetSubscriptValue(receiver, key, value, store.TargetSpan, _context);
++                        if (asynchronous) pending = SetHeaderSubscriptAsync(receiver, key, value, store.TargetSpan, _context);
++                        else { SetSubscriptValue(receiver, key, value, store.TargetSpan, _context); pending = default; }
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    return CompleteTargetStore(pending, instruction.LiveExtent);
+                 }
+                 case ExecutableReadRetainedSlice:
+                 {
+                     var first = instruction.InputStart;
++                    ValueTask<object> pending;
+                     try
+                     {
+                         var receiver = _stack[first];
+                         var start = _stack[first + 1];
+                         var stop = _stack[first + 2];
+                         var step = _stack[first + 3];
+-                        object value;
+                         if (receiver is PyInstance instance)
+                         {
+                             var key = CreateSliceValue(start, stop, step, span, _context);
+-                            // The existing start slot retains the exact key for the store.
++                            // Retain this exact key for the later store.
+                             _stack[first + 1] = key;
+-                            value = asynchronous
+-                                ? await GetUserItemAsync(instance, key, _context, span).ConfigureAwait(false)
+-                                : GetUserItem(instance, key, _context, span);
++                            pending = asynchronous ? GetUserItemAsync(instance, key, _context, span)
++                                : new(GetUserItem(instance, key, _context, span));
+                         }
+-                        else value = asynchronous
+-                            ? await ReadSliceValueAsync(receiver, start, stop, step, span, _context).ConfigureAwait(false)
+-                            : ReadSliceValue(receiver, start, stop, step, span, _context);
+-                        _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++                        else pending = asynchronous ? ReadSliceValueAsync(receiver, start, stop, step, span, _context)
++                            : new(ReadSliceValue(receiver, start, stop, step, span, _context));
+                     }
+                     catch { _stack.RetireTo(first); throw; }
+-                    break;
++                    return CompleteTargetRead(pending, instruction);
+                 }
+                 case ExecutableStoreSlice slice:
+                 {
+                     var first = instruction.InputStart;
++                    ValueTask pending;
+                     try
+                     {
+                         var receiverIndex = first + (slice.ValueLast ? 0 : 1);
+@@ -98,89 +101,144 @@ internal sealed partial class LythonRuntime
+                         var value = _stack[first + (slice.ValueLast ? 4 : 0)];
+                         if (slice.ValueLast && receiver is PyInstance)
+                         {
+-                            if (asynchronous)
+-                                await SetHeaderSubscriptAsync(receiver, (PySlice)start, value, slice.TargetSpan, _context).ConfigureAwait(false);
+-                            else SetSubscriptValue(receiver, (PySlice)start, value, slice.TargetSpan, _context);
++                            if (asynchronous) pending = SetHeaderSubscriptAsync(receiver, (PySlice)start, value, slice.TargetSpan, _context);
++                            else { SetSubscriptValue(receiver, (PySlice)start, value, slice.TargetSpan, _context); pending = default; }
+                         }
+-                        else if (asynchronous)
+-                            await ExecuteSliceAssignmentAsync(receiver, start, stop, step, value, slice.TargetSpan, _context).ConfigureAwait(false);
+-                        else ExecuteSliceAssignment(receiver, start, stop, step, value, slice.TargetSpan, _context);
++                        else if (asynchronous) pending = ExecuteSliceAssignmentAsync(receiver, start, stop, step, value, slice.TargetSpan, _context);
++                        else { ExecuteSliceAssignment(receiver, start, stop, step, value, slice.TargetSpan, _context); pending = default; }
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    return CompleteTargetStore(pending, instruction.LiveExtent);
+                 }
+                 case ExecutableFailAssertion assertion:
+                     ThrowAssertionError(assertion.HasMessage ? _stack.TakeValue(instruction.InputStart, instruction.LiveExtent) : null, _context, span);
+-                    break;
++                    return default;
+                 case ExecutableRaise raised:
+                     var cause = raised.HasCause ? _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1) : null;
+                     ThrowRaisedValue(_stack.TakeValue(instruction.InputStart, instruction.LiveExtent), raised.HasCause, cause, _context, span);
+-                    break;
++                    return default;
+                 case ExecutableDeletePreparedTarget deleted:
+-                    await DeletePreparedTargetAsync(deleted.Target, instruction, asynchronous).ConfigureAwait(false);
+-                    break;
++                    return DeletePreparedTargetAsync(deleted.Target, instruction, asynchronous);
+                 case ExecutableUnpackValues unpack:
+-                    using (var materialized = asynchronous
+-                        ? await MaterializeHeaderSequenceAsync(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), span, _context, unpack.Layout.MaximumReadCount).ConfigureAwait(false)
+-                        : MaterializeUnpackingSequence(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), span, _context, unpack.Layout.MaximumReadCount))
+-                    {
+-                        var values = materialized.Items;
+-                        var layout = unpack.Layout;
+-                        if (!layout.AcceptsValueCount(values.Count))
+-                            throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), span);
+-                        for (var i = layout.TargetCount - 1; i >= 0; i--)
+-                        {
+-                            if (i == layout.StarredTargetIndex)
+-                            {
+-                                var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), _context.MemoryGovernor, span);
+-                                _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i, instruction.ResultSlot + layout.TargetCount - i, rest);
+-                            }
+-                            else _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i,
+-                                instruction.ResultSlot + layout.TargetCount - i, values[layout.HasStarredTarget && i > layout.StarredTargetIndex
+-                                ? layout.SourceIndexForTrailingTarget(i, values.Count) : i]);
+-                        }
+-                    }
+-                    break;
++                {
++                    var source = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
++                    var pending = asynchronous ? MaterializeHeaderSequenceAsync(source, span, _context, unpack.Layout.MaximumReadCount)
++                        : new ValueTask<PyIteration.DrainLease>(MaterializeUnpackingSequence(source, span, _context, unpack.Layout.MaximumReadCount));
++                    if (!pending.IsCompletedSuccessfully) return CompleteTargetUnpackAsync(pending, unpack, instruction);
++                    using var materialized = pending.Result;
++                    PublishUnpackedTargets(materialized, unpack, instruction);
++                    return default;
++                }
+                 default: throw new InvalidOperationException("Unknown prepared target operation.");
+             }
+         }
+ 
+-        private async ValueTask DeletePreparedTargetAsync(AssignmentTargetSyntax target, ExecutableInstruction instruction, bool asynchronous)
++        private ValueTask CompleteTargetStore(ValueTask pending, int extent)
++        {
++            if (!pending.IsCompletedSuccessfully) return CompleteTargetStoreAsync(pending, extent);
++            try { pending.GetAwaiter().GetResult(); }
++            finally { _stack.RetireTo(extent); }
++            return default;
++        }
++
++        private async ValueTask CompleteTargetStoreAsync(ValueTask pending, int extent)
++        {
++            try { await pending.ConfigureAwait(false); }
++            finally { _stack.RetireTo(extent); }
++        }
++
++        private async ValueTask CompleteMemberStoreAsync(ValueTask<bool> pending, LythonSourceSpan span, int extent)
++        {
++            try
++            {
++                if (!await pending.ConfigureAwait(false))
++                    throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", span);
++            }
++            finally { _stack.RetireTo(extent); }
++        }
++
++        private ValueTask CompleteTargetRead(ValueTask<object> pending, in ExecutableInstruction instruction)
++        {
++            if (!pending.IsCompletedSuccessfully) return CompleteTargetReadAsync(pending, instruction);
++            try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, pending.Result); }
++            catch { _stack.RetireTo(instruction.InputStart); throw; }
++            return default;
++        }
++
++        private async ValueTask CompleteTargetReadAsync(ValueTask<object> pending, ExecutableInstruction instruction)
++        {
++            try
++            {
++                var value = await pending.ConfigureAwait(false);
++                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++            }
++            catch { _stack.RetireTo(instruction.InputStart); throw; }
++        }
++
++        private void PublishUnpackedTargets(PyIteration.DrainLease materialized, ExecutableUnpackValues unpack, in ExecutableInstruction instruction)
++        {
++            var span = instruction.Span;
++            var values = materialized.Items;
++            var layout = unpack.Layout;
++            if (!layout.AcceptsValueCount(values.Count))
++                throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), span);
++            for (var i = layout.TargetCount - 1; i >= 0; i--)
++            {
++                if (i == layout.StarredTargetIndex)
++                {
++                    var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), _context.MemoryGovernor, span);
++                    _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i, instruction.ResultSlot + layout.TargetCount - i, rest);
++                }
++                else _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i,
++                    instruction.ResultSlot + layout.TargetCount - i, values[layout.HasStarredTarget && i > layout.StarredTargetIndex
++                    ? layout.SourceIndexForTrailingTarget(i, values.Count) : i]);
++            }
++        }
++
++        private async ValueTask CompleteTargetUnpackAsync(ValueTask<PyIteration.DrainLease> pending, ExecutableUnpackValues unpack, ExecutableInstruction instruction)
++        {
++            using var materialized = await pending.ConfigureAwait(false);
++            PublishUnpackedTargets(materialized, unpack, instruction);
++        }
++
++        private ValueTask DeletePreparedTargetAsync(AssignmentTargetSyntax target, in ExecutableInstruction instruction, bool asynchronous)
+         {
+             var span = instruction.Span;
+             switch (target)
+             {
+                 case NameAssignmentTargetSyntax name:
+-                    if (!DeleteName(name.Name, _context, span))
+-                        throw MissingDeletedName(name.Name, _context, span);
+-                    break;
++                    if (!DeleteName(name.Name, _context, span)) throw MissingDeletedName(name.Name, _context, span);
++                    return default;
+                 case MemberAssignmentTargetSyntax member:
+                     try
+                     {
+                         var receiver = _stack[instruction.InputStart];
+-                        var deleted = asynchronous ? await PyMemberAccess.TryDeleteAsync(receiver, member.MemberName, _context, span).ConfigureAwait(false)
+-                            : PyMemberAccess.TryDelete(receiver, member.MemberName, _context, span);
+-                        if (!deleted) throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, _context, operation: MissingMemberOperation.Delete);
++                        var pending = asynchronous ? PyMemberAccess.TryDeleteAsync(receiver, member.MemberName, _context, span)
++                            : new ValueTask<bool>(PyMemberAccess.TryDelete(receiver, member.MemberName, _context, span));
++                        if (!pending.IsCompletedSuccessfully)
++                            return CompleteMemberDeleteAsync(pending, receiver, member.MemberName, span, instruction.LiveExtent);
++                        if (!pending.Result)
++                            throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, _context, operation: MissingMemberOperation.Delete);
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    _stack.RetireTo(instruction.LiveExtent);
++                    return default;
+                 case SubscriptAssignmentTargetSyntax:
+                 {
+                     var first = instruction.InputStart;
++                    ValueTask pending;
+                     try
+                     {
+-                        if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, _context).ConfigureAwait(false);
+-                        else DeleteSubscriptValue(_stack[first], _stack[first + 1], span, _context);
++                        if (asynchronous) pending = ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, _context);
++                        else { DeleteSubscriptValue(_stack[first], _stack[first + 1], span, _context); pending = default; }
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    return CompleteTargetStore(pending, instruction.LiveExtent);
+                 }
+                 case SliceAssignmentTargetSyntax slice:
+                 {
+-                    // Match the compiler's read order and retain every raw operand
+-                    // until deletion (including protocol I/O) has finished.
+-                    var count = 1 + (slice.Start is null ? 0 : 1) + (slice.End is null ? 0 : 1) + (slice.Step is null ? 0 : 1);
+                     var first = instruction.InputStart;
++                    ValueTask pending;
+                     try
+                     {
+                         var sequence = _stack[first];
+@@ -188,14 +246,24 @@ internal sealed partial class LythonRuntime
+                         var start = slice.Start is null ? null : _stack[next++];
+                         var end = slice.End is null ? null : _stack[next++];
+                         var step = slice.Step is null ? null : _stack[next];
+-                        if (asynchronous) await ExecuteSliceDeletionAsync(sequence, start, end, step, span, _context).ConfigureAwait(false);
+-                        else ExecuteSliceDeletion(sequence, start, end, step, span, _context);
++                        if (asynchronous) pending = ExecuteSliceDeletionAsync(sequence, start, end, step, span, _context);
++                        else { ExecuteSliceDeletion(sequence, start, end, step, span, _context); pending = default; }
+                     }
+-                    finally { _stack.RetireTo(instruction.LiveExtent); }
+-                    break;
++                    catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++                    return CompleteTargetStore(pending, instruction.LiveExtent);
+                 }
+                 default: throw new InvalidOperationException("Invalid prepared delete target.");
+             }
+         }
++
++        private async ValueTask CompleteMemberDeleteAsync(ValueTask<bool> pending, object receiver, string name, LythonSourceSpan span, int extent)
++        {
++            try
++            {
++                if (!await pending.ConfigureAwait(false))
++                    throw PyMemberAccess.CreateMissingMemberError(receiver, name, span, _context, operation: MissingMemberOperation.Delete);
++            }
++            finally { _stack.RetireTo(extent); }
++        }
+     }
+ }

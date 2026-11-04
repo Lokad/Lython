@@ -1,0 +1,18 @@
+{
+  "build": "Final nonincremental Release37.08s,0warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 1573,
+      "public": 2056,
+      "coreSHA256": "7245014f639b2d9ebf10f69b621788a3abc8f880bf2adb810bd4e5690dbd0d4d"
+    },
+    "net10.0": {
+      "internal": 1573,
+      "public": 2056,
+      "coreSHA256": "6ca657918145a68beff96b62db82a8bf0742b69ab7b4edb4e50d3a3cdb2351cc"
+    }
+  },
+  "contract": "One shared completed target-operation switch, actual pending continuations only; same child methods, spans, raw operands and retirement; no new representation/whitelist/framework.",
+  "reviewCorrection": "Await into local before mutable struct publication; final nonincremental rebuild before all focused checks.",
+  "limitations": "Focused target checks only; full delivery deferred until retention. No measured speedup yet."
+}

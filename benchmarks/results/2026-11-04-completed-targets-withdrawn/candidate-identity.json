@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "f6e51d1caeb5c05797c6d0acd694937b4eeaa7e4",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateSource": "ee8020f0 plus shared completed prepared-target operations; actual-pending continuations; same children and ownership; one production file",
+  "candidateCoreSHA256": "7245014f639b2d9ebf10f69b621788a3abc8f880bf2adb810bd4e5690dbd0d4d",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs": "5ca9c7f6d0e3778401563b5185fef6b45d280f4073750ade98dcb3930bd51c6b"
+  }
+}
