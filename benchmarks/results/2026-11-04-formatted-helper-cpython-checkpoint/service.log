@@ -1,0 +1,21 @@
+Running as unit: lython-b202-cpython-20261104.service; invocation ID: cebfb5619b914ca69793e773bc750af3
+Initial machine gate passed; a campaign still needs every sampling gate.
+warm scripts.csv-summary-helpers.large complete
+compile-run scripts.csv-summary-helpers.large complete
+warm scripts.text-summary-helpers.large complete
+compile-run scripts.text-summary-helpers.large complete
+warm scripts.json-summary-helpers.large complete
+compile-run scripts.json-summary-helpers.large complete
+warm scripts.report-render.large complete
+compile-run scripts.report-render.large complete
+warm scripts.config-edit.large complete
+compile-run scripts.config-edit.large complete
+compile scripts.csv-summary-helpers.large complete
+compile scripts.report-render.large complete
+Initial machine gate passed; a campaign still needs every sampling gate.
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 4min 38.261s
+CPU time consumed: 5min 876ms
+Memory peak: 256.0K
+Memory swap peak: 0B

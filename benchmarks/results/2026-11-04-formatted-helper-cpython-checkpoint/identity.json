@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "ffc011341f7c5c8ca9e7223f09de174fccacbb05",
+  "coreSHA256": {
+    "candidate": "718796567fc8e36c597eddd1d92c87b93573b833f3cf69a85ee345aa05686c14",
+    "control": "718796567fc8e36c597eddd1d92c87b93573b833f3cf69a85ee345aa05686c14"
+  },
+  "frozenSourceLink": "48d4bf14 plus B201; production source matches ffc01134, binary not rebuilt/relabelled",
+  "workerSource": "unchanged B197 comparison worker/protocol2; physical image from B201"
+}

@@ -2,65 +2,64 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.299 ms|3.528 ms|1.50×|RAM;2d46dc8e;Variable;3.5% old control /1.0% IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.490 ms|4.211 ms|1.30×|RAM;2d46dc8e;Diagnostic;1.8% old control /0.8% IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.339 ms|1.313 ms|2.54×|RAM;2d46dc8e;Diagnostic;2.6% old control /0.8% IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|5.269 ms|2.742 ms|1.92×|RAM;2d46dc8e;Variable;1.7% old control /3.8% IQR|
-| Config read/edit/write |1,024 paths /7,177 B|0.287 ms|0.259 ms|1.11×|RAM;2d46dc8e;Diagnostic;1.2% old control /1.8% IQR|
+| CSV summary/helpers |4,096 records /57,361 B|5.396 ms|3.502 ms|1.54×|Current ffc01134;RAM;Diagnostic;2.0% control /1.4% IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.525 ms|4.197 ms|1.32×|Current ffc01134;RAM;Diagnostic;0.9% control /0.5% IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.213 ms|1.288 ms|2.49×|Current ffc01134;RAM;Diagnostic;1.8% control /0.6% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|4.836 ms|2.748 ms|1.76×|Current ffc01134;RAM;Variable;0.7% control /3.7% IQR|
+| Config read/edit/write |1,024 paths /7,177 B|0.295 ms|0.252 ms|1.17×|Current ffc01134;RAM;Diagnostic;2.6% control /1.0% IQR|
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
 | Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Earlier bd3;ordinary FS;1.1% Lython IQR|
 
-First five rows measured **2026-11-04**, production source **2d46dc8e**, against
-**CPython3.13.16** on **.NET11RC3**. These are **fresh compilation plus one complete
-synchronous execution in an already-running host**, including mediated RAM-file I/O,
-full checks and cleanup, excluding fixture staging/reset (protocol2). Ratio is Lython
-elapsed / CPython elapsed; above one means slower. IQR is interquartile range / median.
-**Rows have different revisions/storage conditions.** Four explicitly earlier rows
-are2026-11-03 bd3f9dee on the ordinary VM filesystem, not today’s HEAD. Filename
-scripts read names, filter and write/check256 selections, rather than traverse768 files.
+First five rows measured **2026-11-04**, committed production source **ffc01134**,
+against **CPython3.13.16** on **.NET11RC3**. These are **fresh compilation plus one
+complete synchronous execution in an already-running host**, including mediated
+RAM-file I/O, full checks and cleanup, excluding fixture staging/reset (protocol2).
+Ratio=Lython elapsed/CPython elapsed; above one means slower. IQR=interquartile
+range/median; control is the absolute spread between identical-source Lython roles.
+Four explicitly earlier rows use2026-11-03 bd3f9dee and the ordinary VM filesystem.
+Filename scripts filter768 names and write/check256 selections, not traverse768 files.
 
-Text/report gaps remain substantial. Text old controls differ2.6%; CSV3.5% and
-report3.8% Lython IQR limit small source-pair claims. These are bounded diagnostic
-observations, not guaranteed multipliers. The current coupled fresh-JSON result is
-5.6–7.3% faster than both pre-loop baseline roles, closing the earlier provisional
-fresh regression under these conditions. Warm async-text cost and asyncJSON uncertainty
-remain separate. Startup, genuinely suspended I/O, equal heap/RSS and embedding latency
-are unmeasured. Config is close to CPython on RAM; earlier ordinary-FS fresh/warm
-ratios6.29/8.18× describe other conditions. A [file-boundary trace](../benchmarks/results/2026-11-03-config-file-boundary/README.md)
-records truncation paths without quantifying ordinary-FS gains.
+Text/report gaps remain substantial. Fresh report3.7% IQR limits small claims;
+warm text has4.5% same-bits control spread and warm report7.8% CPython IQR. These
+are useful diagnostic ratios, not guaranteed multipliers. Startup, genuinely
+suspended I/O, equal heap/RSS and embedding latency are unmeasured. Config's
+earlier ordinary-FS ratios describe different conditions, not today's RAM result.
 
-[Current observations, controls and debt decision](../benchmarks/results/2026-11-04-current-cpython-checkpoint/README.md)
-retain the failed first ending gate separately; those observations are excluded
-from the current table. Runtime correctness qualification is recorded independently
-in the evidence. [Earlier9ce21533 checkpoint](../benchmarks/results/2026-11-04-coupled-cpython-checkpoint/README.md),
-[7a3a8afe RAM checkpoint](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)
-and [ordinary-FS checkpoint](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md)
-retain original values. [Earlier90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
-is inconclusive (fresh270%IQR/218%control drift; warm138%/77%). The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
+[Current observations and controls](../benchmarks/results/2026-11-04-formatted-helper-cpython-checkpoint/README.md)
+retain all samples and exact identities. Runtime correctness qualification is
+independent. [Earlier2d46 checkpoint](../benchmarks/results/2026-11-04-current-cpython-checkpoint/README.md)
+preserves its failed ending gate, confirmation and debt decision;
+[earlier9ce21533](../benchmarks/results/2026-11-04-coupled-cpython-checkpoint/README.md),
+[RAM7a3a8afe](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)
+and [ordinary-FS](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md)
+keep their original values. [Earlier90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
+remains inconclusive (fresh270%IQR/218%control drift; warm138%/77%).
+The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
 excludes staging symmetrically and is not a runtime optimization.
 
 ## Warm execution, compilation and startup
 
-Latest external source **2d46dc8e**, RAM files, reused compiled code with the same
+Latest external source **ffc01134**, RAM files, reused compiled code with the same
 invocation/I/O/check/cleanup boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers |5.162 ms|3.347 ms|1.54×|1.0% /0.9%|
-| JSON-lines/helpers |5.335 ms|4.075 ms|1.31×|0.4% /0.5%|
-| Text summary/helpers |2.979 ms|1.166 ms|2.56×|0.3% /0.4%|
-| JSON-to-Markdown report |5.091 ms|2.573 ms|1.98×|2.3% /1.4%|
-| Config read/edit/write |0.196 ms|0.185 ms|1.06×|0.6% /0.4%|
+| CSV summary/helpers |5.120 ms|3.337 ms|1.53×|0.7% /0.6%|
+| JSON-lines/helpers |5.289 ms|4.083 ms|1.30×|0.9% /0.8%|
+| Text summary/helpers |3.305 ms|1.161 ms|2.85×|1.3% /0.8%|
+| JSON-to-Markdown report |4.612 ms|2.388 ms|1.93×|2.8% /7.8%|
+| Config read/edit/write |0.200 ms|0.183 ms|1.09×|0.5% /0.8%|
 
-Warm old-role spreads1.0–5.3% limit magnitude, especially CSV/config. **Compilation
-only:** CSV86.18µs versus54.60µs (**1.58×**), report59.95µs versus38.00µs (**1.58×**).
-Compilation controls differ1.6/0.7%; execution/I/O is excluded. Independent phase
-medians must not be subtracted. **Startup is unmeasured.** Frozen precommit core
-ba48576a matches2d46dc8e production source; actual9a4af031+patch SourceLink identity
-and source hashes stay with the observations. [Historical startup](../benchmarks/results/2026-10-29-foundation/README.md)
-describes its original revision. Other file cases remain historical as labeled.
+Warm identical-source spreads0.5-4.5% limit magnitude, especially text; warm report's
+CPython IQR7.8% makes its ratio variable. Text's warm/fresh ordering differs across
+independent samples; do not infer compilation cost by subtraction. **Compilation
+only:** CSV85.27µs versus54.19µs (**1.57×**), report60.25µs versus37.67µs (**1.60×**).
+Compilation controls differ0.4/2.8%; execution/I/O excluded. **Startup unmeasured.**
+Frozen precommit core71879656 matchesffc01134 production; its original48d4bf14+patch
+SourceLink identity and full source snapshot remain in the evidence. Other file
+cases and [startup](../benchmarks/results/2026-10-29-foundation/README.md) are historical.
 
 ## RAM-backed phases and measured revisions
 
@@ -117,13 +116,15 @@ dispatch-only measurement. Exact worker procedures and limitations are linked be
 ## Improvements against earlier Lython
 
 Source-pair improvements below retain their own measured revisions. The current coupled
-checkpoint directly compares2d46dc8e with pre-loop B166; individual
+checkpoint comparesffc01134 with CPython and identical-source controls. The earlier
+2d46dc8e checkpoint also compares pre-loop B166; individual
 historical regressions remain preserved even where later coupled work offsets them.
 These source-pair improvements are separate from the CPython ratios above;
 original elapsed observations retain their own recorded timing boundaries:
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Native formatted helpers |Report allocation-26.12% both APIs; warm elapsed-7..12%, fresh-8..10%|[B201 versus B197/B200; compile+2% accepted, admitted peaks unchanged, unrelated text uncertainty preserved](../benchmarks/results/2026-11-04-native-formatted-returns/README.md)|
 | Fixed UTF-8 construction |Whole-script allocation−3–12%; controlled sync text elapsed−7–8%|[B194 versus9a4af031; async text possible1–2% debt, async JSON uncertain; all original conditions retained](../benchmarks/results/2026-11-04-fixed-text-construction/README.md)|
 | Borrowed native helper arguments |Helper elapsed−6.6–10%; async text≈−7%; allocation flat|[B192 versus334c7cc7; sync text uncertain, refined report within control variation; original adverse report retained](../benchmarks/results/2026-11-04-borrowed-native-arguments/README.md)|
 | Shared numeric layout prototype |General/Decimal allocation−11.3%, complex−16.9%; affected elapsed mixed/adverse|[B190 prototypes versus9ce21533; final narrow-width correctness correction was not separately timed; no general CPU gain](../benchmarks/results/2026-11-04-shared-numeric-layout/README.md)|
