@@ -2357,3 +2357,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Preserve offset-copy failures, corrected semantics and all original measurements.
   Focused444 internal/2667 public per actual.NET11/10 pass; full delivery pending.
   No dormant windows remain. Continue the coherent operand/call redesign objective.
+
+- [Flat operand replacement design, B206](results/2026-11-04-flat-operand-design/README.md):
+  COMPLETE bounded design gate on bf0d38f3. Managed actual11/10: current24B,
+  five-int model32B, native node24B. Current report render already native; naive
+  SSA frame growth3–4x is rejected. Select one flat representation/reused ordinary
+  slots/contiguous call packets/native graph reuse, with explicit snapshot/span
+  fences and deletion milestone. Optimistic payload bounds are not a compiler,
+  semantic validation or speedup. B207 implementation and timing remain open.

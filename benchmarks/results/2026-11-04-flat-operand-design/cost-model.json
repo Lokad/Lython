@@ -1,0 +1,380 @@
+{
+  "shapes": {
+    "actualInstruction": 24,
+    "threeOperandModel": 24,
+    "fourOperandModel": 32,
+    "fiveOperandModel": 32,
+    "actualNativeNode": 24
+  },
+  "scope": "Static optimistic transfer bound, not implemented compiler or speedup. Some loads/stores are semantically necessary; slot counts exclude pool rounding. Native helpers allocate no general workspace.",
+  "codes": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 109,
+      "transferUpperBound": 50,
+      "currentInstructionAndGraphPayloadBytes": 2616,
+      "optimisticFlatInstructionPayloadBytes": 1888,
+      "currentLocalAndOperandSlots": 20,
+      "optimisticSsaSlots": 71,
+      "callSites": [
+        {
+          "arguments": 2,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 2,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 3,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 2,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "function": "parse_amount",
+      "nativeReturn": true,
+      "instructions": 4,
+      "transferUpperBound": 1,
+      "currentInstructionAndGraphPayloadBytes": 168,
+      "optimisticFlatInstructionPayloadBytes": 96,
+      "currentLocalAndOperandSlots": 3,
+      "optimisticSsaSlots": 4,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 90,
+      "transferUpperBound": 39,
+      "currentInstructionAndGraphPayloadBytes": 2160,
+      "optimisticFlatInstructionPayloadBytes": 1632,
+      "currentLocalAndOperandSlots": 19,
+      "optimisticSsaSlots": 61,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 2,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 3,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "function": "words_from_line",
+      "nativeReturn": true,
+      "instructions": 6,
+      "transferUpperBound": 1,
+      "currentInstructionAndGraphPayloadBytes": 216,
+      "optimisticFlatInstructionPayloadBytes": 160,
+      "currentLocalAndOperandSlots": 3,
+      "optimisticSsaSlots": 6,
+      "callSites": [
+        {
+          "arguments": 0,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 0,
+          "receiver": true,
+          "offset": 2
+        }
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 99,
+      "transferUpperBound": 47,
+      "currentInstructionAndGraphPayloadBytes": 2376,
+      "optimisticFlatInstructionPayloadBytes": 1664,
+      "currentLocalAndOperandSlots": 19,
+      "optimisticSsaSlots": 64,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 0,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 2,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 3,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 5,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "function": "record_amount",
+      "nativeReturn": true,
+      "instructions": 4,
+      "transferUpperBound": 2,
+      "currentInstructionAndGraphPayloadBytes": 168,
+      "optimisticFlatInstructionPayloadBytes": 64,
+      "currentLocalAndOperandSlots": 5,
+      "optimisticSsaSlots": 3,
+      "callSites": []
+    },
+    {
+      "case": "scripts.report-render.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 67,
+      "transferUpperBound": 28,
+      "currentInstructionAndGraphPayloadBytes": 1608,
+      "optimisticFlatInstructionPayloadBytes": 1248,
+      "currentLocalAndOperandSlots": 14,
+      "optimisticSsaSlots": 48,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 3,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "function": "render",
+      "nativeReturn": true,
+      "instructions": 19,
+      "transferUpperBound": 6,
+      "currentInstructionAndGraphPayloadBytes": 888,
+      "optimisticFlatInstructionPayloadBytes": 416,
+      "currentLocalAndOperandSlots": 6,
+      "optimisticSsaSlots": 14,
+      "callSites": []
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 80,
+      "transferUpperBound": 35,
+      "currentInstructionAndGraphPayloadBytes": 1920,
+      "optimisticFlatInstructionPayloadBytes": 1440,
+      "currentLocalAndOperandSlots": 14,
+      "optimisticSsaSlots": 52,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 3,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 5,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": true,
+          "offset": 2
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    },
+    {
+      "case": "scripts.scalar-above-range.large",
+      "function": "<module>",
+      "nativeReturn": false,
+      "instructions": 21,
+      "transferUpperBound": 8,
+      "currentInstructionAndGraphPayloadBytes": 504,
+      "optimisticFlatInstructionPayloadBytes": 416,
+      "currentLocalAndOperandSlots": 5,
+      "optimisticSsaSlots": 15,
+      "callSites": [
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        },
+        {
+          "arguments": 1,
+          "receiver": false,
+          "offset": 1
+        }
+      ]
+    }
+  ]
+}
