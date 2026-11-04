@@ -129,6 +129,88 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         }
     }
 
+    // Fixed-arity consumers can read an immutable constant or an already-bound
+    // plain local directly. Other consumers keep their evaluated contiguous
+    // packets. Only adjacent leaf reads are removed: callbacks and failable
+    // reads retain their original order and source attribution.
+    internal static ExecutableInstruction[] ForwardValues(ExecutableCodeObject code, int[] blockOffsets,
+        out int[]? positions)
+    {
+        var instructions = code.Instructions;
+        var map = new int[instructions.Length + 1];
+        var initialized = code.IsFunctionScope && !code.RequiresLocalVariableMirroring
+            ? new bool[code.LocalNames.Count] : [];
+        var removed = 0;
+        for (var block = 0; block + 1 < blockOffsets.Length; block++)
+        {
+            Array.Clear(initialized);
+            var start = blockOffsets[block];
+            for (var index = start; index < blockOffsets[block + 1]; index++)
+            {
+                var instruction = instructions[index];
+                var count = instruction.OpCode switch
+                {
+                    ExecutableOpCode.Binary or ExecutableOpCode.Augmented => 2,
+                    ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return => 1,
+                    _ => 0
+                };
+                var first = instruction.InputStart;
+                var second = instruction.SecondInput;
+                for (var input = count - 1; input >= 0; input--)
+                {
+                    var previous = index - (count - input);
+                    if (previous < start) break;
+                    var leaf = instructions[previous];
+                    if (leaf.OpCode is not (ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal)
+                        || leaf.ResultSlot != instruction.ResultSlot + input) break;
+                    int source;
+                    if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
+                    else if (initialized.Length != 0 && initialized[leaf.LocalSlot]) source = leaf.LocalSlot;
+                    else continue;
+                    if (input == 0) first = source;
+                    else second = source;
+                    map[previous] = -1;
+                    removed++;
+                }
+                if (count != 0) instructions[index] = instruction.WithValueInputs(first, second);
+                if (initialized.Length != 0)
+                {
+                    if (instruction.OpCode == ExecutableOpCode.StoreLocal
+                        && !code.CapturedLocalSlots.Contains(instruction.LocalSlot))
+                        initialized[instruction.LocalSlot] = true;
+                    // Prepared deletion and lowered statement execution may
+                    // withdraw a binding. Keep their original local-read checks.
+                    else if (instruction.OpCode is ExecutableOpCode.ApplyOperation or ExecutableOpCode.ExecuteFallbackStatement)
+                        Array.Clear(initialized);
+                }
+            }
+        }
+        if (removed == 0) { positions = null; return instructions; }
+        var next = 0;
+        for (var index = 0; index < instructions.Length; index++)
+        {
+            var discard = map[index] == -1;
+            map[index] = next;
+            if (!discard) next++;
+        }
+        map[^1] = next;
+        var compact = new ExecutableInstruction[next];
+        for (var index = 0; index < instructions.Length; index++)
+        {
+            if (map[index] == map[index + 1]) continue;
+            var instruction = instructions[index];
+            compact[map[index]] = instruction.OpCode switch
+            {
+                ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
+                    ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(map[instruction.TargetIndex]),
+                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(map[instruction.FailureIndex]),
+                _ => instruction
+            };
+        }
+        positions = map;
+        return compact;
+    }
+
     private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls)
     {

@@ -164,7 +164,10 @@ storage positions. The opcode determines each metadata operand's domain;
 operand projections and control-flow retargeting keep explicit validity checks.
 The existing shape pass prepares input/result positions, live temporary extents,
 maximum workspace and exception-entry depths. Execution uses those positions
-directly. Native-return source links share the instructions and call metadata;
+directly. Fixed-arity arithmetic, local stores and returns can read immutable
+constants or proven initialized plain locals without an intermediate copy.
+Failable reads retain their source spans; evaluated call and protocol packets
+retain snapshots across callbacks. Native-return source links share the instructions and call metadata;
 there is no separate retained expression graph. The retained code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.

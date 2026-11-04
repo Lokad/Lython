@@ -209,20 +209,20 @@ internal sealed partial class LythonRuntime
                         break;
                     case ExecutableOpCode.Binary:
                         result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator,
-                            _stack[first], _stack[first + 1], _context, instruction.Span).ConfigureAwait(false);
+                            ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Augmented:
-                        result = await EvaluateAugmentedAssignmentAsync(_stack[first], _stack[first + 1],
+                        result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
                             MapExecutableAugmented(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Unary:
-                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), _stack[first], _context, instruction.Span).ConfigureAwait(false);
+                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);
                         break;
                     default: throw new InvalidOperationException("Unexpected value operation.");
                 }
                 _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
             }
-            catch { _stack.RetireTo(first); throw; }
+            catch { _stack.RetireTo(instruction.ResultSlot); throw; }
         }
 
     }

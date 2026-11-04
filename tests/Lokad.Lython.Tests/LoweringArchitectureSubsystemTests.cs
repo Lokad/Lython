@@ -348,14 +348,17 @@ y
         var instructions = entry.Instructions;
         Assert.Collection(
             instructions,
-            instruction => Assert.Equal(ExecutableOpCode.LoadConst, instruction.OpCode),
-            instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
+            instruction =>
+            {
+                Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode);
+                Assert.Equal(new System.Numerics.BigInteger(1), entry.Constants[~instruction.InputStart]);
+            },
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),
-            instruction => Assert.Equal(ExecutableOpCode.LoadConst, instruction.OpCode),
             instruction =>
             {
                 Assert.Equal(ExecutableOpCode.Binary, instruction.OpCode);
                 Assert.Equal(BinaryOperatorSyntax.Add, instruction.BinaryOperator);
+                Assert.Equal(new System.Numerics.BigInteger(2), entry.Constants[~instruction.SecondInput]);
             },
             instruction => Assert.Equal(ExecutableOpCode.StoreLocal, instruction.OpCode),
             instruction => Assert.Equal(ExecutableOpCode.LoadLocal, instruction.OpCode),

@@ -129,14 +129,22 @@ internal readonly record struct ExecutableInstruction
     // Compiler-owned storage positions. They share the existing instruction;
     // no input-plan table or runtime shape calculation is needed.
     public int InputStart => _inputStart;
+    public int SecondInput => _secondaryOperand;
     public int ResultSlot => _resultSlot;
     public int LiveExtent => _liveExtent;
     public int NativeFirst => _nativeFirst;
     public int NativeSecond => _nativeSecond;
 
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
-        => new(OpCode, Span, _primaryOperand, _secondaryOperand, inputStart, resultSlot, liveExtent,
+        => new(OpCode, Span, _primaryOperand,
+            OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? checked(inputStart + 1) : _secondaryOperand,
+            inputStart, resultSlot, liveExtent,
             _nativeFirst, _nativeSecond);
+
+    internal ExecutableInstruction WithValueInputs(int first, int second)
+        => new(OpCode, Span, _primaryOperand,
+            OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
+            first, _resultSlot, _liveExtent, _nativeFirst, _nativeSecond);
 
     internal ExecutableInstruction WithNativeSources(int first, int second)
         => new(OpCode, Span, _primaryOperand, _secondaryOperand, _inputStart, _resultSlot, _liveExtent,
@@ -454,6 +462,23 @@ internal sealed partial class ExecutableCodeObject
         IsFunctionScope = isFunctionScope;
         OperandCapacity = operandLayout.MaximumDepth;
         NativeReturnRoot = PrepareNativeReturn();
+        if (NativeReturnRoot is null)
+        {
+            Instructions = ExecutableStackLayout.ForwardValues(this, offsets, out var positions);
+            if (positions is not null)
+            {
+                EntryIndex = positions[EntryIndex];
+                ExceptionRegions = ExceptionRegions.Select(region => region with
+                {
+                    ProtectedStartIndex = positions[region.ProtectedStartIndex],
+                    ProtectedEndIndex = positions[region.ProtectedEndIndex + 1] - 1,
+                    ExceptIndex = region.ExceptIndex is int handler ? positions[handler] : null,
+                    FinallyIndex = region.FinallyIndex is int cleanup ? positions[cleanup] : null,
+                    SuiteStartIndex = region.SuiteStartIndex is int start ? positions[start] : null,
+                    SuiteEndIndex = region.SuiteEndIndex is int end ? positions[end + 1] - 1 : null
+                }).ToArray();
+            }
+        }
     }
 
     public string Name { get; }

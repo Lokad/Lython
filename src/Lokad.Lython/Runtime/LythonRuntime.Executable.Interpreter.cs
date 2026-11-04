@@ -233,7 +233,19 @@ internal sealed partial class LythonRuntime
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private void StoreExecutableLocal(in ExecutableInstruction instruction)
             => StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot,
-                _stack.TakeValue(instruction.InputStart, instruction.LiveExtent), instruction.Span);
+                TakeOperand(instruction), instruction.Span);
+
+        private object ReadOperand(int source)
+            => source < 0 ? RuntimeValue(_codeObject.Constants[~source]) : _stack[source];
+
+        private object TakeOperand(in ExecutableInstruction instruction)
+        {
+            if (instruction.InputStart >= _codeObject.FirstTemporarySlot)
+                return _stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+            var value = ReadOperand(instruction.InputStart);
+            _stack.RetireTo(instruction.LiveExtent);
+            return value;
+        }
 
         private void ExecuteDefinitionOrFallback(in ExecutableInstruction instruction)
         {
@@ -492,15 +504,15 @@ internal sealed partial class LythonRuntime
                         : ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
                     ExecutableOpCode.Slice => ExecuteExecutableSlice(in _stack, instruction.InputStart, instruction.SliceParts, instruction.Span, _context),
                     ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
-                        _stack[first], _stack[first + 1], _context, instruction.Span),
+                        ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
                     ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
-                        _stack[first], _stack[first + 1], _context, instruction.Span),
-                    ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),
+                        ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
+                    ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, ReadOperand(first), _context, instruction.Span),
                     _ => throw new InvalidOperationException("Unexpected value operation."),
                 };
                 _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
             }
-            catch { _stack.RetireTo(first); throw; }
+            catch { _stack.RetireTo(instruction.ResultSlot); throw; }
         }
 
         // Ordinary returns deliver without throwing: a cleanup that handles
@@ -621,7 +633,7 @@ internal sealed partial class LythonRuntime
                     return true;
 
                 case ExecutableOpCode.Return:
-                    return DeliverReturn(_stack.TakeValue(instruction.InputStart, instruction.LiveExtent), instruction.Span);
+                    return DeliverReturn(TakeOperand(instruction), instruction.Span);
 
                 case ExecutableOpCode.ReturnNone:
                     return DeliverReturn(PyNone.Instance, instruction.Span);

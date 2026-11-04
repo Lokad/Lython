@@ -115,9 +115,9 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
                             if (!asynchronous ||
-                                (_stack[instruction.InputStart] is BigInteger or double or bool &&
-                                 _stack[instruction.InputStart + 1] is BigInteger or double or bool) ||
-                                (_stack[instruction.InputStart] is PyString && _stack[instruction.InputStart + 1] is PyString))
+                                (ReadOperand(instruction.InputStart) is BigInteger or double or bool &&
+                                 ReadOperand(instruction.SecondInput) is BigInteger or double or bool) ||
+                                (ReadOperand(instruction.InputStart) is PyString && ReadOperand(instruction.SecondInput) is PyString))
                                 ExecuteOperandValueOperation(instruction);
                             else
                             {
@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Unary:
-                            if (!asynchronous || _stack[instruction.InputStart] is BigInteger or double or bool)
+                            if (!asynchronous || ReadOperand(instruction.InputStart) is BigInteger or double or bool)
                                 ExecuteOperandValueOperation(instruction);
                             else
                             {
