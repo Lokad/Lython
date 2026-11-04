@@ -3,7 +3,9 @@
 2026-11-04. Retain the completed consolidation: 127 net production lines removed,
 one lexical binding walk and one explicit order invariant, without a new visitor
 framework or runtime policy. Final focused checks pass on both actual runtimes;
-full platform/stress/installed-package delivery is separate and pending. Publication
+full delivery is GREEN in [41771244039](https://github.com/Lokad/Lython/actions/runs/41771244039),
+exact ee2b4529: all eight Windows/Ubuntu, actual .NET 11/10, original stress and
+installed-consumer gates pass. [Cached terminal receipt](delivery-ci-status.json). Publication
 and tagging remain postponed. Whole-script performance work remains open.
 
 Baseline runtime 2d46dc8e, qualified through test repair 5d8c7239, frozen

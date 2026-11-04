@@ -2314,4 +2314,5 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Final 776 internal/3,871 public cases per actual target pass. Compilation allocation
   +0.6–0.9% on representative scripts is accepted; small possible compile/fresh cost
   and favorable but variable warm report remain explicit. No general CPU claim.
-  Full delivery follows source commit; whole-script performance work remains OPEN.
+  Full delivery41771244039 is GREEN on ee2b4529, all eight gates; terminal receipt
+  cached. Whole-script performance work remains OPEN.
