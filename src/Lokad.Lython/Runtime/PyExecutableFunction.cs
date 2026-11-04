@@ -14,7 +14,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         ExecutableCodeObject codeObject,
         LythonRuntime.ExecutionContext closure,
         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
-        Dictionary<string, object> defaultValues,
+        IReadOnlyDictionary<string, object> defaultValues,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(name, parameters, closure, defaultValues, scopeFacts, callableKind,

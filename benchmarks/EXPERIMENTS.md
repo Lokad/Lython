@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [prepared declaration/default cleanup](results/2026-11-04-prepared-declarations/README.md)
+removes executable lowered-body retention, duplicate default maps/clones and three
+construction routes.744internal/1677public plus14hosting cases per actual target
+pass. Eight-case221s collection passes all gates: fresh text−1.7–3.4%, warm text
+control-limited, report compile+1.2–1.3% (~0.7µs) retained as explicit debt. Tiny
+allocation changes, no general CPU/RSS claim. Full delivery pending; CPU roadmap open.
+
 The [final borrowed-layout revision](results/2026-11-04-function-layout-borrow-withdrawn/README.md)
 is also withdrawn after110s: fresh text−1.5–1.9%, warm text control-limited, config
 control+9–10% unexplained. Tiny allocation benefit does not justify unresolved

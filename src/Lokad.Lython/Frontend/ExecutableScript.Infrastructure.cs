@@ -384,20 +384,10 @@ internal sealed partial class ExecutableScript
                 functionDefinition.Parameters, functionDefinition.Body,
                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
 
-            Dictionary<string, LoweredExpression>? defaultValues = null;
-            for (var index = 0; index < functionDefinition.Parameters.Count; index++)
-            {
-                var parameter = functionDefinition.Parameters[index];
-                if (parameter.DefaultValue is { } defaultValue)
-                {
-                    (defaultValues ??= new(StringComparer.Ordinal)).Add(parameter.Name, defaultValue);
-                }
-            }
-
-            // Execution needs declaration metadata and its docstring, not a second
-            // body tree. The record copy keeps any already-built generator code.
-            _functions.Add(new ExecutableFunctionBinding(functionDefinition with { Body = [] }, codeObject,
-                defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues,
+            _functions.Add(new ExecutableFunctionBinding(
+                functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
+                functionDefinition.Decorators, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
+                functionDefinition.TypeParameters, codeObject, functionDefinition.GeneratorCode is not null,
                 functionDefinition.Docstring));
             return _functions.Count - 1;
         }

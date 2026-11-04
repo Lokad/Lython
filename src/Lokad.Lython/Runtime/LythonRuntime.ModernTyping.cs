@@ -109,17 +109,18 @@ internal sealed partial class LythonRuntime
                 : parameter.TryGetMember("__default__", context, span, out var value) ? value : PyTypeParameter.NoDefault;
     }
 
-    private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function, LoweredFunctionDefinitionStatement definition,
-        TypeScope scope, ExecutionContext definingContext, bool asynchronous)
+    private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
+        IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression? returnAnnotation,
+        bool hasTypeParameters, LythonSourceSpan span, TypeScope scope, ExecutionContext definingContext, bool asynchronous)
     {
-        if (definition.TypeParameters is not null)
+        if (hasTypeParameters)
             function.TrySetMember("__type_params__", scope.Parameters);
-        if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext) &&
-            definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null)) return;
-        var annotations = new PyDict(definingContext.MemoryGovernor, definition.Span);
+        if (!hasTypeParameters && !HasTypeParameterScope(definingContext) &&
+            returnAnnotation is null && parameters.All(p => p.Annotation is null)) return;
+        var annotations = new PyDict(definingContext.MemoryGovernor, span);
         // CPython's annotation table visits regular arguments before positional-only
         // arguments, followed by *args, keyword-only arguments and **kwargs.
-        foreach (var parameter in definition.Parameters.OrderBy(parameter => parameter.Kind switch
+        foreach (var parameter in parameters.OrderBy(parameter => parameter.Kind switch
         {
             FunctionParameterKind.Positional => 0, FunctionParameterKind.PositionalOnly => 1,
             FunctionParameterKind.VariadicList => 2, FunctionParameterKind.KeywordOnly => 3, _ => 4
@@ -129,11 +130,11 @@ internal sealed partial class LythonRuntime
                     definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(parameter.Annotation.Syntax, definingContext)
                         : await EvaluateTypeExpressionAsync(parameter.Annotation, scope.Annotations, asynchronous).ConfigureAwait(false),
                     definingContext, parameter.Annotation.Span, asynchronous).ConfigureAwait(false);
-        if (definition.ReturnAnnotation is not null)
+        if (returnAnnotation is not null)
             await StoreAnnotationEntryAsync(annotations, "return",
-                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(definition.ReturnAnnotation.Syntax, definingContext)
-                    : await EvaluateTypeExpressionAsync(definition.ReturnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
-                definingContext, definition.ReturnAnnotation.Span, asynchronous).ConfigureAwait(false);
+                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(returnAnnotation.Syntax, definingContext)
+                    : await EvaluateTypeExpressionAsync(returnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
+                definingContext, returnAnnotation.Span, asynchronous).ConfigureAwait(false);
         function.TrySetMember("__annotations__", annotations);
     }
 

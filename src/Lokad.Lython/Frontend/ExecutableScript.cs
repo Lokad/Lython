@@ -397,11 +397,22 @@ internal sealed record ExecutableCallSite(
         ? Arguments[index].NativeSourceInstruction : -1;
 }
 
+// Execution retains declaration inputs, not the original syntax/body graph.
 internal sealed record ExecutableFunctionBinding(
-    LoweredFunctionDefinitionStatement Function,
+    string Name,
+    string DeclaredName,
+    LythonSourceSpan Span,
+    IReadOnlyList<LoweredExpression> Decorators,
+    IReadOnlyList<LoweredFunctionParameter> Parameters,
+    LoweredExpression? ReturnAnnotation,
+    IReadOnlyList<LoweredTypeParameter>? TypeParameters,
     ExecutableCodeObject CodeObject,
-    IReadOnlyDictionary<string, LoweredExpression> DefaultValues,
-    string? Docstring);
+    bool IsGenerator,
+    string? Docstring)
+{
+    public int DefaultCount { get; } = Parameters.Count(static parameter => parameter.DefaultValue is not null);
+    public bool HasAnnotations { get; } = ReturnAnnotation is not null || Parameters.Any(static parameter => parameter.Annotation is not null);
+}
 
 internal sealed record ExecutableMatchCaseBinding(
     MatchCaseSyntax Case,

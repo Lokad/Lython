@@ -8,14 +8,14 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell>? _closureCells;
 
     public PyGeneratorFunction(LoweredFunctionDefinitionStatement definition,
-        LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaults,
+        LythonRuntime.ExecutionContext closure, IReadOnlyDictionary<string, object> defaults,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
         : this(definition.Syntax.DeclaredName, definition.Parameters, definition.GeneratorCode!,
             closure, defaults, definition.GeneratorCode!.ScopeFacts, closureCells) { }
 
     public PyGeneratorFunction(string name, IReadOnlyList<LoweredFunctionParameter> parameters,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
-        Dictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
+        IReadOnlyDictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
         PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(name, parameters, closure, defaults, scopeFacts, callableKind)

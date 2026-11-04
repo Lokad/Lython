@@ -1,0 +1,9 @@
+{
+  "python": "CPython3.13.2,isolated local",
+  "sourceSHA256": "f79c7c4f9d0b79a3cd433c572939c8e94ce736721cfb59380ec9b1d455540ffb",
+  "stdout": "(1, 3, 3, 3) [1, 3]\n",
+  "stderr": "",
+  "eventBytesHex": "64656661756c740a64656661756c740a",
+  "allChecksPassed": true,
+  "contract": "Completed/pending positional and keyword-only defaults preserve order; existing host fixture also checks actual suspension and budget reuse through both APIs."
+}

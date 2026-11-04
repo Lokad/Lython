@@ -32,7 +32,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         string name,
         IReadOnlyList<LoweredFunctionParameter> parameters,
         LythonRuntime.ExecutionContext closure,
-        Dictionary<string, object> defaultValues,
+        IReadOnlyDictionary<string, object> defaultValues,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function,
         int? storageCapacity = null)

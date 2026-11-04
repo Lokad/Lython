@@ -301,54 +301,51 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         bool asynchronous)
     {
-        var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
-            functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
-        var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
-        context.EnterInterpreterFrame(functionBinding.Function.Span);
+        var needsTypeMetadata = functionBinding.HasAnnotations || functionBinding.TypeParameters is not null || HasTypeParameterScope(context);
+        context.EnterInterpreterFrame(functionBinding.Span);
         try
         {
-            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Function.Decorators.Count), functionBinding.Function.Span);
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Decorators.Count), functionBinding.Span);
             var decorators = asynchronous
-                ? await EvaluateDecoratorsAsync(functionBinding.Function.Decorators, context).ConfigureAwait(false)
-                : EvaluateDecorators(functionBinding.Function.Decorators, context);
-            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
-            var defaults = asynchronous
-                ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
-                    expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
-                : MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context);
-            var typeScope = CreateTypeScope(functionBinding.Function.TypeParameters, context, functionBinding.Function.Span);
+                ? await EvaluateDecoratorsAsync(functionBinding.Decorators, context).ConfigureAwait(false)
+                : EvaluateDecorators(functionBinding.Decorators, context);
+            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Span);
+            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultCount, context.MemoryGovernor, functionBinding.Span);
+            var defaults = await EvaluateFunctionDefaults(functionBinding.Parameters, functionBinding.DefaultCount,
+                context, asynchronous).ConfigureAwait(false);
+            var typeScope = CreateTypeScope(functionBinding.TypeParameters, context, functionBinding.Span);
             var closure = typeScope.Closure.FunctionClosureContext;
-            var function = functionBinding.Function.GeneratorCode is not null
-                ? (object)new PyGeneratorFunction(functionBinding.Function, closure,
-                    defaults, closureCells)
+            var function = functionBinding.IsGenerator
+                ? (object)new PyGeneratorFunction(functionBinding.DeclaredName, functionBinding.Parameters,
+                    functionBinding.CodeObject, closure, defaults, functionBinding.CodeObject.ScopeFacts, closureCells)
                 : new PyExecutableFunction(
-                    functionBinding.Function.Syntax.DeclaredName,
-                    functionBinding.Function.Parameters,
+                    functionBinding.DeclaredName,
+                    functionBinding.Parameters,
                     functionBinding.CodeObject,
                     closure,
                     closureCells,
                     defaults,
                     functionBinding.CodeObject.ScopeFacts);
-            ChargeFunctionValue(context, functionBinding.Function.Span);
+            ChargeFunctionValue(context, functionBinding.Span);
             ChargeClosureRetention(
                 closure,
                 context.MemoryGovernor,
-                functionBinding.Function.Span);
+                functionBinding.Span);
             if (function is PyFunctionBase defined)
             {
-                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Function.Span);
+                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Span);
                 if (needsTypeMetadata)
                 {
                     // Metadata does not require interpreting an otherwise compiled body.
                     // Keep its existing scope, evaluation order and ownership before publication.
-                    await AttachTypeMetadataAsync(defined, functionBinding.Function, typeScope, context, asynchronous).ConfigureAwait(false);
+                    await AttachTypeMetadataAsync(defined, functionBinding.Parameters, functionBinding.ReturnAnnotation,
+                        functionBinding.TypeParameters is not null, functionBinding.Span, typeScope, context, asynchronous).ConfigureAwait(false);
                 }
             }
             var decorated = asynchronous
-                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Function.Span, context).ConfigureAwait(false)
-                : ApplyDecorators(function, decorators, functionBinding.Function.Span, context);
-            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
+                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Span, context).ConfigureAwait(false)
+                : ApplyDecorators(function, decorators, functionBinding.Span, context);
+            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Name, decorated, context, functionBinding.Span);
         }
         finally
         {
@@ -660,19 +657,6 @@ internal sealed partial class LythonRuntime
         {
             context.Variables[name] = value;
         }
-    }
-
-    private static Dictionary<string, object> MaterializeExecutableDefaultValues(
-        IReadOnlyDictionary<string, LoweredExpression> defaultValues,
-        ExecutionContext context)
-    {
-        var result = new Dictionary<string, object>(defaultValues.Count, StringComparer.Ordinal);
-        foreach (var pair in defaultValues)
-        {
-            result[pair.Key] = RuntimeValue(EvaluateLoweredExpression(pair.Value, context));
-        }
-
-        return result;
     }
 
 }

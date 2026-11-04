@@ -475,37 +475,43 @@ internal sealed partial class LythonRuntime
         return owned;
     }
 
-    internal static Dictionary<string, object> BuildDefaultArgumentMap(
-        IReadOnlyList<LoweredFunctionParameter> parameters,
-        Func<LoweredExpression, object> evaluate)
+    // The caller admits the private map capacity and holds it through completion.
+    // Functions copy values into their own live default containers; this map never
+    // escapes construction. No-default definitions share immutable empty metadata.
+    private static ValueTask<IReadOnlyDictionary<string, object>> EvaluateFunctionDefaults(
+        IReadOnlyList<LoweredFunctionParameter> parameters, int defaultCount,
+        ExecutionContext context, bool asynchronous)
     {
-        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
+        context.CheckExecution(null);
+        if (defaultCount == 0)
+            return new(System.Collections.Frozen.FrozenDictionary<string, object>.Empty);
         var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
-        foreach (var parameter in parameters)
+        for (var i = 0; i < parameters.Count; i++)
         {
-            if (parameter.DefaultValue is not null)
-            {
-                defaults[parameter.Name] = RuntimeValue(evaluate(parameter.DefaultValue));
-            }
+            var parameter = parameters[i];
+            context.CheckExecution(parameter.DefaultValue?.Span);
+            if (parameter.DefaultValue is not { } expression) continue;
+            var value = asynchronous ? EvaluateLoweredExpressionAsync(expression, context)
+                : new ValueTask<object>(EvaluateLoweredExpression(expression, context));
+            if (!value.IsCompletedSuccessfully)
+                return CompleteFunctionDefaultsAsync(parameters, defaults, i, value, context);
+            defaults.Add(parameter.Name, RuntimeValue(value.Result));
         }
-
-        return defaults;
+        return new(defaults);
     }
 
-    internal static async ValueTask<Dictionary<string, object>> BuildDefaultArgumentMapAsync(
-        IReadOnlyList<LoweredFunctionParameter> parameters,
-        Func<LoweredExpression, ValueTask<object>> evaluate)
+    private static async ValueTask<IReadOnlyDictionary<string, object>> CompleteFunctionDefaultsAsync(
+        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults,
+        int index, ValueTask<object> pending, ExecutionContext context)
     {
-        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
-        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
-        foreach (var parameter in parameters)
+        defaults.Add(parameters[index].Name, RuntimeValue(await pending.ConfigureAwait(false)));
+        for (var i = index + 1; i < parameters.Count; i++)
         {
-            if (parameter.DefaultValue is not null)
-            {
-                defaults[parameter.Name] = RuntimeValue(await evaluate(parameter.DefaultValue).ConfigureAwait(false));
-            }
+            var parameter = parameters[i];
+            context.CheckExecution(parameter.DefaultValue?.Span);
+            if (parameter.DefaultValue is { } expression)
+                defaults.Add(parameter.Name, RuntimeValue(await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)));
         }
-
         return defaults;
     }
 

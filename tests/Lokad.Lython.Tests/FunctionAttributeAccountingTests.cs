@@ -16,7 +16,7 @@ public sealed class FunctionAttributeAccountingTests
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", [], [], context, new(), ScopeDirectiveFacts.Empty);
+        var function = new PyFunction("f", [], [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
         var value = new PyList([42], context.MemoryGovernor, null);
         var beforeTag = context.MemoryGovernor.CurrentAccountedBytes;
         function.TrySetMember("tag", value);
@@ -48,7 +48,7 @@ public sealed class FunctionAttributeAccountingTests
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", [], [], context, new(), ScopeDirectiveFacts.Empty);
+        var function = new PyFunction("f", [], [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
         var beforeFound = function.TryGetMember(name, out var before);
         var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(padding, null);

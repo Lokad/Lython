@@ -88,7 +88,7 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Native dictionary ownership operations | CSV elapsed −5.0–5.1%; allocation unchanged | [Final refinement](../benchmarks/results/2026-11-04-dictionary-owner-operations/README.md). Text/async JSON near unchanged; full dispatch rewrite withdrawn. New-source delivery pending. |
+| Native dictionary ownership operations | CSV elapsed −5.0–5.1%; allocation unchanged | [Final refinement](../benchmarks/results/2026-11-04-dictionary-owner-operations/README.md). Text/async JSON near unchanged; full dispatch rewrite withdrawn. Qualified. |
 | Shared completed JSON loop | JSON aggregation elapsed −2.1–3.8%; synchronous report −2.0–2.7%; allocation unchanged | [Both APIs and controls](../benchmarks/results/2026-11-04-completed-json-prefix/README.md). Text controls inconclusive; delivery qualified. |
 | Bulk newline / CSV state parser | Long-field CSV elapsed −86.99%; allocation −2.54% | [Combined changes](../benchmarks/results/2026-11-04-csv-boundary-state/README.md). Twenty parser lines removed and two Python bugs fixed; typical warm CSV debt remains uncertain. Qualified. |
 | Managed bulk newline scan | Complete long-line scripts elapsed −23–27%; allocation unchanged | [Source pair](../benchmarks/results/2026-11-04-bulk-newline-search/README.md). Seventeen net lines removed; possible warm CSV +1.2–2.8% debt retained. Qualified. |
@@ -98,10 +98,14 @@ Each link records its measured revisions, controls and limitations.
 | Bulk CSV construction | Allocation −13.7–15.1%; CPU −7.2–11.1% | [Controlled comparison](../benchmarks/results/2026-11-02-native-csv-records/README.md). Original threshold misses and adverse control preserved; qualified. |
 | Direct UTF-8 formatting | Allocation −8.67%; confirmation elapsed/CPU −5–8% | [Confirmation](../benchmarks/results/2026-11-02-formatting-confirmation/README.md). Original adverse timing remains unexplained; qualified. |
 
-The current coupled checkpoint compares **5c827e68** with CPython, an identical-source
+The latest external checkpoint compares **5c827e68** with CPython, an identical-source
 control and qualified **a00fe76d**. Long-field gains persist; common scripts remain
 near unchanged or control-limited against that reference. Earlier adverse results
 remain evidence, even where later coupled work offsets them.
+
+The [prepared-declaration cleanup](../benchmarks/results/2026-11-04-prepared-declarations/README.md)
+removes retained metadata and duplicate construction paths. Its diagnostic source
+pair does not establish a general CPU gain; report compilation is about0.7µs slower.
 
 [Experimental history](../benchmarks/EXPERIMENTS.md) preserves the other changes,
 profiles, rejected designs and qualification details. [Existing comparison tools](../benchmarks/COMPARISON.md)

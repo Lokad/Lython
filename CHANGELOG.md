@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Retain executable function headers without unused body trees or duplicate
+  default-expression maps. Share completed/pending default evaluation and empty
+  construction metadata while preserving mutable defaults and asynchronous order.
+
 - Reject private rollback of live dictionary views before returning allowance.
   Keep capacity and rollback on native owners; remove unused view memory hooks.
 

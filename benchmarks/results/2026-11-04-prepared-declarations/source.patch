@@ -1,0 +1,568 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 012f68c8..61af1c3d 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -384,20 +384,10 @@ internal sealed partial class ExecutableScript
+                 functionDefinition.Parameters, functionDefinition.Body,
+                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
+ 
+-            Dictionary<string, LoweredExpression>? defaultValues = null;
+-            for (var index = 0; index < functionDefinition.Parameters.Count; index++)
+-            {
+-                var parameter = functionDefinition.Parameters[index];
+-                if (parameter.DefaultValue is { } defaultValue)
+-                {
+-                    (defaultValues ??= new(StringComparer.Ordinal)).Add(parameter.Name, defaultValue);
+-                }
+-            }
+-
+-            // Execution needs declaration metadata and its docstring, not a second
+-            // body tree. The record copy keeps any already-built generator code.
+-            _functions.Add(new ExecutableFunctionBinding(functionDefinition with { Body = [] }, codeObject,
+-                defaultValues is null ? FrozenDictionary<string, LoweredExpression>.Empty : defaultValues,
++            _functions.Add(new ExecutableFunctionBinding(
++                functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
++                functionDefinition.Decorators, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
++                functionDefinition.TypeParameters, codeObject, functionDefinition.GeneratorCode is not null,
+                 functionDefinition.Docstring));
+             return _functions.Count - 1;
+         }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index e5fa7a01..05f5f4cd 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -397,11 +397,22 @@ internal sealed record ExecutableCallSite(
+         ? Arguments[index].NativeSourceInstruction : -1;
+ }
+ 
++// Execution retains declaration inputs, not the original syntax/body graph.
+ internal sealed record ExecutableFunctionBinding(
+-    LoweredFunctionDefinitionStatement Function,
++    string Name,
++    string DeclaredName,
++    LythonSourceSpan Span,
++    IReadOnlyList<LoweredExpression> Decorators,
++    IReadOnlyList<LoweredFunctionParameter> Parameters,
++    LoweredExpression? ReturnAnnotation,
++    IReadOnlyList<LoweredTypeParameter>? TypeParameters,
+     ExecutableCodeObject CodeObject,
+-    IReadOnlyDictionary<string, LoweredExpression> DefaultValues,
+-    string? Docstring);
++    bool IsGenerator,
++    string? Docstring)
++{
++    public int DefaultCount { get; } = Parameters.Count(static parameter => parameter.DefaultValue is not null);
++    public bool HasAnnotations { get; } = ReturnAnnotation is not null || Parameters.Any(static parameter => parameter.Annotation is not null);
++}
+ 
+ internal sealed record ExecutableMatchCaseBinding(
+     MatchCaseSyntax Case,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index bdcb0cbb..7cc41386 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -475,37 +475,43 @@ internal sealed partial class LythonRuntime
+         return owned;
+     }
+ 
+-    internal static Dictionary<string, object> BuildDefaultArgumentMap(
+-        IReadOnlyList<LoweredFunctionParameter> parameters,
+-        Func<LoweredExpression, object> evaluate)
++    // The caller admits the private map capacity and holds it through completion.
++    // Functions copy values into their own live default containers; this map never
++    // escapes construction. No-default definitions share immutable empty metadata.
++    private static ValueTask<IReadOnlyDictionary<string, object>> EvaluateFunctionDefaults(
++        IReadOnlyList<LoweredFunctionParameter> parameters, int defaultCount,
++        ExecutionContext context, bool asynchronous)
+     {
+-        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
++        context.CheckExecution(null);
++        if (defaultCount == 0)
++            return new(System.Collections.Frozen.FrozenDictionary<string, object>.Empty);
+         var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
+-        foreach (var parameter in parameters)
++        for (var i = 0; i < parameters.Count; i++)
+         {
+-            if (parameter.DefaultValue is not null)
+-            {
+-                defaults[parameter.Name] = RuntimeValue(evaluate(parameter.DefaultValue));
+-            }
++            var parameter = parameters[i];
++            context.CheckExecution(parameter.DefaultValue?.Span);
++            if (parameter.DefaultValue is not { } expression) continue;
++            var value = asynchronous ? EvaluateLoweredExpressionAsync(expression, context)
++                : new ValueTask<object>(EvaluateLoweredExpression(expression, context));
++            if (!value.IsCompletedSuccessfully)
++                return CompleteFunctionDefaultsAsync(parameters, defaults, i, value, context);
++            defaults.Add(parameter.Name, RuntimeValue(value.Result));
+         }
+-
+-        return defaults;
++        return new(defaults);
+     }
+ 
+-    internal static async ValueTask<Dictionary<string, object>> BuildDefaultArgumentMapAsync(
+-        IReadOnlyList<LoweredFunctionParameter> parameters,
+-        Func<LoweredExpression, ValueTask<object>> evaluate)
++    private static async ValueTask<IReadOnlyDictionary<string, object>> CompleteFunctionDefaultsAsync(
++        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults,
++        int index, ValueTask<object> pending, ExecutionContext context)
+     {
+-        var defaultCount = parameters.Count(static parameter => parameter.DefaultValue is not null);
+-        var defaults = new Dictionary<string, object>(defaultCount, StringComparer.Ordinal);
+-        foreach (var parameter in parameters)
++        defaults.Add(parameters[index].Name, RuntimeValue(await pending.ConfigureAwait(false)));
++        for (var i = index + 1; i < parameters.Count; i++)
+         {
+-            if (parameter.DefaultValue is not null)
+-            {
+-                defaults[parameter.Name] = RuntimeValue(await evaluate(parameter.DefaultValue).ConfigureAwait(false));
+-            }
++            var parameter = parameters[i];
++            context.CheckExecution(parameter.DefaultValue?.Span);
++            if (parameter.DefaultValue is { } expression)
++                defaults.Add(parameter.Name, RuntimeValue(await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)));
+         }
+-
+         return defaults;
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 53fde133..3604dba4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -301,54 +301,51 @@ internal sealed partial class LythonRuntime
+         ExecutionContext context,
+         bool asynchronous)
+     {
+-        var hasAnnotations = functionBinding.Function.ReturnAnnotation is not null ||
+-            functionBinding.Function.Parameters.Any(p => p.Annotation is not null);
+-        var needsTypeMetadata = hasAnnotations || functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context);
+-        context.EnterInterpreterFrame(functionBinding.Function.Span);
++        var needsTypeMetadata = functionBinding.HasAnnotations || functionBinding.TypeParameters is not null || HasTypeParameterScope(context);
++        context.EnterInterpreterFrame(functionBinding.Span);
+         try
+         {
+-            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Function.Decorators.Count), functionBinding.Function.Span);
++            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Decorators.Count), functionBinding.Span);
+             var decorators = asynchronous
+-                ? await EvaluateDecoratorsAsync(functionBinding.Function.Decorators, context).ConfigureAwait(false)
+-                : EvaluateDecorators(functionBinding.Function.Decorators, context);
+-            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
+-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
+-            var defaults = asynchronous
+-                ? await BuildDefaultArgumentMapAsync(functionBinding.Function.Parameters,
+-                    expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false)
+-                : MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context);
+-            var typeScope = CreateTypeScope(functionBinding.Function.TypeParameters, context, functionBinding.Function.Span);
++                ? await EvaluateDecoratorsAsync(functionBinding.Decorators, context).ConfigureAwait(false)
++                : EvaluateDecorators(functionBinding.Decorators, context);
++            var closureCells = CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Span);
++            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionBinding.DefaultCount, context.MemoryGovernor, functionBinding.Span);
++            var defaults = await EvaluateFunctionDefaults(functionBinding.Parameters, functionBinding.DefaultCount,
++                context, asynchronous).ConfigureAwait(false);
++            var typeScope = CreateTypeScope(functionBinding.TypeParameters, context, functionBinding.Span);
+             var closure = typeScope.Closure.FunctionClosureContext;
+-            var function = functionBinding.Function.GeneratorCode is not null
+-                ? (object)new PyGeneratorFunction(functionBinding.Function, closure,
+-                    defaults, closureCells)
++            var function = functionBinding.IsGenerator
++                ? (object)new PyGeneratorFunction(functionBinding.DeclaredName, functionBinding.Parameters,
++                    functionBinding.CodeObject, closure, defaults, functionBinding.CodeObject.ScopeFacts, closureCells)
+                 : new PyExecutableFunction(
+-                    functionBinding.Function.Syntax.DeclaredName,
+-                    functionBinding.Function.Parameters,
++                    functionBinding.DeclaredName,
++                    functionBinding.Parameters,
+                     functionBinding.CodeObject,
+                     closure,
+                     closureCells,
+                     defaults,
+                     functionBinding.CodeObject.ScopeFacts);
+-            ChargeFunctionValue(context, functionBinding.Function.Span);
++            ChargeFunctionValue(context, functionBinding.Span);
+             ChargeClosureRetention(
+                 closure,
+                 context.MemoryGovernor,
+-                functionBinding.Function.Span);
++                functionBinding.Span);
+             if (function is PyFunctionBase defined)
+             {
+-                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Function.Span);
++                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Docstring, context, functionBinding.Span);
+                 if (needsTypeMetadata)
+                 {
+                     // Metadata does not require interpreting an otherwise compiled body.
+                     // Keep its existing scope, evaluation order and ownership before publication.
+-                    await AttachTypeMetadataAsync(defined, functionBinding.Function, typeScope, context, asynchronous).ConfigureAwait(false);
++                    await AttachTypeMetadataAsync(defined, functionBinding.Parameters, functionBinding.ReturnAnnotation,
++                        functionBinding.TypeParameters is not null, functionBinding.Span, typeScope, context, asynchronous).ConfigureAwait(false);
+                 }
+             }
+             var decorated = asynchronous
+-                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Function.Span, context).ConfigureAwait(false)
+-                : ApplyDecorators(function, decorators, functionBinding.Function.Span, context);
+-            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
++                ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Span, context).ConfigureAwait(false)
++                : ApplyDecorators(function, decorators, functionBinding.Span, context);
++            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Name, decorated, context, functionBinding.Span);
+         }
+         finally
+         {
+@@ -662,17 +659,4 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    private static Dictionary<string, object> MaterializeExecutableDefaultValues(
+-        IReadOnlyDictionary<string, LoweredExpression> defaultValues,
+-        ExecutionContext context)
+-    {
+-        var result = new Dictionary<string, object>(defaultValues.Count, StringComparer.Ordinal);
+-        foreach (var pair in defaultValues)
+-        {
+-            result[pair.Key] = RuntimeValue(EvaluateLoweredExpression(pair.Value, context));
+-        }
+-
+-        return result;
+-    }
+-
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+index 64b960cd..3208bb24 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+@@ -25,10 +25,10 @@ internal sealed partial class LythonRuntime
+                     break;
+                 case ExecutableCreateFunction function:
+                     using (var storage = _context.MemoryGovernor.ReserveTemporary(320L + 160L * function.Inputs.Count
+-                        + 128L * function.Binding.Function.Parameters.Count + 64L * function.Binding.DefaultValues.Count, span))
++                        + 128L * function.Binding.Parameters.Count, span))
+                     {
+                         var captured = CaptureDefinitionInputs(function.Inputs, instruction.InputStart);
+-                        var template = function.Binding.Function;
++                        var template = function.Binding;
+                         var definition = template with
+                         {
+                             Decorators = template.Decorators.Select(Capture).ToArray(),
+@@ -39,12 +39,10 @@ internal sealed partial class LythonRuntime
+                             }).ToArray(),
+                             ReturnAnnotation = template.ReturnAnnotation is null ? null : Capture(template.ReturnAnnotation),
+                         };
+-                        var defaults = function.Binding.DefaultValues.Count == 0 ? function.Binding.DefaultValues
+-                            : function.Binding.DefaultValues.ToDictionary(pair => pair.Key, pair => Capture(pair.Value), StringComparer.Ordinal);
+                         AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
+                         AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
+                         await ExecuteExecutableFunctionDefinitionAsync(_codeObject,
+-                            function.Binding with { Function = definition, DefaultValues = defaults },
++                            definition,
+                             _locals, _localCells, _context, asynchronous).ConfigureAwait(false);
+                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
+                     }
+@@ -58,12 +56,17 @@ internal sealed partial class LythonRuntime
+                         PyFunctionBase function;
+                         try
+                         {
+-                            var defaults = new Dictionary<string, object>(count, StringComparer.Ordinal);
+-                            var slot = first;
+-                            foreach (var parameter in parameters)
++                            IReadOnlyDictionary<string, object> defaults = System.Collections.Frozen.FrozenDictionary<string, object>.Empty;
++                            if (count != 0)
+                             {
+-                                if (parameter.DefaultValue is not null)
+-                                    defaults.Add(parameter.Name, RuntimeValue(_stack[slot++]));
++                                var values = new Dictionary<string, object>(count, StringComparer.Ordinal);
++                                var slot = first;
++                                foreach (var parameter in parameters)
++                                {
++                                    if (parameter.DefaultValue is not null)
++                                        values.Add(parameter.Name, RuntimeValue(_stack[slot++]));
++                                }
++                                defaults = values;
+                             }
+                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
+                         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs
+index f3efdeb9..d1919cdc 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Expressions.cs
+@@ -471,9 +471,10 @@ internal sealed partial class LythonRuntime
+     private static object CreateLoweredLambda(LoweredLambdaExpression lambda, ExecutionContext context)
+     {
+         var loweredParameters = lambda.Parameters;
+-        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
++        var defaultCount = loweredParameters.Count(static p => p.DefaultValue is not null);
++        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, lambda.Span);
+         return CreateLambdaFunction(lambda, loweredParameters,
+-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)), context);
++            EvaluateFunctionDefaults(loweredParameters, defaultCount, context, false).GetAwaiter().GetResult(), context);
+     }
+ 
+     private static object EvaluateLoweredAssignmentExpression(LoweredAssignmentExpression assignment, ExecutionContext context)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+index 2f1a7c81..954d44ce 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs
+@@ -418,7 +418,7 @@ internal sealed partial class LythonRuntime
+     private static PyFunctionBase CreateLoweredFunction(
+         LoweredFunctionDefinitionStatement functionDefinition,
+         ExecutionContext context,
+-        Dictionary<string, object> defaults)
++        IReadOnlyDictionary<string, object> defaults)
+     {
+         var code = functionDefinition.GeneratorCode ?? functionDefinition.PreparedCode;
+         var cells = code is { ClosureNames.Count: > 0 } &&
+@@ -790,7 +790,7 @@ internal sealed partial class LythonRuntime
+     }
+ 
+     private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
+-        IReadOnlyList<LoweredFunctionParameter> parameters, Dictionary<string, object> defaults, ExecutionContext context,
++        IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyDictionary<string, object> defaults, ExecutionContext context,
+         ExecutableCodeObject? code = null)
+     {
+         var cells = code is null ? [] : CaptureExecutableClosures(code, context, lambda.Span);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
+index 22e8c3f9..7744f408 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs
+@@ -56,11 +56,13 @@ internal sealed partial class LythonRuntime
+             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
+             var decorators = EvaluateDecorators(functionDefinition.Decorators, context);
+             var syntax = functionDefinition.Syntax;
+-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
+-            var defaults = BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context));
++            var defaultCount = functionDefinition.Parameters.Count(static p => p.DefaultValue is not null);
++            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, functionDefinition.Span);
++            var defaults = EvaluateFunctionDefaults(functionDefinition.Parameters, defaultCount, context, false).GetAwaiter().GetResult();
+             var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
+             var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults);
+-            AttachTypeMetadataAsync(function, functionDefinition, typeScope, context, false).GetAwaiter().GetResult();
++            AttachTypeMetadataAsync(function, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
++                functionDefinition.TypeParameters is not null, functionDefinition.Span, typeScope, context, false).GetAwaiter().GetResult();
+             StoreName(syntax.Name, ApplyDecorators(function, decorators, functionDefinition.Span, context), context, functionDefinition.Span);
+         }
+         finally
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs
+index 70ddc8f0..00a50db7 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.Expressions.cs
+@@ -481,9 +481,10 @@ internal sealed partial class LythonRuntime
+     private static async ValueTask<object> CreateLoweredLambdaAsync(LoweredLambdaExpression lambda, ExecutionContext context)
+     {
+         var loweredParameters = lambda.Parameters;
+-        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
++        var defaultCount = loweredParameters.Count(static p => p.DefaultValue is not null);
++        using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, lambda.Span);
+         return CreateLambdaFunction(lambda, loweredParameters,
+-            await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false), context);
++            await EvaluateFunctionDefaults(loweredParameters, defaultCount, context, true).ConfigureAwait(false), context);
+     }
+ 
+     private static async ValueTask<object> InvokeLoweredCallAsync(LoweredCallExpression call, ExecutionContext context)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
+index a1ef647f..ff43349f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs
+@@ -40,11 +40,13 @@ internal sealed partial class LythonRuntime
+             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
+             var decorators = await EvaluateDecoratorsAsync(functionDefinition.Decorators, context).ConfigureAwait(false);
+             var syntax = functionDefinition.Syntax;
+-            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
+-            var defaults = await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false);
++            var defaultCount = functionDefinition.Parameters.Count(static p => p.DefaultValue is not null);
++            using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, functionDefinition.Span);
++            var defaults = await EvaluateFunctionDefaults(functionDefinition.Parameters, defaultCount, context, true).ConfigureAwait(false);
+             var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
+             var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults);
+-            await AttachTypeMetadataAsync(function, functionDefinition, typeScope, context, true).ConfigureAwait(false);
++            await AttachTypeMetadataAsync(function, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
++                functionDefinition.TypeParameters is not null, functionDefinition.Span, typeScope, context, true).ConfigureAwait(false);
+             StoreName(
+                 syntax.Name,
+                 await ApplyDecoratorsAsync(function, decorators, functionDefinition.Span, context).ConfigureAwait(false),
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs
+index d7e7b83a..83f9300c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs
+@@ -109,17 +109,18 @@ internal sealed partial class LythonRuntime
+                 : parameter.TryGetMember("__default__", context, span, out var value) ? value : PyTypeParameter.NoDefault;
+     }
+ 
+-    private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function, LoweredFunctionDefinitionStatement definition,
+-        TypeScope scope, ExecutionContext definingContext, bool asynchronous)
++    private static async ValueTask AttachTypeMetadataAsync(PyFunctionBase function,
++        IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression? returnAnnotation,
++        bool hasTypeParameters, LythonSourceSpan span, TypeScope scope, ExecutionContext definingContext, bool asynchronous)
+     {
+-        if (definition.TypeParameters is not null)
++        if (hasTypeParameters)
+             function.TrySetMember("__type_params__", scope.Parameters);
+-        if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext) &&
+-            definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null)) return;
+-        var annotations = new PyDict(definingContext.MemoryGovernor, definition.Span);
++        if (!hasTypeParameters && !HasTypeParameterScope(definingContext) &&
++            returnAnnotation is null && parameters.All(p => p.Annotation is null)) return;
++        var annotations = new PyDict(definingContext.MemoryGovernor, span);
+         // CPython's annotation table visits regular arguments before positional-only
+         // arguments, followed by *args, keyword-only arguments and **kwargs.
+-        foreach (var parameter in definition.Parameters.OrderBy(parameter => parameter.Kind switch
++        foreach (var parameter in parameters.OrderBy(parameter => parameter.Kind switch
+         {
+             FunctionParameterKind.Positional => 0, FunctionParameterKind.PositionalOnly => 1,
+             FunctionParameterKind.VariadicList => 2, FunctionParameterKind.KeywordOnly => 3, _ => 4
+@@ -129,11 +130,11 @@ internal sealed partial class LythonRuntime
+                     definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(parameter.Annotation.Syntax, definingContext)
+                         : await EvaluateTypeExpressionAsync(parameter.Annotation, scope.Annotations, asynchronous).ConfigureAwait(false),
+                     definingContext, parameter.Annotation.Span, asynchronous).ConfigureAwait(false);
+-        if (definition.ReturnAnnotation is not null)
++        if (returnAnnotation is not null)
+             await StoreAnnotationEntryAsync(annotations, "return",
+-                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(definition.ReturnAnnotation.Syntax, definingContext)
+-                    : await EvaluateTypeExpressionAsync(definition.ReturnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
+-                definingContext, definition.ReturnAnnotation.Span, asynchronous).ConfigureAwait(false);
++                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(returnAnnotation.Syntax, definingContext)
++                    : await EvaluateTypeExpressionAsync(returnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
++                definingContext, returnAnnotation.Span, asynchronous).ConfigureAwait(false);
+         function.TrySetMember("__annotations__", annotations);
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index a43687ad..3e8d4cbe 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -14,7 +14,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         ExecutableCodeObject codeObject,
+         LythonRuntime.ExecutionContext closure,
+         IReadOnlyList<LythonRuntime.ExecutableCell> closureCells,
+-        Dictionary<string, object> defaultValues,
++        IReadOnlyDictionary<string, object> defaultValues,
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+         : base(name, parameters, closure, defaultValues, scopeFacts, callableKind,
+diff --git a/src/Lokad.Lython/Runtime/PyFunction.cs b/src/Lokad.Lython/Runtime/PyFunction.cs
+index 38196146..4c99805c 100644
+--- a/src/Lokad.Lython/Runtime/PyFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyFunction.cs
+@@ -11,7 +11,7 @@ internal sealed class PyFunction : PyFunctionBase
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         IReadOnlyList<LoweredStatement> body,
+         LythonRuntime.ExecutionContext closure,
+-        Dictionary<string, object> defaultValues,
++        IReadOnlyDictionary<string, object> defaultValues,
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+         : base(name, parameters, closure, defaultValues, scopeFacts, callableKind)
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index 59387ebe..f50d27f5 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -32,7 +32,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         string name,
+         IReadOnlyList<LoweredFunctionParameter> parameters,
+         LythonRuntime.ExecutionContext closure,
+-        Dictionary<string, object> defaultValues,
++        IReadOnlyDictionary<string, object> defaultValues,
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function,
+         int? storageCapacity = null)
+diff --git a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+index ec0d5509..b55df456 100644
+--- a/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyGeneratorFunction.cs
+@@ -8,14 +8,14 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
+     private readonly IReadOnlyList<LythonRuntime.ExecutableCell>? _closureCells;
+ 
+     public PyGeneratorFunction(LoweredFunctionDefinitionStatement definition,
+-        LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaults,
++        LythonRuntime.ExecutionContext closure, IReadOnlyDictionary<string, object> defaults,
+         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
+         : this(definition.Syntax.DeclaredName, definition.Parameters, definition.GeneratorCode!,
+             closure, defaults, definition.GeneratorCode!.ScopeFacts, closureCells) { }
+ 
+     public PyGeneratorFunction(string name, IReadOnlyList<LoweredFunctionParameter> parameters,
+         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
+-        Dictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
++        IReadOnlyDictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
+         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+         : base(name, parameters, closure, defaults, scopeFacts, callableKind)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/AsyncFunctionHostingTests.cs b/tests/Lokad.Lython.PublicApi.Tests/AsyncFunctionHostingTests.cs
+index c7b52a92..9b62b482 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/AsyncFunctionHostingTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/AsyncFunctionHostingTests.cs
+@@ -17,6 +17,7 @@ public sealed class AsyncFunctionHostingTests
+         { "generator_closure", "def make(seed):\n    def values(amount=read()):\n        yield seed+amount\n    seed+=1\n    return values\nvalues=make(4)\nprint(list(values()))", "[8]\n", "default\n" },
+         { "failed_default_old_binding", "def f():\n    return 11\ndef fail():\n    note('fail')\n    raise ValueError('default')\ntry:\n    def f(x=fail()):\n        return x\nexcept ValueError:\n    note('caught')\nprint(f())", "11\n", "fail\ncaught\n" },
+         { "defaults_once", "def f(a=read(),b=read()):\n    return a+b\nprint(f())", "6\n", "default\ndefault\n" },
++        { "mixed_completed_pending_defaults", "events=[]\ndef stamp(value):\n    events.append(value)\n    return value\ndef f(a=stamp(1),b=read(),*,c=stamp(3),d=read()):\n    return a,b,c,d\nprint(f(),events)", "(1, 3, 3, 3) [1, 3]\n", "default\ndefault\n" },
+         { "imports_preserve_slots", "note('import')\nmarker=9\nimport math\ndef f(value):\n    preserved=value+1\n    import operator\n    return operator.add(preserved,marker)\nprint(f(2))", "12\n", "import\n" },
+         { "yielding_iadd", "class Number:\n    def __iadd__(self,other):\n        note('iadd')\n        with open('number.txt') as source:\n            return int(source.read())+other\ndef f(value):\n    value+=1\n    return value\nprint(f(Number()))", "4\n", "iadd\n" },
+         { "yielding_iadd_fallback", "class Left:\n    def __iadd__(self,other):\n        note('iadd')\n        with open('number.txt') as source: source.read()\n        return NotImplemented\n    def __add__(self,other):\n        note('add')\n        with open('number.txt') as source: source.read()\n        return NotImplemented\nclass Right:\n    def __radd__(self,other):\n        note('radd')\n        with open('number.txt') as source: source.read()\n        return 42\nvalue=Left()\nvalue+=Right()\nprint(value)", "42\n", "iadd\nadd\nradd\n" },
+diff --git a/tests/Lokad.Lython.Tests/BoundMethodInvocationBoundaryTests.cs b/tests/Lokad.Lython.Tests/BoundMethodInvocationBoundaryTests.cs
+index c52d833c..81b1b13c 100644
+--- a/tests/Lokad.Lython.Tests/BoundMethodInvocationBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/BoundMethodInvocationBoundaryTests.cs
+@@ -149,6 +149,6 @@ public sealed class BoundMethodInvocationBoundaryTests
+         var code = binding.CodeObject.RequireNotNull();
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
+         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
+-        return (new PyExecutableFunction("f", binding.Function.Parameters, code, closure, [], [], code.ScopeFacts), context, code);
++        return (new PyExecutableFunction("f", binding.Parameters, code, closure, [], new Dictionary<string, object>(), code.ScopeFacts), context, code);
+     }
+ }
+diff --git a/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs b/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs
+index 4e11a15f..d231c321 100644
+--- a/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs
++++ b/tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs
+@@ -16,7 +16,7 @@ public sealed class FunctionAttributeAccountingTests
+         const long limit = 1024 * 1024;
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
+-        var function = new PyFunction("f", [], [], context, new(), ScopeDirectiveFacts.Empty);
++        var function = new PyFunction("f", [], [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
+         var value = new PyList([42], context.MemoryGovernor, null);
+         var beforeTag = context.MemoryGovernor.CurrentAccountedBytes;
+         function.TrySetMember("tag", value);
+@@ -48,7 +48,7 @@ public sealed class FunctionAttributeAccountingTests
+         const long limit = 1024 * 1024;
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
+-        var function = new PyFunction("f", [], [], context, new(), ScopeDirectiveFacts.Empty);
++        var function = new PyFunction("f", [], [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
+         var beforeFound = function.TryGetMember(name, out var before);
+         var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
+         context.MemoryGovernor.Reserve(padding, null);
+diff --git a/tests/Lokad.Lython.Tests/LoweredFunctionInvocationBoundaryTests.cs b/tests/Lokad.Lython.Tests/LoweredFunctionInvocationBoundaryTests.cs
+index 8705e1c2..c89eeaf0 100644
+--- a/tests/Lokad.Lython.Tests/LoweredFunctionInvocationBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/LoweredFunctionInvocationBoundaryTests.cs
+@@ -101,7 +101,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
+             context.State.SetCurrentException(active);
+             var tap = new RecordingTap(context, active, receiver, width);
+             context.Variables["tap"] = tap;
+-            var function = new PyFunction("f", definition.Parameters, definition.Body, context, [], ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
++            var function = new PyFunction("f", definition.Parameters, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
+             var result = asynchronous
+                 ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
+                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
+@@ -142,7 +142,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
+         var parameters = string.Join(",", new[] { "self" }.Concat(Enumerable.Range(0, width).Select(i => $"arg{i}")));
+         var definition = Definition($"def f({parameters}):\n return self\n");
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
+-        var function = new PyFunction("f", definition.Parameters, definition.Body, context, [], ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
++        var function = new PyFunction("f", definition.Parameters, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
+         return (function, context, Assert.IsType<LoweredReturnStatement>(Assert.Single(definition.Body)).Expression!);
+     }
+ 
+diff --git a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+index af4aea30..58945771 100644
+--- a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+@@ -310,7 +310,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+         var code = binding.CodeObject.RequireNotNull();
+         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
+         var closure = LythonRuntime.ExecutionContext.CreateModule(context, "/callee.py", "callee");
+-        var function = new PyExecutableFunction("f", binding.Function.Parameters, code, closure, [], [], code.ScopeFacts);
++        var function = new PyExecutableFunction("f", binding.Parameters, code, closure, [], new Dictionary<string, object>(), code.ScopeFacts);
+         return (function, context, code);
+     }
+ }

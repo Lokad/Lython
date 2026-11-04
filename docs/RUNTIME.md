@@ -211,6 +211,13 @@ reuse lexical/class cells and retained namespaces; nonlocals without known paren
 cell slots use the shared namespace lookup. Unused lowered method bodies are
 discarded. Generator preparation and other real lowered consumers remain.
 
+Executable function bindings retain declaration inputs and prepared code without
+the original function body tree. Defaults use one evaluator across both APIs and
+lowered definitions; a continuation handles actual suspension. Empty construction
+maps are immutable shared metadata. Python default tuples/dictionaries remain
+distinct per function and reflect later mutation. Private default storage stays
+admitted through awaited evaluation and construction.
+
 Ordinary positional calls to executable functions with slot-local storage advance
 an explicit caller/callee chain in the same interpreter. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`

@@ -25,10 +25,10 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableCreateFunction function:
                     using (var storage = _context.MemoryGovernor.ReserveTemporary(320L + 160L * function.Inputs.Count
-                        + 128L * function.Binding.Function.Parameters.Count + 64L * function.Binding.DefaultValues.Count, span))
+                        + 128L * function.Binding.Parameters.Count, span))
                     {
                         var captured = CaptureDefinitionInputs(function.Inputs, instruction.InputStart);
-                        var template = function.Binding.Function;
+                        var template = function.Binding;
                         var definition = template with
                         {
                             Decorators = template.Decorators.Select(Capture).ToArray(),
@@ -39,12 +39,10 @@ internal sealed partial class LythonRuntime
                             }).ToArray(),
                             ReturnAnnotation = template.ReturnAnnotation is null ? null : Capture(template.ReturnAnnotation),
                         };
-                        var defaults = function.Binding.DefaultValues.Count == 0 ? function.Binding.DefaultValues
-                            : function.Binding.DefaultValues.ToDictionary(pair => pair.Key, pair => Capture(pair.Value), StringComparer.Ordinal);
                         AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
                         AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
                         await ExecuteExecutableFunctionDefinitionAsync(_codeObject,
-                            function.Binding with { Function = definition, DefaultValues = defaults },
+                            definition,
                             _locals, _localCells, _context, asynchronous).ConfigureAwait(false);
                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
                     }
@@ -58,12 +56,17 @@ internal sealed partial class LythonRuntime
                         PyFunctionBase function;
                         try
                         {
-                            var defaults = new Dictionary<string, object>(count, StringComparer.Ordinal);
-                            var slot = first;
-                            foreach (var parameter in parameters)
+                            IReadOnlyDictionary<string, object> defaults = System.Collections.Frozen.FrozenDictionary<string, object>.Empty;
+                            if (count != 0)
                             {
-                                if (parameter.DefaultValue is not null)
-                                    defaults.Add(parameter.Name, RuntimeValue(_stack[slot++]));
+                                var values = new Dictionary<string, object>(count, StringComparer.Ordinal);
+                                var slot = first;
+                                foreach (var parameter in parameters)
+                                {
+                                    if (parameter.DefaultValue is not null)
+                                        values.Add(parameter.Name, RuntimeValue(_stack[slot++]));
+                                }
+                                defaults = values;
                             }
                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
                         }
