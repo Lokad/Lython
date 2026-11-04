@@ -9,7 +9,7 @@ its real provider effects even without annotated syntax.
 
 This reconsiders the [earlier cache trial](../2026-11-02-analysis-cache-unqualified/README.md),
 which improved compilation but missed the former fixed 10% requirement. Its
-3.84–7.35% compile observations and 15.23% fresh-config control drift remain
+3.84â€“7.35% compile observations and 15.23% fresh-config control drift remain
 unchanged. They establish a reason to reassess on current source, not a prior
 qualified gain. The separate invalid annotation-pass skip stays withdrawn.
 
@@ -23,17 +23,17 @@ four EPYC9V45 vCPUs/16GiB/no swap, .NET11RC3, normal GC/tiering.
 
 | Complete workload / phase | Candidate elapsed | Change vs both baseline roles | Same-source spread | Candidate IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV helpers / compilation |86.061µs|−3.90% /−6.48%|2.76%|0.60%|
-| Text helpers / compilation |63.932µs|−8.35% /−8.39%|0.04%|0.28%|
-| JSON-to-Markdown / compilation |61.448µs|−3.09% /−3.09%|0.00%|1.05%|
-| Config read/edit/write / fresh |0.3011ms|−1.08% /−1.75%|0.68%|0.67%|
-| Text helpers / fresh |3.1798ms|−0.46% /−0.30%|0.16%|0.85%|
-| Text helpers / warm |3.0502ms|−1.81% /+0.39%|2.19%|0.55%|
+| CSV helpers / compilation |86.061Âµs|âˆ’3.90% /âˆ’6.48%|2.76%|0.60%|
+| Text helpers / compilation |63.932Âµs|âˆ’8.35% /âˆ’8.39%|0.04%|0.28%|
+| JSON-to-Markdown / compilation |61.448Âµs|âˆ’3.09% /âˆ’3.09%|0.00%|1.05%|
+| Config read/edit/write / fresh |0.3011ms|âˆ’1.08% /âˆ’1.75%|0.68%|0.67%|
+| Text helpers / fresh |3.1798ms|âˆ’0.46% /âˆ’0.30%|0.16%|0.85%|
+| Text helpers / warm |3.0502ms|âˆ’1.81% /+0.39%|2.19%|0.55%|
 
 Negative means shorter elapsed. Compilation improves against both controls;
 fresh text is within dispersion and warm text straddles its controls. Do not
 claim execution or broad CPU gains. Whole-process allocation per compilation
-falls about0.25–0.46%, fresh0.03–0.17%; warm text is unchanged. These counters
+falls about0.25â€“0.46%, fresh0.03â€“0.17%; warm text is unchanged. These counters
 include fixture reset/process activity and do not measure retained heap or RSS.
 No external CPython ratio is refreshed by this source pair.
 
@@ -66,9 +66,11 @@ One initial probe subprocess used the system dotnet without.NET11; the corrected
 PATH rerun passes unchanged. Preserve that failure in [validation logs](validation-logs.tgz)
 and [validation scope](focused-validation.json).
 
-Commit123f9ff1 is retained. Full Windows/Ubuntu, original Stress and installed
-Release consumers are running in delivery41853526333 at this coherent boundary;
-do not repeat unchanged qualification. Publication postponed.
+Commit123f9ff1 passes all eight logical delivery gates in
+[41853526333](https://github.com/Lokad/Lython/actions/runs/41853526333): Windows/Ubuntu
+actual.NET11/10 ordinary suites, original Stress and installed Release consumers.
+[Terminal receipt](delivery-ci-status.json) is cached; never re-query/replay this
+unchanged qualification. Publication remains postponed.
 
 ## Direct decision on earlier compilation debt
 
@@ -82,12 +84,12 @@ process cleanup pass. The150-second owned service finishes normally, lease free.
 
 | Compilation versus qualified454 | Candidate elapsed | Change vs both older roles | Older spread | Candidate IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV helpers |87.307µs|+0.07% /−1.45%|1.54%|2.53%|
-| Text helpers |64.710µs|−5.50% /−5.75%|0.26%|1.32%|
-| JSON-to-Markdown |63.318µs|−1.18% /−1.75%|0.58%|0.81%|
+| CSV helpers |87.307Âµs|+0.07% /âˆ’1.45%|1.54%|2.53%|
+| Text helpers |64.710Âµs|âˆ’5.50% /âˆ’5.75%|0.26%|1.32%|
+| JSON-to-Markdown |63.318Âµs|âˆ’1.18% /âˆ’1.75%|0.58%|0.81%|
 
 Earlier elapsed compilation debt is not reproduced net in this comparison.
-CSV is near unchanged within2.5–2.7%IQR, not a proven gain. Text/report improve
+CSV is near unchanged within2.5â€“2.7%IQR, not a proven gain. Text/report improve
 against both roles. Compilation allocation remains+4.56% CSV/+4.96% text/+3.29%
 report versus454: accept that explicit net storage cost alongside D1's instruction
 positions/provenance and transport deletion. The smaller current cache saving
