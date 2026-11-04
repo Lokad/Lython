@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "5c827e68 production source; precommit frozen21cddae7 assembly metadata9562510b; exact source snapshot/hashes authoritative",
+  "coreSHA256": {
+    "candidate": "21cddae73e75128c7f012d7bd1bffff9cbf98e39ce0be265ba3aa77451cb0177",
+    "control": "21cddae73e75128c7f012d7bd1bffff9cbf98e39ce0be265ba3aa77451cb0177",
+    "reference": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "ac2eb3208382dba2c204f8b8bc16132bfd12550a84499144aa4ce8b4789ae8a0",
+    "src/Lokad.Lython/Runtime/Text/TextLineScanning.cs": "9e3d8f287fb88bd7b1e51b23e8b78be93acb9869c548f7b55c9e9281bbcfa674"
+  }
+}

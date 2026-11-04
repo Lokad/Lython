@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [5c827e68 external checkpoint](results/2026-11-04-csv-runtime-cpython-checkpoint/README.md)
+completes14 jobs384.53s with all loaded identities/goldens/quiet gates/joins.
+Long-field CSV fresh0.17×/warm0.10×CPython; usual freshCSV/JSON/text/report/config
+1.48/1.30/2.40/1.79/1.09×. Current/reference shortCSVwarm straddles−2.0..+0.8%;
+original possible+1..3.5% source-pair debt remains preserved. Text/report gaps and
+variable rows remain. Full retained64KiB field/digest controls pass per API/target.
+Runtime qualification41889236498 is independent/running; publication held.
+
 The [CSV boundary/state parser](results/2026-11-04-csv-boundary-state/README.md)
 removes20 net production lines, four overlapping flags and duplicate option/matcher
 plumbing; preserves admitted batched record construction. Two skipped-space bugs

@@ -1,0 +1,35 @@
+{
+  "reference": "CPython 3.13.2",
+  "source": "import csv,io,hashlib\nfields = ['first', 'a'*65531+'é😀\\0tail', ('quoted,é\\\"\\n')*4097, 'last']\nstream = io.StringIO(newline='')\ncsv.writer(stream).writerow(fields)\nreader = csv.reader(stream.getvalue().splitlines(keepends=True))\nrow = next(reader)\nassert row == fields\nalias = row[2]\nassert next(reader,None) is None\nassert alias == fields[2]\nprint([len(value) for value in row])\nprint([hashlib.sha256(value.encode('utf-8')).hexdigest() for value in row])\n",
+  "expected": "[5, 65538, 40970, 4]\n['a7937b64b8caa58f03721bb6bacf5c78cb235febe0e70b1b84cd99541461a08e', 'a05d20e2bceba8bdda53a348870d5bac1fe250135b9e84b2982bfde97fc998cb', 'dbe2c378eba3aadf0d63833a0b7d0d0510a3856741c2c2beaa625d7a9857ede6', '3547cb112ac4489af2310c0626cdba6f3097a2ad5a3b42ddd3b59c76c7a079a3']\n",
+  "rows": [
+    {
+      "target": "net11.0",
+      "asynchronous": false,
+      "completeContentsEqual": true,
+      "retainedAliasEqual": true,
+      "allDigestGoldensMatch": true
+    },
+    {
+      "target": "net11.0",
+      "asynchronous": true,
+      "completeContentsEqual": true,
+      "retainedAliasEqual": true,
+      "allDigestGoldensMatch": true
+    },
+    {
+      "target": "net10.0",
+      "asynchronous": false,
+      "completeContentsEqual": true,
+      "retainedAliasEqual": true,
+      "allDigestGoldensMatch": true
+    },
+    {
+      "target": "net10.0",
+      "asynchronous": true,
+      "completeContentsEqual": true,
+      "retainedAliasEqual": true,
+      "allDigestGoldensMatch": true
+    }
+  ]
+}
