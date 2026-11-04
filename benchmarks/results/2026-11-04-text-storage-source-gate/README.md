@@ -50,8 +50,13 @@ Conservative batch retention remains explicit, with bounded host-driven streams.
 PyString's `_committedCacheBytes` has one writer and describes one optional
 rune-index array. Deriving its charge from that actual cache can remove the
 accumulator while introducing offset-capable storage, containing normal-string
-metadata cost. This is a cost-model hypothesis: actual normal-object allocation
-and access overhead must be checked before promotion. Preserve preflight/rollback
+metadata cost. A private managed shape probe subsequently measures72B for the current object,
+72B for the proposed segment/cache-derived shape, then72B for an unchanged current
+control on actual.NET11 RC3 and.NET10.0.8. The payload is preallocated and each
+object escapes through a volatile sink. This supports the metadata model; it is
+not an implemented runtime, CPU result or guarantee of its future field layout.
+Actual normal-string allocation/access overhead still needs validation before
+promotion. Preserve preflight/rollback
 of cache construction. Do not replace the cache with repeated scans or weak tables.
 
 All direct charge consumers are bounded and inspected: default warnings create
@@ -78,3 +83,7 @@ Raw archive SHA256:
 Archive retains the original trace, checked batch/verification/close responses, conditions, identities,
 gates and prospective capture plan. `allocation-reader.cs` is the unchanged offline
 reader source from B170. Publication remains postponed.
+
+`layout-cost-model.tgz` preserves the private source, initial unassigned-field
+compiler diagnostics and corrected successful build. Actual per-target observations
+are alongside it. No source/runtime option or package dependency changes.
