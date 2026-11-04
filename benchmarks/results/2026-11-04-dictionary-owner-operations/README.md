@@ -63,5 +63,7 @@ CPython performance comparison. [All metrics](assessment.json), [original bounde
 [raw observations](observations.tgz), SHA256
 `9f284f266b97af10ee746703fde037cb571eb60ce7501000d65e37c6437a0bda`.
 
-Full Windows/Ubuntu actual11/10/original Stress/installed Release consumers for this
-final source remain pending. Publication stays postponed.
+Full Windows/Ubuntu actual11/10, original Stress and installed Release consumers
+all passed for exact ee8020f0 in [delivery41904808069](delivery-ci-status.json),
+terminal observed2026-11-04T20:43:10Z. This does not qualify later prototypes.
+Publication stays postponed.
