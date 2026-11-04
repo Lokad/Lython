@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "a00fe76d production source; precommit frozen1dcca6f2 assembly metadata65e0871d; exact source snapshot/hashes authoritative",
+  "coreSHA256": {
+    "candidate": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8",
+    "control": "1dcca6f2c6b9ab4bcfe805b9e109ec22eaa06660e25804817e315e5f227e0ee8",
+    "reference": "0d452f955bcbb09b4e877767ba373f5582d9cee2e7e25d5ad2a9e08a1bfc3190"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "6b884c7c8018e12ff430cd9952857cd0ccfba5d76cdb47b2a37026331f5b19e4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Advanced.cs": "e4b7c65fe7eb52f871ca10773579e21d7d109447cb5e0cd2ec59c5d8a13e0d91",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs": "26d59c222c85fae0d9ac0898aff26d6139e0f9576dca4033452124f6a420f2ce",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs": "df29812c704e78d7e73193ed25195a11e07f8321c31da289e1902e27c73912fb",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "a457c1f877ca908db9ba1d06f7e0d1ea012775180bf0a2780aae7f0e6203d374",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": "e52e3268a6a0c34fd0e307ddd880855ac0ea17ae58ef37dddc1fde770d4abab0"
+  }
+}

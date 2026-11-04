@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [a00fe76d current CPython checkpoint](results/2026-11-04-utf8-runtime-cpython-checkpoint/README.md)
+completes12 jobs in328.59s with exact loaded cores, quiet gates and joined cleanup.
+FreshCSV/JSON/text/report/config ratios1.46/1.25/2.45/1.70/1.09; warm
+1.49/1.28/2.52/1.70/1.05. CompilationCSV/report both1.48×. The substantial
+text/report gap remains. A failed executable-symlink identity gate before timing
+is preserved; corrected application directories load exact frozen1dcca6f2 and
+qualified0d452f95. Original source-pair adverse debt is retained, never offset by
+adding percentages. Full runtime platform qualification is independent/pending.
+
 The [shared UTF8 search window](results/2026-11-04-utf8-search-window/README.md)
 removes59 net production lines and corrects out-of-range empty searches/index-hook
 ordering.13,608 CPython combinations match through both APIs/targets. Complete

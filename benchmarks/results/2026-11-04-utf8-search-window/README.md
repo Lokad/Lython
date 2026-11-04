@@ -73,5 +73,5 @@ Both collections use the existing private three-image driver:6sec guest warmup/
 image, alternating preparation,2sec settle,9rotated200ms baseline-sized batches.
 Actual mediated RAM-file I/O, full output/file checks and result cleanup included;
 fixture reset/staging/startup/hashing/final cached teardown excluded. Compile
-separate; fresh includes compile/dispose. Targeted scripts filter2561KiB lines
+separate; fresh includes compile/dispose. Targeted scripts filter256 lines of1KiB
 by shared prefix tuple and count tokens. No cached-string-only microbenchmark.

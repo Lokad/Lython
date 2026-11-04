@@ -2,95 +2,57 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers |4,096 records /57,361 B|5.146 ms|3.464 ms|1.49×|0ffc9ac6;RAM;Control-limited;3.75% control /0.21% IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|5.430 ms|4.193 ms|1.30×|0ffc9ac6;RAM;Diagnostic;0.74% control /0.88% IQR|
-| Text summary/helpers |3,072 lines /35,840 B|3.158 ms|1.283 ms|2.46×|0ffc9ac6;RAM;Variable;CPython3.40% IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|4.647 ms|2.513 ms|1.85×|0ffc9ac6;RAM;Variable;2.15% control /2.77% IQR|
-| Config read/edit/write |1,024 paths /7,177 B|0.286 ms|0.253 ms|1.13×|0ffc9ac6;RAM;Diagnostic;1.28% control /2.13% IQR|
+| CSV summary/helpers |4,096 records /57,361 B|5.516 ms|3.780 ms|1.46×|a00fe76d;RAM;Diagnostic;1.37% control /1.93% IQR|
+| JSON-lines/helpers |4,096 records /110,592 B|5.290 ms|4.219 ms|1.25×|a00fe76d;RAM;Diagnostic;1.24% control /0.64% IQR|
+| Text summary/helpers |3,072 lines /35,840 B|3.319 ms|1.353 ms|2.45×|a00fe76d;RAM;Diagnostic;1.22% control /0.89% IQR|
+| JSON-to-Markdown report |3,072 records /189,441 B|4.647 ms|2.735 ms|1.70×|a00fe76d;RAM;Variable;3.07% Lython IQR|
+| Config read/edit/write |1,024 paths /7,177 B|0.281 ms|0.258 ms|1.09×|a00fe76d;RAM;Diagnostic;0.62% control /1.85% IQR|
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS;Diagnostic;2.7% Lython IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS;Variable;3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS;Diagnostic;1.5% Lython IQR|
 | Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Earlier bd3;ordinary FS;1.1% Lython IQR|
 
-First five rows measured **2026-11-04**, committed runtime source **0ffc9ac6**,
+First five rows measured **2026-11-04**, committed runtime source **a00fe76d**,
 against **CPython3.13.16** on **.NET11RC3**. These are **fresh compilation plus one
 complete synchronous execution in an already-running host**, including mediated
-RAM-file I/O, full checks and cleanup, excluding fixture staging/reset (protocol2).
+RAM-file I/O, full checks and prior-result cleanup, excluding fixture staging/reset.
 Ratio=Lython elapsed/CPython elapsed; above one means slower. IQR=interquartile
-range/median; control is the absolute spread between identical-source Lython roles.
-Four explicitly earlier rows use2026-11-03 bd3f9dee and the ordinary VM filesystem.
-Filename scripts filter768 names and write/check256 selections, not traverse768 files.
+range/median; control is identical-source Lython-role spread. Exact measured
+precommit core**1dcca6f2** and source snapshots distinguish source from build metadata.
+Four explicitly earlier file rows use2026-11-03 bd3f9dee and the ordinary filesystem;
+filename scripts filter768 names/write256 selections, not traverse768 files.
 
-Measured source includes the [executable-storage consolidation](../benchmarks/results/2026-11-04-executable-storage/README.md).
-Later copy-context correction c6ac2ae5 and compiler-cache work are excluded. The substantial text/report gaps
-remain; allocation and architectural simplification do not establish a broad CPU
-gain. Fresh CSV is control-limited, text has3.40% CPython IQR and report's control
-has4.58% IQR. Warm report has5.09% Lython IQR. Startup, genuinely suspended I/O,
-equal heap/RSS and embedding latency are unmeasured. Earlier ordinary-filesystem
-rows describe their own source and conditions.
+The text/report gaps remain. Current report has3.07%IQR; warm report/control have
+3.65%/6.14%IQR. Startup, genuinely suspended I/O, equal heap/RSS and embedding
+latency are unmeasured. Runtime correctness qualification is independent;
+full platform/Stress/package checks on a00fe76d are pending. [Current observations,
+controls and exact identities](../benchmarks/results/2026-11-04-utf8-runtime-cpython-checkpoint/README.md).
 
-[Current observations and controls](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)
-retain all samples and exact identities. Runtime correctness qualification is
-independent. [Earlier2d46 checkpoint](../benchmarks/results/2026-11-04-current-cpython-checkpoint/README.md)
-preserves its failed ending gate, confirmation and debt decision;
-[earlier9ce21533](../benchmarks/results/2026-11-04-coupled-cpython-checkpoint/README.md),
-[RAM7a3a8afe](../benchmarks/results/2026-11-03-combined-storage-cpython-checkpoint/README.md)
-and [ordinary-FS](../benchmarks/results/2026-11-03-runtime-cpython-checkpoint/README.md)
-keep their original values. [Earlier90785737 search](../benchmarks/results/2026-11-02-current-cpython-checkpoint/README.md)
-remains inconclusive (fresh270%IQR/218%control drift; warm138%/77%).
-The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
-excludes staging symmetrically and is not a runtime optimization.
+[Previous0ffc checkpoint](../benchmarks/results/2026-11-04-executable-cpython-checkpoint/README.md)
+and [earlier experimental history](../benchmarks/EXPERIMENTS.md) preserve original
+values, conditions and adverse results. Earlier90785737 search remains inconclusive
+(fresh270%IQR/218%control drift; warm138%/77%). The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
+excludes staging symmetrically; it is not a runtime optimization.
 
 ## Warm execution, compilation and startup
 
-Latest external source **0ffc9ac6**, RAM files, reused compiled code with the same
+Latest external source **a00fe76d**, RAM files, reused compiled code with the same
 invocation/I/O/check/cleanup boundary:
 
 | Warm workload | Lython | CPython | Ratio | Lython / CPython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers |4.976 ms|3.303 ms|1.51×|0.73% /0.60%|
-| JSON-lines/helpers |5.216 ms|4.097 ms|1.27×|1.05% /0.97%|
-| Text summary/helpers |3.041 ms|1.204 ms|2.53×|0.54% /0.35%|
-| JSON-to-Markdown report |4.535 ms|2.360 ms|1.92×|5.09% /1.04%; variable|
-| Config read/edit/write |0.194 ms|0.185 ms|1.05×|0.27% /0.51%|
+| CSV summary/helpers |5.243 ms|3.523 ms|1.49×|0.94% /1.45%|
+| JSON-lines/helpers |5.263 ms|4.103 ms|1.28×|0.41% /0.98%|
+| Text summary/helpers |3.164 ms|1.257 ms|2.52×|1.35% /1.70%|
+| JSON-to-Markdown report |4.465 ms|2.631 ms|1.70×|3.65% /1.76%; variable|
+| Config read/edit/write |0.195 ms|0.185 ms|1.05×|1.29% /0.34%|
 
-Warm identical-source spreads0.25-1.81% limit small claims; report remains variable.
-Do not infer compilation cost by subtracting independent warm/fresh medians.
-**Compilation only:** CSV90.20µs versus54.79µs (**1.65×**), report61.67µs versus
-37.89µs (**1.63×**). Compilation controls differ1.38/1.17%; execution/I/O excluded.
-**Startup unmeasured.** Frozen precommit core0ee77cd0 matches0ffc9ac6 runtime sources;
-its identity and full snapshot remain in the evidence. Later copy-context fixes
-are excluded. Other file cases and [startup](../benchmarks/results/2026-10-29-foundation/README.md)
-are historical. [Previous ffc checkpoint](../benchmarks/results/2026-11-04-formatted-helper-cpython-checkpoint/README.md)
-retains its original values and uncertainty.
-
-## RAM-backed phases and measured revisions
-
-Other earlier RAM checkpoints use the same actual file APIs and checks, with fixtures
-on shared tmpfs instead of the VM filesystem. Measured2026-11-03; exact runtime revisions are shown:
-
-| RAM-backed workload | Runtime | Lython | CPython | Ratio |
-| --- | --- | ---: | ---: | ---: |
-| Config compile-run |b3f1e9c3|0.290 ms|0.251 ms|1.16×|
-| Config warm |b3f1e9c3|0.207 ms|0.181 ms|1.14×|
-| Copy/manifest compile-run |0f05d7c0|0.400 ms|0.238 ms|1.68×|
-| Copy/manifest warm |0f05d7c0|0.227 ms|0.150 ms|1.51×|
-
-The earlier bd3 runtime measures2.05×warm on RAM versus8.18×on the ordinary filesystem:
-storage condition materially affects config's ratio. The earlier UTF-8 handoff
-improves config warm/fresh19.6%/16.3%, controls+0.1%/+0.6%, against its preceding
-runtime. This supports a gain under this storage condition; ordinary-filesystem
-elapsed remains unproven. Copy fresh is1.4%adverse with2.1%IQR. These results
-complement the primary table and do not replace its included-I/O boundary.
-[Earlier config conditions/controls](../benchmarks/results/2026-11-03-native-utf8-handoff/README.md),
-[earlier native writes](../benchmarks/results/2026-11-03-native-stream-transport/README.md),
-[earlier copy/storage observations](../benchmarks/results/2026-11-03-ram-file-checkpoint/README.md).
-Earlier873ae625 report format-layout preparation reduces allocation10.47%, warm/fresh source-pair
-elapsed6.4/4.9%. Compilation alone is59.14µs versus37.69µs (**1.57×**), effectively
-flat against its preceding source. One initial CSV control is adverse and remains
-unexplained; a bounded shared-hash diagnostic does not establish a consistent
-regression. [All report observations and the CSV uncertainty](../benchmarks/results/2026-11-03-prepared-format-layouts/README.md).
-
+Warm identical-source spreads0.48–1.53% limit small claims. Do not infer compilation
+cost by subtracting independent fresh/warm medians. **Compilation only:**
+CSV80.08µs versus54.23µs (**1.48×**), report56.11µs versus37.95µs (**1.48×**).
+Controls differ0.35%/1.27%; LythonIQR1.81%/2.55%, execution/I/O excluded.
+**Startup unmeasured.** [Earlier RAM/filesystem phases and measured revisions](../benchmarks/EXPERIMENTS.md)
+retain their own conditions; older measurements do not describe this source.
 
 ## Machine and included work
 
@@ -119,7 +81,7 @@ dispatch-only measurement. Exact worker procedures and limitations are linked be
 ## Improvements against earlier Lython
 
 Source-pair improvements below retain their own measured revisions. The current coupled
-checkpoint compares0ffc9ac6 with CPython, an identical-source control and qualified454 reference. The earlier
+checkpoint comparesa00fe76d with CPython, an identical-source control and qualified97bc43b2 reference. The earlier
 2d46dc8e checkpoint also compares pre-loop B166; individual
 historical regressions remain preserved even where later coupled work offsets them.
 These source-pair improvements are separate from the CPython ratios above;
