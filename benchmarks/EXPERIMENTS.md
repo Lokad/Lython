@@ -2284,3 +2284,13 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   fixture-layout failures; corrected staging only. Main declared PythonRe surface
   unchanged versusdev.14. Development evidence only: normal pin0.4.0, nonpackable
   adapter, no new core dependency/backend performance/safety/released-package claim.
+
+- [Current coupled CPython checkpoint, B195](results/2026-11-04-current-cpython-checkpoint/README.md):
+  COMPLETE on2d46dc8e production/frozenba48576a. Original12 blocks end with a
+  failed6.47%idle-CPU gate and stay UNQUALIFIED. One longer-warm/swap-role/post-cleanup
+  confirmation passes original thresholds/goldens/joins;366.565s capture/367.180s
+  owned service. Fresh CSV/JSON1.50/1.30×, text/report2.54/1.92×, config1.11×CPython;
+  separate compilation1.58×. Coupled freshJSON−5.6–7.3% closes earlier provisional
+  debt under these conditions; all earlier points retained. Text/report paired gains
+  are substantial, CSV/config magnitude still control-limited. Async debt remains
+  separate; whole objective OPEN. Writer-fixture repair qualifies runtime separately.

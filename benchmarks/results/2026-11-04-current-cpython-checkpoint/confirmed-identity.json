@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "Committed2d46dc8e B194 production source, frozen9a4af031+complete patch ba48576a; pre-loopB166 baseline qualified2323cceb",
+  "coreSHA256": {
+    "candidate": "ba48576af397ef62ce62a493b7ab4eb2ff845874fe44c512e6e5ceadf8e63783",
+    "before-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc",
+    "after-control": "3bed411efcd6e008fc04bca8634d32be64bafc71742509ff0192e8eee86ab8bc"
+  },
+  "purpose": "One coherent CPython/current external and coupled regression-debt checkpoint; publication postponed",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "e6947bfb62bb1c7db988a696fa27738339a237240db6a541b35ed3f211afdda0",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "c2c37959dd4f9529adb66aa60b172574bb17c3ab40c46e0d43424b463225aef8"
+  },
+  "qualification": "Exact2d46dc8e delivery41760386280 running; baseline priorB166 fully qualified; no repeat full local run"
+}

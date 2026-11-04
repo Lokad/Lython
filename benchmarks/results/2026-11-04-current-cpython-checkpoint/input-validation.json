@@ -1,0 +1,62 @@
+[
+  {
+    "case": "scripts.csv-summary-helpers.large",
+    "input": {
+      "input.csv": {
+        "bytes": 57361,
+        "recordsOrLinesOrPaths": 4096,
+        "physicalLines": 5121,
+        "accepted": 3072
+      }
+    },
+    "unchangedVersusB189": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "input": {
+      "input.txt": {
+        "bytes": 35840,
+        "recordsOrLinesOrPaths": 3072,
+        "physicalLines": 3072,
+        "accepted": null
+      }
+    },
+    "unchangedVersusB189": true
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "input": {
+      "input.jsonl": {
+        "bytes": 110592,
+        "recordsOrLinesOrPaths": 4096,
+        "physicalLines": 5120,
+        "accepted": 3072
+      }
+    },
+    "unchangedVersusB189": true
+  },
+  {
+    "case": "scripts.report-render.large",
+    "input": {
+      "records.json": {
+        "bytes": 189441,
+        "recordsOrLinesOrPaths": 3072,
+        "physicalLines": 1,
+        "accepted": null
+      }
+    },
+    "unchangedVersusB189": true
+  },
+  {
+    "case": "scripts.config-edit.large",
+    "input": {
+      "config.json": {
+        "bytes": 7177,
+        "recordsOrLinesOrPaths": 1024,
+        "physicalLines": 1,
+        "accepted": null
+      }
+    },
+    "unchangedVersusB189": true
+  }
+]

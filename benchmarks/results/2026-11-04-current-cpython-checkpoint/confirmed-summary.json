@@ -1,0 +1,246 @@
+{
+  "complete": true,
+  "elapsedSeconds": 366.5650884062052,
+  "timing": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.247959743589744,
+        "candidate": 5.162351794871794,
+        "after-control": 5.444091756756757,
+        "CPython": 3.347038118644068
+      },
+      "ratio": 1.5423642073616823,
+      "deltaPercent": -1.6312615359239002,
+      "versusAfterPercent": -5.175150869477729,
+      "oldControlPercent": 3.737300260479004,
+      "iqrPercent": {
+        "before-control": 0.9930779937287447,
+        "candidate": 0.9848408387908261,
+        "after-control": 0.9024993348231574,
+        "CPython": 0.876243229854085
+      }
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 5.325604027027027,
+        "candidate": 5.298589567567567,
+        "after-control": 5.513738888888889,
+        "CPython": 3.5277502758620694
+      },
+      "ratio": 1.5019741062234802,
+      "deltaPercent": -0.5072562534195857,
+      "versusAfterPercent": -3.902058578705714,
+      "oldControlPercent": 3.532648332604005,
+      "iqrPercent": {
+        "before-control": 0.5953289937435235,
+        "candidate": 1.027359580760221,
+        "after-control": 2.4034293628139083,
+        "CPython": 0.7117276500473206
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 3.590934642857143,
+        "candidate": 2.9786009701492535,
+        "after-control": 3.498667793103448,
+        "CPython": 1.1657751411764705
+      },
+      "ratio": 2.5550390164807646,
+      "deltaPercent": -17.052208787088464,
+      "versusAfterPercent": -14.864710047045538,
+      "oldControlPercent": -2.5694382919841274,
+      "iqrPercent": {
+        "before-control": 0.7470195035773141,
+        "candidate": 0.3400832801074966,
+        "after-control": 0.9470461889898198,
+        "CPython": 0.4286380542743645
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 3.684319472727273,
+        "candidate": 3.339031016949152,
+        "after-control": 3.5893732909090907,
+        "CPython": 1.3127526387096775
+      },
+      "ratio": 2.543534035651325,
+      "deltaPercent": -9.371838092056795,
+      "versusAfterPercent": -6.974539945287594,
+      "oldControlPercent": -2.5770344434300485,
+      "iqrPercent": {
+        "before-control": 0.4093290774789383,
+        "candidate": 0.7795025076543283,
+        "after-control": 0.4901964881375118,
+        "CPython": 0.38755845701202873
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.657375,
+        "candidate": 5.3348818157894735,
+        "after-control": 5.507256162162162,
+        "CPython": 4.075101632653062
+      },
+      "ratio": 1.3091408010642038,
+      "deltaPercent": -5.7004031765708785,
+      "versusAfterPercent": -3.1299496754299105,
+      "oldControlPercent": -2.653506932770733,
+      "iqrPercent": {
+        "before-control": 0.19295388762455398,
+        "candidate": 0.40525783067585486,
+        "after-control": 0.6304647866094433,
+        "CPython": 0.46298582361637675
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 5.921810818181818,
+        "candidate": 5.489652222222222,
+        "after-control": 5.815611705882353,
+        "CPython": 4.210676916666666
+      },
+      "ratio": 1.3037457707793079,
+      "deltaPercent": -7.297744038575715,
+      "versusAfterPercent": -5.6049045250120555,
+      "oldControlPercent": -1.793355369837224,
+      "iqrPercent": {
+        "before-control": 1.169352851052813,
+        "candidate": 0.7656554139130854,
+        "after-control": 1.3825352588725213,
+        "CPython": 1.138170370983307
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 5.5724705000000005,
+        "candidate": 5.0911065853658535,
+        "after-control": 5.626831027027027,
+        "CPython": 2.5728048125000003
+      },
+      "ratio": 1.9788157114098421,
+      "deltaPercent": -8.638249671023779,
+      "versusAfterPercent": -9.520890872463728,
+      "oldControlPercent": 0.9755193325299061,
+      "iqrPercent": {
+        "before-control": 2.209165433989516,
+        "candidate": 2.3356978263913675,
+        "after-control": 4.248964041725404,
+        "CPython": 1.4270041423906048
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 5.636477514285715,
+        "candidate": 5.2686576756756756,
+        "after-control": 5.734267714285714,
+        "CPython": 2.7424192533333334
+      },
+      "ratio": 1.9211714872814472,
+      "deltaPercent": -6.525704000021215,
+      "versusAfterPercent": -8.119782015933264,
+      "oldControlPercent": 1.7349523661213784,
+      "iqrPercent": {
+        "before-control": 2.9466868702338966,
+        "candidate": 3.815891174168176,
+        "after-control": 1.335277983184499,
+        "CPython": 1.6614371882764474
+      }
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "before-control": 0.20308906402439025,
+        "candidate": 0.19583291330049263,
+        "after-control": 0.2138604915433404,
+        "CPython": 0.18463671441774493
+      },
+      "ratio": 1.0606390712597713,
+      "deltaPercent": -3.572890917960103,
+      "versusAfterPercent": -8.429597310260718,
+      "oldControlPercent": 5.3037949486322455,
+      "iqrPercent": {
+        "before-control": 1.0282939912636746,
+        "candidate": 0.640200681382114,
+        "after-control": 2.5612511169318832,
+        "CPython": 0.43504123411649753
+      }
+    },
+    {
+      "case": "scripts.config-edit.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "before-control": 0.2995265306122449,
+        "candidate": 0.2870782316017316,
+        "after-control": 0.2960668346774194,
+        "CPython": 0.2592201551282051
+      },
+      "ratio": 1.1074687902248515,
+      "deltaPercent": -4.155992120320162,
+      "versusAfterPercent": -3.0360047201779095,
+      "oldControlPercent": -1.1550549220977868,
+      "iqrPercent": {
+        "before-control": 1.2281999103649586,
+        "candidate": 1.8352031031136031,
+        "after-control": 0.9159606984446463,
+        "CPython": 0.4610844080999543
+      }
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.08662376611498258,
+        "candidate": 0.08617531515151515,
+        "after-control": 0.08523647761842677,
+        "CPython": 0.05460427432655305
+      },
+      "ratio": 1.5781789285607204,
+      "deltaPercent": -0.5176996840245529,
+      "versusAfterPercent": 1.1014504110449241,
+      "oldControlPercent": -1.6015102537961123,
+      "iqrPercent": {
+        "before-control": 0.8479451168153322,
+        "candidate": 1.3282680492396666,
+        "after-control": 0.6614942751876217,
+        "CPython": 0.24824924798773818
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "before-control": 0.059714247703612985,
+        "candidate": 0.05995246101190476,
+        "after-control": 0.05928420353982301,
+        "CPython": 0.03799820473036897
+      },
+      "ratio": 1.5777708825277603,
+      "deltaPercent": 0.39892206207492453,
+      "versusAfterPercent": 1.1272100022948983,
+      "oldControlPercent": -0.720170110698648,
+      "iqrPercent": {
+        "before-control": 2.132840680872195,
+        "candidate": 1.1177457273947518,
+        "after-control": 1.7319536829195652,
+        "CPython": 0.2630732263046827
+      }
+    }
+  ]
+}
