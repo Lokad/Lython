@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "a8e476bf: same production in delivery c6d71108; frozen402ae9f1",
+  "coreSHA256": {
+    "candidate": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd",
+    "control": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd",
+    "reference": "68a9f3f80ad295c86033fe0801459549301b6cb08f0a5218fefb9689744956dd"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "d49742711a6138ff78a4f2c727c88e7450356d9b4e0a1eb3bfe207dc53218687",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "D31-D33 GREEN7efe/41974563982;D34focused116internal/431public per actualtarget pass, full41977587599 active",
+  "reference": "Previous external0997baa8/core68a9f3f8 with same current worker auxiliary bits, no API/runtime behavior change in the worker",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "79ec5c60828b2e991869db554b4c92b129942f49f23fdb769e85601271df2238",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "b4c9dee879f36ad352b9224b55339c7295dfe01912fc0c1644405fbb8788385e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeFormatting.cs": "ee8741bb8fa30f94a7c2cc4db6e3e3d60ebac9896bcec84471f2b95d20bed3d0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "aaee9be213201c7f4bf0968a43bb7aeaa76ea2b96a6d5a986ed3a3c4ecdf768d",
+    "src/Lokad.Lython/Runtime/PyList.cs": "1c8eed631f5912508592163e918ea14b85d7f78a0ef723c10a9ea580ee3f64de"
+  }
+}

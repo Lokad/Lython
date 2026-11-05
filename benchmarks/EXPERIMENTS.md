@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [retained CSV/list CPython checkpoint](results/2026-11-05-runtime-cpython-csv-checkpoint/README.md)
+completes439.56s/16jobs/all identity/golden/quiet/join gates on a8e476bf/core402ae9f1.
+Fresh nativeCSV/ordinaryCSV/text/config1.43/1.68/2.15/1.05×CPython3.13.16;
+JSON1.19–1.24×/report1.48–1.57× retain3.65/5.54%controls. Compile1.28/1.36×.
+Coupled text−2–3% versus0997 cannot isolate D34's accepted~1%component debt.
+WarmJSON selected+5.50% versus0997/identical-currentcontrol−0.01% stays unresolved.
+Final D34 platform delivery is active; no new CPU/RSS/startup claim. Whole-script
+objective stays open, with complete activation/transport and actual allocations
+requiring evidence before another coherent redesign.
+
 The [private CSV record construction](results/2026-11-05-private-csv-records/README.md)
 retains final arrays with explicit public adoption/private relinquishment, removing
 intermediate row lists, per-field insertion and the draft's extra async forwarding
