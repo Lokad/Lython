@@ -1,8 +1,10 @@
-# Prepared native helpers — retained, delivery pending
+# Prepared native helpers — qualified
 
 2026-11-05. Baseline **cf3dc9cd**, frozen **43fdf658**. Completed source is
 8243b05c plus the archived patch/snapshot, measured **81deb3be**. Retain the
-coherent replacement; full platform/Stress/installed-consumer delivery pending.
+coherent replacement; full delivery [41958212610](https://github.com/Lokad/Lython/actions/runs/41958212610)
+is GREEN on exact8475a8dd: Windows/Ubuntu actual .NET11/.NET10, original Stress
+both targets and installed Release consumers. [Cached receipt](delivery-ci-status.json).
 Publication postponed. This does not complete the broader performance objective.
 
 ## Removed work and preserved contracts

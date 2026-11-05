@@ -1,7 +1,15 @@
 # Benchmark experimental history
 
+The [current prepared-runtime CPU attribution](results/2026-11-05-prepared-script-cpu/README.md)
+has1108text/1613report samples on8475a8dd/81deb3be,36sowned/all gates. Actual declaring
+owners separate parameters from callers; unknown/incomplete maps remain. Budgets
+already share one gate; mandatory funding is not a duplicate policy. Select whole
+fstring construction capacity planning, keeping native ranges, actual read order,
+same governor and bounded pre-allocation/cancellation/rollback proof. No new speedup.
+
 The [prepared native-body replacement](results/2026-11-05-prepared-native-bodies/README.md)
-is retained pending full delivery. Ordinary instructions40->32B;16B prepared values
+is fully qualified on8475a8dd/41958212610,all8logicalgates GREEN cached.
+Ordinary instructions40->32B;16B prepared values
 only for eligible helpers replace runtime structure/arity/method/fusion classifiers.
 Fifteen net production lines removed.268s/all gates: textwarm−4.7–8.0%,async−5.3–7.3%,
 compileallocation−2.3%,warm allocation flat. Same-bit81s CSV/JSON confirmation narrows
