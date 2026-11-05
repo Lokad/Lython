@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "f64bc7c5 plus D64B2 shared set query/preflight prototype; combined source pair against aec4f785 frozen47833d32",
+  "coreSHA256": {
+    "candidate": "68b0d65c3a14f10647329a91dc38ad81c363f283c13a498ff07a67b40c97f4c4",
+    "control": "68b0d65c3a14f10647329a91dc38ad81c363f283c13a498ff07a67b40c97f4c4",
+    "reference": "47833d32f8b6c8233e75017a23d1de3d742b4f379f77c6a7f49a126f62ecf36e"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/ProtocolSideIndex.cs": "c877296a7023268c00d2a96ec6e0e9a9840865ddf097a3ad2b7b1b2f419bf693",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "100215bd658a00af8e3c4d8bb8bb16220b34e1aca66818b375cdd5b07d55e50a",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "d9c59e878f7aee908f92db259e7a0edc25e33321839848e4e6115bf0ff4c58c7",
+    "src/Lokad.Lython/Runtime/PySet.cs": "546fe9ad739a41c796c6c9b76141cdb6de2e0e6eb33aaadd117f0f501a83f55c",
+    "tests/Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs": "6744e61fa1d0587698c9f10a934bc64f5914832969a6b43a5c736c6e5ecdefe6",
+    "tests/Lokad.Lython.Tests/HashQueryOwnershipTests.cs": "5a2f62aec14cd041b4423e33e02923ed17712c1497856123602d34cad7e20e74"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Zero-warning/error actual11/10 build;1400public/462internal per actual target pass. Stored-hash regression and original incorrect set-clear golden preserved. New actual entry-metadata denial regression demonstrably fails before fix. Earlier aec4f785 full delivery independent. No new allocation/CPU/latency claim."
+}

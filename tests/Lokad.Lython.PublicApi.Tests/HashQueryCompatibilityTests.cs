@@ -7,6 +7,47 @@ public sealed class HashQueryCompatibilityTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["empty set queries still invoke hashing", """
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              return 17
+            key=Key()
+            print(key in set(),events)
+            """, "False ['hash']\n"];
+        yield return ["custom set queries match retained native items", """
+            class Key:
+             def __hash__(self):return hash(1)
+             def __eq__(self,other):return isinstance(other,int) and other==1
+            key=Key()
+            s={1}
+            print(key in s)
+            s.add(key)
+            print(len(s),next(iter(s)) is key)
+            s.remove(key)
+            print(len(s))
+            """, "True\n1 False\n0\n"];
+        yield return ["set equality clearing its candidate does not return a stale match", """
+            class Key:
+             armed=False
+             def __hash__(self):return 17
+             def __eq__(self,other):
+              if self.armed:s.clear()
+              return True
+            stored=Key()
+            query=Key()
+            for operation in ['contains','add','remove']:
+             s={stored}
+             stored.armed=True
+             if operation=='contains':print(query in s,len(s))
+             elif operation=='add':
+              s.add(query)
+              print(len(s))
+             else:
+              try:s.remove(query)
+              except KeyError:print('KeyError',len(s))
+            """, "False 0\n0\nKeyError 0\n"];
         yield return ["structural collisions do not compare different Python hashes", """
             from dataclasses import dataclass
             events=[]

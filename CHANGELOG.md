@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share custom set add, membership and removal resolution. Hash empty queries,
+  match native members and preserve stored hashes and equality-driven mutation.
+  Admit protocol-entry metadata before publication, keeping refusal terminal and
+  retained capacity funded through rollback and cleanup.
+
 - Select custom-key equality candidates by their actual Python hash. Remove
   candidate sets, sorting and intermediate lists while preserving snapshot
   ownership, insertion order and the stored-entry structural index.

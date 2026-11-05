@@ -73,12 +73,13 @@ errors. Under `RunAsync`, native-key lookup equality can suspend for host I/O,
 including integer and tuple keys. Custom key hashing and write-key equality
 retain their synchronous-completion restrictions.
 
-Custom-key queries invoke `__hash__` even for an identity hit; native dictionary
+Custom-key queries invoke `__hash__` even for an identity hit or empty set; native dictionary
 copies and set pop reuse stored keys without rehashing. Nested unhashability names
 the failing value. Equality candidates use the actual Python hash, independently
-of the internal structural index. Known gaps remain: custom membership queries
-against empty or native-only sets can skip hashing or miss matches; hashes of slice
-bounds and generated dataclass fields can omit nested custom `__hash__` calls.
+of the internal structural index. Set add preserves positive equality even if its
+callback clears the set; membership/removal require a current retained match.
+Known gaps remain: hashes of slice bounds and generated dataclass fields can omit
+nested custom `__hash__` calls.
 
 List/dict/set/tuple construction, updates, slicing and unpacking preserve evaluation
 order and alias identity. Iteration accepts supported native values and guest

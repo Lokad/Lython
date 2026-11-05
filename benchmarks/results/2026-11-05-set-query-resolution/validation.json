@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "f64bc7c5 plus D64B2 shared set resolution with identity completion refinement; source pair against corrected aec4f785/frozen478",
+  "sourceFilesVerified": true,
+  "coreSHA256": {
+    "candidate": "8050cc0fbbbb794869a597cedefbd06ee5327e1fb6bcb3db832a47c7f6c8d1a8",
+    "control": "8050cc0fbbbb794869a597cedefbd06ee5327e1fb6bcb3db832a47c7f6c8d1a8",
+    "reference": "47833d32f8b6c8233e75017a23d1de3d742b4f379f77c6a7f49a126f62ecf36e"
+  },
+  "publicPerActualTarget": 1400,
+  "internalPerActualTarget": 464,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Focused Release only; full platform/original stress/installed consumers for later combined delivery. Earlier aec4f785 independently GREEN/all8, not qualification of this source.",
+  "retention": "Retain correctness and deletion with synthetic stable-query regression debt+2.30/+1.80% after refinement. Original+5.05/+4.39% adverse preserved. No general CPU/allocation/latency claim."
+}

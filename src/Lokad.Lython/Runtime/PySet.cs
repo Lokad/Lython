@@ -328,9 +328,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public bool Remove(object item)
     {
         if (!PyHashProtocols.NeedsProtocolKey(item) && RemoveStoredItem(item)) return true;
-        if (!RemoveProtocolItem(item)) return false;
-        _version++;
-        return true;
+        return RemoveProtocolItem(item);
     }
 
     // Pop removes a retained member without querying guest hash slots again.
@@ -416,75 +414,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (context is null || useSpan is null)
-        {
-            return AddProtocolStructural(item);
-        }
+        if (context is null || useSpan is null) return AddProtocolStructural(item);
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        if (ResolveProtocolItem(item, hash, context, useSpan, forInsertion: true) is not null) return false;
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // Snapshot actual-hash candidates in insertion order. The store fallback
-        // considers only native items not already resolved through the index.
-        var work = 0;
-        if (_protocol is not null)
-        {
-            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
-            for (var i = 0; i < candidates.Length; i++)
-            {
-                if ((++work & 63) == 0)
-                {
-                    context.CheckExecution(useSpan);
-                }
-
-                var entry = candidates[i];
-                if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-                {
-                    return false;
-                }
-            }
-        }
-
-        var storeHit = -1;
-        var probe = 0;
-        foreach (var existing in _items)
-        {
-            if ((++work & 63) == 0)
-            {
-                context.CheckExecution(useSpan);
-            }
-
-            if (PyHashProtocols.IsNativeHashMatch(existing, hash))
-            {
-                storeHit = probe;
-                break;
-            }
-
-            probe++;
-        }
-
-        if (storeHit >= 0)
-        {
-            using var snapshot = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), useSpan);
-            var storeSnapshot = _items.ToArray();
-            for (var i = storeHit; i < storeSnapshot.Length; i++)
-            {
-                if (i > storeHit && (++work & 63) == 0)
-                {
-                    context.CheckExecution(useSpan);
-                }
-
-                var existing = storeSnapshot[i];
-                if (PyHashProtocols.IsNativeHashMatch(existing, hash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
-                {
-                    return false;
-                }
-            }
-        }
-
-        AppendProtocolItem(item, hash, structuralHash);
-        return true;
+        return AppendProtocolItem(item, hash, structuralHash);
     }
 
     private bool AddProtocolStructural(object item)
@@ -501,36 +436,41 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        AppendProtocolItem(item, structuralHash, structuralHash);
-        return true;
+        return AppendProtocolItem(item, structuralHash, structuralHash);
     }
 
-    private void AppendProtocolItem(object item, int hash, int structuralHash)
+    private bool AppendProtocolItem(object item, int hash, int structuralHash)
     {
-        var committedBefore = CommittedStorageBytes;
         // Protocol keys are instances or tuple-likes, never numeric members.
-        _protocol ??= new List<ProtocolEntry>();
-        _sideIndex ??= new ProtocolSideIndex();
-        var position = _protocol.Count;
-        _sideIndex.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
-
+        // Admit their metadata before any index, backing or entry publication.
+        var bytes = _memoryGovernor is null ? 0 : ProtocolEntryBytes;
+        _memoryGovernor?.Reserve(bytes, _allocationSpan);
+        var countBefore = Count;
+        var position = _protocol?.Count ?? 0;
+        var indexed = false;
         try
         {
+            _protocol ??= new List<ProtocolEntry>();
+            _sideIndex ??= new ProtocolSideIndex();
+            _sideIndex.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
+            indexed = true;
             EnsureCapacity(Count + 1);
+            if (!_items.Add(item)) return false;
+            _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
+            return true;
         }
-        catch (Exception)
+        finally
         {
-            _sideIndex.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
-            throw;
-        }
-
-        _ = _items.Add(item);
-        _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.Reserve(ProtocolEntryBytes, _allocationSpan);
-            _memoryGovernor.Commit(ProtocolEntryBytes);
-            _protocolBytes += ProtocolEntryBytes;
+            if (Count > countBefore)
+            {
+                _memoryGovernor?.Commit(bytes);
+                _protocolBytes += bytes;
+            }
+            else
+            {
+                if (indexed) _sideIndex!.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
+                _memoryGovernor?.ReleaseReserved(bytes);
+            }
         }
     }
 
@@ -538,46 +478,16 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (_protocol is null)
-        {
-            return false;
-        }
-
         if (context is null || useSpan is null)
         {
-            foreach (var entry in _protocol)
-            {
-                if (ReferenceEquals(entry.Item, item))
-                {
-                    return true;
-                }
-            }
-
+            if (_protocol is not null)
+                foreach (var entry in _protocol)
+                    if (ReferenceEquals(entry.Item, item)) return true;
             return false;
         }
 
         var hash = storedHash ?? PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        // Snapshot actual-hash candidates in insertion order before dispatch.
-        // There is no native-store phase here.
-        var work = 0;
-        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
-        for (var i = 0; i < candidates.Length; i++)
-        {
-            if ((++work & 63) == 0)
-            {
-                context.CheckExecution(useSpan);
-            }
-
-            var entry = candidates[i];
-            if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return ResolveProtocolItem(item, hash, context, useSpan) is not null;
     }
 
     private bool ContainsProtocolBuiltin(object item)
@@ -631,86 +541,85 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (context is null || useSpan is null)
-        {
-            return RemoveProtocolStructural(item);
-        }
-
-        // N10 part 1: with no protocol entries homed, a builtin item that
-        // missed the structural probe cannot match anything the scan would
-        // reach without guest dispatch, so skip both snapshots entirely.
-        // (A protocol item still scans the store: an always-true __eq__ can
-        // match a builtin-homed entry like CPython.)
-        if ((_protocol is null || _protocol.Count == 0) && !PyHashProtocols.NeedsProtocolKey(item))
-        {
-            return false;
-        }
+        if (context is null || useSpan is null) return RemoveProtocolStructural(item);
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        // Snapshot actual-hash candidates in insertion order. Position fixup
-        // rides RemoveSideEntry; the store fallback considers native items only.
-        var work = 0;
-        if (_protocol is not null)
+        var stored = ResolveProtocolItem(item, hash, context, useSpan);
+        return stored is not null && RemoveStoredItem(stored);
+    }
+
+    // Custom add/contains/remove share one actual-hash query and one retained
+    // match. Snapshots outlive all callbacks; no CLR comparer invokes guest code.
+    private object? ResolveProtocolItem(object item, int hash,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool forInsertion = false)
+    {
+        long lastSequence = -1;
+        while (true)
         {
-            using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
-            for (var i = 0; i < candidates.Length; i++)
+            context.CheckExecution(span);
+            var sequenceBefore = _protocolSeq;
+            using (var candidatesStorage = _memoryGovernor?.ReserveTemporary(
+                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span))
             {
-                if ((++work & 63) == 0)
+                var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, span, context);
+                foreach (var entry in candidates)
                 {
-                    context.CheckExecution(useSpan);
-                }
-
-                var entry = candidates[i];
-                if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-                {
-                    RemoveSideEntry(entry.Item);
-                    return true;
+                    context.CheckExecution(span);
+                    if (entry.Seq <= lastSequence) continue;
+                    lastSequence = entry.Seq;
+                    if (!IsCurrentProtocolEntry(entry)) continue;
+                    if (ReferenceEquals(entry.Item, item)) return entry.Item;
+                    var matches = LythonRuntime.ElementEquals(entry.Item, item, context, span);
+                    context.CheckExecution(span);
+                    // Python add accepts positive equality even if the callback
+                    // withdrew that entry; queries/removal need a current match.
+                    if (matches && forInsertion) return entry.Item;
+                    if (matches && IsCurrentProtocolEntry(entry)) return entry.Item;
                 }
             }
-        }
+            if (_protocolSeq != sequenceBefore) continue;
 
-        var storeHit = -1;
-        var probe = 0;
-        foreach (var existing in _items)
+            var nativeMatch = false;
+            foreach (var existing in _items)
+            {
+                context.CheckExecution(span);
+                if (PyHashProtocols.IsNativeHashMatch(existing, hash))
+                {
+                    nativeMatch = true;
+                    break;
+                }
+            }
+
+            if (nativeMatch)
+            {
+                using var nativeStorage = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), span);
+                var nativeItems = _items.ToArray();
+                foreach (var existing in nativeItems)
+                {
+                    context.CheckExecution(span);
+                    if (!PyHashProtocols.IsNativeHashMatch(existing, hash)) continue;
+                    var matches = ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, span);
+                    context.CheckExecution(span);
+                    if (matches && forInsertion) return existing;
+                    if (matches && _items.TryGetValue(existing, out var stored)) return stored;
+                }
+            }
+            if (_protocolSeq == sequenceBefore) return null;
+        }
+    }
+
+    private bool IsCurrentProtocolEntry(ProtocolEntry entry)
+    {
+        var low = 0;
+        var high = (_protocol?.Count ?? 0) - 1;
+        while (low <= high)
         {
-            if ((++work & 63) == 0)
-            {
-                context.CheckExecution(useSpan);
-            }
-
-            if (PyHashProtocols.IsNativeHashMatch(existing, hash))
-            {
-                storeHit = probe;
-                break;
-            }
-
-            probe++;
+            var middle = low + (high - low) / 2;
+            var current = _protocol![middle];
+            if (current.Seq == entry.Seq) return ReferenceEquals(current.Item, entry.Item);
+            if (current.Seq < entry.Seq) low = middle + 1;
+            else high = middle - 1;
         }
-
-        if (storeHit >= 0)
-        {
-            using var snapshot = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), useSpan);
-            var storeSnapshot = _items.ToArray();
-            for (var i = storeHit; i < storeSnapshot.Length; i++)
-            {
-                if (i > storeHit && (++work & 63) == 0)
-                {
-                    context.CheckExecution(useSpan);
-                }
-
-                var existing = storeSnapshot[i];
-                if (PyHashProtocols.IsNativeHashMatch(existing, hash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
-                {
-                    _ = _items.Remove(existing);
-                    RemoveProtocolShadow(existing);
-                    ReleaseNumericStorage(existing);
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
@@ -722,8 +631,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if (ReferenceEquals(_protocol[i].Item, item))
                 {
-                    RemoveSideEntry(_protocol[i].Item);
-                    return true;
+                    return RemoveStoredItem(_protocol[i].Item);
                 }
             }
         }
@@ -749,27 +657,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 return;
             }
         }
-    }
-
-    private void RemoveSideEntry(object item)
-    {
-        // Callers always pass the stored protocol item, which is nonnumeric.
-        if (_protocol is not null)
-        {
-            for (var i = 0; i < _protocol.Count; i++)
-            {
-                if (ReferenceEquals(_protocol[i].Item, item))
-                {
-                    var evicted = _protocol[i];
-                    _protocol.RemoveAt(i);
-                    _sideIndex?.RemoveAt(i, evicted.Hash, evicted.StructuralHash);
-                    break;
-                }
-            }
-        }
-
-        _ = _items.Remove(item);
-        ReleaseSideBytes(ProtocolEntryBytes);
     }
 
     private void ReleaseSideBytes(long bytes)

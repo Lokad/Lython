@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [shared set-query milestone](results/2026-11-05-set-query-resolution/README.md)
+removes candidate temporary containers/sorting and three independent query loops,
+fixes empty/native queries and admits metadata before publication. Focus1400public/
+464internal per actual11/10 pass; full qualification remains separate. B29785.76s
+and source-justified B29858.83s pass all gates. Synthetic query regression+5.05/
+4.39% initially, +2.30/1.80% after refinement remains explicit debt. Native complete
+controls are small/variable; retain correctness and deletion without a broad
+CPU/allocation/latency claim. Original/adverse/control/failed conditions preserved.
+
 The [keyed-query/validation correction](results/2026-11-05-keyed-validation/README.md)
 restores required hash callbacks/errors and native-copy behavior, preserves nested
 failure origins and removes repeated subtree hashing. Full4154internal/16015public
