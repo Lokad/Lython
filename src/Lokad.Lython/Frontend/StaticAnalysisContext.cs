@@ -24,11 +24,11 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal ILythonMemoryBudget RegexMemoryOwner => _regexOwner ??=
         (MemoryGovernor?.Budget ?? new LythonMemoryBudget()).CreateScope();
 
-    internal void ReserveRegexStorage(long bytes)
+    internal void ReserveRegexStorage(long bytes, LythonSourceSpan span)
     {
         if (!RegexMemoryOwner.TryReserve(bytes, out _))
-            throw MemoryGovernor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, null)
-                ?? Runtime.RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", null,
+            throw MemoryGovernor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, span)
+                ?? Runtime.RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", span,
                     LythonFailureReason.SharedMemoryAllowance, requested: bytes);
     }
 

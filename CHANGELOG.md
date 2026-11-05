@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Identify regex-provider memory refusals during compilation by operation,
+  provider explanation and available source location. Preserve `LA0008`, terminal
+  shared-memory refusal attribution and cleanup through compile-to-result APIs.
+
 - Build CSV records directly into final field arrays. DictReader releases private
   capacity after callbacks and awaited cleanup; csv.reader and fieldnames adopt
   the same funded backing. Remove intermediate row lists and per-field insertion,

@@ -253,6 +253,9 @@ frame runner. Other calls share native/general target selection and completed
 stack-value transfer across both APIs. Native results travel as objects;
 potentially asynchronous branches retain operands and argument funding until
 their actual completion. Dynamic calls keep the general binder.
+Operand retirement recognizes the runtime's four temporary-value classes through
+one internal base class and disposes them in reverse order. Pending asynchronous
+cursors transfer to the frame's awaited cleanup chain before their slots clear.
 Return values and failures resume the existing instruction
 and exception routing. Prepared operations route directly to their existing
 handler; native stores do not traverse asynchronous display and definition
@@ -734,6 +737,9 @@ cannot catch, suppress or return over it. There is no retry, waiting, algorithm
 fallback or optional-storage recovery. Guest-raised `MemoryError` stays catchable.
 Compilation refusal gives diagnostic `LA0008`. Native cleanup/refunds remain
 available, and later commands can reuse returned allowance.
+Refusals during regex constant analysis retain the provider's explanation,
+the failing regex operation and the available Python source span in that diagnostic.
+The same diagnostic is returned by compilation and compile-to-result APIs.
 
 ### Ownership lifetimes
 

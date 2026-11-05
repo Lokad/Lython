@@ -166,7 +166,7 @@ internal static class StaticRegexReturnResolver
             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
             TryGetWindow(arguments, flagsPosition + 1, textValue.RequireText(), bindings, out var window) &&
-            TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, out var regex))
+            TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, span, out var regex))
         {
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
@@ -197,7 +197,7 @@ internal static class StaticRegexReturnResolver
             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
             textValue.Kind == AbstractValueKind.String &&
             TryGetWindow(arguments, textPosition + 1, textValue.RequireText(), bindings, out var window) &&
-            TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, out var regex))
+            TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, span, out var regex))
         {
             var text = textValue.RequireText();
             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
@@ -226,7 +226,7 @@ internal static class StaticRegexReturnResolver
         out bool flagsKnown)
     {
         flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, out var patternFlags);
-        if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue))
+        if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out var patternExpression, out var patternValue))
         {
             summary = default;
             return false;
@@ -244,13 +244,14 @@ internal static class StaticRegexReturnResolver
             return false;
         }
 
-        summary = CreateRegexPatternSummary(patternValue.RequireText(), flagsKnown ? patternFlags : null, bindings);
+        summary = CreateRegexPatternSummary(patternValue.RequireText(), flagsKnown ? patternFlags : null, bindings,
+            DiagnosticSpan(patternExpression, patternValue));
         return true;
     }
 
-    private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings)
+    private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings, LythonSourceSpan span)
     {
-        if (flags is { } known && TryCompileRegex(pattern, known, bindings, out var compiled))
+        if (flags is { } known && TryCompileRegex(pattern, known, bindings, span, out var compiled))
             return new AbstractRegexPatternSummary(pattern, compiled.Program.CaptureSlotCount, compiled.NamedGroups, compiled.Program.Flags);
         return new AbstractRegexPatternSummary(pattern, null, new Dictionary<PyString, int>());
     }
@@ -314,7 +315,7 @@ internal static class StaticRegexReturnResolver
             ? options
             : 0;
 
-    private static bool TryCompileRegex(string pattern, int options, AbstractState bindings,
+    private static bool TryCompileRegex(string pattern, int options, AbstractState bindings, LythonSourceSpan span,
         [MaybeNullWhen(false)] out StaticAnalysisContext.AnalyzedRegexPattern regex)
     {
         var analysis = bindings.AnalysisContext;
@@ -328,14 +329,14 @@ internal static class StaticRegexReturnResolver
         {
             // Encoded input plus cache/owned-handle capacity and growth overlap.
             var bytes = 256L + 3L * pattern.Length;
-            analysis.ReserveRegexStorage(bytes);
+            analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
             var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
-                analysis.RegexMemoryOwner, token), governor, token, null);
+                analysis.RegexMemoryOwner, token), governor, token, span, operationName: "Regex pattern compilation");
             try
             {
                 analysis.OwnRegexPattern(program);
-                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, null));
+                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, span));
                 // Inputs remain funded until every analysis pattern handle ends.
                 analysis.RegexPatterns[(pattern, options)] = regex;
                 analysis.RegexPatterns[(pattern, program.Flags)] = regex;
@@ -385,8 +386,9 @@ internal static class StaticRegexReturnResolver
         var analysis = bindings.AnalysisContext!;
         var token = analysis.CancellationToken;
         using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
-            analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span);
+            analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
+            operationName: "Regex constant-subject preparation");
         return LythonRuntime.RegexCompiler.ProviderCall(() => subject.Match((LythonRegexMatchMode)operation, token),
-            analysis.MemoryGovernor, token, span) is not null;
+            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching") is not null;
     }
 }

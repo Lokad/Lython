@@ -19,7 +19,8 @@ internal sealed partial class LythonRuntime
         internal const int PythonAsciiFlag = 256;
 
         internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
-            CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null)
+            CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null,
+            string operationName = "Regex provider")
         {
             governor?.ThrowIfAdmissionFailed();
             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
@@ -56,8 +57,8 @@ internal sealed partial class LythonRuntime
                 throw error.Failure switch
                 {
                     LythonRegexFailure.Capability => RuntimeErrors.Capability(error.Message, span),
-                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission(error.Message, error.RequestedBytes, span)
-                        ?? RuntimeErrors.Attributed("MemoryError", error.Message, span,
+                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {error.Message}", error.RequestedBytes, span, error)
+                        ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {error.Message}", span,
                             LythonFailureReason.SharedMemoryAllowance, requested: error.RequestedBytes),
                     _ => CreatePatternErrorFailure(error.Message, pattern, error.Position, governor, cancellationToken, span),
                 };

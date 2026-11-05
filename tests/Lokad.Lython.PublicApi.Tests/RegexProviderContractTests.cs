@@ -8,6 +8,53 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexProviderContractTests
 {
     [Theory]
+    [InlineData("compile", "Regex pattern compilation")]
+    [InlineData("prepare", "Regex constant-subject preparation")]
+    [InlineData("match", "Regex constant matching")]
+    public async Task FrontendAdmissionDiagnosticsPreserveProviderOperationAndExplanation(string stage, string operation)
+    {
+        const string source = "import re\nvalue = re.search('x', 'x')\nprint('must not run')";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var provider = new CooperatingProvider { RefuseStage = stage };
+        var engine = new LythonEngine(provider);
+        LythonDiagnostic expected;
+        using (var script = engine.Compile(source, budget))
+        {
+            Assert.False(script.IsValid);
+            expected = Assert.Single(script.Diagnostics);
+            Assert.Equal("LA0008", expected.Code);
+            Assert.Contains(operation, expected.Message);
+            Assert.Contains("provider scratch admission refused", expected.Message);
+            Assert.Equal(2, expected.Span?.Line);
+            Assert.True(expected.Span?.Length > 0);
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost());
+                CheckFailure(result);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        var options = new LythonRunOptions { MemoryBudget = budget };
+        using (var result = engine.Run(source, new MockLythonHost(), options)) CheckFailure(result);
+        Assert.Equal(0, budget.ReservedBytes);
+        using (var result = await engine.RunAsync(source, new MockLythonHost(), options)) CheckFailure(result);
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+        using (var script = engine.Compile("return 42", budget))
+        using (var result = script.Run(new MockLythonHost())) Assert.True(result.Success);
+        Assert.Equal(0, budget.ReservedBytes);
+
+        void CheckFailure(LythonExecutionResult result)
+        {
+            Assert.False(result.Success);
+            Assert.Empty(result.StandardOutput);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+            Assert.Equal(long.MaxValue, result.FailureAttribution?.Requested);
+            Assert.Equal(expected, Assert.Single(result.Diagnostics));
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MatchingOnlyProviderSupportsNativeSplitSubstituteAndExpand(bool asynchronous)
@@ -711,6 +758,7 @@ public sealed class RegexProviderContractTests
         internal string? BlockStage;
         internal bool HoldCleanup;
         internal bool Refuse;
+        internal string? RefuseStage;
         internal bool CleanupFinished;
         internal CancellationToken? ExpectedToken;
         internal CancellationTokenSource? CancelCapture;
@@ -740,6 +788,9 @@ public sealed class RegexProviderContractTests
             if (ExpectedToken is { } expected) Assert.Equal(expected, token);
             if (BlockStage == stage) { Entered.TrySetResult(); _work.Wait(token); }
             token.ThrowIfCancellationRequested();
+            if (RefuseStage == stage)
+                throw new LythonRegexException(LythonRegexFailure.MemoryAdmission,
+                    "provider scratch admission refused", requestedBytes: long.MaxValue);
         }
 
         internal void Cleanup(ILythonMemoryScope owner)

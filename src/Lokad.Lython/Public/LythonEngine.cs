@@ -52,7 +52,7 @@ public sealed class LythonEngine
         }
         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.SharedMemoryAllowance)
         {
-            return Denied(error.Attribution, error.Span);
+            return Denied(error.Attribution, error.Span, error.Message);
         }
         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.Cancelled)
         {
@@ -69,10 +69,11 @@ public sealed class LythonEngine
                 .OwnMemoryScope(owner, memoryBudget);
         }
 
-        LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null)
+        LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null,
+            string message = "Shared memory budget refused compilation storage.")
         {
             IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
-                "Shared memory budget refused compilation storage.", LythonDiagnosticSeverity.Error, span)];
+                message, LythonDiagnosticSeverity.Error, span)];
             LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
                 attribution ?? new(LythonFailureReason.SharedMemoryAllowance));
             return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),

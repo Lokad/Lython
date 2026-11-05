@@ -96,7 +96,9 @@ public sealed class GovernedMemoryContractTests
         var budget = new LythonMemoryBudget(1);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("return 123\n", budget);
         Assert.False(script.IsValid);
-        Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA0008");
+        var diagnostic = Assert.Single(script.Diagnostics);
+        Assert.Equal("LA0008", diagnostic.Code);
+        Assert.Equal("Shared memory budget refused compilation storage.", diagnostic.Message);
         Assert.Equal(0, budget.ReservedBytes);
     }
 
