@@ -78,8 +78,12 @@ copies and set pop reuse stored keys without rehashing. Nested unhashability nam
 the failing value. Equality candidates use the actual Python hash, independently
 of the internal structural index. Set add preserves positive equality even if its
 callback clears the set; membership/removal require a current retained match.
-Known gaps remain: hashes of slice bounds and generated dataclass fields can omit
-nested custom `__hash__` calls.
+Slice bounds and generated dataclass fields use contextual hashes. Generated
+dataclass methods read all included fields before hashing and retain their defining
+class's field plan. Explicit `object.__hash__` remains an identity operation even
+when the dataclass's own hash slot is disabled. Internal dataclass key storage still
+has known gaps: structural probes can repeat attribute reads or reject a valid
+custom hash when fields are structurally unhashable.
 
 List/dict/set/tuple construction, updates, slicing and unpacking preserve evaluation
 order and alias identity. Iteration accepts supported native values and guest

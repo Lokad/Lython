@@ -1429,15 +1429,6 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "object.__hash__(self) expects exactly one argument.", span);
             }
 
-            // Unhashable dataclass instances keep their shaped failure like
-            // the hash builtin (generated hashes shadow this slot instead).
-            if (arguments[0].Value is PyInstance instance &&
-                instance.Type.DataclassFields is { } &&
-                instance.Type.DataclassHashMode == DataclassHashMode.Unhashable)
-            {
-                throw RuntimeErrors.UnhashableType(arguments[0].Value, span);
-            }
-
             // Identity hashes surface as BigInteger like every other guest
             // integer (raw CLR integers stay second-class in numeric paths).
             return new BigInteger(RuntimeHelpers.GetHashCode(arguments[0].Value));

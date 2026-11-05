@@ -34,6 +34,12 @@ distinguish positive insertion equality from a current lookup/removal match and
 keep the stored-hash relation controls, including mutated dataclass fields.
 [Nested error goldens](Lokad.Lython.PublicApi.Tests/UnhashableKeyOriginTests.cs)
 identify the failing value through slices, tuples, dataclasses and cache keys.
+[Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)
+preserve bound ordering, defining dataclass fields and all reads before field
+hashes. Managed slice-depth checks run after real host suspension and recover on
+the next run. [Ownership regressions](Lokad.Lython.Tests/NestedHashOwnershipTests.cs)
+deny field snapshots before reads and stop later guest callbacks after caught
+refusal/cancellation, with shared-budget recovery and traversal cleanup.
 
 | Contract | Primary coverage |
 | --- | --- |

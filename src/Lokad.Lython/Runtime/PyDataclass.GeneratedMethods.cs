@@ -449,9 +449,11 @@ internal static partial class PyDataclass
 
     }
 
-    internal sealed class DataclassHashMethod(string typeName, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class DataclassHashMethod(string typeName, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly PyString? _moduleName = moduleName;
+        // The defining type's admitted metadata owns this immutable plan.
+        private readonly string[] _fieldNames = fields.Where(ShouldIncludeInGeneratedHash).Select(field => field.Name).ToArray();
 
         public PyString? ModuleName => _moduleName;
 
@@ -490,8 +492,20 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", $"{typeName}.__hash__() expected a bound instance.", span);
             }
 
+            context.CheckExecution(span);
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
-            return LythonRuntime.ComputeBuiltinHash(instance, span);
+            using var guard = PyStructuralGuard.EnterSingle(instance, span, context);
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(_fieldNames.Length), span);
+            var values = new object[_fieldNames.Length];
+            // Python evaluates all attributes for the generated tuple before
+            // invoking the first field hash. Keep that order through callbacks.
+            for (var i = 0; i < values.Length; i++)
+            {
+                context.CheckExecution(span);
+                values[i] = ReadField(instance, _fieldNames[i], context, span);
+                context.CheckExecution(span);
+            }
+            return new System.Numerics.BigInteger(PyHashProtocols.ComputeTupleHash(values, context, span));
         }
     }
 

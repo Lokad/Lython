@@ -78,7 +78,7 @@ internal static partial class PyDataclass
 
         if (!hasExplicitHash && type.DataclassHashMode == DataclassHashMode.Generated)
         {
-            type.TrySetMember("__hash__", new DataclassHashMethod(type.Name, moduleName));
+            type.TrySetMember("__hash__", new DataclassHashMethod(type.Name, fields, moduleName));
         }
         else if (!hasExplicitHash && type.DataclassHashMode == DataclassHashMode.Unhashable)
         {

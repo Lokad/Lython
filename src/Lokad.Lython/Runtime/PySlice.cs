@@ -27,6 +27,12 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        if (name is "__hash__")
+        {
+            value = new SliceHashMethod(this);
+            return true;
+        }
+
         if (name is "indices")
         {
             value = new SliceIndicesMethod(this);
@@ -62,13 +68,36 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    // Slices hash structurally like CPython; bounds hash through the shared
-    // comparer so nested values behave uniformly.
+    // Native storage uses structural bounds; Python hashing dispatches each
+    // bound with the current context. Both retain the same native combination.
     public int GetPyHashCode()
-        => HashCode.Combine(
-            PyValueComparer.Instance.GetHashCode(StartBound ?? PyNone.Instance),
-            PyValueComparer.Instance.GetHashCode(StopBound ?? PyNone.Instance),
-            PyValueComparer.Instance.GetHashCode(StepBound ?? PyNone.Instance));
+        => ComputeHash(null, PyStructuralGuard.AmbientSpan);
+
+    internal int ComputeHash(LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        using var guard = PyStructuralGuard.EnterSingle(this, span, context ?? PyStructuralGuard.AmbientContext);
+        PyStructuralGuard.NoteWork(context, span);
+        return context is not null && span is not null
+            ? HashCode.Combine(
+                PyHashProtocols.GetProtocolHash(Start, context, span),
+                PyHashProtocols.GetProtocolHash(Stop, context, span),
+                PyHashProtocols.GetProtocolHash(Step, context, span))
+            : HashCode.Combine(
+                PyValueComparer.Instance.GetHashCode(Start),
+                PyValueComparer.Instance.GetHashCode(Stop),
+                PyValueComparer.Instance.GetHashCode(Step));
+    }
+
+    private sealed class SliceHashMethod(PySlice owner) : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            if (arguments.Length != 0)
+                throw RuntimeErrors.Type("slice.__hash__() takes no arguments", span);
+            return new BigInteger(PyHashProtocols.GetProtocolHash(owner, context, span));
+        }
+    }
 
     // slice.indices(length) normalises the stored bounds against an explicit
     // length like CPython, coercing the length and any index bounds on the way.

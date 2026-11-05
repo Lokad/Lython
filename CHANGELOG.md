@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Hash slice bounds through Python protocols, including bound/unbound hash
+  methods, with managed recursion protection. Generated dataclass hashes keep
+  their defining field plan and read all included fields before hashing them.
+  Admit temporary field storage first and stop after cancelled/refused callbacks.
+  Explicit `object.__hash__` retains identity behavior for unhashable dataclasses.
+
 - Share custom set add, membership and removal resolution. Hash empty queries,
   match native members and preserve stored hashes and equality-driven mutation.
   Admit protocol-entry metadata before publication, keeping refusal terminal and

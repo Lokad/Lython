@@ -1,0 +1,27 @@
+{
+  "sourceRevision": "f2b7b8a7 plus D64E1/E2 contextual nested-hash prototype; reference f2b7b8a7/frozen8050cc0f before commit metadata",
+  "coreSHA256": {
+    "candidate": "b153a88ab61ab0764d8d963b7cd6817c6efc1fa9da7115e74cf0b8858b61b901",
+    "control": "b153a88ab61ab0764d8d963b7cd6817c6efc1fa9da7115e74cf0b8858b61b901",
+    "reference": "8050cc0fbbbb794869a597cedefbd06ee5327e1fb6bcb3db832a47c7f6c8d1a8"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.ObjectAndBytes.cs": "c81bdee5cb27c4f7327664ddb9c5cf1d42765edc17c3f51a3e7e98a0f5e9181f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "1c776571621a383d330c3d881db9249d64b40d14ecf39af7706e89b8f60481bc",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "a39e2b94744972dd2ce962b75c6ff41a2a1ca21416553040b55cdac3793ac5e8",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "7e42cd99b3f82481f4c657bb6d63cd562a975308dc04ffdf86c5bf06fd700d78",
+    "src/Lokad.Lython/Runtime/PyDataclass.cs": "3ba75b1b906a4fac5e40f8925c19dfaa25781fe509c41037b743522f924ffcc9",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "d609f01a7e7beb29e6d2e2ae6e8c81373a1ad9cc24c55d751aad742c1ba145b3",
+    "src/Lokad.Lython/Runtime/PyMemberAccess.cs": "44aa981ff167cc8e187df23af8a3417d833b4dbfd77eb5458487f682954eb19f",
+    "src/Lokad.Lython/Runtime/PySlice.cs": "3a37292b7b605ea583a87919a4b412df57b8a14e05fa42968e98bc4e7c5a3e4c",
+    "tests/Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs": "3a470e8ae02e5b401d3033e649f6f9e9fb726bbcd1180f1bc7be6c9802d583e8",
+    "tests/Lokad.Lython.Tests/NestedHashOwnershipTests.cs": "74ee00a6d6238a035de4d32158cd130d54b2d41e2121485633b1bd6759ad5f81"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Clean Release actual11/10 build; focused1823public/472internal per target pass, including nine independent CPython goldens, real callback cancellation/refusal, preflight before field reads and native managed-depth bounds after genuine host suspension. Original depth-assumption and missing type-table failures preserved. E3 structural dataclass storage coupling is not fixed; no claim to complete all nested-key storage semantics."
+}

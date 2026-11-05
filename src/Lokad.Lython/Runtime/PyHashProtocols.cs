@@ -32,14 +32,17 @@ internal static class PyHashProtocols
     public static bool NeedsProtocolKey(object key) => key switch
     {
         PyInstance instance => HasCustomSlot(instance, "__eq__") || HasCustomSlot(instance, "__hash__"),
+        PySlice slice => SliceNeedsProtocol(slice),
         _ when PyTupleLike.TryGetItems(key, out var items) => TupleNeedsProtocol(items),
         _ => false,
     };
 
     private static bool TupleNeedsProtocol(IReadOnlyList<object> items)
     {
+        using var guard = PyStructuralGuard.EnterDepth(PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
         foreach (var item in items)
         {
+            PyStructuralGuard.NoteWork();
             if (NeedsProtocolKey(item))
             {
                 return true;
@@ -47,6 +50,13 @@ internal static class PyHashProtocols
         }
 
         return false;
+    }
+
+    private static bool SliceNeedsProtocol(PySlice slice)
+    {
+        using var guard = PyStructuralGuard.EnterDepth(PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
+        PyStructuralGuard.NoteWork();
+        return NeedsProtocolKey(slice.Start) || NeedsProtocolKey(slice.Stop) || NeedsProtocolKey(slice.Step);
     }
 
     // Indexed protocol keys are resolved separately. Native-store fallback may
@@ -59,6 +69,7 @@ internal static class PyHashProtocols
     {
         if (key is PyInstance instance)
         {
+            context.CheckExecution(span);
             if (HasDisabledHash(instance))
             {
                 throw RuntimeErrors.UnhashableType(key, span);
@@ -68,6 +79,7 @@ internal static class PyHashProtocols
             {
                 instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _);
                 var hashMember = PyAttributeLookup.BindForInstance(instance, rawSlot!, context, span);
+                context.CheckExecution(span);
 
                 if (hashMember is not LythonRuntime.ICallable hashCallable)
                 {
@@ -75,6 +87,7 @@ internal static class PyHashProtocols
                 }
 
                 var hashValue = hashCallable.Invoke([], span, context);
+                context.CheckExecution(span);
                 if (!Numbers.PyNumberOps.TryAsInteger(hashValue, out var integerHash))
                 {
                     throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
@@ -91,6 +104,9 @@ internal static class PyHashProtocols
             return ComputeTupleHash(items, context, span);
         }
 
+        if (key is PySlice slice)
+            return PyValueComparer.NormalizeHash(slice.ComputeHash(context, span));
+
         return LythonRuntime.ComputeStructuralHashCode(key, span);
     }
 
@@ -99,14 +115,14 @@ internal static class PyHashProtocols
     // only custom-hashed elements take the protocol branch. Cyclic tuples are
     // rejected by key validation before they can arrive here, with this guard
     // as the backstop.
-    private static int ComputeTupleHash(IReadOnlyList<object> items, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal static int ComputeTupleHash(IReadOnlyList<object> items, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        using (PyStructuralGuard.EnterSingle(items, span))
+        using (PyStructuralGuard.EnterSingle(items, span, context))
         {
             var hash = new HashCode();
             foreach (var item in items)
             {
-                PyStructuralGuard.NoteWork();
+                PyStructuralGuard.NoteWork(context, span);
                 hash.Add(GetProtocolHash(item, context, span));
             }
 

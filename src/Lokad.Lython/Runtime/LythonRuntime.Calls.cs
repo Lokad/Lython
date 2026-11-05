@@ -2376,6 +2376,7 @@ internal sealed partial class LythonRuntime
             "int" => BigInteger.Zero,
             "float" => 0.0,
             "range" => new PyRange(BigInteger.Zero, BigInteger.Zero, BigInteger.One),
+            "slice" => new PySlice(PyNone.Instance, PyNone.Instance, PyNone.Instance),
             "set" => new PySet(),
             _ => null,
         };

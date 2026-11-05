@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "f2b7b8a7 plus D64E1/E2 and shared managed-depth classification refinement; reference frozen805",
+  "sourceFilesVerified": true,
+  "coreSHA256": {
+    "candidate": "793586f5a517984b7ba53feff1fd58e200a004cc008e85b2259742d04c872435",
+    "control": "793586f5a517984b7ba53feff1fd58e200a004cc008e85b2259742d04c872435",
+    "reference": "8050cc0fbbbb794869a597cedefbd06ee5327e1fb6bcb3db832a47c7f6c8d1a8"
+  },
+  "fullInternalPerActualTarget": 4168,
+  "fullPublicPerActualTarget": 16033,
+  "focusedInternalPerActualTarget": 502,
+  "focusedPublicPerActualTarget": 1823,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Full local Release checks pass. Windows/Ubuntu, original stress and installed consumers require separate delivery CI. Earlier aec4f785 GREEN applies only to that earlier source.",
+  "retention": "Retain contextual correctness and shared managed policy; final synthetic native-key+2.07/+2.68% debt remains, original+8.19/+7.54% preserved. Text sign conflicts across blocks; no causalCPU/general gain claim.",
+  "remaining": "E3 structural dataclass storage still repeats attribute reads/can reject valid overridden hashes; finite semantic comparer callers need coherent migration. Do not call E1/E2 complete storage separation."
+}

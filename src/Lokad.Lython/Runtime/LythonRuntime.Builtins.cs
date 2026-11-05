@@ -684,9 +684,8 @@ internal sealed partial class LythonRuntime
             ? instance.Type.TryLookupInMro("__call__", 0, out _, out _)
             : value is ICallable;
 
-    // Single source of truth for hash values: builtin hash() and every
-    // __hash__ member funnel through it, so direct calls can never drift
-    // from the values dicts and sets actually use.
+    // Native builtin hash members share structural values. Python callbacks and
+    // compound public hashes use PyHashProtocols with the active context.
     internal static object ComputeBuiltinHash(object value, LythonSourceSpan span)
         => new BigInteger(ComputeStructuralHashCode(value, span));
 
@@ -706,15 +705,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "hash(object) expects one argument.", span);
         }
 
-        // R13b: instances route through contextual hashing (custom __hash__
-        // dispatch with integer validation, eq-without-hash and None-hash
-        // unhashability); everything else keeps the structural funnel.
-        if (arguments[0] is PyInstance || PyTupleLike.TryGetItems(arguments[0], out _))
-        {
-            return new BigInteger(PyHashProtocols.GetProtocolHash(arguments[0], context, span));
-        }
-
-        return ComputeBuiltinHash(arguments[0], span);
+        return new BigInteger(PyHashProtocols.GetProtocolHash(arguments[0], context, span));
     }
 
     private static object Id(object[] arguments, LythonSourceSpan span, ExecutionContext context)

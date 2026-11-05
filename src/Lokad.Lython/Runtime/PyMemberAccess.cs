@@ -54,6 +54,7 @@ internal static class PyMemberAccess
             [typeof(PyCounter)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CounterMembers.TryGetMember((PyCounter)target, memberName, out value),
             [typeof(PyDeque)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.DequeMembers.TryGetMember((PyDeque)target, memberName, out value),
             [typeof(PyDataclassFieldObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((PyDataclassFieldObject)target).TryGetMember(memberName, out value),
+            [typeof(PySlice)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((PySlice)target).TryGetMember(memberName, out value),
             [typeof(PyDataclassParamsObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((PyDataclassParamsObject)target).TryGetMember(memberName, out value),
             [typeof(LythonPathStat)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.PathStatMembers.TryGetMember((LythonPathStat)target, memberName, out value),
             [typeof(LythonRuntime.CsvReaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvReaderMembers.TryGetMember((LythonRuntime.CsvReaderObject)target, memberName, out value),
