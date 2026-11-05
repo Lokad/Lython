@@ -3,7 +3,8 @@
 The [contextual nested-hash milestone](results/2026-11-05-nested-hash-protocols/README.md)
 corrects slice/defining-dataclass hash protocols, admits field snapshots before
 callbacks and shares managed admission checks. Full4168internal/16033public per
-actual11/10 pass; delivery qualification separate. B29986.16s and justified
+actual11/10 pass; combined Windows/Ubuntu actual11/10, Stress and installed
+consumers GREEN/all8 (cached42113971859). B29986.16s and justified
 B30059.23s pass all gates. Native grouping+8.19/7.54% initially,+2.07/2.68% after
 depth-only classification refinement remains debt. Text signs conflict across
 blocks/unchanged reference drift; no general CPU/allocation/latency claim. E3
@@ -12,7 +13,7 @@ structural dataclass storage coupling stays open with its actual callers recorde
 The [shared set-query milestone](results/2026-11-05-set-query-resolution/README.md)
 removes candidate temporary containers/sorting and three independent query loops,
 fixes empty/native queries and admits metadata before publication. Focus1400public/
-464internal per actual11/10 pass; full qualification remains separate. B29785.76s
+464internal per actual11/10 pass; combined delivery GREEN/all8, cached42113971859. B29785.76s
 and source-justified B29858.83s pass all gates. Synthetic query regression+5.05/
 4.39% initially, +2.30/1.80% after refinement remains explicit debt. Native complete
 controls are small/variable; retain correctness and deletion without a broad

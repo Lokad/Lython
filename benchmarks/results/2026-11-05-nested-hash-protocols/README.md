@@ -3,8 +3,9 @@
 2026-11-05, D64E1/E2 source pair against `f2b7b8a7`, frozen `8050cc0f`.
 Final frozen core `793586f5`, built before commit metadata; all13 changed source/
 test/documentation files [verified](validation.json). Full4168internal/16033public
-Release checks pass per actual.NET11/10. Platform/original Stress/installed-consumer
-qualification is separate. This does not close E3 storage separation or the
+Release checks pass per actual.NET11/10. The combined Windows/Ubuntu delivery
+passed actual11/10, original Stress and installed consumers: [cached terminal
+run42113971859](delivery-ci-status.json), all8 mandatory gates. This does not close E3 storage separation or the
 whole-script performance objective. Publication remains postponed.
 
 Slice bounds now use contextual Python hashing, including bound/unbound hash
