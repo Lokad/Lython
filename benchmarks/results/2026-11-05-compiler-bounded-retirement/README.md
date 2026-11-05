@@ -58,8 +58,9 @@ Release build27.13s, zero warnings/errors. Focus223internal/786public per actual
 formatters, native returns, refusal, cancellation and actual pending cleanup.
 One new mixed guest/private lifetime control; existing reverse/failure/clearing
 controls preserved. No timeout, scale, containment or checkpoint-count relaxation.
-Full local4131internal/16004public pass on each actual runtime. Windows/Ubuntu,
-original stress and installed-consumer qualification batches at this checkpoint.
+Full local4131internal/16004public pass on each actual runtime. Retained commit
+b69a0a49 is pushed; Windows/Ubuntu, original stress and installed-consumer
+qualification is running as [CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621).
 
 [Contract](source-contract.md), [observations](summary.json), [source patch](source.patch).
 Raw archive preserves identities, full samples, orchestration, checks and source.

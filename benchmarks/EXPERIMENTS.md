@@ -26,7 +26,9 @@ does not show a general CPU gain: warmCSV+.72/.94%, fresh/async control-limited.
 Separate B28338s/all gates process allocation−6.67/6.69% (~393KB/job), paired elapsed
 −.92/3.34%/2.51% original spread; current/prior-result cleanup boundaries differ.
 Retain ownership consolidation/allocation saving, preserve adverse elapsed.
-Focus790/2413 and full4130/16004 per actual target pass; full delivery pending.
+Focus790/2413 and full4130/16004 per actual target pass; bce54732 delivery
+42061776662 GREEN/all8 Windows/Ubuntu actual11/10, original stress and installed
+consumers, terminal cached. No unchanged replay.
 
 The [bulk cased range/capacity milestone](results/2026-11-05-text-range-capacity/README.md)
 retains final construction: ordinary scalar scans unchanged, existing unbounded

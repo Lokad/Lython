@@ -87,9 +87,11 @@ checkpoint counters. Original failing logs remain. Final test source differs fro
 the measured snapshot only in these ownership-contract observations.
 
 Retained commit bce54732 is pushed. Full platform/original stress/installed-consumer
-qualification is running as [CI42061776662](https://github.com/Lokad/Lython/actions/runs/42061776662).
+qualification [CI42061776662](https://github.com/Lokad/Lython/actions/runs/42061776662)
+is GREEN/all8: Windows/Ubuntu, actual .NET11/10, original stress and installed
+consumers. [Terminal receipt](delivery-ci-status.json) cached; no unchanged replay.
 Baseline1fa4773e is already fully qualified via
-42051400891/all8; that receipt does not qualify D54. Publication postponed.
+42051400891/all8; D54 has its own qualification above. Publication postponed.
 
 [Contract](source-contract.md), [initial comparison](summary.json),
 [allocation diagnostic](allocation/summary.json), [retained source](retained-source.tgz).

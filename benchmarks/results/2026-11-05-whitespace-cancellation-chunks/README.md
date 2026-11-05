@@ -14,9 +14,11 @@ measured interruption-latency claim. Context-free helpers have no host token.
 Release build33.80s/zero warnings/errors;150internal/237public focused regressions
 pass on each actual .NET11/10: whitespace inventory/bounds, casing/expansions/final
 sigma, native returns, cancellation, terminal refusal, retained storage and reuse.
-No test scale, timeout or containment assertion changed. Full platform delivery
-will be batched at the next coherent retained checkpoint; D54's separate CI does
-not qualify this source.
+No test scale, timeout or containment assertion changed. Retained commit0752be3c
+is included in full local4131internal/16004public per actual target onb69a0a49.
+Its platform delivery is batched with D56 as
+[CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621), running
+onb69a0a49; D54's separate green CI does not qualify these changes.
 
 ## Complete-script comparison and uncertainty
 
