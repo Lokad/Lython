@@ -293,7 +293,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("def f(a, b):\n return a in b\nf(None, 'a')\n", "TypeError", "'in <string>' requires string as left operand, not NoneType")]
     [InlineData("def f(a, b):\n return a in b\nf([], {1, 2})\n", "TypeError", "unhashable type: 'list'")]
     [InlineData("def f(a, b):\n return a in b\nf([], {}.keys())\n", "TypeError", "unhashable type: 'list'")]
-    [InlineData("def f(a, b):\n return a in b\nf([], {}.items())\n", "TypeError", "unhashable type: 'list'")]
+    [InlineData("def f(a, b):\n return a in b\nf(([], 1), {}.items())\n", "TypeError", "unhashable type: 'list'")]
     [InlineData("def f(a, b):\n return a in b\nf([], set())\n", "TypeError", "unhashable type: 'list'")]
     [InlineData("'a' in b'abc'\n", "compile", "Right operand does not support membership testing")]
     [InlineData("b'a' < 'b'\n", "compile", "'<' not supported between instances of 'bytes' and 'str'")]

@@ -38,7 +38,8 @@ public sealed class DictionaryViewRelationTests
             try:print(([],1) in view)
             except TypeError:print('unhashable key')
             print(view.__eq__([]),view.__lt__([]))
-            """, "False False False True\nunhashable key\nNotImplemented NotImplemented\n"];
+            print([] in {}.items())
+            """, "False False False True\nunhashable key\nNotImplemented NotImplemented\nFalse\n"];
         yield return ["native keys and mixed set operands", """
             source={'a':1,'b':2}
             keys=source.keys()

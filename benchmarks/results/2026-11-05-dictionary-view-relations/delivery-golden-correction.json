@@ -1,0 +1,12 @@
+[
+  {
+    "source": "def f(a,b):return a in b\nprint(f([],{}.items()))\n",
+    "output": "False\n",
+    "pythonVersion": "3.13.2"
+  },
+  {
+    "source": "def f(a,b):return a in b\ntry:print(f(([],1),{}.items()))\nexcept TypeError as error:print(type(error).__name__,error)\n",
+    "output": "TypeError unhashable type: 'list'\n",
+    "pythonVersion": "3.13.2"
+  }
+]

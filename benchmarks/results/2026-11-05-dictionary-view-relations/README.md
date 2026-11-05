@@ -74,3 +74,15 @@ value-pattern evaluation. The original and phase-order probes are preserved.
 Fixing these requires coherent extraction phases and funded captured references,
 not changing the raw comparer alone. Generated dataclass storage coupling and
 public compound hashes also remain open. Publication stays postponed.
+
+## First delivery attempt
+
+[Cached42124145716](delivery-attempt1-ci-status.json) failed the same old negative
+fixture on Windows and Ubuntu: it expected TypeError for `[] in {}.items()`.
+[Independent CPython proof](delivery-golden-correction.json) returns False and
+raises TypeError for the meaningful unhashable-key case `([],1) in {}.items()`.
+The negative fixture now uses that two-tuple, preserving all failure assertions;
+the view shape regression includes the valid empty-view False answer. Corrected
+514 public focused cases pass per actual11/10. [Original failure log](delivery-attempt1-failed.log.gz)
+is retained. Full replacement qualification remains pending; no green claim for
+this view delivery. The runtime view implementation was not weakened.
