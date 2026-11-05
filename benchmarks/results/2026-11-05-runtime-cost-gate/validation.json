@@ -1,0 +1,30 @@
+{
+  "sourceRevision": "6c776d0df30e39cc73e1111c08475d6d8c729af0",
+  "coreSHA256": "6626358258f77055985b8fa0d13afc35ac0219567c0852356c3b2b12a8c42fe0",
+  "complete": true,
+  "ownedSeconds": 39.0,
+  "maximumOwnedSeconds": 45,
+  "quietBeforeAfter": true,
+  "workersAndProfilerJoined": true,
+  "finalWorkerReservationsZero": true,
+  "fixturesRemoved": true,
+  "sharedLeaseReleased": true,
+  "samples": {
+    "text": {
+      "samples": 723,
+      "guestCpuSeconds": 3.63,
+      "unknown": 57,
+      "malformedMapLines": 1
+    },
+    "ordinary": {
+      "samples": 1017,
+      "guestCpuSeconds": 5.120000000000001,
+      "unknown": 89,
+      "malformedMapLines": 1
+    }
+  },
+  "archiveSHA256": "2dcea8ccd6c5b076a8aab01d5af09bc8650bc4e61c715780b4deb235d3c502ec",
+  "collectorCondition": "ordinary118390wakeups/1032total samples; text3wakeups/744total",
+  "limits": "Diagnostic CPU/source gate only; unknown symbols/truncated maps and inclusive overlap preserved. No elapsed/allocation/RSS/embedding-latency or causal before-after claim.",
+  "decision": "Select one-pass bulk whitespace ranges plus conservative case capacity; retain existing Unicode writers and standalone sizing. Do not add argument/budget arenas or relabel actual slower call designs."
+}

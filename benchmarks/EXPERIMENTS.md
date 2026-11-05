@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [current runtime-cost gate](results/2026-11-05-runtime-cost-gate/README.md)
+on6c776d0d/66263582 closes39s/723text/1017ordinaryCSV samples, preserving unknowns,
+truncated maps and collector conditions. Instruction prefix21.72/12.29% contains
+actual work; split construction19.64% inclusive is not a removable fraction.
+Source confirms compact instructions/shared locals already delivered. Select
+one-pass word ranges plus conservative casing capacity, removing a real repeated
+traversal and parameters while retaining Unicode writers and standalone sizing.
+No fresh elapsed/allocation/CPU-improvement claim or new frame/budget arena.
+
 The [executable-temporary contract](results/2026-11-05-executable-temporary-contract/README.md)
 replaces one marker interface with one empty base for the same four private classes;
 no additional instances/storage/modes. D49 offline attribution identifies actual

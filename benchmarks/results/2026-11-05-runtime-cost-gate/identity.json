@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "6c776d0df30e39cc73e1111c08475d6d8c729af0",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+    "Lokad.Lython.dll": "6626358258f77055985b8fa0d13afc35ac0219567c0852356c3b2b12a8c42fe0"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/StaticAnalysisContext.cs": "eec49e8a5792f510ebab2890bdb7617a7e1b2fda3bf26c8cb16748fdb4f18eb5",
+    "src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs": "7e0f0b3b6366de34058d543f9b0a739b74d1187076ce64f2dc7173944503548d",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "fbd53efcaa76801214a4a579fc041b2d93b402d76926e76d533379a09ce3bcfd",
+    "src/Lokad.Lython/Runtime/Calls/CallExpansion.cs": "647e7280e79420935ed82857077b966a5e2e0ef34b455948f01fd4cc6869f438",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs": "2d1d9e9e1e419e2c35c9e1d25574ce641b760cd592245d407c41839132c3b7b1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "c1bb90ee4385fa8e4da2719824fdd26eaf28c7c8d3fa64adab5aac325c701162",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "c0ac96ab817d2b93c32092b37983483b36934d6e25666b03906ae84ad34e8eed",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs": "a8566cc2e3e3bd3d7083e8e3647b5b260d770582b36cad2ca20345d6d0b612a1",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "bee5d992df9ed50ff7995b59b86caa053fba62fc55dcd9b5ef6cc20f3de7050b",
+    "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs": "ca5239feb1591e4b11eeb00b313d603d796c712cbb74ba67b36f6e7cc5d0eb2e"
+  },
+  "qualification": "Final build20.72s zero warnings/errors before commits200cb586/6c776d0d; full4125internal/16004public per actual11/10 pass. No source changes since that build. Metadata may reflect earlier parent2183; record observed binary separately. Full42044419339 running.",
+  "purpose": "D52 one bounded next-cost source gate after nominal temporary contract removed the earlier concrete interface predicate. Not an elapsed/CPU improvement comparison or broad profiling campaign."
+}
