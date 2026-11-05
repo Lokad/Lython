@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare closed native-helper operations during compilation and remove their
+  provenance from ordinary instructions. Share string-method metadata and retain
+  dynamic checks, original spans, cancellation and funded cleanup.
+
 - Write eligible native lower/upper plus whitespace-split results directly into
   final word storage, avoiding an intermediate cased line. Share existing Unicode
   casing and split construction; keep independent owners and admission/cancellation.

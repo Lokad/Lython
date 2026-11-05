@@ -1,8 +1,10 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private int? PrepareNativeReturn(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount)
+    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount)
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
             || ClosureNames.Count != 0 || exceptionRegionCount != 0 || blocks.Count != 1)
@@ -11,16 +13,18 @@ internal sealed partial class ExecutableCodeObject
         // implicit completion; none belongs to this straight-line proof.
         var instructions = blocks[0].InstructionArray;
         if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
-            return -1;
+            return ExecutableNativeBody.ReturnNone;
         if (instructions.Length < 2 || instructions[^1].OpCode != ExecutableOpCode.Return)
             return null;
 
-        var stack = new List<(int Instruction, int Member, int Depth)>();
+        var values = new List<NativeReturnValue>();
+        var stack = new List<(int Value, int Member, int Depth)>();
         HashSet<int>? forwardedLocals = null;
         var hasFormattedBuilder = false;
         for (var index = 0; index < instructions.Length - 1; index++)
         {
             var instruction = instructions[index];
+            var operation = NativeReturnOperation.Read;
             var first = -1;
             var second = -1;
             var depth = 1;
@@ -50,17 +54,28 @@ internal sealed partial class ExecutableCodeObject
                 case ExecutableOpCode.LoadCallMember:
                     if (stack.Count == 0 || stack[^1].Member >= 0) return null;
                     // Fold receiver+method into the call; no exposed bound value.
-                    stack[^1] = (stack[^1].Instruction, index, stack[^1].Depth);
+                    stack[^1] = (stack[^1].Value, index, stack[^1].Depth);
                     continue;
                 case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
                 case ExecutableOpCode.Subscript:
                     if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                    first = stack[^2].Instruction;
-                    second = stack[^1].Instruction;
+                    operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Add : NativeReturnOperation.Subscript;
+                    first = stack[^2].Value;
+                    second = stack[^1].Value;
                     depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                     stack.RemoveRange(stack.Count - 2, 2);
                     break;
                 case ExecutableOpCode.ApplyOperation:
+                    operation = Constants[instruction.ConstantIndex] switch
+                    {
+                        ExecutableStartFormattedString => NativeReturnOperation.StartFormat,
+                        ExecutableAppendFormattedText => NativeReturnOperation.AppendFormatText,
+                        ExecutableFinishFormattedString => NativeReturnOperation.FinishFormat,
+                        ExecutableConvertFormattedValue => NativeReturnOperation.ConvertFormat,
+                        ExecutableFormatField { DynamicSpecifier: false, Append: false } => NativeReturnOperation.FormatValue,
+                        ExecutableFormatField { DynamicSpecifier: false, Append: true } => NativeReturnOperation.AppendFormatField,
+                        _ => NativeReturnOperation.Read
+                    };
                     switch (Constants[instruction.ConstantIndex])
                     {
                         case ExecutableStartFormattedString:
@@ -74,14 +89,14 @@ internal sealed partial class ExecutableCodeObject
                         case ExecutableConvertFormattedValue:
                         case ExecutableFormatField { DynamicSpecifier: false, Append: false }:
                             if (stack.Count == 0 || stack[^1].Member >= 0) return null;
-                            first = stack[^1].Instruction;
+                            first = stack[^1].Value;
                             depth = 1 + stack[^1].Depth;
                             stack.RemoveAt(stack.Count - 1);
                             break;
                         case ExecutableFormatField { DynamicSpecifier: false, Append: true }:
                             if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                            first = stack[^2].Instruction;
-                            second = stack[^1].Instruction;
+                            first = stack[^2].Value;
+                            second = stack[^1].Value;
                             depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                             stack.RemoveRange(stack.Count - 2, 2);
                             break;
@@ -102,12 +117,38 @@ internal sealed partial class ExecutableCodeObject
                         depth = Math.Max(depth, stack[a].Depth);
                     }
                     depth = 1 + Math.Max(depth, target.Depth);
-                    first = target.Instruction;
+                    first = target.Value;
                     second = target.Member;
+                    if (target.Member < 0)
+                    {
+                        // These shapes never passed the dynamic builtin proof.
+                        if (site.ArgumentCount != 1 || values[first].Operation != NativeReturnOperation.Read) return null;
+                        operation = NativeReturnOperation.BuiltinUnary;
+                    }
+                    else
+                    {
+                        var member = Names[instructions[target.Member].NameIndex];
+                        var selected = member switch
+                        {
+                            "split" when site.ArgumentCount <= 2 => NativeReturnOperation.Split,
+                            "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
+                            "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
+                            "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
+                            _ when site.ArgumentCount == 0 => LythonRuntime.StringMembers.GetNoArgumentsKind(member),
+                            _ => null
+                        };
+                        if (selected is null) return null;
+                        operation = selected.Value;
+                        if (operation == NativeReturnOperation.Split && site.ArgumentCount == 0)
+                        {
+                            if (values[first].Operation == NativeReturnOperation.Lower) operation = NativeReturnOperation.SplitLowerWhitespace;
+                            else if (values[first].Operation == NativeReturnOperation.Upper) operation = NativeReturnOperation.SplitUpperWhitespace;
+                        }
+                    }
                     for (var a = 0; a < site.ArgumentCount; a++)
                         site.Arguments[a] = site.Arguments[a] with
                         {
-                            NativeSourceInstruction = stack[start + 1 + a].Instruction
+                            NativeValueIndex = stack[start + 1 + a].Value
                         };
                     stack.RemoveRange(start, site.ArgumentCount + 1);
                     break;
@@ -117,13 +158,12 @@ internal sealed partial class ExecutableCodeObject
             // Eligibility bound for CLR-recursive evaluation, never a guest limit.
             // Deeper expressions still execute through the ordinary engine.
             if (depth > 16) return null;
-            instructions[index] = instruction.WithNativeSources(first, second);
-            stack.Add((index, -1, depth));
+            values.Add(new(operation, index, first, second));
+            stack.Add((values.Count - 1, -1, depth));
         }
         if (stack.Count != 1 || stack[0].Member >= 0) return null;
-        if (hasFormattedBuilder && (instructions[stack[0].Instruction].OpCode != ExecutableOpCode.ApplyOperation
-            || Constants[instructions[stack[0].Instruction].ConstantIndex] is not ExecutableFinishFormattedString))
+        if (hasFormattedBuilder && values[stack[0].Value].Operation != NativeReturnOperation.FinishFormat)
             return null;
-        return stack[0].Instruction;
+        return new(values.ToArray(), stack[0].Value);
     }
 }

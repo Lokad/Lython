@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "Baseline cf3dc9cd/43fdf658;candidate parent8243b05c plus source.patch and exact new-file source snapshot",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "81deb3be4bf45f73a4a6372f1223014edc3bf09e8439f8da1eeffa018d1b4cfa",
+  "candidateSource": "Prepared native operation bodies,32B ordinary instructions,no embedded native provenance or repeated structural classification",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "85bb58c349727e1d6130a19ba3ab1223290562925ce7679f20da4e2775809b5a",
+    "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "80727f1abb71f17f43e11bfcf1c625b92c50921b5ad2466837372573b6a97e5d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "4134e479223fb5dbcefdae8969287ae4877b08f1c6b2af3aa066c86d715de09e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeFormatting.cs": "acd7f91627aea5e5b7114723c0035551e2de3d51786f83ec5c4487179f3d4f47",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "6c3d3e272c9bd67ba02ce62e5df0cfaea3ae1720c83b3d6edb1881920f6ba83d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs": "53ed182b7d6ad2c35a03edcea49fd1b8a77ec47c783f1d328e93299fc86fa16a",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "1c18919ab1b44cac5c4360894925e2cdeb6279b73e55e486df8c010f761aa067",
+    "tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs": "bb7b39a5eb5395e1faecf95394f368d7b74e2592fcbea116afbcfb20f80e5a1b",
+    "tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs": "93783e129eb39f0b1554b3259e9f629f5028421bdbc22467ee00807b91287af1",
+    "src/Lokad.Lython/Frontend/ExecutableNativeBody.cs": "5d9dbb22eb58508618381ded687b6073605a5e33f823fae2748718a1200a2a61"
+  }
+}

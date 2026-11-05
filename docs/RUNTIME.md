@@ -174,8 +174,10 @@ maximum workspace and exception-entry depths. Execution uses those positions
 directly. Fixed-arity arithmetic, local stores and returns can read immutable
 constants or proven initialized plain locals without an intermediate copy.
 Failable reads retain their source spans; evaluated call and protocol packets
-retain snapshots across callbacks. Native-return source links share the instructions and call metadata;
-there is no separate retained expression graph. The retained code is one instruction array with absolute branch and
+retain snapshots across callbacks. Ordinary instructions carry no native-return
+provenance. Eligible helpers own compact prepared native operations, referring
+to original instruction spans and shared call metadata without copying them.
+The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.
 The executable engine runs both public APIs and local imports, using local/closure
@@ -257,8 +259,11 @@ bindings. Class/nested definitions
 and other lexical cases retain their function contexts. Native conversions,
 dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime
-guards pass, before native work. Prepared links share the executable instructions;
-evaluation requires no operand or argument arrays. Deeper or unsupported
+guards pass, before native work. Compilation prepares operation kinds, method
+arity and supported casing/formatting combinations; invocation still checks actual
+types, callable identities and namespaces. Prepared values refer to original
+instructions and call inputs; evaluation requires no operand or argument arrays.
+They retain no caller values or tokens. Deeper or unsupported
 expressions keep the full engine. Static builtin-only formatted returns use the
 same native proof and shared formatter. Plain native dictionary fields can qualify
 through side-effect-free reads; protocol keys and unknown formatting callbacks keep

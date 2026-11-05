@@ -6,24 +6,16 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // These bodies cannot expose executable locals, suspend or invoke guest code.
-    // Binding and entry guards remain shared. Module-root definitions can also
-    // omit the lexical context: their native body only needs shared state/globals.
-    internal static bool TryExecuteNativeReturn(
-        ExecutableCodeObject codeObject,
-        ExecutionContext context,
-        ReadOnlySpan<object?> arguments,
-        LythonSourceSpan entrySpan,
-        out object result)
+    internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
+        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result)
     {
         result = PyNone.Instance;
-        var root = codeObject.NativeReturnRoot;
-        if (root is null || context.MirrorLocalStores
-            || context.CurrentExecutableFrame is not null || context.ActiveHandlerVariables is { Count: > 0 })
+        var body = codeObject.NativeBody;
+        if (body is null || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+            || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
-
-        if (!GuardNativeBody(codeObject, arguments, context, out var instructions)) return false;
-        result = ExecuteNativeBody(codeObject, context, arguments, entrySpan, instructions);
+        if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
+        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan);
         return true;
     }
 
@@ -31,14 +23,10 @@ internal sealed partial class LythonRuntime
         ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
     {
         result = PyNone.Instance;
-        if (!GuardNativeBody(code, arguments, module, out var instructions)) return false;
-        // Entry failure has no function traceback, exactly as real frame entry.
+        var body = code.NativeBody!;
+        if (!GuardNativeBody(code, body, arguments, module)) return false;
         module.EnterFunctionCall(span);
-        try
-        {
-            result = ExecuteNativeBody(code, module, arguments, span, instructions);
-            return true;
-        }
+        try { result = ExecuteNativeBody(code, body, module, arguments, span); return true; }
         catch (LythonRuntimeException error)
         {
             PyFunctionBinding.AnnotateException(error, module, name, span);
@@ -47,52 +35,35 @@ internal sealed partial class LythonRuntime
         finally { module.LeaveFunctionCall(); }
     }
 
-    private static bool GuardNativeBody(ExecutableCodeObject codeObject, ReadOnlySpan<object?> arguments,
-        ExecutionContext context, out ExecutableInstruction[] instructions)
-    {
-        instructions = codeObject.Instructions;
-        var root = codeObject.NativeReturnRoot!.Value;
-        // All type/callable guards precede work. No retry through the ordinary
-        // engine is allowed once any operation (including admission) has begun.
-        if (root < 0) return true;
-        if (instructions[root].OpCode == ExecutableOpCode.ApplyOperation)
-            return codeObject.Constants[instructions[root].ConstantIndex] is ExecutableFinishFormattedString
-                ? GuardNativeFormattedReturn(instructions[root].NativeFirst, codeObject, instructions, arguments, context)
-                : GuardNativeFormattedValue(root, codeObject, instructions, arguments, context);
-        return GuardNativeReturn(root, codeObject, instructions, arguments, context, out _, out _);
-    }
+    // Dynamic checks precede all effects, including admission. A failed proof
+    // uses the ordinary executable engine; actual work never falls back/retries.
+    private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+        ReadOnlySpan<object?> arguments, ExecutionContext context)
+        => body.Root < 0 || GuardNativeReturn(body.Root, code, body.Values, arguments, context, out _);
 
-    private static object ExecuteNativeBody(ExecutableCodeObject codeObject, ExecutionContext context,
-        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, ExecutableInstruction[] instructions)
+    private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan)
     {
         context.EnterInterpreterFrame(entrySpan);
         try
         {
-            var root = codeObject.NativeReturnRoot!.Value;
             object result = PyNone.Instance;
             var entryException = context.State.CurrentException;
-            if (root < 0)
-            {
-                context.State.CheckExecution(instructions[0].Span);
-            }
+            if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
             else
             {
-                result = instructions[root].OpCode == ExecutableOpCode.ApplyOperation
-                    ? EvaluateNativeFormattedReturn(codeObject, instructions, arguments, context, entryException)
-                    : EvaluateNativeReturn(root, codeObject, instructions, arguments, context, entryException);
-                context.State.CheckExecution(instructions[^1].Span);
+                result = body.Values[body.Root].Operation == NativeReturnOperation.FinishFormat
+                    ? EvaluateNativeFormattedReturn(code, body.Values, arguments, context, entryException)
+                    : EvaluateNativeReturn(body.Root, code, body.Values, arguments, context, entryException);
+                context.State.CheckExecution(code.Instructions[^1].Span);
             }
-            // No stack temporaries or handler variables exist in these bodies.
             context.State.SetCurrentException(entryException);
             return result;
         }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
-    private enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized }
+    private enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized, Builder }
 
     private static NativeReturnShape ReturnShape(object? value) => value switch
     {
@@ -107,168 +78,160 @@ internal sealed partial class LythonRuntime
         _ => NativeReturnShape.Other,
     };
 
-    private static bool GuardNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
-        ExecutionContext context, out NativeReturnShape shape, out object? value)
+    private static bool GuardNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+        ReadOnlySpan<object?> arguments, ExecutionContext context, out NativeReturnShape shape)
     {
-        ref readonly var instruction = ref instructions[index];
-        var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
-        var memberIndex = call is null ? -1 : instruction.NativeSecond;
-        var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
-        var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
-        var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
-        value = null;
+        ref readonly var value = ref values[index];
         shape = NativeReturnShape.Other;
-        if (instruction.NativeFirst < 0)
+        switch (value.Operation)
         {
-            if (!TryReadNativeOperand(code, instruction, arguments, context, out value)) return false;
-            shape = ReturnShape(value);
-            return true;
+            case NativeReturnOperation.Read:
+                if (!TryReadNativeOperand(code, code.Instructions[value.SourceInstruction], arguments, context, out var input)) return false;
+                shape = ReturnShape(input);
+                return true;
+            case NativeReturnOperation.StartFormat:
+                shape = NativeReturnShape.Builder;
+                return true;
+            case NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue:
+                shape = NativeReturnShape.String;
+                return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+            case NativeReturnOperation.BuiltinUnary:
+                ref readonly var targetValue = ref values[value.First];
+                if (!TryReadNativeOperand(code, code.Instructions[targetValue.SourceInstruction], arguments, context, out var target)
+                    || target is not BuiltinCallable) return false;
+                var call = code.CallSites[code.Instructions[value.SourceInstruction].CallSiteIndex];
+                var argumentIndex = call.NativeArgumentIndex(0);
+                ref readonly var argument = ref values[argumentIndex];
+                object? actual = null;
+                var inputShape = NativeReturnShape.Other;
+                if (argument.Operation == NativeReturnOperation.Read)
+                {
+                    if (!TryReadNativeOperand(code, code.Instructions[argument.SourceInstruction], arguments, context, out actual)) return false;
+                }
+                else if (!GuardNativeReturn(argumentIndex, code, values, arguments, context, out inputShape)) return false;
+                return SelectNativeUnaryOperation(target, actual, inputShape, out shape) is not null && shape != NativeReturnShape.Other;
         }
-        // A builtin target is a resolved operand, not a computed native value.
-        // Classifying its value shape would do work whose result is discarded.
-        var first = NativeReturnShape.Other;
-        var builtinCall = instruction.OpCode == ExecutableOpCode.Call && memberIndex < 0;
-        if (builtinCall)
+
+        if (!GuardNativeReturn(value.First, code, values, arguments, context, out var first)) return false;
+        switch (value.Operation)
         {
-            if (code.CallSites[instruction.CallSiteIndex].ArgumentCount != 1) return false;
-            ref readonly var callable = ref instructions[instruction.NativeFirst];
-            if (callable.NativeFirst >= 0 || !TryReadNativeOperand(code, callable, arguments, context, out var target)
-                || target is not BuiltinCallable) return false;
-            ref readonly var input = ref instructions[secondIndex];
-            object? valueInput = null;
-            var inputShape = NativeReturnShape.Other;
-            if (input.NativeFirst < 0)
-            {
-                if (!TryReadNativeOperand(code, input, arguments, context, out valueInput)) return false;
-            }
-            else if (!GuardNativeReturn(secondIndex, code, instructions, arguments, context, out inputShape, out _)) return false;
-            return SelectNativeUnaryOperation(target, valueInput, inputShape, out shape) is not null
-                && shape != NativeReturnShape.Other;
+            case NativeReturnOperation.FinishFormat:
+                shape = NativeReturnShape.String;
+                return first == NativeReturnShape.Builder;
+            case NativeReturnOperation.AppendFormatText:
+                shape = NativeReturnShape.Builder;
+                return first == NativeReturnShape.Builder;
+            case NativeReturnOperation.AppendFormatField:
+                shape = NativeReturnShape.Builder;
+                return first == NativeReturnShape.Builder && GuardNativeFormattedValue(value.Second, code, values, arguments, context);
+            case NativeReturnOperation.Add:
+                if (!GuardNativeReturn(value.Second, code, values, arguments, context, out var right)) return false;
+                shape = first;
+                return first == right && first is NativeReturnShape.Integer or NativeReturnShape.String;
+            case NativeReturnOperation.Subscript:
+                return GuardNativeReturn(value.Second, code, values, arguments, context, out var key)
+                    && first == NativeReturnShape.Dictionary && key == NativeReturnShape.String;
+            case >= NativeReturnOperation.Strip and <= NativeReturnOperation.IsSpace:
+                shape = value.Operation <= NativeReturnOperation.Upper ? NativeReturnShape.String : NativeReturnShape.Boolean;
+                return first == NativeReturnShape.String;
+            case NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace:
+                shape = NativeReturnShape.Sized;
+                return first == NativeReturnShape.String;
         }
-        else if (!GuardNativeReturn(instruction.NativeFirst, code, instructions, arguments, context, out first, out _)) return false;
+
+        var site = code.CallSites[code.Instructions[value.SourceInstruction].CallSiteIndex];
         var second = NativeReturnShape.None;
         var third = NativeReturnShape.None;
         var fourth = NativeReturnShape.None;
-        if (secondIndex >= 0 && !GuardNativeReturn(secondIndex, code, instructions, arguments, context, out second, out _)) return false;
-        if (thirdIndex >= 0 && !GuardNativeReturn(thirdIndex, code, instructions, arguments, context, out third, out _)) return false;
-        if (fourthIndex >= 0 && !GuardNativeReturn(fourthIndex, code, instructions, arguments, context, out fourth, out _)) return false;
-        switch (instruction.OpCode)
+        if (site.NativeArgumentIndex(0) is >= 0 and var secondIndex
+            && !GuardNativeReturn(secondIndex, code, values, arguments, context, out second)) return false;
+        if (site.NativeArgumentIndex(1) is >= 0 and var thirdIndex
+            && !GuardNativeReturn(thirdIndex, code, values, arguments, context, out third)) return false;
+        if (site.NativeArgumentIndex(2) is >= 0 and var fourthIndex
+            && !GuardNativeReturn(fourthIndex, code, values, arguments, context, out fourth)) return false;
+        if (first != NativeReturnShape.String) return false;
+        switch (value.Operation)
         {
-            case ExecutableOpCode.Binary:
-                shape = first;
-                return first == second && first is NativeReturnShape.Integer or NativeReturnShape.String;
-            case ExecutableOpCode.Subscript:
-                return first == NativeReturnShape.Dictionary && second == NativeReturnShape.String;
-            case ExecutableOpCode.Call when first == NativeReturnShape.String:
-                var member = code.Names[instructions[memberIndex].NameIndex];
-                var count = code.CallSites[instruction.CallSiteIndex].ArgumentCount;
-                if (count == 0 && StringMembers.GetNoArgumentsOperation(member) is not null)
-                {
-                    shape = member is "strip" or "lower" or "upper" ? NativeReturnShape.String : NativeReturnShape.Boolean;
-                    return true;
-                }
-                if (member == "split" && count <= 2 && second is NativeReturnShape.None or NativeReturnShape.String
-                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean)
-                {
-                    shape = NativeReturnShape.Sized;
-                    return true;
-                }
-                if (member is "startswith" or "endswith" && count == 1 && second == NativeReturnShape.String)
-                {
-                    shape = NativeReturnShape.Boolean;
-                    return true;
-                }
-                if (member == "replace" && count is 2 or 3 && second == NativeReturnShape.String
-                    && third == NativeReturnShape.String && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean)
-                {
-                    shape = NativeReturnShape.String;
-                    return true;
-                }
-                return false;
-            default:
-                return false;
+            case NativeReturnOperation.Split:
+                shape = NativeReturnShape.Sized;
+                return second is NativeReturnShape.None or NativeReturnShape.String
+                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+            case NativeReturnOperation.Replace:
+                shape = NativeReturnShape.String;
+                return second == NativeReturnShape.String && third == NativeReturnShape.String
+                    && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+            case NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith:
+                shape = NativeReturnShape.Boolean;
+                return second == NativeReturnShape.String;
+            default: throw new InvalidOperationException("Unknown prepared native proof.");
         }
     }
 
-    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions, ReadOnlySpan<object?> arguments,
-        ExecutionContext context, PyException? entryException)
+    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
     {
-        ref readonly var instruction = ref instructions[index];
-        var call = instruction.OpCode == ExecutableOpCode.Call ? code.CallSites[instruction.CallSiteIndex] : null;
-        var memberIndex = call is null ? -1 : instruction.NativeSecond;
-        var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
-        var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
-        var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
-        var casing = call is { ArgumentCount: 0 } && memberIndex >= 0 &&
-            code.Names[instructions[memberIndex].NameIndex] == "split"
-            ? NativeSplitCasing(instruction.NativeFirst, code, instructions) : null;
+        ref readonly var value = ref values[index];
+        ref readonly var instruction = ref code.Instructions[value.SourceInstruction];
         object? first = null, second = null, third = null, fourth = null;
-        if (instruction.NativeFirst >= 0)
+        if (value.Operation != NativeReturnOperation.Read)
         {
-            first = EvaluateNativeReturn(casing is null ? instruction.NativeFirst : instructions[instruction.NativeFirst].NativeFirst,
-                code, instructions, arguments, context, entryException);
-            if (casing is not null)
+            if (value.Operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
             {
-                ref readonly var producer = ref instructions[instruction.NativeFirst];
-                context.State.CheckExecution(instructions[producer.NativeSecond].Span);
-                context.State.CheckExecution(code.CallSites[producer.CallSiteIndex].CallSpan);
+                ref readonly var producer = ref values[value.First];
+                first = EvaluateNativeReturn(producer.First, code, values, arguments, context, entryException);
+                context.State.CheckExecution(code.Instructions[producer.Second].Span);
+                context.State.CheckExecution(code.CallSites[code.Instructions[producer.SourceInstruction].CallSiteIndex].CallSpan);
             }
-            if (memberIndex >= 0) context.State.CheckExecution(instructions[memberIndex].Span);
-            if (secondIndex >= 0) second = EvaluateNativeReturn(secondIndex, code, instructions, arguments, context, entryException);
-            if (thirdIndex >= 0) third = EvaluateNativeReturn(thirdIndex, code, instructions, arguments, context, entryException);
-            if (fourthIndex >= 0) fourth = EvaluateNativeReturn(fourthIndex, code, instructions, arguments, context, entryException);
+            else first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+            if (value.Operation is NativeReturnOperation.Add or NativeReturnOperation.Subscript)
+                second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
+            else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.SplitUpperWhitespace)
+            {
+                if (value.Second >= 0) context.State.CheckExecution(code.Instructions[value.Second].Span);
+                var call = code.CallSites[instruction.CallSiteIndex];
+                if (call.NativeArgumentIndex(0) is >= 0 and var a) second = EvaluateNativeReturn(a, code, values, arguments, context, entryException);
+                if (call.NativeArgumentIndex(1) is >= 0 and var b) third = EvaluateNativeReturn(b, code, values, arguments, context, entryException);
+                if (call.NativeArgumentIndex(2) is >= 0 and var c) fourth = EvaluateNativeReturn(c, code, values, arguments, context, entryException);
+            }
         }
-        // As in the instruction loop, checkpoint failures are outside operation
-        // exception routing; operation failures restore the caller's exception.
         context.State.CheckExecution(instruction.Span);
         try
         {
-            if (instruction.NativeFirst < 0)
+            switch (value.Operation)
             {
-                TryReadNativeOperand(code, instruction, arguments, context, out var operand);
-                return RuntimeValue(operand);
+                case NativeReturnOperation.Read:
+                    TryReadNativeOperand(code, instruction, arguments, context, out var operand);
+                    return RuntimeValue(operand);
+                case NativeReturnOperation.Add:
+                    return EvaluateBinaryOperator(BinaryOperatorSyntax.Add, first!, second!, context, instruction.Span);
+                case NativeReturnOperation.Subscript:
+                    return ReadSubscriptValue(first!, second!, instruction.Span, context);
+                case NativeReturnOperation.ConvertFormat:
+                    var conversion = (ExecutableConvertFormattedValue)code.Constants[instruction.ConstantIndex]!;
+                    return FormatInterpolatedStringPart(first!, conversion.Conversion, null, context, instruction.Span);
+                case NativeReturnOperation.FormatValue:
+                    var format = (ExecutableFormatField)code.Constants[instruction.ConstantIndex]!;
+                    return FormatInterpolatedStringPart(first!, null, format.FormatSpecifier, context, instruction.Span, format.PreparedFormat);
             }
-            if (instruction.OpCode == ExecutableOpCode.Binary)
-                return EvaluateBinaryOperator(BinaryOperatorSyntax.Add, first!, second!, context, instruction.Span);
-            if (instruction.OpCode == ExecutableOpCode.Subscript)
-                return ReadSubscriptValue(first!, second!, instruction.Span, context);
             var site = code.CallSites[instruction.CallSiteIndex];
-            if (casing is { } upper)
-                return PyStringOps.SplitCasedWhitespace((PyString)first!, upper, context.MemoryGovernor, site.CallSpan, context);
-            if (memberIndex < 0)
+            if (value.Operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
+                return PyStringOps.SplitCasedWhitespace((PyString)first!, value.Operation == NativeReturnOperation.SplitUpperWhitespace,
+                    context.MemoryGovernor, site.CallSpan, context);
+            if (value.Operation == NativeReturnOperation.BuiltinUnary)
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
-            var member = code.Names[instructions[memberIndex].NameIndex];
-            if (site.ArgumentCount == 0 && StringMembers.GetNoArgumentsOperation(member) is { } operation)
-                return InvokeSingleInput(receiver, operation, site.CallSpan, context);
-            return member switch
+            if (value.Operation is >= NativeReturnOperation.Strip and <= NativeReturnOperation.IsSpace)
+                return InvokeSingleInput(receiver, StringMembers.GetNoArgumentsOperation(value.Operation), site.CallSpan, context);
+            return value.Operation switch
             {
-                "split" => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
-                "replace" => InvokeStringReplace(receiver, second!, third!, fourth, site.CallSpan, context),
-                "startswith" or "endswith" => InvokeStringAffix(receiver, second!, site.CallSpan, context, member == "startswith"),
-                _ => throw new InvalidOperationException("Invalid native return method."),
+                NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
+                NativeReturnOperation.Replace => InvokeStringReplace(receiver, second!, third!, fourth, site.CallSpan, context),
+                NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith =>
+                    InvokeStringAffix(receiver, second!, site.CallSpan, context, value.Operation == NativeReturnOperation.StartsWith),
+                _ => throw new InvalidOperationException("Unknown prepared native value."),
             };
         }
-        catch (LythonRuntimeException error)
-        {
-            RestoreNativeReturnException(context, entryException, error);
-            throw;
-        }
-    }
-
-    // The ordinary native-body proof already established exact builtin methods
-    // before any work. Reuse its graph; no extra plan or execution route is kept.
-    private static bool? NativeSplitCasing(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions)
-    {
-        ref readonly var producer = ref instructions[index];
-        if (producer.OpCode != ExecutableOpCode.Call || producer.NativeSecond < 0 ||
-            code.CallSites[producer.CallSiteIndex] is not { HasReceiver: true, ArgumentCount: 0 }) return null;
-        return code.Names[instructions[producer.NativeSecond].NameIndex] switch
-        {
-            "lower" => false,
-            "upper" => true,
-            _ => null
-        };
+        catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
     }
 
     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,

@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [prepared native-body replacement](results/2026-11-05-prepared-native-bodies/README.md)
+is retained pending full delivery. Ordinary instructions40->32B;16B prepared values
+only for eligible helpers replace runtime structure/arity/method/fusion classifiers.
+Fifteen net production lines removed.268s/all gates: textwarm−4.7–8.0%,async−5.3–7.3%,
+compileallocation−2.3%,warm allocation flat. Same-bit81s CSV/JSON confirmation narrows
+old7.7%/3.7%control spreads; possibleCSV~1% debt and fresh/report uncertainty remain.
+1744internal/5171public plus overlapping40native/50internal+90public stack checks
+per actual target pass. Preserve UTF8 fixture-writer failure/correction and all
+adverse signs. No CPU/RSS/external-ratio claim; whole objective remains open.
+
 The [whole native-helper source gate](results/2026-11-05-native-preparation-source-gate/README.md)
 selects a complete preparation/deletion contract after six maintained-source
 inventories. Hypothetical328–776B retained savings are not measurements; repeated

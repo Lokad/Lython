@@ -1,0 +1,20 @@
+{
+  "build": "Nonincremental Release81.39s,zero warnings/errors",
+  "internalPerActualTarget": 1744,
+  "publicPerActualTarget": 5171,
+  "additionalNativeCases": 40,
+  "overlap": "39 included above; one added all15string-method independent CPython scenario",
+  "testOnlyBuild": "Corrected UTF8 source;16.54s;zero warnings/errors;core unchanged",
+  "coreHashes": {
+    "net11.0": "81deb3be4bf45f73a4a6372f1223014edc3bf09e8439f8da1eeffa018d1b4cfa",
+    "net10.0": "404567419c06b27b2de6bbdcb67ddc472bd0c160d6ffe30469873e3d6d49ff3f"
+  },
+  "qualification": "Focused Release development on actual Windows11/10;full platform/stress/package pending retention",
+  "correction": "First all-method fixture writer read original UTF8 using Windows legacy encoding, causing a C# char-literal build error. Restored exact Git UTF8 and inserted only new fixture; failed build log preserved. No production source/bits changed by this correction.",
+  "additionalManagedStackControls": {
+    "internalPerTarget": 50,
+    "publicPerTarget": 90,
+    "overlap": "Some controls overlap original focused selection; no blanket unique-count claim"
+  },
+  "disposition": "Retain complete source;full platform/Stress/installed Release consumer delivery pending"
+}

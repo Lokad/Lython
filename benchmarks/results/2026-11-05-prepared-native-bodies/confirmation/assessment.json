@@ -1,0 +1,103 @@
+{
+  "performanceQualified": false,
+  "purpose": "Whole native preparation versus cf3dc9cd;two same-bit CSV/JSON confirmation jobs;allocation/elapsed/compile separated,peaks initial untimed setup only",
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 4.97853572,
+          "iqrPercent": 0.40543688215216583,
+          "processAllocatedBytes": 4943391.2,
+          "minimumBatchMilliseconds": 248.242975
+        },
+        "candidate": {
+          "milliseconds": 4.9591496,
+          "iqrPercent": 0.15905872248743178,
+          "processAllocatedBytes": 4944452.16,
+          "minimumBatchMilliseconds": 246.569149
+        },
+        "before-control": {
+          "milliseconds": 4.91282232,
+          "iqrPercent": 1.6619229168458751,
+          "processAllocatedBytes": 4944467.52,
+          "minimumBatchMilliseconds": 244.640193
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.38939401242259475,
+        0.9429870852728062
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.02146218976155634,
+        -0.00031065023559095906
+      ],
+      "unchangedSpreadPercent": 1.319934287827107,
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 8415421,
+          "PeakRootBytes": 8511773
+        },
+        "candidate": {
+          "PeakExecutionBytes": 8415421,
+          "PeakRootBytes": 8511773
+        },
+        "before-control": {
+          "PeakExecutionBytes": 8415421,
+          "PeakRootBytes": 8511773
+        }
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 4.912492816326531,
+          "iqrPercent": 0.4108263784011475,
+          "processAllocatedBytes": 3329387.102040816,
+          "minimumBatchMilliseconds": 239.500062
+        },
+        "candidate": {
+          "milliseconds": 4.878525693877552,
+          "iqrPercent": 1.0361134571439437,
+          "processAllocatedBytes": 3330074.448979592,
+          "minimumBatchMilliseconds": 238.105939
+        },
+        "before-control": {
+          "milliseconds": 4.9024539795918365,
+          "iqrPercent": 0.300819774786252,
+          "processAllocatedBytes": 3329382.0408163266,
+          "minimumBatchMilliseconds": 238.65849
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.6914437072781165,
+        -0.48808792114917177
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.020644848967976692,
+        0.020796897285335625
+      ],
+      "unchangedSpreadPercent": 0.20435320946080582,
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 5103058,
+          "PeakRootBytes": 5200306
+        },
+        "candidate": {
+          "PeakExecutionBytes": 5103058,
+          "PeakRootBytes": 5200306
+        },
+        "before-control": {
+          "PeakExecutionBytes": 5103058,
+          "PeakRootBytes": 5200306
+        }
+      }
+    }
+  ],
+  "ownedCollectionSeconds": 81.0,
+  "allGoldenBalanceFixtureIdentityQuietGatesPassed": true,
+  "archiveSHA256": "2de8b241b84af5be638370c3f25f1a06e9c741c766db23077fa39d65c5c96f5b"
+}

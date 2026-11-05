@@ -1,0 +1,150 @@
+{
+  "coreSHA256": "81deb3be4bf45f73a4a6372f1223014edc3bf09e8439f8da1eeffa018d1b4cfa",
+  "instructionStride": 32,
+  "nativeValueStride": 16,
+  "purpose": "Read-only source inventory and managed current-thread array-allocation stride diagnostic, not guest allocation/CPU/elapsed/admission measurement",
+  "records": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 106,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "parse_amount",
+          "instructionCount": 4,
+          "nativeValueCount": 3,
+          "nativeOperations": [
+            "Read",
+            "Read",
+            "BuiltinUnary"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 85,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "words_from_line",
+          "instructionCount": 6,
+          "nativeValueCount": 3,
+          "nativeOperations": [
+            "Read",
+            "Lower",
+            "SplitLowerWhitespace"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 96,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "record_amount",
+          "instructionCount": 4,
+          "nativeValueCount": 3,
+          "nativeOperations": [
+            "Read",
+            "Read",
+            "Subscript"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.report-render.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 65,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "render",
+          "instructionCount": 19,
+          "nativeValueCount": 18,
+          "nativeOperations": [
+            "StartFormat",
+            "AppendFormatText",
+            "Read",
+            "Read",
+            "Subscript",
+            "AppendFormatField",
+            "AppendFormatText",
+            "Read",
+            "Read",
+            "Subscript",
+            "AppendFormatField",
+            "AppendFormatText",
+            "Read",
+            "Read",
+            "Subscript",
+            "AppendFormatField",
+            "AppendFormatText",
+            "FinishFormat"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-edit.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 79,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large.long-fields",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 106,
+          "nativeValueCount": 0,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "parse_amount",
+          "instructionCount": 4,
+          "nativeValueCount": 3,
+          "nativeOperations": [
+            "Read",
+            "Read",
+            "BuiltinUnary"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    }
+  ]
+}

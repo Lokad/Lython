@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
@@ -6,30 +7,51 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> StripWhitespaceOperation = StripWhitespace;
-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> LowerOperation = Lower;
-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object> UpperOperation = Upper;
+        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object>[] NoArgumentsOperations =
+        [
+            StripWhitespace,
+            Lower,
+            Upper,
+            static (receiver, span, context) => PyStringOps.IsLower(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsUpper(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsTitle(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsAlpha(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsDigit(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsAlnum(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsAscii(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsDecimal(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsIdentifier(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsNumeric(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsPrintable(receiver, context, span),
+            static (receiver, span, context) => PyStringOps.IsSpace(receiver, context, span),
+        ];
 
-        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
+        internal static NativeReturnOperation? GetNoArgumentsKind(string name)
             => name switch
             {
-                "strip" => StripWhitespaceOperation,
-                "lower" => LowerOperation,
-                "upper" => UpperOperation,
-                "islower" => static (receiver, span, context) => PyStringOps.IsLower(receiver, context, span),
-                "isupper" => static (receiver, span, context) => PyStringOps.IsUpper(receiver, context, span),
-                "istitle" => static (receiver, span, context) => PyStringOps.IsTitle(receiver, context, span),
-                "isalpha" => static (receiver, span, context) => PyStringOps.IsAlpha(receiver, context, span),
-                "isdigit" => static (receiver, span, context) => PyStringOps.IsDigit(receiver, context, span),
-                "isalnum" => static (receiver, span, context) => PyStringOps.IsAlnum(receiver, context, span),
-                "isascii" => static (receiver, span, context) => PyStringOps.IsAscii(receiver, context, span),
-                "isdecimal" => static (receiver, span, context) => PyStringOps.IsDecimal(receiver, context, span),
-                "isidentifier" => static (receiver, span, context) => PyStringOps.IsIdentifier(receiver, context, span),
-                "isnumeric" => static (receiver, span, context) => PyStringOps.IsNumeric(receiver, context, span),
-                "isprintable" => static (receiver, span, context) => PyStringOps.IsPrintable(receiver, context, span),
-                "isspace" => static (receiver, span, context) => PyStringOps.IsSpace(receiver, context, span),
+                "strip" => NativeReturnOperation.Strip,
+                "lower" => NativeReturnOperation.Lower,
+                "upper" => NativeReturnOperation.Upper,
+                "islower" => NativeReturnOperation.IsLower,
+                "isupper" => NativeReturnOperation.IsUpper,
+                "istitle" => NativeReturnOperation.IsTitle,
+                "isalpha" => NativeReturnOperation.IsAlpha,
+                "isdigit" => NativeReturnOperation.IsDigit,
+                "isalnum" => NativeReturnOperation.IsAlnum,
+                "isascii" => NativeReturnOperation.IsAscii,
+                "isdecimal" => NativeReturnOperation.IsDecimal,
+                "isidentifier" => NativeReturnOperation.IsIdentifier,
+                "isnumeric" => NativeReturnOperation.IsNumeric,
+                "isprintable" => NativeReturnOperation.IsPrintable,
+                "isspace" => NativeReturnOperation.IsSpace,
                 _ => null
             };
+
+        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
+            => GetNoArgumentsKind(name) is { } kind ? GetNoArgumentsOperation(kind) : null;
+
+        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object> GetNoArgumentsOperation(NativeReturnOperation kind)
+            => NoArgumentsOperations[(int)kind - (int)NativeReturnOperation.Strip];
 
         internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
             => PyStringOps.Lower(receiver, context, span);
