@@ -5,6 +5,18 @@
 Focused actual .NET11/10 checks pass; full delivery pending with D31. Publication
 postponed; broader performance work remains open.
 
+Initial delivery CI41973141592 at d9245ea9 failed one public retained-subprocess-
+arguments test on both platforms; all4,104 internal cases per platform passed.
+Later .NET10/package/originalStress gates were skipped. The test expected500
+small lists sharing literal strings to exceed400,000 B, depending on the discarded
+minimum capacity. Replace that threshold fixture with32 distinct4 KiB retained
+arguments: tight allowance refusal before all host calls, roomy success with
+returned aliases, and cleanup to zero. All132 focused subprocess/shared-memory
+cases pass per actual11/10; production bits remain b6046395. This is test correction,
+not a runtime fix or relaxed containment. [Original failed delivery](initial-delivery-ci-status.json)
+and [failed log](initial-delivery-ci-failed.log) remain visible; subsequent delivery
+qualification is recorded separately.
+
 One construction/growth/clear invariant replaces three old storage rules. Known
 capacity is respected, empty lists need no element backing, growth starts at8
 then is geometric, and clear/nonpositive repetition relinquishes backing before

@@ -3,10 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG21: Popen handles and CompletedProcess values retain their args lists, so
-// the argument strings must own governor charges like any retained value.
-// Pre-fix peaks sit near 1.06MB (2000 retained Popens) and 82KB (200 retained
-// runs); owning 128B plus UTF-8 length per retained arg trips the budgets below.
+// Popen handles and CompletedProcess values retain their original args lists.
+// Retained payloads remain funded independently of the list growth policy.
 public sealed class SubprocessArgsAccountingScenarioTests
 {
     private static string ArgvCode(string big1, string big2)
@@ -43,34 +41,49 @@ public sealed class SubprocessArgsAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
-    [Fact]
-    public async Task ManyRetainedRunArgsStayCharged()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ManyRetainedRunArgsStayCharged(bool asynchronous)
     {
-        var big1 = new string('A', 500);
-        var big2 = new string('B', 500);
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
-            "import subprocess\n" +
-            "ps = []\n" +
-            "i = 0\n" +
-            "while i < 500:\n" +
-            "    ps.append(subprocess.run(" + ArgvCode(big1, big2) + "))\n" +
-            "    i = i + 1\n" +
-            "return len(ps)\n");
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
+            import subprocess
+            ps = []
+            for i in range(32):
+                ps.append(subprocess.run(['tool', 'A' * 4096 + str(i)]))
+            return (len(ps), ps[0].args[1], ps[-1].args[1])
+            """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(400000) };
-        var host = new MockLythonHost();
-        host.EnableSubprocess();
-        Seed(host, big1, big2);
-        var sync = script.Run(host, options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
 
-        var asyncHost = new MockLythonHost();
-        asyncHost.EnableSubprocess();
-        Seed(asyncHost, big1, big2);
-        var asyncResult = await script.RunAsync(asyncHost, options);
-        Assert.False(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        // Distinct live payloads exceed this allowance without depending on
+        // an exact number of list slots or repeated charges for shared literals.
+        foreach (var limit in new[] { 128000, 1048576 })
+        {
+            var budget = new LythonMemoryBudget(limit);
+            var host = new MockLythonHost();
+            host.EnableSubprocess();
+            for (var i = 0; i < 32; i++)
+                host.SeedSubprocessResult(["tool", new string('A', 4096) + i], 0);
+            using var result = asynchronous
+                ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = budget });
+            if (limit == 128000)
+            {
+                Assert.False(result.Success);
+                Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                Assert.True(host.SubprocessRequests.Count < 32);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new object?[] { new BigInteger(32), new string('A', 4096) + "0", new string('A', 4096) + "31" },
+                    Assert.IsAssignableFrom<IReadOnlyList<object?>>(result.ReturnValue));
+                Assert.True(budget.ReservedBytes > 8192);
+            }
+            result.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        }
     }
 
     [Fact]

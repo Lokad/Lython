@@ -1,0 +1,77 @@
+tests (windows-latest)	Test Release (.NET 11)	﻿2026-11-05T05:21:39.9278841Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9282370Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9284228Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9401958Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9402357Z env:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9402606Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9402993Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9403473Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9403947Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9404736Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9405555Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9406230Z   DOTNET_DbgEnableMiniDump: 1
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9406736Z   DOTNET_DbgMiniDumpType: Mini
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9407354Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:39.9407732Z ##[endgroup]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:41.0144744Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.0029378Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.0696516Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.2494109Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.2716715Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.5770273Z Blame: Attaching crash dump utility to process testhost (3720).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:42.5880626Z Blame: Attaching crash dump utility to process testhost (1416).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3659883Z ^[[31;1m[xUnit.net 00:00:12.16]     Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3672868Z   Failed Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged [40 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3674288Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3674988Z    Assert.False() Failure
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3675948Z Expected: False
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3677603Z Actual:   True
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3678584Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3681685Z      at Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged() in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\SubprocessArgsAccountingScenarioTests.cs:line 65
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:21:57.3684630Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:22:16.7601345Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:22:16.7785163Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:22:16.7863910Z Passed!  - Failed:     0, Passed:  4104, Skipped:     0, Total:  4104, Duration: 30 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:26:20.9973090Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:26:21.0159458Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:26:21.0715811Z Failed!  - Failed:     1, Passed: 15980, Skipped:     0, Total: 15981, Duration: 4 m 26 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-05T05:26:21.5661906Z ##[error]Process completed with exit code 1.
+tests (ubuntu-latest)	Test Release (.NET 11)	﻿2026-11-05T05:20:12.5438105Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5439688Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5440417Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5464887Z shell: /usr/bin/pwsh -command ". '{0}'"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5465196Z env:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5465469Z   DOTNET_ROOT: /usr/share/dotnet
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5465829Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5466211Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5466599Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5467033Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5467402Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5467755Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5468084Z   DOTNET_DbgEnableMiniDump: 1
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5468500Z   DOTNET_DbgMiniDumpType: Mini
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5468818Z   DOTNET_DbgMiniDumpName: /home/runner/work/Lython/Lython/crash-%p.dmp
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:12.5469226Z ##[endgroup]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:13.4351980Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:13.8570166Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:14.0237975Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:14.0370268Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net11.0/Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:14.1575427Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:14.2031223Z Blame: Attaching crash dump utility to process dotnet (3712).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:14.3051542Z Blame: Attaching crash dump utility to process dotnet (3731).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:35.6389848Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:35.6495454Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:20:35.6596546Z Passed!  - Failed:     0, Passed:  4104, Skipped:     0, Total:  4104, Duration: 19 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3947934Z ^[[31;1m[xUnit.net 00:01:56.75]     Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3949339Z   Failed Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged [2 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3950059Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3950963Z    Assert.False() Failure
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3951273Z Expected: False
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3951552Z Actual:   True
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3951789Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3952557Z      at Lokad.Lython.PublicApi.Tests.SubprocessArgsAccountingScenarioTests.ManyRetainedRunArgsStayCharged() in /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/SubprocessArgsAccountingScenarioTests.cs:line 65
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:22:11.3953532Z --- End of stack trace from previous location ---
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:24:24.1690134Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:24:24.1818809Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:24:24.2017220Z Failed!  - Failed:     1, Passed: 15980, Skipped:     0, Total: 15981, Duration: 4 m 1 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-05T05:24:25.2173503Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,26 @@
+{
+  "runId": 41973141592,
+  "headSha": "d9245ea9bcf113cb59edde2d55f561aaf37b37e4",
+  "url": "https://github.com/Lokad/Lython/actions/runs/41973141592",
+  "terminal": true,
+  "conclusion": "failure",
+  "observedUtc": "2026-11-05T05:30:08.644604+00:00",
+  "jobs": [
+    {
+      "platform": "Windows",
+      "net11": "one public retained-args test failed; 4104 internal passed",
+      "net10": "skipped",
+      "installedConsumers": "skipped",
+      "originalStress": "skipped"
+    },
+    {
+      "platform": "Ubuntu",
+      "net11": "one public retained-args test failed; 4104 internal passed",
+      "net10": "skipped",
+      "installedConsumers": "skipped",
+      "originalStress": "skipped"
+    }
+  ],
+  "failure": "ManyRetainedRunArgsStayCharged expected refusal at an obsolete fixed-count/list-capacity threshold",
+  "statusSource": "First and only terminal status observation; failed log retrieved once separately"
+}

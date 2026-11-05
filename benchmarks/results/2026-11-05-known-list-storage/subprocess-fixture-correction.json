@@ -1,0 +1,12 @@
+{
+  "productionCoreSHA256": "b60463957f65bfd16a14686b08ca63b9361ac04fe534924a2d09fcca70f7b625",
+  "productionChanged": false,
+  "cause": "500 small lists sharing constant strings no longer exhaust the old capacity-dependent allowance",
+  "replacement": "32 unique retained 4 KiB arguments, tight refusal and roomy success with returned aliases and cleanup to zero",
+  "focusedCasesPerFramework": 132,
+  "frameworks": ["net11.0", "net10.0"],
+  "allPassed": true,
+  "buildSeconds": 14.28,
+  "warnings": 0,
+  "errors": 0
+}
