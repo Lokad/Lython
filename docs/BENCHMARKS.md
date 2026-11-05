@@ -30,7 +30,9 @@ Exact frozen core **ec4b6378** (built before commit metadata), source/fixture ha
 raw samples and checks: [retained checkpoint](../benchmarks/results/2026-11-05-runtime-cpython-refresh/README.md).
 Full local4143internal/16004public pass per actual.NET11/10. Source13d platform/
 original stress/installed-consumer [CI42074585232](https://github.com/Lokad/Lython/actions/runs/42074585232)
-is running; earlier b69 qualification is separate. Publication remains postponed.
+is GREEN on Windows/Ubuntu, actual11/10, original stress and installed consumers.
+The [terminal receipt](../benchmarks/results/2026-11-05-frame-exit-cleanup/delivery-ci-status.json)
+is cached; no unchanged replay. Publication remains postponed.
 
 Four earlier file rows measure **2026-11-03/bd3f9dee**, ordinary filesystem, and
 are not updated-source results. Filename scripts filter768 supplied names/write256

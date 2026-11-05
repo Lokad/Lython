@@ -54,8 +54,10 @@ No allocation/causalCPU/RSS/host-latency/startup measurement or claim.
 
 Full local4143internal/16004public per actual.NET11/10 passes. Retained13d platform/
 original stress/installed consumers [CI42074585232](https://github.com/Lokad/Lython/actions/runs/42074585232)
-is running. Priorb69 delivery42065949621/all8 does not qualify D59. Publication
-postponed; broader performance and independent regex work continue.
+is GREEN/all8 on13d69be6, with its own
+[cached terminal receipt](../2026-11-05-frame-exit-cleanup/delivery-ci-status.json).
+Priorb69 delivery remains separate. Publication postponed; broader performance
+and independent regex work continue.
 
 [Contract](source-contract.md), [summary](summary.json), [identity](identity.json),
 [raw source/observations/gates](observations.tgz), [archive receipt](archive-receipt.json).
