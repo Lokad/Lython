@@ -1,0 +1,27 @@
+{
+  "source": "e958c9b1",
+  "runtimeQualification": "42005719439 terminalGREEN/all8, receipt in native-dictionary-backing",
+  "tooling": "95c10298,124 focused worker cases per actual11/10",
+  "observedService": {
+    "unit": "lython-b266-runtime-cpython-20261105",
+    "loaded": true,
+    "active": true,
+    "pid": 3207104
+  },
+  "ownedSeconds": 466.5210993527435,
+  "jobs": 17,
+  "complete": true,
+  "allWorkersClosedJoined": true,
+  "finalLythonReservationsZero": "Required for every normal worker exit by identical workerb94; exit0/joins checked",
+  "sharedVmLeaseReleased": true,
+  "quietBeforeAndAfter": true,
+  "ownedFixturesRemoved": true,
+  "measurement": "Process-isolated current/control/previous Lython/CPython; source-specific controls and all adverse points retained",
+  "included": "Invocation, mediatedRAMIO, complete stdout/files, prior-resultcleanup; fresh addsCompile/Dispose",
+  "excluded": "Fixture reset/startup/transport/responsehash/final cached-owner/process/fixture teardown",
+  "limitations": [
+    "No genuine suspendedIO, heap/RSS, startup or embedding-latency measurements",
+    "Sampled processCPU ticks are not causal attribution",
+    "No single component speedup follows from this coupled source pair"
+  ]
+}

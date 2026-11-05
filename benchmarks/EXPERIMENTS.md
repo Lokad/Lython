@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [qualified dictionary/construction CPython checkpoint](results/2026-11-05-dictionary-cpython-checkpoint/README.md)
+compares exact final1f59/e958 with previous402, an identical-current process and
+CPython3.13.16.466.52s/17jobs/all gates; all final worker reservations zero.
+Fresh nativeCSV1.37×,ordinaryCSV1.57×,text2.16–2.22×CPython. Coupled ordinaryCSV
+warm/fresh5–7% lower, report5–8% lower; freshtext+1.14/−1.60% remains inconclusive.
+Cache-drainCSV9.3–9.5% lower/.25% current spread, without individual D40 attribution
+or proof of the earlier drift's cause. Current guide refreshed; original adverse
+points/debt remain. Exacte958 full42005719439 is GREEN/all8/cached; publication held.
+
 The [complete native dictionary backing](results/2026-11-05-native-dictionary-backing/README.md)
 retains one managed entry/bucket array and single-probe admitted insertion,
 removing the BCL carrier/separate buckets. Initial161s/all gates has favorable
@@ -12,7 +21,8 @@ actual11/10 pass. Final54s/two jobs/all gates: allocationnativeCSV−5.2%,cache-
 CSV−17.38%; elapsedinconclusive with6.62/9.16% unchanged spread. Prior construction
 timings do not measure that final binary. Retain complete storage/semantic gains,
 accept custom-table maintenance and workload-dependent large-map space costs;
-no further local tuning. Full delivery and process-isolated milestone remain open.
+no further local tuning. Full delivery and the process-isolated milestone are
+now closed by the cached qualification/checkpoint above; original uncertainties remain.
 
 The [final list storage and lazy activation replacement](results/2026-11-05-final-storage-activation/README.md)
 retains c0221b77 versus qualified402. Remove constructor loans/per-field insertion,

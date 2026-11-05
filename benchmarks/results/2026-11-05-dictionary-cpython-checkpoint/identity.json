@@ -1,0 +1,29 @@
+{
+  "sourceRevision": "e958c9b1; final D40 frozen1f5919c0 versus previous externala8e476bf/c6d71108 frozen402ae9f1",
+  "coreSHA256": {
+    "candidate": "1f5919c0f48b4c35c22fcbcda252898a70c059d0b2c98ffc002bb8ebb466c78f",
+    "control": "1f5919c0f48b4c35c22fcbcda252898a70c059d0b2c98ffc002bb8ebb466c78f",
+    "reference": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Full delivery42005719439 must be GREEN before launch; focused4111internal/4655public per actualtarget pass",
+  "workerChange": "Final zero-reservation invariant after all cached compilations/results disposed; same worker for all Lython roles; no timing-boundary change",
+  "reference": "Previous external402 with current identical auxiliary bits",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "d6b120af89aeddfe795317c54511537659344382827af5f6db3b7a338f9519a6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "958aa2bc4a1197aeaf202dcadfb9692ef493b84032180f35866c39a03c815776",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "81204133d5095a041298566f2a170a0fbf4d4790bc09f6e2a2de4a4645688aa6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "38d4d68811648e63153fcd1500771b8d8933dcb3ca2feca6deb20bb6d780633b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "e1641b728fac7529ae61ad2b75071817c7a33256ae6b71b27f8d7b8347043f41",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs": "9be4b3e4b39e594e72f67f7bb14bcfbd4e5e6d034002863dc0c9e0c039c7f182",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "da6b91e0cc12949efb646c4af79bee0812c5810ada9a3822473b89f0e59e0037",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "83c3400fdb5051738296fb29b8985b2da7c19c2f0f03b05532965b5e3b0b9044",
+    "src/Lokad.Lython/Runtime/PyList.cs": "afca24ec3a20133eea480dc4d0be87c672797321f33d01c9f2a718125b0d9e35",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "e9beefa4ec02333287ee5392747bb2bb6987148a014d3273452b867a0ae058f0"
+  }
+}

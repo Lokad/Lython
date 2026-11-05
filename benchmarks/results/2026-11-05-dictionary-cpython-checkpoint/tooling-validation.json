@@ -1,0 +1,13 @@
+{
+  "revision": "95c10298",
+  "runtimeSource": "e958c9b1",
+  "focusedWorkerRegressions": {
+    "net11.0": 124,
+    "net10.0": 124
+  },
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "net11WorkerSHA256": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+  "timingBoundaryChanged": false,
+  "fullRuntimeQualification": "42005719439 exacte958 terminalGREEN/all8"
+}
