@@ -1,0 +1,160 @@
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+index 544f62c1..63f8aa64 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -86,33 +86,39 @@ internal static partial class PyStringOps
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+     {
++        // Each chunk decodes at most 64 complete scalars; a final scalar may
++        // cross the byte boundary by at most three bytes. No shared work counter.
+         var start = -1;
+         var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+         for (var position = 0; position < source.Length;)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
+-            if (IsPythonWhitespace(rune))
++            context?.CheckExecution(span);
++            var chunkEnd = position + Math.Min(64, source.Length - position);
++            do
+             {
+-                if (start >= 0)
++                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
+-                    start = -1;
+-                    remaining--;
++                    if (start >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        start = -1;
++                        remaining--;
++                    }
+                 }
+-            }
+-            else if (start < 0)
+-            {
+-                start = position;
+-                if (remaining == 0)
++                else if (start < 0)
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
+-                    return;
++                    start = position;
++                    if (remaining == 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        return;
++                    }
+                 }
+-            }
+-            position += width;
++                position += width;
++            } while (position < chunkEnd);
+         }
+         if (start >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+@@ -131,25 +137,29 @@ internal static partial class PyStringOps
+         long extraCapacity = 0;
+         for (var position = 0; position < source.Length;)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
+-            if (IsPythonWhitespace(rune))
++            context?.CheckExecution(span);
++            var chunkEnd = position + Math.Min(64, source.Length - position);
++            do
+             {
+-                if (start >= 0)
++                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context,
+-                        CheckCaseOutputCapacity(position - start + extraCapacity, span));
+-                    start = -1;
+-                    extraCapacity = 0;
++                    if (start >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context,
++                            CheckCaseOutputCapacity(position - start + extraCapacity, span));
++                        start = -1;
++                        extraCapacity = 0;
++                    }
+                 }
+-            }
+-            else
+-            {
+-                if (start < 0) start = position;
+-                if (width > 1) extraCapacity += maximumCaseWidth - width;
+-            }
+-            position += width;
++                else
++                {
++                    if (start < 0) start = position;
++                    if (width > 1) extraCapacity += maximumCaseWidth - width;
++                }
++                position += width;
++            } while (position < chunkEnd);
+         }
+         if (start >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+@@ -165,29 +175,33 @@ internal static partial class PyStringOps
+         var end = -1;
+         for (var position = source.Length; position > 0;)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeLastFromUtf8(source[..position], out var rune, out var width);
+-            if (IsPythonWhitespace(rune))
++            context?.CheckExecution(span);
++            var chunkStart = Math.Max(0, position - 64);
++            do
+             {
+-                if (end >= 0)
++                Rune.DecodeLastFromUtf8(source[..position], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
+-                    end = -1;
+-                    remaining--;
++                    if (end >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        end = -1;
++                        remaining--;
++                    }
+                 }
+-            }
+-            else if (end < 0)
+-            {
+-                end = position;
+-                if (remaining == 0)
++                else if (end < 0)
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
+-                    return;
++                    end = position;
++                    if (remaining == 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        return;
++                    }
+                 }
+-            }
+-            position -= width;
++                position -= width;
++            } while (position > chunkStart);
+         }
+         if (end >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,

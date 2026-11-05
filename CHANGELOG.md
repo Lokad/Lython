@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Check cooperative cancellation in bounded UTF-8 chunks while finding whitespace
+  words, removing shared traversal updates for every scalar. Preserve Unicode,
+  split limits, conservative admission and independently owned results.
+
 - Replace the three thread-local tiny function-argument pools with one funded,
   cleared workspace per execution. Repeated equal-sized calls reuse its capacity;
   nested and suspended calls retain their own funding. Small calls now use shared

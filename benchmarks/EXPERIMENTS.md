@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [bounded whitespace cancellation milestone](results/2026-11-05-whitespace-cancellation-chunks/README.md)
+removes per-scalar shared traversal updates in three UTF8 scans, using <=64scalar
+chunk checks with unchanged owners/semantics. Focus150/237 per actual target pass.
+B28486.34s/all gates: standard−.16/1.48%,unfused−1.99/2.40%; Unicode+.03/5.87%
+with5.83% identical-current spread. One justified same-binary B28551.94s/all gates
+gives Unicode+.20/2.18%, still possible small regression/inconclusive. Retain the
+bounded simplification; no Unicode/general/causalCPU/allocation/latency gain claim.
+Original ENOSPC/setup/maintenance conditions and both raw blocks preserved.
+
 The [execution-owned function workspace](results/2026-11-05-owned-function-workspace/README.md)
 replaces three ThreadStatic tiny pools/size branches with one actual cleared,
 funded exact-capacity array per execution. No new owner/arena/window/credit/retry;

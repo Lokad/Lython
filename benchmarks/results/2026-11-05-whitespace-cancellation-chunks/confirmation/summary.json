@@ -1,0 +1,25 @@
+{
+  "complete": true,
+  "elapsedSeconds": 51.939131807070225,
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.unicode",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 9.63057337037037,
+        "control": 9.821434653846154,
+        "CPython": 5.070170039215686,
+        "reference": 9.611459037037037
+      },
+      "ratio": 1.8994576702323267,
+      "referenceDeltaPercent": 0.1988702574674539,
+      "controlPercent": 1.981826794061825,
+      "iqrPercent": {
+        "candidate": 1.0152105054658072,
+        "control": 1.8426784672195593,
+        "CPython": 1.6712511386089983,
+        "reference": 1.2948826045195103
+      }
+    }
+  ]
+}

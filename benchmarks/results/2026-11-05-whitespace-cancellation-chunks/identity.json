@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "bce54732 plus D55 bounded UTF8 whitespace scan cancellation; reference same D54 production frozen705 before commit metadata",
+  "coreSHA256": {
+    "candidate": "7895ac6dea2c5004875bb348edd0ba1afb87c39114c35be259b1d0ac83be15cb",
+    "control": "7895ac6dea2c5004875bb348edd0ba1afb87c39114c35be259b1d0ac83be15cb",
+    "reference": "705d2e51485fb70da9ec69c2fdd1cc0f5f6e15c9c07f0fb521deef446010e3cb"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "febf16bfb39774902dce89fd1e41e716e04d8d5ac83341ba6c0df7eb2053664f"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused whitespace/casing/native return/shared-budget admission/ownership tests pass on both actual runtimes; build zero warnings/errors. D54 full platform delivery independent.",
+  "changes": "Replace per-scalar shared traversal WorkTick updates in three native whitespace collectors with explicit checks before64-byte chunks, complete scalar decode; all structural callers and owners unchanged."
+}

@@ -86,8 +86,9 @@ kwargs/input/result funding. No timeout relaxation, weakened containment, fuel o
 checkpoint counters. Original failing logs remain. Final test source differs from
 the measured snapshot only in these ownership-contract observations.
 
-Full platform/original stress/installed-consumer qualification is pending the
-coherent delivery checkpoint. Baseline1fa4773e is already fully qualified via
+Retained commit bce54732 is pushed. Full platform/original stress/installed-consumer
+qualification is running as [CI42061776662](https://github.com/Lokad/Lython/actions/runs/42061776662).
+Baseline1fa4773e is already fully qualified via
 42051400891/all8; that receipt does not qualify D54. Publication postponed.
 
 [Contract](source-contract.md), [initial comparison](summary.json),
