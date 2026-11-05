@@ -683,7 +683,8 @@ input, keys and containers retain their execution ownership throughout.
 Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
 Default objects admit their shell and first native table together when the initial
-property token is a quote. Empty objects and invalid initial property tokens use
+property token is a quote, starting one four-entry block for the unknown width.
+Empty objects and invalid initial property tokens use
 shell-only storage; a quoted but truncated key can still admit the table before
 its syntax error. This conservative preflight can refuse before the first key or
 number callback. Refusal remains terminal, with ordinary awaited cleanup.
@@ -1045,14 +1046,20 @@ batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
 Dictionary tables keep insertion order, including deletion followed by reinsertion.
+One managed entry array holds native payloads and hash-bucket heads; namespace
+views keep their live backing. Native updates and admitted insertion share one
+hash/probe. Private bucket mixing leaves Python-visible hashes unchanged.
 Table capacity includes conservative key/value headroom. Removal and clear retain
 that funding and reuse prepaid slots; allowance returns when the owner ends.
 Instance attributes use the same capacity-level policy. Growth admits replacement
 overlap before allocation; unused slots and peaks can cause earlier denial. A
 competing budget user may cause later growth to refuse before a new binding is
 published. After refused admission, even updates within funded capacity stop.
-The managed ordered table shifts later entries on middle deletion, so repeated
-deletions in large dictionaries can have quadratic cost. Native copies admit
+Middle deletion shifts the live suffix and adjusts its hash links; last deletion
+only unlinks its bucket chain. Repeated middle deletions can have quadratic cost.
+Collision scans and private growth observe cooperative cancellation. Structural
+payload shifts are atomic; individual CLR allocations and structural mutations
+are not internally interrupted. Native copies admit
 their destination capacity before allocation and copy directly without an
 intermediate entry array. Unknown-length internal sources admit growth as they
 are consumed. Failed private copies refund their storage; long managed copies

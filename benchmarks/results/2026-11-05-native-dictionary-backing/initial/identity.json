@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "b9601e43 plus exact D40 native-table patch/snapshot versus retained6140/corec022",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "d49742711a6138ff78a4f2c727c88e7450356d9b4e0a1eb3bfe207dc53218687",
+    "Lokad.Lython.dll": "c0221b7776e62f220858d7af2972bf5669466e88ad521cee70497844150c813b",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "4b61edd74045977c03ae5659d547aed24fc9366d11bce4218d309bf0c211936e",
+  "candidateSource": "One native ordered entry/bucket array and single-probe admitted insertion",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "91cf34f921474377c370c9c0fbd2f4803b210a3801ac2837501e219652c9d6df",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "83c3400fdb5051738296fb29b8985b2da7c19c2f0f03b05532965b5e3b0b9044",
+    "tests/Lokad.Lython.Tests/NativeDictionaryMutationTests.cs": "171fbedba2d1acc97ff794fffe9315d0e54eebdbebc38cc4716323a4413be567"
+  }
+}

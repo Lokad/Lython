@@ -384,8 +384,9 @@ internal sealed partial class LythonRuntime
             var bytes = input.Utf8Bytes;
             var position = SkipJsonWhitespace(bytes.Span, opening + 1, context, span);
             // Fund the shell and first native table together when the first
-            // property token establishes nonempty object storage.
-            var capacity = position < bytes.Length && bytes.Span[position] == (byte)'"' ? 1 : 0;
+            // property token establishes nonempty object storage. Its final width
+            // is unknown: start one block instead of growing a two-slot table.
+            var capacity = position < bytes.Length && bytes.Span[position] == (byte)'"' ? 4 : 0;
             object result = isObject && options.ObjectPairsHook is null
                 ? new PyDict(capacity, context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
             return ReadJsonContainerRemainder(input, options, context, span, depth,

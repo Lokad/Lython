@@ -1,5 +1,19 @@
 # Benchmark experimental history
 
+The [complete native dictionary backing](results/2026-11-05-native-dictionary-backing/README.md)
+retains one managed entry/bucket array and single-probe admitted insertion,
+removing the BCL carrier/separate buckets. Initial161s/all gates has favorable
+CSV/JSON but reportallocation+5.13%; preserve it. One JSON-construction refinement,
+160s/all gates: CSVwarm4.2–8.5% lower/fresh5.6–7.1% lower, JSON4.1–4.3% lower;
+allocationCSV−3.3–5.2%,JSON−6.9%,report−4.49%. Report/text elapsed control-limited.
+Final source1f5919c0 also completes bucket-preserving ordered removal, eliminating
+a full-capacity/last-deletion cliff before promotion.4111internal/4655public per
+actual11/10 pass. Final54s/two jobs/all gates: allocationnativeCSV−5.2%,cache-drain
+CSV−17.38%; elapsedinconclusive with6.62/9.16% unchanged spread. Prior construction
+timings do not measure that final binary. Retain complete storage/semantic gains,
+accept custom-table maintenance and workload-dependent large-map space costs;
+no further local tuning. Full delivery and process-isolated milestone remain open.
+
 The [final list storage and lazy activation replacement](results/2026-11-05-final-storage-activation/README.md)
 retains c0221b77 versus qualified402. Remove constructor loans/per-field insertion,
 duplicate list-literal backing, eager member-cache tables and missed-read namespace

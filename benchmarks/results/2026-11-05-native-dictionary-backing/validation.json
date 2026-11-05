@@ -1,0 +1,70 @@
+{
+  "retention": "Retain complete native storage; no further local tuning. Full delivery pending.",
+  "baseline": "6140b97c / qualifiede5017ce4 / measuredc0221b77",
+  "variants": {
+    "initial": "4b61edd7; measured6jobs; reportallocation+5.13%",
+    "construction": "3384dd91; measured6jobs; unknown JSON object initialblock",
+    "completion": "1f5919c0; final source with bucket-preserving suffix removal; measured2jobs"
+  },
+  "buildsSeconds": {
+    "initial": 33.98,
+    "construction": 46.19,
+    "completion": 54.06
+  },
+  "warnings": 0,
+  "errors": 0,
+  "focusedPerActualTarget": {
+    "initial": {
+      "existingInternal": 4109,
+      "public": 4655,
+      "newIndependentRegressions": 2
+    },
+    "construction": {
+      "internal": 4111,
+      "public": 4655
+    },
+    "completion": {
+      "internal": 4111,
+      "public": 4655
+    }
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "finalCoreSHA256": {
+    "net11.0": "1f5919c0f48b4c35c22fcbcda252898a70c059d0b2c98ffc002bb8ebb466c78f",
+    "net10.0": "58ea655bfc68c35567ed1b3d42bf17486f57f02aebf72b977d0ea0c08b4218de"
+  },
+  "collections": [
+    {
+      "label": "initial",
+      "ownedSeconds": 161.0,
+      "allGates": true,
+      "archiveSHA256": "d2cd1c5d5513400da72d2db17db95f5ab6f9ce4bdab4c561dcba8497a748504b"
+    },
+    {
+      "label": "construction",
+      "ownedSeconds": 160.0,
+      "allGates": true,
+      "archiveSHA256": "aac1970cb9bcbf299abc710efa9b78d45a164ce05c1f02e9e372ad12aaff28e0"
+    },
+    {
+      "label": "completion",
+      "ownedSeconds": 54.0,
+      "allGates": true,
+      "archiveSHA256": "af88b267756935cf6933f82412c3b8b05f4561fae7c819a13505c7ff0ef24a07"
+    }
+  ],
+  "limitations": [
+    "Construction elapsed belongs to3384 before removal completion, not exact final1f59 bits.",
+    "Final two-job unchanged controls differ6.62/9.16%; elapsed magnitude unresolved.",
+    "No new CPython/RSS/startup/embedding-latency measurement.",
+    "Large-map capacity/physical-entry-width tradeoffs remain workload dependent.",
+    "Atomic structural mutation and individual CLR allocation are not internally interrupted; probe/private growth checks remain."
+  ],
+  "stagingCorrections": [
+    "First local final-driver adaptation searched2-case marker in existing6-case input; corrected before any VM timing.",
+    "First worker-DLL hardlink attempt refused mode mismatch before changing files; bounded core dedup preserved bytes/paths/permissions."
+  ]
+}

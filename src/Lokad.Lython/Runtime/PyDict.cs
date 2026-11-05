@@ -327,10 +327,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         }
         governor.Commit(protocolBytes);
         _nativeItems = storage._nativeItems;
-        _nativeCapacity = storage._nativeCapacity;
+        _nativeCount = storage._nativeCount;
         _nativeCommittedBytes = storage._nativeCommittedBytes;
         storage._nativeItems = null;
-        storage._nativeCapacity = 0;
+        storage._nativeCount = 0;
         storage._nativeCommittedBytes = 0;
         storage._items = null!;
         _items = this;
@@ -712,7 +712,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     private int StorageKeyIndex(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_nativeItems is { } native) return native.IndexOf(key);
+        if (_nativeItems is not null) return FindNativeIndex(key);
         // Live namespace bridges expose their existing order, without adding
         // another index or materializing their values.
         var index = 0;
@@ -1272,10 +1272,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var countBefore = Count;
         try
         {
+            if (_nativeItems is not null) { _ = SetNativeItem(storageKey, storageValue); return; }
             // Replacement retains the original equal key and changes no size.
             // Only a missing entry requires capacity admission and insertion.
             if (_items.TrySetExisting(storageKey, storageValue)) return;
-            if (_nativeItems is not null) EnsureNativeCapacity(checked(Count + 1), _memoryGovernor, _allocationSpan);
             _items.AddNew(storageKey, storageValue);
         }
         finally
