@@ -1,0 +1,26 @@
+{
+  "parent": "7efe581b80c9ec82b63ea6346843e70e8271ac6f",
+  "initialCoreSHA256": "77b20fbdbca429721d1bc758062712713a4e0c3c6805844fd3af91105e48db13",
+  "finalCoreSHA256": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd",
+  "net10CoreSHA256": "a1ec8a123a05549410b9f7675899cd3acbad7fad5df39c1248722d2cc6b4d330",
+  "initialFocusedPerFramework": {
+    "internal": 116,
+    "public": 431
+  },
+  "finalFocusedPerFramework": {
+    "internal": 116,
+    "public": 431
+  },
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "allFocusedPassed": true,
+  "nonincrementalBuildSeconds": 35.9,
+  "warnings": 0,
+  "errors": 0,
+  "added": "one full-allowance exact array adoption and three gated actual header cleanup cases; independent CPython reentrant-header golden through both APIs",
+  "fullPlatformStressInstalledQualification": "pending retained-source delivery",
+  "debt": "Final text control original+1.90..5.13%/3.16%spread;unchanged longer-warmup confirmation+0.77..0.97%/.20%spread. Accept roughly1% warmtext cost, no causal claim; recheck at next material representative checkpoint rather than repeat unchanged.",
+  "actualPublicReader": "Private comparison source derived from maintained csv-summary.py with identical fixture/goldens; source kept in every raw catalog"
+}

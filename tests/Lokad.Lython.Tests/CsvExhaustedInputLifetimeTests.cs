@@ -92,7 +92,10 @@ public sealed class CsvExhaustedInputLifetimeTests
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString("kept,😀\n")]), Options(), new(0, 0, 0, 0), context);
-        var row = asynchronous ? await source.TryMoveNextAsync() : source.TryMoveNext(out var next) ? next : null;
+        var reader = new LythonRuntime.CsvReaderObject(source);
+        var item = asynchronous ? await reader.TryMoveNextAsync()
+            : reader.TryMoveNext(out var next) ? PyIterationResult.Yield(next) : PyIterationResult.End;
+        var row = Assert.IsType<PyList>(item.Value);
         Assert.NotNull(row);
         if (asynchronous) Assert.Null(await source.TryMoveNextAsync());
         else Assert.False(source.TryMoveNext(out _));

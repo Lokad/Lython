@@ -351,8 +351,11 @@ window, preserving validation and early-match behavior.
 
 CSV parsing searches bounded UTF-8 spans for structural byte candidates and
 verifies complete dialect characters at each boundary. One record/field state
-preserves empty, quoted and ignored-space records; field bytes and returned rows
-keep the existing admitted staging and retained ownership.
+preserves empty, quoted and ignored-space records. Completed records queue final
+field arrays. DictReader relinquishes private array capacity after header/key
+protocols and awaited cleanup; values and escaping dictionaries/rest lists retain
+independent funding. csv.reader and exposed fieldnames adopt the funded array
+without copying. Queued records remain charged through EOF and recoverable errors.
 
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.

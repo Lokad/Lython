@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Build CSV records directly into final field arrays. DictReader releases private
+  capacity after callbacks and awaited cleanup; csv.reader and fieldnames adopt
+  the same funded backing. Remove intermediate row lists and per-field insertion,
+  preserving queued records, retained values, cancellation and terminal refusal.
+
 - Respect known list capacities, start empty without element backing and use one
   geometric growth rule. Clear without allocating replacement storage, retaining
   metadata and alias funding. Remove the capacity floor and first-growth exception;

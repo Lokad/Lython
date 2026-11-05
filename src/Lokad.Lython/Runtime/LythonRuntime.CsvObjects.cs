@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
         {
             if (Records.TryMoveNext(out var row))
             {
-                value = row;
+                value = Records.AdoptRecord(row);
                 return true;
             }
 
@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
             var row = await Records.TryMoveNextAsync().ConfigureAwait(false);
-            return row is null ? PyIterationResult.End : PyIterationResult.Yield(row);
+            return row is null ? PyIterationResult.End : PyIterationResult.Yield(Records.AdoptRecord(row));
         }
 
         public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
             if (_fieldNames is PyNone)
             {
                 var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
-                if (row is not null) _fieldNames = row;
+                if (row is not null) _fieldNames = Rows.AdoptRecord(row);
             }
             LineNum = new BigInteger(Rows.PhysicalLineCount);
             return _fieldNames;
@@ -123,62 +123,88 @@ internal sealed partial class LythonRuntime
                 : EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, LineNum, BigInteger.Zero, _context, _span);
             if (asynchronous ? await IsTruthyAsync(zero, _context, _span).ConfigureAwait(false) : LythonRuntime.IsTruthy(zero, _context, _span))
                 _ = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
-            var row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
-            if (row is null) return PyIterationResult.End;
-            LineNum = new BigInteger(Rows.PhysicalLineCount);
-            while (row.Count == 0)
+            object[]? row = null;
+            try
             {
-                row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out next) ? next : null;
+                row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out var next) ? next : null;
                 if (row is null) return PyIterationResult.End;
+                LineNum = new BigInteger(Rows.PhysicalLineCount);
+                while (row.Length == 0)
+                {
+                    Rows.ReleaseRecord(row);
+                    row = null;
+                    row = asynchronous ? await Rows.TryMoveNextAsync().ConfigureAwait(false) : Rows.TryMoveNext(out next) ? next : null;
+                    if (row is null) return PyIterationResult.End;
+                }
+                var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+                if (fields is PyList names && HasStringFieldNames(names))
+                {
+                    // Native string headers cannot run guest callbacks. Construct
+                    // the whole record at its admitted capacity, preserving first
+                    // insertion order and the last value for duplicate names.
+                    var capacity = checked(names.Count + (row.Length > names.Count ? 1 : 0));
+                    var record = new PyDict(capacity, _context.MemoryGovernor, _span);
+                    using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
+                    for (var i = 0; i < names.Count; i++)
+                    {
+                        _context.CheckExecution(_span);
+                        record.SetItem(names[i], i < row.Length ? row[i] : _restValue);
+                    }
+                    if (row.Length > names.Count)
+                        record.SetItem(ValidateDictionaryKey(_restKey, _span),
+                            RestFields(row, new BigInteger(names.Count)));
+                    return PyIterationResult.Yield(record);
+                }
+                var result = new PyDict(_context.MemoryGovernor, _span);
+                await using (var keys = asynchronous ? await PyIteration.Cursor.CreateAsync(fields, _span, _context).ConfigureAwait(false)
+                    : PyIteration.Cursor.Create(fields, _span, _context))
+                {
+                    for (var i = 0; ; i++)
+                    {
+                        var key = asynchronous ? await keys.TryMoveNextAsync().ConfigureAwait(false)
+                            : keys.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                        if (!key.HasValue || i >= row.Length) break;
+                        Store(key.Value, row[i]);
+                    }
+                }
+                fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+                var length = (BigInteger)(asynchronous ? await LenAsync([fields], _span, _context).ConfigureAwait(false) : Len([fields], _span, _context));
+                if (length < row.Length) Store(_restKey, RestFields(row, length));
+                else if (length > row.Length)
+                {
+                    var tail = asynchronous ? await ReadSliceValueAsync(fields, new BigInteger(row.Length), null, null, _span, _context).ConfigureAwait(false)
+                        : ReadSliceValue(fields, new BigInteger(row.Length), null, null, _span, _context);
+                    if (asynchronous)
+                        await foreach (var key in ToSequenceAsync(tail, _span, _context).ConfigureAwait(false)) Store(key, _restValue);
+                    else foreach (var key in ToSequence(tail, _span, _context)) Store(key, _restValue);
+                }
+                return PyIterationResult.Yield(result);
+                void Store(object key, object value)
+                {
+                    using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
+                    result.SetItem(ValidateDictionaryKey(key, _span), value);
+                }
             }
-            var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
-            if (fields is PyList names && HasStringFieldNames(names))
+            finally
             {
-                // Native string headers cannot run guest callbacks. Construct
-                // the whole record at its admitted capacity, preserving first
-                // insertion order and the last value for duplicate names.
-                var capacity = checked(names.Count + (row.Count > names.Count ? 1 : 0));
-                var record = new PyDict(capacity, _context.MemoryGovernor, _span);
-                using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
-                for (var i = 0; i < names.Count; i++)
+                if (row is not null) Rows.ReleaseRecord(row);
+            }
+        }
+
+        private PyList RestFields(object[] row, BigInteger start)
+        {
+            var bounds = PyIndexing.NormalizeSliceBounds(row.Length, start, null, null, _span);
+            var tail = new PyList(bounds.End - bounds.Start, _context.MemoryGovernor, _span);
+            try
+            {
+                for (var i = bounds.Start; i < bounds.End; i++)
                 {
                     _context.CheckExecution(_span);
-                    record.SetItem(names[i], i < row.Count ? row[i] : _restValue);
+                    tail.Add(row[i]);
                 }
-                if (row.Count > names.Count)
-                    record.SetItem(ValidateDictionaryKey(_restKey, _span),
-                        ReadSliceValue(row, new BigInteger(names.Count), null, null, _span, _context));
-                return PyIterationResult.Yield(record);
+                return tail;
             }
-            var result = new PyDict(_context.MemoryGovernor, _span);
-            await using (var keys = asynchronous ? await PyIteration.Cursor.CreateAsync(fields, _span, _context).ConfigureAwait(false)
-                : PyIteration.Cursor.Create(fields, _span, _context))
-            {
-                for (var i = 0; ; i++)
-                {
-                    var key = asynchronous ? await keys.TryMoveNextAsync().ConfigureAwait(false)
-                        : keys.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
-                    if (!key.HasValue || i >= row.Count) break;
-                    Store(key.Value, row[i]);
-                }
-            }
-            fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
-            var length = (BigInteger)(asynchronous ? await LenAsync([fields], _span, _context).ConfigureAwait(false) : Len([fields], _span, _context));
-            if (length < row.Count) Store(_restKey, ReadSliceValue(row, length, null, null, _span, _context));
-            else if (length > row.Count)
-            {
-                var tail = asynchronous ? await ReadSliceValueAsync(fields, new BigInteger(row.Count), null, null, _span, _context).ConfigureAwait(false)
-                    : ReadSliceValue(fields, new BigInteger(row.Count), null, null, _span, _context);
-                if (asynchronous)
-                    await foreach (var key in ToSequenceAsync(tail, _span, _context).ConfigureAwait(false)) Store(key, _restValue);
-                else foreach (var key in ToSequence(tail, _span, _context)) Store(key, _restValue);
-            }
-            return PyIterationResult.Yield(result);
-            void Store(object key, object value)
-            {
-                using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
-                result.SetItem(ValidateDictionaryKey(key, _span), value);
-            }
+            catch { tail.DiscardUnpublishedStorage(); throw; }
         }
 
         private bool HasStringFieldNames(PyList names)

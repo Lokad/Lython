@@ -9,6 +9,20 @@ public sealed class CsvCanonicalStateTests
     {
         yield return new object[] { "utf8-chunk-and-scalar-tokens", "import csv\nrow=next(csv.reader(['a'*4095+'😀b💬tail'],delimiter='💬'))\nprint(len(row[0]),row[0][-3:],row[1])\nprint(list(csv.reader(['a💠😀,b'],escapechar='💠')))\nprint(list(csv.reader(['💬a💬💬😀💬,b'],quotechar='💬')))", "4097 a😀b tail\n[['a😀', 'b']]\n[['a💬😀', 'b']]\n" };
         yield return new object[] { "plain-control", "import csv\nprint(list(csv.reader(['a,b','1,2'])))", "[['a', 'b'], ['1', '2']]\n" };
+        yield return new object[] { "reentrant-header-shared-reader", """
+            import csv
+            class Fields:
+             def __iter__(self):
+              print('future', next(r.reader))
+              return iter(['a'])
+             def __len__(self): return 1
+            r=csv.DictReader(['current','future','last'],fieldnames=['a'])
+            r.fieldnames=Fields()
+            first=next(r)
+            print(first,r.line_num)
+            print(next(r.reader))
+            print(first)
+            """, "future ['future']\n{'a': 'current'} 2\n['last']\n{'a': 'current'}\n" };
         yield return new object[] { "header-list-alias", "import csv\nfields=['a']\nr=csv.DictReader(['1,2'],fieldnames=fields)\nprint(r.fieldnames is fields,r.fieldnames is r.fieldnames)\nfields.append('b')\nprint(next(r))", "True True\n{'a': '1', 'b': '2'}\n" };
         yield return new object[] { "inferred-header-identity", "import csv\nr=csv.DictReader(['a,b','1,2'])\nprint(r.fieldnames is r.fieldnames)\nr.fieldnames[0]='x'\nprint(next(r))", "True\n{'x': '1', 'b': '2'}\n" };
         yield return new object[] { "lazy-header", "import csv\ndef source():\n print('pulled')\n yield 'a'\n yield '1'\nr=csv.DictReader(source())\nprint('made')\nprint(next(r))", "made\npulled\n{'a': '1'}\n" };

@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [private CSV record construction](results/2026-11-05-private-csv-records/README.md)
+retains final arrays with explicit public adoption/private relinquishment, removing
+intermediate row lists, per-field insertion and the draft's extra async forwarding
+layer. Each source134s/all gates: allocation−4.7–7.6%, publicreaderelapsed−4.2–5.3%;
+DictReader warm timings control-limited. Finaltext+1.9–5.1% adverse remains; one
+unchanged-bit41s reversed/longer-warmup confirmation+0.8–1.0% with0.20%spread.
+Accept roughly1% warmtext debt, no general CPU/CPython/RSS claim.116internal/431public
+per actualtarget pass; full delivery pending. Preserve failed3.96% quiet pre-gate,
+both sources, all controls and real pending-user/refusal cleanup coverage.
+
 The [known/empty list storage policy](results/2026-11-05-known-list-storage/README.md)
 removes the8slot constructor floor, special first expansion and allocating clear
 replacement. Thirteen net production lines removed; sort uses one managed empty

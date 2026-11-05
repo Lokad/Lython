@@ -1,0 +1,56 @@
+{
+  "performanceQualified": false,
+  "purpose": "Unchanged402ae9f1 text confirmation;one complete-script job;warm and fresh separate,peaks initial untimed setup only",
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 2.6258326041666664,
+          "iqrPercent": 0.41777463203832915,
+          "processAllocatedBytes": 1826399.75,
+          "minimumBatchMilliseconds": 251.373428
+        },
+        "candidate": {
+          "milliseconds": 2.6461461666666666,
+          "iqrPercent": 0.46111792010480707,
+          "processAllocatedBytes": 1826816.0833333333,
+          "minimumBatchMilliseconds": 252.644324
+        },
+        "before-control": {
+          "milliseconds": 2.6206893333333334,
+          "iqrPercent": 1.3411150221544876,
+          "processAllocatedBytes": 1826815.3333333333,
+          "minimumBatchMilliseconds": 249.868412
+        }
+      },
+      "candidateElapsedChangePercent": [
+        0.7736046261199725,
+        0.971379285958851
+      ],
+      "candidateProcessAllocationChangePercent": [
+        0.022795301703970594,
+        4.105505282403499e-05
+      ],
+      "unchangedSpreadPercent": 0.19587199980576342,
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 1957831,
+          "PeakRootBytes": 2037383
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1957831,
+          "PeakRootBytes": 2037383
+        },
+        "before-control": {
+          "PeakExecutionBytes": 1957831,
+          "PeakRootBytes": 2037383
+        }
+      }
+    }
+  ],
+  "ownedCollectionSeconds": 41.0,
+  "allGoldenBalanceFixtureIdentityQuietGatesPassed": true,
+  "archiveSHA256": "eeb3e2eb550991a14729ec690444ab680e77668162df5ab0f8c9af782f510446"
+}

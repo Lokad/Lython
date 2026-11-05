@@ -278,7 +278,15 @@ internal sealed partial class LythonRuntime
 
         // Advances the shared cursor; every iterator over this source observes
         // the same position, matching CPython (a second pass sees nothing new).
-        public bool TryMoveNext(out PyList row)
+        internal PyList AdoptRecord(object[] record)
+            => PyList.FromTransferredArray(record, _context.MemoryGovernor, _span);
+
+        // Private DictReader rows never need a guest list. Their capacity stays
+        // funded until either public adoption or the consumer's awaited finally.
+        internal void ReleaseRecord(object[] record)
+            => _context.MemoryGovernor.Release(PyList.EstimateCapacityBytes(record.Length));
+
+        internal bool TryMoveNext(out object[] row)
         {
             while (true)
             {
@@ -297,7 +305,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public async ValueTask<PyList?> TryMoveNextAsync()
+        internal async ValueTask<object[]?> TryMoveNextAsync()
         {
             while (true)
             {
@@ -462,7 +470,7 @@ internal sealed partial class LythonRuntime
         private int _fieldStart;
         private long _stringBytes;
         private readonly CsvRecordSource _owner;
-        private readonly List<PyList> _ready = new();
+        private readonly List<object[]> _ready = new();
         private int _readyHead;
         private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote }
         private FieldState _state;
@@ -489,7 +497,7 @@ internal sealed partial class LythonRuntime
 
         // Takes the next completed record, if any. Records completed by one
         // Feed call queue here until the source drains them.
-        public bool TryTakeReady(out PyList row)
+        public bool TryTakeReady(out object[] row)
         {
             if (_readyHead >= _ready.Count)
             {
@@ -613,7 +621,7 @@ internal sealed partial class LythonRuntime
             if (_state == FieldState.Quoted) return;
             if (text.IsEmpty)
             {
-                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
+                FinishRecord();
                 return;
             }
             if (text[^1] != (byte)'\n' && text[^1] != (byte)'\r') FinishRecord();
@@ -674,7 +682,7 @@ internal sealed partial class LythonRuntime
             _fieldWasQuoted = false;
         }
 
-        private void EnqueueRecord(PyList record)
+        private void EnqueueRecord(object[] record)
         {
             EnsureListCapacity(_ready);
             _ready.Add(record);
@@ -682,19 +690,16 @@ internal sealed partial class LythonRuntime
 
         private void FinishRecord()
         {
-            if (_state == FieldState.RecordStart && _record.Length == _fieldStart && _fields.Count == 0)
-            {
-                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
-                ReleaseRowScratch();
-                return;
-            }
-
-            FinishField();
+            if (!(_state == FieldState.RecordStart && _record.Length == _fieldStart && _fields.Count == 0))
+                FinishField();
             // Admit all ordinary field payloads once, while working bytes and
-            // old capacities remain funded. Each final value commits its part.
-            using var storage = _context.MemoryGovernor.ReserveTemporary(_stringBytes, _span);
+            // old capacities remain funded. The private array includes headroom
+            // for adoption by csv.reader; each value keeps independent funding.
+            var rowBytes = PyList.EstimateCapacityBytes(_fields.Count);
+            using var storage = _context.MemoryGovernor.ReserveTemporary(checked(_stringBytes + rowBytes), _span);
             _context.CheckExecution(_span);
-            var row = new PyList(_fields.Count, _context.MemoryGovernor, _span);
+            var row = _fields.Count == 0 ? Array.Empty<object>() : new object[_fields.Count];
+            var index = 0;
             foreach (var field in _fields)
             {
                 _context.CheckExecution(_span);
@@ -713,10 +718,11 @@ internal sealed partial class LythonRuntime
                     }
                     cell = PyString.FromOwnedUtf8(bytes, _context.MemoryGovernor, _span, storage);
                 }
-                row.Add(cell);
+                row[index++] = cell;
             }
             _context.CheckExecution(_span);
             EnqueueRecord(row);
+            storage.Commit(rowBytes);
             _fields.Clear();
             _record.Truncate(0);
             _fieldStart = 0;

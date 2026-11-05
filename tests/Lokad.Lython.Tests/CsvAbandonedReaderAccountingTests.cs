@@ -25,7 +25,7 @@ public sealed class CsvAbandonedReaderAccountingTests
         {
             Assert.True(live.TryMoveNext(out var value));
             Assert.Equal("r" + row, ((PyString)value[0]).AsString());
-            rows.Add(value);
+            rows.Add(live.AdoptRecord(value));
         }
         var baseline = budget.ReservedBytes;
         var abandoned = new List<WeakReference<LythonRuntime.CsvRecordSource>>();
