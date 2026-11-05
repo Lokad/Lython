@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "a39d6ba5 plus E3b2 coherent mapping extraction and immediate dataclass field failure propagation; runtime reference612/f207",
+  "coreSHA256": {
+    "candidate": "887002c2af6997d0b3bd44ef4e5c3ead0a1af05d99acebe078c967f27e26789a",
+    "control": "887002c2af6997d0b3bd44ef4e5c3ead0a1af05d99acebe078c967f27e26789a",
+    "reference": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs": "e566db5da1e1e29b6efdc18b957334917bbfbfc45230ee4bdf6eb5458a68ed15",
+    "src/Lokad.Lython/Runtime/PyDataclass.Operations.cs": "b5833494cdf18a1f72b9ed30669d5c1a02e3d4eee8b560eb1af98d369530b800",
+    "src/Lokad.Lython/Runtime/PySet.cs": "a981a1dcc83c5b7f4995d5921e469a354004279fe476dab4ba8fca22d5b43102",
+    "tests/Lokad.Lython.PublicApi.Tests/MappingPatternExtractionTests.cs": "a78aa374d9c17523f46798e95c193fab89a2b314c7df3a60ed98e5da443c6fd1",
+    "tests/Lokad.Lython.Tests/MappingPatternOwnershipTests.cs": "baa043a06be727c10a38ee01378df55e4bec8ef842ba2c55f5732f1da4c28525"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused770public/76internal per actual11/10, zero-warning/error build. Nine Python goldens and ten ownership cases pass. View source612 delivery failed only stale malformed-item golden, corrected independently in a39. Full combined replacement qualification pending. Valid native pattern and default dataclass controls; incorrect dynamic-key/ordering baselines excluded."
+}

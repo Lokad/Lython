@@ -362,6 +362,13 @@ conservatively reserves the source backing until callbacks and cleanup finish,
 including after a callback clears the source. This can require additional shared
 allowance even when a particular callback does not mutate it.
 
+Mapping-pattern extraction admits temporary key/value slots with scalar headroom
+and a private seen set, releasing both after synchronous extraction. Captured
+values keep their independent payload owners and surviving binding slots. Rest
+mappings stay charged on publication; a failed unpublished copy is refunded.
+Pattern key/property hooks require synchronous completion; guards and bodies
+retain asynchronous host support.
+
 Copy operations scope hash/equality mutations to their active caller after awaited
 hooks, and pass that caller to memo lookups. Thread-local provenance from another
 execution cannot select the allowance. Shallow native copies preserve stored

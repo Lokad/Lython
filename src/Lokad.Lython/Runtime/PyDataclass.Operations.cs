@@ -77,10 +77,15 @@ internal static partial class PyDataclass
     }
 
     internal static object ReadField(PyInstance instance, string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => instance.TryGetAttribute(name, context, span, out var value) ? value : throw new LythonRuntimeException("AttributeError", $"'{instance.Type.Name}' object has no attribute '{name}'", span);
+    {
+        var found = instance.TryGetAttribute(name, context, span, out var value);
+        context.CheckExecution(span);
+        return found ? value! : throw new LythonRuntimeException("AttributeError", $"'{instance.Type.Name}' object has no attribute '{name}'", span);
+    }
     internal static async ValueTask<object> ReadFieldAsync(PyInstance instance, string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var result = await PyAttributeLookup.TryResolveInstanceMemberAsync(instance, name, context, span).ConfigureAwait(false);
+        context.CheckExecution(span);
         return result.Found ? result.Value : throw new LythonRuntimeException("AttributeError", $"'{instance.Type.Name}' object has no attribute '{name}'", span);
     }
 

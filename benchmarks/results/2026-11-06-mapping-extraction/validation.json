@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "a39d6ba5 plus E3b2 coherent mapping extraction and immediate dataclass field failure propagation; runtime reference612/f207",
+  "productionSourceFilesVerified": true,
+  "coreSHA256": {
+    "candidate": "887002c2af6997d0b3bd44ef4e5c3ead0a1af05d99acebe078c967f27e26789a",
+    "control": "887002c2af6997d0b3bd44ef4e5c3ead0a1af05d99acebe078c967f27e26789a",
+    "reference": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b"
+  },
+  "testOnlyRefinement": {
+    "tests/Lokad.Lython.Tests/MappingPatternOwnershipTests.cs": "38cfc1600e2ea16304fd23d746f0997fee15fdfa333b9a64489e27e6e6462c40"
+  },
+  "refinement": "After timing, move native field failure regression to explicit supported ReadField/ReadFieldAsync boundaries; it must not require future key storage to read fields. Runtime source and frozen core byte-identical; original structural-hash failure and original tests preserved.",
+  "focusedInternalPerActualTarget": 78,
+  "focusedPublicPerActualTarget": 770,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Focused Release only. View attempt42124145716 failed stale malformed-item negative golden on both OS; independent Python proof/corrected fixture committeda39d6ba5. Combined replacement platform/stress/installed qualification pending.",
+  "retention": "Retain Python phases and containment; native pattern elapsed+17.54/+15.30% is credible regression debt, current spread1.90%; explicit next completion milestone prepares match artifacts instead of reverting semantics or skipping admission. Dataclass/text controls mixed/variable. No CPU/allocation/startup/embedding claim.",
+  "remaining": "Generated structural hash coupling remains. Complete compiled match/capture source gate next; avoid another local quota/ownership subsystem. Native string hashes/buckets vary across fresh processes, demonstrated locally; no fingerprints for original VM roles, so not a causal explanation of timing."
+}

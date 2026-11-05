@@ -1,12 +1,22 @@
 # Benchmark experimental history
 
+The [mapping-extraction milestone](results/2026-11-06-mapping-extraction/README.md)
+corrects length/key/value phases, duplicates/rest and immediate native field failure,
+using admitted private working storage and existing cleanup. Focus770public/78internal
+per actual11/10 passes. B30585.11s/three jobs/all gates: native pattern elapsed
++17.54%/+15.30% is retained regression debt; dataclass/text controls inconclusive.
+Next milestone prepares existing compiled match artifacts rather than undoing
+semantics/admission. Original failures and fresh-process hash-layout evidence remain;
+full combined replacement qualification pending.
+
 The [dictionary-view milestone](results/2026-11-05-dictionary-view-relations/README.md)
 consolidates24 relation bodies, removes one raw equality set/two membership scans
 and native items-to-items tuple records. Focus372public/132internal per actual11/10
 passes. B30359.07s/B30459.02s all gates; final native-view elapsed−80.17%/−79.28%,
 current spread4.49%, still5.76× CPython. Complete text mixed; no broad CPU/allocation
 claim. The reflected-dispatch and terminal contains failures stay preserved.
-Mapping extraction/duplicate/rest defects and full view qualification remain open.
+Mapping extraction/duplicate/rest defects are corrected in the subsequent milestone;
+full combined replacement qualification remains pending after the stale-golden failure.
 
 The [Counter key-traversal milestone](results/2026-11-05-counter-key-traversal/README.md)
 removes four temporary key HashSets/three unions and corrects Python effects,

@@ -1,0 +1,72 @@
+{
+  "source": "print(hash('alpha'),hash('café'),hash('😀'),hash('beta'))",
+  "words": [
+    "alpha",
+    "café",
+    "😀",
+    "beta"
+  ],
+  "rows": [
+    {
+      "process": 0,
+      "hashes": [
+        -233477928,
+        -795299960,
+        1036022000,
+        666452807
+      ],
+      "bucketsAtCapacity4": [
+        3,
+        2,
+        3,
+        2
+      ]
+    },
+    {
+      "process": 1,
+      "hashes": [
+        -1451251901,
+        -1172851801,
+        -1055081889,
+        1175697037
+      ],
+      "bucketsAtCapacity4": [
+        3,
+        2,
+        3,
+        3
+      ]
+    },
+    {
+      "process": 2,
+      "hashes": [
+        -127168784,
+        959196918,
+        895168237,
+        1898501222
+      ],
+      "bucketsAtCapacity4": [
+        3,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "process": 3,
+      "hashes": [
+        -1599721513,
+        -1969005499,
+        585300263,
+        -1655612330
+      ],
+      "bucketsAtCapacity4": [
+        0,
+        1,
+        2,
+        2
+      ]
+    }
+  ],
+  "scope": "Four local fresh public-probe processes; semantics/layout diagnostic only, no timing. PyString uses HashCode.AddBytes; dictionary native mixing copied from source. Text workload lower/split creates these four keys, native capacity4. Different process hashes/buckets are demonstrated; original benchmark workers had no hash fingerprints, so elapsed variance is not causally attributed."
+}

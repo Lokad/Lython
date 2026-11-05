@@ -963,7 +963,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private void EnsureCapacity(int targetCount)
+    internal void EnsureCapacity(int targetCount)
     {
         if (targetCount <= 0)
         {

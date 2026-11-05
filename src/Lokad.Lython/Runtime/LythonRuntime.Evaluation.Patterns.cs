@@ -171,46 +171,87 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         Dictionary<string, object> bindings)
     {
-        if (subject is not PyDict dict)
+        if (subject is not PyDict dict || dict.Count < pattern.Items.Count)
         {
             return false;
         }
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, pattern.Span);
 
-        var matchedKeys = new HashSet<object>(new PyValueComparer());
-        foreach (var item in pattern.Items)
+        var count = pattern.Items.Count;
+        if (count == 0) return TryBindMappingRest(pattern, dict, [], context, bindings);
+
+        // Captures own references and scalar-box headroom while callbacks can
+        // mutate the source. Larger payloads retain their independent owners.
+        var capacity = checked(2 * count);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(PyList.EstimateCapacityBytes(capacity), pattern.Span);
+        var captured = new object[capacity];
+        var seen = new PySet(context.MemoryGovernor, pattern.Span);
+        try
         {
-            var key = ValidateDictionaryKey(EvaluateExpression(item.Key, context), item.Key.Span);
-            if (!dict.TryGetValue(key, out var value))
+            seen.EnsureCapacity(count);
+            // Python extracts every key before fetching values or matching any
+            // subpattern; getters must observe that order even on a later miss.
+            for (var i = 0; i < count; i++)
             {
-                return false;
+                var item = pattern.Items[i];
+                captured[i] = EvaluateExpression(item.Key, context);
+                context.CheckExecution(item.Key.Span);
             }
 
-            matchedKeys.Add(key);
-            if (!TryMatchPattern(item.Pattern, value, context, bindings))
+            for (var i = 0; i < count; i++)
             {
-                return false;
-            }
-        }
-
-        if (pattern.RestName is not null)
-        {
-            var rest = new PyDict(context.MemoryGovernor, pattern.Span);
-            foreach (var pair in dict)
-            {
-                if (!matchedKeys.Contains(pair.Key))
+                var span = pattern.Items[i].Key.Span;
+                var key = ValidateDictionaryKey(captured[i], span);
+                var duplicate = seen.Contains(key);
+                context.CheckExecution(span);
+                if (duplicate)
                 {
-                    rest.SetItem(pair.Key, pair.Value);
+                    var rendered = PyRendering.ToReprPyString(key, new(context));
+                    context.CheckExecution(span);
+                    throw new LythonRuntimeException("ValueError", "mapping pattern checks duplicate key (" + rendered + ")", span);
                 }
+                seen.Add(key);
+                context.CheckExecution(span);
+                var found = dict.TryGetValue(key, out var value, context, span);
+                context.CheckExecution(span);
+                if (!found) return false;
+                captured[count + i] = value!;
             }
 
-            if (!TryBindPatternName(pattern.OriginalBindingName ?? pattern.RestName, rest, bindings))
+            for (var i = 0; i < count; i++)
             {
-                return false;
+                context.CheckExecution(pattern.Items[i].Pattern.Span);
+                var matches = TryMatchPattern(pattern.Items[i].Pattern, captured[count + i], context, bindings);
+                context.CheckExecution(pattern.Items[i].Pattern.Span);
+                if (!matches) return false;
             }
+            return TryBindMappingRest(pattern, dict, captured.AsSpan(0, count), context, bindings);
         }
+        finally { seen.ReleaseUnpublishedStorage(); }
+    }
 
-        return true;
+    private static bool TryBindMappingRest(MatchMappingPatternSyntax pattern, PyDict dict,
+        ReadOnlySpan<object> keys, ExecutionContext context, Dictionary<string, object> bindings)
+    {
+        if (pattern.RestName is null) return true;
+        var rest = new PyDict(dict, context.MemoryGovernor, pattern.Span);
+        var published = false;
+        try
+        {
+            foreach (var key in keys)
+            {
+                context.CheckExecution(pattern.Span);
+                var removed = rest.TryRemove(key, out _);
+                context.CheckExecution(pattern.Span);
+                if (!removed) throw RuntimeErrors.MissingKey(key, pattern.Span);
+            }
+            var bound = TryBindPatternName(pattern.OriginalBindingName ?? pattern.RestName, rest, bindings);
+            context.CheckExecution(pattern.Span);
+            if (!bound) return false;
+            published = true;
+            return true;
+        }
+        finally { if (!published) context.MemoryGovernor.RefundUnpublishedValue(rest); }
     }
 
     private static bool TryMatchClassPattern(

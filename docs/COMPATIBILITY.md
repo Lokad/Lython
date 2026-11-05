@@ -78,6 +78,10 @@ copies and set pop reuse stored keys without rehashing. Nested unhashability nam
 the failing value. Equality candidates use the actual Python hash, independently
 of the internal structural index. Set add preserves positive equality even if its
 callback clears the set; membership/removal require a current retained match.
+Mapping-pattern subjects currently use native dict values. Patterns check the
+subject length before key getters, extract all keys
+and values before subpatterns, reject dynamic duplicate keys, and construct rest
+by copying the current mapping then deleting matched keys in order.
 Dictionary-view membership and comparisons use dictionary key protocols; item
 values may be unhashable. Native view methods preserve NotImplemented and
 reflected ChainMap-view behavior.
