@@ -71,6 +71,7 @@ allocation retention, admission retry, forced GC or relaxed containment controls
 D44 source723b9638 full42025698023 is GREEN/all8/cached. D45 correction has focused
 107internal/366public CSV per actual.NET11/10 and18 final escaping-result checks;
 retained-source rebuild31.87s/zero warnings/errors,7internal/142public post-restore
-checks per target pass. Full retained-source74de3388/42029990429 is running; this
-checkpoint remains provisional for final delivery until that qualification ends.
+checks per target pass. Full retained-source74de3388/42029990429 is GREEN: all eight
+Windows/Ubuntu, actual.NET11/10, original stress and installed-consumer gates
+verified in delivery-ci-status.json. Terminal cached; never query again.
 Publication is postponed. No new benchmark framework or producer qualification.

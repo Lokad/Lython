@@ -7,7 +7,8 @@ absent.440.59s/16jobs/all gates, all final reservations zero. Fresh nativeCSV
 config1.03–1.04×,longCSV.14×CPython. Compilation1.27–1.29/1.32–1.38×.
 Warmtext4.45% spread/freshJSON conflicting source signs remain inconclusive;
 longCSVwarm17.1–18.4% lower versusqualified7dcc. No component/CPU/allocation debt
-closure claim. Full retained-source42029990429 running; publication postponed.
+closure claim. Full retained-source74de3388/42029990429 GREEN/all8/cached;
+publication postponed, whole performance objective still active.
 
 The [complete call-operand transport prototype](results/2026-11-05-call-operand-transport/README.md)
 is withdrawn. Five staging fields removed using immutable paused instructions

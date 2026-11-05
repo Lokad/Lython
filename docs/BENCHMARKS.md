@@ -28,8 +28,9 @@ frozen core **6cb05f8e**, catalog, raw samples and identities are in the
 [current checkpoint](../benchmarks/results/2026-11-05-current-cpython-checkpoint/README.md).
 The measured runtime includes executable targets, owned CSV input and quoted-EOF
 correction; the slower call-transport prototype is absent. CSV storage source
-723b9638 has passed full delivery; final retained-source74de3388 qualification
-is running. Publication remains postponed.
+723b9638 and retained-source74de3388 have passed Windows/Ubuntu, actual .NET11/10,
+original stress and installed-package checks. The [terminal receipt](../benchmarks/results/2026-11-05-current-cpython-checkpoint/delivery-ci-status.json)
+is cached. Publication remains postponed.
 
 Ordinary helpers execute ordinary Python functions under both runtimes. Fresh
 text remains about2.0×CPython and report about1.5×; long-field CSV does not describe
