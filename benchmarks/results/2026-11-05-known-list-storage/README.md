@@ -2,8 +2,9 @@
 
 2026-11-05. Retain parent5148eda8 plus exact patch/snapshot, frozen core
 **b6046395**, versus **450b9162/d8d8df23** with the same representative corpus.
-Focused actual .NET11/10 checks pass; full delivery pending with D31. Publication
-postponed; broader performance work remains open.
+Full delivery41974563982 is GREEN on7efe581b, all8Windows/Ubuntu actual11/10,
+originalStress and installed-consumer gates. [Terminal cached receipt](delivery-ci-status.json);
+never re-query. Publication postponed; broader performance work remains open.
 
 Initial delivery CI41973141592 at d9245ea9 failed one public retained-subprocess-
 arguments test on both platforms; all4,104 internal cases per platform passed.

@@ -3,7 +3,8 @@
 2026-11-05. Retain refined source, frozen core **d8d8df23**, parent0997baa8 plus
 exact patch/snapshot. Baseline **0997baa8/68a9f3f8** is fully qualified; this change
 passes focused actual .NET11/10 checks. Full platform/Stress/installed qualification
-is batched at the next coherent delivery. Publication postponed; broader work open.
+is GREEN in41974563982 on7efe581b, all8logicalgates;
+[terminal cached receipt](../2026-11-05-known-list-storage/delivery-ci-status.json). Publication postponed; broader work open.
 
 Compilation proves one root builder, no nested builder, one final stack value and
 ordered operations. Consume that order directly. Delete runtime

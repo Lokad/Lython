@@ -19,7 +19,7 @@ unchanged-bit41s reversed/longer-warmup confirmation is−0.5–1.0%/spread.49%.
 No general nativeCSV/CPU claim or automatic retiming. Accounted initial peaks
 CSV−19%/text−43% are not RSS.1561internal/3696public per actual11/10 pass; old
 replacement-refusal/floor assumptions corrected without relaxing failure checks.
-Full delivery batches pending D31 and this change; publication stays postponed.
+Full41974563982 deliveryGREEN on7efe581b,all8gates,cached; publication stays postponed.
 
 The [ordered native formatted-body replacement](results/2026-11-05-ordered-native-format/README.md)
 removes runtime builder shapes and recursive append-chain traversal. Initial135s
@@ -28,7 +28,7 @@ refinement restores the original tiny shared entry guard: warmreport−3.5–5.4
 async−5.6–7.2%,allocationflat. Possibletext~1%/compile~2%cost and freshuncertainty
 explicitly accepted; neither inlining nor generalCPUcause established. Both source/
 adverse conditions and275internal/1167public per actualtarget/revision preserved.
-Full qualification batched at next delivery; whole-script objective stays open.
+Full41974563982 deliveryGREEN on7efe581b,all8gates,cached; whole-script objective stays open.
 
 The [construction CPython checkpoint](results/2026-11-05-runtime-cpython-construction-checkpoint/README.md)
 measures exact0997baa8/core68a9f3f8 in385.81s/14jobs with independent current control
@@ -46,7 +46,7 @@ warm/async and 10.0% fresh; elapsed favors the new source by 5.8–9.0% across
 those boundaries. Compile and numeric control are near flat; text control moves
 favorably and has no attributed gain. Capacity/admission tradeoffs stay explicit;
 focused 275 internal/1,167 public tests pass per actual target. Full delivery
-pending. This remains separate from external CPython ratios and CPU attribution.
+is GREEN on0997baa8/41963810520, all8gates cached. This remains separate from external CPython ratios and CPU attribution.
 
 The [current prepared-runtime CPU attribution](results/2026-11-05-prepared-script-cpu/README.md)
 has1108text/1613report samples on8475a8dd/81deb3be,36sowned/all gates. Actual declaring
