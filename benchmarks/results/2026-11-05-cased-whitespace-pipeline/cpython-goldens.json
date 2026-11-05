@@ -1,0 +1,60 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "unicode": "15.1.0",
+  "whitespace": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    28,
+    29,
+    30,
+    31,
+    32,
+    133,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288
+  ],
+  "inputWords": [
+    "\u039f\u03a3",
+    "\u03a3",
+    "\u0130\u00df\ufb03",
+    "A\u03a3\u2019",
+    "A\u03a3\u200d"
+  ],
+  "expected": {
+    "lower": [
+      "\u03bf\u03c2",
+      "\u03c3",
+      "i\u0307\u00df\ufb03",
+      "a\u03c2\u2019",
+      "a\u03c2\u200d"
+    ],
+    "upper": [
+      "\u039f\u03a3",
+      "\u03a3",
+      "\u0130SSFFI",
+      "A\u03a3\u2019",
+      "A\u03a3\u200d"
+    ]
+  },
+  "allWhitespaceGoldensPassed": true,
+  "allUnicodeScalarMappingsIntroduceNoNewWhitespace": true
+}

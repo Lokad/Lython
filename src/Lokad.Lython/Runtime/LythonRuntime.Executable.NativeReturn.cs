@@ -199,10 +199,20 @@ internal sealed partial class LythonRuntime
         var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
         var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
         var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
+        var casing = call is { ArgumentCount: 0 } && memberIndex >= 0 &&
+            code.Names[instructions[memberIndex].NameIndex] == "split"
+            ? NativeSplitCasing(instruction.NativeFirst, code, instructions) : null;
         object? first = null, second = null, third = null, fourth = null;
         if (instruction.NativeFirst >= 0)
         {
-            first = EvaluateNativeReturn(instruction.NativeFirst, code, instructions, arguments, context, entryException);
+            first = EvaluateNativeReturn(casing is null ? instruction.NativeFirst : instructions[instruction.NativeFirst].NativeFirst,
+                code, instructions, arguments, context, entryException);
+            if (casing is not null)
+            {
+                ref readonly var producer = ref instructions[instruction.NativeFirst];
+                context.State.CheckExecution(instructions[producer.NativeSecond].Span);
+                context.State.CheckExecution(code.CallSites[producer.CallSiteIndex].CallSpan);
+            }
             if (memberIndex >= 0) context.State.CheckExecution(instructions[memberIndex].Span);
             if (secondIndex >= 0) second = EvaluateNativeReturn(secondIndex, code, instructions, arguments, context, entryException);
             if (thirdIndex >= 0) third = EvaluateNativeReturn(thirdIndex, code, instructions, arguments, context, entryException);
@@ -223,6 +233,8 @@ internal sealed partial class LythonRuntime
             if (instruction.OpCode == ExecutableOpCode.Subscript)
                 return ReadSubscriptValue(first!, second!, instruction.Span, context);
             var site = code.CallSites[instruction.CallSiteIndex];
+            if (casing is { } upper)
+                return PyStringOps.SplitCasedWhitespace((PyString)first!, upper, context.MemoryGovernor, site.CallSpan, context);
             if (memberIndex < 0)
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
@@ -242,6 +254,21 @@ internal sealed partial class LythonRuntime
             RestoreNativeReturnException(context, entryException, error);
             throw;
         }
+    }
+
+    // The ordinary native-body proof already established exact builtin methods
+    // before any work. Reuse its graph; no extra plan or execution route is kept.
+    private static bool? NativeSplitCasing(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions)
+    {
+        ref readonly var producer = ref instructions[index];
+        if (producer.OpCode != ExecutableOpCode.Call || producer.NativeSecond < 0 ||
+            code.CallSites[producer.CallSiteIndex] is not { HasReceiver: true, ArgumentCount: 0 }) return null;
+        return code.Names[instructions[producer.NativeSecond].NameIndex] switch
+        {
+            "lower" => false,
+            "upper" => true,
+            _ => null
+        };
     }
 
     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,

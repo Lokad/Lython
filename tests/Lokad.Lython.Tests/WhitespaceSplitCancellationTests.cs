@@ -14,6 +14,27 @@ public sealed class WhitespaceSplitCancellationTests
     private static readonly string Word = new('α', 16384);
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CasedOutputAdmissionCancellationUnwindsBeforeConstruction(bool upper)
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHook(owner);
+            var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var input = PyString.FromString(Word + " " + Word, context.MemoryGovernor, Span);
+            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                PyStringOps.SplitCasedWhitespace(input, upper, context.MemoryGovernor, Span, context));
+            AssertCancelled(error, context, cancellation, hook);
+            Assert.Equal(Word + " " + Word, input.AsString());
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, -1)]
     [InlineData(false, 1)]
     [InlineData(true, 1)]

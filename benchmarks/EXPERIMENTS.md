@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [final-word casing pipeline](results/2026-11-05-cased-whitespace-pipeline/README.md)
+retains elimination of a full cased-line intermediate using the existing native
+graph, Unicode mapping and whitespace constructor. Six-job161s pair establishes
+text allocation−14.1%warm/async,−13.2%fresh; elapsedfresh−5.2–6.6%,async−4.9–5.2%.
+Warm7%control spread and JSONcontrol+0.9–1.1% debt remain visible.1280internal/
+4772public plus overlapping66pipeline cases per actual11/10 pass. No new opcode,
+descriptor/owner/ASCII shortcut; full delivery pending, whole objective open.
+
 The [precedence consolidation reassessment](results/2026-11-05-precedence-consolidation/README.md)
 retains thirty net parser-line deletion after a current-source136s pair. Compile
 elapsed CSV/text−6.7–8.4%,report−8.5–11.4%; allocation effectively flat. Fresh config

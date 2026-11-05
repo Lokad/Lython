@@ -1,0 +1,31 @@
+{
+  "build": "Nonincremental Release86.95s,zero warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 1280,
+      "public": 4772,
+      "coreSHA256": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b"
+    },
+    "net10.0": {
+      "internal": 1280,
+      "public": 4772,
+      "coreSHA256": "9fc6bd6c09f690cfa5e33512e8da8ec42981ff0d977fe3f37b728a748b09097b"
+    }
+  },
+  "contract": "Existing native graph + full Unicode casing/one whitespace materializer; no intermediate cased line or new plan/opcode/owner. Explicit word capacity remains funded; existing16B range estimate covers12B records.",
+  "tradeoff": "Final-storage admission replaces unobservable intermediate admission; request sizes/order/spans can differ. First refused request remains terminal and no fallback after work.",
+  "limitations": "Focused development/source pair; independent earlier source delivery does not qualify this prototype. Publication postponed.",
+  "additionalPipelineProtocolChecks": {
+    "net11.0": {
+      "public": 66,
+      "overlap": "63 previously included in4772; three real custom-method success/cancellation/cleanup cases added",
+      "coreSHA256": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b"
+    },
+    "net10.0": {
+      "public": 66,
+      "overlap": "63 previously included in4772; three real custom-method success/cancellation/cleanup cases added",
+      "coreSHA256": "9fc6bd6c09f690cfa5e33512e8da8ec42981ff0d977fe3f37b728a748b09097b"
+    }
+  },
+  "additionalBuild": "Public test-only Release15.93s,zero warnings/errors; production binaries exactly match frozen measured images."
+}

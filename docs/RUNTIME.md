@@ -944,6 +944,12 @@ between bounded input windows; contextual scans keep their own checks. Input
 storage stays borrowed and funded until completion. Cancelled admission or
 construction returns only private output funding and preserves input aliases.
 
+Eligible native helper returns combining `lower()` or `upper()` with a default
+whitespace `split()` write independently owned words directly. Unicode expansions
+and final-sigma context are preserved. Final word capacities are admitted together;
+removing the unobservable cased line can change admission amounts, order and failure
+spans. First refusal remains terminal. Custom protocols keep awaited execution.
+
 Fixed-capacity UTF-8 copies, casing and padding reserve their final capacity and
 metadata directly through the governor. Private construction refunds that balance
 on failure; successful strings retain the full backing charge. Copies into a

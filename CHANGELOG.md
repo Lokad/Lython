@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Write eligible native lower/upper plus whitespace-split results directly into
+  final word storage, avoiding an intermediate cased line. Share existing Unicode
+  casing and split construction; keep independent owners and admission/cancellation.
+
 - Parse arithmetic and bitwise precedence without descending every grammar layer
   for each operand. Remove redundant parser routes while preserving evaluation
   order, diagnostics, cancellation and existing nesting bounds.

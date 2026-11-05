@@ -11,8 +11,14 @@ internal static partial class PyStringOps
         0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A or
         0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
 
+    internal static PyList SplitCasedWhitespace(PyString value, bool upper,
+        MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => SplitWhitespaceCore(value, -1, false, governor, span, context,
+            upper ? CaseMapping.Upper : CaseMapping.Lower);
+
     private static PyList SplitWhitespaceCore(PyString value, int maxSplit, bool reverse,
-        MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+        MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,
+        CaseMapping? casing = null)
     {
         governor ??= value.OwnerMemoryGovernor;
         span ??= value.AllocationSpan;
@@ -22,7 +28,7 @@ internal static partial class PyStringOps
         var source = value.Utf8Bytes.Span;
         // Fixed, memory-safe stack scratch; larger results admit their backing
         // through the existing reservation before allocating a replacement.
-        Span<(int Start, int End)> ranges = stackalloc (int, int)[8];
+        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
         var count = 0;
         long outputBytes = 0, scratchBytes = 0;
         MemoryGovernor.TemporaryMemoryReservation? scratch = null;
@@ -30,10 +36,10 @@ internal static partial class PyStringOps
         {
             if (reverse)
                 CollectWhitespaceReverse(source, maxSplit, ref ranges, ref count, ref outputBytes,
-                    ref scratchBytes, ref scratch, governor, span, context);
+                    ref scratchBytes, ref scratch, governor, span, context, casing);
             else
                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
-                    ref scratchBytes, ref scratch, governor, span, context);
+                    ref scratchBytes, ref scratch, governor, span, context, casing);
 
             // Admit all fragment capacity/metadata once. Commit transfers each
             // fragment's funding without another shared-allowance resize.
@@ -44,16 +50,24 @@ internal static partial class PyStringOps
             {
                 context?.CheckExecution(span);
                 var range = ranges[reverse ? count - index - 1 : index];
-                var bytes = new byte[range.End - range.Start];
-                for (var copied = 0; copied < bytes.Length;)
+                var bytes = new byte[range.Capacity];
+                var written = bytes.Length;
+                if (casing is { } mapping)
                 {
-                    context?.CheckExecution(span);
-                    var chunk = Math.Min(4096, bytes.Length - copied);
-                    source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
-                    copied += chunk;
+                    // Whitespace is case-stable and breaks final-sigma context.
+                    // Write final words without materializing a cased source.
+                    written = WriteCaseUtf8(source[range.Start..range.End], bytes, mapping, context, span);
                 }
-                var fragment = governor is null ? PyString.FromOwnedUtf8(bytes)
-                    : PyString.FromOwnedUtf8(bytes, governor, span, output!);
+                else
+                    for (var copied = 0; copied < bytes.Length;)
+                    {
+                        context?.CheckExecution(span);
+                        var chunk = Math.Min(4096, bytes.Length - copied);
+                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
+                        copied += chunk;
+                    }
+                var fragment = governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
+                    : PyString.FromOwnedUtf8(bytes, governor, span, output!, written);
                 parts.Add(fragment);
             }
             context?.CheckExecution(span);
@@ -63,9 +77,9 @@ internal static partial class PyStringOps
     }
 
     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
-        scoped ref Span<(int Start, int End)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
     {
         var start = -1;
         var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
@@ -78,7 +92,7 @@ internal static partial class PyStringOps
                 if (start >= 0)
                 {
                     AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
-                        ref scratchBytes, ref scratch, governor, span, context);
+                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
                     start = -1;
                     remaining--;
                 }
@@ -89,7 +103,7 @@ internal static partial class PyStringOps
                 if (remaining == 0)
                 {
                     AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
-                        ref scratchBytes, ref scratch, governor, span, context);
+                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
                     return;
                 }
             }
@@ -97,13 +111,13 @@ internal static partial class PyStringOps
         }
         if (start >= 0)
             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
-                ref scratchBytes, ref scratch, governor, span, context);
+                ref scratchBytes, ref scratch, governor, span, context, source, casing);
     }
 
     private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,
-        scoped ref Span<(int Start, int End)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
     {
         var end = -1;
         for (var position = source.Length; position > 0;)
@@ -115,7 +129,7 @@ internal static partial class PyStringOps
                 if (end >= 0)
                 {
                     AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
-                        ref scratchBytes, ref scratch, governor, span, context);
+                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
                     end = -1;
                     remaining--;
                 }
@@ -126,7 +140,7 @@ internal static partial class PyStringOps
                 if (remaining == 0)
                 {
                     AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
-                        ref scratchBytes, ref scratch, governor, span, context);
+                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
                     return;
                 }
             }
@@ -134,13 +148,13 @@ internal static partial class PyStringOps
         }
         if (end >= 0)
             AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
-                ref scratchBytes, ref scratch, governor, span, context);
+                ref scratchBytes, ref scratch, governor, span, context, source, casing);
     }
 
-    private static void AppendWhitespaceRange(scoped ref Span<(int Start, int End)> ranges,
+    private static void AppendWhitespaceRange(scoped ref Span<(int Start, int End, int Capacity)> ranges,
         ref int count, int start, int end, ref long outputBytes, ref long scratchBytes,
         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor, LythonSourceSpan? span,
-        LythonRuntime.ExecutionContext? context)
+        LythonRuntime.ExecutionContext? context, ReadOnlySpan<byte> source, CaseMapping? casing)
     {
         if (count == ranges.Length)
         {
@@ -154,7 +168,7 @@ internal static partial class PyStringOps
             try
             {
                 context?.CheckExecution(span);
-                var replacement = new (int Start, int End)[capacity];
+                var replacement = new (int Start, int End, int Capacity)[capacity];
                 ranges[..count].CopyTo(replacement);
                 ranges = replacement;
             }
@@ -162,7 +176,9 @@ internal static partial class PyStringOps
             scratch?.Shrink(scratchBytes);
             scratchBytes = bytes;
         }
-        ranges[count++] = (start, end);
-        outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(end - start));
+        var outputCapacity = casing is { } mapping
+            ? CaseOutputCapacity(source[start..end], mapping, context, span) : end - start;
+        ranges[count++] = (start, end, outputCapacity);
+        outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(outputCapacity));
     }
 }

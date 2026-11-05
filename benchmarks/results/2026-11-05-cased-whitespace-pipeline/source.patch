@@ -1,0 +1,323 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index 1e544f20..b3410123 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -199,10 +199,20 @@ internal sealed partial class LythonRuntime
+         var secondIndex = call is null ? instruction.NativeSecond : call.NativeArgumentIndex(0);
+         var thirdIndex = call is null ? -1 : call.NativeArgumentIndex(1);
+         var fourthIndex = call is null ? -1 : call.NativeArgumentIndex(2);
++        var casing = call is { ArgumentCount: 0 } && memberIndex >= 0 &&
++            code.Names[instructions[memberIndex].NameIndex] == "split"
++            ? NativeSplitCasing(instruction.NativeFirst, code, instructions) : null;
+         object? first = null, second = null, third = null, fourth = null;
+         if (instruction.NativeFirst >= 0)
+         {
+-            first = EvaluateNativeReturn(instruction.NativeFirst, code, instructions, arguments, context, entryException);
++            first = EvaluateNativeReturn(casing is null ? instruction.NativeFirst : instructions[instruction.NativeFirst].NativeFirst,
++                code, instructions, arguments, context, entryException);
++            if (casing is not null)
++            {
++                ref readonly var producer = ref instructions[instruction.NativeFirst];
++                context.State.CheckExecution(instructions[producer.NativeSecond].Span);
++                context.State.CheckExecution(code.CallSites[producer.CallSiteIndex].CallSpan);
++            }
+             if (memberIndex >= 0) context.State.CheckExecution(instructions[memberIndex].Span);
+             if (secondIndex >= 0) second = EvaluateNativeReturn(secondIndex, code, instructions, arguments, context, entryException);
+             if (thirdIndex >= 0) third = EvaluateNativeReturn(thirdIndex, code, instructions, arguments, context, entryException);
+@@ -223,6 +233,8 @@ internal sealed partial class LythonRuntime
+             if (instruction.OpCode == ExecutableOpCode.Subscript)
+                 return ReadSubscriptValue(first!, second!, instruction.Span, context);
+             var site = code.CallSites[instruction.CallSiteIndex];
++            if (casing is { } upper)
++                return PyStringOps.SplitCasedWhitespace((PyString)first!, upper, context.MemoryGovernor, site.CallSpan, context);
+             if (memberIndex < 0)
+                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
+             var receiver = (PyString)first!;
+@@ -244,6 +256,21 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
++    // The ordinary native-body proof already established exact builtin methods
++    // before any work. Reuse its graph; no extra plan or execution route is kept.
++    private static bool? NativeSplitCasing(int index, ExecutableCodeObject code, ExecutableInstruction[] instructions)
++    {
++        ref readonly var producer = ref instructions[index];
++        if (producer.OpCode != ExecutableOpCode.Call || producer.NativeSecond < 0 ||
++            code.CallSites[producer.CallSiteIndex] is not { HasReceiver: true, ArgumentCount: 0 }) return null;
++        return code.Names[instructions[producer.NativeSecond].NameIndex] switch
++        {
++            "lower" => false,
++            "upper" => true,
++            _ => null
++        };
++    }
++
+     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,
+         ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+     {
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+index 1738f4d7..78d527bb 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -11,8 +11,14 @@ internal static partial class PyStringOps
+         0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A or
+         0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
+ 
++    internal static PyList SplitCasedWhitespace(PyString value, bool upper,
++        MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
++        => SplitWhitespaceCore(value, -1, false, governor, span, context,
++            upper ? CaseMapping.Upper : CaseMapping.Lower);
++
+     private static PyList SplitWhitespaceCore(PyString value, int maxSplit, bool reverse,
+-        MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
++        MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,
++        CaseMapping? casing = null)
+     {
+         governor ??= value.OwnerMemoryGovernor;
+         span ??= value.AllocationSpan;
+@@ -22,7 +28,7 @@ internal static partial class PyStringOps
+         var source = value.Utf8Bytes.Span;
+         // Fixed, memory-safe stack scratch; larger results admit their backing
+         // through the existing reservation before allocating a replacement.
+-        Span<(int Start, int End)> ranges = stackalloc (int, int)[8];
++        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
+         var count = 0;
+         long outputBytes = 0, scratchBytes = 0;
+         MemoryGovernor.TemporaryMemoryReservation? scratch = null;
+@@ -30,10 +36,10 @@ internal static partial class PyStringOps
+         {
+             if (reverse)
+                 CollectWhitespaceReverse(source, maxSplit, ref ranges, ref count, ref outputBytes,
+-                    ref scratchBytes, ref scratch, governor, span, context);
++                    ref scratchBytes, ref scratch, governor, span, context, casing);
+             else
+                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
+-                    ref scratchBytes, ref scratch, governor, span, context);
++                    ref scratchBytes, ref scratch, governor, span, context, casing);
+ 
+             // Admit all fragment capacity/metadata once. Commit transfers each
+             // fragment's funding without another shared-allowance resize.
+@@ -44,16 +50,24 @@ internal static partial class PyStringOps
+             {
+                 context?.CheckExecution(span);
+                 var range = ranges[reverse ? count - index - 1 : index];
+-                var bytes = new byte[range.End - range.Start];
+-                for (var copied = 0; copied < bytes.Length;)
++                var bytes = new byte[range.Capacity];
++                var written = bytes.Length;
++                if (casing is { } mapping)
+                 {
+-                    context?.CheckExecution(span);
+-                    var chunk = Math.Min(4096, bytes.Length - copied);
+-                    source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
+-                    copied += chunk;
++                    // Whitespace is case-stable and breaks final-sigma context.
++                    // Write final words without materializing a cased source.
++                    written = WriteCaseUtf8(source[range.Start..range.End], bytes, mapping, context, span);
+                 }
+-                var fragment = governor is null ? PyString.FromOwnedUtf8(bytes)
+-                    : PyString.FromOwnedUtf8(bytes, governor, span, output!);
++                else
++                    for (var copied = 0; copied < bytes.Length;)
++                    {
++                        context?.CheckExecution(span);
++                        var chunk = Math.Min(4096, bytes.Length - copied);
++                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
++                        copied += chunk;
++                    }
++                var fragment = governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
++                    : PyString.FromOwnedUtf8(bytes, governor, span, output!, written);
+                 parts.Add(fragment);
+             }
+             context?.CheckExecution(span);
+@@ -63,9 +77,9 @@ internal static partial class PyStringOps
+     }
+ 
+     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
+-        scoped ref Span<(int Start, int End)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
++        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
++        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
+     {
+         var start = -1;
+         var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+@@ -78,7 +92,7 @@ internal static partial class PyStringOps
+                 if (start >= 0)
+                 {
+                     AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
++                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+                     start = -1;
+                     remaining--;
+                 }
+@@ -89,7 +103,7 @@ internal static partial class PyStringOps
+                 if (remaining == 0)
+                 {
+                     AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
++                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+                     return;
+                 }
+             }
+@@ -97,13 +111,13 @@ internal static partial class PyStringOps
+         }
+         if (start >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+-                ref scratchBytes, ref scratch, governor, span, context);
++                ref scratchBytes, ref scratch, governor, span, context, source, casing);
+     }
+ 
+     private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,
+-        scoped ref Span<(int Start, int End)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
++        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
++        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
+     {
+         var end = -1;
+         for (var position = source.Length; position > 0;)
+@@ -115,7 +129,7 @@ internal static partial class PyStringOps
+                 if (end >= 0)
+                 {
+                     AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
++                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+                     end = -1;
+                     remaining--;
+                 }
+@@ -126,7 +140,7 @@ internal static partial class PyStringOps
+                 if (remaining == 0)
+                 {
+                     AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context);
++                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+                     return;
+                 }
+             }
+@@ -134,13 +148,13 @@ internal static partial class PyStringOps
+         }
+         if (end >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
+-                ref scratchBytes, ref scratch, governor, span, context);
++                ref scratchBytes, ref scratch, governor, span, context, source, casing);
+     }
+ 
+-    private static void AppendWhitespaceRange(scoped ref Span<(int Start, int End)> ranges,
++    private static void AppendWhitespaceRange(scoped ref Span<(int Start, int End, int Capacity)> ranges,
+         ref int count, int start, int end, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor, LythonSourceSpan? span,
+-        LythonRuntime.ExecutionContext? context)
++        LythonRuntime.ExecutionContext? context, ReadOnlySpan<byte> source, CaseMapping? casing)
+     {
+         if (count == ranges.Length)
+         {
+@@ -154,7 +168,7 @@ internal static partial class PyStringOps
+             try
+             {
+                 context?.CheckExecution(span);
+-                var replacement = new (int Start, int End)[capacity];
++                var replacement = new (int Start, int End, int Capacity)[capacity];
+                 ranges[..count].CopyTo(replacement);
+                 ranges = replacement;
+             }
+@@ -162,7 +176,9 @@ internal static partial class PyStringOps
+             scratch?.Shrink(scratchBytes);
+             scratchBytes = bytes;
+         }
+-        ranges[count++] = (start, end);
+-        outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(end - start));
++        var outputCapacity = casing is { } mapping
++            ? CaseOutputCapacity(source[start..end], mapping, context, span) : end - start;
++        ranges[count++] = (start, end, outputCapacity);
++        outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(outputCapacity));
+     }
+ }
+diff --git a/tests/Lokad.Lython.Tests/WhitespaceSplitCancellationTests.cs b/tests/Lokad.Lython.Tests/WhitespaceSplitCancellationTests.cs
+index aedf1d58..57d0a96f 100644
+--- a/tests/Lokad.Lython.Tests/WhitespaceSplitCancellationTests.cs
++++ b/tests/Lokad.Lython.Tests/WhitespaceSplitCancellationTests.cs
+@@ -13,6 +13,27 @@ public sealed class WhitespaceSplitCancellationTests
+     private static readonly LythonSourceSpan Span = new(17, 3, 2, 1);
+     private static readonly string Word = new('α', 16384);
+ 
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public void CasedOutputAdmissionCancellationUnwindsBeforeConstruction(bool upper)
++    {
++        var root = new LythonMemoryBudget(1024 * 1024);
++        using var cancellation = new CancellationTokenSource();
++        using (var owner = root.CreateScope())
++        {
++            var hook = new AdmissionHook(owner);
++            var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
++            var input = PyString.FromString(Word + " " + Word, context.MemoryGovernor, Span);
++            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
++            var error = Assert.Throws<LythonRuntimeException>(() =>
++                PyStringOps.SplitCasedWhitespace(input, upper, context.MemoryGovernor, Span, context));
++            AssertCancelled(error, context, cancellation, hook);
++            Assert.Equal(Word + " " + Word, input.AsString());
++        }
++        Assert.Equal(0, root.ReservedBytes);
++    }
++
+     [Theory]
+     [InlineData(false, -1)]
+     [InlineData(false, 1)]
+diff --git a/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs b/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
+index 31e71a76..873bfd5b 100644
+--- a/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
++++ b/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
+@@ -8,8 +8,11 @@ public sealed class WhitespaceStorageOwnershipTests
+ {
+     private static readonly LythonSourceSpan Span = new(19, 3, 4, 1);
+ 
+-    [Fact]
+-    public void RefusedWholeOutputAdmissionPrecedesFragmentAllocation()
++    [Theory]
++    [InlineData(-1)]
++    [InlineData(0)]
++    [InlineData(1)]
++    public void RefusedWholeOutputAdmissionPrecedesFragmentAllocation(int casing)
+     {
+         const long allowance = 1024 * 1024;
+         var budget = new LythonMemoryBudget(allowance);
+@@ -25,7 +28,8 @@ public sealed class WhitespaceStorageOwnershipTests
+                 var committed = governor.CurrentCommittedBytes;
+                 var before = GC.GetAllocatedBytesForCurrentThread();
+                 var failure = Assert.Throws<LythonRuntimeException>(() =>
+-                    PyStringOps.SplitWhitespace(input, governor, Span, context));
++                    casing < 0 ? PyStringOps.SplitWhitespace(input, governor, Span, context)
++                    : PyStringOps.SplitCasedWhitespace(input, casing == 1, governor, Span, context));
+                 var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                 Assert.Same(governor.AdmissionFailure, failure);
+                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+@@ -40,8 +44,11 @@ public sealed class WhitespaceStorageOwnershipTests
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
+-    [Fact]
+-    public void IndependentOwnerFragmentsRemainFundedAfterSourceCleanup()
++    [Theory]
++    [InlineData(-1)]
++    [InlineData(0)]
++    [InlineData(1)]
++    public void IndependentOwnerFragmentsRemainFundedAfterSourceCleanup(int casing)
+     {
+         var budget = new LythonMemoryBudget();
+         using (var resultOwner = budget.CreateScope())
+@@ -52,9 +59,11 @@ public sealed class WhitespaceStorageOwnershipTests
+             {
+                 var sourceContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = sourceOwner });
+                 var input = PyString.FromString("α 😀 XYZ", sourceContext.MemoryGovernor, Span);
+-                result = PyStringOps.SplitWhitespace(input, resultContext.MemoryGovernor, Span, resultContext);
++                result = casing < 0 ? PyStringOps.SplitWhitespace(input, resultContext.MemoryGovernor, Span, resultContext)
++                    : PyStringOps.SplitCasedWhitespace(input, casing == 1, resultContext.MemoryGovernor, Span, resultContext);
+             }
+-            Assert.Equal(["α", "😀", "XYZ"], result.Cast<PyString>().Select(part => part.AsString()).ToArray());
++            Assert.Equal(casing < 0 ? ["α", "😀", "XYZ"] : casing == 0 ? ["α", "😀", "xyz"] : ["Α", "😀", "XYZ"],
++                result.Cast<PyString>().Select(part => part.AsString()).ToArray());
+             Assert.All(result.Cast<PyString>(), part => Assert.Same(resultContext.MemoryGovernor, part.OwnerMemoryGovernor));
+             Assert.Equal(resultContext.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
+             Assert.True(budget.ReservedBytes > 0);

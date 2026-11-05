@@ -8,8 +8,11 @@ public sealed class WhitespaceStorageOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(19, 3, 4, 1);
 
-    [Fact]
-    public void RefusedWholeOutputAdmissionPrecedesFragmentAllocation()
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void RefusedWholeOutputAdmissionPrecedesFragmentAllocation(int casing)
     {
         const long allowance = 1024 * 1024;
         var budget = new LythonMemoryBudget(allowance);
@@ -25,7 +28,8 @@ public sealed class WhitespaceStorageOwnershipTests
                 var committed = governor.CurrentCommittedBytes;
                 var before = GC.GetAllocatedBytesForCurrentThread();
                 var failure = Assert.Throws<LythonRuntimeException>(() =>
-                    PyStringOps.SplitWhitespace(input, governor, Span, context));
+                    casing < 0 ? PyStringOps.SplitWhitespace(input, governor, Span, context)
+                    : PyStringOps.SplitCasedWhitespace(input, casing == 1, governor, Span, context));
                 var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
                 Assert.Same(governor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
@@ -40,8 +44,11 @@ public sealed class WhitespaceStorageOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void IndependentOwnerFragmentsRemainFundedAfterSourceCleanup()
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void IndependentOwnerFragmentsRemainFundedAfterSourceCleanup(int casing)
     {
         var budget = new LythonMemoryBudget();
         using (var resultOwner = budget.CreateScope())
@@ -52,9 +59,11 @@ public sealed class WhitespaceStorageOwnershipTests
             {
                 var sourceContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = sourceOwner });
                 var input = PyString.FromString("α 😀 XYZ", sourceContext.MemoryGovernor, Span);
-                result = PyStringOps.SplitWhitespace(input, resultContext.MemoryGovernor, Span, resultContext);
+                result = casing < 0 ? PyStringOps.SplitWhitespace(input, resultContext.MemoryGovernor, Span, resultContext)
+                    : PyStringOps.SplitCasedWhitespace(input, casing == 1, resultContext.MemoryGovernor, Span, resultContext);
             }
-            Assert.Equal(["α", "😀", "XYZ"], result.Cast<PyString>().Select(part => part.AsString()).ToArray());
+            Assert.Equal(casing < 0 ? ["α", "😀", "XYZ"] : casing == 0 ? ["α", "😀", "xyz"] : ["Α", "😀", "XYZ"],
+                result.Cast<PyString>().Select(part => part.AsString()).ToArray());
             Assert.All(result.Cast<PyString>(), part => Assert.Same(resultContext.MemoryGovernor, part.OwnerMemoryGovernor));
             Assert.Equal(resultContext.MemoryGovernor.CurrentAccountedBytes, budget.ReservedBytes);
             Assert.True(budget.ReservedBytes > 0);
