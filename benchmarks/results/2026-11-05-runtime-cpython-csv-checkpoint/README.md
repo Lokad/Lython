@@ -3,8 +3,10 @@
 2026-11-05. Retained source **a8e476bf**, same production in **c6d71108**, frozen
 core **402ae9f1**; previous external **0997baa8/68a9f3f8** and an identical-current
 control run alongside CPython. Earlier D31–D33 delivery41974563982 is GREEN/all8
-gates/cached. D34 final41977587599 delivery remains active; this checkpoint does
-not imply its platform/Stress/package success. Publication postponed.
+gates/cached. D34 final41977587599 subsequently completed GREEN on c6d71108,
+all eight Windows/Ubuntu, actual11/10, original stress and installed-consumer gates
+([cached receipt](../2026-11-05-private-csv-records/delivery-ci-status.json)).
+Publication postponed.
 
 Quiet dedicated Standard_F4as_v7, four AMD EPYC9V45 vCPUs/16GiB/no swap,
 Ubuntu24.04.4. .NET11RC3 SDK/runtime11.0.100-rc.3.26522.148/11.0.0-rc.3.26522.148.

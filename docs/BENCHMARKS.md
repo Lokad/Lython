@@ -21,8 +21,9 @@ already-running host**, including mediated RAM-file I/O, full checks and prior-
 result cleanup, excluding staging/reset. Ratio=Lython elapsed/CPython elapsed;
 above one means slower. IQR=interquartile range/median. Control compares identical-
 source role medians. Exact frozen core **402ae9f1** and snapshots identify the
-measured build. Focused actual11/10 checks pass; D34 final platform/Stress/installed
-qualification remains active. Earlier7efe581b passes all delivery gates.
+measured build. Final qualification on **c6d71108** passes Windows/Ubuntu,
+actual11/10, original stress and installed-package checks; the terminal CI result
+is [cached with the evidence](../benchmarks/results/2026-11-05-private-csv-records/delivery-ci-status.json).
 
 JSON/report ranges show identical-source medians, not confidence intervals. Warm
 JSON controls differ5.23%; freshreport controls5.54%. The selected warmJSON point
@@ -93,7 +94,7 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Private CSV record arrays | CSV allocation −4.7–7.6%; public-reader warm elapsed −4.2–5.3% | [Source variants and confirmation](../benchmarks/results/2026-11-05-private-csv-records/README.md). DictReader warm timing control-limited; roughly1% warm-text cost accepted, larger original adverse point preserved. Focused checks pass; full delivery pending. |
+| Private CSV record arrays | CSV allocation −4.7–7.6%; public-reader warm elapsed −4.2–5.3% | [Source variants and confirmation](../benchmarks/results/2026-11-05-private-csv-records/README.md). DictReader warm timing control-limited; roughly1% warm-text cost accepted, larger original adverse point preserved. Fully qualified on c6d71108. |
 | Known/empty list backing | Text allocation −8.61%, warm elapsed −2.4–2.9%; CSV allocation −2.1–3.3% | [Complete scripts and confirmation](../benchmarks/results/2026-11-05-known-list-storage/README.md). Report favorable; original native-CSV elapsed cost not reproduced in unchanged-bit confirmation and remains visible. Fully qualified on7efe581b. |
 | Ordered native formatted bodies | Report warm elapsed −3.5–5.4%, async −5.6–7.2%; allocation flat | [Initial and refined sources](../benchmarks/results/2026-11-05-ordered-native-format/README.md). Possible text ~1% and compile ~2% costs accepted; fresh magnitude uncertain. Fully qualified on7efe581b. |
 | Shared f-string construction | Report allocation −10.3% warm/async, −10.0% fresh; elapsed −7.0–8.9% warm, −5.8–7.8% async, −8.5–9.0% fresh | [Complete report source pair](../benchmarks/results/2026-11-05-formatted-construction/README.md). Numeric control near flat; compilation/control effects limit small claims. Fully qualified on0997baa8. |

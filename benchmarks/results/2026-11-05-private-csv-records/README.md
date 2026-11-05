@@ -1,8 +1,9 @@
 # Private CSV record storage
 
 2026-11-05. Retain parent7efe581b plus exact final patch/snapshot, core
-**402ae9f1**, versus **7efe581b/b6046395**. Actual .NET11/10 focused checks pass;
-retained-source platform/Stress/installed qualification pending. Publication held;
+**402ae9f1**, versus **7efe581b/b6046395**. Final c6d71108 qualification passes all
+eight Windows/Ubuntu, actual .NET11/10, original stress and installed-consumer gates
+([cached terminal CI41977587599](delivery-ci-status.json)). Publication held;
 the broader performance objective remains open.
 
 Queue final field arrays, without an intermediate Python list, separate row
