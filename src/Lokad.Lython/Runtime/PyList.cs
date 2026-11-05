@@ -5,6 +5,9 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
     internal const int InitialCapacity = 8;
+    // Deliberately distinct from Array.Empty: a sort callback can grow and
+    // clear its view, which still counts as modification when sorting ends.
+    private static readonly object[] SortingEmpty = new object[0];
     private object[] _items;
     private int _count;
     private long _committedBytes;
@@ -16,7 +19,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     internal static long EstimateCapacityBytes(int capacity)
         => checked(64L + ((16L + RuntimeMemoryEstimates.ScalarStorageBytes) * capacity));
 
-    public PyList() : this(InitialCapacity, null, null) { }
+    public PyList() : this(0, null, null) { }
     public PyList(IEnumerable<object> items) : this(items, null, null) { }
     public PyList(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
 
@@ -24,10 +27,10 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        var actualCapacity = Math.Max(InitialCapacity, capacity);
-        var bytes = EstimateCapacityBytes(actualCapacity);
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
+        var bytes = EstimateCapacityBytes(capacity);
         using var backing = governor?.ReserveTemporary(bytes, allocationSpan);
-        _items = new object[actualCapacity];
+        _items = capacity == 0 ? [] : new object[capacity];
         backing?.Commit(bytes);
         if (backing is not null) _committedBytes = bytes;
     }
@@ -202,7 +205,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         var bytes = EstimateCapacityBytes(0);
         _memoryGovernor?.Reserve(bytes, _allocationSpan);
         var original = new SortBacking(_items, _count, _committedBytes);
-        _items = [];
+        _items = SortingEmpty;
         _count = 0;
         _committedBytes = _memoryGovernor is null ? 0 : bytes;
         _memoryGovernor?.Commit(bytes);
@@ -211,7 +214,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     internal bool RestoreAfterSort(SortBacking original, PyStableSort.Buffer? sorted)
     {
-        var modified = _items.Length != 0;
+        var modified = !ReferenceEquals(_items, SortingEmpty);
         if (sorted is not null)
             for (var i = 0; i < original.Count; i++) original.Items[i] = sorted[i].Value;
         var discardedBytes = _committedBytes;
@@ -227,7 +230,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         if (_items.Length == 0) return; // Empty callback view while sorting.
         if (count <= 0 || _count == 0)
         {
-            ReplaceWithEmpty();
+            Clear();
             return;
         }
         var totalLength = (long)_count * count;
@@ -325,12 +328,14 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     public void Clear()
     {
         if (_items.Length == 0) return;
-        if (_memoryGovernor is not null) ReplaceWithEmpty();
-        else
-        {
-            Array.Clear(_items, 0, _count);
-            _count = 0;
-        }
+        _items = [];
+        _count = 0;
+        // Relinquish backing before returning its allowance. Metadata and
+        // independent payload/alias owners remain funded; no replacement allocates.
+        var retained = Math.Min(_committedBytes, EstimateCapacityBytes(0));
+        var released = _committedBytes - retained;
+        _committedBytes = retained;
+        _memoryGovernor?.Release(released);
     }
 
     public object GetItem(int index) => _items[index];
@@ -384,31 +389,13 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     internal void EnsureCapacity(int targetCount)
     {
         if (targetCount <= _items.Length) return;
-        // The first expansion uses observed demand; subsequent growth is geometric.
-        var capacity = _items.Length == InitialCapacity ? targetCount : Math.Max(targetCount, (int)Math.Min(
+        var capacity = Math.Max(targetCount, (int)Math.Min(
             _items.Length == 0 ? InitialCapacity : (long)_items.Length * 2, Array.MaxLength));
         var bytes = EstimateCapacityBytes(capacity);
         using var backing = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
         var replacement = new object[capacity];
         Array.Copy(_items, replacement, _count);
         _items = replacement;
-        if (backing is not null)
-        {
-            backing.Commit(bytes);
-            _memoryGovernor!.Release(_committedBytes);
-            _committedBytes = bytes;
-        }
-    }
-
-    private void ReplaceWithEmpty()
-    {
-        // Refusal leaves the original backing/content intact. Old capacity
-        // remains charged through allocation of the replacement, even if empty.
-        var bytes = EstimateCapacityBytes(InitialCapacity);
-        using var backing = _memoryGovernor?.ReserveTemporary(bytes, _allocationSpan);
-        var replacement = new object[InitialCapacity];
-        _items = replacement;
-        _count = 0;
         if (backing is not null)
         {
             backing.Commit(bytes);

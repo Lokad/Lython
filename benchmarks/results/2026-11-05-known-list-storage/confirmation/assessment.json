@@ -1,0 +1,56 @@
+{
+  "performanceQualified": false,
+  "purpose": "Unchanged b6046395 nativeCSV confirmation;one complete-script job;allocation/elapsed/compile separated,peaks initial untimed setup only",
+  "rows": [
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "phase": "warm",
+      "metrics": {
+        "before": {
+          "milliseconds": 4.870934596153846,
+          "iqrPercent": 0.3712895107449983,
+          "processAllocatedBytes": 4943381.538461538,
+          "minimumBatchMilliseconds": 252.037777
+        },
+        "candidate": {
+          "milliseconds": 4.8458858846153845,
+          "iqrPercent": 0.22063481875223906,
+          "processAllocatedBytes": 4780345.846153846,
+          "minimumBatchMilliseconds": 251.114682
+        },
+        "before-control": {
+          "milliseconds": 4.8947491923076925,
+          "iqrPercent": 0.34028104795093317,
+          "processAllocatedBytes": 4944431.230769231,
+          "minimumBatchMilliseconds": 252.454419
+        }
+      },
+      "candidateElapsedChangePercent": [
+        -0.514248570659126,
+        -0.9982801114528761
+      ],
+      "candidateProcessAllocationChangePercent": [
+        -3.2980600635254875,
+        -3.3185896811402826
+      ],
+      "unchangedSpreadPercent": 0.4889122545938207,
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 8415421,
+          "PeakRootBytes": 8511773
+        },
+        "candidate": {
+          "PeakExecutionBytes": 6776621,
+          "PeakRootBytes": 6872973
+        },
+        "before-control": {
+          "PeakExecutionBytes": 8415421,
+          "PeakRootBytes": 8511773
+        }
+      }
+    }
+  ],
+  "ownedCollectionSeconds": 41.0,
+  "allGoldenBalanceFixtureIdentityQuietGatesPassed": true,
+  "archiveSHA256": "5dea77a9f65a8e91da45de03b9f8013c33591335eefa1b4d407ccb1811685483"
+}

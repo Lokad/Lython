@@ -204,6 +204,9 @@ instead of requerying historical green runs.
   cover CPython visibility/mutation/error goldens and real suspension; native
   [sort ownership](Lokad.Lython.Tests/ListSortOwnershipTests.cs) checks refusal
   before detachment and funding/restoration through awaited cancellation/refusal.
+  [List capacity ownership](Lokad.Lython.Tests/ListCapacityOwnershipTests.cs) also
+  covers allocation-free clear/repetition under a full allowance, retained aliases
+  and immediate budget reuse. Growth and attachment still refuse before mutation.
 - [Benchmark ownership](Lokad.Lython.PublicApi.Tests/BenchmarkOwnershipTests.cs)
   verifies the actual shared benchmark helper releases results after consumption,
   including consumer and guest failures.

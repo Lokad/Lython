@@ -111,12 +111,15 @@ public sealed class PrimitiveStorageTests
     public void ListAttachmentPublishesOnlyAfterCapacityAdmission()
     {
         var list = new PyList(new object[] { true, (byte)1 });
-        var denied = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8) - 1));
+        var budget = new LythonMemoryBudget(4096);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var blocked));
+        using var padding = blocked;
+        var denied = new MemoryGovernor(budget);
         var error = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(denied));
         Assert.Equal("MemoryError", error.ExceptionType);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(0, denied.CurrentAccountedBytes);
-        var admitted = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8)));
+        var admitted = new MemoryGovernor(new LythonMemoryBudget(4096));
         list.AttachMemoryGovernor(admitted);
         Assert.Same(admitted, list.OwnerMemoryGovernor);
         Assert.Equal(list.CommittedStorageBytes, admitted.CurrentCommittedBytes);

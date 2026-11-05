@@ -324,11 +324,18 @@ execution cannot select the allowance. Shallow native copies preserve stored
 hashes and key identities without calling those protocols again.
 
 Lists own their backing array, count and retained-capacity accounting directly.
+Known sizes receive that capacity; empty lists start without an element array.
 Growth admits the complete replacement while the old array remains funded;
-geometric capacity can require headroom beyond the immediate element count.
+growth from empty starts small, then uses one geometric rule. It can require
+headroom beyond the immediate count, so admission thresholds can change.
 Construction failures refund private backing, while failed live extension keeps
-its successful prefix charged. Sorting keeps the detached backing funded through
+its successful prefix charged. Clearing and nonpositive in-place repetition drop
+backing before refunding capacity, retain metadata and independent value/alias
+owners, and need no fresh allowance. An already refused command stays terminal.
+Sorting keeps the detached backing funded through
 callbacks and awaited cleanup, then restores it before releasing callback storage.
+Its private empty marker preserves mutation-then-clear detection without retaining
+an unnecessary replacement array.
 In-place repetition fills the admitted array in bounded, cancellation-checked copies.
 
 Immutable strings retain their independent UTF-8 backing. Their optional scalar

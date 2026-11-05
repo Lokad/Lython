@@ -8,6 +8,8 @@ public sealed class ListSortCallbackTests
     [Theory]
     [InlineData("items.append(9)", "ValueError [1, 2, 3]\n")]
     [InlineData("items.append(9);items.pop()", "ValueError [1, 2, 3]\n")]
+    [InlineData("items.append(9);items.clear()", "ValueError [1, 2, 3]\n")]
+    [InlineData("items.append(9);items *= 0", "ValueError [1, 2, 3]\n")]
     [InlineData("items.clear()", "ok [1, 2, 3]\n")]
     [InlineData("items.reverse()", "ok [1, 2, 3]\n")]
     [InlineData("items.sort()", "ok [1, 2, 3]\n")]

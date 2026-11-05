@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Respect known list capacities, start empty without element backing and use one
+  geometric growth rule. Clear without allocating replacement storage, retaining
+  metadata and alias funding. Remove the capacity floor and first-growth exception;
+  preserve sort mutation detection and admission before replacement peaks.
+
 - Consume prepared native formatted returns in source order. Remove their runtime
   builder-shape proof and recursive append-chain execution, retaining actual field
   checks, original reads, shared formatting, cancellation and funded cleanup.

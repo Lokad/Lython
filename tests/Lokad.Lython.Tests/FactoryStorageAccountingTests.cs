@@ -17,7 +17,7 @@ public sealed class FactoryStorageAccountingTests
     }
 
     [Fact]
-    public void ListClearReleasesDiscardedBackingAndKeepsReplacementFunded()
+    public void ListClearReleasesDiscardedBackingAndKeepsMetadataFunded()
     {
         var budget = new LythonMemoryBudget(4096);
         using var owner = budget.CreateScope();
@@ -32,22 +32,4 @@ public sealed class FactoryStorageAccountingTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void DeniedListReplacementKeepsContentsAndOldBackingFunded()
-    {
-        var budget = new LythonMemoryBudget(4096);
-        using var owner = budget.CreateScope();
-        var governor = new MemoryGovernor(owner);
-        var list = new PyList(Enumerable.Range(0, 20).Cast<object>().ToArray(), governor, null);
-        var before = budget.ReservedBytes;
-        Assert.True(owner.TryReserve(4096 - before, out var pressure));
-        var failure = Assert.Throws<LythonRuntimeException>(list.Clear);
-        Assert.Equal(20, list.Count);
-        Assert.Equal(4096, budget.ReservedBytes);
-        pressure.Dispose();
-        Assert.Equal(before, budget.ReservedBytes);
-        Assert.Same(failure, Assert.Throws<LythonRuntimeException>(list.Clear));
-        Assert.Equal(20, list.Count);
-        Assert.Equal(before, budget.ReservedBytes);
-    }
 }

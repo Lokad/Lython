@@ -1,0 +1,17 @@
+{
+  "sourceParent": "5148eda8",
+  "coreSHA256": "b60463957f65bfd16a14686b08ca63b9361ac04fe534924a2d09fcca70f7b625",
+  "net10CoreSHA256": "5003d0af1a658056228e52124ba087238f0533204d9a2f0c56be14ffa6cba18d",
+  "internalCasesPerFramework": 1561,
+  "publicCasesPerFramework": 3696,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "allFocusedPassed": true,
+  "initialPolicySpecificFailuresPreserved": 2,
+  "buildSeconds": 41.75,
+  "warnings": 0,
+  "errors": 0,
+  "fullPlatformStressInstalledQualification": "pending coherent D31+D33 delivery"
+}

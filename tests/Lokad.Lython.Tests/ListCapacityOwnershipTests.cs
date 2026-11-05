@@ -13,7 +13,7 @@ public sealed class ListCapacityOwnershipTests
         object value = new BigInteger(7);
         var list = new PyList([value, value, true, false, new object()], governor);
         var charge = list.CommittedStorageBytes;
-        Assert.Equal(new PyList([], governor).CommittedStorageBytes, charge);
+        Assert.Equal(new PyList(Enumerable.Repeat<object>(PyNone.Instance, list.Count).ToArray(), governor).CommittedStorageBytes, charge);
         Assert.Same(value, list[0]);
         Assert.Same(value, list[1]);
         list[2] = value;
@@ -91,12 +91,49 @@ public sealed class ListCapacityOwnershipTests
     {
         var value = new object();
         var list = new PyList([value]);
-        var governor = new MemoryGovernor(new LythonMemoryBudget(PyList.EstimateCapacityBytes(8) - 1));
+        var budget = new LythonMemoryBudget(4096);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var blocked));
+        using var padding = blocked;
+        var governor = new MemoryGovernor(budget);
         var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
         Assert.Same(governor.AdmissionFailure, failure);
         Assert.Null(list.OwnerMemoryGovernor);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Same(value, Assert.Single(list));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClearingNeedsNoFreshAllowanceAndKeepsRetainedAliasesFunded(bool repeat)
+    {
+        var budget = new LythonMemoryBudget(8192);
+        using (var owner = budget.CreateScope())
+        {
+            var governor = new MemoryGovernor(owner);
+            var value = Lokad.Lython.Runtime.Text.PyString.FromString(new string('x', 256), governor, null);
+            var list = new PyList([value, value, BigInteger.One], governor);
+            var alias = list;
+            var retained = new PyList([value], governor);
+            var before = governor.CurrentCommittedBytes;
+            var oldCapacity = list.CommittedStorageBytes;
+            Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out var blocked));
+            using (blocked)
+            {
+                if (repeat) list.RepeatInPlace(0, new LythonSourceSpan(0, 1, 1, 1));
+                else list.Clear();
+                Assert.Empty(alias);
+                Assert.Same(value, Assert.Single(retained));
+                var returned = oldCapacity - list.CommittedStorageBytes;
+                Assert.True(returned > 0);
+                Assert.Equal(before - returned, governor.CurrentCommittedBytes);
+                Assert.Equal(0, governor.CurrentReservedBytes);
+                Assert.True(budget.TryReserve(returned, out var reused));
+                reused.Dispose();
+                Assert.True(governor.CurrentCommittedBytes >= value.CommittedOwnedBytes + retained.CommittedStorageBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

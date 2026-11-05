@@ -1,5 +1,16 @@
 # Benchmark experimental history
 
+The [known/empty list storage policy](results/2026-11-05-known-list-storage/README.md)
+removes the8slot constructor floor, special first expansion and allocating clear
+replacement. Thirteen net production lines removed; sort uses one managed empty
+marker.108s/all gates: textallocation−8.61%/elapsed−2.4–2.9%,CSVallocation−2.1–3.3%,
+report favorable. InitialnativeCSV+0.7–2.6%elapsed/controlspread1.88% remains; one
+unchanged-bit41s reversed/longer-warmup confirmation is−0.5–1.0%/spread.49%.
+No general nativeCSV/CPU claim or automatic retiming. Accounted initial peaks
+CSV−19%/text−43% are not RSS.1561internal/3696public per actual11/10 pass; old
+replacement-refusal/floor assumptions corrected without relaxing failure checks.
+Full delivery batches pending D31 and this change; publication stays postponed.
+
 The [ordered native formatted-body replacement](results/2026-11-05-ordered-native-format/README.md)
 removes runtime builder shapes and recursive append-chain traversal. Initial135s
 reportwarm−3.2–3.5%/async−4.4–5.0%,buttext+1.4–2.9%adverse. One135s source
