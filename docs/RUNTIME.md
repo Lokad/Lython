@@ -1005,8 +1005,10 @@ storage stays borrowed and funded until completion. Cancelled admission or
 construction returns only private output funding and preserves input aliases.
 
 Eligible native helper returns combining `lower()` or `upper()` with a default
-whitespace `split()` write independently owned words directly. Unicode expansions
-and final-sigma context are preserved. Final word capacities are admitted together;
+whitespace `split()` write independently owned words directly. Cased word-range
+discovery also determines conservative output capacity; ordinary split/rsplit keep
+their own scalar scans. The shared casing writer preserves Unicode expansions
+and final-sigma context. Final word capacities are admitted together;
 removing the unobservable cased line can change admission amounts, order and failure
 spans. First refusal remains terminal. Custom protocols keep awaited execution.
 

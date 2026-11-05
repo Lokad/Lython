@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "6c776d0d plus D53 bulk whitespace range/case-capacity prototype",
+  "coreSHA256": {
+    "candidate": "518d164e35986bf1efb53cb9abcbd2a2c292686f03903bae2f0bb100e81b544c",
+    "control": "518d164e35986bf1efb53cb9abcbd2a2c292686f03903bae2f0bb100e81b544c",
+    "reference": "6626358258f77055985b8fa0d13afc35ac0219567c0852356c3b2b12a8c42fe0"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "233internal/193public whitespace/expansion/native-return/shared-memory/cancellation/lifetime cases per actual11/10 pass. Baseline6c full4125/16004 per actual target pass; full42044419339 running.",
+  "changes": "Accumulate the existing conservative non-ASCII case expansion allowance during the forward whitespace scalar walk; remove per-word capacity rescans, append source/casing plumbing and reverse unused casing. No new layout/cache/owner/strategy.",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "6725da851ed9b69e3d2661661338fe331cc2098f51311d5ce597a876a7f42e6c"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "scripts.text-summary-helpers.unicode",
+  "fixtureTextUtf8Bytes": 196608,
+  "fixtureTextCodePoints": 122880,
+  "expectedOutput": "32768\n",
+  "sourceSha256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+  "fixtureSha256": "625542cd80aeb76fdbe8da089a6a5647228ed9b191f53d15e8e1a321a0c89fca",
+  "expectedFilesSha256": "2102c63d3716359c789cbf20595835444a40d3332f8efc55997521804eb3c79f"
+}

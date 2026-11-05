@@ -136,6 +136,11 @@ internal static partial class PyStringOps
                 offset += width;
             }
         }
+        return CheckCaseOutputCapacity(capacity, span);
+    }
+
+    private static int CheckCaseOutputCapacity(long capacity, LythonSourceSpan? span)
+    {
         if (capacity > Array.MaxLength) throw RuntimeErrors.Memory("cased string exceeds supported capacity", span);
         return (int)capacity;
     }

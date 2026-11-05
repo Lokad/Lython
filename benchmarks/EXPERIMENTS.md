@@ -1,5 +1,16 @@
 # Benchmark experimental history
 
+The [bulk cased range/capacity milestone](results/2026-11-05-text-range-capacity/README.md)
+retains final construction: ordinary scalar scans unchanged, existing unbounded
+cased split derives its exact conservative estimate during range discovery;
+per-word capacity rescans and unused coupling disappear. Initial140.32s is control
+limited; refined113.00s exposes actual unfused+2.76/3.69% despite favorable Unicode.
+Final86.42s/all gates removes ordinary per-scalar work: standardtext−2.61/3.98%,
+unfused−1.64/3.19%, mixedUnicode conflicting−4.03/+1.69% with5.96% current spread.
+Preserve all three blocks; no final Unicode/general/causalCPU/allocation claim.
+Focus233/193 per actual target pass. Full delivery batches at the next retained
+checkpoint; baseline6c776d0d already GREEN/all8. Performance objective stays open.
+
 The [current runtime-cost gate](results/2026-11-05-runtime-cost-gate/README.md)
 on6c776d0d/66263582 closes39s/723text/1017ordinaryCSV samples, preserving unknowns,
 truncated maps and collector conditions. Instruction prefix21.72/12.29% contains

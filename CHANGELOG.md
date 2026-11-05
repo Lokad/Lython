@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Compute fused lower/upper whitespace-split capacity during word discovery,
+  removing repeated sizing scans. Preserve ordinary split/rsplit work, Unicode
+  casing, conservative admission, cancellation and independently owned results.
+
 - Identify regex-provider memory refusals during compilation by operation,
   provider explanation and available source location. Preserve `LA0008`, terminal
   shared-memory refusal attribution and cleanup through compile-to-result APIs.
