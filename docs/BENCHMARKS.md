@@ -91,6 +91,7 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Shared f-string construction | Report allocation −10.3% warm/async, −10.0% fresh; elapsed −7.0–8.9% warm, −5.8–7.8% async, −8.5–9.0% fresh | [Complete report source pair](../benchmarks/results/2026-11-05-formatted-construction/README.md). Numeric control near flat; compilation/control effects limit small claims. Focused checks pass; full delivery pending. |
 | Prepared native helpers | Text warm elapsed −4.7–8.0%, async −5.3–7.3%; text compilation allocation −2.3% | [Whole source pair](../benchmarks/results/2026-11-05-prepared-native-bodies/README.md). Warm allocation flat; CSV/JSON confirmation near unchanged; possible CSV ~1% cost and fresh/report uncertainty retained. Qualified on8475a8dd. |
 | Final-word casing / whitespace split | Text allocation −14.1% warm/async, −13.2% fresh; fresh elapsed −5.2–6.6%, async −4.9–5.2% | [Complete source pair](../benchmarks/results/2026-11-05-cased-whitespace-pipeline/README.md). Warm magnitude control-limited; JSON control +0.9–1.1% accepted, compilation inconclusive. Qualified on cf3dc9cd. |
 | Arithmetic precedence consolidation | CSV/text compilation elapsed −6.7–8.4%; report −8.5–11.4%; allocation effectively unchanged | [Current-source reassessment](../benchmarks/results/2026-11-05-precedence-consolidation/README.md). Thirty parser lines removed. Fresh config −1.1–1.3%; warm text inconclusive with adverse signs preserved. Qualified on f7fed42c. |

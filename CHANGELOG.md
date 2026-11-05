@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Plan initial multi-part f-string storage from existing literal and format
+  metadata on both execution paths, avoiding intermediate buffer growth and
+  copying. Preserve current cancellation and allocation rollback; tight shared
+  allowances may reject construction earlier without retrying smaller storage.
+
 - Prepare closed native-helper operations during compilation and remove their
   provenance from ordinary instructions. Share string-method metadata and retain
   dynamic checks, original spans, cancellation and funded cleanup.

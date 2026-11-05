@@ -367,6 +367,14 @@ Invalid native grammar can still reach a custom formatter. Dynamic specification
 and other formatting APIs use the same parser at their actual operation. Layouts
 retain no execution token, callback state or separate cache owner.
 
+Multi-part f-strings use their literal bytes and static widths to plan modest
+initial builder storage, shared by ordinary execution and native helpers. Larger
+output uses normal admitted growth. Capacity remains charged when transferred to
+the result; conservative planning can retain more storage or reject a tight
+allowance before a field callback runs. Refusal is terminal, without retrying a
+smaller buffer. Cancellation after admission releases unpublished construction
+storage before allocation; actual field reads retain their execution order.
+
 String width and precision in f-strings, `str.format` and `format()` count Unicode
 scalars directly in UTF-8. Standalone string padding shares its exact output
 allocation with `ljust`, `rjust` and `center`, preserving unchanged string identity.

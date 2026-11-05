@@ -9,6 +9,56 @@ public sealed class StringBuilderAdmissionTests(ITestOutputHelper output)
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
 
+    [Fact]
+    public void InitialCapacityCancellationReturnsAdmittedAllowanceBeforeAllocation()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var baseline = root.ReservedBytes;
+            hook.AfterGrowth = _ => cancellation.Cancel();
+            var error = Assert.Throws<OperationCanceledException>(() =>
+                new GovernedByteBuilder(context.MemoryGovernor, Span, 32, cancellation.Token));
+            Assert.Equal(cancellation.Token, error.CancellationToken);
+            Assert.Equal(baseline, root.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+        Assert.True(root.TryReserve(root.LimitBytes!.Value, out var reused));
+        reused.Dispose();
+    }
+
+    [Fact]
+    public void InitialCapacityRefusalRemainsTerminalWhenAdmissionAlsoCancels()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var baseline = root.ReservedBytes;
+            hook.RefuseGrowth = _ => { cancellation.Cancel(); return true; };
+            var error = Assert.Throws<LythonRuntimeException>(() =>
+                new GovernedByteBuilder(context.MemoryGovernor, Span, 32, cancellation.Token));
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+            Assert.Same(Span, error.Span);
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.Equal(baseline, root.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
+            hook.RefuseGrowth = null;
+            Assert.Same(error, Assert.Throws<LythonRuntimeException>(() =>
+                new GovernedByteBuilder(context.MemoryGovernor, Span, 8, cancellation.Token)));
+            Assert.Equal(baseline, root.ReservedBytes);
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]

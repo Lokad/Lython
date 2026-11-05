@@ -6,6 +6,8 @@ public sealed class FormattedStringExecutionTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "events=[]\ndef mark():\n events.append('called')\n return 1\ntry: print(f'head{mark():>1000000000s}tail')\nexcept ValueError: print(events)\nprint(len(f\"a{'q':>513s}z\"))", "['called']\n515\n" },
+        { "value=True\nprint(f\"a{('yes' if value else 'no'):>5}b{f'{7:03d}'}c\")", "a  yesb007c\n" },
         { "events=[]\ndef mark(name,value):\n events.append(name)\n return value\nclass Value:\n def __str__(self):\n  events.append('convert')\n  return 'é'\nprint(f\"a{mark('value',Value())!s:>{mark('width',3)}}b\",events)", "a  éb ['value', 'convert', 'width']\n" },
         { "events=[]\nclass Value:\n def __format__(self,spec):\n  events.append('format:'+spec)\n  return '😀'\ndef spec():\n events.append('specifier')\n return 3\nprint(f'{Value():>{spec()}}',events)", "😀 ['specifier', 'format:>3']\n" },
         { "def outer(value):\n def render(width):\n  local=value+1\n  text=f'{local:0{width}d}'\n  return text,locals()['local']\n return render\nprint(outer(6)(3))", "('007', 7)\n" },

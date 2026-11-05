@@ -17,7 +17,7 @@ internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : Execu
 internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
 internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier, bool Append,
     LythonRuntime.InterpolatedFormatSpecifier? PreparedFormat) : ExecutableOperation;
-internal sealed record ExecutableStartFormattedString : ExecutableOperation;
+internal sealed record ExecutableStartFormattedString(int InitialCapacity) : ExecutableOperation;
 internal sealed record ExecutableAppendFormattedText(PyString Text) : ExecutableOperation;
 internal sealed record ExecutableFinishFormattedString : ExecutableOperation;
 internal sealed record ExecutableCreateGeneratorExpression(ExecutableCodeObject CodeObject, LythonSourceSpan OuterSpan) : ExecutableOperation;
@@ -51,12 +51,18 @@ internal sealed partial class ExecutableScript
                 return block;
             }
             var append = parts.Count > 1;
-            if (append) EmitOperation(new ExecutableStartFormattedString(), span, block);
+            var startBlock = block;
+            var startIndex = _blocks[block].Instructions.Count;
+            var initialCapacity = 0;
+            // Fill the construction descriptor after this existing parts walk;
+            // prepared specifiers are parsed once and no old constant is kept.
+            if (append) AddInstruction(block, ExecutableInstruction.ApplyOperation(-1, span));
             foreach (var part in parts)
             {
                 if (part is LoweredFormattedStringTextPart text)
                 {
                     var literal = PyString.FromString(text.Text);
+                    initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, literal.Utf8Bytes.Length));
                     if (append) EmitOperation(new ExecutableAppendFormattedText(literal), span, block);
                     else AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(literal), span));
                 }
@@ -67,11 +73,22 @@ internal sealed partial class ExecutableScript
                         EmitOperation(new ExecutableConvertFormattedValue(conversion), span, block);
                     if (field.FormatSpecifierParts is not null)
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
-                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append,
-                        field.FormatSpecifierParts is null ? LythonRuntime.PrepareConstantFormatSpecifier(field.FormatSpecifier, span) : null), span, block);
+                    var prepared = field.FormatSpecifierParts is null
+                        ? LythonRuntime.PrepareConstantFormatSpecifier(field.FormatSpecifier, span) : null;
+                    initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, prepared?.Width ?? 0));
+                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null, append, prepared), span, block);
                 }
             }
-            if (append) EmitOperation(new ExecutableFinishFormattedString(), span, block);
+            if (append)
+            {
+                // Plan only a small initial backing. Larger output continues
+                // through the builder's ordinary admitted growth.
+                if (initialCapacity != 0)
+                    initialCapacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)Math.Max(8, initialCapacity));
+                _blocks[startBlock].Instructions[startIndex] = ExecutableInstruction.ApplyOperation(
+                    InternConstant(new ExecutableStartFormattedString(initialCapacity)), span);
+                EmitOperation(new ExecutableFinishFormattedString(), span, block);
+            }
             return block;
         }
 

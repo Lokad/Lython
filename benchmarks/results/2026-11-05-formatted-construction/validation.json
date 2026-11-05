@@ -1,0 +1,15 @@
+{
+  "nonincrementalReleaseBuildPassed": true,
+  "buildSeconds": 44.27,
+  "warnings": 0,
+  "errors": 0,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "internalCasesPerFramework": 275,
+  "publicCasesPerFramework": 1167,
+  "coreSHA256": "68a9f3f80ad295c86033fe0801459549301b6cb08f0a5218fefb9689744956dd",
+  "platformStressInstalledConsumers": "pending coherent delivery",
+  "logsSHA256": "b53aab0555158d823584540178cb274ac8acd80e8ab729ec2f2204ac8016956a"
+}

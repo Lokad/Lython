@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [shared formatted-string construction](results/2026-11-05-formatted-construction/README.md)
+is retained after a 165 s six-job source pair. Report allocation decreases 10.3%
+warm/async and 10.0% fresh; elapsed favors the new source by 5.8–9.0% across
+those boundaries. Compile and numeric control are near flat; text control moves
+favorably and has no attributed gain. Capacity/admission tradeoffs stay explicit;
+focused 275 internal/1,167 public tests pass per actual target. Full delivery
+pending. This remains separate from external CPython ratios and CPU attribution.
+
 The [current prepared-runtime CPU attribution](results/2026-11-05-prepared-script-cpu/README.md)
 has1108text/1613report samples on8475a8dd/81deb3be,36sowned/all gates. Actual declaring
 owners separate parameters from callers; unknown/incomplete maps remain. Budgets

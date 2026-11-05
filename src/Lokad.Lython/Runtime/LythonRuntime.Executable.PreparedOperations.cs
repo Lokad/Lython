@@ -62,8 +62,9 @@ internal sealed partial class LythonRuntime
                     try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
                     catch { _stack.RetireTo(targetSlot); throw; }
                     break;
-                case ExecutableStartFormattedString:
-                    var output = new GovernedByteBuilder(_context.MemoryGovernor, span);
+                case ExecutableStartFormattedString formatted:
+                    var output = new GovernedByteBuilder(_context.MemoryGovernor, span, formatted.InitialCapacity,
+                        _context.State.CancellationToken);
                     try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, output); }
                     catch { output.Release(); throw; }
                     break;

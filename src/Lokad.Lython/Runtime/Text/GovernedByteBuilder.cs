@@ -29,7 +29,8 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
 
     public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(governor, allocationSpan, 0) { }
 
-    public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity)
+    public GovernedByteBuilder(MemoryGovernor governor, LythonSourceSpan? allocationSpan, int capacity,
+        CancellationToken cancellationToken = default)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
@@ -40,10 +41,22 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
         else
         {
 
+            _memoryGovernor.ThrowIfAdmissionFailed();
+            cancellationToken.ThrowIfCancellationRequested();
             _memoryGovernor.Reserve(capacity, allocationSpan);
-            _buffer = new byte[capacity];
-            _memoryGovernor.Commit(capacity);
-            _committedCapacity = capacity;
+            try
+            {
+                _memoryGovernor.ThrowIfAdmissionFailed();
+                cancellationToken.ThrowIfCancellationRequested();
+                _buffer = new byte[capacity];
+                _memoryGovernor.Commit(capacity);
+                _committedCapacity = capacity;
+            }
+            catch
+            {
+                _memoryGovernor.ReleaseReserved(capacity);
+                throw;
+            }
         }
     }
 

@@ -41,7 +41,9 @@ internal sealed partial class LythonRuntime
     {
         ref readonly var root = ref values[code.NativeBody!.Root];
         context.State.CheckExecution(code.Instructions[0].Span);
-        var output = new GovernedByteBuilder(context.MemoryGovernor, code.Instructions[0].Span);
+        var start = (ExecutableStartFormattedString)code.Constants[code.Instructions[0].ConstantIndex]!;
+        var output = new GovernedByteBuilder(context.MemoryGovernor, code.Instructions[0].Span, start.InitialCapacity,
+            context.State.CancellationToken);
         try
         {
             AppendNativeFormattedReturn(root.First, output, code, values, arguments, context, entryException);
