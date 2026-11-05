@@ -1,0 +1,296 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.10]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 3, asynchronous: True) [FAIL]
+[xUnit.net 00:00:01.12]     Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 3, asynchronous: True) [176 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(asynchronous: False) [184 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 5294
+Actual:   5710
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableFrameStorageTests.cs:line 97
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.13]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 2, asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.13]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 0, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 2, asynchronous: False) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 0, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.13]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 1, asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.14]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 3, asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.14]     Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 1, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 3, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(asynchronous: True) [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 5294
+Actual:   5710
+  Stack Trace:
+     at Lokad.Lython.Tests.ExecutableFrameStorageTests.SequentialMethodCallsReturnWorkingStorageWithoutCollection(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ExecutableFrameStorageTests.cs:line 97
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.14]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 0, asynchronous: True) [FAIL]
+[xUnit.net 00:00:01.14]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 1, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 0, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 1, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.15]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 2, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(entry: 2, asynchronous: True) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SequentialCallsReturnWorkingCapacityWithoutCollecting(Int32 entry, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 38
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.18]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 3, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 3, asynchronous: True) [9 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.18]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 0, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 0, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 0, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 0, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 1, asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 2, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 1, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 2, asynchronous: False) [13 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 641
+Actual:   753
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 2, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 2, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 0, asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 2, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 0, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 385
+Actual:   465
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 2, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 1, asynchronous: True) [FAIL]
+[xUnit.net 00:00:01.19]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 0, asynchronous: True) [FAIL]
+[xUnit.net 00:00:01.20]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 3, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 1, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 0, asynchronous: True) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 385
+Actual:   465
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(failure: 3, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1089
+Actual:   1281
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.BindingAndFrameEntryFailuresReturnWorkingCapacity(Int32 failure, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 129
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.20]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 1, asynchronous: True) [FAIL]
+[xUnit.net 00:00:01.20]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 2, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 1, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 513
+Actual:   609
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 2, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 641
+Actual:   753
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.20]     Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 1, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(width: 1, asynchronous: False) [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 513
+Actual:   609
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredFunctionInvocationBoundaryTests.AdmissionDenialKeepsFundingExceptionAndSpan(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredFunctionInvocationBoundaryTests.cs:line 78
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.21]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.21]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "cancel") [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(asynchronous: False) [10 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1938
+Actual:   2098
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 479
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "cancel") [16 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 180
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.21]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(asynchronous: True) [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1938
+Actual:   2098
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 479
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.22]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "admission") [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "admission") [5 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 180
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:01.23]     Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "success") [FAIL]
+[xUnit.net 00:00:01.23]     Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(cancel: False) [FAIL]
+  Failed Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(route: "success") [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1225
+Actual:   1417
+  Stack Trace:
+     at Lokad.Lython.Tests.OwnedFunctionLocalsTests.SuspendedBodyKeepsCapacityUntilItsLastUserFinishes(String route) in D:\code\Lython\tests\Lokad.Lython.Tests\OwnedFunctionLocalsTests.cs:line 180
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(cancel: False) [45 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 517
+Actual:   661
+  Stack Trace:
+     at Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.Tests\SimpleFunctionExecutionBoundaryTests.cs:line 73
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.24]     Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(cancel: True) [FAIL]
+  Failed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(cancel: True) [26 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 517
+Actual:   661
+  Stack Trace:
+     at Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(Boolean cancel) in D:\code\Lython\tests\Lokad.Lython.Tests\SimpleFunctionExecutionBoundaryTests.cs:line 73
+   at InvokeStub_SimpleFunctionExecutionBoundaryTests.FormattedHelperUnwindsGrowthFailureWithoutRefundingItsInput(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.24]     Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperErrorsReleaseWorkingStorageAndPreserveTheCallerException [FAIL]
+  Failed Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperErrorsReleaseWorkingStorageAndPreserveTheCallerException [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 385
+Actual:   529
+  Stack Trace:
+     at Lokad.Lython.Tests.SimpleFunctionExecutionBoundaryTests.FormattedHelperErrorsReleaseWorkingStorageAndPreserveTheCallerException() in D:\code\Lython\tests\Lokad.Lython.Tests\SimpleFunctionExecutionBoundaryTests.cs:line 33
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:    32, Passed:   758, Skipped:     0, Total:   790, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

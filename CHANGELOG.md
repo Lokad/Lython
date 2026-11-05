@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Replace the three thread-local tiny function-argument pools with one funded,
+  cleared workspace per execution. Repeated equal-sized calls reuse its capacity;
+  nested and suspended calls retain their own funding. Small calls now use shared
+  admission, and idle retention can reject tight budgets earlier. Cleanup returns
+  the cache without collecting or retrying refused storage.
+
 - Compute fused lower/upper whitespace-split capacity during word discovery,
   removing repeated sizing scans. Preserve ordinary split/rsplit work, Unicode
   casing, conservative admission, cancellation and independently owned results.

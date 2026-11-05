@@ -88,6 +88,7 @@ public sealed class BoundMethodInvocationBoundaryTests
         Assert.Equal(direct.Message, bound.Message);
         Assert.Same(direct.Span, bound.Span);
         Assert.Equal(denied, governor.LastDeniedReservationBytes);
+        context.State.CloseResources();
         Assert.Equal(before, governor.CurrentAccountedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Same(active, context.State.CurrentException);

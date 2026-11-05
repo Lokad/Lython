@@ -29,6 +29,12 @@ invariants belong in the white-box suite.
 Reuse the existing case/host fixtures. Add API/delay/budget combinations when their
 interaction can fail independently, not as a blanket product for every semantic case.
 
+[Function workspace ownership](Lokad.Lython.Tests/FunctionWorkspaceOwnershipTests.cs)
+checks funded idle reuse, distinct active and shared-root execution buffers, first
+refusal and explicit cleanup. Repeated-call controls assert stable retained
+capacity, then exact recovery when cache ownership ends. Retained inputs, kwargs,
+closures and suspended users keep their independent funding throughout.
+
 ## Focused development
 
 Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,

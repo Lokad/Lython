@@ -89,17 +89,22 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
             Assert.True(worker.TryGetOwnAttribute("value", out var expected));
             var baseline = budget.ReservedBytes;
             var span = new LythonSourceSpan(0, 1, 1, 1);
+            long? steady = null;
             for (var iteration = 0; iteration < 8; iteration++)
             {
                 var result = asynchronous ? await method.InvokeAsync([], span, context)
                     : method.Invoke([], span, context);
                 Assert.Same(expected, result);
-                Assert.Equal(baseline, budget.ReservedBytes);
+                steady ??= budget.ReservedBytes;
+                Assert.True(steady > baseline);
+                Assert.Equal(steady, budget.ReservedBytes);
                 Assert.Null(context.CurrentExecutableFrame);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             }
+            context.State.CloseResources();
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

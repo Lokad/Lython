@@ -10,75 +10,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Pooled binder value slots for the common layout widths. The consumer
-    // bound Values remain invocation-owned: nonmirrored executable frames borrow
-    // them through completion, other frames copy refs out, and dataclass
-    // dunders read transiently. Captures/exposed locals retain values or cells,
-    // never this array. ThreadStatic plus take-null with keep-first
-    // stays safe under recursion, suspension and parallel tests; slots are
-    // cleared before caching (fresh arrays start null too). Only the user-function paths
-    // return boxes; colder paths simply do not cache.
-    [ThreadStatic]
-    private static object[]? _pooledOneBoundValue;
-    [ThreadStatic]
-    private static object[]? _pooledTwoBoundValues;
-    [ThreadStatic]
-    private static object[]? _pooledThreeBoundValues;
-
-    private static object[] RentBoundValues(int count)
-    {
-        if (count == 1)
-        {
-            var rented = _pooledOneBoundValue;
-            if (rented is not null)
-            {
-                _pooledOneBoundValue = null;
-                return rented;
-            }
-            return new object[1];
-        }
-        if (count == 2)
-        {
-            var rented = _pooledTwoBoundValues;
-            if (rented is not null)
-            {
-                _pooledTwoBoundValues = null;
-                return rented;
-            }
-            return new object[2];
-        }
-        if (count == 3)
-        {
-            var rentedThree = _pooledThreeBoundValues;
-            if (rentedThree is not null)
-            {
-                _pooledThreeBoundValues = null;
-                return rentedThree;
-            }
-            return new object[3];
-        }
-        return new object[count];
-    }
-
-    internal static void ReturnBoundValues(object[] values)
-    {
-        if (values.Length == 1)
-        {
-            Array.Clear(values);
-            _pooledOneBoundValue ??= values;
-        }
-        else if (values.Length == 2)
-        {
-            Array.Clear(values);
-            _pooledTwoBoundValues ??= values;
-        }
-        else if (values.Length == 3)
-        {
-            Array.Clear(values);
-            _pooledThreeBoundValues ??= values;
-        }
-    }
-
     // The function invocation owns this buffer through default lookup and body
     // completion. Values/cells/snapshots have their own retained ownership.
     internal static void ReturnBoundArguments(BoundCallArguments bound)
@@ -86,39 +17,28 @@ internal sealed partial class LythonRuntime
 
     private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, long storageBytes)
     {
-        try
-        {
-            if (values.Length > 3) Array.Clear(values);
-            ReturnBoundValues(values);
-        }
-        finally { storageOwner?.Release(storageBytes); }
+        if (storageOwner is not null) storageOwner.ReturnFunctionWorkspace(values, storageBytes);
+        else Array.Clear(values);
     }
 
     private static BoundCallArguments RentFunctionArgumentStorage(
-        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor? governor, int? storageCapacity)
+        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor governor, int? storageCapacity)
     {
         var parameterCount = plan.LayoutParameterNames.Count;
         var capacity = storageCapacity ?? parameterCount;
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
-        // Existing one/two/three-slot cleared pools are bounded control storage.
-        // Unpooled executable storage covers capacity, flags and metadata before
-        // allocation, without a separate per-call reservation object.
-        var owner = storageCapacity is not null && capacity > 3
-            ? governor ?? throw new ArgumentNullException(nameof(governor)) : null;
-        var bytes = owner is null ? 0 : 64L + 16L * capacity;
-        owner?.Reserve(bytes, span);
-        object[] values = [];
+        // One execution-owned cleared workspace covers final capacity, metadata
+        // and presence overflow. Active callers retain it through real cleanup;
+        // only returned idle storage can be reused, including after suspension.
+        var values = governor.RentFunctionWorkspace(capacity, span);
+        var bytes = MemoryGovernor.FunctionWorkspaceBytes(capacity);
         try
         {
-            values = capacity == 0 ? [] : RentBoundValues(capacity);
-            var bound = new BoundCallArguments(values, new ArgumentPresence(parameterCount), owner, bytes);
-            owner?.Commit(bytes);
-            return bound;
+            return new BoundCallArguments(values, new ArgumentPresence(parameterCount), governor, bytes);
         }
         catch
         {
-            ReturnBoundValues(values);
-            owner?.ReleaseReserved(bytes);
+            governor.ReturnFunctionWorkspace(values, bytes);
             throw;
         }
     }
@@ -167,8 +87,8 @@ internal sealed partial class LythonRuntime
     // Eligible signatures contain only positional parameters. Read existing
     // operands once into owned bound storage, before a body can suspend.
     internal static BoundCallArguments BindPositionalFunctionArguments(
-        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver = null,
-        MemoryGovernor? governor = null, int? storageCapacity = null)
+        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver,
+        MemoryGovernor governor, int? storageCapacity = null)
     {
         var storage = RentFunctionArgumentStorage(plan, span, governor, storageCapacity);
         var values = storage.Values;

@@ -35,6 +35,8 @@ public sealed class KwargsKeyAccountingTests
         var bound = BindKwargs(context, span, "alpha", new BigInteger(1));
         var kwargs = (PyDict)bound.Values[0];
         var key = kwargs.Keys.OfType<PyString>().Single();
+        LythonRuntime.ReturnBoundArguments(bound);
+        context.State.CloseResources();
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal(kwargs.CommittedStorageBytes + key.CommittedOwnedBytes,
             context.MemoryGovernor.CurrentCommittedBytes);

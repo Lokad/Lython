@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [execution-owned function workspace](results/2026-11-05-owned-function-workspace/README.md)
+replaces three ThreadStatic tiny pools/size branches with one actual cleared,
+funded exact-capacity array per execution. No new owner/arena/window/credit/retry;
+small buffers now funded and idle retention can deny earlier. B282139.91s/all gates
+does not show a general CPU gain: warmCSV+.72/.94%, fresh/async control-limited.
+Separate B28338s/all gates process allocation−6.67/6.69% (~393KB/job), paired elapsed
+−.92/3.34%/2.51% original spread; current/prior-result cleanup boundaries differ.
+Retain ownership consolidation/allocation saving, preserve adverse elapsed.
+Focus790/2413 and full4130/16004 per actual target pass; full delivery pending.
+
 The [bulk cased range/capacity milestone](results/2026-11-05-text-range-capacity/README.md)
 retains final construction: ordinary scalar scans unchanged, existing unbounded
 cased split derives its exact conservative estimate during range discovery;
@@ -8,8 +18,9 @@ limited; refined113.00s exposes actual unfused+2.76/3.69% despite favorable Unic
 Final86.42s/all gates removes ordinary per-scalar work: standardtext−2.61/3.98%,
 unfused−1.64/3.19%, mixedUnicode conflicting−4.03/+1.69% with5.96% current spread.
 Preserve all three blocks; no final Unicode/general/causalCPU/allocation claim.
-Focus233/193 per actual target pass. Full delivery batches at the next retained
-checkpoint; baseline6c776d0d already GREEN/all8. Performance objective stays open.
+Focus233/193 per actual target pass; final1fa4773e delivery42051400891 GREEN/all8,
+Windows/Ubuntu actual11/10, original stress and installed consumers. Terminal
+cached; performance objective stays open.
 
 The [current runtime-cost gate](results/2026-11-05-runtime-cost-gate/README.md)
 on6c776d0d/66263582 closes39s/723text/1017ordinaryCSV samples, preserving unknowns,

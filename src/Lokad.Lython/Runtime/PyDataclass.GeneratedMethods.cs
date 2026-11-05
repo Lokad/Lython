@@ -169,7 +169,7 @@ internal static partial class PyDataclass
             {
                 // Generated dunders enter no frame, so the rented
                 // bound-values box is returned on every exit path.
-                LythonRuntime.ReturnBoundValues(bound.Values);
+                LythonRuntime.ReturnBoundArguments(bound);
             }
         }
 
@@ -327,7 +327,7 @@ internal static partial class PyDataclass
             {
                 // Generated dunders enter no frame, so the rented
                 // bound-values box is returned on every exit path.
-                LythonRuntime.ReturnBoundValues(bound.Values);
+                LythonRuntime.ReturnBoundArguments(bound);
             }
         }
     }
@@ -443,7 +443,7 @@ internal static partial class PyDataclass
             {
                 // Generated dunders enter no frame, so the rented
                 // bound-values box is returned on every exit path.
-                LythonRuntime.ReturnBoundValues(bound.Values);
+                LythonRuntime.ReturnBoundArguments(bound);
             }
         }
 

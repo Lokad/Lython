@@ -75,6 +75,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             : Assert.Throws<LythonRuntimeException>(() => function.Invoke(Arguments(width, new object()), CallSpan, context));
         Assert.Equal("RecursionError", error.ExceptionType);
         Assert.Same(CallSpan, error.Span);
+        context.State.CloseResources();
         Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Same(active, context.State.CurrentException);
         AssertUnwound(context);

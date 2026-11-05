@@ -21,6 +21,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             var active = new PyException("RuntimeError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
             var baseline = context.MemoryGovernor.CurrentAccountedBytes;
+            long? steady = null;
             for (var pass = 0; pass < 3; pass++)
             {
                 var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function,
@@ -30,11 +31,15 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 Assert.Same(active, context.State.CurrentException);
                 Assert.Equal("/callee.py", error.SourcePath);
                 Assert.Equal("f", Assert.Single(error.Frames).FunctionName);
-                Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
+                steady ??= context.MemoryGovernor.CurrentAccountedBytes;
+                Assert.True(steady >= baseline);
+                Assert.Equal(steady, context.MemoryGovernor.CurrentAccountedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
             }
+            context.State.CloseResources();
+            Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
         }
     }
 
@@ -70,11 +75,11 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                     Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
                 }
                 Assert.Equal("kept", input.AsString());
+                context.State.CloseResources();
                 Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
-                context.State.CloseResources();
             }
             Assert.Equal(0, budget.ReservedBytes);
         }

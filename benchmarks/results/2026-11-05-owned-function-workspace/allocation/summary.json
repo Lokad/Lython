@@ -1,0 +1,17 @@
+{
+  "before": {
+    "medianMilliseconds": 4.872979761904762,
+    "medianProcessAllocatedBytes": 5892246.476190476,
+    "iqrPercent": 0.7615268158745906
+  },
+  "candidate": {
+    "medianMilliseconds": 4.710185904761905,
+    "medianProcessAllocatedBytes": 5499125.904761905,
+    "iqrPercent": 0.8692291631720447
+  },
+  "before-control": {
+    "medianMilliseconds": 4.753792142857143,
+    "medianProcessAllocatedBytes": 5893527.80952381,
+    "iqrPercent": 0.8685547132372109
+  }
+}

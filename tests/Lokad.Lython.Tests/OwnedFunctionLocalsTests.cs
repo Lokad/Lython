@@ -31,16 +31,21 @@ public sealed class OwnedFunctionLocalsTests
         var function = Define(context);
         var value = PyString.FromString("retained", context.MemoryGovernor, null);
         var baseline = budget.ReservedBytes;
+        long? steady = null;
         for (var i = 0; i < 16; i++)
         {
             var result = await Invoke(function, value, context, entry, asynchronous);
             Assert.Same(value, result);
-            Assert.Equal(baseline, budget.ReservedBytes);
+            steady ??= budget.ReservedBytes;
+            Assert.True(steady > baseline);
+            Assert.Equal(steady, budget.ReservedBytes);
             Assert.All(tap.Storage!, Assert.Null);
             Check(context);
         }
         Assert.Equal(16, tap.Calls);
         Assert.Equal("retained", value.AsString());
+        context.State.CloseResources();
+        Assert.Equal(baseline, budget.ReservedBytes);
         Assert.True(baseline > 0);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
@@ -126,6 +131,7 @@ public sealed class OwnedFunctionLocalsTests
         });
         Assert.Equal(failure == 3 ? "RecursionError" : "TypeError", error.ExceptionType);
         Assert.Equal(0, tap.Calls);
+        context.State.CloseResources();
         Assert.Equal(baseline, budget.ReservedBytes);
         Assert.Null(context.MemoryGovernor.AdmissionFailure);
         Check(context);
@@ -177,6 +183,7 @@ public sealed class OwnedFunctionLocalsTests
         }
         Assert.True(tap.Finished);
         Assert.All(tap.Storage!, Assert.Null);
+        context.State.CloseResources();
         Assert.Equal(baseline, budget.ReservedBytes);
         Check(context);
         Assert.Equal("retained", value.AsString());

@@ -135,6 +135,7 @@ public sealed class LoweredAugmentedTargetBoundaryTests
             var context = await Define(source, asynchronous);
             var before = context.MemoryGovernor.CurrentAccountedBytes;
             await Invoke(Bind(Assert.IsType<PyInstance>(context.Variables["runner"]), "run"), context, asynchronous);
+            context.State.CloseResources();
             fees.Add(context.MemoryGovernor.CurrentAccountedBytes - before);
             AssertUnwound(context);
         }

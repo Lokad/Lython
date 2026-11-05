@@ -1,0 +1,130 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.32]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 0, asynchronous: False) [FAIL]
+[xUnit.net 00:00:02.33]     Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 2) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 0, asynchronous: False) [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1810
+Actual:   1954
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 2) [15 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 641
+Actual:   817
+  Stack Trace:
+     at Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(Int32 width) in D:\code\Lython\tests\Lokad.Lython.Tests\BoundMethodInvocationBoundaryTests.cs:line 91
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.34]     Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 1) [FAIL]
+  Failed Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 1) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 513
+Actual:   673
+  Stack Trace:
+     at Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(Int32 width) in D:\code\Lython\tests\Lokad.Lython.Tests\BoundMethodInvocationBoundaryTests.cs:line 91
+   at InvokeStub_BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:02.34]     Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 0) [FAIL]
+[xUnit.net 00:00:02.34]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 1, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(width: 0) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 385
+Actual:   529
+  Stack Trace:
+     at Lokad.Lython.Tests.BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(Int32 width) in D:\code\Lython\tests\Lokad.Lython.Tests\BoundMethodInvocationBoundaryTests.cs:line 91
+   at InvokeStub_BoundMethodInvocationBoundaryTests.FrameAdmissionDenialKeepsSpanFundingAndRollback(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 1, asynchronous: False) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1938
+Actual:   2098
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.35]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 2, asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 2, asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 2066
+Actual:   2242
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.36]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 1, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 1, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1938
+Actual:   2098
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.38]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 2, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 2, asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 2066
+Actual:   2242
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.39]     Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 0, asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(width: 0, asynchronous: True) [12 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 1810
+Actual:   1954
+  Stack Trace:
+     at Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassFactoryMethodsRollBackRejectedAdmission(Int32 width, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\ClassMethodExecutionBoundaryTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.44]     Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "name") [FAIL]
+  Failed Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "name") [17 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   144
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(String form) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredAugmentedTargetBoundaryTests.cs:line 143
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.46]     Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "member") [FAIL]
+  Failed Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "member") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   144
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(String form) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredAugmentedTargetBoundaryTests.cs:line 143
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.47]     Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "index") [FAIL]
+  Failed Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(form: "index") [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   144
+  Stack Trace:
+     at Lokad.Lython.Tests.LoweredAugmentedTargetBoundaryTests.AugmentedTargetsKeepFundingAndUnwindAcrossModes(String form) in D:\code\Lython\tests\Lokad.Lython.Tests\LoweredAugmentedTargetBoundaryTests.cs:line 143
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:03.06]     Lokad.Lython.Tests.KwargsKeyAccountingTests.KwargsKeysCommitExactly [FAIL]
+  Failed Lokad.Lython.Tests.KwargsKeyAccountingTests.KwargsKeysCommitExactly [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 741
+Actual:   821
+  Stack Trace:
+     at Lokad.Lython.Tests.KwargsKeyAccountingTests.KwargsKeysCommitExactly() in D:\code\Lython\tests\Lokad.Lython.Tests\KwargsKeyAccountingTests.cs:line 39
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:    13, Passed:  4117, Skipped:     0, Total:  4130, Duration: 23 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+
+Passed!  - Failed:     0, Passed: 16004, Skipped:     0, Total: 16004, Duration: 1 m 51 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

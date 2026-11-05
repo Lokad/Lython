@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// R19: bound-values boxes rented from the pool return on every exit path.
+// Bound workspace returns on every exit path and stays cleared for reuse.
 // Arity failures inside BindFunctionArguments, recursion/budget failures in
 // EnterInvocationFrame, and the frameless dataclass dunders all hand the box
 // back; otherwise each failure strands one pooled array (losing the pool slot
@@ -30,8 +30,8 @@ public sealed class BoundBoxCleanupTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var plan = TwoParameterPlan();
         var first = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context).Values;
-        LythonRuntime.ReturnBoundValues(first);
+            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context);
+        LythonRuntime.ReturnBoundArguments(first);
 
         // One argument for two required parameters: the rent already happened,
         // so a leaked box would strand the pooled array here.
@@ -40,9 +40,11 @@ public sealed class BoundBoxCleanupTests
         Assert.Equal("TypeError", failure.ExceptionType);
 
         var second = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context).Values;
-        LythonRuntime.ReturnBoundValues(second);
-        Assert.Same(first, second);
+            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, context);
+        LythonRuntime.ReturnBoundArguments(second);
+        Assert.Same(first.Values, second.Values);
+        Assert.All(second.Values, value => Assert.Null(value));
+        context.State.CloseResources();
     }
 
     [Fact]
@@ -66,8 +68,8 @@ public sealed class BoundBoxCleanupTests
             ScopeDirectiveFacts.Empty);
         var plan = TwoParameterPlan();
         var box = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure).Values;
-        LythonRuntime.ReturnBoundValues(box);
+            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure);
+        LythonRuntime.ReturnBoundArguments(box);
 
         // Zero recursion depth trips inside EnterInvocationFrame, after the
         // Invoke rent: the box must come back before the error propagates.
@@ -76,9 +78,11 @@ public sealed class BoundBoxCleanupTests
         Assert.Equal("RecursionError", failure.ExceptionType);
 
         var again = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure).Values;
-        LythonRuntime.ReturnBoundValues(again);
-        Assert.Same(box, again);
+            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure);
+        LythonRuntime.ReturnBoundArguments(again);
+        Assert.Same(box.Values, again.Values);
+        Assert.All(again.Values, value => Assert.Null(value));
+        closure.State.CloseResources();
     }
 
     [Fact]
@@ -104,8 +108,8 @@ public sealed class BoundBoxCleanupTests
             new Dictionary<string, object>());
         var box = LythonRuntime.BindFunctionArguments(
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2), CallArgumentValue.Positional(3)],
-            Span, plan, context).Values;
-        LythonRuntime.ReturnBoundValues(box);
+            Span, plan, context);
+        LythonRuntime.ReturnBoundArguments(box);
 
         var instance = new PyInstance(type, context.MemoryGovernor, null);
         init.Invoke(
@@ -114,9 +118,11 @@ public sealed class BoundBoxCleanupTests
 
         var again = LythonRuntime.BindFunctionArguments(
             [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2), CallArgumentValue.Positional(3)],
-            Span, plan, context).Values;
-        LythonRuntime.ReturnBoundValues(again);
-        Assert.Same(box, again);
+            Span, plan, context);
+        LythonRuntime.ReturnBoundArguments(again);
+        Assert.Same(box.Values, again.Values);
+        Assert.All(again.Values, value => Assert.Null(value));
+        context.State.CloseResources();
         GC.KeepAlive(instance);
     }
 }

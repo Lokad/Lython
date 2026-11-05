@@ -10,6 +10,50 @@ internal sealed class MemoryGovernor
     // through an uncharged window; estimates intentionally need only be safe.
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
+    private object[]? _functionWorkspace;
+    private bool _functionWorkspaceReuseEnded;
+
+    internal static long FunctionWorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
+
+    internal object[] RentFunctionWorkspace(int capacity, LythonSourceSpan span)
+    {
+        ThrowIfAdmissionFailed();
+        var cached = _functionWorkspace;
+        _functionWorkspace = null;
+        if (cached is not null)
+        {
+            if (cached.Length == capacity) return cached;
+            // End idle ownership before a different allocation. This is normal
+            // eviction, never recovery/retry after an admission refusal.
+            Release(FunctionWorkspaceBytes(cached.Length));
+        }
+        if (capacity == 0) return [];
+        var bytes = FunctionWorkspaceBytes(capacity);
+        Reserve(bytes, span);
+        try
+        {
+            var values = new object[capacity];
+            Commit(bytes);
+            return values;
+        }
+        catch { ReleaseReserved(bytes); throw; }
+    }
+
+    internal void ReturnFunctionWorkspace(object[] values, long bytes)
+    {
+        Array.Clear(values);
+        if (!_functionWorkspaceReuseEnded && _functionWorkspace is null && values.Length != 0)
+            _functionWorkspace = values;
+        else Release(bytes);
+    }
+
+    internal void EndFunctionWorkspaceReuse()
+    {
+        _functionWorkspaceReuseEnded = true;
+        if (_functionWorkspace is not { } cached) return;
+        _functionWorkspace = null;
+        Release(FunctionWorkspaceBytes(cached.Length));
+    }
 
     public MemoryGovernor(ILythonMemoryBudget? budget)
     {

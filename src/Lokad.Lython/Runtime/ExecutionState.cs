@@ -294,7 +294,11 @@ internal sealed partial class ExecutionState
             finally
             {
                 try { CloseHashes(); }
-                finally { CloseSubprocessCompletions(); }
+                finally
+                {
+                    try { CloseSubprocessCompletions(); }
+                    finally { MemoryGovernor.EndFunctionWorkspaceReuse(); }
+                }
             }
         }
     }

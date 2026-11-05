@@ -1,0 +1,29 @@
+{
+  "sourceRevision": "d608789a plus D54 execution-owned function workspace prototype; baseline production1fa4773e/frozen830ceafc before commit metadata",
+  "coreSHA256": {
+    "candidate": "705d2e51485fb70da9ec69c2fdd1cc0f5f6e15c9c07f0fb521deef446010e3cb",
+    "control": "705d2e51485fb70da9ec69c2fdd1cc0f5f6e15c9c07f0fb521deef446010e3cb",
+    "reference": "830ceafc7136015e1bd75cfdb7fa0918782b3559242a8e6aa7994ae084c0fb0d"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "790internal/2413public focused cases per actual11/10 pass. Five new ownership controls; initial32 balance tests updated to explicit cache lifetime while preserving semantic/refusal/span/held-user assertions. Baseline1fa full42051400891 running.",
+  "changes": "Remove three ThreadStatic tiny pools, size cases and Rent/ReturnBoundValues; one exact-sized cleared actual array cached/funded by the existing execution governor. Active borrows unchanged; mismatch ends idle ownership before one admission, no retry. Root cleanup ends idle reuse; late returns cannot recache. Small buffers now funded; earlier denial possible.",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/ExecutionState.cs": "2d7a3e6db8aea2906a2569953134db54b6cc4f7f411550bdab3b35a46b715fc0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "bc8ba07eef5ff2c6bfa93319199e2fa8457d9d61d1b32c518bc38f3892d9816c",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "88067e9fcaa0410d4369cd54e8e3ffa5fe8a5fe3bfb1cde732871742ff80b323",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "6dadff12080a5d611f258aa503db8e6a0a924001652d47d1aa17747d5f9215a4",
+    "tests/Lokad.Lython.Tests/BoundBoxCleanupTests.cs": "b5558e3ed18e86c19f3d3dbdb5927540d0ff712f261865130fdfe9cc19ad6612",
+    "tests/Lokad.Lython.Tests/ClassMethodExecutionBoundaryTests.cs": "4d0b06236e496760d449542f747d5583707b598593383cdf6cb7a0dd5073d5d5",
+    "tests/Lokad.Lython.Tests/ExecutableFrameStorageTests.cs": "c1fd49fd36091ff463f7fbc3ce91b7d3fb72203d2dddf60f5e7e916f4722cfe0",
+    "tests/Lokad.Lython.Tests/LoweredFunctionInvocationBoundaryTests.cs": "2db7ceba70192bbdcc976e2e9abac766fef7b069cb0784e07b8088930a0f6e24",
+    "tests/Lokad.Lython.Tests/OwnedFunctionLocalsTests.cs": "86122a363b456445711131e8aa85f36b4a46defa37fd6c4e11a66b80bd99e09b",
+    "tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs": "a8e96331066ded30075858ec93edf0639205b9cc4ba55cecbe51ec91a59abf8c",
+    "tests/Lokad.Lython.Tests/FunctionWorkspaceOwnershipTests.cs": "1766e6993a6574c80f5e6655e77d24a24facf468bd01dcd388619b85e5b6e994"
+  }
+}

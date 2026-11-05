@@ -69,6 +69,7 @@ public sealed class ClassMethodExecutionBoundaryTests
                 await Invoke(method, Arguments(width), context, asynchronous));
             Assert.Equal("RecursionError", error.ExceptionType);
             Assert.Same(CallSpan, error.Span);
+            context.State.CloseResources();
             Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Same(active, context.State.CurrentException);
@@ -476,6 +477,7 @@ public sealed class ClassMethodExecutionBoundaryTests
         {
             await Assert.ThrowsAnyAsync<LythonRuntimeException>(async () =>
                 await Invoke(method, [CallArgumentValue.Positional(new BigInteger(37))], context, asynchronous));
+            context.State.CloseResources();
             Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
             AssertUnwound(context);
         }

@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "jobs": 1,
+  "quietBeforeAfter": true,
+  "allGoldensAndBalances": true,
+  "workersJoined": true,
+  "fixturesRemoved": true,
+  "archiveSHA256": "d14b4b6b8cba82bffd6c2fd50d2f90b1d019490240e2f6848f76b439cc7b4662"
+}

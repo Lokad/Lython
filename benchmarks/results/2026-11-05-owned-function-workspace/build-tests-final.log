@@ -1,0 +1,11 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net10.0]
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.81
