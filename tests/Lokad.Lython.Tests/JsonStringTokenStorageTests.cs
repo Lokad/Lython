@@ -9,8 +9,10 @@ namespace Lokad.Lython.Tests;
 
 public sealed class JsonStringTokenStorageTests
 {
-    [Fact]
-    public void CancelledEscapedScanDoesNotAdmitDecodingStorage()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CancelledScanDoesNotAdmitDecodingStorage(bool escaped)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -18,7 +20,7 @@ public sealed class JsonStringTokenStorageTests
         {
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
                 { MemoryBudget = owner, CancellationToken = cancellation.Token });
-            var source = PyString.FromString("\"" + string.Concat(Enumerable.Repeat(@"\n", 1024)) + "\"",
+            var source = PyString.FromString("\"" + (escaped ? string.Concat(Enumerable.Repeat(@"\n", 1024)) : new string('a', 2048)) + "\"",
                 context.MemoryGovernor, null);
             // Exercise the actual native scanner independently of its caller's
             // entry check. Escapes advance by two and can skip modulo checks.

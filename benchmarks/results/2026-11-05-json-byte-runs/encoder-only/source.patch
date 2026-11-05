@@ -1,0 +1,98 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index 373a488a..a70f5262 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -11,6 +11,11 @@ internal sealed partial class LythonRuntime
+ {
+     private sealed partial class JsonModule : PyModule
+     {
++        // Quotes, backslash, controls, DEL and non-ASCII still enter the one
++        // strict scalar/escape path. Ordinary native bytes travel in runs.
++        private static readonly SearchValues<byte> JsonPlainAscii = SearchValues.Create(
++            " !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"u8);
++
+         // Callers fund the retained reference pairs before entering. CPython
+         // sorts the original keys before applying skipkeys or key validation.
+         internal static List<(object OriginalKey, object Value)> CollectSortedJsonEntries(
+@@ -355,6 +360,14 @@ internal sealed partial class LythonRuntime
+                     checkpoint = position > int.MaxValue - 4096 ? int.MaxValue : position + 4096;
+                 }
+ 
++                var end = Math.Min(bytes.Length, checkpoint);
++                var special = bytes[position..end].IndexOfAnyExcept(JsonPlainAscii);
++                if (special < 0)
++                {
++                    position = end;
++                    continue;
++                }
++                position += special;
+                 var scalar = (int)bytes[position];
+                 var consumed = 1;
+                 if (scalar >= 0x80)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
+index 19a6561b..3ae0e90d 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs
+@@ -4,6 +4,31 @@ namespace Lokad.Lython.PublicApi.Tests;
+ 
+ public sealed class JsonStringEmissionTests
+ {
++    [Theory]
++    [InlineData(4093, false)]
++    [InlineData(4093, true)]
++    [InlineData(4095, false)]
++    [InlineData(4095, true)]
++    [InlineData(4096, false)]
++    [InlineData(4096, true)]
++    [InlineData(4097, false)]
++    [InlineData(4097, true)]
++    public async Task EscapesAndScalarsCrossBulkInputWindows(int prefixLength, bool ensureAscii)
++    {
++        var prefix = new string('a', prefixLength);
++        var text = prefix + "😀\n\"\\é\u007f" + prefix;
++        var expected = "\"" + prefix + (ensureAscii ? "\\ud83d\\ude00\\n\\\"\\\\\\u00e9\\u007f" : "😀\\n\\\"\\\\é\u007f") + prefix + "\"";
++        using var script = new LythonEngine().Compile("import json\nreturn json.dumps(payload,ensure_ascii=" + (ensureAscii ? "True" : "False") + ")");
++        Assert.True(script.IsValid);
++        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["payload"] = text } };
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(expected, result.ReturnValue);
++        }
++    }
++
+     [Theory]
+     [InlineData("dumps", false)]
+     [InlineData("dumps", true)]
+diff --git a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+index 6d7f24fe..ac639cc8 100644
+--- a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+@@ -15,9 +15,13 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
+ 
+     [Theory]
+-    [InlineData(1)]
+-    [InlineData(129)]
+-    public void InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(int length)
++    [InlineData(1, true)]
++    [InlineData(129, true)]
++    [InlineData(4097, true)]
++    [InlineData(1, false)]
++    [InlineData(129, false)]
++    [InlineData(4097, false)]
++    public void InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(int length, bool ensureAscii)
+     {
+         var budget = new LythonMemoryBudget(1024 * 1024);
+         using (var owner = budget.CreateScope())
+@@ -28,7 +32,8 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+             var input = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, Span);
+             var callable = Load(context, "dumps");
+             var committed = context.MemoryGovernor.CurrentCommittedBytes;
+-            Assert.Throws<DecoderFallbackException>(() => callable.Invoke([CallArgumentValue.Positional(input)], Span, context));
++            Assert.Throws<DecoderFallbackException>(() => callable.Invoke([CallArgumentValue.Positional(input),
++                CallArgumentValue.Keyword("ensure_ascii", ensureAscii)], Span, context));
+             Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+             Assert.Null(context.MemoryGovernor.AdmissionFailure);

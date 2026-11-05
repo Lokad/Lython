@@ -1,0 +1,17 @@
+{
+  "sourceRevision": "Baseline cf3dc9cd/43fdf658, measured current checkpoint; candidate parent787348c8 plus source.patch",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "52c2fe9cfad83f466e0eba2989a5a3d7df777ba831e14709a24975e78ad038db",
+  "candidateSource": "One existing JSON encoder scans ordinary ASCII as managed native byte runs, retaining strict Unicode decoding/escaping/bounded checkpoints",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": "b86aa5d939097243b594140708eb853607ab8203387a5c978ea77ac2c78f0521",
+    "tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs": "58dc89d03704e28ed963c3abc103dfa88d4fa34c5c2d81bfbadc1494c628bf08",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs": "3035c3b464393636265ce684b6162e457af684aae59981a3540cf4eff86722f1"
+  }
+}

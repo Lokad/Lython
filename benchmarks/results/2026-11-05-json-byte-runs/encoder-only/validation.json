@@ -1,0 +1,14 @@
+{
+  "build": "Nonincremental Release,0warnings/0errors",
+  "internalPerActualTarget": 492,
+  "publicPerActualTarget": 1155,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Focused development only; full delivery pending a retention decision",
+  "coreHashes": {
+    "net11.0": "52c2fe9cfad83f466e0eba2989a5a3d7df777ba831e14709a24975e78ad038db"
+  },
+  "archiveSHA256": "daa03ff0f02e0f1b6f2752519d1f4e0211c9417ca2086c9487e47ef36a59c663"
+}

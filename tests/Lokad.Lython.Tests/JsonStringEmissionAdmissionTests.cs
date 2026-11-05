@@ -15,9 +15,13 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(129)]
-    public void InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(int length)
+    [InlineData(1, true)]
+    [InlineData(129, true)]
+    [InlineData(4097, true)]
+    [InlineData(1, false)]
+    [InlineData(129, false)]
+    [InlineData(4097, false)]
+    public void InvalidUtf8UsesTheStrictDecoderAndRefundsWorkingStorage(int length, bool ensureAscii)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -28,7 +32,8 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             var input = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, Span);
             var callable = Load(context, "dumps");
             var committed = context.MemoryGovernor.CurrentCommittedBytes;
-            Assert.Throws<DecoderFallbackException>(() => callable.Invoke([CallArgumentValue.Positional(input)], Span, context));
+            Assert.Throws<DecoderFallbackException>(() => callable.Invoke([CallArgumentValue.Positional(input),
+                CallArgumentValue.Keyword("ensure_ascii", ensureAscii)], Span, context));
             Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Null(context.MemoryGovernor.AdmissionFailure);

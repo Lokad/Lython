@@ -1,5 +1,18 @@
 # Benchmark experimental history
 
+The [JSON byte-run assessment](results/2026-11-05-json-byte-runs/README.md) is
+withdrawn: modest report/JSON signs and flat allocation do not justify actual
+1024-record output regressions of4.7–7.2%encode/write and1.4–2.0%streaming.
+Preserve encoder-only162s scope error, corrected161s source pair and unchanged-bit
+83s output qualification, all quiet/identity/golden/balance/join gates. Retain
+semantic input-window/strictUTF8/plain-cancellation controls; both production
+scan changes are removed. No causal CPU claim or permanent design veto.
+
+The [mapping-RHS source gate](results/2026-11-05-mapping-rhs-source-gate/README.md)
+finds direct dictionary calls already borrow operands: no argument array/frame to
+remove. No extra guarded opcode/evaluator selected from dispatch counts alone.
+Preserve the RHS/LHS/callback/lifetime proof obligations; whole-script work continues.
+
 The [qualified pipeline CPython checkpoint](results/2026-11-05-runtime-cpython-pipeline-checkpoint/README.md)
 uses exactcf3dc9cd/43fdf658 after full eight-gate deliveryGREEN. Original14jobs
 384.95s/all gates plus one unchanged-binary55.34s fresh-text confirmation preserve

@@ -1,0 +1,26 @@
+{
+  "disposition": "All production scan changes withdrawn; original cf3dc9cd production source restored",
+  "build": "Nonincremental Release32.82s,0warnings/0errors",
+  "internalPerActualTarget": 493,
+  "publicPerActualTarget": 1163,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "coreHashes": {
+    "net11.0": "9a9fc5ec2beeedbb32294745069f92380197fb7b7242412ff607c63d2d017240",
+    "net10.0": "12299d03317fee895619331dc517a9175f63486535fee7d4ff0207e0de1121b9"
+  },
+  "limitations": "Untimed restored-source correctness verification, not a performance source-pair or repetition of cached full platform qualification",
+  "archives": {
+    "restored-validation.tgz": "371d87e5c0b346cdff232f9167cf78280e988b1eef3ee994bba1e7b594836eb8",
+    "encoder-only/focused-validation.tgz": "2fb8f4d32b1122e2d56b5756c42163bc951327bc8fe283703f52292aebad5659",
+    "encoder-only/observations.tgz": "daa03ff0f02e0f1b6f2752519d1f4e0211c9417ca2086c9487e47ef36a59c663",
+    "encoder-only/source-snapshot.tgz": "c885e8d8c2685d9b06c520ad7e59fe98d0a2be9d3296fee69324b746ca987b73",
+    "output-coverage/observations.tgz": "e60d9de2f42c3c216c6878ae3947612ea1281a753d3f0f05a720667107611d56",
+    "output-coverage/source-snapshot.tgz": "43b119333179425128ef2c02af6afd22825e8bafe67e85a8a04dad0fdb3a4eb6",
+    "reader-and-encoder/focused-validation.tgz": "25f0179609e204c6d885fbbbc2eea4bc8bff8dd7dc5cf3f3f044788ad90ab77e",
+    "reader-and-encoder/observations.tgz": "a00c0442d57037756ce826687230e5ceffefb9dae0886da628275981106f34f6",
+    "reader-and-encoder/source-snapshot.tgz": "43b119333179425128ef2c02af6afd22825e8bafe67e85a8a04dad0fdb3a4eb6"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "Baseline cf3dc9cd/43fdf658, measured current checkpoint; candidate parent787348c8 plus source.patch",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "eb1d8de38e867a0386e79fffc608b6a6e7cea4f1fe79d6bc2ed4febe0313beb7",
+  "candidateSource": "Existing JSON reader/encoder scan ordinary native bytes in managed runs, retaining strict Unicode/token/escape/admission/cancellation paths",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "7b3d0855e3643ebe500640de8816bbe72699f62c9e3119dbbf094d5e0320e7ec",
+    "tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs": "cdc28861875ca8df60d7cb650a973bd1375fc8f4326b32cf8199edd5e228c233",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonStringTokenBoundaryTests.cs": "daa29dd38659b724c0353de01851fa6ce1f458156dac02073167e7b4d1aa6d7c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs": "b86aa5d939097243b594140708eb853607ab8203387a5c978ea77ac2c78f0521",
+    "tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs": "58dc89d03704e28ed963c3abc103dfa88d4fa34c5c2d81bfbadc1494c628bf08",
+    "tests/Lokad.Lython.PublicApi.Tests/JsonStringEmissionTests.cs": "3035c3b464393636265ce684b6162e457af684aae59981a3540cf4eff86722f1"
+  }
+}

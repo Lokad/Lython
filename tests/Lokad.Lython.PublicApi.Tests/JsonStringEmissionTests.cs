@@ -5,6 +5,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonStringEmissionTests
 {
     [Theory]
+    [InlineData(4093, false)]
+    [InlineData(4093, true)]
+    [InlineData(4095, false)]
+    [InlineData(4095, true)]
+    [InlineData(4096, false)]
+    [InlineData(4096, true)]
+    [InlineData(4097, false)]
+    [InlineData(4097, true)]
+    public async Task EscapesAndScalarsCrossBulkInputWindows(int prefixLength, bool ensureAscii)
+    {
+        var prefix = new string('a', prefixLength);
+        var text = prefix + "😀\n\"\\é\u007f" + prefix;
+        var expected = "\"" + prefix + (ensureAscii ? "\\ud83d\\ude00\\n\\\"\\\\\\u00e9\\u007f" : "😀\\n\\\"\\\\é\u007f") + prefix + "\"";
+        using var script = new LythonEngine().Compile("import json\nreturn json.dumps(payload,ensure_ascii=" + (ensureAscii ? "True" : "False") + ")");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["payload"] = text } };
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.ReturnValue);
+        }
+    }
+
+    [Theory]
     [InlineData("dumps", false)]
     [InlineData("dumps", true)]
     [InlineData("encode", false)]
