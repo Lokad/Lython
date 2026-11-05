@@ -81,3 +81,24 @@ archives; frozen workers and evidence archives remain.
 [source patch/snapshot, catalog, driver, raw and gates](observations.tgz),
 [focused validation](validation.json), [original/corrected logs and cleanup receipts](validation-logs.tgz).
 Archive SHA256 `38df04e97034706839a724b9f42fdf35ee43dc3bdf3cf0a4e4928cf51ee329f6`.
+
+## Initial delivery fixture correction
+
+CI41989134021 fails one internal fixture on both platforms; all15,983 public
+cases per platform pass. Later framework/package/stress gates are skipped,
+not qualified. The [terminal failure receipt](initial-delivery-ci-status.json)
+and [both original logs plus corrected focused logs](delivery-fixture-logs.tgz)
+remain preserved; never query its completed status again.
+
+ReentrantClearRetainsFundingUntilEqualityHasFinished originally sampled total
+committed storage before resolving `f.cache_clear`. Its first generic lookup now
+admits a96B cache table, so the second sample is96B larger. Resolve that method
+before the first sample, then invoke it between samples. This keeps the exact
+funding-equality, no pending reservation and final shared-budget-zero assertions,
+and isolates the cache-entry borrow from unrelated first-lookup storage. No
+timeout, threshold or containment assertion is relaxed.
+
+Test-only correction: clean test build7.87s, **1,130 relevant internal cases per
+actual11/10 pass**, including functools, cancellation, admission, ownership and
+lifetime coverage. Production corec0221b77 is unchanged; no performance rerun.
+Corrected full delivery is a separate checkpoint and remains pending.

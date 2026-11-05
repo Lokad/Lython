@@ -21,5 +21,24 @@
   "archiveSHA256": "38df04e97034706839a724b9f42fdf35ee43dc3bdf3cf0a4e4928cf51ee329f6",
   "ownedSeconds": 161,
   "allComparisonGatesPassed": true,
-  "fullDelivery": "Pending coherent Windows/Ubuntu, both actual frameworks, original stress and installed Release consumer checkpoint"
+  "fullDelivery": "Pending coherent Windows/Ubuntu, both actual frameworks, original stress and installed Release consumer checkpoint",
+  "initialDeliveryFailure": {
+    "runId": 41989134021,
+    "platforms": [
+      "Windows",
+      "Ubuntu"
+    ],
+    "internalFailed": 1,
+    "internalPassed": 4108,
+    "publicPassed": 15983,
+    "laterGates": "skipped",
+    "terminalCached": true
+  },
+  "testOnlyCorrection": {
+    "buildSeconds": 7.87,
+    "productionUnchanged": true,
+    "focusedPassedPerActualFramework": 1130,
+    "exactFundingAndCleanupAssertionsPreserved": true,
+    "fullDelivery": "Pending corrected checkpoint"
+  }
 }

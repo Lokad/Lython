@@ -19,8 +19,11 @@ public sealed class FunctoolsCacheBorrowTests
                 def __eq__(self,other):
                     if enabled[0]:
                         enabled[0]=False
+                        # Resolve the method before observing cache-entry funding;
+                        # a first generic lookup can admit frame working storage.
+                        clear=f.cache_clear
                         observe()
-                        f.cache_clear()
+                        clear()
                         observe()
                     return True
             f(E())
