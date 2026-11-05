@@ -310,7 +310,8 @@ internal static partial class StaticStructuralDiagnostics
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
            StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
            StaticAbstractFacts.IsTupleLike(left) && StaticAbstractFacts.IsTupleLike(right) ||
-           StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right);
+           StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
+           left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter;
 
     private static bool CanApplyMembership(AbstractValue candidate, AbstractValue container)
     {

@@ -1,0 +1,18 @@
+{
+  "sourceRevision": "f66427f1 plus final E3a including original count equality and same-Counter comparison",
+  "sourceFilesVerified": true,
+  "coreSHA256": {
+    "candidate": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+    "control": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+    "reference": "793586f5a517984b7ba53feff1fd58e200a004cc008e85b2259742d04c872435"
+  },
+  "focusedInternalPerActualTarget": 104,
+  "focusedPublicPerActualTarget": 187,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Focused Release only for current Counter source; prior f66427f1 combined delivery cached42113971859 GREEN/all8 does not qualify these later changes.",
+  "retention": "Remove four temporary HashSets/three unions; correct key semantics, both comparison passes, identity/NaN, ordering dispatch and operand order; fund retained backing through actual awaits. Final native-key Counter elapsed -10.62/-12.10%, current spread1.65%; complete CSV mixed, no broad CPU/allocation/latency claim.",
+  "limitations": "Conservative temporary retention can require another backing allowance. Custom key callbacks remain sync-only. E3b mapping/view/public-compound semantic comparer callers and storage coupling remain; full next delivery pending."
+}

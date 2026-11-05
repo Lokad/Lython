@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -3992,7 +3993,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return MultisetLessEqual(counter, other, context, span) && !PyEquality.CountersEqual(counter, other);
+                    return MultisetCompare(counter, other, BinaryOperatorSyntax.LessEqual, context, span) && !PyEquality.CountersEqual(counter, other);
                 }, CounterLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -4006,7 +4007,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return MultisetLessEqual(counter, other, context, span);
+                    return MultisetCompare(counter, other, BinaryOperatorSyntax.LessEqual, context, span);
                 }, CounterLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -4020,7 +4021,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return MultisetLessEqual(other, counter, context, span) && !PyEquality.CountersEqual(counter, other);
+                    return MultisetCompare(counter, other, BinaryOperatorSyntax.GreaterEqual, context, span) && !PyEquality.CountersEqual(counter, other);
                 }, CounterGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -4034,7 +4035,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return MultisetLessEqual(other, counter, context, span);
+                    return MultisetCompare(counter, other, BinaryOperatorSyntax.GreaterEqual, context, span);
                 }, CounterGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>

@@ -799,18 +799,20 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> CountersEqualAsync(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
     {
-        var guardState = context.State.StructuralTraversal;
-        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
-        keys.UnionWith(right.Keys);
-
-        foreach (var key in keys)
+        for (var pass = 0; pass < 2; pass++)
         {
-            PyStructuralGuard.NoteWork(guardState, context, span);
-            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
-            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            if (!await ElementEqualsAsync(leftValue, rightValue, context, span).ConfigureAwait(false))
+            var source = pass == 0 ? left : right;
+            if (source.Count == 0) continue;
+            using var retained = context.MemoryGovernor.ReserveTemporary(source.CommittedStorageBytes, span);
+            foreach (var key in source.Keys)
             {
-                return false;
+                context.CheckExecution(span);
+                var leftValue = left.TryGetValue(key, out var foundLeft, context, span) ? foundLeft : BigInteger.Zero;
+                var rightValue = right.TryGetValue(key, out var foundRight, context, span) ? foundRight : BigInteger.Zero;
+                var compared = await AreEqualWithProtocolsAsync(leftValue, rightValue, context, span).ConfigureAwait(false);
+                var matches = await IsTruthyAsync(compared, context, span).ConfigureAwait(false);
+                context.CheckExecution(span);
+                if (!matches) return false;
             }
         }
 
@@ -1373,6 +1375,13 @@ internal sealed partial class LythonRuntime
             };
         }
 
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            var operation = method is "__gt__" or "__ge__" ? BinaryOperatorSyntax.GreaterEqual : BinaryOperatorSyntax.LessEqual;
+            return MultisetCompare(leftCounter, rightCounter, operation, context, span) &&
+                (method is "__le__" or "__ge__" || !PyEquality.CountersEqual(leftCounter, rightCounter));
+        }
+
         // A NotImplemented answer declines like a missing slot (CPython reflected
         // dispatch): the root object slots always decline, so unsupported orderings
         // keep the relational fallback instead of reading NotImplemented as a value.
@@ -1556,6 +1565,13 @@ internal sealed partial class LythonRuntime
             };
         }
 
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            var operation = methods.Left is "__gt__" or "__ge__" ? BinaryOperatorSyntax.GreaterEqual : BinaryOperatorSyntax.LessEqual;
+            return await MultisetCompareAsync(leftCounter, rightCounter, operation, context, span).ConfigureAwait(false) &&
+                (methods.Left is "__le__" or "__ge__" || !await CountersEqualAsync(leftCounter, rightCounter, context, span).ConfigureAwait(false));
+        }
+
         // Same precedence as the sync twin above; a successful result flows
         // back raw, otherwise the relational fallback stays a bool.
         SpecialMethodInvocation invocation;
@@ -1609,6 +1625,28 @@ internal sealed partial class LythonRuntime
         {
             return CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
         }
+    }
+
+    private static async ValueTask<bool> MultisetCompareAsync(
+        PyCounter left, PyCounter right, BinaryOperatorSyntax operation, ExecutionContext context, LythonSourceSpan span)
+    {
+        for (var pass = 0; pass < 2; pass++)
+        {
+            var source = pass == 0 ? left : right;
+            if (source.Count == 0) continue;
+            using var retained = context.MemoryGovernor.ReserveTemporary(source.CommittedStorageBytes, span);
+            foreach (var key in source.Keys)
+            {
+                context.CheckExecution(span);
+                var leftCount = left.TryGetValue(key, out var foundLeft, context, span) ? foundLeft : BigInteger.Zero;
+                var rightCount = right.TryGetValue(key, out var foundRight, context, span) ? foundRight : BigInteger.Zero;
+                var compared = await EvaluateBinaryOperatorAsync(operation, leftCount, rightCount, context, span).ConfigureAwait(false);
+                var matches = await IsTruthyAsync(compared, context, span).ConfigureAwait(false);
+                context.CheckExecution(span);
+                if (!matches) return false;
+            }
+        }
+        return true;
     }
 
     private static async ValueTask<object> SequencesCompareOrderedListsAsync(

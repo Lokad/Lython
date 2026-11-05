@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "f66427f1 plus E3a Counter key-set removal and ordering dispatch correction",
+  "coreSHA256": {
+    "candidate": "1c042aec68f3a444b831aaf9286057b71f28df8d29a803239f023d529c29630e",
+    "control": "1c042aec68f3a444b831aaf9286057b71f28df8d29a803239f023d529c29630e",
+    "reference": "793586f5a517984b7ba53feff1fd58e200a004cc008e85b2259742d04c872435"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/StaticStructuralDiagnostics.Operators.cs": "68e55a2a12fc566aaefb79224bb5711473e593ef18cd601231c614ba8b6644a6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "0eea144b2a3885da3f32819a6779a516ec0e34db795ed09efde167ef97ad2b78",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "933b6133edae68d9756570f89bbec006309071999f1c2695cce04c6c31adb123",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs": "ee741f5b237648d61c5f120d2010b966bc41996faab2e070fd1ce5a09aa454f1",
+    "src/Lokad.Lython/Runtime/PyEquality.cs": "bec4e5512973a31001813242e010cc0d8c21b5a5e83db67854e88c2a8d16af61",
+    "tests/Lokad.Lython.PublicApi.Tests/CounterKeyTraversalTests.cs": "4478453b447997147eb8a1625214f8c6211b57d85040647c940e95fa2cc173a5",
+    "tests/Lokad.Lython.Tests/CounterTraversalOwnershipTests.cs": "ec4f1faa1e9cd05b284a794654fb581d689479e8491a49d50aef5bd05cfdfe0f"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused186public/104internal per actual11/10, zero-warning/error build. Full preceding source f66427f1 GREEN/all8 cached42113971859, not current Counter changes. Native builtin-key Counter results are equivalent; incorrect callback baselines excluded from performance claims."
+}

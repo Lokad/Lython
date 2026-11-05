@@ -78,6 +78,9 @@ copies and set pop reuse stored keys without rehashing. Nested unhashability nam
 the failing value. Equality candidates use the actual Python hash, independently
 of the internal structural index. Set add preserves positive equality even if its
 callback clears the set; membership/removal require a current retained match.
+Counter algebra uses dictionary key protocols, and comparisons visit both sources
+in order, treating missing counts as zero and observing source mutation. Ordinary
+Counter ordering operators and explicit methods use the same value semantics.
 Slice bounds and generated dataclass fields use contextual hashes. Generated
 dataclass methods read all included fields before hashing and retain their defining
 class's field plan. Explicit `object.__hash__` remains an identity operation even

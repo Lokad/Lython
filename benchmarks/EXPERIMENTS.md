@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [Counter key-traversal milestone](results/2026-11-05-counter-key-traversal/README.md)
+removes four temporary key HashSets/three unions and corrects Python effects,
+ordering, aliases and source mutation with funded live traversal. Focused187public/
+104internal per actual11/10 pass. Final59.12s source pair: native-key Counter
+elapsed−10.62%/−12.10%, current spread1.65%; complete CSV+0.84%/−0.55% mixed.
+Original59.03s prototype and failed conditions preserved; no broad CPU/allocation
+claim. E3b storage coupling and full qualification of this later source stay open.
+
 The [contextual nested-hash milestone](results/2026-11-05-nested-hash-protocols/README.md)
 corrects slice/defining-dataclass hash protocols, admits field snapshots before
 callbacks and shares managed admission checks. Full4168internal/16033public per

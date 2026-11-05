@@ -160,21 +160,24 @@ internal sealed partial class LythonRuntime
     // comparison failures for non-numeric occupants.
     // Multiset ordering shared by the Counter comparison dunders: every
     // key on either side compares with missing counts as zero through the
-    // full <= operator, exactly like CPython (element failures propagate).
-    internal static bool MultisetLessEqual(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
+    // full <= or >= operator, exactly like CPython (element failures propagate).
+    internal static bool MultisetCompare(PyCounter left, PyCounter right, BinaryOperatorSyntax operation, ExecutionContext context, LythonSourceSpan span)
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
-        keys.UnionWith(right.Keys);
-
-        foreach (var key in keys)
+        for (var pass = 0; pass < 2; pass++)
         {
-            var leftCount = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
-            var rightCount = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            // N11: ordering returns raw results; counter comparison truth-tests.
-            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, leftCount, rightCount, context, span), context, span))
+            var source = pass == 0 ? left : right;
+            if (source.Count == 0) continue;
+            using var retained = context.MemoryGovernor.ReserveTemporary(source.CommittedStorageBytes, span);
+            foreach (var key in source.Keys)
             {
-                return false;
+                context.CheckExecution(span);
+                var leftCount = left.TryGetValue(key, out var foundLeft, context, span) ? foundLeft : BigInteger.Zero;
+                var rightCount = right.TryGetValue(key, out var foundRight, context, span) ? foundRight : BigInteger.Zero;
+                // Ordering returns raw results; Counter truth-tests them.
+                var matches = IsTruthy(EvaluateBinaryOperator(operation, leftCount, rightCount, context, span), context, span);
+                context.CheckExecution(span);
+                if (!matches) return false;
             }
         }
 
@@ -573,19 +576,23 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
         var result = CreateCounterResult(left, right, span);
-        var seen = new HashSet<object>(PyValueComparer.Instance);
-        foreach (var pair in left.Items)
+        using (var retained = context.MemoryGovernor.ReserveTemporary(left.CommittedStorageBytes, span))
         {
-            seen.Add(pair.Key);
-            AddResult(pair.Key, pair.Value, right.GetCount(pair.Key));
+            foreach (var pair in left.Items)
+            {
+                context.CheckExecution(span);
+                AddResult(pair.Key, pair.Value, right.GetCount(pair.Key));
+            }
         }
 
-        foreach (var pair in right.Items)
+        using (var retained = context.MemoryGovernor.ReserveTemporary(right.CommittedStorageBytes, span))
         {
-            if (seen.Add(pair.Key))
+            foreach (var pair in right.Items)
             {
-                AddResult(pair.Key, BigInteger.Zero, pair.Value);
+                context.CheckExecution(span);
+                if (!left.TryGetValue(pair.Key, out _)) AddResult(pair.Key, BigInteger.Zero, pair.Value);
             }
         }
         return result;

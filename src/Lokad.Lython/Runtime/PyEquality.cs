@@ -1,3 +1,4 @@
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using System.Numerics;
@@ -27,6 +28,14 @@ internal static class PyEquality
         if (left is LythonRuntime.StatisticsModule.PyNormalDist leftDistribution &&
             right is LythonRuntime.StatisticsModule.PyNormalDist rightDistribution)
             return leftDistribution.Equals(rightDistribution);
+
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return CountersEqual(leftCounter, rightCounter);
+            }
+        }
 
         // Keep identity after numeric comparison: a boxed NaN must remain unequal to
         // itself even when both operands happen to reference the same boxed object.
@@ -184,14 +193,6 @@ internal static class PyEquality
             using (PyStructuralGuard.EnterPair(left, right, null))
             {
                 return DefaultDictContentEquals(rightDefaultDict, left);
-            }
-        }
-
-        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
-        {
-            using (PyStructuralGuard.EnterPair(left, right, null))
-            {
-                return CountersEqual(leftCounter, rightCounter);
             }
         }
 
@@ -502,20 +503,34 @@ internal static class PyEquality
             key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null));
 
     // Counter equality treats absent keys as having a zero count, unlike
-    // ordinary dictionary equality, so compare the union of both key sets.
+    // ordinary dictionary equality. Python visits both sources, including keys
+    // present in both; comparison effects and source mutation remain observable.
     internal static bool CountersEqual(PyCounter left, PyCounter right)
     {
-        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
-        keys.UnionWith(right.Keys);
-
-        foreach (var key in keys)
+        var context = PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
+        var span = PyStructuralGuard.AmbientSpan;
+        for (var pass = 0; pass < 2; pass++)
         {
-            PyStructuralGuard.NoteWork();
-            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
-            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            if (!LythonRuntime.ElementEqualsAmbient(leftValue, rightValue))
+            var source = pass == 0 ? left : right;
+            if (source.Count == 0) continue;
+            using var retained = (context?.MemoryGovernor ?? source.OwnerMemoryGovernor)?.ReserveTemporary(
+                source.CommittedStorageBytes, span ?? source.AllocationSpan);
+            foreach (var key in source.Keys)
             {
-                return false;
+                PyStructuralGuard.NoteWork(context, span);
+                var foundLeft = context is not null && span is not null
+                    ? left.TryGetValue(key, out var leftValue, context, span)
+                    : left.TryGetValue(key, out leftValue);
+                var foundRight = context is not null && span is not null
+                    ? right.TryGetValue(key, out var rightValue, context, span)
+                    : right.TryGetValue(key, out rightValue);
+                var lhs = foundLeft ? leftValue! : BigInteger.Zero;
+                var rhs = foundRight ? rightValue! : BigInteger.Zero;
+                var matches = context is not null && span is not null
+                    ? LythonRuntime.IsTruthy(LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, lhs, rhs, context, span), context, span)
+                    : AreEqual(lhs, rhs);
+                context?.CheckExecution(span);
+                if (!matches) return false;
             }
         }
 
