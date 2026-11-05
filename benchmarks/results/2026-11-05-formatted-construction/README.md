@@ -2,7 +2,9 @@
 
 2026-11-05. Retained source: parent 3a2a9d5b plus the exact patch/snapshot below,
 core **68a9f3f8**. Baseline fully qualified **8475a8dd**, core **81deb3be**.
-Focused checks pass; full platform/Stress/installed-consumer delivery pending.
+Fully qualified on0997baa8: [41963810520](https://github.com/Lokad/Lython/actions/runs/41963810520)
+is terminal GREEN for all eight Windows/Ubuntu, actual .NET11/10, original Stress
+and installed Release consumer gates. [Cached receipt](delivery-ci-status.json).
 Publication postponed; the broader whole-script objective remains open.
 
 Static literal byte lengths and already-parsed format widths plan modest initial

@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [ordered native formatted-body replacement](results/2026-11-05-ordered-native-format/README.md)
+removes runtime builder shapes and recursive append-chain traversal. Initial135s
+reportwarm−3.2–3.5%/async−4.4–5.0%,buttext+1.4–2.9%adverse. One135s source
+refinement restores the original tiny shared entry guard: warmreport−3.5–5.4%,
+async−5.6–7.2%,allocationflat. Possibletext~1%/compile~2%cost and freshuncertainty
+explicitly accepted; neither inlining nor generalCPUcause established. Both source/
+adverse conditions and275internal/1167public per actualtarget/revision preserved.
+Full qualification batched at next delivery; whole-script objective stays open.
+
 The [construction CPython checkpoint](results/2026-11-05-runtime-cpython-construction-checkpoint/README.md)
 measures exact0997baa8/core68a9f3f8 in385.81s/14jobs with independent current control
 and previouscf3 source. All normalruntime/identity/golden/quiet/join gates pass.

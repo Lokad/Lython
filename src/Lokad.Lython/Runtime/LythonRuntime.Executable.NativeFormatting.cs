@@ -5,6 +5,17 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private static bool GuardNativeFormattedBody(ExecutableCodeObject code,
+        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
+    {
+        // Compilation proves one root builder and orders every append. Only
+        // the fields need dynamic proof; do not reconstruct the builder spine.
+        foreach (ref readonly var value in values.AsSpan())
+            if (value.Operation == NativeReturnOperation.AppendFormatField
+                && !GuardNativeFormattedValue(value.Second, code, values, arguments, context)) return false;
+        return true;
+    }
+
     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
         NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
     {
@@ -46,7 +57,27 @@ internal sealed partial class LythonRuntime
             context.State.CancellationToken);
         try
         {
-            AppendNativeFormattedReturn(root.First, output, code, values, arguments, context, entryException);
+            // Native preparation permits one builder, no nested builder, and
+            // one final result. Every append is already in original code order.
+            foreach (ref readonly var value in values.AsSpan())
+            {
+                if (value.Operation is not (NativeReturnOperation.AppendFormatText or NativeReturnOperation.AppendFormatField)) continue;
+                var fieldValue = value.Operation == NativeReturnOperation.AppendFormatField
+                    ? EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException) : null;
+                ref readonly var instruction = ref code.Instructions[value.SourceInstruction];
+                context.State.CheckExecution(instruction.Span);
+                try
+                {
+                    if (value.Operation == NativeReturnOperation.AppendFormatText)
+                        output.Append(((ExecutableAppendFormattedText)code.Constants[instruction.ConstantIndex]!).Text);
+                    else
+                    {
+                        var field = (ExecutableFormatField)code.Constants[instruction.ConstantIndex]!;
+                        AppendInterpolatedStringPart(output, fieldValue!, null, field.FormatSpecifier, context, instruction.Span, field.PreparedFormat);
+                    }
+                }
+                catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+            }
             context.State.CheckExecution(code.Instructions[root.SourceInstruction].Span);
             try { return output.ToPyStringAndRelease(); }
             catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
@@ -54,25 +85,4 @@ internal sealed partial class LythonRuntime
         finally { output.Release(); }
     }
 
-    private static void AppendNativeFormattedReturn(int index, GovernedByteBuilder output, ExecutableCodeObject code,
-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
-    {
-        ref readonly var value = ref values[index];
-        if (value.Operation == NativeReturnOperation.StartFormat) return;
-        AppendNativeFormattedReturn(value.First, output, code, values, arguments, context, entryException);
-        var fieldValue = value.Second < 0 ? null : EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
-        ref readonly var instruction = ref code.Instructions[value.SourceInstruction];
-        context.State.CheckExecution(instruction.Span);
-        try
-        {
-            if (value.Operation == NativeReturnOperation.AppendFormatText)
-                output.Append(((ExecutableAppendFormattedText)code.Constants[instruction.ConstantIndex]!).Text);
-            else
-            {
-                var field = (ExecutableFormatField)code.Constants[instruction.ConstantIndex]!;
-                AppendInterpolatedStringPart(output, fieldValue!, null, field.FormatSpecifier, context, instruction.Span, field.PreparedFormat);
-            }
-        }
-        catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
-    }
 }

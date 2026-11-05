@@ -1,0 +1,27 @@
+{
+  "revisions": {
+    "initial": {
+      "coreSHA256": "6f73c0c8340459f9205267a5ca3cda8343eb2d48dc4967e9c5be87b9f3fc404b",
+      "internalCasesPerFramework": 275,
+      "publicCasesPerFramework": 1167,
+      "frameworks": [
+        "net11.0",
+        "net10.0"
+      ],
+      "allFocusedPassed": true
+    },
+    "refined": {
+      "coreSHA256": "d8d8df23a926bf7a7a5fcc8cc4ad9435e20c90eba33102228c44e951f55a4d0f",
+      "internalCasesPerFramework": 275,
+      "publicCasesPerFramework": 1167,
+      "frameworks": [
+        "net11.0",
+        "net10.0"
+      ],
+      "allFocusedPassed": true
+    }
+  },
+  "refinedNet10SHA256": "1ca2826d251a6a19f7a71d13365f0504cc4aa04c6abdd2023b41bb8fbebe81c9",
+  "fullPlatformStressInstalledQualification": "batched at next coherent delivery, not yet complete",
+  "logsSHA256": "704b8f7579ae7c36b402730ea0f09e49d049712ca925e102ae0f46b991a223ba"
+}

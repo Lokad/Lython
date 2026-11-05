@@ -268,7 +268,11 @@ expressions keep the full engine. Static builtin-only formatted returns use the
 same native proof and shared formatter. Plain native dictionary fields can qualify
 through side-effect-free reads; protocol keys and unknown formatting callbacks keep
 ordinary execution. One working UTF-8 builder releases on failure or cancellation
-and transfers retained output with its funding. Adjacent local stores/loads can forward their
+and transfers retained output with its funding. Preparation establishes one root
+builder; native formatting checks fields and consumes append operations in source
+order without a recursive builder-chain proof or execution walk. Actual field
+values are never cached across admission or later effects.
+Adjacent local stores/loads can forward their
 value inside the native proof when no later read needs that binding. Original
 instructions and local metadata remain intact for dynamic behavior and inspection.
 Custom protocols, captures, observable locals and

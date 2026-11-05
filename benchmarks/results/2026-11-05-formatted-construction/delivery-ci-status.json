@@ -1,0 +1,54 @@
+{
+  "runId": 41963810520,
+  "headSha": "0997baa8f39deec4c17f57a8e3235f0ea50a0e23",
+  "url": "https://github.com/Lokad/Lython/actions/runs/41963810520",
+  "terminal": true,
+  "dispatchedUtc": "2026-11-05T03:48:08.366410+00:00",
+  "status": "completed",
+  "conclusion": "success",
+  "observedUtc": "2026-11-05T04:15:28.235913+00:00",
+  "gates": [
+    {
+      "platform": "tests (ubuntu-latest)",
+      "step": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "step": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "step": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "step": "Test original stress scales",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "step": "Test Release (.NET 11)",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "step": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "step": "Verify Release package consumer",
+      "conclusion": "success"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "step": "Test original stress scales",
+      "conclusion": "success"
+    }
+  ],
+  "originalStress": "Workflow loops actualnet11.0 andnet10.0 in each platform gate",
+  "measuredCoreSHA256": "68a9f3f80ad295c86033fe0801459549301b6cb08f0a5218fefb9689744956dd"
+}

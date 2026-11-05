@@ -2,7 +2,9 @@
 
 2026-11-05. Exact runtime **0997baa8**, frozen core **68a9f3f8**; previous external
 **cf3dc9cd/43fdf658** and an identical-current control run alongside CPython.
-Focused checks pass; full delivery41963810520 pending. Publication postponed.
+Full delivery41963810520 is terminal GREEN on exact0997baa8, all eight platform/
+framework/originalStress/installed-consumer gates; [cached receipt](../2026-11-05-formatted-construction/delivery-ci-status.json).
+Publication postponed.
 The separate D31 working prototype is not included in these measurements.
 
 Quiet dedicated Azure Standard_F4as_v7, four AMD EPYC9V45 vCPUs/16 GiB/no swap,

@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized, Builder }
+    private enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized }
 
     private static NativeReturnShape ReturnShape(object? value) => value switch
     {
@@ -85,12 +85,12 @@ internal sealed partial class LythonRuntime
         shape = NativeReturnShape.Other;
         switch (value.Operation)
         {
+            case NativeReturnOperation.FinishFormat:
+                shape = NativeReturnShape.String;
+                return GuardNativeFormattedBody(code, values, arguments, context);
             case NativeReturnOperation.Read:
                 if (!TryReadNativeOperand(code, code.Instructions[value.SourceInstruction], arguments, context, out var input)) return false;
                 shape = ReturnShape(input);
-                return true;
-            case NativeReturnOperation.StartFormat:
-                shape = NativeReturnShape.Builder;
                 return true;
             case NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue:
                 shape = NativeReturnShape.String;
@@ -115,15 +115,6 @@ internal sealed partial class LythonRuntime
         if (!GuardNativeReturn(value.First, code, values, arguments, context, out var first)) return false;
         switch (value.Operation)
         {
-            case NativeReturnOperation.FinishFormat:
-                shape = NativeReturnShape.String;
-                return first == NativeReturnShape.Builder;
-            case NativeReturnOperation.AppendFormatText:
-                shape = NativeReturnShape.Builder;
-                return first == NativeReturnShape.Builder;
-            case NativeReturnOperation.AppendFormatField:
-                shape = NativeReturnShape.Builder;
-                return first == NativeReturnShape.Builder && GuardNativeFormattedValue(value.Second, code, values, arguments, context);
             case NativeReturnOperation.Add:
                 if (!GuardNativeReturn(value.Second, code, values, arguments, context, out var right)) return false;
                 shape = first;

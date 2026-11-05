@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consume prepared native formatted returns in source order. Remove their runtime
+  builder-shape proof and recursive append-chain execution, retaining actual field
+  checks, original reads, shared formatting, cancellation and funded cleanup.
+
 - Plan initial multi-part f-string storage from existing literal and format
   metadata on both execution paths, avoiding intermediate buffer growth and
   copying. Preserve current cancellation and allocation rollback; tight shared

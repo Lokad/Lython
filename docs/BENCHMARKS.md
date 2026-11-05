@@ -19,8 +19,9 @@ one complete synchronous execution in an already-running host**, including media
 RAM-file IO, full checks and prior-result cleanup, excluding staging/reset.
 Ratio=Lython elapsed/CPython elapsed; above one means slower. IQR=interquartile
 range/median. Control compares identical-source role medians. Exact precommit core
-**68a9f3f8** and snapshots identify the measured build. Focused Release checks
-pass on both actual runtimes; full platform/Stress/installed-consumer delivery is pending.
+**68a9f3f8** and snapshots identify the measured build. This source passes all
+Windows/Ubuntu, actual .NET 11/10, original Stress and installed Release consumer
+gates. Later prepared-format changes are measured separately below.
 
 Text ranges show medians of identical-source roles, not confidence intervals.
 Fresh controls differ 3.32%; warm controls differ 5.85%. Earlier text collections
@@ -91,7 +92,8 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Shared f-string construction | Report allocation −10.3% warm/async, −10.0% fresh; elapsed −7.0–8.9% warm, −5.8–7.8% async, −8.5–9.0% fresh | [Complete report source pair](../benchmarks/results/2026-11-05-formatted-construction/README.md). Numeric control near flat; compilation/control effects limit small claims. Focused checks pass; full delivery pending. |
+| Ordered native formatted bodies | Report warm elapsed −3.5–5.4%, async −5.6–7.2%; allocation flat | [Initial and refined sources](../benchmarks/results/2026-11-05-ordered-native-format/README.md). Possible text ~1% and compile ~2% costs accepted; fresh magnitude uncertain. Focused checks pass; full qualification batched at next delivery. |
+| Shared f-string construction | Report allocation −10.3% warm/async, −10.0% fresh; elapsed −7.0–8.9% warm, −5.8–7.8% async, −8.5–9.0% fresh | [Complete report source pair](../benchmarks/results/2026-11-05-formatted-construction/README.md). Numeric control near flat; compilation/control effects limit small claims. Fully qualified on0997baa8. |
 | Prepared native helpers | Text warm elapsed −4.7–8.0%, async −5.3–7.3%; text compilation allocation −2.3% | [Whole source pair](../benchmarks/results/2026-11-05-prepared-native-bodies/README.md). Warm allocation flat; CSV/JSON confirmation near unchanged; possible CSV ~1% cost and fresh/report uncertainty retained. Qualified on8475a8dd. |
 | Final-word casing / whitespace split | Text allocation −14.1% warm/async, −13.2% fresh; fresh elapsed −5.2–6.6%, async −4.9–5.2% | [Complete source pair](../benchmarks/results/2026-11-05-cased-whitespace-pipeline/README.md). Warm magnitude control-limited; JSON control +0.9–1.1% accepted, compilation inconclusive. Qualified on cf3dc9cd. |
 | Arithmetic precedence consolidation | CSV/text compilation elapsed −6.7–8.4%; report −8.5–11.4%; allocation effectively unchanged | [Current-source reassessment](../benchmarks/results/2026-11-05-precedence-consolidation/README.md). Thirty parser lines removed. Fresh config −1.1–1.3%; warm text inconclusive with adverse signs preserved. Qualified on f7fed42c. |
