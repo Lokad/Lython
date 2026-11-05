@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [complete target-instruction family](results/2026-11-05-executable-targets/README.md)
+retains measuredd3735439 over qualified1f59. Remove9 operation records, retained
+delete syntax, generic target routing and always-async target/delete dispatch;
+reuse executable operands and preserve spans, evaluation order and awaited owners.
+4111internal/7360public per actual11/10 pass.139.94s/five process-isolated jobs/all
+gates: fresh text7.27–7.31% lower/.05% current spread, async5.60–5.67% lower/.07%,
+ordinaryCSV2.04–2.36% lower. Warmtext controls differ2.99%; reportIQR up to7.47%
+is inconclusive. Allocation/CPU/real-I/O latency unmeasured. Full delivery pending,
+publication held; the complete performance objective remains active.
+
 The [qualified dictionary/construction CPython checkpoint](results/2026-11-05-dictionary-cpython-checkpoint/README.md)
 compares exact final1f59/e958 with previous402, an identical-current process and
 CPython3.13.16.466.52s/17jobs/all gates; all final worker reservations zero.

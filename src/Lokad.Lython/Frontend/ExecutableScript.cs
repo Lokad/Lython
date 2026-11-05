@@ -17,6 +17,21 @@ internal enum ExecutableOpCode
     LoadGlobal,
     LoadName,
     ApplyOperation,
+    StoreMember,
+    StoreMemberLast,
+    StoreSubscript,
+    StoreSubscriptLast,
+    StoreSlice,
+    StoreSliceLast,
+    ReadRetainedSubscript,
+    ReadRetainedSlice,
+    UnpackValues,
+    FailAssertion,
+    Raise,
+    DeleteName,
+    DeleteMember,
+    DeleteSubscript,
+    DeleteSlice,
     LoadMember,
     LoadCallMember,
     LoadCallReceiver,
@@ -149,6 +164,8 @@ internal readonly record struct ExecutableInstruction
     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
         or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
+        or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
+        or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
     public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
         ? _secondaryOperand : throw InvalidOperand(nameof(MemberCacheIndex));
@@ -172,6 +189,16 @@ internal readonly record struct ExecutableInstruction
     public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
     public ExecutableAugmentedOperator AugmentedOperator => (ExecutableAugmentedOperator)_primaryOperand;
 
+    public int TargetSpanIndex => OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
+        ? _secondaryOperand : OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+            or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
+            ? _primaryOperand : throw InvalidOperand(nameof(TargetSpanIndex));
+    public bool ValueLast => OpCode is ExecutableOpCode.StoreMemberLast or ExecutableOpCode.StoreSubscriptLast or ExecutableOpCode.StoreSliceLast;
+    public UnpackingLayout UnpackLayout => OpCode == ExecutableOpCode.UnpackValues
+        ? new(_primaryOperand, _secondaryOperand) : throw InvalidOperand(nameof(UnpackLayout));
+    public bool HasAssertionMessage => ReadPrimaryOperand(ExecutableOpCode.FailAssertion, nameof(HasAssertionMessage)) != 0;
+    public bool HasRaiseCause => ReadPrimaryOperand(ExecutableOpCode.Raise, nameof(HasRaiseCause)) != 0;
+
     public static ExecutableInstruction Import(int importIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Import, span, importIndex);
 
@@ -183,6 +210,29 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
+
+    public static ExecutableInstruction StoreMember(int nameIndex, int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
+        => new(valueLast ? ExecutableOpCode.StoreMemberLast : ExecutableOpCode.StoreMember, span, nameIndex, targetSpanIndex);
+
+    public static ExecutableInstruction StoreSubscript(int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
+        => new(valueLast ? ExecutableOpCode.StoreSubscriptLast : ExecutableOpCode.StoreSubscript, span, targetSpanIndex);
+
+    public static ExecutableInstruction StoreSlice(int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
+        => new(valueLast ? ExecutableOpCode.StoreSliceLast : ExecutableOpCode.StoreSlice, span, targetSpanIndex);
+
+    public static ExecutableInstruction ReadRetainedSubscript(LythonSourceSpan span) => new(ExecutableOpCode.ReadRetainedSubscript, span);
+    public static ExecutableInstruction ReadRetainedSlice(LythonSourceSpan span) => new(ExecutableOpCode.ReadRetainedSlice, span);
+    public static ExecutableInstruction UnpackValues(UnpackingLayout layout, LythonSourceSpan span)
+        => new(ExecutableOpCode.UnpackValues, span, layout.TargetCount, layout.StarredTargetIndex);
+    public static ExecutableInstruction FailAssertion(bool hasMessage, LythonSourceSpan span)
+        => new(ExecutableOpCode.FailAssertion, span, hasMessage ? 1 : 0);
+    public static ExecutableInstruction Raise(bool hasCause, LythonSourceSpan span)
+        => new(ExecutableOpCode.Raise, span, hasCause ? 1 : 0);
+    public static ExecutableInstruction DeleteName(int nameIndex, LythonSourceSpan span) => new(ExecutableOpCode.DeleteName, span, nameIndex);
+    public static ExecutableInstruction DeleteMember(int nameIndex, LythonSourceSpan span) => new(ExecutableOpCode.DeleteMember, span, nameIndex);
+    public static ExecutableInstruction DeleteSubscript(LythonSourceSpan span) => new(ExecutableOpCode.DeleteSubscript, span);
+    public static ExecutableInstruction DeleteSlice(ExecutableSliceParts parts, LythonSourceSpan span)
+        => new(ExecutableOpCode.DeleteSlice, span, (int)parts);
 
     public static ExecutableInstruction LoadConst(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadConst, span, constantIndex);

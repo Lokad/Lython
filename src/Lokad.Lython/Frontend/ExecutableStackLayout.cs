@@ -104,7 +104,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     case ExecutableOpCode.ReturnNone:
                     case ExecutableOpCode.ReraiseException:
                         goto CompleteBlock;
-                    case ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is ExecutableRaise or ExecutableFailAssertion:
+                    case ExecutableOpCode.Raise or ExecutableOpCode.FailAssertion:
                         goto CompleteBlock;
                 }
             }
@@ -180,7 +180,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                         initialized[instruction.LocalSlot] = true;
                     // Prepared deletion and lowered statement execution may
                     // withdraw a binding. Keep their original local-read checks.
-                    else if (instruction.OpCode is ExecutableOpCode.ApplyOperation or ExecutableOpCode.ExecuteFallbackStatement)
+                    else if (instruction.OpCode is ExecutableOpCode.ApplyOperation or ExecutableOpCode.ExecuteFallbackStatement
+                        or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
+                        or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+                        or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
+                        or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
+                        or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
+                        or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
+                        or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice)
                         Array.Clear(initialized);
                 }
             }
@@ -215,10 +222,27 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableOpCode.PreloadImplicitSuperArguments or ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or
                 ExecutableOpCode.BindException or ExecutableOpCode.ReraiseException or ExecutableOpCode.ClearException or
                 ExecutableOpCode.EndFinally or ExecutableOpCode.ReturnNone => (0, 0),
+            ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice => (0, 1),
+            ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast => (2, 0),
+            ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => (3, 0),
+            ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast => (5, 0),
+            ExecutableOpCode.UnpackValues => (1, instruction.UnpackLayout.TargetCount),
+            ExecutableOpCode.FailAssertion => (instruction.HasAssertionMessage ? 1 : 0, 0),
+            ExecutableOpCode.Raise => (instruction.HasRaiseCause ? 2 : 1, 0),
+            ExecutableOpCode.DeleteName => (0, 0),
+            ExecutableOpCode.DeleteMember => (1, 0),
+            ExecutableOpCode.DeleteSubscript => (2, 0),
+            ExecutableOpCode.DeleteSlice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 0),
             ExecutableOpCode.ApplyOperation => OperationEffect((ExecutableOperation)constants[instruction.ConstantIndex]!),
             _ => throw new InvalidOperationException($"Unknown executable operand effect: {instruction.OpCode}.")
         };
-        var minimum = instruction.OpCode == ExecutableOpCode.ForNext ? 1 : pop;
+        var minimum = instruction.OpCode switch
+        {
+            ExecutableOpCode.ForNext => 1,
+            ExecutableOpCode.ReadRetainedSubscript => 2,
+            ExecutableOpCode.ReadRetainedSlice => 4,
+            _ => pop
+        };
         if (instruction.OpCode == ExecutableOpCode.ApplyOperation)
         {
             minimum = constants[instruction.ConstantIndex] switch
@@ -226,8 +250,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableAppendDisplay item => checked(2 + item.IteratorDepth),
                 ExecutableStoreDictionaryItem item => checked(pop + 1 + item.IteratorDepth),
                 ExecutableAppendCall => 2,
-                ExecutableReadRetainedSubscript => 2,
-                ExecutableReadRetainedSlice => 4,
                 ExecutableAppendFormattedText => 1,
                 ExecutableFormatField { Append: true } => checked(pop + 1),
                 _ => pop
@@ -249,21 +271,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         ExecutableCreateFunction function => (function.Inputs.Count, 0),
         ExecutableCreateLambda lambda => (lambda.Expression.Parameters.Count(p => p.DefaultValue is not null), 1),
         ExecutableCreateClass type => (checked(type.Definition.Decorators.Count + (type.ExpandedHeader ? 1 : 0)), 0),
-        ExecutableReadRetainedSubscript or ExecutableReadRetainedSlice => (0, 1),
-        ExecutableStoreMember => (2, 0),
-        ExecutableStoreSubscript => (3, 0),
-        ExecutableStoreSlice => (5, 0),
-        ExecutableUnpackValues unpack => (1, unpack.Layout.TargetCount),
-        ExecutableFailAssertion assertion => (assertion.HasMessage ? 1 : 0, 0),
-        ExecutableRaise raised => (raised.HasCause ? 2 : 1, 0),
-        ExecutableDeletePreparedTarget deleted => (deleted.Target switch
-        {
-            NameAssignmentTargetSyntax => 0,
-            MemberAssignmentTargetSyntax => 1,
-            SubscriptAssignmentTargetSyntax => 2,
-            SliceAssignmentTargetSyntax slice => 1 + (slice.Start is null ? 0 : 1) + (slice.End is null ? 0 : 1) + (slice.Step is null ? 0 : 1),
-            _ => throw new InvalidOperationException("Unknown executable delete shape.")
-        }, 0),
         _ => throw new InvalidOperationException($"Unknown prepared operand effect: {operation.GetType().Name}.")
     };
 }

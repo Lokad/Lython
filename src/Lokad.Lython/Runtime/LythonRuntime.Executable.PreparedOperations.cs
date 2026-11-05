@@ -77,9 +77,8 @@ internal sealed partial class LythonRuntime
                     _stack.RetireTo(instruction.ResultSlot);
                     _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, formattedResult);
                     break;
-                // Route directly to the handler that owns the operation. In
-                // particular, a target store must not enter display/call and
-                // definition state machines just to reach their default arms.
+                // Display/call and definition operations retain their own
+                // suspension paths. Targets use ordinary opcodes instead.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
                     or ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableFormatField
                     or ExecutableCreateGeneratorExpression:
@@ -87,8 +86,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
                     or ExecutableCreateFunction or ExecutableCreateLambda or ExecutableStartClassHeader or ExecutableCreateClass:
                     return ExecutePreparedDefinitionOperationAsync(operation, instruction, asynchronous);
-                default:
-                    return ExecutePreparedTargetOperationAsync(operation, instruction, asynchronous);
+                default: throw new InvalidOperationException("Unknown prepared operation.");
             }
             return ValueTask.CompletedTask;
         }

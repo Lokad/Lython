@@ -14,7 +14,7 @@ public sealed class ExecutableAugmentedMemberTests
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.False(code.RequiresLocalVariableMirroring);
-        Assert.Single(code.Constants.OfType<ExecutableStoreMember>());
+        Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.LoadMember);
     }
 

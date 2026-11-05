@@ -16,7 +16,7 @@ internal sealed partial class ExecutableScript
             {
                 case LoweredUnpackedTypeExpression unpacked:
                     currentBlock = CompileExpression(unpacked.Value, currentBlock);
-                    EmitOperation(new ExecutableUnpackValues(new UnpackingLayout(1, -1)), unpacked.Span, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.UnpackValues(new UnpackingLayout(1, -1), unpacked.Span));
                     return currentBlock;
                 case LoweredYieldExpression yielded:
                     if (yielded.Value is null)

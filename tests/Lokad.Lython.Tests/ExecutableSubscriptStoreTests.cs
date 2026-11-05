@@ -14,7 +14,7 @@ public sealed class ExecutableSubscriptStoreTests
         var module = ExecutableScript.Compile(LoweredScript.Lower(syntax));
         var code = Assert.Single(module.EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Single(code.Constants.OfType<ExecutableStoreSubscript>());
+        Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
     }
 
     [Theory]

@@ -42,6 +42,21 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.StoreLocal:
                             StoreExecutableLocal(instruction);
                             break;
+                        case ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
+                            or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+                            or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
+                            or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
+                            or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
+                            or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
+                            or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice:
+                            if (!asynchronous) ExecuteTargetInstruction(instruction, false).GetAwaiter().GetResult();
+                            else
+                            {
+                                pending = WithoutJump(ExecuteTargetInstruction(instruction, true));
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                _ = ConsumeOperation(ref pending);
+                            }
+                            break;
                         case ExecutableOpCode.ApplyOperation:
                             if (!asynchronous)
                                 ExecutePreparedOperationAsync(instruction, false).GetAwaiter().GetResult();

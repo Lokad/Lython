@@ -1,9 +1,5 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableFailAssertion(bool HasMessage) : ExecutableOperation;
-internal sealed record ExecutableRaise(bool HasCause) : ExecutableOperation;
-internal sealed record ExecutableDeletePreparedTarget(AssignmentTargetSyntax Target) : ExecutableOperation;
-
 internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
@@ -16,7 +12,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(block, ExecutableInstruction.JumpIfFalse(failure, statement.Condition.Span));
             AddInstruction(block, ExecutableInstruction.Jump(after, statement.Span));
             if (statement.Message is not null) failure = CompileExpression(statement.Message, failure);
-            EmitOperation(new ExecutableFailAssertion(statement.Message is not null), statement.Span, failure);
+            AddInstruction(failure, ExecutableInstruction.FailAssertion(statement.Message is not null, statement.Span));
             // The operation throws. A structural jump also terminates this block.
             AddInstruction(failure, ExecutableInstruction.Jump(after, statement.Span));
             return after;
@@ -30,7 +26,7 @@ internal sealed partial class ExecutableScript
             {
                 block = CompileExpression(statement.Expression, block);
                 if (statement.CauseExpression is not null) block = CompileExpression(statement.CauseExpression, block);
-                EmitOperation(new ExecutableRaise(statement.CauseExpression is not null), statement.Span, block);
+                AddInstruction(block, ExecutableInstruction.Raise(statement.CauseExpression is not null, statement.Span));
             }
             return block;
         }
@@ -50,17 +46,42 @@ internal sealed partial class ExecutableScript
                 foreach (var item in items) block = CompileDelete(item.Expression, block);
                 return block;
             }
-            AssignmentTargetSyntax target = expression switch
+            switch (expression)
             {
-                IdentifierExpressionSyntax name => new NameAssignmentTargetSyntax(name.Name, name.Span),
-                MemberExpressionSyntax member => new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
-                SubscriptExpressionSyntax item => new SubscriptAssignmentTargetSyntax(item.Target, item.Index, item.Span),
-                SliceExpressionSyntax slice => new SliceAssignmentTargetSyntax(slice.Target, slice.Start, slice.End, slice.Step, slice.Span),
-                _ => throw new InvalidOperationException("Invalid delete target."),
-            };
-            foreach (var read in AssignmentTargetFacts.Reads(target))
-                block = CompileExpression(LoweredScript.LowerExpression(read), block);
-            EmitOperation(new ExecutableDeletePreparedTarget(target), expression.Span, block);
+                case IdentifierExpressionSyntax name:
+                    AddInstruction(block, ExecutableInstruction.DeleteName(InternName(name.Name), expression.Span));
+                    break;
+                case MemberExpressionSyntax member:
+                    block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
+                    AddInstruction(block, ExecutableInstruction.DeleteMember(InternName(member.MemberName), expression.Span));
+                    break;
+                case SubscriptExpressionSyntax item:
+                    block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
+                    block = CompileExpression(LoweredScript.LowerExpression(item.Index), block);
+                    AddInstruction(block, ExecutableInstruction.DeleteSubscript(expression.Span));
+                    break;
+                case SliceExpressionSyntax slice:
+                    block = CompileExpression(LoweredScript.LowerExpression(slice.Target), block);
+                    var parts = ExecutableSliceParts.None;
+                    if (slice.Start is not null)
+                    {
+                        block = CompileExpression(LoweredScript.LowerExpression(slice.Start), block);
+                        parts |= ExecutableSliceParts.Start;
+                    }
+                    if (slice.End is not null)
+                    {
+                        block = CompileExpression(LoweredScript.LowerExpression(slice.End), block);
+                        parts |= ExecutableSliceParts.End;
+                    }
+                    if (slice.Step is not null)
+                    {
+                        block = CompileExpression(LoweredScript.LowerExpression(slice.Step), block);
+                        parts |= ExecutableSliceParts.Step;
+                    }
+                    AddInstruction(block, ExecutableInstruction.DeleteSlice(parts, expression.Span));
+                    break;
+                default: throw new InvalidOperationException("Invalid delete target.");
+            }
             return block;
         }
     }

@@ -25,6 +25,8 @@ passes Windows/Ubuntu, actual11/10, original stress and installed-package checks
 the terminal [CI receipt](../benchmarks/results/2026-11-05-native-dictionary-backing/delivery-ci-status.json)
 is cached. Later95c10298 adds the comparison worker's final zero-balance assertion,
 outside timing; the same worker is used beside both source images.
+The later target-instruction source pair below does not replace these seven-script
+measurements or describe an already-qualified newer baseline.
 
 Text/JSON/report ranges show identical-source medians, not confidence intervals.
 Fresh text has2.71% current spread, JSON3.67%, report2.67%; these limit small claims.
@@ -96,6 +98,7 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
+| Executable target instructions | Text fresh elapsed −7.27–7.31%, completed-host async −5.60–5.67%; ordinary CSV warm −2.04–2.36% | [Whole-family deletion and controls](../benchmarks/results/2026-11-05-executable-targets/README.md). Warm-text magnitude limited; report control inconclusive; allocation and real-I/O latency unmeasured. Full delivery pending. |
 | Native dictionary backing | Construction variant: CSV allocation −3.3–5.2%, JSON −6.9%, report −4.49%; ordinary CSV elapsed 5.6–8.5% lower, JSON 4.1–4.3% lower | [Three frozen sources and controls](../benchmarks/results/2026-11-05-native-dictionary-backing/README.md). Final removal completion has separate checks; its two-job elapsed comparison is inconclusive with 6.6–9.2% unchanged-control spread. Fully qualified on e958c9b1. |
 | Final list storage / lazy activation | Text allocation −5.0–5.4%; ordinary CSV −6.3–6.5%; async text elapsed −3.2–3.4% | [Complete source pair](../benchmarks/results/2026-11-05-final-storage-activation/README.md). Warm text/CSV magnitudes control-limited; report near unchanged. Fully qualified on e5017ce4; original Windows timeout and unchanged-source confirmation preserved. |
 | Private CSV record arrays | CSV allocation −4.7–7.6%; public-reader warm elapsed −4.2–5.3% | [Source variants and confirmation](../benchmarks/results/2026-11-05-private-csv-records/README.md). DictReader warm timing control-limited; roughly1% warm-text cost accepted, larger original adverse point preserved. Fully qualified on c6d71108. |

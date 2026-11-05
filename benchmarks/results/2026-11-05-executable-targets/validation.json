@@ -1,0 +1,45 @@
+{
+  "decision": "Retain complete target family; full delivery pending",
+  "baseline": "qualifiede958/frozen1f59",
+  "prototype": "ee2674a5 plus target migration; frozen d3735439",
+  "focusedPerActualTarget": {
+    "internal": 4111,
+    "selectedPublic": 7360
+  },
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "initialBuild": "48.29s,26 xUnit2031 assertion-analyzer errors; corrected to filtered Assert.Single overload, no runtime/semantic relaxation",
+  "correctedBuild": "12.88s/zero warnings/errors; no tests began until both build processes exited",
+  "finalCleanup": "Only comments and whitespace change after measured d373; final Release rebuild/qualification recorded separately",
+  "measuredNet11CoreSHA256": "d37354397a5a590ceee46c20284535edcb92257f13d85563aa6d386fa738dfa8",
+  "measuredNet10CoreSHA256": "23edf371308a20054046ddbdf4fef2a621a85604fb13003d5d0e0efb46dc3c2b",
+  "observedService": {
+    "unit": "lython-b267-target-instructions-20261105",
+    "loaded": true,
+    "active": true,
+    "pid": 3209361
+  },
+  "ownedSeconds": 139.9357516989112,
+  "allGates": true,
+  "finalWorkerReservationsZero": true,
+  "workersAndFixturesClosed": true,
+  "sharedLeaseReleased": true,
+  "allocationReductionMeasured": false,
+  "attributedCpuMeasured": false,
+  "limitations": [
+    "Warmtext current controls differ2.99%; magnitude limited",
+    "Report current/reference IQR up to7.47%; control effect inconclusive",
+    "Async timing uses completed host effects, not real-I/O latency",
+    "No refreshed full CPython/RSS/startup/embedding-latency claim"
+  ],
+  "finalBuildSeconds": 40.26,
+  "finalBuildWarnings": 0,
+  "finalBuildErrors": 0,
+  "finalTargetedChecksPerActualTarget": 85,
+  "finalCoreSHA256": {
+    "net11.0": "a4ce2b48772195080257e1b49f924305edf8be2e96aa7e265df56b82061966cb",
+    "net10.0": "1079a6f2b531d10d63d3ceeec0d95ed407f79e67ec0275b84e853ff3b0a21814"
+  }
+}

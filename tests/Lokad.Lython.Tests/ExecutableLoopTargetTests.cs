@@ -16,7 +16,7 @@ public sealed class ExecutableLoopTargetTests
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Single(code.Constants.OfType<ExecutableUnpackValues>());
+        Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.UnpackValues);
     }
 
     [Theory]

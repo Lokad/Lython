@@ -1,0 +1,31 @@
+{
+  "sourceRevision": "ee2674a5 plus complete D42 target-instruction prototype; frozen d3735439",
+  "coreSHA256": {
+    "candidate": "d37354397a5a590ceee46c20284535edcb92257f13d85563aa6d386fa738dfa8",
+    "control": "d37354397a5a590ceee46c20284535edcb92257f13d85563aa6d386fa738dfa8",
+    "reference": "1f5919c0f48b4c35c22fcbcda252898a70c059d0b2c98ffc002bb8ebb466c78f"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "4111internal/7360public per actual11/10 pass; baselinee958 fully qualified42005719439 GREEN/all8",
+  "reference": "Qualified native dictionary/final list/lazy activation baseline1f5919c0",
+  "changes": "Nine operation records and retained delete AST removed; target instructions and synchronous prefix; focused semantic/ownership/token checks pass",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "b2044790c1c5597fc992eea846f96027bb766bee5479ecc84b624100f45acfbc",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "41dbbaa6703a3af07036db0611d7e27038a77651f405cbc1b85ec64ddb2887b1",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingStatements.cs": "412b44c39c456c8553c07da03f0b1b16b4a1f5347595816e5ea55d61c4b0087f",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "91ba4637815fbd5c697b920c0792b9cc03697d5b1d42450b909189f3c724ae32",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "f0b1bd9cbd0eeab4dacfa09efb90a972f63161d764e93281213bf0159127f778",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "dc5e0ca0da8cf0ac5622b4004b4e13575bc564ec6bcddc35980b00c0b01bfc1a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "036ada4e85754cfda46b9e624d11885e0c261eefa5db75ca815926bd5025ea20",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "3b16ba654cb4a7436a03694ac7b3caba1a8d5ebeced74626e8b0a8cf66ff51b5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "373a39f8796e4dfbe9ff2e2302e0d5c36195aa8dc08c5de9fbb19d53ccea7bd4"
+  },
+  "deletedSourceFiles": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedTargets.cs"
+  ]
+}

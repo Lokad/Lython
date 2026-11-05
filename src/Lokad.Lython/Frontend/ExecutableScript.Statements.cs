@@ -151,20 +151,20 @@ internal sealed partial class ExecutableScript
                             if (bound is null) AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), augmentedSlice.Span));
                             else currentBlock = CompileExpression(bound, currentBlock);
                         }
-                        EmitOperation(new ExecutableReadRetainedSlice(), augmentedSlice.Span, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSlice(augmentedSlice.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
-                        EmitOperation(new ExecutableStoreSlice(augmentedSlice.Span, ValueLast: true), augmented.Span, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.StoreSlice(InternConstant(augmentedSlice.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
                     if (augmented.Target is LoweredSubscriptAugmentedAssignmentTarget augmentedItem)
                     {
                         currentBlock = CompileExpression(augmentedItem.Receiver, currentBlock);
                         currentBlock = CompileExpression(augmentedItem.Index, currentBlock);
-                        EmitOperation(new ExecutableReadRetainedSubscript(), augmentedItem.Span, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSubscript(augmentedItem.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
-                        EmitOperation(new ExecutableStoreSubscript(augmentedItem.Span, ValueLast: true), augmented.Span, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.StoreSubscript(InternConstant(augmentedItem.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
                     if (augmented.Target is LoweredMemberAugmentedAssignmentTarget augmentedMember)
@@ -175,7 +175,7 @@ internal sealed partial class ExecutableScript
                             AllocateMemberCache(), augmentedMember.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
-                        EmitOperation(new ExecutableStoreMember(augmentedMember.Target.MemberName, augmentedMember.Span, ValueLast: true), augmented.Span, currentBlock);
+                        AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.Target.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
                     if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
@@ -231,7 +231,7 @@ internal sealed partial class ExecutableScript
             }
             if (target is UnpackingAssignmentTargetGroupSyntax group)
             {
-                EmitOperation(new ExecutableUnpackValues(UnpackingLayout.FromTargets(group.Targets)), span, block);
+                AddInstruction(block, ExecutableInstruction.UnpackValues(UnpackingLayout.FromTargets(group.Targets), span));
                 foreach (var child in group.Targets)
                     block = CompileStoreTarget(AssignmentTargetFacts.FromUnpacking(child), child.Span, block);
                 return block;
@@ -240,13 +240,13 @@ internal sealed partial class ExecutableScript
             {
                 block = CompileExpression(LoweredScript.LowerExpression(item.Target), block);
                 block = CompileExpression(LoweredScript.LowerExpression(item.Index), block);
-                EmitOperation(new ExecutableStoreSubscript(item.Span), span, block);
+                AddInstruction(block, ExecutableInstruction.StoreSubscript(InternConstant(item.Span), span));
                 return block;
             }
             if (target is MemberAssignmentTargetSyntax member)
             {
                 block = CompileExpression(LoweredScript.LowerExpression(member.Target), block);
-                EmitOperation(new ExecutableStoreMember(member.MemberName, member.Span), span, block);
+                AddInstruction(block, ExecutableInstruction.StoreMember(InternName(member.MemberName), InternConstant(member.Span), span));
                 return block;
             }
             if (target is SliceAssignmentTargetSyntax slice)
@@ -257,7 +257,7 @@ internal sealed partial class ExecutableScript
                     if (bound is null) AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), span));
                     else block = CompileExpression(LoweredScript.LowerExpression(bound), block);
                 }
-                EmitOperation(new ExecutableStoreSlice(slice.Span), span, block);
+                AddInstruction(block, ExecutableInstruction.StoreSlice(InternConstant(slice.Span), span));
                 return block;
             }
             throw new InvalidOperationException("Unknown assignment target.");

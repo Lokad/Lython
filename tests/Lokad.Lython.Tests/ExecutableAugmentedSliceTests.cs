@@ -18,8 +18,8 @@ public sealed class ExecutableAugmentedSliceTests
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
         Assert.Equal(generator, code.RequiresLocalVariableMirroring);
-        Assert.Single(code.Constants.OfType<ExecutableStoreSlice>());
-        Assert.Single(code.Constants.OfType<ExecutableReadRetainedSlice>());
+        Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
+        Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.ReadRetainedSlice);
     }
 
     [Theory]
@@ -31,8 +31,8 @@ public sealed class ExecutableAugmentedSliceTests
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        if (member) Assert.Single(code.Constants.OfType<ExecutableStoreMember>());
-        else Assert.Single(code.Constants.OfType<ExecutableStoreSlice>());
+        if (member) Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast);
+        else Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
     }
 
     [Theory]

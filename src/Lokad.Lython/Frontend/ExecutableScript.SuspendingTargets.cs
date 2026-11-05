@@ -1,12 +1,5 @@
 namespace Lokad.Lython.Frontend;
 
-internal sealed record ExecutableUnpackValues(UnpackingLayout Layout) : ExecutableOperation;
-internal sealed record ExecutableReadRetainedSubscript : ExecutableOperation;
-internal sealed record ExecutableStoreSubscript(LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
-internal sealed record ExecutableStoreMember(string MemberName, LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
-internal sealed record ExecutableReadRetainedSlice : ExecutableOperation;
-internal sealed record ExecutableStoreSlice(LythonSourceSpan TargetSpan, bool ValueLast = false) : ExecutableOperation;
-
 internal sealed partial class ExecutableScript
 {
     private sealed partial class Builder
@@ -22,7 +15,7 @@ internal sealed partial class ExecutableScript
                     var starIndex = -1;
                     for (var i = 0; i < tuple.Items.Count; i++)
                         if (AssignmentTargetFacts.IsStarred(tuple.Items[i])) starIndex = i;
-                    EmitOperation(new ExecutableUnpackValues(new UnpackingLayout(tuple.Items.Count, starIndex)), span, block);
+                    AddInstruction(block, ExecutableInstruction.UnpackValues(new UnpackingLayout(tuple.Items.Count, starIndex), span));
                     foreach (var child in tuple.Items) block = CompileLoopTarget(child, span, block);
                     return block;
                 default: throw new InvalidOperationException("Unknown loop target.");
