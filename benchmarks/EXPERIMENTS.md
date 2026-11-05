@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [retained-source CPython checkpoint](results/2026-11-05-current-cpython-checkpoint/README.md)
+measures9c1d/6cb05f8e after executable targets and CSV input/EOF delivery; D46 is
+absent.440.59s/16jobs/all gates, all final reservations zero. Fresh nativeCSV
+1.32–1.33×,ordinaryCSV1.50–1.55×,text2.00–2.02×,JSON1.12–1.15×,report1.47×,
+config1.03–1.04×,longCSV.14×CPython. Compilation1.27–1.29/1.32–1.38×.
+Warmtext4.45% spread/freshJSON conflicting source signs remain inconclusive;
+longCSVwarm17.1–18.4% lower versusqualified7dcc. No component/CPU/allocation debt
+closure claim. Full retained-source42029990429 running; publication postponed.
+
 The [complete call-operand transport prototype](results/2026-11-05-call-operand-transport/README.md)
 is withdrawn. Five staging fields removed using immutable paused instructions
 and admitted operands, preserving both descriptor phases and awaited cleanup;
