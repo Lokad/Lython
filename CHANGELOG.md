@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Restore saved exception state and remove handler bindings at actual executable
+  frame exit, including cancellation or refused admission at instruction entry.
+  Share existing cleanup across both APIs; yielded/pending frames retain state.
+
 - Bound private operand cleanup using facts from the existing compiler shape pass.
   Skip classification of higher guest operands while preserving full reference
   clearing, reverse disposal and awaited cursor cleanup.

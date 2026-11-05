@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _instructionIndex, out _))
                 return true;
 
-            AbandonFrame(span);
             _frameReturnValue = signal.Value;
             _hasFrameReturn = true;
             return false;
@@ -23,7 +22,6 @@ internal sealed partial class LythonRuntime
                 new PendingControl(signal), span, ref _pendingAbrupt, ref _instructionIndex, out _))
                 return true;
 
-            AbandonFrame(span);
             return false;
         }
 
@@ -40,14 +38,12 @@ internal sealed partial class LythonRuntime
             // rethrow the original CLR exception instead of throwing it anew.
             if (_codeObject.ExceptionRegions.Count == 0)
             {
-                AbandonFrame(span);
                 return false;
             }
             if (!TryHandleAbrupt(_codeObject, _context, ref _stack, _instructionIndex,
                 new PendingException(ex), span, ref _pendingAbrupt, ref _instructionIndex, out var matchedRegion))
             {
                 var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
-                AbandonFrame(span);
                 if (!ReferenceEquals(failure, ex)) throw failure;
                 return false;
             }

@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
                 if (!HasYield && !HasPendingCall)
                 {
                     _preparedTypeSubscription = null;
-                    _stack.RetireTo(_codeObject.FirstTemporarySlot);
+                    AbandonFrame();
                     _stack.ReleaseStorage();
                 }
             }

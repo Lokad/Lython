@@ -150,12 +150,20 @@ internal sealed partial class LythonRuntime
         // Abandoning the frame drops its saved handler chain and restores the
         // active exception from frame entry, like CPython deleting handler
         // names and restoring the previous exception on frame exit.
-        private void AbandonFrame(LythonSourceSpan span)
+        private void AbandonFrame()
         {
-            _stack.RetireTo(_codeObject.FirstTemporarySlot);
-            _savedActiveExceptions?.Clear();
-            AbandonActiveHandlerVars(_context, span);
-            _context.State.SetCurrentException(_entryActiveException);
+            try { _stack.RetireTo(_codeObject.FirstTemporarySlot); }
+            finally
+            {
+                _savedActiveExceptions?.Clear();
+                try
+                {
+                    if (_context.ActiveHandlerVariables is { Count: > 0 })
+                        AbandonActiveHandlerVars(_context,
+                            CurrentInstructionSpan ?? _codeObject.Instructions[^1].Span);
+                }
+                finally { _context.State.SetCurrentException(_entryActiveException); }
+            }
         }
 
         // Pops saves for suites this propagation abandoned: a handler stays
@@ -525,7 +533,6 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            AbandonFrame(span);
             _frameReturnValue = value;
             _hasFrameReturn = true;
             return true;
@@ -707,7 +714,7 @@ internal sealed partial class LythonRuntime
                     if (!HasYield && !HasPendingCall)
                     {
                         _preparedTypeSubscription = null;
-                        _stack.RetireTo(_codeObject.FirstTemporarySlot);
+                        AbandonFrame();
                     }
                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
                     finally { if (!HasYield && !HasPendingCall) _stack.ReleaseStorage(); }

@@ -1,0 +1,11 @@
+{
+  "sourceBase": "f8ebdc7c, productionb69a0a49",
+  "coreSHA256": "ec4b63788bb3cfe66d35e5d338873def52454b7da1085ee0e4fcdcaa0f0b65a7",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "d55c22a4d78a3dd8c572f933a51f1e937e85f34bde744e976af2b920e27b5b5e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "5c845912137bc68836dd988ac756946c7f4ee8a4f126f706bc765e9c073d4c79",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "da4f1f811ea39d86704e4c1cfddde3fb18cd98beb33625ffc0212c60b23bd158",
+    "tests/Lokad.Lython.Tests/InstructionFailureRoutingTests.cs": "eb92061673ce8d59df0305caddafeb4599d9f312b72db2eadab52c7bf0858a64"
+  },
+  "changes": "Existing abandonment once at actual nonyield/nonpending driver exits, five scattered calls removed, exception restored in finally; no new policy or ownership machinery."
+}

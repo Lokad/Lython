@@ -195,6 +195,11 @@ Successful loop advances and true conditional arms continue at the next
 instruction; they need no unconditional entry jump. Exception routing restores
 the compiler-prepared protected-entry depth.
 
+Actual executable frame exit restores the entry exception state and removes
+abandoned handler bindings, including cancellation or refused admission at
+instruction entry. Yielded generators and pending calls retain their frame state;
+native cleanup and cursor disposal finish before owned storage is released.
+
 Private loops over exact builtin lists and tuples keep the sequence in its operand
 slot and advance by index. One fixed-size position array is admitted on first use
 and shares the operand workspace's lifetime, including generator suspension;

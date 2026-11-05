@@ -17,8 +17,9 @@ sigma, native returns, cancellation, terminal refusal, retained storage and reus
 No test scale, timeout or containment assertion changed. Retained commit0752be3c
 is included in full local4131internal/16004public per actual target onb69a0a49.
 Its platform delivery is batched with D56 as
-[CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621), running
-onb69a0a49; D54's separate green CI does not qualify these changes.
+[CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621), GREEN/all8
+onb69a0a49. [Terminal receipt](../2026-11-05-compiler-bounded-retirement/delivery-ci-status.json)
+is cached; no unchanged replay. D54's earlier receipt remains separate.
 
 ## Complete-script comparison and uncertainty
 

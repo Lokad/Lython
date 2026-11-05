@@ -1,0 +1,17 @@
+{
+  "id": "pure.integer-counter.10000",
+  "family": "pure",
+  "category": "integer-loop",
+  "scale": "10000",
+  "size": 10000,
+  "source": "total = 0\nfor value in range(10000):\n    total += value\nprint(total)\n",
+  "fixtureJson": "{\"size\":10000,\"text\":null}",
+  "expectedOutput": "49995000\n",
+  "sourceUtf8Bytes": 69,
+  "expectedOutputUtf8Bytes": 9,
+  "fixtureTextUtf8Bytes": 0,
+  "fixtureTextCodePoints": 0,
+  "sourceSha256": "3fbedf89ed070942ec8be79fd024132fe1c9a2f2f016c590c389893a3789b3b4",
+  "fixtureSha256": "7601e8e5f0594e37c2297d2903e5c15e2da900a369821cf0a7a4427ad48c91ca",
+  "expectedOutputSha256": "d6075389cdb7a8f518e688411a7c63544210fcef63d52dc47068a46cef0d92ab"
+}

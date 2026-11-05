@@ -1,0 +1,101 @@
+{
+  "activeTids": [
+    "3233352"
+  ],
+  "samples": 912,
+  "cpuSeconds": 4.6,
+  "malformedMapLines": [
+    "0x7219c3f85480 45d instance void [System.Private.CoreLib] System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable`1+ConfiguredValueTaskAwaiter[System.__Canon]::System.Runtime.CompilerServices.IStateMachineBoxAwareAwaiter.AwaitUnsa"
+  ],
+  "topLeafCpuSamples": [
+    [
+      "instance valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableFrameInterpreter/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteInstructionPrefix(bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+      381
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::StoreExecutableLocal(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      129
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      76
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<Iterate>d__21::MoveNext()[OptimizedTier1]",
+      70
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteOperandValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      44
+    ],
+    [
+      "[unknown]",
+      43
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      35
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::RetireTo(int32)[OptimizedTier1]",
+      31
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      28
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+      16
+    ],
+    [
+      "instance void [System.Runtime.Numerics] System.Numerics.BigInteger::.ctor(int64)[OptimizedTier1]",
+      15
+    ],
+    [
+      "__tls_get_addr",
+      12
+    ],
+    [
+      "valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::MapExecutableAugmented(valuetype Lokad.Lython.Frontend.ExecutableAugmentedOperator)[OptimizedTier1]",
+      12
+    ],
+    [
+      "void [System.Private.CoreLib] System.SpanHelpers::ClearWithReferences(native int&,native uint)[OptimizedTier1]",
+      8
+    ],
+    [
+      "__tls_get_addr@plt",
+      4
+    ],
+    [
+      "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+      2
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+      1
+    ],
+    [
+      "pthread_cond_signal",
+      1
+    ],
+    [
+      "class Lokad.Lython.Runtime.LythonRuntime/BuiltinCallable [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+BuiltinCallable::Create(string,class [System.Runtime]System.Func`4<object[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,object>,class [System.Runtime]System.Func`4<object[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<object>>,string[],int32)[OptimizedTier1]",
+      1
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+      1
+    ],
+    [
+      "instance class Lokad.Lython.LythonExecutionResult [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass754_0::<Run>b__0()[OptimizedTier1]",
+      1
+    ],
+    [
+      "instance class Lokad.Lython.Runtime.ExecutionThreads/WorkItem [Lokad.Lython] Lokad.Lython.Runtime.ExecutionThreads::Take(class Lokad.Lython.Runtime.ExecutionThreads/Worker)[OptimizedTier1]",
+      1
+    ]
+  ],
+  "unknown": 43
+}

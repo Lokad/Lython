@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "f8ebdc7c plus D57 protected inner instruction loop; reference same D56 production frozen86cea356 before commit metadata",
+  "coreSHA256": {
+    "candidate": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+    "control": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+    "reference": "86cea35674c9ea7c461d7d4af27da9a684f363c15ef01374ed9bdb90df7183e8"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "7be2442aa892f3cf9487e866a2ba91066c38cb6dadb3ff6cd87aa0487a740710"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "205internal/1274public focused exception/generator/refusal/cancellation/async/ownership cases per actual11/10 pass. Clean32.01s build. D56 full local passed; platform42065949621 independent.",
+  "changes": "Existing three routing catches outside protected inner instruction loop. Entry sticky failure branches outward to existing CheckExecution. Same instruction ref for helper errors despite changed index, success/error tails preserve jump/pause/disposal, no added flags/counters/owner/dispatch strategy."
+}

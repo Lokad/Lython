@@ -1,0 +1,16 @@
+{
+  "sourceRevision": "f8ebdc7c, same productionb69a0a49 after byte-identical dispatch restoration and forced nonincremental build; added routing tests only",
+  "files": {
+    "Lokad.Lython.dll": "2f27268251eb74ca829b4591ae05d8b3e044bc061ba87a1e710d6aa5b0e9d6bc",
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "8d9a625512d3acd2c1b471f840b01cb74cec13a9b98c2d419d4bfba2ad58d5b5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "c7ebc3b4ac0d50df0e7a1579b32fd4d40daf9363817d160a0d5485db51548a62",
+    "src/Lokad.Lython/Runtime/PyCoreIterators.cs": "45880228390023fca4b84a485b0af9259a56f69cf44efba553e539c257ce5c0f"
+  },
+  "purpose": "One focused basic-loop cost source gate after D57 mixed evidence; no fresh general profiling campaign or CPUgain claim."
+}

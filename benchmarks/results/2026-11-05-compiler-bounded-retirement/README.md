@@ -60,7 +60,9 @@ One new mixed guest/private lifetime control; existing reverse/failure/clearing
 controls preserved. No timeout, scale, containment or checkpoint-count relaxation.
 Full local4131internal/16004public pass on each actual runtime. Retained commit
 b69a0a49 is pushed; Windows/Ubuntu, original stress and installed-consumer
-qualification is running as [CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621).
+qualification [CI42065949621](https://github.com/Lokad/Lython/actions/runs/42065949621)
+is GREEN/all8 onb69a0a49: Windows/Ubuntu, actual11/10, original stress and installed
+consumers. [Terminal receipt](delivery-ci-status.json) cached; no unchanged replay.
 
 [Contract](source-contract.md), [observations](summary.json), [source patch](source.patch).
 Raw archive preserves identities, full samples, orchestration, checks and source.

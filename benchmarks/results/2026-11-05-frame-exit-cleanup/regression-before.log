@@ -1,0 +1,41 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.58]     Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: True, failureKind: 1, insideHandler: True) [FAIL]
+[xUnit.net 00:00:00.58]     Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: True, failureKind: 0, insideHandler: True) [FAIL]
+[xUnit.net 00:00:00.59]     Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: False, failureKind: 0, insideHandler: True) [FAIL]
+  Failed Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: True, failureKind: 1, insideHandler: True) [20 ms]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }
+Actual:   PyException { AllocationSpan = null, Args = [···], Cause = null, Code = inner, Context = PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }, ··· }
+  Stack Trace:
+     at Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(Boolean asynchronous, Int32 failureKind, Boolean insideHandler) in D:\code\Lython\tests\Lokad.Lython.Tests\InstructionFailureRoutingTests.cs:line 68
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: True, failureKind: 0, insideHandler: True) [< 1 ms]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }
+Actual:   PyException { AllocationSpan = null, Args = [···], Cause = null, Code = inner, Context = PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }, ··· }
+  Stack Trace:
+     at Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(Boolean asynchronous, Int32 failureKind, Boolean insideHandler) in D:\code\Lython\tests\Lokad.Lython.Tests\InstructionFailureRoutingTests.cs:line 68
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: False, failureKind: 0, insideHandler: True) [< 1 ms]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }
+Actual:   PyException { AllocationSpan = null, Args = [···], Cause = null, Code = inner, Context = PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }, ··· }
+  Stack Trace:
+     at Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(Boolean asynchronous, Int32 failureKind, Boolean insideHandler) in D:\code\Lython\tests\Lokad.Lython.Tests\InstructionFailureRoutingTests.cs:line 68
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.60]     Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: False, failureKind: 1, insideHandler: True) [FAIL]
+  Failed Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(asynchronous: False, failureKind: 1, insideHandler: True) [< 1 ms]
+  Error Message:
+   Assert.Same() Failure: Values are not the same instance
+Expected: PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }
+Actual:   PyException { AllocationSpan = null, Args = [···], Cause = null, Code = inner, Context = PyException { AllocationSpan = null, Args = null, Cause = null, Code = None, Context = null, ··· }, ··· }
+  Stack Trace:
+     at Lokad.Lython.Tests.InstructionFailureRoutingTests.EntryFailureKeepsItsOriginWhileOperationFailureAcquiresPythonContext(Boolean asynchronous, Int32 failureKind, Boolean insideHandler) in D:\code\Lython\tests\Lokad.Lython.Tests\InstructionFailureRoutingTests.cs:line 68
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     4, Passed:     8, Skipped:     0, Total:    12, Duration: 140 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

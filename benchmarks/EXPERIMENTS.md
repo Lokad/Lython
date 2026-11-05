@@ -1,5 +1,24 @@
 # Benchmark experimental history
 
+The [basic-loop cost gate](results/2026-11-05-basic-loop-cost/README.md)
+closes one25s/912guest-sample capture, unknown4.71%/one truncated map line retained.
+Prefix41.78%,store14.14%,addition8.33%,rangeMoveNext7.68% include actual work,
+not removable fractions. Preserve lifetime fences; no broad scalar dominance
+claim. Source review exposes terminal-entry frame restoration missing cleanup,
+now a bounded correctness/consolidation milestone. All quiet/golden/identity/
+Closed/finalzero/worker-profiler joins/fixture gates pass. No elapsed/allocation/
+causalCPU/embedding-latency claim or general profile replay.
+
+The [protected instruction-loop layout](results/2026-11-05-instruction-loop-boundary/README.md)
+is withdrawn. Entry failure stays outside routing, same instruction ref/pending
+cleanup, no phase flags/new strategy. B287139.70s/all gates: text−4.24/4.71%,
+JSON−1.13/2.67%,CSV conflicting,report+2.60/3.63% variable,basic+.59/.92%. One
+justified same-binary B28897.10s/all gates reverses report−1.31/3.64%,basic−.67/4.33%
+with substantial dispersion. Preserve uncertainty, favorable/adverse conditions;
+no causal gain/failure claim. Extra outward branch/cold tail lacks sufficiently
+consistent benefit: source restored/nonincremental build, six independent routing/
+origin/effect/ownership regressions retained. No percentage veto/permanent ban.
+
 The [compiler-bounded operand-retirement milestone](results/2026-11-05-compiler-bounded-retirement/README.md)
 uses one conservative slot bound from the existing shape pass, removing ordinary
 guest-value classification above it while retaining full clearing/reverse/failed/

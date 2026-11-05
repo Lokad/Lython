@@ -15,6 +15,10 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Instruction failure routing](Lokad.Lython.Tests/InstructionFailureRoutingTests.cs)
+distinguishes entry cancellation/refusal from operation errors, preserving the
+first origin, active Python exception state, stopped effects and released storage.
+
 | Contract | Primary coverage |
 | --- | --- |
 | Language/module values, types and errors | Public goldens and semantic families; syntax cases run once through each API |
