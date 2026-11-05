@@ -360,12 +360,18 @@ returned indexes retain scalar coordinates. Tuple affixes reuse the prepared
 window, preserving validation and early-match behavior.
 
 CSV parsing searches bounded UTF-8 spans for structural byte candidates and
-verifies complete dialect characters at each boundary. One record/field state
-preserves empty, quoted and ignored-space records. Completed records queue final
-field arrays. DictReader relinquishes private array capacity after header/key
-protocols and awaited cleanup; values and escaping dictionaries/rest lists retain
-independent funding. csv.reader and exposed fieldnames adopt the funded array
-without copying. Queued records remain charged through EOF and recoverable errors.
+verifies complete dialect characters at each boundary. Native text files append
+a complete physical line directly into the parser's admitted buffer, which the
+same parser compacts in place. Public file iteration still returns independent
+strings. Raw line bytes and an unfinished multiline prefix can require more
+working capacity than the decoded fields; replacement peaks remain admitted.
+Each source item completes at most one record, with trailing CR/LF allowed.
+One independently funded final field array awaits consumption. DictReader
+relinquishes private array capacity after header/key protocols and awaited
+cleanup; values and escaping dictionaries/rest lists retain independent funding.
+csv.reader and exposed fieldnames adopt the funded array without copying.
+Source and parse errors consume the failed item and discard its unfinished
+record; already returned rows remain valid and funded.
 
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.

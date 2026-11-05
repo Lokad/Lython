@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
                         : PyIteration.Cursor.Create(args[0], span, context);
                 var format = await GetOptionsAsync(bound, dictionary ? CsvOptionArgumentLayout.Dictionary : CsvOptionArgumentLayout.Standard,
                     span, context, asynchronous).ConfigureAwait(false);
-                var records = new CsvRecordSource(args[0] as PyList, cursor, format, span, context);
+                var records = new CsvRecordSource(args[0] as PyList, cursor, args[0] as ExecutionContext.TextFileHandle, format, span, context);
                 cursor = null;
                 return dictionary ? new CsvDictReaderObject(records, fields, args[2], args[3], context, span) : new CsvReaderObject(records);
             }
@@ -230,6 +230,7 @@ internal sealed partial class LythonRuntime
         private readonly CsvRecordParser _parser;
         private PyIteration.Cursor? _cursor;
         private PyList? _indexed;
+        private ExecutionContext.TextFileHandle? _nativeFile;
         private int _position;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
@@ -239,14 +240,13 @@ internal sealed partial class LythonRuntime
         // from actual capacities, independently of emitted values.
         internal const long ShellBytes = 512;
         internal long OwnedBytes => ShellBytes + _parser.StorageBytes;
-        internal bool Completed => _completed;
 
         private CsvRecordSource(CsvOptions options, LythonSourceSpan span, ExecutionContext context)
         {
             _context = context;
             _span = span;
             using var storage = context.MemoryGovernor.ReserveTemporary(ShellBytes, span);
-            _parser = new CsvRecordParser(options, context, span, this);
+            _parser = new CsvRecordParser(options, context, span);
             storage.Commit(ShellBytes);
         }
 
@@ -257,15 +257,18 @@ internal sealed partial class LythonRuntime
             {
                 if (source is PyList list) _indexed = list;
                 else _cursor = PyIteration.Cursor.Create(source, span, context);
+                _nativeFile = source as ExecutionContext.TextFileHandle;
             }
             catch { DiscardConstruction(); throw; }
         }
 
-        internal CsvRecordSource(PyList? indexed, PyIteration.Cursor? cursor, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
+        internal CsvRecordSource(PyList? indexed, PyIteration.Cursor? cursor, ExecutionContext.TextFileHandle? nativeFile,
+            CsvOptions options, LythonSourceSpan span, ExecutionContext context)
             : this(options, span, context)
         {
             _indexed = indexed;
             _cursor = cursor;
+            _nativeFile = nativeFile;
         }
 
         private void DiscardConstruction()
@@ -319,6 +322,17 @@ internal sealed partial class LythonRuntime
                     return null;
                 }
 
+                if (_nativeFile is not null)
+                {
+                    var before = _parser.InputBuffer.Length;
+                    bool read;
+                    try { read = await _nativeFile.ReadLineIntoAsync(_parser.InputBuffer).ConfigureAwait(false); }
+                    catch { _parser.ResetRecord(); throw; }
+                    if (!read) await FinishExhaustedAsync().ConfigureAwait(false);
+                    else FeedNativeLine(before);
+                    continue;
+                }
+
                 if (_indexed is not null)
                 {
                     // Indexed lists never touch the host, so the async pull shares
@@ -348,8 +362,10 @@ internal sealed partial class LythonRuntime
                     // Version-checked iterators (large-list storage, views)
                     // surface concurrent modification as a CLR failure; fail
                     // explicitly instead of leaking it.
+                    _parser.ResetRecord();
                     throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
                 }
+                catch { _parser.ResetRecord(); throw; }
 
                 if (!next.HasValue)
                 {
@@ -363,6 +379,16 @@ internal sealed partial class LythonRuntime
 
         private void Pull()
         {
+            if (_nativeFile is not null)
+            {
+                var before = _parser.InputBuffer.Length;
+                bool read;
+                try { read = _nativeFile.ReadLineInto(_parser.InputBuffer); }
+                catch { _parser.ResetRecord(); throw; }
+                if (!read) FinishExhausted();
+                else FeedNativeLine(before);
+                return;
+            }
             object current;
             if (_indexed is not null)
             {
@@ -390,8 +416,10 @@ internal sealed partial class LythonRuntime
                     // Version-checked iterators (large-list storage, views)
                     // surface concurrent modification as a CLR failure; fail
                     // explicitly instead of leaking it.
+                    _parser.ResetRecord();
                     throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
                 }
+                catch { _parser.ResetRecord(); throw; }
 
                 if (!moved)
                 {
@@ -404,12 +432,21 @@ internal sealed partial class LythonRuntime
             FeedPulledLine(current);
         }
 
+        private void FeedNativeLine(int before)
+        {
+            _context.CheckExecution(_span);
+            PhysicalLineCount++;
+            try { _parser.FeedOwnedLine(before); }
+            catch { _parser.ResetRecord(); throw; }
+        }
+
         private void FeedPulledLine(object current)
         {
             _context.CheckExecution(_span);
             if (!PyStringOps.TryAsString(current, out var line))
             {
-                throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
+                _parser.ResetRecord();
+                throw CsvError($"iterator should return strings, not {RuntimeErrors.OperandTypeName(current)} (the file should be opened in text mode)", _span);
             }
 
             PhysicalLineCount++;
@@ -421,8 +458,8 @@ internal sealed partial class LythonRuntime
             {
                 // The failed line is consumed either way; drop its partial
                 // record so the next pull starts clean instead of poisoning
-                // every later row. (A non-string element throws before any
-                // feed, leaving legitimately pending multiline state alone.)
+                // every later row. A failed __next__ begins a fresh record on
+                // its next invocation, including after source/type failures.
                 _parser.ResetRecord();
                 throw;
             }
@@ -454,6 +491,7 @@ internal sealed partial class LythonRuntime
                 {
                     _cursor = null;
                     _indexed = null;
+                    _nativeFile = null;
                     _parser.ReleaseScratch();
                 }
             }
@@ -469,9 +507,7 @@ internal sealed partial class LythonRuntime
         private readonly GovernedByteBuilder _record;
         private int _fieldStart;
         private long _stringBytes;
-        private readonly CsvRecordSource _owner;
-        private readonly List<object[]> _ready = new();
-        private int _readyHead;
+        private object[]? _readyRecord;
         private enum FieldState { RecordStart, FieldStart, Bare, Quoted, AfterQuote }
         private FieldState _state;
         private bool _fieldWasQuoted;
@@ -484,44 +520,44 @@ internal sealed partial class LythonRuntime
             internal readonly object? Converted = converted;
         }
 
-        internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity + 16L * _ready.Capacity);
+        internal long StorageBytes => checked(16L * _fields.Capacity + _record.CommittedCapacity);
+        internal GovernedByteBuilder InputBuffer => _record;
 
-        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, CsvRecordSource owner)
+        internal void FeedOwnedLine(int before)
+        {
+            var line = _record.WrittenSpan[before..];
+            _record.Truncate(before);
+            // CSV decoding only removes syntax bytes. Writes stay behind the
+            // consumed input, and the already-admitted backing cannot grow.
+            // Truncate/FinishRecord retain it until this Feed has completed.
+            Feed(line);
+        }
+
+        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             _options = options;
             _context = context;
             _span = span;
-            _owner = owner;
             _record = new GovernedByteBuilder(context.MemoryGovernor, span, 16);
         }
 
-        // Takes the next completed record, if any. Records completed by one
-        // Feed call queue here until the source drains them.
+        // One source item completes at most one row. No subsequent item is
+        // pulled until this independently funded result has been transferred.
         public bool TryTakeReady(out object[] row)
         {
-            if (_readyHead >= _ready.Count)
+            if (_readyRecord is null)
             {
-                if (_owner.Completed) ReleaseReadyStorage();
                 row = null!;
                 return false;
             }
-
-            row = _ready[_readyHead];
-            _ready[_readyHead] = null!;
-            _readyHead++;
-            if (_readyHead > 1024 && _readyHead >= _ready.Count / 2)
-            {
-                _ready.RemoveRange(0, _readyHead);
-                _readyHead = 0;
-            }
-
-            if (_owner.Completed && _readyHead >= _ready.Count) ReleaseReadyStorage();
-
+            row = _readyRecord;
+            _readyRecord = null;
             return true;
         }
 
         public void Feed(ReadOnlySpan<byte> text)
         {
+            if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
             var delimiter = _options.Delimiter.Utf8Bytes.Span;
             var quote = _options.Quoting != CsvQuotingMode.None && _options.QuoteChar is { } q
                 ? q.Utf8Bytes.Span : default;
@@ -591,8 +627,9 @@ internal sealed partial class LythonRuntime
                 var c = text[i];
                 if (c is (byte)'\r' or (byte)'\n')
                 {
-                    FinishRecord();
-                    i += c == (byte)'\r' && i + 1 < text.Length && text[i + 1] == (byte)'\n' ? 2 : 1;
+                    FinishRecord(text[(i + 1)..]);
+                    _context.CheckExecution(_span);
+                    return;
                 }
                 else if (remaining.StartsWith(delimiter))
                 {
@@ -682,16 +719,21 @@ internal sealed partial class LythonRuntime
             _fieldWasQuoted = false;
         }
 
-        private void EnqueueRecord(object[] record)
-        {
-            EnsureListCapacity(_ready);
-            _ready.Add(record);
-        }
-
-        private void FinishRecord()
+        private void FinishRecord(ReadOnlySpan<byte> remainder = default)
         {
             if (!(_state == FieldState.RecordStart && _record.Length == _fieldStart && _fields.Count == 0))
                 FinishField();
+            // CPython accepts trailing CR/LF in an iterator item, but another
+            // unquoted record belongs in a separate item. Validate before any
+            // row is published, after this field's numeric conversion/errors.
+            for (var offset = 0; offset < remainder.Length;)
+            {
+                _context.CheckExecution(_span);
+                var count = Math.Min(4096, remainder.Length - offset);
+                if (remainder.Slice(offset, count).IndexOfAnyExcept((byte)'\r', (byte)'\n') >= 0)
+                    throw CsvError("new-line character seen in unquoted field - do you need to open the file with newline=''?", _span);
+                offset += count;
+            }
             // Admit all ordinary field payloads once, while working bytes and
             // old capacities remain funded. The private array includes headroom
             // for adoption by csv.reader; each value keeps independent funding.
@@ -721,7 +763,7 @@ internal sealed partial class LythonRuntime
                 row[index++] = cell;
             }
             _context.CheckExecution(_span);
-            EnqueueRecord(row);
+            _readyRecord = row;
             storage.Commit(rowBytes);
             _fields.Clear();
             _record.Truncate(0);
@@ -732,7 +774,7 @@ internal sealed partial class LythonRuntime
         }
 
         // Drops the in-progress record after a failed feed so the next pull
-        // starts clean. Completed queue entries are untouched.
+        // starts clean. Completed result ownership is independent of scratch.
         public void ResetRecord()
         {
             _fields.Clear();
@@ -761,24 +803,7 @@ internal sealed partial class LythonRuntime
             _fields.Capacity = 0;
             _fieldStart = 0;
             _stringBytes = 0;
-            // EOF can precede consumption of records already queued by Feed.
-            // Their slots stay funded until the last record is handed out.
-            if (_readyHead >= _ready.Count)
-            {
-                _ready.Clear();
-                _ready.Capacity = 0;
-                _readyHead = 0;
-            }
             _context.MemoryGovernor.Release(before - StorageBytes);
-        }
-
-        private void ReleaseReadyStorage()
-        {
-            var before = _ready.Capacity;
-            _ready.Clear();
-            _ready.Capacity = 0;
-            _readyHead = 0;
-            _context.MemoryGovernor.Release(16L * before);
         }
 
     }

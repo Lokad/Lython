@@ -93,6 +93,13 @@ dispatch-only measurement. Exact worker procedures and limitations are linked be
 
 ## Improvements against earlier Lython
 
+The [owned native CSV input comparison](../benchmarks/results/2026-11-05-csv-owned-input/README.md)
+measures c10ddd55 against qualified7dcc3b48: long-field CSV warm elapsed is
+18.3–18.6% lower with0.33% identical-current spread. Ordinary CSV magnitudes
+remain control-limited; unchanged text includes+3.46%/−1.18% conflicting roles.
+Allocation and attributed CPU are unmeasured. This targeted source pair does
+not replace the representative external baseline above.
+
 These are separate source-pair results, not CPython ratios or additive gains.
 Each link records its measured revisions, controls and limitations.
 

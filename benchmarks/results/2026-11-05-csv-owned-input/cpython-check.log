@@ -1,0 +1,7 @@
+read 1
+18981 False True v 2
+['a', 'b'] 1
+bad 2
+['tail"', 'v'] 3
+['last', 'row'] 4
+[{"input": "a,b\rc,d\r", "value": null, "error": ["Error", "new-line character seen in unquoted field - do you need to open the file with newline=''?"]}, {"input": "a,b\n\n", "value": [["a", "b"]], "error": null}, {"input": "a,b\r\n\n", "value": [["a", "b"]], "error": null}, {"input": "\n\n", "value": [[]], "error": null}, {"input": "bad\nnext", "value": null, "error": ["Error", "new-line character seen in unquoted field - do you need to open the file with newline=''?"]}]

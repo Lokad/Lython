@@ -129,7 +129,7 @@ public sealed class CsvReaderInputHandlingTests
     [Fact]
     public async Task CaughtBadElementSkipsCleanly()
     {
-        // A non-string element fails with TypeError and the following element
+        // A non-string element fails with csv.Error and the following element
         // still parses; the iterator is not left exhausted.
         var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
             import csv
@@ -143,7 +143,7 @@ public sealed class CsvReaderInputHandlingTests
             results = [next(it), next(it)]
             try:
                 results.append(next(it))
-            except TypeError as e:
+            except csv.Error as e:
                 results.append(type(e).__name__)
                 results.append(str(e))
             results.append(next(it))
@@ -154,8 +154,8 @@ public sealed class CsvReaderInputHandlingTests
         {
             new List<object?> { "a" },
             new List<object?> { "b" },
-            "TypeError",
-            "csv.reader(csvfile) expects an iterable of strings.",
+            "Error",
+            "iterator should return strings, not int (the file should be opened in text mode)",
             new List<object?> { "c" },
         };
         var sync = script.Run(new MockLythonHost());
@@ -217,7 +217,7 @@ public sealed class CsvReaderInputHandlingTests
             rows.append(1)
             try:
                 read_all(rows)
-            except TypeError as e:
+            except csv.Error as e:
                 results.append(type(e).__name__)
                 results.append(str(e))
             try:
@@ -231,8 +231,8 @@ public sealed class CsvReaderInputHandlingTests
         {
             new List<object?> { new List<object?> { "x" } },
             new List<object?> { new Dictionary<object, object?> { ["k"] = "a" } },
-            "TypeError",
-            "csv.reader(csvfile) expects an iterable of strings.",
+            "Error",
+            "iterator should return strings, not int (the file should be opened in text mode)",
             "Error",
         };
         var syncHost = new MockLythonHost();

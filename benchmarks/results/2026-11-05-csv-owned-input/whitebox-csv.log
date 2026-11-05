@@ -1,0 +1,31 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.35]     Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(asynchronous: False) [FAIL]
+[xUnit.net 00:00:01.35]     Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(asynchronous: False) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "TypeError"
+Actual:   "Error"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.Tests.CsvDenialOwnershipTests.AbandonPartialSource(ExecutionContext context, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\CsvDenialOwnershipTests.cs:line 352
+   at Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\CsvDenialOwnershipTests.cs:line 257
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(asynchronous: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "TypeError"
+Actual:   "Error"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.Tests.CsvDenialOwnershipTests.AbandonPartialSource(ExecutionContext context, Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\CsvDenialOwnershipTests.cs:line 352
+   at Lokad.Lython.Tests.CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\CsvDenialOwnershipTests.cs:line 257
+   at InvokeStub_CsvDenialOwnershipTests.PartialRowsStayOwnedUntilTheirExplicitBatchEnds(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Failed!  - Failed:     2, Passed:   101, Skipped:     0, Total:   103, Duration: 566 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

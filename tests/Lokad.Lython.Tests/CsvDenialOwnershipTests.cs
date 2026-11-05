@@ -27,6 +27,7 @@ public sealed class CsvDenialOwnershipTests
             Options() with { Quoting = LythonRuntime.CsvQuotingMode.NonNumeric }, Span, context);
         var parser = Parser(source);
         parser.Feed("1,"u8);
+        Assert.True(parser.TryTakeReady(out var retained));
         var held = PyString.FromString("held", governor, Span);
         ILythonMemoryReservation? padding = null;
         // Fund the 130-byte UTF-8 value, leaving 70 bytes for its 72-byte float scratch.
@@ -38,7 +39,6 @@ public sealed class CsvDenialOwnershipTests
         Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
             error.Attribution?.Reason);
         Assert.Equal(72, governor.LastDeniedReservationBytes); // Existing float scratch for two UTF-8 bytes.
-        Assert.True(parser.TryTakeReady(out var retained));
         Assert.Equal(1.0, Assert.IsType<double>(retained[0]));
         Assert.False(parser.TryTakeReady(out _));
         Assert.True(held.Utf8Bytes.Span.SequenceEqual("held"u8));
@@ -349,7 +349,7 @@ public sealed class CsvDenialOwnershipTests
         var error = asynchronous
             ? Assert.Throws<LythonRuntimeException>(() => source.TryMoveNextAsync().GetAwaiter().GetResult())
             : Assert.Throws<LythonRuntimeException>(() => source.TryMoveNext(out _));
-        Assert.Equal("TypeError", error.ExceptionType);
+        Assert.Equal("Error", error.ExceptionType);
         return new(source);
     }
 

@@ -1,0 +1,25 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:04.62]     Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(asynchronous: True) [FAIL]
+[xUnit.net 00:00:04.63]     Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(asynchronous: False) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(asynchronous: True) [288 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.AssertFile(Boolean asynchronous, String content, String source, String expected, Int32 expectedCloses) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 111
+   at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 12
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(asynchronous: False) [< 1 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.AssertFile(Boolean asynchronous, String content, String source, String expected, Int32 expectedCloses) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 111
+   at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.GenericItemsShareTheSameSingleRecordAndErrorLifetime(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 12
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:    14, Skipped:     0, Total:    16, Duration: 1 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

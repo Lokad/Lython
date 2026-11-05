@@ -195,6 +195,47 @@ internal sealed partial class LythonRuntime
                 finally { builder?.Release(); }
             }
 
+            // Native consumers already own their destination. Finish copying a
+            // whole physical line before they inspect it; no window borrow escapes.
+            internal bool ReadLineInto(GovernedByteBuilder destination)
+            {
+                var before = destination.Length;
+                while (true)
+                {
+                    Refill();
+                    if (Drained())
+                    {
+                        _services.CheckExecution(null);
+                        return destination.Length != before;
+                    }
+                    if (AppendLineWindow(destination)) return true;
+                }
+            }
+
+            internal async ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
+            {
+                var before = destination.Length;
+                while (true)
+                {
+                    await RefillAsync().ConfigureAwait(false);
+                    if (Drained())
+                    {
+                        _services.CheckExecution(null);
+                        return destination.Length != before;
+                    }
+                    if (AppendLineWindow(destination)) return true;
+                }
+            }
+
+            private bool AppendLineWindow(GovernedByteBuilder destination)
+            {
+                var end = TextLineScanning.FindLineEndByte(_window.Span, _windowConsumed, _newline);
+                var complete = end < _window.Length || EndsWithTerminator();
+                AppendRange(destination, _windowConsumed, end);
+                _services.CheckExecution(null);
+                return complete;
+            }
+
             public async ValueTask<PyString> ReadLineAsync(int size)
             {
                 if (size == 0)

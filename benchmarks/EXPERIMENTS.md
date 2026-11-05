@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [owned native CSV input transport](results/2026-11-05-csv-owned-input/README.md)
+removes an unexposed line string/copy/admission and, after independent Python
+corrections, the ready-row queue/backlink/capacity machinery.143.12s/five jobs/all
+gates: longCSVwarm18.32/18.59% lower/.33% current spread; ordinaryCSV smaller
+timings are control-limited. Text+3.46/−1.18% with4.48% spread is inconclusive;
+the adverse observation remains. No allocation/causalCPU claim. Original source
+rollback assumption and baseline failures are preserved with the corrected
+Python record lifetime. Separate non-strict quoted-EOF mismatch is a follow-up.
+
 The [current complete-script CPU/source gate](results/2026-11-05-current-script-cpu/README.md)
 closes39s/two cases on qualified7dcc/a4ce:783text/1022ordinaryCSV guest samples,
 unknown5.11/8.51%, one truncated map line each and collector conditions preserved.

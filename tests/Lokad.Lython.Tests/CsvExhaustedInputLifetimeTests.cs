@@ -113,31 +113,6 @@ public sealed class CsvExhaustedInputLifetimeTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task EofPreservesQueuedFinalRecordAndItsFunding(bool asynchronous)
-    {
-        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var (source, input, firstField) = CompleteWithQueuedRecord(context, asynchronous);
-        Collect();
-        Assert.False(input.TryGetTarget(out _));
-        Assert.True(source.OwnedBytes > LythonRuntime.CsvRecordSource.ShellBytes);
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var slots = source.OwnedBytes - LythonRuntime.CsvRecordSource.ShellBytes;
-        var row = asynchronous ? await source.TryMoveNextAsync() : source.TryMoveNext(out var next) ? next : null;
-        Assert.NotNull(row);
-        Assert.Equal("second", ((PyString)row[0]).AsString());
-        Assert.Equal("😀", ((PyString)row[1]).AsString());
-        Assert.Equal(LythonRuntime.CsvRecordSource.ShellBytes, source.OwnedBytes);
-        Assert.Equal(before - slots, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.False(source.TryMoveNext(out _));
-        Assert.Null(await source.TryMoveNextAsync());
-        GC.KeepAlive(firstField);
-        GC.KeepAlive(row);
-        GC.KeepAlive(source);
-    }
-
-    [Theory]
     [InlineData(false, "none")]
     [InlineData(true, "none")]
     [InlineData(false, "sync")]
@@ -211,24 +186,6 @@ public sealed class CsvExhaustedInputLifetimeTests
     {
         var input = new PyList([]);
         return (new(input, Options(), new(0, 0, 0, 0), context), new(input));
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (LythonRuntime.CsvRecordSource Source, WeakReference<object> Input, PyString Field)
-        CompleteWithQueuedRecord(LythonRuntime.ExecutionContext context, bool asynchronous)
-    {
-        var (source, input) = EmptySource(context);
-        var parser = (LythonRuntime.CsvRecordParser)typeof(LythonRuntime.CsvRecordSource)
-            .GetField("_parser", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source)!;
-        // A controlled parser/source boundary: completion with an already
-        // parsed record still queued must not discard that record or its slots.
-        parser.Feed("first,1\nsecond,😀\n"u8);
-        Assert.True(source.TryMoveNext(out var first));
-        var finish = typeof(LythonRuntime.CsvRecordSource).GetMethod(asynchronous ? "FinishExhaustedAsync" : "FinishExhausted",
-            BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var result = finish.Invoke(source, null);
-        if (asynchronous) ((ValueTask)result!).GetAwaiter().GetResult();
-        return (source, input, (PyString)first[0]);
     }
 
     private sealed class CleanupCursor(bool fail) : IEnumerator<object>

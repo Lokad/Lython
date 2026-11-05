@@ -1,0 +1,29 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:04.35]     Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(asynchronous: False) [FAIL]
+[xUnit.net 00:00:04.45]     Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(asynchronous: True) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(asynchronous: False) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "bad 1\n['last', 'row'] 2\n"
+Actual:   "['c', 'd'] 1\n"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.AssertFile(Boolean asynchronous, String content, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 101
+   at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 29
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(asynchronous: True) [99 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "bad 1\n['last', 'row'] 2\n"
+Actual:   "['c', 'd'] 1\n"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.AssertFile(Boolean asynchronous, String content, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 101
+   at Lokad.Lython.PublicApi.Tests.CsvNativeInputTests.EmbeddedRecordDelimiterRejectsTheWholeItemAndNextPullRecovers(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\CsvNativeInputTests.cs:line 29
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     6, Skipped:     0, Total:     8, Duration: 855 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)
