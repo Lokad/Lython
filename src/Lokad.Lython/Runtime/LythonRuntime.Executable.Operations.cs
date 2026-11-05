@@ -150,8 +150,6 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Executable IR contains unknown unary operator {op}."),
         };
 
-    private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
-        => EvaluateAugmentedAssignment(currentValue, right, ExecutableInstruction.MapAugmentedOperator(op), context, span);
 
 
 }

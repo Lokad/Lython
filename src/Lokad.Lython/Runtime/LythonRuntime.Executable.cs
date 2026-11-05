@@ -340,6 +340,14 @@ internal sealed partial class LythonRuntime
             return value;
         }
 
+        // The completed operation consumed this input, as PublishValue would
+        // overwrite it. Its result goes directly to a binding instead.
+        internal void ForgetResultInput(int resultSlot)
+        {
+            _items[resultSlot] = null!;
+            LiveExtent = resultSlot;
+        }
+
         internal bool TryPrepareNativeIteration(int slot, LythonSourceSpan span)
         {
             if (_items[slot] is not (PyList or PyTuple)) return false;

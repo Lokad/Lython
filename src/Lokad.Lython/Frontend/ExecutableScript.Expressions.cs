@@ -393,24 +393,6 @@ internal sealed partial class ExecutableScript
                 _ => throw new InvalidOperationException($"Executable IR lowering does not support unary operator {op}."),
             };
 
-        private static ExecutableAugmentedOperator MapAugmentedAssignmentOperator(AugmentedAssignmentOperatorSyntax op)
-            => op switch
-            {
-                AugmentedAssignmentOperatorSyntax.Add => ExecutableAugmentedOperator.Add,
-                AugmentedAssignmentOperatorSyntax.Subtract => ExecutableAugmentedOperator.Subtract,
-                AugmentedAssignmentOperatorSyntax.Multiply => ExecutableAugmentedOperator.Multiply,
-                AugmentedAssignmentOperatorSyntax.MatrixMultiply => ExecutableAugmentedOperator.MatrixMultiply,
-                AugmentedAssignmentOperatorSyntax.Divide => ExecutableAugmentedOperator.Divide,
-                AugmentedAssignmentOperatorSyntax.FloorDivide => ExecutableAugmentedOperator.FloorDivide,
-                AugmentedAssignmentOperatorSyntax.Modulo => ExecutableAugmentedOperator.Modulo,
-                AugmentedAssignmentOperatorSyntax.Power => ExecutableAugmentedOperator.Power,
-                AugmentedAssignmentOperatorSyntax.BitwiseOr => ExecutableAugmentedOperator.BitwiseOr,
-                AugmentedAssignmentOperatorSyntax.BitwiseXor => ExecutableAugmentedOperator.BitwiseXor,
-                AugmentedAssignmentOperatorSyntax.BitwiseAnd => ExecutableAugmentedOperator.BitwiseAnd,
-                AugmentedAssignmentOperatorSyntax.LeftShift => ExecutableAugmentedOperator.LeftShift,
-                AugmentedAssignmentOperatorSyntax.RightShift => ExecutableAugmentedOperator.RightShift,
-                _ => throw new InvalidOperationException($"Executable IR lowering does not support augmented assignment operator {op}."),
-            };
 
     }
 }

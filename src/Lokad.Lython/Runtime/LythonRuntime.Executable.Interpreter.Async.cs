@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
                     _stack[instruction.ResultSlot] = PyNone.Instance;
                     _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, cached);
                 }
-                else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, cached);
+                else PublishInstructionResult(instruction, cached);
                 return new(false);
             }
             var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 _stack[instruction.ResultSlot] = PyNone.Instance;
                 _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, member.Value);
             }
-            else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, member.Value);
+            else PublishInstructionResult(instruction, member.Value);
         }
 
         private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
         {
             if (next.HasValue)
             {
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, next.Value);
+                PublishInstructionResult(instruction, next.Value);
                 return new(false);
             }
             _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, _delegation!.ReturnValue);
+                PublishInstructionResult(instruction, _delegation!.ReturnValue);
                 _delegation = null;
             }
         }
@@ -143,13 +143,13 @@ internal sealed partial class LythonRuntime
             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
             {
                 var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
+                PublishInstructionResult(instruction, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
                 var enteredContext = await PyContextManagers.EnterAsync(RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span), instruction.Span, _context).ConfigureAwait(false);
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, enteredContext);
+                PublishInstructionResult(instruction, enteredContext);
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
@@ -213,14 +213,14 @@ internal sealed partial class LythonRuntime
                         break;
                     case ExecutableOpCode.Augmented:
                         result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
-                            ExecutableInstruction.MapAugmentedOperator(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
+                            instruction.AugmentedOperator, _context, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Unary:
                         result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);
                         break;
                     default: throw new InvalidOperationException("Unexpected value operation.");
                 }
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
+                PublishInstructionResult(instruction, result);
             }
             catch { _stack.RetireTo(instruction.ResultSlot); throw; }
         }

@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableFinishComprehension:
                     var completed = _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
                     ((ExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, completed);
+                    PublishInstructionResult(instruction, completed);
                     break;
                 case ExecutableStartDisplay start:
                     object collection = start.Kind switch
@@ -53,12 +53,12 @@ internal sealed partial class LythonRuntime
                         ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
                         _ => new PyList([], _context.MemoryGovernor, span),
                     };
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, collection);
+                    PublishInstructionResult(instruction, collection);
                     break;
                 case ExecutableFinishTuple:
                     var expanded = (PyList)_stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, tuple);
+                    PublishInstructionResult(instruction, tuple);
                     break;
                 case ExecutableStartCall call:
                     var targetSlot = instruction.InputStart;
@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableStartFormattedString formatted:
                     var output = new GovernedByteBuilder(_context.MemoryGovernor, span, formatted.InitialCapacity,
                         _context.State.CancellationToken);
-                    try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, output); }
+                    try { PublishInstructionResult(instruction, output); }
                     catch { output.Release(); throw; }
                     break;
                 case ExecutableAppendFormattedText text:
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
                     var outputSlot = instruction.InputStart;
                     var formattedResult = ((GovernedByteBuilder)_stack[outputSlot]).ToPyStringAndRelease();
                     _stack.RetireTo(instruction.ResultSlot);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, formattedResult);
+                    PublishInstructionResult(instruction, formattedResult);
                     break;
                 // Display/call and definition operations retain their own
                 // suspension paths. Targets use ordinary opcodes instead.
@@ -171,14 +171,14 @@ internal sealed partial class LythonRuntime
                     {
                         var accumulator = (CallExpansion.CallArgumentAccumulator)_stack[accumulatorSlot];
                         var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
-                        _stack.PublishValue(accumulatorSlot, accumulatorSlot + 1, result);
+                        PublishInstructionResult(instruction, result);
                     }
                     catch { _stack.RetireTo(accumulatorSlot); throw; }
                     break;
                 case ExecutableConvertFormattedValue conversion:
                     var convertedField = await FormatSuspendedFieldAsync(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), conversion.Conversion,
                         null, _context, span, asynchronous).ConfigureAwait(false);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, convertedField);
+                    PublishInstructionResult(instruction, convertedField);
                     break;
                 case ExecutableFormatField field:
                     var specifier = field.DynamicSpecifier ? ((PyString)_stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString() : field.FormatSpecifier;
@@ -190,13 +190,13 @@ internal sealed partial class LythonRuntime
                             formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
                         else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span, field.PreparedFormat);
                     }
-                    else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
+                    else PublishInstructionResult(instruction, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
                         outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, generatorExpression);
+                    PublishInstructionResult(instruction, generatorExpression);
                     break;
                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
             }

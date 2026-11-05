@@ -1,0 +1,28 @@
+{
+  "instructionFields": [
+    [
+      "int",
+      "_primaryOperand"
+    ],
+    [
+      "int",
+      "_secondaryOperand"
+    ],
+    [
+      "int",
+      "_inputStart"
+    ],
+    [
+      "int",
+      "_resultSlot"
+    ],
+    [
+      "int",
+      "_liveExtent"
+    ]
+  ],
+  "noInstructionFieldsAdded": true,
+  "deletedDedicatedLocalUpdatePath": true,
+  "duplicateAugmentedEnumAndMappingsRemoved": true,
+  "publicAPIsChanged": false
+}

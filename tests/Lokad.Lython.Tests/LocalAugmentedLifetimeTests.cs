@@ -81,6 +81,74 @@ public sealed class LocalAugmentedLifetimeTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("produce(rhs)", false, false)]
+    [InlineData("hold(rhs)", false, false)]
+    [InlineData("Source()[0]", false, false)]
+    [InlineData("produce(rhs)", true, false)]
+    [InlineData("hold(rhs)", true, false)]
+    [InlineData("produce(rhs)", false, true)]
+    public async Task OrdinaryResultWaitsForProducerAndPreservesTarget(string expression, bool cancel, bool refuse)
+    {
+        var source = """
+            def produce(other):
+             hold(other)
+             return other
+            class Source:
+             def __getitem__(self,key):return produce(rhs)
+            rhs=['original']
+            previous=rhs
+            left=['target']
+            observe()
+            left=
+            """.TrimEnd() + expression + "\nreturn left is previous\n";
+        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions
+        { MemoryBudget = owner, CancellationToken = cancellation.Token });
+        var observe = new Observe();
+        var hold = new Hold(observe, refuse);
+        context.Variables["observe"] = observe;
+        context.Variables["hold"] = hold;
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
+        try
+        {
+            await hold.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
+            Assert.Same(observe.Left, left);
+            var funded = budget.ReservedBytes;
+            Assert.True(funded > 0);
+            if (cancel) cancellation.Cancel();
+            Assert.False(pending.IsCompleted);
+            Assert.Equal(funded, budget.ReservedBytes);
+        }
+        finally
+        {
+            hold.Release.TrySetResult();
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (LythonRuntimeException) when (cancel || refuse) { }
+        }
+        if (cancel || refuse)
+        {
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
+            if (refuse) Assert.Same(hold.Refusal, error);
+            else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
+            Assert.Same(observe.Left, left);
+        }
+        else Assert.Equal(true, await pending);
+        Assert.True(hold.Finished);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class Observe : LythonRuntime.ICallable
     {
         internal LythonRuntime.ExecutableFrameState? Frame;
@@ -107,7 +175,7 @@ public sealed class LocalAugmentedLifetimeTests
             Assert.Equal(PyString.FromString("original"), Assert.Single(Assert.IsType<PyList>(arguments[0].Value)));
             if (refuse) Refusal = context.MemoryGovernor.RefuseAdmission("suspended update", 777, span);
             Finished = true;
-            return PyNone.Instance;
+            return arguments[0].Value;
         }
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {

@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
                     try { result = InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, _context, arguments); }
                     finally { ReturnCallArguments(arguments); }
                 }
-                _stack.PublishValue(start, start + 1, result);
+                PublishInstructionResult(_codeObject.Instructions[_instructionIndex], result);
                 return default;
             }
             catch
@@ -127,13 +127,13 @@ internal sealed partial class LythonRuntime
         private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
         {
             if (!pending.IsCompleted) return AwaitCallValueAsync(pending, start);
-            _stack.PublishValue(start, start + 1, pending.GetAwaiter().GetResult());
+            PublishInstructionResult(_codeObject.Instructions[_instructionIndex], pending.GetAwaiter().GetResult());
             return default;
         }
 
         private async ValueTask AwaitCallValueAsync(ValueTask<object> pending, int start)
         {
-            try { _stack.PublishValue(start, start + 1, await pending.ConfigureAwait(false)); }
+            try { PublishInstructionResult(_codeObject.Instructions[_instructionIndex], await pending.ConfigureAwait(false)); }
             catch { _stack.RetireTo(start); throw; }
         }
 

@@ -190,16 +190,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     kept--;
                 }
                 instruction = count == 0 ? instruction : instruction.WithValueInputs(first, second);
-                // One completed local update: retain the evaluated inputs and
-                // commit directly, without an intermediate result operand.
+                // A single guest result can go directly into the adjacent
+                // binding. Keep that store for its span and for pending cleanup.
                 if (instruction.OpCode == ExecutableOpCode.StoreLocal && kept > 0
-                    && instructions[kept - 1] is { OpCode: ExecutableOpCode.Augmented } update
-                    && update.Span == instruction.Span
-                    && update.ResultSlot == instruction.InputStart
-                    && update.LiveExtent == instruction.InputStart + 1
-                    && instruction.LiveExtent == update.ResultSlot)
-                    instructions[kept - 1] = update.WithLocalAugmentedStore(instruction);
-                else instructions[kept++] = instruction;
+                    && instructions[kept - 1] is var producer
+                    && CanForwardResult(producer, code.Constants)
+                    && producer.ResultSlot == instruction.InputStart
+                    && producer.LiveExtent == instruction.InputStart + 1
+                    && instruction.LiveExtent == producer.ResultSlot)
+                    instructions[kept - 1] = producer.WithLocalResult();
+                instructions[kept++] = instruction;
                 if (initialized.Length != 0)
                 {
                     if (instruction.OpCode == ExecutableOpCode.StoreLocal
@@ -222,6 +222,24 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 blocks[block] = blocks[block] with { InstructionArray = instructions[..kept] };
         }
     }
+
+    private static bool CanForwardResult(ExecutableInstruction instruction, IReadOnlyList<object?> constants)
+        => instruction.OpCode switch
+        {
+            ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadClosure or
+                ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName or ExecutableOpCode.LoadMember or
+                ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or
+                ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSlice or
+                ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or
+                ExecutableOpCode.Subscript or ExecutableOpCode.Slice or ExecutableOpCode.Call or
+                ExecutableOpCode.ForNext => true,
+            ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
+                ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
+                ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableCreateGeneratorExpression or
+                ExecutableFinishFormattedString or ExecutableCreateLambda or ExecutablePostponedAnnotation or
+                ExecutableAnnotationsEnabled or ExecutableFormatField { Append: false },
+            _ => false,
+        };
 
     private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,
         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls)

@@ -153,7 +153,7 @@ internal sealed partial class ExecutableScript
                         }
                         AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSlice(augmentedSlice.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
                         AddInstruction(currentBlock, ExecutableInstruction.StoreSlice(InternConstant(augmentedSlice.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
@@ -163,7 +163,7 @@ internal sealed partial class ExecutableScript
                         currentBlock = CompileExpression(augmentedItem.Index, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSubscript(augmentedItem.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
                         AddInstruction(currentBlock, ExecutableInstruction.StoreSubscript(InternConstant(augmentedItem.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
@@ -174,7 +174,7 @@ internal sealed partial class ExecutableScript
                         AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.Target.MemberName),
                             AllocateMemberCache(), augmentedMember.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
                         AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.Target.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
                         return currentBlock;
                     }
@@ -183,7 +183,7 @@ internal sealed partial class ExecutableScript
 
                     CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
                     currentBlock = CompileExpression(augmented.Expression, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
                     CompileStoreBoundName(augmentedName.Target.Name, augmented.Span, currentBlock);
                     return currentBlock;
 

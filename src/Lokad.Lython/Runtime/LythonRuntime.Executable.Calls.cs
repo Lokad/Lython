@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                _stack.PublishValue(start, start + 1, RuntimeValue(value));
+                PublishInstructionResult(_codeObject.Instructions[_instructionIndex], RuntimeValue(value));
                 _instructionIndex++;
             }
         }

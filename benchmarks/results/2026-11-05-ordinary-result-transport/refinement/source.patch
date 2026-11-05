@@ -1,0 +1,881 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+index 01003243..50c3b4c4 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs
+@@ -393,24 +393,6 @@ internal sealed partial class ExecutableScript
+                 _ => throw new InvalidOperationException($"Executable IR lowering does not support unary operator {op}."),
+             };
+ 
+-        private static ExecutableAugmentedOperator MapAugmentedAssignmentOperator(AugmentedAssignmentOperatorSyntax op)
+-            => op switch
+-            {
+-                AugmentedAssignmentOperatorSyntax.Add => ExecutableAugmentedOperator.Add,
+-                AugmentedAssignmentOperatorSyntax.Subtract => ExecutableAugmentedOperator.Subtract,
+-                AugmentedAssignmentOperatorSyntax.Multiply => ExecutableAugmentedOperator.Multiply,
+-                AugmentedAssignmentOperatorSyntax.MatrixMultiply => ExecutableAugmentedOperator.MatrixMultiply,
+-                AugmentedAssignmentOperatorSyntax.Divide => ExecutableAugmentedOperator.Divide,
+-                AugmentedAssignmentOperatorSyntax.FloorDivide => ExecutableAugmentedOperator.FloorDivide,
+-                AugmentedAssignmentOperatorSyntax.Modulo => ExecutableAugmentedOperator.Modulo,
+-                AugmentedAssignmentOperatorSyntax.Power => ExecutableAugmentedOperator.Power,
+-                AugmentedAssignmentOperatorSyntax.BitwiseOr => ExecutableAugmentedOperator.BitwiseOr,
+-                AugmentedAssignmentOperatorSyntax.BitwiseXor => ExecutableAugmentedOperator.BitwiseXor,
+-                AugmentedAssignmentOperatorSyntax.BitwiseAnd => ExecutableAugmentedOperator.BitwiseAnd,
+-                AugmentedAssignmentOperatorSyntax.LeftShift => ExecutableAugmentedOperator.LeftShift,
+-                AugmentedAssignmentOperatorSyntax.RightShift => ExecutableAugmentedOperator.RightShift,
+-                _ => throw new InvalidOperationException($"Executable IR lowering does not support augmented assignment operator {op}."),
+-            };
+ 
+     }
+ }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+index 595d64d4..cd193f46 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs
+@@ -153,7 +153,7 @@ internal sealed partial class ExecutableScript
+                         }
+                         AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSlice(augmentedSlice.Span));
+                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
+-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
++                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
+                         AddInstruction(currentBlock, ExecutableInstruction.StoreSlice(InternConstant(augmentedSlice.Span), augmented.Span, valueLast: true));
+                         return currentBlock;
+                     }
+@@ -163,7 +163,7 @@ internal sealed partial class ExecutableScript
+                         currentBlock = CompileExpression(augmentedItem.Index, currentBlock);
+                         AddInstruction(currentBlock, ExecutableInstruction.ReadRetainedSubscript(augmentedItem.Span));
+                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
+-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
++                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
+                         AddInstruction(currentBlock, ExecutableInstruction.StoreSubscript(InternConstant(augmentedItem.Span), augmented.Span, valueLast: true));
+                         return currentBlock;
+                     }
+@@ -174,7 +174,7 @@ internal sealed partial class ExecutableScript
+                         AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.Target.MemberName),
+                             AllocateMemberCache(), augmentedMember.Span));
+                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
+-                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
++                        AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
+                         AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.Target.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
+                         return currentBlock;
+                     }
+@@ -183,7 +183,7 @@ internal sealed partial class ExecutableScript
+ 
+                     CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
+                     currentBlock = CompileExpression(augmented.Expression, currentBlock);
+-                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
++                    AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
+                     CompileStoreBoundName(augmentedName.Target.Name, augmented.Span, currentBlock);
+                     return currentBlock;
+ 
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 95430cbb..21665840 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -58,7 +58,6 @@ internal enum ExecutableOpCode
+     MakeSlice,
+     Binary,
+     Augmented,
+-    AugmentedLocal,
+     Unary,
+     Jump,
+     JumpIfFalse,
+@@ -83,23 +82,6 @@ internal enum ExecutableUnaryOperator
+     BitwiseNot,
+ }
+ 
+-internal enum ExecutableAugmentedOperator
+-{
+-    Add,
+-    Subtract,
+-    Multiply,
+-    MatrixMultiply,
+-    Divide,
+-    FloorDivide,
+-    Modulo,
+-    Power,
+-    BitwiseOr,
+-    BitwiseXor,
+-    BitwiseAnd,
+-    LeftShift,
+-    RightShift,
+-}
+-
+ [Flags]
+ internal enum ExecutableSliceParts
+ {
+@@ -121,7 +103,7 @@ internal readonly record struct ExecutableInstruction
+ 
+     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
+         int primaryOperand = 0, int secondaryOperand = 0,
+-        int inputStart = -1, int resultSlot = -1, int liveExtent = -1)
++        int inputStart = -1, int resultSlot = -1, int liveExtent = 0)
+     {
+         OpCode = opCode;
+         Span = span;
+@@ -141,7 +123,10 @@ internal readonly record struct ExecutableInstruction
+     public int InputStart => _inputStart;
+     public int SecondInput => _secondaryOperand;
+     public int ResultSlot => _resultSlot;
+-    public int LiveExtent => _liveExtent;
++    // A complemented prepared extent marks the adjacent local-result store.
++    // Decode the original extent; physical positions never name locals.
++    public int LiveExtent => HasLocalResult ? ~_liveExtent : _liveExtent;
++    public bool HasLocalResult => _liveExtent < 0;
+ 
+     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
+         => new(OpCode, Span, _primaryOperand,
+@@ -153,41 +138,18 @@ internal readonly record struct ExecutableInstruction
+             OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
+             first, _resultSlot, _liveExtent);
+ 
+-    // Joined only after layout: both operands keep their prepared sources,
+-    // while the result position names the destination local, outside retirement.
+-    internal ExecutableInstruction WithLocalAugmentedStore(ExecutableInstruction store)
+-        => new(ExecutableOpCode.AugmentedLocal, Span, (int)MapAugmentedOperator(AugmentedOperator),
+-            SecondInput, InputStart, store.LocalSlot, store.LiveExtent);
+-
+-    public AugmentedAssignmentOperatorSyntax LocalAugmentedOperator
+-        => (AugmentedAssignmentOperatorSyntax)ReadPrimaryOperand(ExecutableOpCode.AugmentedLocal, nameof(LocalAugmentedOperator));
+-
+-    internal static AugmentedAssignmentOperatorSyntax MapAugmentedOperator(ExecutableAugmentedOperator op)
+-        => op switch
+-            {
+-                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
+-                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
+-                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
+-                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
+-                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
+-                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
+-                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
+-                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
+-                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
+-                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
+-                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
+-                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
+-                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
+-                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
+-            };
++    // The following store retains its own source span and is also the
++    // continuation when input cleanup must finish asynchronously.
++    internal ExecutableInstruction WithLocalResult()
++        => new(OpCode, Span, _primaryOperand, _secondaryOperand,
++            _inputStart, _resultSlot, ~_liveExtent);
+ 
+     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
+     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
+     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
+     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
+         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
+-    public int LocalSlot => OpCode == ExecutableOpCode.AugmentedLocal ? _resultSlot
+-        : OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
++    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
+             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
+     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
+         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
+@@ -217,7 +179,7 @@ internal readonly record struct ExecutableInstruction
+     public ExecutableSliceParts SliceParts => (ExecutableSliceParts)_primaryOperand;
+     public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)_primaryOperand;
+     public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
+-    public ExecutableAugmentedOperator AugmentedOperator => (ExecutableAugmentedOperator)_primaryOperand;
++    public AugmentedAssignmentOperatorSyntax AugmentedOperator => (AugmentedAssignmentOperatorSyntax)_primaryOperand;
+ 
+     public int TargetSpanIndex => OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
+         ? _secondaryOperand : OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+@@ -355,7 +317,7 @@ internal readonly record struct ExecutableInstruction
+     public static ExecutableInstruction Binary(BinaryOperatorSyntax op, LythonSourceSpan span)
+         => new(ExecutableOpCode.Binary, span, (int)op);
+ 
+-    public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
++    public static ExecutableInstruction Augmented(AugmentedAssignmentOperatorSyntax op, LythonSourceSpan span)
+         => new(ExecutableOpCode.Augmented, span, (int)op);
+ 
+     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index dc5ffaf2..a9bdfd76 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -190,16 +190,16 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+                     kept--;
+                 }
+                 instruction = count == 0 ? instruction : instruction.WithValueInputs(first, second);
+-                // One completed local update: retain the evaluated inputs and
+-                // commit directly, without an intermediate result operand.
++                // A single guest result can go directly into the adjacent
++                // binding. Keep that store for its span and for pending cleanup.
+                 if (instruction.OpCode == ExecutableOpCode.StoreLocal && kept > 0
+-                    && instructions[kept - 1] is { OpCode: ExecutableOpCode.Augmented } update
+-                    && update.Span == instruction.Span
+-                    && update.ResultSlot == instruction.InputStart
+-                    && update.LiveExtent == instruction.InputStart + 1
+-                    && instruction.LiveExtent == update.ResultSlot)
+-                    instructions[kept - 1] = update.WithLocalAugmentedStore(instruction);
+-                else instructions[kept++] = instruction;
++                    && instructions[kept - 1] is var producer
++                    && CanForwardResult(producer, code.Constants)
++                    && producer.ResultSlot == instruction.InputStart
++                    && producer.LiveExtent == instruction.InputStart + 1
++                    && instruction.LiveExtent == producer.ResultSlot)
++                    instructions[kept - 1] = producer.WithLocalResult();
++                instructions[kept++] = instruction;
+                 if (initialized.Length != 0)
+                 {
+                     if (instruction.OpCode == ExecutableOpCode.StoreLocal
+@@ -223,6 +223,24 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+         }
+     }
+ 
++    private static bool CanForwardResult(ExecutableInstruction instruction, IReadOnlyList<object?> constants)
++        => instruction.OpCode switch
++        {
++            ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadClosure or
++                ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName or ExecutableOpCode.LoadMember or
++                ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or
++                ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSlice or
++                ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or
++                ExecutableOpCode.Subscript or ExecutableOpCode.Slice or ExecutableOpCode.Call or
++                ExecutableOpCode.ForNext => true,
++            ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
++                ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
++                ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableCreateGeneratorExpression or
++                ExecutableFinishFormattedString or ExecutableCreateLambda or ExecutablePostponedAnnotation or
++                ExecutableAnnotationsEnabled or ExecutableFormatField { Append: false },
++            _ => false,
++        };
++
+     private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,
+         IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls)
+     {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 6e1d94a1..2f6b706b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -112,7 +112,7 @@ internal sealed partial class LythonRuntime
+                     try { result = InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, _context, arguments); }
+                     finally { ReturnCallArguments(arguments); }
+                 }
+-                _stack.PublishValue(start, start + 1, result);
++                PublishInstructionResult(_codeObject.Instructions[_instructionIndex], result);
+                 return default;
+             }
+             catch
+@@ -127,13 +127,13 @@ internal sealed partial class LythonRuntime
+         private ValueTask CompleteCallValue(ValueTask<object> pending, int start)
+         {
+             if (!pending.IsCompleted) return AwaitCallValueAsync(pending, start);
+-            _stack.PublishValue(start, start + 1, pending.GetAwaiter().GetResult());
++            PublishInstructionResult(_codeObject.Instructions[_instructionIndex], pending.GetAwaiter().GetResult());
+             return default;
+         }
+ 
+         private async ValueTask AwaitCallValueAsync(ValueTask<object> pending, int start)
+         {
+-            try { _stack.PublishValue(start, start + 1, await pending.ConfigureAwait(false)); }
++            try { PublishInstructionResult(_codeObject.Instructions[_instructionIndex], await pending.ConfigureAwait(false)); }
+             catch { _stack.RetireTo(start); throw; }
+         }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index 6f0bcc96..cb23e41e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
+             }
+             else
+             {
+-                _stack.PublishValue(start, start + 1, RuntimeValue(value));
++                PublishInstructionResult(_codeObject.Instructions[_instructionIndex], RuntimeValue(value));
+                 _instructionIndex++;
+             }
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 608542eb..a86a6065 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
+                     _stack[instruction.ResultSlot] = PyNone.Instance;
+                     _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, cached);
+                 }
+-                else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, cached);
++                else PublishInstructionResult(instruction, cached);
+                 return new(false);
+             }
+             var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
+@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
+                 _stack[instruction.ResultSlot] = PyNone.Instance;
+                 _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, member.Value);
+             }
+-            else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, member.Value);
++            else PublishInstructionResult(instruction, member.Value);
+         }
+ 
+         private ValueTask<bool> ExecuteForNextAsync(ExecutableInstruction instruction)
+@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
+         {
+             if (next.HasValue)
+             {
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, next.Value);
++                PublishInstructionResult(instruction, next.Value);
+                 return new(false);
+             }
+             _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);
+@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
+             }
+             else
+             {
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, _delegation!.ReturnValue);
++                PublishInstructionResult(instruction, _delegation!.ReturnValue);
+                 _delegation = null;
+             }
+         }
+@@ -143,13 +143,13 @@ internal sealed partial class LythonRuntime
+             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
+             {
+                 var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
++                PublishInstructionResult(instruction, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
+                 return false;
+             }
+             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
+             {
+                 var enteredContext = await PyContextManagers.EnterAsync(RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span), instruction.Span, _context).ConfigureAwait(false);
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, enteredContext);
++                PublishInstructionResult(instruction, enteredContext);
+                 return false;
+             }
+             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
+@@ -213,14 +213,14 @@ internal sealed partial class LythonRuntime
+                         break;
+                     case ExecutableOpCode.Augmented:
+                         result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
+-                            ExecutableInstruction.MapAugmentedOperator(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
++                            instruction.AugmentedOperator, _context, instruction.Span).ConfigureAwait(false);
+                         break;
+                     case ExecutableOpCode.Unary:
+                         result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);
+                         break;
+                     default: throw new InvalidOperationException("Unexpected value operation.");
+                 }
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
++                PublishInstructionResult(instruction, result);
+             }
+             catch { _stack.RetireTo(instruction.ResultSlot); throw; }
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index a538994a..b26364d2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
+                         case ExecutableOpCode.Complete:
+                             return InstructionPause.Boundary;
+                         case ExecutableOpCode.LoadLocal:
+-                            _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                            PublishInstructionResult(instruction,
+                                 LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, _context));
+                             break;
+                         case ExecutableOpCode.StoreLocal:
+@@ -128,15 +128,6 @@ internal sealed partial class LythonRuntime
+                                 jumped = ConsumeOperation(ref pending);
+                             }
+                             break;
+-                        case ExecutableOpCode.AugmentedLocal:
+-                            if (!asynchronous) ExecuteLocalAugmented(instruction, false).GetAwaiter().GetResult();
+-                            else
+-                            {
+-                                pending = WithoutJump(ExecuteLocalAugmented(instruction, true));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
+                             if (!asynchronous ||
+                                 (ReadOperand(instruction.InputStart) is BigInteger or double or bool &&
+@@ -177,7 +168,7 @@ internal sealed partial class LythonRuntime
+                         case ExecutableOpCode.ForNext:
+                             if (_stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
+                             {
+-                                if (nativeNext.HasValue) _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, nativeNext.Value);
++                                if (nativeNext.HasValue) PublishInstructionResult(instruction, nativeNext.Value);
+                                 else
+                                 {
+                                     _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 0769bdbd..ae7f8da1 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -297,19 +297,19 @@ internal sealed partial class LythonRuntime
+             {
+                 case ExecutableOpCode.LoadConst:
+                     var constant = RuntimeValue(_codeObject.Constants[instruction.ConstantIndex]);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, constant);
++                    PublishInstructionResult(instruction, constant);
+                     break;
+ 
+                 case ExecutableOpCode.LoadClosure:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, LoadClosure(_codeObject, _context, instruction.ClosureSlot, instruction.Span));
++                    PublishInstructionResult(instruction, LoadClosure(_codeObject, _context, instruction.ClosureSlot, instruction.Span));
+                     break;
+ 
+                 case ExecutableOpCode.LoadGlobal:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, ResolveExecutableGlobal(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
++                    PublishInstructionResult(instruction, ResolveExecutableGlobal(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.LoadName:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
++                    PublishInstructionResult(instruction, ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
+                     break;
+ 
+ 
+@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
+                         _stack[instruction.ResultSlot] = PyNone.Instance;
+                         _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
+                     }
+-                    else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, memberValue);
++                    else PublishInstructionResult(instruction, memberValue);
+                     break;
+ 
+                 case ExecutableOpCode.PreloadImplicitSuperArguments:
+@@ -386,33 +386,33 @@ internal sealed partial class LythonRuntime
+             switch (instruction.OpCode)
+             {
+                 case ExecutableOpCode.MakeList:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                    PublishInstructionResult(instruction,
+                         CreateListFromStack(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.MakeTuple:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                    PublishInstructionResult(instruction,
+                         CreateTupleFromStack(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.MakeSet:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                    PublishInstructionResult(instruction,
+                         ExecuteExecutableMakeSet(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.MakeDict:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                    PublishInstructionResult(instruction,
+                         ExecuteExecutableMakeDict(ref _stack, instruction.InputStart, instruction.PairCount, instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.ResolveContextManager:
+                     var managerValue = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, PyContextManagers.Resolve(managerValue, instruction.Span, _context));
++                    PublishInstructionResult(instruction, PyContextManagers.Resolve(managerValue, instruction.Span, _context));
+                     break;
+ 
+                 case ExecutableOpCode.EnterContextManager:
+                     var enteringManager = RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, enteringManager.Enter());
++                    PublishInstructionResult(instruction, enteringManager.Enter());
+                     break;
+ 
+                 case ExecutableOpCode.ExitContextManager:
+@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
+                 return true;
+             }
+ 
+-            _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++            PublishInstructionResult(instruction, value);
+             return false;
+         }
+ 
+@@ -486,7 +486,7 @@ internal sealed partial class LythonRuntime
+                 case ExecutableOpCode.MakeSlice:
+                     var (start, stop, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, instruction.InputStart);
+                     _stack.RetireTo(instruction.ResultSlot);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, CreateSliceValue(start, stop, step, instruction.Span, _context));
++                    PublishInstructionResult(instruction, CreateSliceValue(start, stop, step, instruction.Span, _context));
+                     break;
+ 
+             }
+@@ -508,12 +508,12 @@ internal sealed partial class LythonRuntime
+                     ExecutableOpCode.Slice => ExecuteExecutableSlice(in _stack, instruction.InputStart, instruction.SliceParts, instruction.Span, _context),
+                     ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
+                         ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
+-                    ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
+-                        ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
++                    ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(ReadOperand(first), ReadOperand(instruction.SecondInput),
++                        instruction.AugmentedOperator, _context, instruction.Span),
+                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, ReadOperand(first), _context, instruction.Span),
+                     _ => throw new InvalidOperationException("Unexpected value operation."),
+                 };
+-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
++                PublishInstructionResult(instruction, result);
+             }
+             catch { _stack.RetireTo(instruction.ResultSlot); throw; }
+         }
+@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
+                 case ExecutableOpCode.MatchException:
+                     var active = _context.State.CurrentException
+                         ?? throw new InvalidOperationException("Exception selection requires an active exception.");
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
++                    PublishInstructionResult(instruction,
+                         MatchesCaughtExceptionValue(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), active.Identity, _context, instruction.Span));
+                     return false;
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs
+deleted file mode 100644
+index 2d02aa97..00000000
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs
++++ /dev/null
+@@ -1,54 +0,0 @@
+-using System.Numerics;
+-using System.Runtime.CompilerServices;
+-using Lokad.Lython.Frontend;
+-using Lokad.Lython.Runtime.Text;
+-
+-namespace Lokad.Lython.Runtime;
+-
+-internal sealed partial class LythonRuntime
+-{
+-    private sealed partial class ExecutableFrameInterpreter
+-    {
+-        // Keep computed object temporaries out of the long dispatch loop, just
+-        // like ordinary stores. Inputs remain owned until operator/store finish.
+-        [MethodImpl(MethodImplOptions.NoInlining)]
+-        private ValueTask ExecuteLocalAugmented(in ExecutableInstruction instruction, bool asynchronous)
+-        {
+-            try
+-            {
+-                var left = ReadOperand(instruction.InputStart);
+-                var right = ReadOperand(instruction.SecondInput);
+-                if (!asynchronous || (left is BigInteger or double or bool && right is BigInteger or double or bool)
+-                    || (left is PyString && right is PyString))
+-                {
+-                    CommitLocalAugmented(instruction, EvaluateAugmentedAssignment(left, right,
+-                        instruction.LocalAugmentedOperator, _context, instruction.Span));
+-                    return default;
+-                }
+-
+-                var pending = EvaluateAugmentedAssignmentAsync(left, right,
+-                    instruction.LocalAugmentedOperator, _context, instruction.Span);
+-                if (!pending.IsCompleted) return AwaitLocalAugmented(pending, instruction);
+-                CommitLocalAugmented(instruction, pending.GetAwaiter().GetResult());
+-                return default;
+-            }
+-            catch { _stack.RetireTo(instruction.LiveExtent); throw; }
+-        }
+-
+-        private void CommitLocalAugmented(in ExecutableInstruction instruction, object value)
+-        {
+-            // A callback can suspend or refuse admission. Do not publish its
+-            // result into the binding after cancellation or terminal refusal.
+-            _context.CheckExecution(instruction.Span);
+-            StoreLocalValue(_codeObject, _locals, _localCells, _context,
+-                instruction.LocalSlot, value, instruction.Span);
+-            _stack.RetireTo(instruction.LiveExtent);
+-        }
+-
+-        private async ValueTask AwaitLocalAugmented(ValueTask<object> pending, ExecutableInstruction instruction)
+-        {
+-            try { CommitLocalAugmented(instruction, await pending.ConfigureAwait(false)); }
+-            catch { _stack.RetireTo(instruction.LiveExtent); throw; }
+-        }
+-    }
+-}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+index c45d45a2..0909f853 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+@@ -150,8 +150,6 @@ internal sealed partial class LythonRuntime
+             _ => throw new InvalidOperationException($"Executable IR contains unknown unary operator {op}."),
+         };
+ 
+-    private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
+-        => EvaluateAugmentedAssignment(currentValue, right, ExecutableInstruction.MapAugmentedOperator(op), context, span);
+ 
+ 
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+index 3208bb24..61d43b2f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs
+@@ -13,10 +13,10 @@ internal sealed partial class LythonRuntime
+             switch (operation)
+             {
+                 case ExecutableAnnotationsEnabled:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, !_context.PostponedAnnotations);
++                    PublishInstructionResult(instruction, !_context.PostponedAnnotations);
+                     break;
+                 case ExecutablePostponedAnnotation postponed:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, CreatePostponedAnnotationValue(postponed.Annotation, _context));
++                    PublishInstructionResult(instruction, CreatePostponedAnnotationValue(postponed.Annotation, _context));
+                     break;
+                 case ExecutableStoreModuleAnnotation annotation:
+                     var value = _stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+@@ -71,11 +71,11 @@ internal sealed partial class LythonRuntime
+                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
+                         }
+                         finally { _stack.RetireTo(instruction.ResultSlot); }
+-                        _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, function);
++                        PublishInstructionResult(instruction, function);
+                     }
+                     break;
+                 case ExecutableStartClassHeader header:
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
++                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
+                     break;
+                 case ExecutableCreateClass create:
+                     using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+index 05cd08e4..6881550a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
+                 case ExecutableFinishComprehension:
+                     var completed = _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
+                     ((ExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, completed);
++                    PublishInstructionResult(instruction, completed);
+                     break;
+                 case ExecutableStartDisplay start:
+                     object collection = start.Kind switch
+@@ -53,12 +53,12 @@ internal sealed partial class LythonRuntime
+                         ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
+                         _ => new PyList([], _context.MemoryGovernor, span),
+                     };
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, collection);
++                    PublishInstructionResult(instruction, collection);
+                     break;
+                 case ExecutableFinishTuple:
+                     var expanded = (PyList)_stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                     var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, tuple);
++                    PublishInstructionResult(instruction, tuple);
+                     break;
+                 case ExecutableStartCall call:
+                     var targetSlot = instruction.InputStart;
+@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
+                 case ExecutableStartFormattedString formatted:
+                     var output = new GovernedByteBuilder(_context.MemoryGovernor, span, formatted.InitialCapacity,
+                         _context.State.CancellationToken);
+-                    try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, output); }
++                    try { PublishInstructionResult(instruction, output); }
+                     catch { output.Release(); throw; }
+                     break;
+                 case ExecutableAppendFormattedText text:
+@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
+                     var outputSlot = instruction.InputStart;
+                     var formattedResult = ((GovernedByteBuilder)_stack[outputSlot]).ToPyStringAndRelease();
+                     _stack.RetireTo(instruction.ResultSlot);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, formattedResult);
++                    PublishInstructionResult(instruction, formattedResult);
+                     break;
+                 // Display/call and definition operations retain their own
+                 // suspension paths. Targets use ordinary opcodes instead.
+@@ -171,14 +171,14 @@ internal sealed partial class LythonRuntime
+                     {
+                         var accumulator = (CallExpansion.CallArgumentAccumulator)_stack[accumulatorSlot];
+                         var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
+-                        _stack.PublishValue(accumulatorSlot, accumulatorSlot + 1, result);
++                        PublishInstructionResult(instruction, result);
+                     }
+                     catch { _stack.RetireTo(accumulatorSlot); throw; }
+                     break;
+                 case ExecutableConvertFormattedValue conversion:
+                     var convertedField = await FormatSuspendedFieldAsync(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), conversion.Conversion,
+                         null, _context, span, asynchronous).ConfigureAwait(false);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, convertedField);
++                    PublishInstructionResult(instruction, convertedField);
+                     break;
+                 case ExecutableFormatField field:
+                     var specifier = field.DynamicSpecifier ? ((PyString)_stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString() : field.FormatSpecifier;
+@@ -190,13 +190,13 @@ internal sealed partial class LythonRuntime
+                             formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
+                         else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span, field.PreparedFormat);
+                     }
+-                    else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
++                    else PublishInstructionResult(instruction, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
+                     break;
+                 case ExecutableCreateGeneratorExpression comprehension:
+                     var outer = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                     var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
+                         outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
+-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, generatorExpression);
++                    PublishInstructionResult(instruction, generatorExpression);
+                     break;
+                 default: throw new InvalidOperationException("Unknown prepared suspension operation.");
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index 7498ad07..7217a80f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -340,6 +340,14 @@ internal sealed partial class LythonRuntime
+             return value;
+         }
+ 
++        // The completed operation consumed this input, as PublishValue would
++        // overwrite it. Its result goes directly to a binding instead.
++        internal void ForgetResultInput(int resultSlot)
++        {
++            _items[resultSlot] = null!;
++            LiveExtent = resultSlot;
++        }
++
+         internal bool TryPrepareNativeIteration(int slot, LythonSourceSpan span)
+         {
+             if (_items[slot] is not (PyList or PyTuple)) return false;
+diff --git a/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs b/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
+index b28e3aba..15d423c3 100644
+--- a/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
++++ b/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
+@@ -81,6 +81,74 @@ public sealed class LocalAugmentedLifetimeTests
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
++    [Theory]
++    [InlineData("produce(rhs)", false, false)]
++    [InlineData("hold(rhs)", false, false)]
++    [InlineData("Source()[0]", false, false)]
++    [InlineData("produce(rhs)", true, false)]
++    [InlineData("hold(rhs)", true, false)]
++    [InlineData("produce(rhs)", false, true)]
++    public async Task OrdinaryResultWaitsForProducerAndPreservesTarget(string expression, bool cancel, bool refuse)
++    {
++        var source = """
++            def produce(other):
++             hold(other)
++             return other
++            class Source:
++             def __getitem__(self,key):return produce(rhs)
++            rhs=['original']
++            previous=rhs
++            left=['target']
++            observe()
++            left=
++            """.TrimEnd() + expression + "\nreturn left is previous\n";
++        var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var owner = budget.CreateScope();
++        using var cancellation = new CancellationTokenSource();
++        var context = new Context(new MockLythonHost(), new LythonRunOptions
++        { MemoryBudget = owner, CancellationToken = cancellation.Token });
++        var observe = new Observe();
++        var hold = new Hold(observe, refuse);
++        context.Variables["observe"] = observe;
++        context.Variables["hold"] = hold;
++        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
++        try
++        {
++            await hold.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(pending.IsCompleted);
++            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
++            Assert.Same(observe.Left, left);
++            var funded = budget.ReservedBytes;
++            Assert.True(funded > 0);
++            if (cancel) cancellation.Cancel();
++            Assert.False(pending.IsCompleted);
++            Assert.Equal(funded, budget.ReservedBytes);
++        }
++        finally
++        {
++            hold.Release.TrySetResult();
++            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
++            catch (LythonRuntimeException) when (cancel || refuse) { }
++        }
++        if (cancel || refuse)
++        {
++            var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
++            if (refuse) Assert.Same(hold.Refusal, error);
++            else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
++            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
++            Assert.Same(observe.Left, left);
++        }
++        else Assert.Equal(true, await pending);
++        Assert.True(hold.Finished);
++        Assert.Null(context.CurrentExecutableFrame);
++        Assert.Equal(0, context.State.CurrentInterpreterDepth);
++        Assert.Equal(0, context.State.CurrentRecursionDepth);
++        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        owner.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     private sealed class Observe : LythonRuntime.ICallable
+     {
+         internal LythonRuntime.ExecutableFrameState? Frame;
+@@ -107,7 +175,7 @@ public sealed class LocalAugmentedLifetimeTests
+             Assert.Equal(PyString.FromString("original"), Assert.Single(Assert.IsType<PyList>(arguments[0].Value)));
+             if (refuse) Refusal = context.MemoryGovernor.RefuseAdmission("suspended update", 777, span);
+             Finished = true;
+-            return PyNone.Instance;
++            return arguments[0].Value;
+         }
+         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+         {
+diff --git a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+index a47baab2..15b9a1ef 100644
+--- a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+@@ -380,11 +380,14 @@ values[1:4:2]
+         var executable = ExecutableScript.Compile(lowered);
+         var instructions = executable.EntryPoint.Instructions.ToArray();
+ 
+-        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.AugmentedLocal);
+-        Assert.Equal(AugmentedAssignmentOperatorSyntax.Add, augmented.LocalAugmentedOperator);
+-        Assert.Equal(executable.EntryPoint.LocalNameToSlot["total"], augmented.LocalSlot);
+-        Assert.True(augmented.LocalSlot < executable.EntryPoint.FirstTemporarySlot);
+-        Assert.True(augmented.LiveExtent >= executable.EntryPoint.FirstTemporarySlot);
++        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
++        Assert.Equal(AugmentedAssignmentOperatorSyntax.Add, augmented.AugmentedOperator);
++        Assert.True(augmented.HasLocalResult);
++        var store = instructions[Array.IndexOf(instructions, augmented) + 1];
++        Assert.Equal(executable.EntryPoint.LocalNameToSlot["total"], store.LocalSlot);
++        Assert.True(store.LocalSlot < executable.EntryPoint.FirstTemporarySlot);
++        Assert.True(augmented.ResultSlot >= executable.EntryPoint.FirstTemporarySlot);
++        Assert.Equal(augmented.ResultSlot + 1, augmented.LiveExtent);
+ 
+         var slice = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Slice);
+         Assert.Equal(
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+new file mode 100644
+index 00000000..d1fb0509
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+@@ -0,0 +1,41 @@
++using System.Runtime.CompilerServices;
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    private sealed partial class ExecutableFrameInterpreter
++    {
++        private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
++        {
++            if (!instruction.HasLocalResult)
++            {
++                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++            }
++            else CompleteLocalResult(instruction, value);
++        }
++
++        // Keep computed guest temporaries out of the long dispatch loop, as
++        // ordinary stores do. Unchanged operand publication needs no new fence.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        private void CompleteLocalResult(in ExecutableInstruction instruction, object value)
++        {
++            // Preserve the original input retirement and its disposal order.
++            // Pending cleanup must finish before the binding becomes visible;
++            // the unchanged driver and following store already implement that.
++            if (instruction.LiveExtent < _stack.LiveExtent) _stack.RetireTo(instruction.LiveExtent);
++            if (_stack.HasPendingDisposals)
++            {
++                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
++                return;
++            }
++
++            _stack.ForgetResultInput(instruction.ResultSlot);
++            ref readonly var store = ref _codeObject.Instructions[_instructionIndex + 1];
++            _context.CheckExecution(store.Span);
++            StoreLocalValue(_codeObject, _locals, _localCells, _context, store.LocalSlot, value, store.Span);
++            _instructionIndex++;
++        }
++    }
++}

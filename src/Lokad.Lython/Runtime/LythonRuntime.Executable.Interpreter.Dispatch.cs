@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Complete:
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.LoadLocal:
-                            _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                            PublishInstructionResult(instruction,
                                 LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, _context));
                             break;
                         case ExecutableOpCode.StoreLocal:
@@ -128,15 +128,6 @@ internal sealed partial class LythonRuntime
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
-                        case ExecutableOpCode.AugmentedLocal:
-                            if (!asynchronous) ExecuteLocalAugmented(instruction, false).GetAwaiter().GetResult();
-                            else
-                            {
-                                pending = WithoutJump(ExecuteLocalAugmented(instruction, true));
-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
-                                _ = ConsumeOperation(ref pending);
-                            }
-                            break;
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
                             if (!asynchronous ||
                                 (ReadOperand(instruction.InputStart) is BigInteger or double or bool &&
@@ -177,7 +168,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.ForNext:
                             if (_stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
                             {
-                                if (nativeNext.HasValue) _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, nativeNext.Value);
+                                if (nativeNext.HasValue) PublishInstructionResult(instruction, nativeNext.Value);
                                 else
                                 {
                                     _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);

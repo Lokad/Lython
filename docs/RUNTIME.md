@@ -178,10 +178,13 @@ The existing shape pass prepares input/result positions, live temporary extents,
 maximum workspace and exception-entry depths. Execution uses those positions
 directly. Fixed-arity arithmetic, local stores and returns can read immutable
 constants or proven initialized plain locals without an intermediate copy.
-Adjacent augmented assignment and local store share one instruction: the
-evaluated operands survive protocol calls and suspension, then the existing
-binding store runs after cancellation/refusal checks. No result operand is
-published and read back solely to update the local.
+Ordinary expression and iteration results can complete directly into an adjacent
+local binding. A marker in the existing extent metadata preserves the physical
+operand positions; the following store supplies its target and separate source
+span. Inputs retire in their original order, then cancellation/refusal is checked
+before binding. If disposal is pending, the existing funded result operand and
+store remain the continuation after awaited cleanup. No result is published early
+and no extra async completion stage is needed.
 Failable reads retain their source spans; evaluated call and protocol packets
 retain snapshots across callbacks. Ordinary instructions carry no native-return
 provenance. Eligible helpers own compact prepared native operations, referring

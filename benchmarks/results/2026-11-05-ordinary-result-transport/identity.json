@@ -1,0 +1,37 @@
+{
+  "sourceRevision": "a63708a7 plus D62 complete ordinary-result transport prototype; reference a63708a7 frozen6c669799 before commit metadata",
+  "coreSHA256": {
+    "candidate": "1478038834c9e10a717bc6712b11d39b780157df91da3f4a899fa9de6bdae00f",
+    "control": "1478038834c9e10a717bc6712b11d39b780157df91da3f4a899fa9de6bdae00f",
+    "reference": "6c66979918645de89b0872e734f568dac8cb6d4b3dcae0302bfc8a9750c9b3ba"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "3147b8e6ecb03f15621f80da6598c7cf606282c659e0743cc42fd639581495ef",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "c9712a69fcb03d500db8a3ad7f29292748b3f46caed5c310412f64dc2cd943c5",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "aeb6f2470de6e46694ed33002e134e5befbda211b127f1ed14d1ccaa8af4db11",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "1b17bf01fff8185158a1bf5fd9886718c661c085b3012a8bee3a4f1120579f95",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "a9b888f4288579fceb5dca310f3f8c41d75eca26b7bdfa2b8ea5ae502d5c0226",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "c2740c195ea5b846f94b6d0c5a779236360830ade01e9561cffe1fac9a568a86",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "527548a89bf6c931009b8444356597e3e568150fc4912e7d5b81d981dd8f6412",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "a8eb03bfa63f47b9bb34f058592d771696d261c346f5d5fb40c47e5e79f96987",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "f1dfb9fce858ebe5dc026b99beb12bb0f803f44fbcb057c92fbea460fb56b6f9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "d6f457a1c880c0cdfbfdaa1fd772e1eb2efcbd84c4592fe1da19878f785e1f3f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "389658bacd6c3eb57c1f46f8dcdbb8bb35bbba31e638b7b41fb78571d762960a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "8b99ae89b3319403fa0f03595ae586e217308f0ccde0c5fe18c2d1fde0bfcf11",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "ba4f8384e50fb3e1ee4a4b5e1802b4faad0b31a716f9d12d105ba682c1d18751",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "a56f631adaf72e9b6dbb959393fe51c0e1872c4578b2a2b1825df34094ba76f9",
+    "tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs": "4b4bd4cffb9adc42573d58b4f9c55a4dba122ddd65d42146882c0b337dab0e2d",
+    "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "078fc213c1663aa373efd385e3ba2dcca6c84ee57d28753f7b97db18ae63dfd4"
+  },
+  "deletedFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs": "2d02aa97ca89993bd78d1eeed7f814a04b460362"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Clean27.26s and4.16s actual11/10 builds zero warnings/errors; focused282internal/1592public plus25 actual suspended result/iterator-cleanup cases per target pass. D61 full4144internal/16004public per target pass, independent CI42081657838 stress phase on both platforms as of19:28; prototype qualification separate.",
+  "changes": "One ordinary-value publication invariant, adjacent store retains target/span and pending-cleanup continuation; complement existing extent marker, physical positions unchanged. No added instruction/frame fields, array/pass/owner/async stage. Removes dedicated AugmentedLocal opcode/handler, duplicate enum/two mappings/wrapper. Restored D61 store metadata may cost compilation/storage."
+}

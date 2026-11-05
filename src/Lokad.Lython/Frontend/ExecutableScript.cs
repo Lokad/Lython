@@ -58,7 +58,6 @@ internal enum ExecutableOpCode
     MakeSlice,
     Binary,
     Augmented,
-    AugmentedLocal,
     Unary,
     Jump,
     JumpIfFalse,
@@ -83,23 +82,6 @@ internal enum ExecutableUnaryOperator
     BitwiseNot,
 }
 
-internal enum ExecutableAugmentedOperator
-{
-    Add,
-    Subtract,
-    Multiply,
-    MatrixMultiply,
-    Divide,
-    FloorDivide,
-    Modulo,
-    Power,
-    BitwiseOr,
-    BitwiseXor,
-    BitwiseAnd,
-    LeftShift,
-    RightShift,
-}
-
 [Flags]
 internal enum ExecutableSliceParts
 {
@@ -121,7 +103,7 @@ internal readonly record struct ExecutableInstruction
 
     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
         int primaryOperand = 0, int secondaryOperand = 0,
-        int inputStart = -1, int resultSlot = -1, int liveExtent = -1)
+        int inputStart = -1, int resultSlot = -1, int liveExtent = 0)
     {
         OpCode = opCode;
         Span = span;
@@ -141,7 +123,10 @@ internal readonly record struct ExecutableInstruction
     public int InputStart => _inputStart;
     public int SecondInput => _secondaryOperand;
     public int ResultSlot => _resultSlot;
-    public int LiveExtent => _liveExtent;
+    // A complemented prepared extent marks the adjacent local-result store.
+    // Decode the original extent; physical positions never name locals.
+    public int LiveExtent => HasLocalResult ? ~_liveExtent : _liveExtent;
+    public bool HasLocalResult => _liveExtent < 0;
 
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
         => new(OpCode, Span, _primaryOperand,
@@ -153,41 +138,18 @@ internal readonly record struct ExecutableInstruction
             OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
             first, _resultSlot, _liveExtent);
 
-    // Joined only after layout: both operands keep their prepared sources,
-    // while the result position names the destination local, outside retirement.
-    internal ExecutableInstruction WithLocalAugmentedStore(ExecutableInstruction store)
-        => new(ExecutableOpCode.AugmentedLocal, Span, (int)MapAugmentedOperator(AugmentedOperator),
-            SecondInput, InputStart, store.LocalSlot, store.LiveExtent);
-
-    public AugmentedAssignmentOperatorSyntax LocalAugmentedOperator
-        => (AugmentedAssignmentOperatorSyntax)ReadPrimaryOperand(ExecutableOpCode.AugmentedLocal, nameof(LocalAugmentedOperator));
-
-    internal static AugmentedAssignmentOperatorSyntax MapAugmentedOperator(ExecutableAugmentedOperator op)
-        => op switch
-            {
-                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
-                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
-                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
-                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
-                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
-                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
-                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
-                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
-                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
-                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
-                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
-                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
-                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
-                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
-            };
+    // The following store retains its own source span and is also the
+    // continuation when input cleanup must finish asynchronously.
+    internal ExecutableInstruction WithLocalResult()
+        => new(OpCode, Span, _primaryOperand, _secondaryOperand,
+            _inputStart, _resultSlot, ~_liveExtent);
 
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
-    public int LocalSlot => OpCode == ExecutableOpCode.AugmentedLocal ? _resultSlot
-        : OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
+    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
@@ -217,7 +179,7 @@ internal readonly record struct ExecutableInstruction
     public ExecutableSliceParts SliceParts => (ExecutableSliceParts)_primaryOperand;
     public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)_primaryOperand;
     public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
-    public ExecutableAugmentedOperator AugmentedOperator => (ExecutableAugmentedOperator)_primaryOperand;
+    public AugmentedAssignmentOperatorSyntax AugmentedOperator => (AugmentedAssignmentOperatorSyntax)_primaryOperand;
 
     public int TargetSpanIndex => OpCode is ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
         ? _secondaryOperand : OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
@@ -355,7 +317,7 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction Binary(BinaryOperatorSyntax op, LythonSourceSpan span)
         => new(ExecutableOpCode.Binary, span, (int)op);
 
-    public static ExecutableInstruction Augmented(ExecutableAugmentedOperator op, LythonSourceSpan span)
+    public static ExecutableInstruction Augmented(AugmentedAssignmentOperatorSyntax op, LythonSourceSpan span)
         => new(ExecutableOpCode.Augmented, span, (int)op);
 
     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)

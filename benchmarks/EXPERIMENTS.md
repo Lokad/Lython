@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [ordinary-result transport milestone](results/2026-11-05-ordinary-result-transport/README.md)
+replaces the dedicated augmented opcode with one result/binding invariant across
+ordinary values and iteration. Same instruction fields; source spans and pending
+cleanup keep their actual store continuation. Original B293193.43s and refined
+B294193.25s sevenjob blocks pass all gates. Final basicloop−2.45/3.02%,JSON−.93/
+1.98%; possible small CSV debt, text control disagreement and variable report
+remain. Initial larger gains are not generalized. No allocation/causalCPU claim;
+full local/platform delivery is recorded separately in that evidence.
+
 The [complete local augmented-update pipeline](results/2026-11-05-local-augmented-update/README.md)
 removes one intermediate result/store transfer using the existing compiler pass
 and five metadata ints. B291166.96s/six complete jobs and one justified same-binary

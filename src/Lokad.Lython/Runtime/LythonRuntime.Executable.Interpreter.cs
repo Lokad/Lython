@@ -297,19 +297,19 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.LoadConst:
                     var constant = RuntimeValue(_codeObject.Constants[instruction.ConstantIndex]);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, constant);
+                    PublishInstructionResult(instruction, constant);
                     break;
 
                 case ExecutableOpCode.LoadClosure:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, LoadClosure(_codeObject, _context, instruction.ClosureSlot, instruction.Span));
+                    PublishInstructionResult(instruction, LoadClosure(_codeObject, _context, instruction.ClosureSlot, instruction.Span));
                     break;
 
                 case ExecutableOpCode.LoadGlobal:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, ResolveExecutableGlobal(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
+                    PublishInstructionResult(instruction, ResolveExecutableGlobal(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.LoadName:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
+                    PublishInstructionResult(instruction, ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
                     break;
 
 
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
                         _stack[instruction.ResultSlot] = PyNone.Instance;
                         _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
                     }
-                    else _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, memberValue);
+                    else PublishInstructionResult(instruction, memberValue);
                     break;
 
                 case ExecutableOpCode.PreloadImplicitSuperArguments:
@@ -386,33 +386,33 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.MakeList:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                    PublishInstructionResult(instruction,
                         CreateListFromStack(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeTuple:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                    PublishInstructionResult(instruction,
                         CreateTupleFromStack(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeSet:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                    PublishInstructionResult(instruction,
                         ExecuteExecutableMakeSet(ref _stack, instruction.InputStart, instruction.ItemCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.MakeDict:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                    PublishInstructionResult(instruction,
                         ExecuteExecutableMakeDict(ref _stack, instruction.InputStart, instruction.PairCount, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.ResolveContextManager:
                     var managerValue = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, PyContextManagers.Resolve(managerValue, instruction.Span, _context));
+                    PublishInstructionResult(instruction, PyContextManagers.Resolve(managerValue, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.EnterContextManager:
                     var enteringManager = RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, enteringManager.Enter());
+                    PublishInstructionResult(instruction, enteringManager.Enter());
                     break;
 
                 case ExecutableOpCode.ExitContextManager:
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
+            PublishInstructionResult(instruction, value);
             return false;
         }
 
@@ -486,7 +486,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.MakeSlice:
                     var (start, stop, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, instruction.InputStart);
                     _stack.RetireTo(instruction.ResultSlot);
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, CreateSliceValue(start, stop, step, instruction.Span, _context));
+                    PublishInstructionResult(instruction, CreateSliceValue(start, stop, step, instruction.Span, _context));
                     break;
 
             }
@@ -508,12 +508,12 @@ internal sealed partial class LythonRuntime
                     ExecutableOpCode.Slice => ExecuteExecutableSlice(in _stack, instruction.InputStart, instruction.SliceParts, instruction.Span, _context),
                     ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
                         ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
-                    ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
-                        ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span),
+                    ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(ReadOperand(first), ReadOperand(instruction.SecondInput),
+                        instruction.AugmentedOperator, _context, instruction.Span),
                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, ReadOperand(first), _context, instruction.Span),
                     _ => throw new InvalidOperationException("Unexpected value operation."),
                 };
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, result);
+                PublishInstructionResult(instruction, result);
             }
             catch { _stack.RetireTo(instruction.ResultSlot); throw; }
         }
@@ -591,7 +591,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.MatchException:
                     var active = _context.State.CurrentException
                         ?? throw new InvalidOperationException("Exception selection requires an active exception.");
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent,
+                    PublishInstructionResult(instruction,
                         MatchesCaughtExceptionValue(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), active.Identity, _context, instruction.Span));
                     return false;
 

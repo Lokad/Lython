@@ -13,10 +13,10 @@ internal sealed partial class LythonRuntime
             switch (operation)
             {
                 case ExecutableAnnotationsEnabled:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, !_context.PostponedAnnotations);
+                    PublishInstructionResult(instruction, !_context.PostponedAnnotations);
                     break;
                 case ExecutablePostponedAnnotation postponed:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, CreatePostponedAnnotationValue(postponed.Annotation, _context));
+                    PublishInstructionResult(instruction, CreatePostponedAnnotationValue(postponed.Annotation, _context));
                     break;
                 case ExecutableStoreModuleAnnotation annotation:
                     var value = _stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
@@ -71,11 +71,11 @@ internal sealed partial class LythonRuntime
                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, _context, lambda.CodeObject);
                         }
                         finally { _stack.RetireTo(instruction.ResultSlot); }
-                        _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, function);
+                        PublishInstructionResult(instruction, function);
                     }
                     break;
                 case ExecutableStartClassHeader header:
-                    _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
+                    PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
                     break;
                 case ExecutableCreateClass create:
                     using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
