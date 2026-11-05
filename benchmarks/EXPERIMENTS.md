@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [current complete-text cost gate](results/2026-11-05-current-text-cost/README.md)
+captures afc3189e/084aaa38 in28s:1332guest samples/6.7CPU seconds; unknown7.21%
+and one truncated map retained. All quiet/golden/identity/Closed/finalzero/joins/
+fixture gates pass. Self costs include real work; no CPUgain/allocation/latency
+claim or resolution of elapsed disagreement. Source assessment proceeds to
+keyed mutation/duplicate hash enforcement, with protocol/error/admission proof
+required before code. No new profiling campaign or assumption of dominance.
+
 The [ordinary-result transport milestone](results/2026-11-05-ordinary-result-transport/README.md)
 replaces the dedicated augmented opcode with one result/binding invariant across
 ordinary values and iteration. Same instruction fields; source spans and pending

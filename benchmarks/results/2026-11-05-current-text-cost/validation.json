@@ -1,0 +1,11 @@
+{
+  "archiveSHA256": "397432f56549cc1017ba528848e2eaa0275d6d86b70dc3f31291836078949e8c",
+  "complete": true,
+  "quietBeforeAndAfter": true,
+  "allWorkersAndProfilerJoined": true,
+  "guestFixtureDirectories": [],
+  "samples": 1332,
+  "cpuSeconds": 6.7,
+  "unknown": 96,
+  "malformedMapLines": 1
+}

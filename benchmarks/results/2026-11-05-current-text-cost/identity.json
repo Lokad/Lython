@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "afc3189e3ba5ea2c41936c3ab1b4654230157129",
+  "files": {
+    "Lokad.Lython.dll": "084aaa38c228cd7f85e25e8e7f5ae67e71d57abacc53a410b53f93b977ebb979",
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "9a572f7ae00dc8b9db333f280c9a4d9ad1e016f3e70caa503658b1919ab2a9e2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "a8eb03bfa63f47b9bb34f058592d771696d261c346f5d5fb40c47e5e79f96987",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "aaee9be213201c7f4bf0968a43bb7aeaa76ea2b96a6d5a986ed3a3c4ecdf768d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "a9b888f4288579fceb5dca310f3f8c41d75eca26b7bdfa2b8ea5ae502d5c0226",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "88067e9fcaa0410d4369cd54e8e3ffa5fe8a5fe3bfb1cde732871742ff80b323",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "febf16bfb39774902dce89fd1e41e716e04d8d5ac83341ba6c0df7eb2053664f",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "b897887d96c4841fecf3ecde05645be107db0df123c85fc792469bf6c79531af",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "6a494e2fbfe24aa4c948d174f76e8612b41733e6e5e7279321fb00b809a61b21",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "da6b91e0cc12949efb646c4af79bee0812c5810ada9a3822473b89f0e59e0037"
+  },
+  "purpose": "D63 one bounded current complete-text cost gate after D62; CPUcost diagnostic only, no gain/latency/allocation attribution.",
+  "qualification": "Full4150internal/16004public per actual11/10 pass; exact source matched archived D62 patch; CI42088051016 independent/active."
+}
