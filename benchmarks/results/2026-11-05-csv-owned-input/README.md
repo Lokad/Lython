@@ -67,7 +67,9 @@ APIs, retained rows/shared cursors, embedded delimiter rejection, parse recovery
 generic type-error lifecycle and an interrupted native read; delayed I/O is real.
 Existing CSV cases cover in-flight cancellation, refusal, aliases and budget reuse.
 Release nonincremental solution build23.33s, zero warnings/errors; frozen measured
-core matches the rebuild. Full delivery status is recorded separately when complete.
+core matches the rebuild. Full local actual.NET11/10 each pass4109internal and
+15993public. Exact source723b9638 delivery42025698023 is running Windows/Ubuntu,
+actual11/10, original stress and installed consumers; terminal status pending.
 
 Separate proven preexisting mismatch: non-strict quoted EOF should emit a final
 row; current Finish rejects it. A bounded follow-up will preserve the final row's

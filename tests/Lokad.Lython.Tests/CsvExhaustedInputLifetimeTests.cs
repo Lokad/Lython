@@ -86,12 +86,15 @@ public sealed class CsvExhaustedInputLifetimeTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CompletedReaderKeepsReturnedRecordFundedAfterEof(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task CompletedReaderKeepsReturnedRecordFundedAfterEof(bool asynchronous, bool quotedEof)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString("kept,😀\n")]), Options(), new(0, 0, 0, 0), context);
+        var source = new LythonRuntime.CsvRecordSource(new PyList([PyString.FromString(quotedEof ? "kept,\"😀" : "kept,😀\n")]),
+            Options() with { Strict = !quotedEof }, new(0, 0, 0, 0), context);
         var reader = new LythonRuntime.CsvReaderObject(source);
         var item = asynchronous ? await reader.TryMoveNextAsync()
             : reader.TryMoveNext(out var next) ? PyIterationResult.Yield(next) : PyIterationResult.End;

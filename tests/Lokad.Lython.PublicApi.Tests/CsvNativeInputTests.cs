@@ -5,6 +5,32 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class CsvNativeInputTests
 {
     [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public async Task QuotedEofPublishesTheLastRowUnlessStrict(bool asynchronous, bool nativeFile, bool strict)
+    {
+        var input = nativeFile ? "source" : "['a,\"first\\n', 'last']";
+        var source = "with open('/input.csv', newline='') as source:\n" +
+            $"    import csv\n    reader = csv.reader({input}, strict={(strict ? "True" : "False")})\n" + """
+                try:
+                    row = next(reader)
+                    print(row, reader.line_num)
+                except csv.Error as error:
+                    print(str(error), reader.line_num)
+                print(next(reader, None) is None)
+            """ + (strict ? "" : "\n    return row");
+        var expected = strict ? "unexpected end of data 2\nTrue\n" : "['a', 'first\\nlast'] 2\nTrue\n";
+        await AssertFile(asynchronous, "a,\"first\nlast", source, expected,
+            expectedReturn: strict ? null : new object?[] { "a", "first\nlast" });
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task GenericItemsShareTheSameSingleRecordAndErrorLifetime(bool asynchronous)
@@ -107,7 +133,8 @@ public sealed class CsvNativeInputTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private static async Task AssertFile(bool asynchronous, string content, string source, string expected, int expectedCloses = 1)
+    private static async Task AssertFile(bool asynchronous, string content, string source, string expected, int expectedCloses = 1,
+        IReadOnlyList<object?>? expectedReturn = null)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
@@ -120,6 +147,11 @@ public sealed class CsvNativeInputTests
         using var result = asynchronous ? await script.RunAsync(delayed) : script.Run(sync);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, result.StandardOutput);
+        if (expectedReturn is not null)
+        {
+            Assert.Equal(expectedReturn, Assert.IsType<List<object?>>(result.ReturnValue));
+            Assert.True(budget.ReservedBytes > baseline);
+        }
         Assert.Equal(expectedCloses, asynchronous ? delayed.ClosedFileCount : sync.ClosedFileCount);
         if (asynchronous && expectedCloses != 0) Assert.True(delayed.CompletedAsynchronously > 0);
         result.Dispose();

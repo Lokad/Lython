@@ -13,6 +13,30 @@ public sealed class CsvDenialOwnershipTests
     private const long Cap = 3L * 1024 * 1024;
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
+    [Fact]
+    public void QuotedEofRefusalIsTerminalBeforePublishingTheFinalRow()
+    {
+        var budget = new LythonMemoryBudget(Cap);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = owner });
+        var parser = new LythonRuntime.CsvRecordParser(Options() with { Strict = false }, context, Span);
+        parser.Feed(Encoding.UTF8.GetBytes("a,\"" + new string('x', 8192)));
+        Assert.True(budget.TryReserve(Cap - budget.ReservedBytes, out var blocker));
+        using (blocker)
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() => parser.Finish());
+            Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+            Assert.False(parser.TryTakeReady(out _));
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(Span)));
+            parser.ReleaseScratch();
+        }
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

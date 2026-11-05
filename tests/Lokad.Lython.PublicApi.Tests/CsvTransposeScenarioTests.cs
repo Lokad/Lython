@@ -35,14 +35,14 @@ public sealed class CsvTransposeScenarioTests
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import csv
-rows = list(csv.reader(["\"broken"]))
+rows = list(csv.reader(["\"broken"], strict=True))
 """,
             new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("Error", result.Failure?.ExceptionType);
-        Assert.Contains("Invalid csv input", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("unexpected end of data", result.Failure?.Message);
     }
 
     [Fact]

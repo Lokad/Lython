@@ -382,7 +382,7 @@ import csv
 
 status = "missing"
 try:
-    list(csv.reader(["\"broken"]))
+    list(csv.reader(["\"broken"], strict=True))
 except csv.Error as ex:
     status = "caught:" + str(ex)
 __lython_file = open("/out.txt", "w")
@@ -392,7 +392,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("caught:Invalid csv input.", host.ReadText("/out.txt"));
+        Assert.Equal("caught:unexpected end of data", host.ReadText("/out.txt"));
     }
 
     [Fact]

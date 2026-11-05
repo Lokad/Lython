@@ -666,7 +666,9 @@ internal sealed partial class LythonRuntime
 
         public void Finish()
         {
-            if (_state == FieldState.Quoted) throw CsvError("Invalid csv input.", _span);
+            if (_state != FieldState.Quoted) return;
+            if (_options.Strict) throw CsvError("unexpected end of data", _span);
+            FinishRecord();
         }
 
         private int ConsumeEscape(ReadOnlySpan<byte> text, int index, ReadOnlySpan<byte> escape)

@@ -10,6 +10,31 @@ namespace Lokad.Lython.Tests;
 public sealed class CsvParserCancellationTests
 {
     [Fact]
+    public void CancellationDuringQuotedEofConstructionDoesNotPublishTheRow()
+    {
+        var root = new LythonMemoryBudget();
+        using var owner = root.CreateScope();
+        using var cancellation = new CancellationTokenSource();
+        var budget = new CancelOnGrowth(owner, cancellation) { Enabled = false };
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
+            { MemoryBudget = budget, CancellationToken = cancellation.Token });
+        var span = new LythonSourceSpan(0, 0, 1, 1);
+        var options = new LythonRuntime.CsvOptions(PyStringOps.CommaLiteral, PyString.FromString("\""),
+            LythonRuntime.CsvQuotingMode.Minimal, true, null, false, PyString.FromString("\n"), false);
+        var parser = new LythonRuntime.CsvRecordParser(options, context, span);
+        parser.Feed(Encoding.UTF8.GetBytes("\"" + new string('x', 8192)));
+        budget.Enabled = true;
+        var error = Assert.Throws<LythonRuntimeException>(() => parser.Finish());
+        Assert.True(budget.Triggered);
+        Assert.Contains("execution canceled", error.Message, StringComparison.Ordinal);
+        Assert.False(parser.TryTakeReady(out _));
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        parser.ReleaseScratch();
+        owner.Dispose();
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Fact]
     public void NativeParsingStopsDuringFieldGrowth()
     {
         var root=new LythonMemoryBudget();using var owner=root.CreateScope();
@@ -36,6 +61,7 @@ public sealed class CsvParserCancellationTests
 
     private sealed class CancelOnGrowth(ILythonMemoryBudget inner,CancellationTokenSource cancellation):ILythonMemoryBudget
     {
+        public bool Enabled { get; set; } = true;
         public bool Triggered {get;private set;}
         public ILythonMemoryScope CreateScope()=>inner.CreateScope();
         public bool TryReserve(long bytes,[NotNullWhen(true)] out ILythonMemoryReservation? reservation)
@@ -45,7 +71,7 @@ public sealed class CsvParserCancellationTests
         }
         private void Grew(long previous,long bytes)
         {
-            if(!Triggered&&bytes-previous>=8192){Triggered=true;cancellation.Cancel();}
+            if(Enabled&&!Triggered&&bytes-previous>=8192){Triggered=true;cancellation.Cancel();}
         }
         private sealed class Admission(CancelOnGrowth outer,ILythonMemoryReservation inner):ILythonMemoryReservation
         {

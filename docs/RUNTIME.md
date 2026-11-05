@@ -372,6 +372,9 @@ cleanup; values and escaping dictionaries/rest lists retain independent funding.
 csv.reader and exposed fieldnames adopt the funded array without copying.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
+Non-strict quoted EOF produces a final row before source/scratch cleanup; its
+independent storage stays funded through cleanup and later guest use. Strict
+quoted EOF fails without publishing that row.
 
 Ordinary dictionaries own their ordered table and retained-capacity accounting
 directly. Namespace and environment views forward to their live backing instead.
