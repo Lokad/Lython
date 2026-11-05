@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
@@ -35,7 +35,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
     {
         var method = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
-        method.Invoke(wrapper, [key, keyCharge, value, span, context, PyHashProtocols.BucketHash(key, context, span)]);
+        method.Invoke(wrapper, [key, keyCharge, value, span, context, PyHashProtocols.GetProtocolHash(key, context, span)]);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         var store = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
         // Entry infrastructure cannot fit beside the fresh key: denial refunds it.
-        var failure = Assert.Throws<TargetInvocationException>(() => store.Invoke(wrapper, [key, keyCharge, new BigInteger(1), span, context, PyHashProtocols.BucketHash(key, context, span)]));
+        var failure = Assert.Throws<TargetInvocationException>(() => store.Invoke(wrapper, [key, keyCharge, new BigInteger(1), span, context, PyHashProtocols.GetProtocolHash(key, context, span)]));
         Assert.IsType<LythonRuntimeException>(failure.InnerException);
         Assert.Equal("MemoryError", ((LythonRuntimeException)failure.InnerException!).ExceptionType);
         Assert.Equal(baseline, context.MemoryGovernor.CurrentCommittedBytes);

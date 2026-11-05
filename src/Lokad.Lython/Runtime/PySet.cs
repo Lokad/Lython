@@ -327,24 +327,22 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool Remove(object item)
     {
-        // Equality can match different scalar types (including bool and int).
-        // Release by the actual retained member, never by the argument's type.
-        if (_items.TryGetValue(item, out var stored))
-        {
-            _ = _items.Remove(item);
-            RemoveProtocolShadow(stored);
-            ReleaseNumericStorage(stored);
-            _version++;
-            return true;
-        }
+        if (!PyHashProtocols.NeedsProtocolKey(item) && RemoveStoredItem(item)) return true;
+        if (!RemoveProtocolItem(item)) return false;
+        _version++;
+        return true;
+    }
 
-        if (RemoveProtocolItem(item))
-        {
-            _version++;
-            return true;
-        }
-
-        return false;
+    // Pop removes a retained member without querying guest hash slots again.
+    // Public removal must resolve a protocol query first.
+    private bool RemoveStoredItem(object item)
+    {
+        if (!_items.TryGetValue(item, out var stored)) return false;
+        _ = _items.Remove(item);
+        RemoveProtocolShadow(stored);
+        ReleaseNumericStorage(stored);
+        _version++;
+        return true;
     }
 
     public bool TryPop(out object item)
@@ -357,22 +355,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         item = enumerator.Current;
-        Remove(item);
+        RemoveStoredItem(item);
         return true;
     }
 
     public bool Contains(object item)
     {
-        if (_items.Contains(item))
-        {
-            return true;
-        }
-
-        if (PyHashProtocols.NeedsProtocolKey(item))
-        {
-            return ContainsProtocolItem(item);
-        }
-
+        if (PyHashProtocols.NeedsProtocolKey(item)) return ContainsProtocolItem(item);
+        if (_items.Contains(item)) return true;
         return _protocol is not null && ContainsProtocolBuiltin(item);
     }
 

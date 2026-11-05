@@ -116,7 +116,7 @@ internal sealed class PyMappingProxy : IPySubscriptableValue, IPyIterableValue, 
     public LythonSourceSpan? AllocationSpan { get; }
     public int Length => Dictionary.Count;
     public int Count => Dictionary.Count;
-    public int GetPyHashCode() => throw new PyUnhashableException();
+    public int GetPyHashCode() => throw new PyUnhashableException(this);
     public bool IsTruthy() => Count != 0;
     public object Underlying => this;
     public IEnumerable<object> Keys => Dictionary.Keys;

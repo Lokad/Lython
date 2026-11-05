@@ -110,9 +110,9 @@ internal static class PyContainment
 
             return set.Contains(candidate);
         }
-        catch (PyUnhashableException)
+        catch (PyUnhashableException error)
         {
-            throw RuntimeErrors.UnhashableType(candidate, span);
+            throw RuntimeErrors.UnhashableType(error.Value, span);
         }
     }
 

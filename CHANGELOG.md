@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Invoke custom key hashes for dictionary/set queries and removal, including
+  identity hits, and propagate their errors. Native dictionary copies reuse stored
+  keys without invoking hashes again. Report the failing nested unhashable value;
+  separate tuple shape validation from hashing to avoid repeated subtree work.
+
 - Complete ordinary expression and iteration results directly into adjacent local
   bindings, avoiding intermediate result transport when cleanup has finished.
   Preserve separate operation/store spans, delayed protocols, cancellation,

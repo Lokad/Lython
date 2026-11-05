@@ -19,11 +19,11 @@ public sealed class ReentrantDictRemovalTests
 
     private static async Task AssertBothModes(string source, object? expected)
     {
-        var script = Compile(source);
-        var sync = script.Run(new MockLythonHost());
+        using var script = Compile(source);
+        using var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
-        var asyncResult = await script.RunAsync(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
@@ -63,7 +63,7 @@ public sealed class ReentrantDictRemovalTests
                 except KeyError:
                     return ["keyerror", sorted(k.name for k in d), calls]
                 """,
-            new List<object?> { "keyerror", new List<object?>(), new List<object?> { "hash:e", "eq:evil" } });
+            new List<object?> { "keyerror", new List<object?>(), new List<object?> { "hash:e", "eq:evil", "hash:a" } });
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class ReentrantDictRemovalTests
                 except KeyError:
                     return ["keyerror", sorted(k.name for k in d), calls]
                 """,
-            new List<object?> { "returned", new BigInteger(1), new List<object?>(), new List<object?> { "hash:e", "eq:evil" } });
+            new List<object?> { "returned", new BigInteger(1), new List<object?>(), new List<object?> { "hash:e", "eq:evil", "hash:b", "eq:a" } });
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public sealed class ReentrantDictRemovalTests
                 except KeyError:
                     return ["keyerror", sorted(k.name for k in d), calls]
                 """,
-            new List<object?> { "returned", "dflt", new List<object?>(), new List<object?> { "hash:e", "eq:evil" } });
+            new List<object?> { "returned", "dflt", new List<object?>(), new List<object?> { "hash:e", "eq:evil", "hash:a" } });
     }
 
     [Fact]
@@ -217,6 +217,6 @@ public sealed class ReentrantDictRemovalTests
                 except KeyError:
                     return ["keyerror", sorted(k.name for k in d), calls]
                 """,
-            new List<object?> { "returned", new BigInteger(1), new List<object?>(), new List<object?> { "hash:e", "eq:evil" } });
+            new List<object?> { "returned", new BigInteger(1), new List<object?>(), new List<object?> { "hash:e", "eq:evil", "hash:b", "eq:a" } });
     }
 }

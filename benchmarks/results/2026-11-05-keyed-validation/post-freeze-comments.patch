@@ -1,0 +1,28 @@
+--- frozen/src/Lokad.Lython/Runtime/PyDict.cs
++++ delivery/src/Lokad.Lython/Runtime/PyDict.cs
+@@ -540,9 +540,9 @@
+     private LythonRuntime.ExecutionContext? ActiveProtocolContext()
+         => PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
+ 
+-    // Dual-home protocol lookup: the fast store probes identically first
+-    // (covering same-object hits in every mode), then the side index scans
+-    // by identity always and by element == when a context is active. Hash
++    // Contextual protocol lookup hashes even identity queries, then the side
++    // index scans by identity and element ==. Context-free internal operations
++    // resolve retained identities without invoking guest callbacks. Hash
+     // prechecks are semantic (unequal hashes never compare, like CPython
+     // buckets), not just an optimization.
+     private bool TryGetProtocolValue(object key, [MaybeNullWhen(false)] out object value)
+--- frozen/src/Lokad.Lython/Runtime/PySet.cs
++++ delivery/src/Lokad.Lython/Runtime/PySet.cs
+@@ -333,8 +333,8 @@
+         return true;
+     }
+ 
+-    // Internal pop/copy/cleanup uses a retained member without querying guest
+-    // hash slots again. Public removal must resolve a protocol query first.
++    // Pop removes a retained member without querying guest hash slots again.
++    // Public removal must resolve a protocol query first.
+     private bool RemoveStoredItem(object item)
+     {
+         if (!_items.TryGetValue(item, out var stored)) return false;

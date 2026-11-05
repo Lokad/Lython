@@ -7,8 +7,11 @@ namespace Lokad.Lython.Runtime;
 /// </summary>
 internal sealed class PyUnhashableException : InvalidOperationException
 {
-    public PyUnhashableException()
+    public PyUnhashableException(object value)
         : base("unhashable value")
     {
+        Value = value;
     }
+
+    public object Value { get; }
 }

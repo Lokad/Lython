@@ -14,16 +14,20 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static object ValidateSetItem(object value, LythonSourceSpan span)
-        => ValidateHashableKey(value, span);
+        => ValidateDictionaryKey(value, span);
 
     internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
-        => ValidateHashableKey(value, span);
+    {
+        var key = ValidateKeyShape(value, span);
+        _ = ComputeStructuralHashCode(key, span);
+        return key;
+    }
 
     // Shared set/dict key validation: hashability is a property of the existing
     // items, so a validated tuple keeps its identity (and nested identities)
     // instead of rebuilding copies that break `is` checks downstream. Validation
     // never transforms items; anything unhashable throws UnhashableType.
-    private static object ValidateHashableKey(object value, LythonSourceSpan? span)
+    private static object ValidateKeyShape(object value, LythonSourceSpan? span)
     {
         // The None slot is established at class creation; this check never
         // invokes guest code or infers hashability from a later __eq__ edit.
@@ -40,7 +44,7 @@ internal sealed partial class LythonRuntime
             _ => throw RuntimeErrors.UnhashableType(value, span)
         };
 
-        return EnsureHashableValue(normalized, span);
+        return normalized;
     }
 
     private static PyTuple ValidateTupleKey(PyTuple tuple, LythonSourceSpan? span)
@@ -50,23 +54,10 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < tuple.Count; i++)
             {
                 PyStructuralGuard.NoteWork();
-                ValidateHashableKey(tuple[i], span);
+                ValidateKeyShape(tuple[i], span);
             }
 
             return tuple;
-        }
-    }
-
-    private static object EnsureHashableValue(object value, LythonSourceSpan? span)
-    {
-        try
-        {
-            _ = PyValueComparer.Instance.GetHashCode(value);
-            return value;
-        }
-        catch (InvalidOperationException)
-        {
-            throw RuntimeErrors.UnhashableType(value, span);
         }
     }
 

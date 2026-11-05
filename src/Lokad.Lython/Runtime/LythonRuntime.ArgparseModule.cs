@@ -348,7 +348,7 @@ internal sealed partial class LythonRuntime
             return _members.Remove(PyString.FromString(name));
         }
         public override bool Equals(object? other) => other is ArgparseNamespaceObject fellow && PyEquality.AreEqual(_members, fellow._members);
-        public override int GetHashCode() => throw new PyUnhashableException();
+        public override int GetHashCode() => throw new PyUnhashableException(this);
         public PyString RenderPython(PyRenderingContext context)
         {
             var span = PyStructuralGuard.AmbientSpan;

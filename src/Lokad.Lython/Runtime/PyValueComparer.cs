@@ -34,7 +34,7 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
         {
             IPyHashableValue hashable => hashable.GetPyHashCode(),
             _ when PyNumberOps.TryAsNumber(obj, out var numeric) => PyNumberOps.GetHashCode(numeric),
-            _ => throw new PyUnhashableException()
+            _ => throw new PyUnhashableException(obj)
         };
         return NormalizeHash(hash);
     }

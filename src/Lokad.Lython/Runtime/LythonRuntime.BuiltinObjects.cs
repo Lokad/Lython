@@ -424,8 +424,11 @@ internal sealed partial class LythonRuntime
             source = argument.Value;
         }
 
-        var result = new PyDict(context.MemoryGovernor, span);
-        if (source is not null)
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var nativeSource = source as PyDict;
+        var result = nativeSource is null ? new PyDict(context.MemoryGovernor, span)
+            : new PyDict(nativeSource, context.MemoryGovernor, span);
+        if (source is not null && nativeSource is null)
         {
             UpdateDictionaryFromSource(result, source, context, span);
         }
@@ -456,8 +459,12 @@ internal sealed partial class LythonRuntime
             source = argument.Value;
         }
 
-        var result = new PyDict(context.MemoryGovernor, span);
-        if (source is not null)
+        var nativeSource = source as PyDict;
+        PyDict result;
+        using (PyStructuralGuard.PushAmbient(context, span))
+            result = nativeSource is null ? new PyDict(context.MemoryGovernor, span)
+                : new PyDict(nativeSource, context.MemoryGovernor, span);
+        if (source is not null && nativeSource is null)
         {
             await UpdateDictionaryFromSourceAsync(result, source, context, span).ConfigureAwait(false);
         }
@@ -466,6 +473,7 @@ internal sealed partial class LythonRuntime
         {
             if (argument.IsKeyword)
             {
+                using var ambient = PyStructuralGuard.PushAmbient(context, span);
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
                 result.SetItem(keyword, argument.Value);
             }

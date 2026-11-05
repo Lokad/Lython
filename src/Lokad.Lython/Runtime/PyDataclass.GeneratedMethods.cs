@@ -491,7 +491,7 @@ internal static partial class PyDataclass
             }
 
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
-            return new BigInteger(instance.GetPyHashCode());
+            return LythonRuntime.ComputeBuiltinHash(instance, span);
         }
     }
 

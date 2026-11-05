@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Lokad.Lython.Runtime;
@@ -27,7 +27,7 @@ public sealed class FunctoolsCacheAccountingTests
     {
         var method = wrapper.GetType().GetMethod("Store", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new InvalidOperationException("Store not found.");
-        method.Invoke(wrapper, [key, 0L, value, span, context, PyHashProtocols.BucketHash(key, context, span)]);
+        method.Invoke(wrapper, [key, 0L, value, span, context, PyHashProtocols.GetProtocolHash(key, context, span)]);
     }
 
     private static void InvokeClear(object wrapper)

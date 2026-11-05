@@ -155,12 +155,12 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
     {
-        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValue(key, out value);
+        if (HasProtocolKeys &&
             ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
             return TryGetBuiltinValue(key, context, span, out value);
 
         if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
-        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValue(key, out value);
         value = PyNone.Instance;
         return false;
     }
@@ -170,10 +170,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     // branch inside TryGetProtocolValue instead.
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key))
+        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValueExplicit(key, context, span, out value);
+        if (HasProtocolKeys)
             return TryGetBuiltinValue(key, context, span, out value);
         if (_items.TryGetValue(key, out var stored)) { value = stored; return true; }
-        if (PyHashProtocols.NeedsProtocolKey(key)) return TryGetProtocolValueExplicit(key, context, span, out value);
         value = PyNone.Instance;
         return false;
     }
@@ -350,10 +350,11 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     public bool Remove(object key)
     {
-        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+        var protocol = PyHashProtocols.NeedsProtocolKey(key);
+        if (HasProtocolKeys && !protocol &&
             ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
             return TryRemoveBuiltinValue(key, context, span, out _);
-        if (_items.TryGetValue(key, out var storedValue))
+        if (!protocol && _items.TryGetValue(key, out var storedValue))
         {
             _ = _items.Remove(key);
             RemoveProtocolShadow(key);
@@ -376,7 +377,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     // inside the first dispatch could fail spuriously or double-apply.
     public bool TryRemove(object key, [MaybeNullWhen(false)] out object value)
     {
-        if (HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key) &&
+        if (PyHashProtocols.NeedsProtocolKey(key)) return TryRemoveProtocolValue(key, out value);
+        if (HasProtocolKeys &&
             ActiveProtocolContext() is { } context && (PyStructuralGuard.AmbientSpan ?? _allocationSpan) is { } span)
             return TryRemoveBuiltinValue(key, context, span, out value);
         // Ordinary storage probes stay direct; mixed native keys have already
@@ -386,11 +388,6 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             value = stored;
             RemoveResolvedEntry(key);
             return true;
-        }
-
-        if (PyHashProtocols.NeedsProtocolKey(key))
-        {
-            return TryRemoveProtocolValue(key, out value);
         }
 
         value = PyNone.Instance;
@@ -543,9 +540,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     private LythonRuntime.ExecutionContext? ActiveProtocolContext()
         => PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
 
-    // Dual-home protocol lookup: the fast store probes identically first
-    // (covering same-object hits in every mode), then the side index scans
-    // by identity always and by element == when a context is active. Hash
+    // Contextual protocol lookup hashes even identity queries, then the side
+    // index scans by identity and element ==. Context-free internal operations
+    // resolve retained identities without invoking guest callbacks. Hash
     // prechecks are semantic (unequal hashes never compare, like CPython
     // buckets), not just an optimization.
     private bool TryGetProtocolValue(object key, [MaybeNullWhen(false)] out object value)

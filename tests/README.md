@@ -24,6 +24,14 @@ keep original operands funded across protocol rebinding and real suspension.
 Native calls, compiled children and subscript callbacks leave targets unchanged
 while pending; cancellation or refused admission preserves them and awaits cleanup.
 
+[Hash queries](Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs) preserve
+Python callback effects and errors, while native copies and set pop use stored
+keys without rehashing. [Ownership checks](Lokad.Lython.Tests/HashQueryOwnershipTests.cs)
+exercise actual refusal/cancellation inside those callbacks, unchanged containers,
+first-origin propagation and reusable shared funding after cleanup.
+[Nested error goldens](Lokad.Lython.PublicApi.Tests/UnhashableKeyOriginTests.cs)
+identify the failing value through slices, tuples, dataclasses and cache keys.
+
 | Contract | Primary coverage |
 | --- | --- |
 | Language/module values, types and errors | Public goldens and semantic families; syntax cases run once through each API |

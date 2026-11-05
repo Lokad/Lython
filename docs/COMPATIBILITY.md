@@ -73,6 +73,12 @@ errors. Under `RunAsync`, native-key lookup equality can suspend for host I/O,
 including integer and tuple keys. Custom key hashing and write-key equality
 retain their synchronous-completion restrictions.
 
+Custom-key queries invoke `__hash__` even for an identity hit; native dictionary
+copies and set pop reuse stored keys without rehashing. Nested unhashability names
+the failing value. Known gaps remain: structural collisions can cause extra
+equality callbacks across different custom hashes, and hashes of slice bounds and
+generated dataclass fields can omit nested custom `__hash__` calls.
+
 List/dict/set/tuple construction, updates, slicing and unpacking preserve evaluation
 order and alias identity. Iteration accepts supported native values and guest
 protocols. Builtins and higher-order functions can invoke guest callbacks; the

@@ -1,0 +1,38 @@
+{
+  "sourceRevision": "14f7e054012563abcfc2ad1a72e0f8392276e787 plus D64A/C/D source snapshot",
+  "coreSHA256": {
+    "candidate": "47833d32f8b6c8233e75017a23d1de3d742b4f379f77c6a7f49a126f62ecf36e",
+    "control": "47833d32f8b6c8233e75017a23d1de3d742b4f379f77c6a7f49a126f62ecf36e",
+    "reference": "084aaa38c228cd7f85e25e8e7f5ae67e71d57abacc53a410b53f93b977ebb979"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseModule.cs": "ae254b3517bf593f23c92547b53c46ad1fc6a89b3224f0e434a5accade77a6d6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": "ab8b0c0edc7f135aff7605021b09296015637a975357a04999fed5f4acd80b01",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "7aa6d51ba7d92a383af25a4251b76528ab348fe4eb4b511ac99631801e426d61",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs": "a81363606b2bd76d01b208ef94024bc0c01128816fa6fbd0b44a19ccfab03cc6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Cache.cs": "36aa7af93e6910ebe13f8beb3fe81747e3a6b60053071cfd2abf29788f933ab5",
+    "src/Lokad.Lython/Runtime/PyContainment.cs": "1a7006d22c863ac383648226f85757d4c3e7bc63f3d36bf53845593e09e500cd",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "4e31d13af8f9cac89f277cde4712fa48a438509b5dc7100689083801ef39260e",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "98aa618eb9e6c20a4b8839ced843eb67b7b996bcf5feaa4c303fbd93c055939d",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "373fa9352c26a2ecddde11c035c6af2c46fa72e60f6c238bf735d838c4c8a991",
+    "src/Lokad.Lython/Runtime/PyInstance.cs": "416ea544d5a2d14e8bb25cb1627b4ab741992a591707c27c8a09475b9536b626",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "66bf50e56429b60aa355914e969129bd5469af6be2fab300100e7df6267b53cd",
+    "src/Lokad.Lython/Runtime/PySet.cs": "abce273469d4029b421c6c5af38a01018ef8d493df39dd110490c0766049e377",
+    "src/Lokad.Lython/Runtime/PyUnhashableException.cs": "a01827ed122028870a06cbb5b8a911ac90c85f1b91abd4c56ec8067052958412",
+    "src/Lokad.Lython/Runtime/PyValueComparer.cs": "06515775887b62f4014e66484200fded2418e0e8c8078c053581a8d2bc25bb34",
+    "tests/Lokad.Lython.PublicApi.Tests/BuiltinObjectExceptionFunctionTests.cs": "d38fff9f39abc648c8ef38d81ff95acb903184d00080b5554c38ebb7a4bb4c01",
+    "tests/Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs": "65ba2ce052437565182762a88e836c800c0b426f09dd046054d63088e7d593f4",
+    "tests/Lokad.Lython.PublicApi.Tests/ReentrantDictRemovalTests.cs": "a5c1e98902b0eb5b23fb9d6e155d95053b35df44e23ed8d5d5d0050adc1b114d",
+    "tests/Lokad.Lython.PublicApi.Tests/UnhashableKeyOriginTests.cs": "62c1df03834373311c55f0865e56592875eef77d6f050ff5e2ddbb6925ae876f",
+    "tests/Lokad.Lython.Tests/FunctoolsCacheAccountingTests.cs": "fe7fa0af8c552f6c23bce836733583bc36b46deb1b16f14ef1df590180c024b8",
+    "tests/Lokad.Lython.Tests/FunctoolsCacheOwnershipTests.cs": "d1f8b310ef8ad2272dcb750ad92c807d68d6d0223d275142f91f88394a42dbae",
+    "tests/Lokad.Lython.Tests/HashQueryOwnershipTests.cs": "ccf5ed69109403606ae74bf9a039b220993d058b9860d69e87a5ffb10d8134c8"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused103internal/331public per actual11/10 pass; corrected old expectations independently checked with isolatedCPython3.13.2; full local suites underway. Real refusal/cancellation and retained-data cleanup regressions pass. Source benchmark compares native semantics only; never claims faster corrected guest callback behavior against an incorrect baseline."
+}

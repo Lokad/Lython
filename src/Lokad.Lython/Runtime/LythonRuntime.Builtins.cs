@@ -688,14 +688,14 @@ internal sealed partial class LythonRuntime
     // __hash__ member funnel through it, so direct calls can never drift
     // from the values dicts and sets actually use.
     internal static object ComputeBuiltinHash(object value, LythonSourceSpan span)
+        => new BigInteger(ComputeStructuralHashCode(value, span));
+
+    internal static int ComputeStructuralHashCode(object value, LythonSourceSpan? span)
     {
-        try
+        try { return PyValueComparer.Instance.GetHashCode(value); }
+        catch (PyUnhashableException error)
         {
-            return new BigInteger(PyValueComparer.Instance.GetHashCode(value));
-        }
-        catch (InvalidOperationException)
-        {
-            throw RuntimeErrors.UnhashableType(value, span);
+            throw RuntimeErrors.UnhashableType(error.Value, span);
         }
     }
 

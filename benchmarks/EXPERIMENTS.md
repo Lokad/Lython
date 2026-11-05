@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [keyed-query/validation correction](results/2026-11-05-keyed-validation/README.md)
+restores required hash callbacks/errors and native-copy behavior, preserves nested
+failure origins and removes repeated subtree hashing. Full4154internal/16015public
+per actual11/10 pass. B296140.41s/five jobs/all gates: native compound-key controls
+improve; complete CSV/text/JSON do not establish a broad speedup, with small CSV
+and conflicting JSON debt preserved. Actual-hash candidate authority and nested
+protocol hashing remain demonstrated follow-ups. No allocation/causalCPU claim.
+
 The [current complete-text cost gate](results/2026-11-05-current-text-cost/README.md)
 captures afc3189e/084aaa38 in28s:1332guest samples/6.7CPU seconds; unknown7.21%
 and one truncated map retained. All quiet/golden/identity/Closed/finalzero/joins/

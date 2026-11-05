@@ -1,0 +1,16 @@
+{
+  "build": "Release solution actual .NET11/10, zero warnings/errors",
+  "tests": {
+    "internal-net11.0": 4154,
+    "public-net11.0": 16015,
+    "internal-net10.0": 4154,
+    "public-net10.0": 16015
+  },
+  "probes": "Three original public mismatches now match isolatedCPython3.13.2 in both invocation modes; new copy/error/query/nested/ownership cases have independent goldens. Original failures preserved.",
+  "pending": [
+    "Actual-hash authority: stable guest hashes can trigger extra equality from structural collisions.",
+    "Nested slice bounds/generated dataclass fields can omit custom hash callbacks.",
+    "Suspending custom key callbacks explicitly rejected by the existing supported boundary."
+  ],
+  "sourceNote": "Frozen comparison/current local full-test binary47833d32 matches the21-file source snapshot in observations.tgz. Two subsequent runtime comment corrections only are preserved in post-freeze-comments.patch; no executable code differs. CI qualifies the delivery commit separately."
+}

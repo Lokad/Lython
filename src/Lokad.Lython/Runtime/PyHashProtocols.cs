@@ -78,24 +78,15 @@ internal static class PyHashProtocols
                 return PyValueComparer.Instance.GetHashCode(integerHash);
             }
 
-            return PyValueComparer.Instance.GetHashCode(key);
+            return LythonRuntime.ComputeStructuralHashCode(key, span);
         }
 
         if (PyTupleLike.TryGetItems(key, out var items))
         {
-            // Unhashable elements surface with the house convention (naming
-            // the tuple), matching the structural funnel this replaces.
-            try
-            {
-                return ComputeTupleHash(items, context, span);
-            }
-            catch (PyUnhashableException)
-            {
-                throw RuntimeErrors.UnhashableType(key, span);
-            }
+            return ComputeTupleHash(items, context, span);
         }
 
-        return PyValueComparer.Instance.GetHashCode(key);
+        return LythonRuntime.ComputeStructuralHashCode(key, span);
     }
 
     // Tuple hashing recurses into element hashes with the same combination as
@@ -115,22 +106,6 @@ internal static class PyHashProtocols
             }
 
             return PyValueComparer.NormalizeHash(hash.ToHashCode());
-        }
-    }
-
-    // Table bucket for one key: guest __hash__ when customized (with
-    // unhashability), otherwise the structural comparer. Unhashable
-    // builtins surface as UnhashableType naming the key, preserving the
-    // structural funnel convention (tuples name the tuple).
-    public static int BucketHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        try
-        {
-            return GetProtocolHash(key, context, span);
-        }
-        catch (PyUnhashableException)
-        {
-            throw RuntimeErrors.UnhashableType(key, span);
         }
     }
 
@@ -165,7 +140,7 @@ internal sealed class ContextualKeyTable<TValue>
 
     public bool TryGetValue(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out TValue value)
     {
-        return TryGetValue(key, PyHashProtocols.BucketHash(key, context, span), context, span, out value);
+        return TryGetValue(key, PyHashProtocols.GetProtocolHash(key, context, span), context, span, out value);
     }
 
     public bool TryGetValue(object key, int hash, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out TValue value)
@@ -190,7 +165,7 @@ internal sealed class ContextualKeyTable<TValue>
     // Single hash-plus-scan for get-or-create: first-seen order on adds.
     public Entry GetOrAdd(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
+        var hash = PyHashProtocols.GetProtocolHash(key, context, span);
         if (!_buckets.TryGetValue(hash, out var bucket))
         {
             bucket = new List<Entry>();
@@ -218,7 +193,7 @@ internal sealed class ContextualKeyTable<TValue>
     // eager garbage like one empty list per duplicate element).
     public Entry GetOrAdd(object key, Func<TValue> factory, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
+        var hash = PyHashProtocols.GetProtocolHash(key, context, span);
         if (!_buckets.TryGetValue(hash, out var bucket))
         {
             bucket = new List<Entry>();
@@ -245,7 +220,7 @@ internal sealed class ContextualKeyTable<TValue>
     // Updates an existing entry in place (no order change); false if missing.
     public bool TrySet(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
+        var hash = PyHashProtocols.GetProtocolHash(key, context, span);
         if (_buckets.TryGetValue(hash, out var bucket))
         {
             // Snapshot: guest == may reenter this table (recursive cached calls).
@@ -263,7 +238,7 @@ internal sealed class ContextualKeyTable<TValue>
     }
 
     public void Add(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => Add(key, value, PyHashProtocols.BucketHash(key, context, span));
+        => Add(key, value, PyHashProtocols.GetProtocolHash(key, context, span));
 
     // Already-hashed publication and reference removal cannot reenter guest code.
     public Entry Add(object key, TValue value, int hash)
@@ -289,7 +264,7 @@ internal sealed class ContextualKeyTable<TValue>
 
     public bool Remove(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var hash = PyHashProtocols.BucketHash(key, context, span);
+        var hash = PyHashProtocols.GetProtocolHash(key, context, span);
         if (!_buckets.TryGetValue(hash, out var bucket))
         {
             return false;

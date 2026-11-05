@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
             {
                 // Like Python's known-hash dictionary calls, hashing happens once.
                 // Key protocols remain synchronous; target invocation may suspend.
-                var hash = PyHashProtocols.BucketHash(key, context, span);
+                var hash = PyHashProtocols.GetProtocolHash(key, context, span);
                 if (TryLookup(key, hash, context, span, out var cached))
                 {
                     _hits++;
