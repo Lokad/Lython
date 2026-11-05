@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "qualified f6e51d1c, frozen df206f47 baseline; documentation/test-only HEAD56bf2769",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "04f3e00dad8e8673e620e34b3cf8b1a1376d25f58275e4ad94684b62672f0eaa",
+  "candidateSource": "Final one-file JSON first-token/native construction; redundant comma-rescan helper deleted. Original native capacity/ownership/actual-suspension paths remain.",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "34f8eebf1c66ff2e688b05ef0cf865f733004d4a5587d943bb791baf636bf7fe"
+  }
+}

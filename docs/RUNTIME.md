@@ -648,6 +648,11 @@ hook enters an await helper and resumes that same loop after completion; pending
 input, keys and containers retain their execution ownership throughout.
 Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
+Default objects admit their shell and first native table together when the initial
+property token is a quote. Empty objects and invalid initial property tokens use
+shell-only storage; a quoted but truncated key can still admit the table before
+its syntax error. This conservative preflight can refuse before the first key or
+number callback. Refusal remains terminal, with ordinary awaited cleanup.
 
 JSON encoders write UTF-8 directly into governed capacity, including string
 escaping, keys, separators and indentation. Replacement buffers and the final

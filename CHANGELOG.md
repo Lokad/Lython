@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit default JSON object shells and initial native storage together. Share
+  separator handling across completed and suspended parsing, removing the initial
+  position sentinel and redundant whitespace scan. Tight budgets can refuse
+  earlier, before the first property callback; refusal and cleanup remain terminal.
+
 - Retain executable function headers without unused body trees or duplicate
   default-expression maps. Share completed/pending default evaluation and empty
   construction metadata while preserving mutable defaults and asynchronous order.

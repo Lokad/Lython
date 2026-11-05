@@ -1,0 +1,18 @@
+{
+  "build": "Nonincremental Release43.52s,zero warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 242,
+      "public": 782,
+      "coreSHA256": "dace6b52b2192f7609c009bb80c194b6a7f10f98a06d444760a233ae70725677"
+    },
+    "net10.0": {
+      "internal": 242,
+      "public": 782,
+      "coreSHA256": "11acfea0c2c2ca9f18865e0fcbbe62b2a033c89dc99c504fd6e5ea0e6b63136d"
+    }
+  },
+  "contract": "Existing native dictionary shell+first slots admitted at initial nonempty property token; next-token loop removes initial end sentinel and obsolete opening parameters; no new owners/limits/caches.",
+  "tradeoff": "Conservative combined admission can refuse before first key/number work; first refusal remains terminal. Empty/invalid initial tokens keep shell-only capacity. Existing focused semantics pass unchanged.",
+  "limitations": "Focused development checks only; full platform/stress/package qualification after retained delivery; no measured gain yet."
+}

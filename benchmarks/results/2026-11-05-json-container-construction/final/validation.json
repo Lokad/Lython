@@ -1,0 +1,19 @@
+{
+  "build": "Final nonincremental Release39.55s,zero warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 242,
+      "public": 782,
+      "coreSHA256": "04f3e00dad8e8673e620e34b3cf8b1a1376d25f58275e4ad94684b62672f0eaa"
+    },
+    "net10.0": {
+      "internal": 242,
+      "public": 782,
+      "coreSHA256": "72609bdd7a1b5139f9bf31102199ff3a4403a2b52b11f723d193ea9909323642"
+    }
+  },
+  "contract": "Initial-token/native object construction; initial end sentinel/opening continuation inputs and redundant EnsureJsonComma helper removed; existing owner/reservation/native capacity paths preserved.",
+  "tradeoff": "Combined default-object preflight may conservatively refuse before first property/number callbacks; terminal origin/cleanup and all normal Python hooks/errors remain.",
+  "logNote": "Final focused launcher reused existing log names; completed final logs archived under this source, original initial pass counts remain in initial validation/tool transcript.",
+  "limitations": "Full delivery pending retention; no publication/adapter promotion."
+}

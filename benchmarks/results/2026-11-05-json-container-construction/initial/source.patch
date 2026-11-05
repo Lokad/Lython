@@ -1,0 +1,117 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index 8cd69f74..6c6be836 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -381,10 +381,15 @@ internal sealed partial class LythonRuntime
+             int depth, int opening, bool isObject, bool asynchronous)
+         {
+             var expected = isObject ? context.State.JsonRecordKeys : Array.Empty<PyString>();
++            var bytes = input.Utf8Bytes;
++            var position = SkipJsonWhitespace(bytes.Span, opening + 1, context, span);
++            // Fund the shell and first native table together when the first
++            // property token establishes nonempty object storage.
++            var capacity = position < bytes.Length && bytes.Span[position] == (byte)'"' ? 1 : 0;
+             object result = isObject && options.ObjectPairsHook is null
+-                ? new PyDict(context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
+-            return ReadJsonContainerRemainder(input, options, context, span, depth, opening,
+-                isObject, asynchronous, result, expected, true, -1);
++                ? new PyDict(capacity, context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
++            return ReadJsonContainerRemainder(input, options, context, span, depth,
++                isObject, asynchronous, result, expected, true, position);
+         }
+ 
+         // Completed values stay in this ordinary loop. Only an actually pending
+@@ -392,15 +397,14 @@ internal sealed partial class LythonRuntime
+         // remain the same recursive parser and execution-owned containers.
+         private ValueTask<(object Value, int End)> ReadJsonContainerRemainder(
+             PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
+-            int depth, int opening, bool isObject, bool asynchronous, object result,
+-            PyString[] expected, bool matched, int valueEnd)
++            int depth, bool isObject, bool asynchronous, object result,
++            PyString[] expected, bool matched, int position)
+         {
+             var bytes = input.Utf8Bytes;
+             while (true)
+             {
+-                // A closer here follows an empty container or a completed value.
+-                var peek = SkipJsonWhitespace(bytes.Span, valueEnd < 0 ? opening + 1 : valueEnd, context, span);
+-                if (peek < bytes.Length && bytes.Span[peek] == (isObject ? (byte)'}' : (byte)']'))
++                // Position names the first item, next item, or closing token.
++                if (position < bytes.Length && bytes.Span[position] == (isObject ? (byte)'}' : (byte)']'))
+                 {
+                     if (isObject)
+                     {
+@@ -411,25 +415,14 @@ internal sealed partial class LythonRuntime
+                             ? finishedDictionary.Keys : JsonPairKeys((PyList)result), count, span);
+                     }
+                     var hook = isObject ? options.ObjectPairsHook ?? options.ObjectHook : null;
+-                    if (hook is null) return new((result, peek + 1));
++                    if (hook is null) return new((result, position + 1));
+                     var converted = InvokeJsonCallbackCoreAsync(hook, result, context, span, asynchronous);
+                     return converted.IsCompleted
+-                        ? new((converted.GetAwaiter().GetResult(), peek + 1))
+-                        : CompleteJsonScalarAsync(converted, peek + 1, null);
++                        ? new((converted.GetAwaiter().GetResult(), position + 1))
++                        : CompleteJsonScalarAsync(converted, position + 1, null);
+                 }
+ 
+-                var start = peek;
+-                if (valueEnd >= 0)
+-                {
+-                    var comma = EnsureJsonComma(bytes.Span, valueEnd, input, span, context);
+-                    start = SkipJsonWhitespace(bytes.Span, comma + 1, context, span);
+-                    if (start < bytes.Length && bytes.Span[start] == (isObject ? (byte)'}' : (byte)']'))
+-                    {
+-                        throw NewJsonDecodeFailure(input, isObject
+-                            ? "Illegal trailing comma before end of object" : "Illegal trailing comma before end of array",
+-                            comma, innerException: null, span, context);
+-                    }
+-                }
++                var start = position;
+ 
+                 if (start >= bytes.Length || (isObject && bytes.Span[start] != (byte)'"'))
+                 {
+@@ -450,22 +443,38 @@ internal sealed partial class LythonRuntime
+                 var pending = ReadJsonValueAsync(input, options, context, span, depth, start, asynchronous);
+                 if (!pending.IsCompleted)
+                     return CompleteJsonContainerValueAsync(pending, input, options, context, span,
+-                        depth, opening, isObject, asynchronous, result, expected, matched, key);
++                        depth, isObject, asynchronous, result, expected, matched, key);
+                 var (value, end) = pending.GetAwaiter().GetResult();
+                 AppendJsonContainerValue(result, key, value, context, span);
+-                valueEnd = end;
++                position = NextJsonContainerToken(input, end, isObject, context, span);
+             }
+         }
+ 
++        private static int NextJsonContainerToken(PyString input, int valueEnd, bool isObject,
++            ExecutionContext context, LythonSourceSpan span)
++        {
++            var bytes = input.Utf8Bytes.Span;
++            var position = SkipJsonWhitespace(bytes, valueEnd, context, span);
++            if (position < bytes.Length && bytes[position] == (isObject ? (byte)'}' : (byte)']')) return position;
++            var comma = EnsureJsonComma(bytes, position, input, span, context);
++            position = SkipJsonWhitespace(bytes, comma + 1, context, span);
++            if (position < bytes.Length && bytes[position] == (isObject ? (byte)'}' : (byte)']'))
++                throw NewJsonDecodeFailure(input, isObject
++                    ? "Illegal trailing comma before end of object" : "Illegal trailing comma before end of array",
++                    comma, innerException: null, span, context);
++            return position;
++        }
++
+         private async ValueTask<(object Value, int End)> CompleteJsonContainerValueAsync(
+             ValueTask<(object Value, int End)> pending, PyString input, JsonLoadOptions options,
+-            ExecutionContext context, LythonSourceSpan span, int depth, int opening,
++            ExecutionContext context, LythonSourceSpan span, int depth,
+             bool isObject, bool asynchronous, object result, PyString[] expected, bool matched, PyString? key)
+         {
+             var (value, end) = await pending.ConfigureAwait(false);
+             AppendJsonContainerValue(result, key, value, context, span);
+-            return await ReadJsonContainerRemainder(input, options, context, span, depth, opening,
+-                isObject, asynchronous, result, expected, matched, end).ConfigureAwait(false);
++            return await ReadJsonContainerRemainder(input, options, context, span, depth,
++                isObject, asynchronous, result, expected, matched,
++                NextJsonContainerToken(input, end, isObject, context, span)).ConfigureAwait(false);
+         }
+ 
+         private static void AppendJsonContainerValue(object result, PyString? key, object value,
