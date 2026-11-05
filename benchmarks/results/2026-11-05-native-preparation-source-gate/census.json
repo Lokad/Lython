@@ -1,0 +1,142 @@
+{
+  "coreSHA256": "9a9fc5ec2beeedbb32294745069f92380197fb7b7242412ff607c63d2d017240",
+  "purpose": "Read-only native graph/storage census; no prototype, allocation, CPU or elapsed claim. Hypothetical sizes exclude call inputs already retained and compiler scratch.",
+  "records": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 106,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 848,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        },
+        {
+          "name": "parse_amount",
+          "instructionCount": 4,
+          "nativeRoot": 2,
+          "nativeNodeCount": 3,
+          "callNames": [
+            "dynamic-unary/1"
+          ],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 32,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 104
+        }
+      ]
+    },
+    {
+      "id": "scripts.text-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 85,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 680,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        },
+        {
+          "name": "words_from_line",
+          "instructionCount": 6,
+          "nativeRoot": 4,
+          "nativeNodeCount": 3,
+          "callNames": [
+            "split/0",
+            "lower/0"
+          ],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 48,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 104
+        }
+      ]
+    },
+    {
+      "id": "scripts.json-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 96,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 768,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        },
+        {
+          "name": "record_amount",
+          "instructionCount": 4,
+          "nativeRoot": 2,
+          "nativeNodeCount": 3,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 32,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 104
+        }
+      ]
+    },
+    {
+      "id": "scripts.report-render.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 65,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 520,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        },
+        {
+          "name": "render",
+          "instructionCount": 19,
+          "nativeRoot": 17,
+          "nativeNodeCount": 18,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 152,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 344
+        }
+      ]
+    },
+    {
+      "id": "scripts.config-edit.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 79,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 632,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-helpers.large.long-fields",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 106,
+          "nativeRoot": null,
+          "nativeNodeCount": 0,
+          "callNames": [],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 848,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 0
+        },
+        {
+          "name": "parse_amount",
+          "instructionCount": 4,
+          "nativeRoot": 2,
+          "nativeNodeCount": 3,
+          "callNames": [
+            "dynamic-unary/1"
+          ],
+          "ordinaryInstructionBytesSavedIfEdgesRemoved": 32,
+          "hypothetical16ByteNodesWith56ByteOwnerOverhead": 104
+        }
+      ]
+    }
+  ]
+}

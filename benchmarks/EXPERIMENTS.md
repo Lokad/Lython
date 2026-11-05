@@ -1,5 +1,11 @@
 # Benchmark experimental history
 
+The [whole native-helper source gate](results/2026-11-05-native-preparation-source-gate/README.md)
+selects a complete preparation/deletion contract after six maintained-source
+inventories. Hypothetical328–776B retained savings are not measurements; repeated
+structural classification must actually disappear. No prototype/speedup. Preserve
+B207's graph/readonly lessons, dynamic snapshots and existing native optimizations.
+
 The [JSON byte-run assessment](results/2026-11-05-json-byte-runs/README.md) is
 withdrawn: modest report/JSON signs and flat allocation do not justify actual
 1024-record output regressions of4.7–7.2%encode/write and1.4–2.0%streaming.
