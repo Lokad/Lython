@@ -60,8 +60,10 @@ startup, response hashing and final cached-owner teardown are excluded. All user
 are joined. Process allocation includes reset/runtime noise; untimed initial
 admission peaks are not fresh overlap, heap/RSS or embedding latency. Current
 elapsed is not a CPU measurement. No updated CPython ratios or whole-objective
-completion follows. Full delivery qualification is separate from the running D19
-checkpoint and must cover the retained source before calling it fully qualified.
+completion follows. Full delivery41940441052 on exact f7fed42c is GREEN: Windows/Ubuntu ordinary
+actual.NET11/10, installed Release consumers and original Stress on both actual
+frameworks. [Terminal cached receipt](delivery-ci-status.json), observed00:49:29UTC.
+This does not qualify the later cased-whitespace prototype; publication held.
 
 [All metrics/IQR/allocations](assessment.json), [compact table](measurements.md),
 [focused logs](focused-checks/), [original source contract](pre-code-plan.md).
