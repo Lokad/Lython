@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [compiler-bounded operand-retirement milestone](results/2026-11-05-compiler-bounded-retirement/README.md)
+uses one conservative slot bound from the existing shape pass, removing ordinary
+guest-value classification above it while retaining full clearing/reverse/failed/
+awaited cleanup. No extra pass/array/registry/owner/mode. Focus223/786 per actual
+target pass. B286140.24s/all gates: text−7.29/9.29%,CSV−.75/2.01%,JSON−1.13/1.75%,
+report−3.55/6.36% variable. Compilation inconclusive−.89/1.83%; preserve dispersion.
+Retain coherent cleanup simplification; no allocation/causalCPU/general-speedup
+claim. Larger runtime/frontend/regex roadmap and D55 Unicode debt remain open.
+
 The [bounded whitespace cancellation milestone](results/2026-11-05-whitespace-cancellation-chunks/README.md)
 removes per-scalar shared traversal updates in three UTF8 scans, using <=64scalar
 chunk checks with unchanged owners/semantics. Focus150/237 per actual target pass.

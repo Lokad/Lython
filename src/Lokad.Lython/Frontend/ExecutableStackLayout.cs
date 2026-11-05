@@ -4,7 +4,8 @@ namespace Lokad.Lython.Frontend;
 
 // Operand shapes are a compiler invariant. Guest iteration, expansion and
 // suspension change values, never the number of executable operand slots.
-internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot)
+internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
+    int LastOwnedTemporarySlot)
 {
     internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
         ExecutableStackLayout layout, out int[] offsets)
@@ -51,6 +52,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         var depths = new int?[blocks.Count];
         var pending = new Queue<int>();
         var maximum = initialDepth;
+        // Generator expressions arrive with their acquired outer cursor. Other
+        // guest values never expose the interpreter's private temporary wrappers.
+        var lastOwnedTemporarySlot = initialDepth == 0 ? -1 : checked(firstTemporarySlot + initialDepth - 1);
         Enter(entryBlock, initialDepth);
         while (pending.TryDequeue(out var blockIndex))
         {
@@ -81,6 +85,19 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 instructions[instructionIndex] = instruction.WithStorageSlots(
                     checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
                     checked(firstTemporarySlot + depth));
+                var ownedSlot = instruction.OpCode switch
+                {
+                    ExecutableOpCode.GetIter => inputStart,
+                    // Conservatively include every duplicate, without another
+                    // value-liveness analysis or runtime resource registry.
+                    ExecutableOpCode.Dup => resultSlot + 1,
+                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
+                        ExecutableStartComprehension or ExecutableStartCall or
+                        ExecutableStartClassHeader or ExecutableStartFormattedString => resultSlot,
+                    _ => -1
+                };
+                if (ownedSlot >= 0)
+                    lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, checked(firstTemporarySlot + ownedSlot));
                 maximum = Math.Max(maximum, depth);
                 switch (instruction.OpCode)
                 {
@@ -112,7 +129,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             // existing interpreter never falls through to the next stored block.
         CompleteBlock:;
         }
-        return new(maximum, depths, firstTemporarySlot);
+        return new(maximum, depths, firstTemporarySlot, lastOwnedTemporarySlot);
 
         void Enter(int block, int depth)
         {

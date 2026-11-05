@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "0752be3c plus D56 compiler-bounded private operand retirement; reference same D55 production frozen7895 before commit metadata",
+  "coreSHA256": {
+    "candidate": "86cea35674c9ea7c461d7d4af27da9a684f363c15ef01374ed9bdb90df7183e8",
+    "control": "86cea35674c9ea7c461d7d4af27da9a684f363c15ef01374ed9bdb90df7183e8",
+    "reference": "7895ac6dea2c5004875bb348edd0ba1afb87c39114c35be259b1d0ac83be15cb"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "68efa1ea171371c366151ab9d27c71b7345c1d2f35ac8cf20f7b5b91569add93",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "de2c0ba277cb1d0c1895f32395ba0400759bd32e5365f9e57ab657c13edfc77a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "8d9a625512d3acd2c1b471f840b01cb74cec13a9b98c2d419d4bfba2ad58d5b5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "108c0270ea45395f041d6405c1bddccfb3983d624af8ce262464d77b4f7a0fb4",
+    "tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs": "f831f38efe1a02ecc1e1a48688cbafa0df2dee9f53367cff849dce79e51d965c"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused executable cleanup, generators/comprehensions, expanded calls/classes, formatters, native returns, actual pending cursor ownership/cancellation and shared admission tests pass on both actual runtimes. D54 platform delivery independent.",
+  "changes": "Derive highest possibly private-owned operand in existing compiler shape pass, including seeded genexpr cursor and conservative Dup. Retire only bounded private prefix, clear whole range. No new pass/array/registry/owner/mode, no active refund, reverse/failed/pending cleanup unchanged."
+}

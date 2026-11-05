@@ -253,15 +253,17 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
+        private readonly int _lastOwnedTemporarySlot;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
-        public ExecutableValueStorage(int capacity, int firstTemporarySlot, ExecutionContext context,
+        public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
         {
             _context = context;
             _firstTemporarySlot = firstTemporarySlot;
+            _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
             _memberCaches = null;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
@@ -388,7 +390,9 @@ internal sealed partial class LythonRuntime
             }
 
             var newCount = liveExtent;
-            for (var i = LiveExtent - 1; i >= newCount; i--)
+            // Compiler-owned wrappers cannot occur above this conservative bound.
+            // Still clear every retired guest reference after private cleanup.
+            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
             {
                 if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
                 {
@@ -547,7 +551,7 @@ internal sealed partial class LythonRuntime
                 + 48L * codeObject.CapturedLocalSlots.Count);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
-        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot,
+        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
             context, span, bytes, argumentsAreLocals ? boundArguments.Values : null);
         try
         {

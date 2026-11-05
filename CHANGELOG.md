@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Bound private operand cleanup using facts from the existing compiler shape pass.
+  Skip classification of higher guest operands while preserving full reference
+  clearing, reverse disposal and awaited cursor cleanup.
+
 - Check cooperative cancellation in bounded UTF-8 chunks while finding whitespace
   words, removing shared traversal updates for every scalar. Preserve Unicode,
   split limits, conservative admission and independently owned results.

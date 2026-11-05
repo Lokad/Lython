@@ -262,7 +262,10 @@ stack-value transfer across both APIs. Native results travel as objects;
 potentially asynchronous branches retain operands and argument funding until
 their actual completion. Dynamic calls keep the general binder.
 Operand retirement recognizes the runtime's four temporary-value classes through
-one internal base class and disposes them in reverse order. Pending asynchronous
+one internal base class and disposes them in reverse order. The existing compiler
+shape pass bounds the slots that can hold private temporaries, including seeded
+generator cursors and conservative duplication. Retirement skips classification
+of higher guest operands while clearing the full retired range. Pending asynchronous
 cursors transfer to the frame's awaited cleanup chain before their slots clear.
 Return values and failures resume the existing instruction
 and exception routing. Prepared operations route directly to their existing

@@ -8,6 +8,28 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableOperandStackBoundaryTests
 {
     [Fact]
+    public void UpperGuestOperandsRetireBeforeLowerPrivateOwnershipEnds()
+    {
+        using var stack = new StackView(4, lastOwnedTemporarySlot: 1);
+        var retained = new object();
+        var disposed = false;
+        var guest = new OrdinaryDisposable();
+        stack.Push(retained);
+        stack.Push(new Temporary(() => disposed = true));
+        stack.Push(guest);
+        stack.Push(new object());
+        stack.RemoveTail(2);
+        Assert.Equal(2, stack.Count);
+        Assert.False(disposed);
+        Assert.False(guest.Disposed);
+        Assert.Same(retained, stack.At(0));
+        stack.RemoveTail(1);
+        Assert.True(disposed);
+        Assert.False(guest.Disposed);
+        Assert.Same(retained, stack.Pop());
+    }
+
+    [Fact]
     public void RetiringAnOrdinaryDisposableValueDoesNotDisposeIt()
     {
         using var stack = new StackView(4);
@@ -124,7 +146,9 @@ public sealed class ExecutableOperandStackBoundaryTests
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         private readonly object _stack;
-        public StackView(int capacity) => _stack = Activator.CreateInstance(StackType, [capacity, 0, _context, null, 0L, null])!;
+        public StackView(int capacity, int? lastOwnedTemporarySlot = null)
+            => _stack = Activator.CreateInstance(StackType, [capacity, 0, lastOwnedTemporarySlot ?? capacity - 1,
+                _context, null, 0L, null])!;
         public void Dispose()
         {
             RemoveTail(Count);

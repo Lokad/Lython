@@ -497,6 +497,7 @@ internal sealed partial class ExecutableCodeObject
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         OperandCapacity = operandLayout.MaximumDepth;
+        LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
         NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
         if (NativeBody is null) ExecutableStackLayout.ForwardValues(this, blocks);
         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
@@ -554,6 +555,7 @@ internal sealed partial class ExecutableCodeObject
 
     public int OperandCapacity { get; }
     public int FirstTemporarySlot => LocalNames.Count;
+    public int LastOwnedTemporarySlot { get; }
     public int ValueStorageCapacity => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
 
     public ExecutableNativeBody? NativeBody { get; }

@@ -1,0 +1,174 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 3fdf03cb..d9623412 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -497,6 +497,7 @@ internal sealed partial class ExecutableCodeObject
+         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
+         IsFunctionScope = isFunctionScope;
+         OperandCapacity = operandLayout.MaximumDepth;
++        LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
+         NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
+         if (NativeBody is null) ExecutableStackLayout.ForwardValues(this, blocks);
+         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
+@@ -554,6 +555,7 @@ internal sealed partial class ExecutableCodeObject
+ 
+     public int OperandCapacity { get; }
+     public int FirstTemporarySlot => LocalNames.Count;
++    public int LastOwnedTemporarySlot { get; }
+     public int ValueStorageCapacity => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+ 
+     public ExecutableNativeBody? NativeBody { get; }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index da1f701b..4c371d4f 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -4,7 +4,8 @@ namespace Lokad.Lython.Frontend;
+ 
+ // Operand shapes are a compiler invariant. Guest iteration, expansion and
+ // suspension change values, never the number of executable operand slots.
+-internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot)
++internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
++    int LastOwnedTemporarySlot)
+ {
+     internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
+         ExecutableStackLayout layout, out int[] offsets)
+@@ -51,6 +52,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+         var depths = new int?[blocks.Count];
+         var pending = new Queue<int>();
+         var maximum = initialDepth;
++        // Generator expressions arrive with their acquired outer cursor. Other
++        // guest values never expose the interpreter's private temporary wrappers.
++        var lastOwnedTemporarySlot = initialDepth == 0 ? -1 : checked(firstTemporarySlot + initialDepth - 1);
+         Enter(entryBlock, initialDepth);
+         while (pending.TryDequeue(out var blockIndex))
+         {
+@@ -81,6 +85,19 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+                 instructions[instructionIndex] = instruction.WithStorageSlots(
+                     checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
+                     checked(firstTemporarySlot + depth));
++                var ownedSlot = instruction.OpCode switch
++                {
++                    ExecutableOpCode.GetIter => inputStart,
++                    // Conservatively include every duplicate, without another
++                    // value-liveness analysis or runtime resource registry.
++                    ExecutableOpCode.Dup => resultSlot + 1,
++                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
++                        ExecutableStartComprehension or ExecutableStartCall or
++                        ExecutableStartClassHeader or ExecutableStartFormattedString => resultSlot,
++                    _ => -1
++                };
++                if (ownedSlot >= 0)
++                    lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, checked(firstTemporarySlot + ownedSlot));
+                 maximum = Math.Max(maximum, depth);
+                 switch (instruction.OpCode)
+                 {
+@@ -112,7 +129,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+             // existing interpreter never falls through to the next stored block.
+         CompleteBlock:;
+         }
+-        return new(maximum, depths, firstTemporarySlot);
++        return new(maximum, depths, firstTemporarySlot, lastOwnedTemporarySlot);
+ 
+         void Enter(int block, int depth)
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index 04a06929..7498ad07 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -253,15 +253,17 @@ internal sealed partial class LythonRuntime
+         private readonly ExecutionContext _context;
+         private long _ownedStorageBytes;
+         private readonly int _firstTemporarySlot;
++        private readonly int _lastOwnedTemporarySlot;
+         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
+         internal bool DeferAsyncDisposal;
+         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
+ 
+-        public ExecutableValueStorage(int capacity, int firstTemporarySlot, ExecutionContext context,
++        public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
+             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
+         {
+             _context = context;
+             _firstTemporarySlot = firstTemporarySlot;
++            _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
+             _nativeIterationPositions = null;
+             _memberCaches = null;
+             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
+@@ -388,7 +390,9 @@ internal sealed partial class LythonRuntime
+             }
+ 
+             var newCount = liveExtent;
+-            for (var i = LiveExtent - 1; i >= newCount; i--)
++            // Compiler-owned wrappers cannot occur above this conservative bound.
++            // Still clear every retired guest reference after private cleanup.
++            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
+             {
+                 if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
+                 {
+@@ -547,7 +551,7 @@ internal sealed partial class LythonRuntime
+                 + 48L * codeObject.CapturedLocalSlots.Count);
+         // The compiler-sized operand lifetime funds private frame arrays before any
+         // are allocated. Escaping cells acquire their separate retained charge.
+-        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot,
++        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
+             context, span, bytes, argumentsAreLocals ? boundArguments.Values : null);
+         try
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+index 4698dd5e..5753d381 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+@@ -92,7 +92,8 @@ internal sealed partial class LythonRuntime
+             _span = span;
+             OwnerMemoryGovernor = frame.MemoryGovernor;
+             // EstimateStorage already funds this retained frame's metadata.
+-            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot, frame, span, 0, null);
++            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot,
++                code.LastOwnedTemporarySlot, frame, span, 0, null);
+             try
+             {
+                 var locals = stack.Values;
+diff --git a/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs b/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs
+index a0fe4bcc..31dfc0a0 100644
+--- a/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs
+@@ -7,6 +7,28 @@ namespace Lokad.Lython.Tests;
+ 
+ public sealed class ExecutableOperandStackBoundaryTests
+ {
++    [Fact]
++    public void UpperGuestOperandsRetireBeforeLowerPrivateOwnershipEnds()
++    {
++        using var stack = new StackView(4, lastOwnedTemporarySlot: 1);
++        var retained = new object();
++        var disposed = false;
++        var guest = new OrdinaryDisposable();
++        stack.Push(retained);
++        stack.Push(new Temporary(() => disposed = true));
++        stack.Push(guest);
++        stack.Push(new object());
++        stack.RemoveTail(2);
++        Assert.Equal(2, stack.Count);
++        Assert.False(disposed);
++        Assert.False(guest.Disposed);
++        Assert.Same(retained, stack.At(0));
++        stack.RemoveTail(1);
++        Assert.True(disposed);
++        Assert.False(guest.Disposed);
++        Assert.Same(retained, stack.Pop());
++    }
++
+     [Fact]
+     public void RetiringAnOrdinaryDisposableValueDoesNotDisposeIt()
+     {
+@@ -124,7 +146,9 @@ public sealed class ExecutableOperandStackBoundaryTests
+         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
+             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
+         private readonly object _stack;
+-        public StackView(int capacity) => _stack = Activator.CreateInstance(StackType, [capacity, 0, _context, null, 0L, null])!;
++        public StackView(int capacity, int? lastOwnedTemporarySlot = null)
++            => _stack = Activator.CreateInstance(StackType, [capacity, 0, lastOwnedTemporarySlot ?? capacity - 1,
++                _context, null, 0L, null])!;
+         public void Dispose()
+         {
+             RemoveTail(Count);
