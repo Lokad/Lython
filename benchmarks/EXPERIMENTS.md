@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [construction CPython checkpoint](results/2026-11-05-runtime-cpython-construction-checkpoint/README.md)
+measures exact0997baa8/core68a9f3f8 in385.81s/14jobs with independent current control
+and previouscf3 source. All normalruntime/identity/golden/quiet/join gates pass.
+Fresh CSV/JSON/report/config1.49/1.19/1.57/1.05×CPython3.13.16; freshtext2.20–2.28×
+and warmtext2.32–2.47×retain3.32%/5.85%control variation. Compile1.30/1.35×.
+Initial B250 worker staging loaded81d instead of68a; identity gate stopped before
+any job timing. Original failure/source/Ready/journal preserved; corrected B251
+copies identical worker executable/deps/runtimeconfig beside intended core.
+No runtime/parameters changed, no discarded adverse timing or causal CPU claim.
+
 The [shared formatted-string construction](results/2026-11-05-formatted-construction/README.md)
 is retained after a 165 s six-job source pair. Report allocation decreases 10.3%
 warm/async and 10.0% fresh; elapsed favors the new source by 5.8–9.0% across
