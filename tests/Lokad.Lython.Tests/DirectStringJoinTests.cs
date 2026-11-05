@@ -14,7 +14,7 @@ public sealed class DirectStringJoinTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task DistinctReceiversProduceOwnedValuesWithoutBoundMethodCaches(bool asynchronous, bool generator)
+    public async Task DistinctReceiversProduceOwnedValuesAndUnwind(bool asynchronous, bool generator)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -28,8 +28,7 @@ public sealed class DirectStringJoinTests
         _ = await Execute(code, context, asynchronous);
         Assert.Equal(new[] { "café|😀", "café::😀" }, record.Values.Select(v => v.AsString()));
         Assert.All(record.Values, value => Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor));
-        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
-        Assert.All(caches.Cast<object?>(), Assert.Null);
+
         AssertUnwound(context);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);

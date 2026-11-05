@@ -41,11 +41,12 @@ internal static partial class PyStringOps
                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
                     ref scratchBytes, ref scratch, governor, span, context, casing);
 
-            // Admit all fragment capacity/metadata once. Commit transfers each
-            // fragment's funding without another shared-allowance resize.
-            using var output = governor?.ReserveTemporary(outputBytes, span);
+            // Admit final backing and all fragments together. Each value keeps
+            // its own payload; adoption transfers the completed list capacity.
+            var listBytes = PyList.EstimateCapacityBytes(count);
+            using var output = governor?.ReserveTemporary(checked(outputBytes + listBytes), span);
             context?.CheckExecution(span);
-            var parts = governor is null ? new PyList() : new PyList(count, governor, span);
+            var parts = count == 0 ? Array.Empty<object>() : new object[count];
             for (var index = 0; index < count; index++)
             {
                 context?.CheckExecution(span);
@@ -68,10 +69,11 @@ internal static partial class PyStringOps
                     }
                 var fragment = governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
                     : PyString.FromOwnedUtf8(bytes, governor, span, output!, written);
-                parts.Add(fragment);
+                parts[index] = fragment;
             }
             context?.CheckExecution(span);
-            return parts;
+            output?.Commit(listBytes);
+            return PyList.FromTransferredArray(parts, governor, span);
         }
         finally { scratch?.Dispose(); }
     }

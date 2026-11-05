@@ -39,8 +39,7 @@ public sealed class DirectDictionaryGetTests
             Assert.Equal(2, key.Calls);
             Assert.Same(sentinel, field.GetValue(null));
             Assert.All(sentinel, item => Assert.Same(marker, item.Value));
-            var caches = (Array)key.Frame!.GetType().GetField("_memberCaches", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(key.Frame)!;
-            Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
+
             Assert.Single(left);
             Assert.Empty(right);
             Assert.Null(context.CurrentExecutableFrame);

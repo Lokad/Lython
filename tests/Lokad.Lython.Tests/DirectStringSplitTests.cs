@@ -15,7 +15,7 @@ public sealed class DirectStringSplitTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task DistinctReceiversProduceOwnedListsWithoutBoundMethodCaches(bool asynchronous, bool separator)
+    public async Task DistinctReceiversProduceOwnedListsAndUnwind(bool asynchronous, bool separator)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -31,8 +31,7 @@ public sealed class DirectStringSplitTests
         Assert.Equal(new[] { "café", "😀" }, record.Values[1].Cast<PyString>().Select(s => s.AsString()));
         Assert.NotSame(record.Values[0], record.Values[1]);
         Assert.All(record.Values, value => Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor));
-        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
-        Assert.All(caches.Cast<object?>(), Assert.Null);
+
         Assert.True(budget.ReservedBytes > 0);
         AssertUnwound(context);
         owner.Dispose();

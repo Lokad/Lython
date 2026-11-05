@@ -227,8 +227,13 @@ methods, followed by the getter's callable result. Each invocation owns its
 value array until its body and awaited cleanup finish. Local bindings occupy its
 prefix and temporary operands its suffix; binding writes directly into that
 storage where locals need no mirroring. Suspended callers retain their operands.
-Ownership admits the fixed whole-frame capacity and fresh cell/cache/control
-storage before construction and retains them through suspension. Arrays do not
+Ownership admits the fixed whole-frame capacity and fresh cell/control storage
+before construction and retains them through suspension. A generic member lookup
+admits its frame's cache table before descriptor or protocol effects; direct
+builtin receiver paths need no table. Refusal remains terminal, including this
+later admission after earlier body effects. Read-only lexical misses leave unused
+namespace dictionaries unmaterialized; explicit namespace consumers retain the
+same stable dictionary. Arrays do not
 grow. Temporary retirement never clears the local prefix. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
 once. Generators keep their existing retained metadata owner and admit their
@@ -420,7 +425,9 @@ copy. Builders detach before reuse. Nonconsuming snapshots remain independent
 copies and admit their real working/output overlap; byte-array results stay exact-sized.
 
 Whitespace splitting scans UTF-8 ranges once, then admits the complete string
-output and final list capacity. Larger range scratch is admitted separately and
+output and final list capacity together. It fills and adopts the final element
+array, as do fixed-count executable list displays, without an intermediate list
+copy or per-element growth. Larger range scratch is admitted separately and
 refunded after materialization; result strings and aliases keep their batch owner.
 This can reject earlier than incremental fragment admission. Scans and bounded
 copies observe cancellation; an individual CLR allocation cannot be interrupted.

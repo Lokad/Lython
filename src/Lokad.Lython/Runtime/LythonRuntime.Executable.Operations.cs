@@ -107,16 +107,18 @@ internal sealed partial class LythonRuntime
 
     private static PyList CreateListFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
     {
-        using var preflight6491 = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(count), span);
-        var items = new object[count];
+        var bytes = PyList.EstimateCapacityBytes(count);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var items = count == 0 ? Array.Empty<object>() : new object[count];
         for (var i = 0; i < count; i++)
         {
             items[i] = stack[start + i];
         }
 
         stack.RetireTo(start);
-        var list = new PyList(items, context.MemoryGovernor, span);
-        return list;
+        storage.Commit(bytes);
+        return PyList.FromTransferredArray(items, context.MemoryGovernor, span);
     }
 
     private static PyTuple CreateTupleFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)

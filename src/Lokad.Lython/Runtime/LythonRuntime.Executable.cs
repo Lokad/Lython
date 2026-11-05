@@ -249,6 +249,7 @@ internal sealed partial class LythonRuntime
     {
         private object[] _items;
         private int[]? _nativeIterationPositions;
+        private ExecutableMemberCache?[]? _memberCaches;
         private readonly ExecutionContext _context;
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
@@ -262,6 +263,7 @@ internal sealed partial class LythonRuntime
             _context = context;
             _firstTemporarySlot = firstTemporarySlot;
             _nativeIterationPositions = null;
+            _memberCaches = null;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, allocationSpan);
@@ -277,9 +279,28 @@ internal sealed partial class LythonRuntime
         {
             _items = [];
             _nativeIterationPositions = null;
+            _memberCaches = null;
             var bytes = _ownedStorageBytes;
             _ownedStorageBytes = 0;
             _context.MemoryGovernor.Release(bytes);
+        }
+
+        internal ExecutableMemberCache?[] GetMemberCaches(int count, LythonSourceSpan span)
+        {
+            if (_memberCaches is { } existing) return existing;
+            var bytes = checked(32L + 64L * count);
+            var ownedBytes = checked(_ownedStorageBytes + bytes);
+            var governor = _context.MemoryGovernor;
+            governor.Reserve(bytes, span);
+            try
+            {
+                _context.CheckExecution(span);
+                var caches = new ExecutableMemberCache?[count];
+                governor.Commit(bytes);
+                _ownedStorageBytes = ownedBytes;
+                return _memberCaches = caches;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
         }
 
         internal PyIteration.Cursor? TakePendingDisposal()
@@ -524,8 +545,6 @@ internal sealed partial class LythonRuntime
         if (codeObject.CapturedLocalSlots.Count != 0)
             bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.LocalNames.Count)
                 + 48L * codeObject.CapturedLocalSlots.Count);
-        if (codeObject.MemberCacheCount != 0)
-            bytes = checked(bytes + 32L + 64L * codeObject.MemberCacheCount);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot,

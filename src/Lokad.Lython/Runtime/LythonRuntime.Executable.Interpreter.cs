@@ -55,7 +55,6 @@ internal sealed partial class LythonRuntime
             _context = context;
             _instructionIndex = codeObject.EntryIndex;
             _entryActiveException = context.State.CurrentException;
-            _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
             // The factory retains ownership until every construction allocation
             // succeeds. No throwing work follows this transfer.
             _stack = stack;
@@ -192,10 +191,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Empty cache tables are shared: no instruction can name an index the
-        // compiler never emitted (any such access already throws today).
-        private readonly ExecutableMemberCache?[] _memberCaches;
-
         // Stores through the same cell-mirroring and host-mirroring policy as
         // StoreLocal, so synthetic slots (chain, match, with) behave exactly
         // like compiler-issued stores.
@@ -272,7 +267,7 @@ internal sealed partial class LythonRuntime
 
         private bool TryReadMemberCache(ExecutableInstruction instruction, object target, out object value)
         {
-            var cached = _memberCaches[instruction.MemberCacheIndex];
+            var cached = _stack.GetMemberCaches(_codeObject.MemberCacheCount, instruction.Span)[instruction.MemberCacheIndex];
             // Equal objects may have different mutable members; identity is required.
             if (cached is not null && ReferenceEquals(cached.Target, target))
             {
@@ -284,7 +279,7 @@ internal sealed partial class LythonRuntime
         }
 
         private void PublishMemberCache(ExecutableInstruction instruction, object target, object value)
-            => _memberCaches[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, value,
+            => _stack.GetMemberCaches(_codeObject.MemberCacheCount, instruction.Span)[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, value,
                 instruction.OpCode is ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
                 ? new ExecutableMemberCache(target, value) : null;
 

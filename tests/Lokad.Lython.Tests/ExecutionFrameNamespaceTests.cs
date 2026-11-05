@@ -1,9 +1,28 @@
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Frontend;
+using Lokad.Lython.Tests.Harness;
+using System.Reflection;
 
 namespace Lokad.Lython.Tests;
 
 public sealed class ExecutionFrameNamespaceTests
 {
+    [Fact]
+    public void LexicalReadsDoNotMaterializeAnUnusedNamespace()
+    {
+        var parent = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var child = new LythonRuntime.ExecutionContext(parent, ScopeDirectiveFacts.Empty);
+        var span = new LythonSourceSpan(0, 0, 1, 1);
+        Assert.True(parent.TryGetBuiltin("int", out var expected));
+        Assert.Same(expected, LythonRuntime.ResolveName("int", span, child));
+        Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ResolveName("missing", span, child));
+        Assert.Null(typeof(ExecutionFrame).GetField("_variables", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(child));
+        var actualNamespace = child.Variables;
+        actualNamespace["value"] = expected;
+        Assert.Same(expected, LythonRuntime.ResolveName("value", span, child));
+        Assert.Same(actualNamespace, child.Variables);
+    }
+
     [Fact]
     public void NamespaceAliasesRemainStableAcrossConcurrentFirstReads()
     {

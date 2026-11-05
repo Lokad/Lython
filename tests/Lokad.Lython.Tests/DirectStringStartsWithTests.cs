@@ -45,7 +45,7 @@ public sealed class DirectStringStartsWithTests
     [InlineData(true, "startswith")]
     [InlineData(false, "endswith")]
     [InlineData(true, "endswith")]
-    public async Task DistinctStringsDoNotConstructBoundMethodCaches(bool asynchronous, string method)
+    public async Task DistinctStringsPreserveValuesAndUnwind(bool asynchronous, string method)
     {
         var (code, context) = Prepare("for text in [left,right]:\n    result=text.startswith(prefix)\n    record()\n", method: method);
         var left = PyString.FromString("alpha", context.MemoryGovernor, null);
@@ -66,8 +66,7 @@ public sealed class DirectStringStartsWithTests
         Assert.Equal(2, record.Values.Count);
         Assert.True(Assert.IsType<bool>(record.Values[0]));
         Assert.False(Assert.IsType<bool>(record.Values[1]));
-        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
-        Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
+
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

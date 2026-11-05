@@ -1,0 +1,25 @@
+{
+  "nonincrementalReleaseBuildSeconds": 36.46,
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "actualTargets": {
+    "net11.0": {
+      "internalPassed": 2242,
+      "publicPassed": 7909,
+      "failed": 0
+    },
+    "net10.0": {
+      "internalPassed": 2242,
+      "publicPassed": 7909,
+      "failed": 0
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "c0221b7776e62f220858d7af2972bf5669466e88ad521cee70497844150c813b",
+    "net10.0": "99897a66a153cb2d8bb477ef0054ea2cab1a44abedc3bd4585cacb909b7a79bf"
+  },
+  "archiveSHA256": "38df04e97034706839a724b9f42fdf35ee43dc3bdf3cf0a4e4928cf51ee329f6",
+  "ownedSeconds": 161,
+  "allComparisonGatesPassed": true,
+  "fullDelivery": "Pending coherent Windows/Ubuntu, both actual frameworks, original stress and installed Release consumer checkpoint"
+}

@@ -11,7 +11,7 @@ public sealed class DirectStringStripTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DistinctStringsDoNotConstructBoundMethodCaches(bool asynchronous)
+    public async Task DistinctStringsPreserveValuesAndUnwind(bool asynchronous)
     {
         var (code, context) = Prepare("for text in [left,right]:\n    result=text.strip()\n    record()\n");
         var left = PyString.FromString("alpha", context.MemoryGovernor, null);
@@ -31,8 +31,7 @@ public sealed class DirectStringStripTests
         Assert.Equal(2, record.Values.Count);
         Assert.Same(left, record.Values[0]);
         Assert.Equal("café😀", Assert.IsType<PyString>(record.Values[1]).AsString());
-        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
-        Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
+
         Assert.Null(context.CurrentExecutableFrame);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

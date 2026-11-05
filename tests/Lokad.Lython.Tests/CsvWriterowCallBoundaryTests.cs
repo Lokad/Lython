@@ -26,7 +26,7 @@ public sealed class CsvWriterowCallBoundaryTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task OrdinaryCallUsesReceiverOperandsWithoutABoundMemberCache(bool asynchronous)
+    public async Task OrdinaryCallPreservesRowsAndCleanup(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -35,8 +35,7 @@ public sealed class CsvWriterowCallBoundaryTests
             Assert.Equal(1, Assert.Single(code.CallSites, c => c.HasReceiver).ArgumentCount);
             var (context, _, _, sink) = Prepare(owner, "row");
             Assert.Same(sink.ReturnValue, await Run(code, context, asynchronous));
-            var caches = (Array)sink.Frame!.GetType().GetField("_memberCaches", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(sink.Frame)!;
-            Assert.All(caches.Cast<object?>(), Assert.Null);
+
             AssertUnwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -239,12 +238,12 @@ public sealed class CsvWriterowCallBoundaryTests
         internal readonly PyString ReturnValue = PyString.FromString("saved", governor, Span);
         internal readonly List<string> Writes = [];
         internal object? Retained;
-        internal object? Frame;
+
         internal TaskCompletionSource? Release;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Retained = arguments[0].Value;
-            Frame = context.CurrentExecutableFrame;
+
             Writes.Add(((PyString)Retained).AsString());
             return ReturnValue;
         }

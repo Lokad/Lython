@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [final list storage and lazy activation replacement](results/2026-11-05-final-storage-activation/README.md)
+retains c0221b77 versus qualified402. Remove constructor loans/per-field insertion,
+duplicate list-literal backing, eager member-cache tables and missed-read namespace
+construction.161s/six jobs/all gates: allocation text−5.0–5.4%,ordinaryCSV−6.3–6.5%;
+async text elapsed−3.2–3.4% with.16% unchanged spread. Warm text−1.7–6.1%/4.49%
+spread,ordinaryCSV−1.9–4.2%/2.42%spread limit magnitude; reportnearflat. No new
+CPU/CPython or component-debt closure claim.2242internal/7909public peractual11/10
+pass. Original nullable/obsolete architecture-fixture failures preserved; full
+coherent delivery pending. Whole-script objective remains open.
+
 The [complete-script allocation assessment](results/2026-11-05-activation-allocation/README.md)
 closes one32s external AllocationTick capture on qualified402, two complete scripts,
 zero loss and all cleanup/identity/quiet gates. Text strings/bytes54.16%, temporary

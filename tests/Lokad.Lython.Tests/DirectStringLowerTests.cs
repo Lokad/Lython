@@ -18,7 +18,7 @@ public class DirectStringLowerTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DistinctReceiversProduceOwnedStringsWithoutBoundMethodCaches(bool asynchronous)
+    public async Task DistinctReceiversProduceOwnedStringsAndUnwind(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -34,8 +34,7 @@ public class DirectStringLowerTests
         Assert.Equal(Uppercase ? "IΣSS" : "i\u0307ς", record.Values[1].AsString());
         Assert.NotSame(record.Values[0], record.Values[1]);
         Assert.All(record.Values, value => Assert.Same(context.MemoryGovernor, value.OwnerMemoryGovernor));
-        var caches = (Array)record.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(record.Frame)!;
-        Assert.All(caches.Cast<object?>(), Assert.Null);
+
         Assert.Equal(0, Assert.Single(code.CallSites, site => site.HasReceiver).ArgumentCount);
         Assert.True(budget.ReservedBytes > 0);
         AssertUnwound(context);

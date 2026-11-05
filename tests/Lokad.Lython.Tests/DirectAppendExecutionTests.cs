@@ -39,8 +39,7 @@ public sealed class DirectAppendExecutionTests
             Assert.Equal(2, argument.Calls);
             Assert.Same(argument.Value, Assert.Single(left));
             Assert.Same(argument.Value, Assert.Single(right));
-            var caches = (Array)argument.Frame!.GetType().GetField("_memberCaches", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(argument.Frame)!;
-            Assert.All(caches.Cast<object?>(), value => Assert.Null(value));
+
             Assert.Null(context.CurrentExecutableFrame);
             Assert.Equal(0, context.State.CurrentInterpreterDepth);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
     {
         if (inlinedBindings && context.TryGetInlinedBinding(name, out var binding))
         {
-            if (binding.Variables.TryGetValue(name, out var bound)) return bound;
+            if (binding.Frame.TryGetVariable(name, out var bound)) return bound;
             throw RuntimeErrors.UnboundLocalVariable(name, span);
         }
         if (inlinedBindings && context.InlinedComprehensionLookup is { } comprehensionLookup)
@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
                 return executableValue;
             }
 
-            if (globalContext.Variables.TryGetValue(name, out var globalValue))
+            if (globalContext.Frame.TryGetVariable(name, out var globalValue))
             {
                 return globalValue;
             }
@@ -64,13 +64,14 @@ internal sealed partial class LythonRuntime
                 return executableValue;
             }
 
-            var variables = context.IsAnnotationScope && current.AnnotationClassNamespace is { } classNamespace
-                ? classNamespace : current.Variables;
-            if (variables.TryGetValue(name, out var value))
+            var found = context.IsAnnotationScope && current.AnnotationClassNamespace is { } classNamespace
+                ? classNamespace.TryGetValue(name, out var value)
+                : current.Frame.TryGetVariable(name, out value);
+            if (found)
             {
                 if (name == "__class__" && ReferenceEquals(value, UninitializedLocal))
                     throw RuntimeErrors.FreeVariableNotAssociated(name, span);
-                return value;
+                return value!;
             }
             if (current.FunctionName is not null && current.ScopeFacts.LocalNames.Contains(name))
             {

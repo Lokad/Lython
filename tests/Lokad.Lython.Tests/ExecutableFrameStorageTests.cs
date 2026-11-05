@@ -15,7 +15,7 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         const int capacity = 8192;
         var statements = Enumerable.Range(0, capacity)
             .Select(i => caches ? $"item.member{i}" : $"local{i}=0");
-        var source = "effect=1\n" + string.Join('\n', statements) + "\nreturn 7";
+        var source = "effects.append(1)\n" + string.Join('\n', statements) + "\nreturn 7";
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
@@ -24,7 +24,13 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         using (var owner = budget.CreateScope())
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-            Assert.True(budget.TryReserve(4 * 1024 * 1024 - budget.ReservedBytes, out var blocker));
+            var effects = new PyList(1, context.MemoryGovernor, null);
+            context.Variables["effects"] = effects;
+            if (caches) context.Variables["item"] = new PyList();
+            // Cache backing is requested at the first generic lookup. Leave
+            // room for the small operand array and preceding assignment.
+            var workingHeadroom = caches ? 1024 : 0;
+            Assert.True(budget.TryReserve(4 * 1024 * 1024 - budget.ReservedBytes - workingHeadroom, out var blocker));
             using (blocker)
             {
                 LythonRuntimeException? failure = null;
@@ -49,7 +55,7 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
                 // supported x64 targets. Allow ample error/setup overhead while
                 // proving that denied storage was not allocated first.
                 Assert.True(allocated < capacity * 4L, $"Allocated {allocated} bytes before reporting refused admission.");
-                Assert.False(context.Variables.ContainsKey("effect"));
+                Assert.Equal(caches ? 1 : 0, effects.Count);
                 Assert.Null(context.CurrentExecutableFrame);
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);

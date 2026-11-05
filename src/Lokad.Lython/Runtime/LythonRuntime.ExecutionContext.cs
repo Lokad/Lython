@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
             if (NonlocalTargets.TryGetValue(name, out var target))
             {
                 if (target.CurrentExecutableFrame is { } frame && frame.TryResolveLocalOrClosure(name, out value)) return true;
-                if (target.Variables.TryGetValue(name, out value) && !ReferenceEquals(value, UninitializedLocal)) return true;
+                if (target.Frame.TryGetVariable(name, out value) && !ReferenceEquals(value, UninitializedLocal)) return true;
             }
             value = null;
             return false;
