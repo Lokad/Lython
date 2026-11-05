@@ -7,8 +7,11 @@ construction.161s/six jobs/all gates: allocation text−5.0–5.4%,ordinaryCSV�
 async text elapsed−3.2–3.4% with.16% unchanged spread. Warm text−1.7–6.1%/4.49%
 spread,ordinaryCSV−1.9–4.2%/2.42%spread limit magnitude; reportnearflat. No new
 CPU/CPython or component-debt closure claim.2242internal/7909public peractual11/10
-pass. Original nullable/obsolete architecture-fixture failures preserved; full
-coherent delivery pending. Whole-script objective remains open.
+pass. Original nullable/obsolete architecture-fixture failures preserved. Full
+41990811055 attempt2 is GREEN/all8gates on unchanged e5017ce4; only failed Windows
+job rerun, Ubuntu gates reused. Original funding-fixture failure and later Windows
+5s comparator timeout remain; their test-only corrections/local checks do not
+explain the timeout. Whole-script objective remains open.
 
 The [complete-script allocation assessment](results/2026-11-05-activation-allocation/README.md)
 closes one32s external AllocationTick capture on qualified402, two complete scripts,

@@ -1,8 +1,10 @@
 # Final list storage and lazy activation construction
 
 2026-11-05. **Retain** the exact D37/D38 patch over c7500764, frozen core
-**c0221b77**, versus qualified **a8e476bf/c6d71108, core402ae9f1**. Focused
-checks pass on actual .NET11/10; full delivery qualification remains pending.
+**c0221b77**, versus qualified **a8e476bf/c6d71108, core402ae9f1**. Production
+6140b97c is fully qualified on e5017ce4: all eight Windows/Ubuntu, actual11/10,
+original stress and installed-package gates pass in CI41990811055 attempt2.
+The [terminal receipt](delivery-ci-status.json) is cached; do not query again.
 Publication postponed and the whole-script performance objective remains open.
 
 Counted whitespace splitting admits payloads and final list backing together,
@@ -101,7 +103,7 @@ timeout, threshold or containment assertion is relaxed.
 Test-only correction: clean test build7.87s, **1,130 relevant internal cases per
 actual11/10 pass**, including functools, cancellation, admission, ownership and
 lifetime coverage. Production corec0221b77 is unchanged; no performance rerun.
-Corrected full delivery is a separate checkpoint and remains pending.
+Corrected full delivery is recorded below; source-pair timing was not repeated.
 
 The second checkpoint41990811055 passes both full .NET11 suites/platforms, and
 Windows.NET10 internal cases. One Windows.NET10 public comparator-truth case
@@ -120,5 +122,15 @@ protocol suspension with less work. It does not prove the original timeout fixed
 Production corec0221b77 remains unchanged, with no retiming. Corrected focused
 public **91 cases per actual11/10** pass in final serial runs after build completion.
 Original, initially overlapping-build and final serial logs are retained; only
-the final serial runs establish the corrected focused result. Full delivery
-remains separate and pending.
+the final serial runs establish the corrected focused result.
+
+The unchanged failed Windows job alone was rerun on exact e5017ce4. Attempt2
+passes both ordinary suites, original stress on both frameworks and the installed
+Release consumer, reusing Ubuntu's successful attempt1. All eight logical gates
+are GREEN. The original timeout remains unexplained; the successful unchanged
+confirmation does not attribute it to scheduling or prove a fixture fix.
+[Original attempt1 failure](second-delivery-ci-status.json),
+[both original platform logs](second-delivery-original-logs.tgz),
+[final cached qualification](delivery-ci-status.json). Later b9601e43 only minimizes
+the test fixture and adds its close assertion; that test change is locally checked
+and can batch full-source qualification with the next runtime checkpoint.

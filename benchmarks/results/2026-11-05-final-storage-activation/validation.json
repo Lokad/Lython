@@ -21,7 +21,7 @@
   "archiveSHA256": "38df04e97034706839a724b9f42fdf35ee43dc3bdf3cf0a4e4928cf51ee329f6",
   "ownedSeconds": 161,
   "allComparisonGatesPassed": true,
-  "fullDelivery": "Pending coherent Windows/Ubuntu, both actual frameworks, original stress and installed Release consumer checkpoint",
+  "fullDelivery": "GREEN e5017ce4/41990811055 attempt2, all8gates; only failed Windows job rerun; original failure preserved",
   "initialDeliveryFailure": {
     "runId": 41989134021,
     "platforms": [
@@ -44,9 +44,9 @@
   "secondDeliveryFailure": {
     "runId": 41990811055,
     "windowsNet10": "One public comparator truth completion timeout5s; all4109 internal and15982 other public cases pass",
-    "ubuntu": "Both ordinary suites and installed consumer pass; original stress still active at this observation",
+    "ubuntu": "Both ordinary suites, installed consumer and original stress pass in attempt1",
     "cause": "Unresolved; original8cases pass unchanged locally per actual framework",
-    "terminal": false
+    "terminal": true
   },
   "comparatorFixtureCorrection": {
     "productionUnchanged": true,
@@ -57,6 +57,6 @@
     "oneActualComparison": true,
     "exactCloseAndBudgetAssertions": true,
     "verification": "Final serial runs after build completion; initial overlapping-build runs retained but not used as qualification",
-    "fullDelivery": "Pending bounded Windows confirmation or next coherent checkpoint; no automatic new full two-platform campaign for this test-only fixture"
+    "fullDelivery": "Later b960 test-only fixture is locally verified; production already fully qualified at unchanged e501. Batch its full source with next runtime checkpoint."
   }
 }
