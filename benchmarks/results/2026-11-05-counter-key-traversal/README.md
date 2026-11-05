@@ -3,8 +3,8 @@
 2026-11-05, source `f66427f1` plus E3a; reference frozen `793586f5`, final
 core `48f4690c`. [Source verification and focused validation](validation.json).
 The current Counter source passes 187 public/104 internal focused Release tests
-per actual .NET 11/10. Full platform, original Stress and installed consumers
-remain pending for this later source. The preceding `f66427f1` delivery is fully
+per actual .NET 11/10. Subsequent combined Windows/Ubuntu, actual11/10, original
+Stress and installed consumers passed: [cached terminal42119563175](delivery-ci-status.json), all8 gates. The preceding `f66427f1` delivery is fully
 qualified separately; its green result does not qualify E3a.
 
 Four temporary key HashSets, three unions and seen-key storage disappear.
