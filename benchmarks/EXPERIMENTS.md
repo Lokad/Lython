@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [bounded string-metadata correction](results/2026-11-05-bounded-string-metadata/README.md)
+retains shared scalar traversal/current len+projection tokens and removes two
+unbounded loops, with unchanged storage/ownership. Both bulk algorithms withdrawn:
+initial mixedUnicode+306%, refined+36.6/37.1%, despite ASCII~51% lower. Preserve
+both146.77s/five-job blocks/all controls. Final91.80s/three-job diagnostic/all gates
+shows no gross count-script regression (roles within~1%); no speedup/CPU/allocation
+claim. Focus529/2037 and full4124/16001 per actual target pass; final platform/stress/
+installed delivery pending. Bounded checks are distinct from measured in-flight latency.
+
 The [retained-source CPython checkpoint](results/2026-11-05-current-cpython-checkpoint/README.md)
 measures9c1d/6cb05f8e after executable targets and CSV input/EOF delivery; D46 is
 absent.440.59s/16jobs/all gates, all final reservations zero. Fresh nativeCSV

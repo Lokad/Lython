@@ -359,6 +359,11 @@ window. Whole-string windows use the byte extent directly; explicit bounds and
 returned indexes retain scalar coordinates. Tuple affixes reuse the prepared
 window, preserving validation and early-match behavior.
 
+String character and UTF-16 width counts share a bounded UTF-8 traversal. Native
+`len` and public projection supply the current cancellation token; cached strings
+retain no caller token. Projection still admits the full CLR UTF-16 width before
+allocation, including supplementary characters. Final CLR decoding is synchronous.
+
 CSV parsing searches bounded UTF-8 spans for structural byte candidates and
 verifies complete dialect characters at each boundary. Native text files append
 a complete physical line directly into the parser's admitted buffer, which the

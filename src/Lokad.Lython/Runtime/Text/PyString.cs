@@ -48,21 +48,17 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     {
         get
         {
-            return _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(Utf8Span));
-
-            static int CountRunes(ReadOnlySpan<byte> utf8)
-            {
-                var count = 0;
-                for (var i = 0; i < utf8.Length;)
-                {
-                    i += GetRuneLength(utf8[i]);
-                    count++;
-                }
-
-                return count;
-            }
+            if (_runeLength >= 0) return _runeLength;
+            var context = PyStructuralGuard.AmbientContext;
+            var span = PyStructuralGuard.AmbientSpan;
+            context?.CheckExecution(span);
+            return GetCharacterCount(context?.State.CancellationToken ?? default, span);
         }
     }
+
+    internal int GetCharacterCount(CancellationToken cancellationToken, LythonSourceSpan? span)
+        => _runeLength >= 0 ? _runeLength
+            : (_runeLength = CountUtf8Units(false, cancellationToken, span));
 
     /// <summary>
     /// Counts the UTF-16 code units the decoded CLR string needs. Astral runes
@@ -70,35 +66,36 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     /// <see cref="Length"/> whenever astral characters are present. Projection
     /// budgets must use this width: rune counts undercharge astral payloads.
     /// </summary>
-    public int GetUtf16CodeUnitCount()
+    public int GetUtf16CodeUnitCount(CancellationToken cancellationToken = default, LythonSourceSpan? span = null)
     {
-        var units = 0;
-        var bytes = Utf8Span;
-        for (var i = 0; i < bytes.Length;)
-        {
-            var lead = bytes[i];
-            if (lead < 0x80)
-            {
-                units += 1;
-                i += 1;
-            }
-            else if (lead < 0xE0)
-            {
-                units += 1;
-                i += 2;
-            }
-            else if (lead < 0xF0)
-            {
-                units += 1;
-                i += 3;
-            }
-            else
-            {
-                units += 2;
-                i += 4;
-            }
-        }
+        var context = PyStructuralGuard.AmbientContext;
+        span ??= PyStructuralGuard.AmbientSpan;
+        context?.CheckExecution(span);
+        if (!cancellationToken.CanBeCanceled) cancellationToken = context?.State.CancellationToken ?? default;
+        return CountUtf8Units(true, cancellationToken, span);
+    }
 
+    private int CountUtf8Units(bool utf16, CancellationToken cancellationToken, LythonSourceSpan? span)
+    {
+        var source = Utf8Span;
+        var units = 0;
+        // Count both widths without decoding or creating a CLR string. Keep
+        // cancellation ranges on scalar boundaries, deferring at most three bytes.
+        for (var offset = 0; offset < source.Length;)
+        {
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            var end = offset + Math.Min(4096, source.Length - offset);
+            while (end < source.Length && (source[end] & 0xC0) == 0x80) end--;
+            var count = 0; // A bounded chunk cannot overflow this subtotal.
+            while (offset < end)
+            {
+                var width = GetRuneLength(source[offset]);
+                count += utf16 && width == 4 ? 2 : 1;
+                offset += width;
+            }
+            units = checked(units + count);
+        }
+        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         return units;
     }
 

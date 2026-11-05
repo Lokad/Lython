@@ -14,6 +14,7 @@ internal sealed class ProjectionBudget
     }
 
     public long CurrentBytes { get; private set; }
+    internal CancellationToken CancellationToken => _cancellationToken;
 
     internal ProjectionException? AdmissionFailure { get; private set; }
 

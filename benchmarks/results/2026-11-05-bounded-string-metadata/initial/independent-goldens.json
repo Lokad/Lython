@@ -1,0 +1,29 @@
+[
+  {
+    "id": "scripts.file-character-count.ascii",
+    "fixtureTextUtf8Bytes": 1048576,
+    "fixtureTextCodePoints": 1048576,
+    "expectedOutput": "1048576\n",
+    "sourceSha256": "6708f9b21573d53be9e69448d1e623a899f243130dc3391132ae55dacfa65946",
+    "fixtureSha256": "a6f5e91f883a512c30b24e900d8bc77d75e8b56ae997b399c6b3278e458e40c3",
+    "expectedFilesSha256": "917e436c807fc1dc0b924d100281465d08ddf6615c873eaa62e7e3f25b64f7fc"
+  },
+  {
+    "id": "scripts.file-character-count.unicode",
+    "fixtureTextUtf8Bytes": 458880,
+    "fixtureTextCodePoints": 196736,
+    "expectedOutput": "196736\n",
+    "sourceSha256": "6708f9b21573d53be9e69448d1e623a899f243130dc3391132ae55dacfa65946",
+    "fixtureSha256": "2fae7e27967f8c9bc9361d9f02b717b9aeed40a34112e649bc82cf5e852ed05f",
+    "expectedFilesSha256": "6c61e89477d0561c3acf46391f023ab75608dbea750b762844e77840a014d031"
+  },
+  {
+    "id": "scripts.file-character-count.short-unicode",
+    "fixtureTextUtf8Bytes": 32768,
+    "fixtureTextCodePoints": 16384,
+    "expectedOutput": "16384\n",
+    "sourceSha256": "6708f9b21573d53be9e69448d1e623a899f243130dc3391132ae55dacfa65946",
+    "fixtureSha256": "abf29a46f78c492a50493f37b502ed2cc740b4a900a953627fb55dade6b05862",
+    "expectedFilesSha256": "1a2b51d475ec76d2b01970396c3c156fc879cf1c998f0f8fb162cf89dc9f5bbd"
+  }
+]

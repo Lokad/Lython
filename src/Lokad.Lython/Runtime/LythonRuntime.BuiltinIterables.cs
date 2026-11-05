@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
         {
             PyChainMap chainMap => LenChainMap(chainMap, span, context),
             PyRange range => range.Length,
+            PyString text => new BigInteger(text.GetCharacterCount(context.State.CancellationToken, span)),
             IPySizedValue sized => new BigInteger(sized.Length),
             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
             System.Collections.ICollection collection => new BigInteger(collection.Count),
