@@ -1,12 +1,27 @@
 # Benchmark experimental history
 
+The [qualified pipeline CPython checkpoint](results/2026-11-05-runtime-cpython-pipeline-checkpoint/README.md)
+uses exactcf3dc9cd/43fdf658 after full eight-gate deliveryGREEN. Original14jobs
+384.95s/all gates plus one unchanged-binary55.34s fresh-text confirmation preserve
+5–6.5% control variation: fresh text is a visible2.29–2.50x range, warm2.32x;
+CSV/JSON/report/configfresh1.46/1.24/1.74/1.04xCPython. Compilation1.32/1.34x.
+No discarded adverse data/additive CPU claim; substantial gaps and whole objective open.
+
+The [immutable dev29 adapter qualification](results/2026-11-05-adapter-dev29/README.md)
+passes84internal/421public per actual11/10 with exact package/test/fixture hashes,
+six lifetime/three actual in-flight cancellation controls included. Main declared
+PythonRe surface unchanged, normal0.4 pin/output intact, core backend-free. Three
+precise final adapter capability gaps remain; no released promotion or producer
+performance/safety claim. A corrected reflection artifact path required no retest.
+
 The [final-word casing pipeline](results/2026-11-05-cased-whitespace-pipeline/README.md)
 retains elimination of a full cased-line intermediate using the existing native
 graph, Unicode mapping and whitespace constructor. Six-job161s pair establishes
 text allocation−14.1%warm/async,−13.2%fresh; elapsedfresh−5.2–6.6%,async−4.9–5.2%.
 Warm7%control spread and JSONcontrol+0.9–1.1% debt remain visible.1280internal/
 4772public plus overlapping66pipeline cases per actual11/10 pass. No new opcode,
-descriptor/owner/ASCII shortcut; full delivery pending, whole objective open.
+descriptor/owner/ASCII shortcut. Full delivery41944972624 GREEN on cf3dc9cd,
+all eight gates cached; whole objective open.
 
 The [precedence consolidation reassessment](results/2026-11-05-precedence-consolidation/README.md)
 retains thirty net parser-line deletion after a current-source136s pair. Compile

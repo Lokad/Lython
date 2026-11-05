@@ -60,7 +60,10 @@ retain both baselines, no confirmation or discarded samples. Compilation and
 report control are inconclusive. JSON's~1% adverse elapsed remains accepted debt
 for materially less text allocation/storage and work; its cause is not established.
 No general CPU, additive-gain or updated CPython-ratio claim follows. The whole-
-script performance objective remains open. Full final-source delivery is pending.
+script performance objective remains open. Full delivery41944972624 on exact
+cf3dc9cd is GREEN: Windows/Ubuntu actual11/10 ordinary, installed Release consumers
+and original Stress on both actual frameworks. [Terminal cached receipt](delivery-ci-status.json),
+observed01:19:24UTC. Publication remains postponed.
 
 Warm includes public invocation, mediated RAM-file IO, full checks and prior-result
 cleanup; async host IO completes synchronously, with actual suspension tested

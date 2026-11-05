@@ -1,0 +1,24 @@
+{
+  "source": "cf3dc9cd",
+  "coreSHA256": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+  "initialJobs": 14,
+  "initialSeconds": 384.95233530411497,
+  "textConfirmationSeconds": 55.33796001877636,
+  "freshText": {
+    "lythonRoleMedianRangeMs": [
+      2.9523722127659573,
+      3.1455495
+    ],
+    "pythonCollectionMedianRangeMs": [
+      1.2569520578512396,
+      1.2867078877551021
+    ],
+    "pairedRatioRange": [
+      2.2948135006271935,
+      2.5025214608243047
+    ],
+    "status": "Variable; original and confirmation controls retained"
+  },
+  "allSourcesFullyQualified": true,
+  "limits": "No startup/suspendedIO/RSS/embedding latency or additive/causal CPU claim"
+}

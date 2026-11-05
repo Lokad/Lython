@@ -2,57 +2,61 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/helpers | 4,096 records / 57,361 B | 5.013 ms | 3.485 ms | 1.44× | f6e51d1c; RAM; Diagnostic; 1.06% control / 1.22% IQR |
-| JSON-lines/helpers | 4,096 records / 110,592 B | 5.256 ms | 4.116 ms | 1.28× | f6e51d1c; RAM; Control-limited; 2.40% control / 1.40% IQR |
-| Text summary/helpers | 3,072 lines / 35,840 B | 3.123 ms | 1.286 ms | 2.43× | f6e51d1c; RAM; Diagnostic; 0.79% control / 0.85% IQR |
-| JSON-to-Markdown report | 3,072 records / 189,441 B | 4.348 ms | 2.551 ms | 1.70× | f6e51d1c; RAM; Variable; 3.29% control / 2.91% IQR |
-| Config read/edit/write | 1,024 paths / 7,177 B | 0.273 ms | 0.255 ms | 1.07× | f6e51d1c; RAM; Diagnostic; 0.13% control / 1.51% IQR |
-| CSV long fields | 16 records / 524,717 B | 0.406 ms | 2.423 ms | 0.17× | f6e51d1c; RAM; Diagnostic; 0.95% control / 1.70% IQR |
+| CSV summary/helpers | 4,096 records / 57,361 B | 5.030 ms | 3.444 ms | 1.46× | cf3dc9cd; RAM; Diagnostic; 0.89% control / 0.35% IQR |
+| JSON-lines/helpers | 4,096 records / 110,592 B | 5.107 ms | 4.122 ms | 1.24× | cf3dc9cd; RAM; Diagnostic; 0.08% control / 0.51% IQR |
+| Text summary/helpers | 3,072 lines / 35,840 B | 2.95–3.15 ms | 1.26–1.29 ms | 2.29–2.50× | cf3dc9cd; RAM; Variable; two collections; 5.0–6.5% controls |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 4.368 ms | 2.504 ms | 1.74× | cf3dc9cd; RAM; Variable; 2.25% control / 3.03% IQR |
+| Config read/edit/write | 1,024 paths / 7,177 B | 0.265 ms | 0.255 ms | 1.04× | cf3dc9cd; RAM; Diagnostic; 0.28% control / 2.12% IQR |
+| CSV long fields | 16 records / 524,717 B | 0.401 ms | 2.427 ms | 0.17× | cf3dc9cd; RAM; Diagnostic; 1.27% control / 1.14% IQR |
 | Search with early exit |42,010 B file|0.508 ms|0.243 ms|2.09×|Earlier bd3;ordinary FS; Diagnostic; 2.7% Lython IQR|
 | Unicode filename filter |768 names /124,050 B|0.897 ms|0.419 ms|2.14×|Earlier bd3;ordinary FS; Variable; 3.5% Lython IQR|
 | ASCII filename filter |768 names /74,898 B|0.789 ms|0.292 ms|2.70×|Earlier bd3;ordinary FS; Diagnostic; 1.5% Lython IQR|
 | Copy/checksum/manifest |Two files /4,107 B|0.526 ms|0.312 ms|1.69×|Earlier bd3;ordinary FS;1.1% Lython IQR|
 
-First six rows measured **2026-11-04**, committed runtime source **f6e51d1c**,
+First six rows measured **2026-11-05**, committed runtime source **cf3dc9cd**,
 against **CPython 3.13.16** on **.NET 11 RC3**. They measure **fresh compilation plus
 one complete synchronous execution in an already-running host**, including mediated
-RAM-file I/O, full checks and prior-result cleanup, excluding staging/reset.
+RAM-file IO, full checks and prior-result cleanup, excluding staging/reset.
 Ratio=Lython elapsed/CPython elapsed; above one means slower. IQR=interquartile
-range/median; control=absolute difference of identical-source role medians/current
-median. Exact precommit core **df206f47** and snapshots identify the measured build.
+range/median. Control compares identical-source role medians. Exact precommit core
+**43fdf658** and snapshots identify the measured build; source passes all platform,
+original Stress and installed Release consumer gates.
+
+Fresh text shows role/collection medians, not confidence intervals. Its original
+6.54% control spread remains; one unchanged-binary confirmation with longer
+warmup/reversed workers still has4.98% spread. Ratios are paired within collections;
+warm text is measured separately below. Report also remains variable. These limits
+do not erase the substantial text/report gaps. Long-field CSV does not describe
+ordinary CSV. Startup, genuine suspended IO, heap/RSS and embedding latency remain
+unmeasured. [Current observations, conditions and exact identities](../benchmarks/results/2026-11-05-runtime-cpython-pipeline-checkpoint/README.md).
+
 Four explicitly earlier file rows use 2026-11-03 **bd3f9dee** and ordinary filesystem;
 filename scripts filter768 names/write256 selections, not traverse768 files.
-
-Long-field CSV benefits from bulk scanning; it does not describe ordinary CSV.
-Text/report gaps remain. Report Lython/control IQR2.91%/2.03% and opposing warm/fresh
-control directions limit small claims. Startup, genuinely suspended I/O, heap/RSS
-and embedding latency remain unmeasured. Full platform/Stress/package checks pass
-on f6e51d1c. [Current observations, controls and exact identities](../benchmarks/results/2026-11-04-runtime-cpython-declaration-checkpoint/README.md).
-
-[Previous5c checkpoint](../benchmarks/results/2026-11-04-csv-runtime-cpython-checkpoint/README.md)
-and [experimental history](../benchmarks/EXPERIMENTS.md) preserve earlier sources,
-conditions and adverse results. Earlier90785737 search remains inconclusive
-(fresh270%IQR/218%control drift; warm138%/77%). The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
+[Previous f6 checkpoint](../benchmarks/results/2026-11-04-runtime-cpython-declaration-checkpoint/README.md)
+and [experimental history](../benchmarks/EXPERIMENTS.md) preserve earlier sources and
+adverse results. Earlier90785737 search remains inconclusive (fresh270%IQR/218%
+control drift; warm138%/77%). The [clock correction](../benchmarks/results/2026-11-03-comparison-boundary-diagnostic/README.md)
 excludes staging symmetrically; it is not a runtime optimization.
 
 ## Warm execution, compilation and startup
 
-Latest external source **f6e51d1c**, RAM files, reused compiled code with the same
-invocation/I/O/check/cleanup boundary:
+Latest external source **cf3dc9cd**, RAM files, reused compiled code with the same
+invocation/IO/check/cleanup boundary:
 
 | Warm workload | Lython | CPython | Ratio | Current control / Lython IQR |
 | --- | ---: | ---: | ---: | ---: |
-| CSV summary/helpers | 4.874 ms | 3.339 ms | 1.46× | 2.23% / 0.56% |
-| JSON-lines/helpers | 5.013 ms | 4.051 ms | 1.24× | 0.78% / 0.77% |
-| Text summary/helpers | 2.898 ms | 1.176 ms | 2.46× | 2.33% / 0.40% |
-| JSON-to-Markdown report | 4.367 ms | 2.367 ms | 1.84× | 2.93% / 3.20% |
-| Config read/edit/write | 0.191 ms | 0.186 ms | 1.03× | 0.15% / 0.83% |
-| CSV long fields | 0.253 ms | 2.368 ms | 0.11× | 0.40% / 1.73% |
+| CSV summary/helpers | 4.960 ms | 3.363 ms | 1.47× | 0.62% / 1.23% |
+| JSON-lines/helpers | 4.828 ms | 4.090 ms | 1.18× | 2.22% / 0.76% |
+| Text summary/helpers | 2.782 ms | 1.201 ms | 2.32× | 0.77% / 0.54% |
+| JSON-to-Markdown report | 4.107 ms | 2.347 ms | 1.75× | 2.86% / 2.27% |
+| Config read/edit/write | 0.191 ms | 0.185 ms | 1.03× | 0.74% / 1.55% |
+| CSV long fields | 0.249 ms | 2.301 ms | 0.11× | 1.16% / 2.08% |
 
-Warm identical-source spreads0.15–2.93% limit small claims; report remains variable.
-Do not infer compile cost by subtracting fresh/warm medians. **Compilation only:**
-CSV80.49µs vs54.86µs (**1.47×**), report55.34µs vs37.70µs (**1.47×**);
-Lython IQR2.42%/2.53%, controls2.27%/2.25%, execution/I/O excluded.
+Identical-source spreads0.62–2.86% limit small claims; report remains variable.
+Do not subtract fresh/warm medians to infer compile cost. **Compilation only:**
+CSV71.91µs vs54.60µs (**1.32×**),
+report51.12µs vs38.16µs (**1.34×**);
+Lython IQR0.54%/2.59%, controls2.13%/0.96%, execution/IO excluded.
 **Startup unmeasured.** [Earlier phases/revisions](../benchmarks/EXPERIMENTS.md)
 retain their own conditions; older measurements do not describe this source.
 
@@ -87,7 +91,7 @@ Each link records its measured revisions, controls and limitations.
 
 | Change | Established result | Evidence and limitations |
 | --- | --- | --- |
-| Final-word casing / whitespace split | Text allocation −14.1% warm/async, −13.2% fresh; fresh elapsed −5.2–6.6%, async −4.9–5.2% | [Complete source pair](../benchmarks/results/2026-11-05-cased-whitespace-pipeline/README.md). Warm magnitude control-limited; JSON control +0.9–1.1% accepted, compilation inconclusive. Full delivery pending. |
+| Final-word casing / whitespace split | Text allocation −14.1% warm/async, −13.2% fresh; fresh elapsed −5.2–6.6%, async −4.9–5.2% | [Complete source pair](../benchmarks/results/2026-11-05-cased-whitespace-pipeline/README.md). Warm magnitude control-limited; JSON control +0.9–1.1% accepted, compilation inconclusive. Qualified on cf3dc9cd. |
 | Arithmetic precedence consolidation | CSV/text compilation elapsed −6.7–8.4%; report −8.5–11.4%; allocation effectively unchanged | [Current-source reassessment](../benchmarks/results/2026-11-05-precedence-consolidation/README.md). Thirty parser lines removed. Fresh config −1.1–1.3%; warm text inconclusive with adverse signs preserved. Qualified on f7fed42c. |
 | Native JSON container construction | JSON aggregation allocation −3.79%; report −2.24% | [Source pair](../benchmarks/results/2026-11-05-json-container-construction/README.md). Async report elapsed −4.3–4.7%; other timings have control/dispersion limits. Fresh config +0.8–1.3% (~2–4µs) accepted; qualified on ab487dfa. |
 | Native dictionary ownership operations | CSV elapsed −5.0–5.1%; allocation unchanged | [Final refinement](../benchmarks/results/2026-11-04-dictionary-owner-operations/README.md). Text/async JSON near unchanged; full dispatch rewrite withdrawn. Qualified. |
@@ -100,10 +104,13 @@ Each link records its measured revisions, controls and limitations.
 | Bulk CSV construction | Allocation −13.7–15.1%; CPU −7.2–11.1% | [Controlled comparison](../benchmarks/results/2026-11-02-native-csv-records/README.md). Original threshold misses and adverse control preserved; qualified. |
 | Direct UTF-8 formatting | Allocation −8.67%; confirmation elapsed/CPU −5–8% | [Confirmation](../benchmarks/results/2026-11-02-formatting-confirmation/README.md). Original adverse timing remains unexplained; qualified. |
 
-The latest external checkpoint compares **f6e51d1c** with CPython, an identical-source
-control and previous external **5c827e68**. Typical scripts are near unchanged or
-control-limited; report fresh favors the current source but is variable. Earlier
-adverse results remain evidence; independent percentages are not additive.
+The latest external checkpoint compares **cf3dc9cd** with CPython, an identical-
+source control and previous external **f6e51d1c**. Coupled warm text favors the
+current source by about6%; fresh-text magnitude remains uncertain. JSON/report
+favor current source with control/dispersion limits; typical CSV is near unchanged,
+configuration fresh is favorable and warm is near unchanged. Compilation favors
+current source by about9–10%. These diagnostic combined effects do not identify
+individual causes or erase earlier adverse results; percentages are not additive.
 
 The [prepared-declaration cleanup](../benchmarks/results/2026-11-04-prepared-declarations/README.md)
 removes retained metadata and duplicate construction paths. Its diagnostic source

@@ -1,0 +1,1 @@
+Initial API reflection targeted the adapter class-library output, which does not copy runtime package dependencies. The helper failed before inspection. It was rerun against the actual consuming public-test output. Exact package DLL hashes are checked at both test and worker-fixture outputs. No tests/captures/source/package changed or repeated.

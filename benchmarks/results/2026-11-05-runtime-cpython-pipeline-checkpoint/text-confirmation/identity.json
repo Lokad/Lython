@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "cf3dc9cd88c36ec9376f26639446dec0d51bb466; exact precommit frozen43fdf658/assembly metadata ca05da4b. Source snapshots/hashes authoritative.",
+  "coreSHA256": {
+    "candidate": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+    "control": "43fdf658f44bc47e48f4a4970abcd5b123dd37ab7d613447ec0107b48e62ab2b",
+    "reference": "df206f479ab6e016a9b0a54ce68e82fd9e4cdd7fcca51879e8d2ef1b2179b6cd"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "563641c24c031f805b628800c649dbc73ef42d14fb8a72eaab66d557231df561",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "0feea57e654f182f0e541e7ab99c3b4a296b621e03048e9cff308bd13a9520bc"
+  },
+  "qualification": "Focused1280internal/4772public per actual11/10 + overlapping66pipeline controls green. Final-source delivery41944972624 active, not yet fully qualified; prior f7 and f6 full delivery GREEN cached.",
+  "note": "Reference is previous external f6 checkpoint, not a repeat qualification. New CPython data is provisional until current delivery passes."
+}
