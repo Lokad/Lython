@@ -1,0 +1,185 @@
+diff --git a/src/Lokad.Lython/Frontend/Parser.Expressions.cs b/src/Lokad.Lython/Frontend/Parser.Expressions.cs
+index 2a11890a..551bbad0 100644
+--- a/src/Lokad.Lython/Frontend/Parser.Expressions.cs
++++ b/src/Lokad.Lython/Frontend/Parser.Expressions.cs
+@@ -262,33 +262,52 @@ internal sealed partial class Parser
+     }
+ 
+     private ExpressionSyntax? ParseBitwiseOrExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.BitwiseOr);
++        => ParseArithmeticExpression(LeftAssociativeLayer.BitwiseOr);
+ 
+-    private ExpressionSyntax? ParseBitwiseXorExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.BitwiseXor);
+-
+-    private ExpressionSyntax? ParseBitwiseAndExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.BitwiseAnd);
+-
+-    private ExpressionSyntax? ParseShiftExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.Shift);
+-
+-    private ExpressionSyntax? ParseAdditiveExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.Additive);
+-
+-    private ExpressionSyntax? ParseMultiplicativeExpression()
+-        => ParseLeftAssociativeExpression(LeftAssociativeLayer.Multiplicative);
++    // Descend only for tighter operators, rather than for every grammar level.
++    private ExpressionSyntax? ParseArithmeticExpression(LeftAssociativeLayer minimumLayer)
++    {
++        var expression = ParseUnaryExpression();
++        if (expression is null) return null;
++        var precedingLayer = LeftAssociativeLayer.Multiplicative;
++        var operandCount = 1;
++        while (LeftAssociativeOperator(CurrentToken) is { } operation && operation.Layer >= minimumLayer)
++        {
++            var operatorToken = ReadToken();
++            // Tighter operators occur in the right operand. Descending to a
++            // looser level starts that level's independent operand count.
++            if (operation.Layer != precedingLayer)
++            {
++                precedingLayer = operation.Layer;
++                operandCount = 1;
++            }
++            if (++operandCount > MaxNestingDepth)
++            {
++                AddDiagnostic("LA0003", $"Expression chain exceeds the maximum of {MaxNestingDepth} operands.", operatorToken);
++                return null;
++            }
++            var right = ParseArithmeticExpression(operation.Layer + 1);
++            if (right is null)
++            {
++                var diagnostic = LeftAssociativeError(operation.Layer);
++                AddDiagnostic(diagnostic.Code, diagnostic.Message, operatorToken);
++                return null;
++            }
++            expression = new BinaryExpressionSyntax(expression, operation.Operator, right, Merge(expression.Span, right.Span));
++        }
++        return expression;
++    }
+ 
+     private ExpressionSyntax? ParseLeftAssociativeExpression(LeftAssociativeLayer layer)
+     {
+-        var expression = ParseNextLayer(layer);
++        var expression = layer == LeftAssociativeLayer.Or ? ParseAndExpression() : ParseNotExpression();
+         if (expression is null)
+         {
+             return null;
+         }
+ 
+         var operandCount = 1;
+-        while (TryGetLeftAssociativeOperator(layer, CurrentToken, out var binaryOperator))
++        while (LeftAssociativeOperator(CurrentToken) is { } operation && operation.Layer == layer)
+         {
+             var operatorToken = ReadToken();
+             operandCount++;
+@@ -300,7 +319,7 @@ internal sealed partial class Parser
+                     operatorToken);
+                 return null;
+             }
+-            var right = ParseNextLayer(layer);
++            var right = layer == LeftAssociativeLayer.Or ? ParseAndExpression() : ParseNotExpression();
+             if (right is null)
+             {
+                 var diagnostic = LeftAssociativeError(layer);
+@@ -313,7 +332,7 @@ internal sealed partial class Parser
+ 
+             expression = new BinaryExpressionSyntax(
+                 expression,
+-                binaryOperator,
++                operation.Operator,
+                 right,
+                 Merge(expression.Span, right.Span));
+         }
+@@ -322,75 +341,26 @@ internal sealed partial class Parser
+         return expression;
+     }
+ 
+-    private ExpressionSyntax? ParseNextLayer(LeftAssociativeLayer layer)
+-        => layer switch
++    private static (LeftAssociativeLayer Layer, BinaryOperatorSyntax Operator)? LeftAssociativeOperator(Token token)
++        => token switch
+         {
+-            LeftAssociativeLayer.Or => ParseAndExpression(),
+-            LeftAssociativeLayer.And => ParseNotExpression(),
+-            LeftAssociativeLayer.BitwiseOr => ParseBitwiseXorExpression(),
+-            LeftAssociativeLayer.BitwiseXor => ParseBitwiseAndExpression(),
+-            LeftAssociativeLayer.BitwiseAnd => ParseShiftExpression(),
+-            LeftAssociativeLayer.Shift => ParseAdditiveExpression(),
+-            LeftAssociativeLayer.Additive => ParseMultiplicativeExpression(),
+-            LeftAssociativeLayer.Multiplicative => ParseUnaryExpression(),
+-            _ => throw new ArgumentOutOfRangeException(nameof(layer), layer, "Unknown binary precedence layer."),
++            Token.Or => (LeftAssociativeLayer.Or, BinaryOperatorSyntax.Or),
++            Token.And => (LeftAssociativeLayer.And, BinaryOperatorSyntax.And),
++            Token.Pipe => (LeftAssociativeLayer.BitwiseOr, BinaryOperatorSyntax.BitwiseOr),
++            Token.Caret => (LeftAssociativeLayer.BitwiseXor, BinaryOperatorSyntax.BitwiseXor),
++            Token.Ampersand => (LeftAssociativeLayer.BitwiseAnd, BinaryOperatorSyntax.BitwiseAnd),
++            Token.LessLess => (LeftAssociativeLayer.Shift, BinaryOperatorSyntax.LeftShift),
++            Token.GreaterGreater => (LeftAssociativeLayer.Shift, BinaryOperatorSyntax.RightShift),
++            Token.Plus => (LeftAssociativeLayer.Additive, BinaryOperatorSyntax.Add),
++            Token.Minus => (LeftAssociativeLayer.Additive, BinaryOperatorSyntax.Subtract),
++            Token.At => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.MatrixMultiply),
++            Token.Star => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Multiply),
++            Token.Slash => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Divide),
++            Token.SlashSlash => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.FloorDivide),
++            Token.Percent => (LeftAssociativeLayer.Multiplicative, BinaryOperatorSyntax.Modulo),
++            _ => null,
+         };
+ 
+-    private static bool TryGetLeftAssociativeOperator(
+-        LeftAssociativeLayer layer,
+-        Token token,
+-        out BinaryOperatorSyntax binaryOperator)
+-    {
+-        switch (layer, token)
+-        {
+-            case (LeftAssociativeLayer.Or, Token.Or):
+-                binaryOperator = BinaryOperatorSyntax.Or;
+-                return true;
+-            case (LeftAssociativeLayer.And, Token.And):
+-                binaryOperator = BinaryOperatorSyntax.And;
+-                return true;
+-            case (LeftAssociativeLayer.BitwiseOr, Token.Pipe):
+-                binaryOperator = BinaryOperatorSyntax.BitwiseOr;
+-                return true;
+-            case (LeftAssociativeLayer.BitwiseXor, Token.Caret):
+-                binaryOperator = BinaryOperatorSyntax.BitwiseXor;
+-                return true;
+-            case (LeftAssociativeLayer.BitwiseAnd, Token.Ampersand):
+-                binaryOperator = BinaryOperatorSyntax.BitwiseAnd;
+-                return true;
+-            case (LeftAssociativeLayer.Shift, Token.LessLess):
+-                binaryOperator = BinaryOperatorSyntax.LeftShift;
+-                return true;
+-            case (LeftAssociativeLayer.Shift, Token.GreaterGreater):
+-                binaryOperator = BinaryOperatorSyntax.RightShift;
+-                return true;
+-            case (LeftAssociativeLayer.Additive, Token.Plus):
+-                binaryOperator = BinaryOperatorSyntax.Add;
+-                return true;
+-            case (LeftAssociativeLayer.Additive, Token.Minus):
+-                binaryOperator = BinaryOperatorSyntax.Subtract;
+-                return true;
+-            case (LeftAssociativeLayer.Multiplicative, Token.At):
+-                binaryOperator = BinaryOperatorSyntax.MatrixMultiply;
+-                return true;
+-            case (LeftAssociativeLayer.Multiplicative, Token.Star):
+-                binaryOperator = BinaryOperatorSyntax.Multiply;
+-                return true;
+-            case (LeftAssociativeLayer.Multiplicative, Token.Slash):
+-                binaryOperator = BinaryOperatorSyntax.Divide;
+-                return true;
+-            case (LeftAssociativeLayer.Multiplicative, Token.SlashSlash):
+-                binaryOperator = BinaryOperatorSyntax.FloorDivide;
+-                return true;
+-            case (LeftAssociativeLayer.Multiplicative, Token.Percent):
+-                binaryOperator = BinaryOperatorSyntax.Modulo;
+-                return true;
+-            default:
+-                binaryOperator = default;
+-                return false;
+-        }
+-    }
+-
+     private static LeftAssociativeDiagnostic LeftAssociativeError(LeftAssociativeLayer layer)
+         => layer switch
+         {

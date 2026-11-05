@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [precedence consolidation reassessment](results/2026-11-05-precedence-consolidation/README.md)
+retains thirty net parser-line deletion after a current-source136s pair. Compile
+elapsed CSV/text−6.7–8.4%,report−8.5–11.4%; allocation effectively flat. Fresh config
+−1.1–1.3%; warm text's+0.6–3.8% adverse signs remain control-limited. Original B46
+rigid-threshold rejection and19% fresh-config drift are preserved.656internal/
+3499public per actual11/10 and overlapping27 boundary/cancellation cases pass;
+full retained-source delivery pending. Whole-script work remains open.
+
 The [current compiler source gate](results/2026-11-05-frontend-source-gate/README.md)
 has774text/728report compiler-thread samples with quiet/goldens/owned cleanup.
 Parsing28/34% and static binding25/20% are inclusive; LoweredScript itself~3%.

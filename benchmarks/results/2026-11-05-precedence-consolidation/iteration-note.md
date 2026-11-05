@@ -1,0 +1,1 @@
+The first --no-build test command was started before the nonincremental solution build exited. Its assembly was not yet present; no tests executed. Preserve that log and wait for the actual build completion before the focused sequence. No semantic failure or timeout change.

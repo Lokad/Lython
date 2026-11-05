@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "baseline ab487dfa/D19 frozen04f3e00d, documentation-only HEAD71ba8ae2",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "fdff2473f9bf11ff785372d735208582aa5147f9897b29e2dee3b293a46d4a0f",
+    "Lokad.Lython.dll": "04f3e00dad8e8673e620e34b3cf8b1a1376d25f58275e4ad94684b62672f0eaa",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "candidateCoreSHA256": "0d5af60aaf9834010883b7d3e03b7aeb7849668a76b55742b36750760e4373cc",
+  "candidateSource": "Complete bounded precedence-climbing parser, earlier B46 design reassessed with current independent compilation/warm/fresh controls",
+  "candidateSourceFiles": {
+    "src/Lokad.Lython/Frontend/Parser.Expressions.cs": "84ef8860e789c4a3a0643dc678b0a3d1d4278893f2caa21f2a45c8b8a70328a4"
+  }
+}

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse arithmetic and bitwise precedence without descending every grammar layer
+  for each operand. Remove redundant parser routes while preserving evaluation
+  order, diagnostics, cancellation and existing nesting bounds.
+
 - Admit default JSON object shells and initial native storage together. Share
   separator handling across completed and suspended parsing, removing the initial
   position sentinel and redundant whitespace scan. Tight budgets can refuse

@@ -1,0 +1,40 @@
+{
+  "build": "Nonincremental Release62.95s,zero warnings/errors",
+  "frameworks": {
+    "net11.0": {
+      "internal": 656,
+      "public": 3499,
+      "coreSHA256": "0d5af60aaf9834010883b7d3e03b7aeb7849668a76b55742b36750760e4373cc"
+    },
+    "net10.0": {
+      "internal": 656,
+      "public": 3499,
+      "coreSHA256": "bcea421cfaf44f80146b4ecee3ce6d189b4608148ddac864fd80ec473e4545e6"
+    }
+  },
+  "contract": "One existing precedence-climbing parser, five forwarding methods/ParseNextLayer/layer-token double dispatch removed; Boolean/comparison/unary/power paths, nesting/diagnostics/cancellation/admission preserved.",
+  "limitations": "Focused development checks; final source delivery qualification remains separate from D19 ongoing CI. No performance claim before observations.",
+  "additionalBoundaryChecks": {
+    "net11.0": {
+      "public": 27,
+      "overlap": "Existing arithmetic/compiler cancellation plus two independent mixed-chain admission/budget regressions; not27new cases",
+      "coreSHA256": "2b861c37e57fc12d06d1cff0ab9e4f89f640363ce624b180cd6bb41bd8e6ca3c",
+      "assemblyVersionStrings": [
+        "0.11.0",
+        "0.11.0+71ba8ae2c3c41b5898bfc6f51af8822d3fb9c428"
+      ],
+      "sameProductionSourceAsMeasured": true
+    },
+    "net10.0": {
+      "public": 27,
+      "overlap": "Existing arithmetic/compiler cancellation plus two independent mixed-chain admission/budget regressions; not27new cases",
+      "coreSHA256": "139b50b533694cbd038e5c841914f1103daa7e66fe8fa9c58fb1d14f7820091e",
+      "assemblyVersionStrings": [
+        "0.11.0",
+        "0.11.0+71ba8ae2c3c41b5898bfc6f51af8822d3fb9c428"
+      ],
+      "sameProductionSourceAsMeasured": true
+    }
+  },
+  "additionalBuild": "Public test-only build54.26s/zero warnings/errors; core rebuild embeds newer documentation-only SourceRevisionId. Performance still refers exactly to frozen0d5af60a."
+}
