@@ -58,6 +58,7 @@ internal enum ExecutableOpCode
     MakeSlice,
     Binary,
     Augmented,
+    AugmentedLocal,
     Unary,
     Jump,
     JumpIfFalse,
@@ -152,13 +153,42 @@ internal readonly record struct ExecutableInstruction
             OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
             first, _resultSlot, _liveExtent);
 
+    // Joined only after layout: both operands keep their prepared sources,
+    // while the result position names the destination local, outside retirement.
+    internal ExecutableInstruction WithLocalAugmentedStore(ExecutableInstruction store)
+        => new(ExecutableOpCode.AugmentedLocal, Span, (int)MapAugmentedOperator(AugmentedOperator),
+            SecondInput, InputStart, store.LocalSlot, store.LiveExtent);
+
+    public AugmentedAssignmentOperatorSyntax LocalAugmentedOperator
+        => (AugmentedAssignmentOperatorSyntax)ReadPrimaryOperand(ExecutableOpCode.AugmentedLocal, nameof(LocalAugmentedOperator));
+
+    internal static AugmentedAssignmentOperatorSyntax MapAugmentedOperator(ExecutableAugmentedOperator op)
+        => op switch
+            {
+                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
+                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
+                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
+                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
+                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
+                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
+                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
+                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
+                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
+                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
+                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
+                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
+                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
+                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
+            };
+
     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
-    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
-        ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
+    public int LocalSlot => OpCode == ExecutableOpCode.AugmentedLocal ? _resultSlot
+        : OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
+            ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName

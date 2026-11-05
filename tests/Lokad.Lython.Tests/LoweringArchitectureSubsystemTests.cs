@@ -380,8 +380,11 @@ values[1:4:2]
         var executable = ExecutableScript.Compile(lowered);
         var instructions = executable.EntryPoint.Instructions.ToArray();
 
-        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
-        Assert.Equal(ExecutableAugmentedOperator.Add, augmented.AugmentedOperator);
+        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.AugmentedLocal);
+        Assert.Equal(AugmentedAssignmentOperatorSyntax.Add, augmented.LocalAugmentedOperator);
+        Assert.Equal(executable.EntryPoint.LocalNameToSlot["total"], augmented.LocalSlot);
+        Assert.True(augmented.LocalSlot < executable.EntryPoint.FirstTemporarySlot);
+        Assert.True(augmented.LiveExtent >= executable.EntryPoint.FirstTemporarySlot);
 
         var slice = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Slice);
         Assert.Equal(

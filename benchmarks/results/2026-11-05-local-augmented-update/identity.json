@@ -1,0 +1,26 @@
+{
+  "sourceRevision": "d946c4e8 plus D61 complete local augmented-update pipeline; reference qualified13d69be6 production frozenec4b before commit metadata",
+  "coreSHA256": {
+    "candidate": "6c66979918645de89b0872e734f568dac8cb6d4b3dcae0302bfc8a9750c9b3ba",
+    "control": "6c66979918645de89b0872e734f568dac8cb6d4b3dcae0302bfc8a9750c9b3ba",
+    "reference": "ec4b63788bb3cfe66d35e5d338873def52454b7da1085ee0e4fcdcaa0f0b65a7"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "0d4c2c231cf8705dd3cb22559667a0e0ac32f5f7f17f3df591abcb2cf2230f39",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "bbe2533e503695c52d044255edb8923e72c13ddf53b09f72a62c6a3f9fb9994c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "e455c48f2e0b7f676a4cb9073c43e44bda5f33e5b0285e8fd93e8847cc21e509",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "f58028590458ebd19f1f6ad44dc0bd5225c7345ba853fa82cdd550a40d54d815",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs": "0cd8b040076fcc474cee73e358448bda6305481f91e21b39ab996c016825b57e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "644a7be4b4be898fa107eec7ca5a8e449fab7a8eed23e25017ac391adb478dfc",
+    "tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs": "bd0dc42a63127d3033d641ecadaa5bba5e687806559f93125f4038ec99fb782b",
+    "tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs": "d66bac1b89e452a981cb0f8801f278e7d0c05694ebacdedf7a7992ed5ba2aa60"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Clean26.89s and6.40s builds; focused247internal/1592public per actual11/10 pass. Additional suspended-refusal case passes with existing3 lifetime cases per actual11/10. One invalid build project spelling failed before compilation and is preserved. D59 Windows/Ubuntu actual11/10/stress/installed consumers42074585232 GREEN/all8 cached; prototype qualification separate.",
+  "changes": "Same-span Augmented/StoreLocal combined in existing forwarding pass using existing five ints. Existing operator and StoreLocalValue protocols; inputs funded through completion, token/refusal before binding, correct retirement. Moves existing enum mapper; no new frame fields/array/owner/backend/value representation. Useful no-inline lifetime fences preserved."
+}

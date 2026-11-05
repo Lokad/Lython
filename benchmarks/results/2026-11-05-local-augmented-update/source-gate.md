@@ -1,0 +1,1 @@
+D61 source contract recorded before code; eight source/test files frozen with SHA256 and source archive. Five opcode ints; no additional frame storage or layout pass. Focused suites and actual suspended cancellation/refusal ownership pass before measurement. Full delivery only at retained checkpoint.

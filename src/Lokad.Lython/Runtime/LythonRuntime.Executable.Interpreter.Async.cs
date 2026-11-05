@@ -213,7 +213,7 @@ internal sealed partial class LythonRuntime
                         break;
                     case ExecutableOpCode.Augmented:
                         result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
-                            MapExecutableAugmented(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
+                            ExecutableInstruction.MapAugmentedOperator(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Unary:
                         result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);

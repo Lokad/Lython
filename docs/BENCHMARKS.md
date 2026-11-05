@@ -87,6 +87,7 @@ Separate source-pair observations; not CPython ratios, additive gains or per-cha
 
 | Measured change | Result | Limits and evidence |
 | --- | --- | --- |
+| Local augmented-update transport, after13d | Basicloop elapsed−16.05/16.54% | [Source pair](../benchmarks/results/2026-11-05-local-augmented-update/README.md). CSV confirmation+0.77/+0.99% possible debt; initial adverse/control spread and report uncertainty retained. Not included in representative tables above; platform qualification separate. |
 | Retained13d group versus9c1d | Warm ordinaryCSV−6.5–8.8%,text−9.1–9.5%;freshJSON−7.0–8.4% | [Same checkpoint](../benchmarks/results/2026-11-05-runtime-cpython-refresh/README.md). Fresh report+.65/1.72% adverse/variable; config/compile small or inconclusive. Older debts remain. |
 | Funded function workspace | OrdinaryCSV process allocation−6.67/6.69% | [Qualified source pair](../benchmarks/results/2026-11-05-owned-function-workspace/README.md). Elapsed mixed, admitted peak+208B, cleanup boundaries differ. |
 | Native helper returns | CSV/JSON allocation−19.9/19.3% | [Historical qualified pair](../benchmarks/results/2026-11-02-native-function-returns/README.md). Original elapsed diagnostic. |

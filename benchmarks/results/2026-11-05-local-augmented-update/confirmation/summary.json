@@ -1,0 +1,25 @@
+{
+  "complete": true,
+  "elapsedSeconds": 52.00857707997784,
+  "timing": [
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.638212814814815,
+        "control": 4.648159454545455,
+        "CPython": 3.2131551948051946,
+        "reference": 4.602730909090909
+      },
+      "ratio": 1.4435072486736882,
+      "referenceDeltaPercent": 0.7708881189170791,
+      "controlPercent": 0.21444983505003457,
+      "iqrPercent": {
+        "candidate": 1.859241026632357,
+        "control": 0.5312589612693895,
+        "CPython": 0.5106955800009706,
+        "reference": 0.9458064816855694
+      }
+    }
+  ]
+}

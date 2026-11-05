@@ -189,7 +189,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     if (previous < kept - 1) instructions[previous] = instructions[kept - 1];
                     kept--;
                 }
-                instructions[kept++] = count == 0 ? instruction : instruction.WithValueInputs(first, second);
+                instruction = count == 0 ? instruction : instruction.WithValueInputs(first, second);
+                // One completed local update: retain the evaluated inputs and
+                // commit directly, without an intermediate result operand.
+                if (instruction.OpCode == ExecutableOpCode.StoreLocal && kept > 0
+                    && instructions[kept - 1] is { OpCode: ExecutableOpCode.Augmented } update
+                    && update.Span == instruction.Span
+                    && update.ResultSlot == instruction.InputStart
+                    && update.LiveExtent == instruction.InputStart + 1
+                    && instruction.LiveExtent == update.ResultSlot)
+                    instructions[kept - 1] = update.WithLocalAugmentedStore(instruction);
+                else instructions[kept++] = instruction;
                 if (initialized.Length != 0)
                 {
                     if (instruction.OpCode == ExecutableOpCode.StoreLocal

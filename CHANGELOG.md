@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Combine local augmented assignment with its binding store, removing the
+  intermediate operand and separate store dispatch. Preserve Python protocols,
+  delayed operations, cancellation, terminal refusal and retained operands.
+
 - Restore saved exception state and remove handler bindings at actual executable
   frame exit, including cancellation or refused admission at instruction entry.
   Share existing cleanup across both APIs; yielded/pending frames retain state.

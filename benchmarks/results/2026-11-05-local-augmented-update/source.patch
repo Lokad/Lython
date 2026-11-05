@@ -1,0 +1,288 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index d9623412..95430cbb 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -58,6 +58,7 @@ internal enum ExecutableOpCode
+     MakeSlice,
+     Binary,
+     Augmented,
++    AugmentedLocal,
+     Unary,
+     Jump,
+     JumpIfFalse,
+@@ -152,13 +153,42 @@ internal readonly record struct ExecutableInstruction
+             OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
+             first, _resultSlot, _liveExtent);
+ 
++    // Joined only after layout: both operands keep their prepared sources,
++    // while the result position names the destination local, outside retirement.
++    internal ExecutableInstruction WithLocalAugmentedStore(ExecutableInstruction store)
++        => new(ExecutableOpCode.AugmentedLocal, Span, (int)MapAugmentedOperator(AugmentedOperator),
++            SecondInput, InputStart, store.LocalSlot, store.LiveExtent);
++
++    public AugmentedAssignmentOperatorSyntax LocalAugmentedOperator
++        => (AugmentedAssignmentOperatorSyntax)ReadPrimaryOperand(ExecutableOpCode.AugmentedLocal, nameof(LocalAugmentedOperator));
++
++    internal static AugmentedAssignmentOperatorSyntax MapAugmentedOperator(ExecutableAugmentedOperator op)
++        => op switch
++            {
++                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
++                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
++                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
++                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
++                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
++                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
++                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
++                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
++                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
++                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
++                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
++                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
++                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
++                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
++            };
++
+     public int ImportIndex => ReadPrimaryOperand(ExecutableOpCode.Import, nameof(ImportIndex));
+     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
+     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
+     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
+         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
+-    public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
+-        ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
++    public int LocalSlot => OpCode == ExecutableOpCode.AugmentedLocal ? _resultSlot
++        : OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
++            ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
+     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
+         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
+     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index 4c371d4f..dc5ffaf2 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -189,7 +189,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+                     if (previous < kept - 1) instructions[previous] = instructions[kept - 1];
+                     kept--;
+                 }
+-                instructions[kept++] = count == 0 ? instruction : instruction.WithValueInputs(first, second);
++                instruction = count == 0 ? instruction : instruction.WithValueInputs(first, second);
++                // One completed local update: retain the evaluated inputs and
++                // commit directly, without an intermediate result operand.
++                if (instruction.OpCode == ExecutableOpCode.StoreLocal && kept > 0
++                    && instructions[kept - 1] is { OpCode: ExecutableOpCode.Augmented } update
++                    && update.Span == instruction.Span
++                    && update.ResultSlot == instruction.InputStart
++                    && update.LiveExtent == instruction.InputStart + 1
++                    && instruction.LiveExtent == update.ResultSlot)
++                    instructions[kept - 1] = update.WithLocalAugmentedStore(instruction);
++                else instructions[kept++] = instruction;
+                 if (initialized.Length != 0)
+                 {
+                     if (instruction.OpCode == ExecutableOpCode.StoreLocal
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 2f7a2262..608542eb 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -213,7 +213,7 @@ internal sealed partial class LythonRuntime
+                         break;
+                     case ExecutableOpCode.Augmented:
+                         result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
+-                            MapExecutableAugmented(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
++                            ExecutableInstruction.MapAugmentedOperator(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
+                         break;
+                     case ExecutableOpCode.Unary:
+                         result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 8e840c2e..a538994a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -128,6 +128,15 @@ internal sealed partial class LythonRuntime
+                                 jumped = ConsumeOperation(ref pending);
+                             }
+                             break;
++                        case ExecutableOpCode.AugmentedLocal:
++                            if (!asynchronous) ExecuteLocalAugmented(instruction, false).GetAwaiter().GetResult();
++                            else
++                            {
++                                pending = WithoutJump(ExecuteLocalAugmented(instruction, true));
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
++                                _ = ConsumeOperation(ref pending);
++                            }
++                            break;
+                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
+                             if (!asynchronous ||
+                                 (ReadOperand(instruction.InputStart) is BigInteger or double or bool &&
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+index 9ad252ab..c45d45a2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+@@ -151,24 +151,7 @@ internal sealed partial class LythonRuntime
+         };
+ 
+     private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
+-        => EvaluateAugmentedAssignment(currentValue, right, MapExecutableAugmented(op), context, span);
++        => EvaluateAugmentedAssignment(currentValue, right, ExecutableInstruction.MapAugmentedOperator(op), context, span);
++
+ 
+-    private static AugmentedAssignmentOperatorSyntax MapExecutableAugmented(ExecutableAugmentedOperator op)
+-        => op switch
+-            {
+-                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
+-                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
+-                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
+-                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
+-                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
+-                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
+-                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
+-                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
+-                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
+-                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
+-                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
+-                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
+-                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
+-                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
+-            };
+ }
+diff --git a/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs b/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
+index 9b55ab17..b28e3aba 100644
+--- a/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
++++ b/tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs
+@@ -9,10 +9,11 @@ namespace Lokad.Lython.Tests;
+ public sealed class LocalAugmentedLifetimeTests
+ {
+     [Theory]
+-    [InlineData(false, false)]
+-    [InlineData(true, false)]
+-    [InlineData(true, true)]
+-    public async Task OriginalOperandSurvivesProtocolRebindingAndAwait(bool asynchronous, bool cancel)
++    [InlineData(false, false, false)]
++    [InlineData(true, false, false)]
++    [InlineData(true, true, false)]
++    [InlineData(true, false, true)]
++    public async Task OriginalOperandSurvivesProtocolRebindingAndAwait(bool asynchronous, bool cancel, bool refuse)
+     {
+         const string source = """
+             class Value:
+@@ -38,7 +39,7 @@ public sealed class LocalAugmentedLifetimeTests
+         var context = new Context(new MockLythonHost(), new LythonRunOptions
+         { MemoryBudget = owner, CancellationToken = cancellation.Token });
+         var observe = new Observe();
+-        var hold = new Hold(observe);
++        var hold = new Hold(observe, refuse);
+         context.Variables["observe"] = observe;
+         context.Variables["hold"] = hold;
+         if (asynchronous)
+@@ -58,12 +59,13 @@ public sealed class LocalAugmentedLifetimeTests
+             {
+                 hold.Release.TrySetResult();
+                 try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+-                catch (LythonRuntimeException) when (cancel) { }
++                catch (LythonRuntimeException) when (cancel || refuse) { }
+             }
+-            if (cancel)
++            if (cancel || refuse)
+             {
+                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
+-                Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
++                if (refuse) Assert.Same(hold.Refusal, error);
++                else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+                 Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
+                 Assert.Same(observe.Left, left);
+             }
+@@ -92,16 +94,18 @@ public sealed class LocalAugmentedLifetimeTests
+         }
+     }
+ 
+-    private sealed class Hold(Observe observed) : LythonRuntime.ICallable
++    private sealed class Hold(Observe observed, bool refuse) : LythonRuntime.ICallable
+     {
+         internal TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+         internal TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+         internal bool Finished;
++        internal LythonRuntimeException? Refusal;
+         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+         {
+             Assert.Single(arguments);
+             Assert.Same(observed.Right, arguments[0].Value);
+             Assert.Equal(PyString.FromString("original"), Assert.Single(Assert.IsType<PyList>(arguments[0].Value)));
++            if (refuse) Refusal = context.MemoryGovernor.RefuseAdmission("suspended update", 777, span);
+             Finished = true;
+             return PyNone.Instance;
+         }
+diff --git a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+index bd42eaeb..a47baab2 100644
+--- a/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
++++ b/tests/Lokad.Lython.Tests/LoweringArchitectureSubsystemTests.cs
+@@ -380,8 +380,11 @@ values[1:4:2]
+         var executable = ExecutableScript.Compile(lowered);
+         var instructions = executable.EntryPoint.Instructions.ToArray();
+ 
+-        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Augmented);
+-        Assert.Equal(ExecutableAugmentedOperator.Add, augmented.AugmentedOperator);
++        var augmented = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.AugmentedLocal);
++        Assert.Equal(AugmentedAssignmentOperatorSyntax.Add, augmented.LocalAugmentedOperator);
++        Assert.Equal(executable.EntryPoint.LocalNameToSlot["total"], augmented.LocalSlot);
++        Assert.True(augmented.LocalSlot < executable.EntryPoint.FirstTemporarySlot);
++        Assert.True(augmented.LiveExtent >= executable.EntryPoint.FirstTemporarySlot);
+ 
+         var slice = Assert.Single(instructions, instruction => instruction.OpCode == ExecutableOpCode.Slice);
+         Assert.Equal(
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs
+new file mode 100644
+index 00000000..2d02aa97
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.LocalUpdates.cs
+@@ -0,0 +1,54 @@
++using System.Numerics;
++using System.Runtime.CompilerServices;
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    private sealed partial class ExecutableFrameInterpreter
++    {
++        // Keep computed object temporaries out of the long dispatch loop, just
++        // like ordinary stores. Inputs remain owned until operator/store finish.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        private ValueTask ExecuteLocalAugmented(in ExecutableInstruction instruction, bool asynchronous)
++        {
++            try
++            {
++                var left = ReadOperand(instruction.InputStart);
++                var right = ReadOperand(instruction.SecondInput);
++                if (!asynchronous || (left is BigInteger or double or bool && right is BigInteger or double or bool)
++                    || (left is PyString && right is PyString))
++                {
++                    CommitLocalAugmented(instruction, EvaluateAugmentedAssignment(left, right,
++                        instruction.LocalAugmentedOperator, _context, instruction.Span));
++                    return default;
++                }
++
++                var pending = EvaluateAugmentedAssignmentAsync(left, right,
++                    instruction.LocalAugmentedOperator, _context, instruction.Span);
++                if (!pending.IsCompleted) return AwaitLocalAugmented(pending, instruction);
++                CommitLocalAugmented(instruction, pending.GetAwaiter().GetResult());
++                return default;
++            }
++            catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++        }
++
++        private void CommitLocalAugmented(in ExecutableInstruction instruction, object value)
++        {
++            // A callback can suspend or refuse admission. Do not publish its
++            // result into the binding after cancellation or terminal refusal.
++            _context.CheckExecution(instruction.Span);
++            StoreLocalValue(_codeObject, _locals, _localCells, _context,
++                instruction.LocalSlot, value, instruction.Span);
++            _stack.RetireTo(instruction.LiveExtent);
++        }
++
++        private async ValueTask AwaitLocalAugmented(ValueTask<object> pending, ExecutableInstruction instruction)
++        {
++            try { CommitLocalAugmented(instruction, await pending.ConfigureAwait(false)); }
++            catch { _stack.RetireTo(instruction.LiveExtent); throw; }
++        }
++    }
++}

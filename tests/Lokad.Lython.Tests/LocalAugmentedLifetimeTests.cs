@@ -9,10 +9,11 @@ namespace Lokad.Lython.Tests;
 public sealed class LocalAugmentedLifetimeTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task OriginalOperandSurvivesProtocolRebindingAndAwait(bool asynchronous, bool cancel)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public async Task OriginalOperandSurvivesProtocolRebindingAndAwait(bool asynchronous, bool cancel, bool refuse)
     {
         const string source = """
             class Value:
@@ -38,7 +39,7 @@ public sealed class LocalAugmentedLifetimeTests
         var context = new Context(new MockLythonHost(), new LythonRunOptions
         { MemoryBudget = owner, CancellationToken = cancellation.Token });
         var observe = new Observe();
-        var hold = new Hold(observe);
+        var hold = new Hold(observe, refuse);
         context.Variables["observe"] = observe;
         context.Variables["hold"] = hold;
         if (asynchronous)
@@ -58,12 +59,13 @@ public sealed class LocalAugmentedLifetimeTests
             {
                 hold.Release.TrySetResult();
                 try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
-                catch (LythonRuntimeException) when (cancel) { }
+                catch (LythonRuntimeException) when (cancel || refuse) { }
             }
-            if (cancel)
+            if (cancel || refuse)
             {
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
-                Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+                if (refuse) Assert.Same(hold.Refusal, error);
+                else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
                 Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
                 Assert.Same(observe.Left, left);
             }
@@ -92,16 +94,18 @@ public sealed class LocalAugmentedLifetimeTests
         }
     }
 
-    private sealed class Hold(Observe observed) : LythonRuntime.ICallable
+    private sealed class Hold(Observe observed, bool refuse) : LythonRuntime.ICallable
     {
         internal TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal bool Finished;
+        internal LythonRuntimeException? Refusal;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Assert.Single(arguments);
             Assert.Same(observed.Right, arguments[0].Value);
             Assert.Equal(PyString.FromString("original"), Assert.Single(Assert.IsType<PyList>(arguments[0].Value)));
+            if (refuse) Refusal = context.MemoryGovernor.RefuseAdmission("suspended update", 777, span);
             Finished = true;
             return PyNone.Instance;
         }

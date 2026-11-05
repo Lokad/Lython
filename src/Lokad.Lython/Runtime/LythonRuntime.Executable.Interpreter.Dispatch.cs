@@ -128,6 +128,15 @@ internal sealed partial class LythonRuntime
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
+                        case ExecutableOpCode.AugmentedLocal:
+                            if (!asynchronous) ExecuteLocalAugmented(instruction, false).GetAwaiter().GetResult();
+                            else
+                            {
+                                pending = WithoutJump(ExecuteLocalAugmented(instruction, true));
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                _ = ConsumeOperation(ref pending);
+                            }
+                            break;
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
                             if (!asynchronous ||
                                 (ReadOperand(instruction.InputStart) is BigInteger or double or bool &&

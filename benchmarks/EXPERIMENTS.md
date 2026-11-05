@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [complete local augmented-update pipeline](results/2026-11-05-local-augmented-update/README.md)
+removes one intermediate result/store transfer using the existing compiler pass
+and five metadata ints. B291166.96s/six complete jobs and one justified same-binary
+B29252.01s CSV confirmation pass all gates. Basicloop elapsed−16.05/16.54%;
+CSV confirmation+0.77/+0.99% possible debt, initial adverse/control discrepancy
+and noisy report retained. No whole-script/causalCPU/allocation claim. Full local
+4144internal/16004public per actual11/10 pass; platform delivery is separate.
+
 The [retained-runtime CPython refresh](results/2026-11-05-runtime-cpython-refresh/README.md)
 measures13d69be6/ec4b versus qualified9c1d/6cb, CPython3.13.16 and independent
 current control:440.25s/16jobs/all gates. Fresh ordinaryCSV1.43–1.44×,text1.89–1.96×,
@@ -7,7 +15,8 @@ JSON1.07–1.08×,report1.45–1.47×. Separate compile and warm tables/IO-clean
 in current guide. Warm source-group CSV−6.53/8.82%,text−9.07/9.50%,freshJSON−7.04/
 8.42%; fresh report+.65/1.72% adverse/variable, config/compile limited. No individual
 attribution/causalCPU/allocation/latency claim or closure of D55 Unicode/older debts.
-Full local4143/16004 per actual target pass; retained-source platform delivery pending.
+Full local4143/16004 per actual target pass; retained13d platform delivery
+42074585232 GREEN/all8, terminal receipt cached.
 
 The [basic-loop cost gate](results/2026-11-05-basic-loop-cost/README.md)
 closes one25s/912guest-sample capture, unknown4.71%/one truncated map line retained.

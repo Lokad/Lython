@@ -151,24 +151,7 @@ internal sealed partial class LythonRuntime
         };
 
     private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
-        => EvaluateAugmentedAssignment(currentValue, right, MapExecutableAugmented(op), context, span);
+        => EvaluateAugmentedAssignment(currentValue, right, ExecutableInstruction.MapAugmentedOperator(op), context, span);
 
-    private static AugmentedAssignmentOperatorSyntax MapExecutableAugmented(ExecutableAugmentedOperator op)
-        => op switch
-            {
-                ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
-                ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
-                ExecutableAugmentedOperator.Multiply => AugmentedAssignmentOperatorSyntax.Multiply,
-                ExecutableAugmentedOperator.MatrixMultiply => AugmentedAssignmentOperatorSyntax.MatrixMultiply,
-                ExecutableAugmentedOperator.Divide => AugmentedAssignmentOperatorSyntax.Divide,
-                ExecutableAugmentedOperator.FloorDivide => AugmentedAssignmentOperatorSyntax.FloorDivide,
-                ExecutableAugmentedOperator.Modulo => AugmentedAssignmentOperatorSyntax.Modulo,
-                ExecutableAugmentedOperator.Power => AugmentedAssignmentOperatorSyntax.Power,
-                ExecutableAugmentedOperator.BitwiseOr => AugmentedAssignmentOperatorSyntax.BitwiseOr,
-                ExecutableAugmentedOperator.BitwiseXor => AugmentedAssignmentOperatorSyntax.BitwiseXor,
-                ExecutableAugmentedOperator.BitwiseAnd => AugmentedAssignmentOperatorSyntax.BitwiseAnd,
-                ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
-                ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
-                _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
-            };
+
 }

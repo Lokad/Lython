@@ -19,6 +19,10 @@ invariants belong in the white-box suite.
 distinguishes entry cancellation/refusal from operation errors, preserving the
 first origin, active Python exception state, stopped effects and released storage.
 
+[Local augmented lifetimes](Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs)
+keep the original operand funded across protocol rebinding and real suspension;
+cancellation or refused admission preserves the target and awaits cleanup.
+
 | Contract | Primary coverage |
 | --- | --- |
 | Language/module values, types and errors | Public goldens and semantic families; syntax cases run once through each API |
