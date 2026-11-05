@@ -63,7 +63,8 @@ Focused Release223internal/514public per actual.NET11/10 pass, including
 comprehensions, generators, argument expansion, formatting, cancellation, terminal
 refusal, retained aliases and cleanup. The new boundary control proves retiring
 ordinary IDisposable values does not dispose them. Full retained-source platform,
-stress and installed-package qualification is tracked at the coherent delivery
-checkpoint. Retained D50 plus D51 diagnostics: final Release build20.72s/zero
+stress and installed-package qualification is complete on6c776d0d:
+CI42044419339 GREEN/all8 Windows/Ubuntu, actual11/10 and original stress,
+[terminal status](delivery-ci-status.json) cached. Retained D50 plus D51 diagnostics: final Release build20.72s/zero
 warnings/errors, full4125internal/16004public per actual.NET11/10 pass. Publication
 remains postponed. The broader performance objective is open.

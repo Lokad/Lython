@@ -17,8 +17,9 @@ B276140.27s/five jobs/all gates has3–4% identical-current differences. One jus
 unchanged-binary B277114.57s/three-job confirmation supports warm text4.00–5.53%
 lower;CSV.96–2.89% lower varies. Async+0.58–0.99% conflicts with initial−4.24–8.08%:
 preserved unresolved debt. Retain the nominal contract; no allocation/CPU/general
-speedup claim. Focus223/514 per actual target pass; batch full delivery with the
-independent regex diagnostic correction. The overall performance objective remains open.
+speedup claim. Focus223/514 per actual target pass; full4125/16004 per actual
+target and CI42044419339 GREEN/all8 on6c776d0d with the independent regex diagnostic
+correction. Terminal cached; the overall performance objective remains open.
 
 The [bounded string-metadata correction](results/2026-11-05-bounded-string-metadata/README.md)
 retains shared scalar traversal/current len+projection tokens and removes two

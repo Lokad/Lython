@@ -2,7 +2,8 @@
 
 2026-11-05, source6c776d0d, observed core66263582 (built before commit metadata),
 workerb94. Full local4125internal/16004public per actual.NET11/10 pass;
-Windows/Ubuntu/stress/installed-consumer CI42044419339 is running.
+Windows/Ubuntu/stress/installed-consumer CI42044419339 is GREEN/all8,
+[terminal status](../2026-11-05-executable-temporary-contract/delivery-ci-status.json) cached.
 
 One39-second owned capture, within45s, after six guest warmup seconds per case.
 Same complete text/ordinaryCSV scripts and independent output/file goldens,
