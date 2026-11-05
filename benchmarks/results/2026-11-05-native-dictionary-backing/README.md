@@ -1,9 +1,11 @@
 # Native dictionary backing and complete record construction
 
 2026-11-05. **Retain** the completed source over d644b5cf, measured final core
-**1f5919c0**, versus **6140b97c/e5017ce4, measuredc0221b77**. Focused actual
-.NET11/10 checks pass; full Windows/Ubuntu, original stress and installed-package
-qualification remains pending. Publication postponed; performance work stays open.
+**1f5919c0**, versus **6140b97c/e5017ce4, measuredc0221b77**. Committed
+**e958c9b1** passes full Windows/Ubuntu, actual.NET11/10, original
+stress on both targets and installed Release package consumers. The terminal
+[CI42005719439 receipt](delivery-ci-status.json) is cached; no unchanged replay.
+Publication postponed; performance work stays open.
 
 One managed entry array contains ordered payloads and hash-bucket heads. Remove
 the separate OrderedDictionary object/bucket array and capacity field; count

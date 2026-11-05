@@ -1,5 +1,5 @@
 {
-  "retention": "Retain complete native storage; no further local tuning. Full delivery pending.",
+  "retention": "Retain complete native storage, fully qualifiede958c9b1. No further local tuning; process-isolated external checkpoint underway.",
   "baseline": "6140b97c / qualifiede5017ce4 / measuredc0221b77",
   "variants": {
     "initial": "4b61edd7; measured6jobs; reportallocation+5.13%",
@@ -66,5 +66,12 @@
   "stagingCorrections": [
     "First local final-driver adaptation searched2-case marker in existing6-case input; corrected before any VM timing.",
     "First worker-DLL hardlink attempt refused mode mismatch before changing files; bounded core dedup preserved bytes/paths/permissions."
-  ]
+  ],
+  "delivery": {
+    "runId": 42005719439,
+    "revision": "e958c9b155f3a7075c88d30363da7f978e737dc8",
+    "allEightLogicalGates": true,
+    "terminalCached": true,
+    "receipt": "delivery-ci-status.json"
+  }
 }
