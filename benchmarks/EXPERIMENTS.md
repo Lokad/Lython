@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [complete call-operand transport prototype](results/2026-11-05-call-operand-transport/README.md)
+is withdrawn. Five staging fields removed using immutable paused instructions
+and admitted operands, preserving both descriptor phases and awaited cleanup;
+two extra subscript scratch slots.139.98s/five jobs/all gates: ordinaryCSVwarm
+2.9–5.3% slower in both current roles, fresh+.45/.73%,async+.80/1.42%; text and
+JSON control-limited. No established whole-script gain or measured allocation
+benefit. Full4113internal/16001public per actual target pass, then all three source
+files restored byte-for-byte. Evidence supports withdrawal of this tradeoff,
+not a permanent design ban, narrower rescue or completion of the performance goal.
+
 The [owned native CSV input transport](results/2026-11-05-csv-owned-input/README.md)
 removes an unexposed line string/copy/admission and, after independent Python
 corrections, the ready-row queue/backlink/capacity machinery.143.12s/five jobs/all

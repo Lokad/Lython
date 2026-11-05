@@ -1,0 +1,11 @@
+{
+  "restoredSourceRevision": "9c1d7e74",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "d152a2c5448f03c639ecdf4945d069b5a9f7e855488135cc33de5fc91bb82d2a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "daa7e5027a57438b70a65597e91ff5f3d7fafc84bdb77de583eea6ef59f602fa",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "c7ebc3b4ac0d50df0e7a1579b32fd4d40daf9363817d160a0d5485db51548a62"
+  },
+  "restoredCoreSHA256": "6cb05f8ef304ec9c60e68cb3fb7a41cb5108200b74c354912f2f0afbbf7a12ad",
+  "priorPrecommitCoreSHA256": "70e608fcfc0a74d0c32b35ba852214db3c57e92427c123b134135a8cf024ad95",
+  "note": "Restored committed source blobs, no src diff. Build identity differs after commit; no binary identity/timed claim for rebuilt core."
+}

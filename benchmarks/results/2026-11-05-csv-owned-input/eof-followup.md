@@ -21,4 +21,5 @@ all development logs remain in ignored notes/csv-eof-d45. No timeouts weakened.
 
 The prior measured source's full local suites each pass4109internal/15993public
 on actual.NET11/10; their logs are included here. Its independent full delivery
-42025698023 remains associated with723b9638, not this later correction.
+42025698023 is GREEN/all eight required gates, cached and associated with723b9638,
+not this later correction.
