@@ -3,7 +3,11 @@
 D64A/C/D, 2026-11-05. Source `14f7e054` plus the archived21-file correction;
 frozen core `47833d32`, reference D62/`084aaa38`. Two subsequent comment-only
 corrections are [preserved separately](post-freeze-comments.patch); executable
-code matches the measured snapshot. Delivery CI is separate from local checks.
+code matches the measured snapshot. Delivery source `aec4f785` is fully qualified:
+[CI42100526619](https://github.com/Lokad/Lython/actions/runs/42100526619), Windows/
+Ubuntu, actual11/10, original Stress and installed consumers, all8 gates GREEN.
+[Terminal receipt](delivery-ci-status.json) is cached; no unchanged replay.
+Later candidate-selection/set-resolution work is separate from this qualification.
 
 Dictionary/set queries and removal now invoke custom hashes even for identical
 keys, propagating errors. Native `dict(source)` copies reuse stored hashes, like
