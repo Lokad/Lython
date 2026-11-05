@@ -21,7 +21,9 @@ retains combined shell/first-table admission and a shared next-token loop. Final
 six-job165s collection establishes allocation −3.79% JSON/−2.24% report; async
 report elapsed −4.3–4.7%, with other timing limits visible. Fresh config +0.8–1.3%
 (~2–4µs) is accepted debt. Both source variants/adverse controls remain;242internal/
-782public checks per actual11/10 pass. Full delivery pending; whole objective open.
+782public checks per actual11/10 pass. Full delivery41938239957 GREEN on ab487dfa;
+all eight platform/framework/original Stress/installed-consumer gates cached.
+Whole objective remains open.
 
 The [checked operand-read assessment](results/2026-11-05-operand-read-assessment/README.md)
 is withdrawn after three coherent source shapes and bounded controls. Compact218s

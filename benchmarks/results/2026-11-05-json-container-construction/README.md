@@ -24,7 +24,10 @@ focused checks per actual .NET11/.NET10 pass. Existing coverage includes grammar
 error positions, duplicates, Unicode, all hooks, actual suspension/reentrant aliases,
 cancellation, refusal, retained results and shared-budget cleanup/reuse.
 [Validation](final/validation.json), [final focused logs](focused-checks/).
-Full platform/Stress/installed-package delivery is recorded separately when complete.
+Full delivery41938239957 on exact ab487dfa is GREEN: Windows/Ubuntu ordinary
+actual.NET11/10, installed Release package consumers and original Stress on both
+frameworks. [Terminal cached receipt](delivery-ci-status.json), observed00:25:09UTC.
+Later parser changes require their own qualification; publication remains held.
 
 ## Controlled observations and decision
 
