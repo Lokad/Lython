@@ -1,0 +1,64 @@
+{
+  "coreSHA256": "d8d8df23a926bf7a7a5fcc8cc4ad9435e20c90eba33102228c44e951f55a4d0f",
+  "purpose": "Read-only compiler frame/native-body inventory, not guest allocation/CPU/elapsed/admission measurement",
+  "records": [
+    {
+      "id": "scripts.csv-summary-helpers.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 106,
+          "nativeValueCount": 0,
+          "requiresMirroring": false,
+          "valueStorageCapacity": 20,
+          "memberCacheCount": 5,
+          "localCount": 12,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "parse_amount",
+          "instructionCount": 4,
+          "nativeValueCount": 3,
+          "requiresMirroring": false,
+          "valueStorageCapacity": 5,
+          "memberCacheCount": 0,
+          "localCount": 1,
+          "nativeOperations": [
+            "Read",
+            "Read",
+            "BuiltinUnary"
+          ],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    },
+    {
+      "id": "scripts.csv-summary-functions.large",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "instructionCount": 88,
+          "nativeValueCount": 0,
+          "requiresMirroring": false,
+          "valueStorageCapacity": 19,
+          "memberCacheCount": 4,
+          "localCount": 11,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        },
+        {
+          "name": "accumulate",
+          "instructionCount": 24,
+          "nativeValueCount": 0,
+          "requiresMirroring": false,
+          "valueStorageCapacity": 9,
+          "memberCacheCount": 1,
+          "localCount": 4,
+          "nativeOperations": [],
+          "sourceCoordinatesValid": true
+        }
+      ]
+    }
+  ]
+}

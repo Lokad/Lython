@@ -1,0 +1,31 @@
+{
+  "python": "3.13.2",
+  "standaloneStdoutNewline": "'\\r\\n'",
+  "records": [
+    {
+      "case": "scripts.csv-summary-functions.empty",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "stdout": "0\r\n",
+      "fullOutputFilesPassed": true
+    },
+    {
+      "case": "scripts.csv-summary-functions.small",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "stdout": "48\r\n",
+      "fullOutputFilesPassed": true
+    },
+    {
+      "case": "scripts.csv-summary-helpers.large",
+      "sourceSHA256": "7d421bd3c67892ea046f7e6be8dcbde2e47b5ac85e0f88911ed7f3b27fddc893",
+      "stdout": "3072\r\n",
+      "fullOutputFilesPassed": true
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "stdout": "3072\r\n",
+      "fullOutputFilesPassed": true
+    }
+  ],
+  "originalRawLFCheckFailedBeforeAnyVMUpload": true
+}

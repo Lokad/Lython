@@ -1,0 +1,16 @@
+{
+  "runtimeChanged": false,
+  "coreSHA256": "d8d8df23a926bf7a7a5fcc8cc4ad9435e20c90eba33102228c44e951f55a4d0f",
+  "publicCasesPerFramework": 68,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "newCorpusCases": 3,
+  "newExplicitAsyncFreshControls": 2,
+  "allFocusedPassed": true,
+  "benchmarkBuildSeconds": 6.49,
+  "publicBuildSeconds": 18.78,
+  "warnings": 0,
+  "errors": 0
+}

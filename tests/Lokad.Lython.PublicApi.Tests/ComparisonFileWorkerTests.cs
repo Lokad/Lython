@@ -49,12 +49,14 @@ public sealed class ComparisonFileWorkerTests
     }
 
     [Theory]
-    [InlineData("compile")]
-    [InlineData("compile-run")]
-    [InlineData("warm-async")]
-    public async Task SelectedLaneKeepsCompilationAndFileExecutionBoundaries(string lane)
+    [InlineData("compile", "scripts.csv-summary.small")]
+    [InlineData("compile-run", "scripts.csv-summary.small")]
+    [InlineData("warm-async", "scripts.csv-summary.small")]
+    [InlineData("compile-run", "scripts.csv-summary-functions.small")]
+    [InlineData("warm-async", "scripts.csv-summary-functions.small")]
+    public async Task SelectedLaneKeepsCompilationAndFileExecutionBoundaries(string lane, string id)
     {
-        using var catalog = new Catalog(WorkloadCatalog.CreateRepresentative().First(c => c.Size == 16));
+        using var catalog = new Catalog(WorkloadCatalog.CreateRepresentative().Single(c => c.Id == id));
         var result = (await Run(catalog, lane))[1];
         Assert.Equal("Completed", result.Status);
         Assert.Equal(lane == "compile" ? null : catalog.Workload.ExpectedFilesSha256, result.ActualFilesSha256);

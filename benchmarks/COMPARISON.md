@@ -129,7 +129,8 @@ The BenchmarkDotNet toolchain is pinned to 0.16.0-preview.2 for .NET 11 support.
 ### Complete file scripts
 
 The `representative` catalog includes the existing CSV, text, JSON-lines, file,
-search, uppercase and configuration jobs, plus four `-helpers` variants. Each
+search, uppercase and configuration jobs, plus four single-expression `-helpers`
+variants and CSV aggregation with a branching, mutating `-functions` helper. Each
 variant adds one ordinary annotated helper to the corresponding CSV, text,
 JSON-lines or file-manifest job, preserving its independent output/file goldens.
 Integer/finite-float numeric reports add planned/actual JSON arrays and two
