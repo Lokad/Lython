@@ -2313,6 +2313,36 @@ internal sealed partial class LythonRuntime
 
     internal static class DictViewMembers
     {
+        private static bool AcceptsComparison(object view, object other)
+            => PyContainment.IsSetViewOperand(other) &&
+                (view is ChainMapKeysView or ChainMapItemsView || other is PySet or DictKeysView or DictItemsView);
+
+        private static BoundCallable CreateComparison(object view, string method, LythonCallableSignature signature)
+            => BoundCallable.Create(
+                (arguments, span, context) => AcceptsComparison(view, arguments[0])
+                    ? PyContainment.CompareSetViews(view, arguments[0], method, context, span)
+                    : PyNotImplemented.Instance,
+                signature,
+                async (arguments, span, context) => AcceptsComparison(view, arguments[0])
+                    ? await PyContainment.CompareSetViewsAsync(view, arguments[0], method, context, span, true).ConfigureAwait(false)
+                    : PyNotImplemented.Instance);
+
+        private static BoundCallable CreateContains(object view, LythonCallableSignature signature)
+            => BoundCallable.Create(
+                (arguments, span, context) =>
+                {
+                    var contained = PyContainment.ContainsWithProtocols(view, arguments[0], context, span);
+                    context.CheckExecution(span);
+                    return contained;
+                },
+                signature,
+                async (arguments, span, context) =>
+                {
+                    var contained = await PyContainment.ContainsWithProtocolsAsync(view, arguments[0], context, span).ConfigureAwait(false);
+                    context.CheckExecution(span);
+                    return contained;
+                });
+
         public static bool TryGetKeysMember(DictKeysView view, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -2336,15 +2366,7 @@ internal sealed partial class LythonRuntime
                     return dictKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__contains__(item) expects one argument.", span);
-                    }
-
-                    return PyContainment.Contains(view, arguments[0], span);
-                }, DictKeysContainsSignature),
+                "__contains__" => CreateContains(view, DictKeysContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2417,90 +2439,12 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, DictKeysRXorSignature),
-                "__eq__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__eq__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysEqSignature),
-                "__ne__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__ne__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysNeSignature),
-                "__lt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__lt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysLtSignature),
-                "__le__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__le__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysLeSignature),
-                "__gt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__gt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysGtSignature),
-                "__ge__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_keys.__ge__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictKeysGeSignature),
+                "__eq__" => CreateComparison(view, "__eq__", DictKeysEqSignature),
+                "__ne__" => CreateComparison(view, "__ne__", DictKeysNeSignature),
+                "__lt__" => CreateComparison(view, "__lt__", DictKeysLtSignature),
+                "__le__" => CreateComparison(view, "__le__", DictKeysLeSignature),
+                "__gt__" => CreateComparison(view, "__gt__", DictKeysGtSignature),
+                "__ge__" => CreateComparison(view, "__ge__", DictKeysGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -2574,15 +2518,7 @@ internal sealed partial class LythonRuntime
                     return dictItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__contains__(item) expects one argument.", span);
-                    }
-
-                    return PyContainment.Contains(view, arguments[0], span);
-                }, DictItemsContainsSignature),
+                "__contains__" => CreateContains(view, DictItemsContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2655,90 +2591,12 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, DictItemsRXorSignature),
-                "__eq__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__eq__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsEqSignature),
-                "__ne__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__ne__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsNeSignature),
-                "__lt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__lt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsLtSignature),
-                "__le__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__le__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsLeSignature),
-                "__gt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__gt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsGtSignature),
-                "__ge__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict_items.__ge__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, DictItemsGeSignature),
+                "__eq__" => CreateComparison(view, "__eq__", DictItemsEqSignature),
+                "__ne__" => CreateComparison(view, "__ne__", DictItemsNeSignature),
+                "__lt__" => CreateComparison(view, "__lt__", DictItemsLtSignature),
+                "__le__" => CreateComparison(view, "__le__", DictItemsLeSignature),
+                "__gt__" => CreateComparison(view, "__gt__", DictItemsGtSignature),
+                "__ge__" => CreateComparison(view, "__ge__", DictItemsGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -2780,15 +2638,7 @@ internal sealed partial class LythonRuntime
                     return chainMapKeysIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__contains__(item) expects one argument.", span);
-                    }
-
-                    return PyContainment.Contains(view, arguments[0], span);
-                }, ChainMapKeysContainsSignature),
+                "__contains__" => CreateContains(view, ChainMapKeysContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2901,90 +2751,12 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapKeysRXorSignature),
-                "__eq__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__eq__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysEqSignature),
-                "__ne__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__ne__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysNeSignature),
-                "__lt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__lt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysLtSignature),
-                "__le__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__le__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysLeSignature),
-                "__gt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__gt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysGtSignature),
-                "__ge__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__ge__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapKeysGeSignature),
+                "__eq__" => CreateComparison(view, "__eq__", ChainMapKeysEqSignature),
+                "__ne__" => CreateComparison(view, "__ne__", ChainMapKeysNeSignature),
+                "__lt__" => CreateComparison(view, "__lt__", ChainMapKeysLtSignature),
+                "__le__" => CreateComparison(view, "__le__", ChainMapKeysLeSignature),
+                "__gt__" => CreateComparison(view, "__gt__", ChainMapKeysGtSignature),
+                "__ge__" => CreateComparison(view, "__ge__", ChainMapKeysGeSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
@@ -3018,15 +2790,7 @@ internal sealed partial class LythonRuntime
                     return chainMapItemsIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__contains__(item) expects one argument.", span);
-                    }
-
-                    return PyContainment.Contains(view, arguments[0], span);
-                }, ChainMapItemsContainsSignature),
+                "__contains__" => CreateContains(view, ChainMapItemsContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3139,90 +2903,12 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
                 }, ChainMapItemsRXorSignature),
-                "__eq__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__eq__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsEqSignature),
-                "__ne__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__ne__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsNeSignature),
-                "__lt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__lt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsLtSignature),
-                "__le__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__le__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsLeSignature),
-                "__gt__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__gt__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsGtSignature),
-                "__ge__" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__ge__(value) expects one argument.", span);
-                    }
-
-                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
-                    {
-                        return PyNotImplemented.Instance;
-                    }
-
-                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, ChainMapItemsGeSignature),
+                "__eq__" => CreateComparison(view, "__eq__", ChainMapItemsEqSignature),
+                "__ne__" => CreateComparison(view, "__ne__", ChainMapItemsNeSignature),
+                "__lt__" => CreateComparison(view, "__lt__", ChainMapItemsLtSignature),
+                "__le__" => CreateComparison(view, "__le__", ChainMapItemsLeSignature),
+                "__gt__" => CreateComparison(view, "__gt__", ChainMapItemsGtSignature),
+                "__ge__" => CreateComparison(view, "__ge__", ChainMapItemsGeSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };

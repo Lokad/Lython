@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal static class PyContainment
+internal static partial class PyContainment
 {
     public static bool Contains(object container, object candidate, LythonSourceSpan span)
     {
@@ -18,8 +18,8 @@ internal static class PyContainment
             PyDefaultDict defaultDict => defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _),
             PyChainMap chainMap => chainMap.ContainsKey(candidate, span),
             PySet set => ContainsInSet(set, candidate, span),
-            LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
-            LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
+            LythonRuntime.DictKeysView keysView => keysView.Source.ContainsKey(LythonRuntime.ValidateDictionaryKey(candidate, span)),
+            LythonRuntime.DictItemsView itemsView => ContainsInDictItems(itemsView, candidate, span),
             ChainMapKeysView chainKeys => chainKeys.Owner.ContainsKey(candidate, span),
             ChainMapValuesView chainValues => ContainsInChainMapValues(chainValues, candidate, span),
             ChainMapItemsView chainItems => ContainsInChainMapItems(chainItems, candidate, span),
@@ -50,8 +50,8 @@ internal static class PyContainment
             PyDefaultDict defaultDict => defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _),
             PyChainMap chainMap => chainMap.ContainsKey(candidate, span),
             PySet set => ContainsInSet(set, candidate, span),
-            LythonRuntime.DictKeysView keysView => ContainsInValidatedViewWithProtocols(keysView, candidate, context, span),
-            LythonRuntime.DictItemsView itemsView => ContainsInValidatedViewWithProtocols(itemsView, candidate, context, span),
+            LythonRuntime.DictKeysView keysView => keysView.Source.ContainsKey(LythonRuntime.ValidateDictionaryKey(candidate, span)),
+            LythonRuntime.DictItemsView itemsView => ContainsInDictItems(itemsView, candidate, span),
             ChainMapKeysView chainKeys => chainKeys.Owner.ContainsKey(candidate, span),
             ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocols(chainValues, candidate, context, span),
             ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocols(chainItems, candidate, context, span),
@@ -83,8 +83,8 @@ internal static class PyContainment
             PyDefaultDict defaultDict => new ValueTask<bool>(defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _)),
             PyChainMap chainMap => new ValueTask<bool>(chainMap.ContainsKey(candidate, span)),
             PySet set => new ValueTask<bool>(ContainsInSet(set, candidate, span)),
-            LythonRuntime.DictKeysView keysView => new ValueTask<bool>(ContainsInValidatedView(keysView, candidate, span)),
-            LythonRuntime.DictItemsView itemsView => new ValueTask<bool>(ContainsInValidatedView(itemsView, candidate, span)),
+            LythonRuntime.DictKeysView keysView => ContainsInDictKeysAsync(keysView, candidate, context, span),
+            LythonRuntime.DictItemsView itemsView => ContainsInDictItemsAsync(itemsView, candidate, context, span),
             ChainMapKeysView chainKeys => new ValueTask<bool>(chainKeys.Owner.ContainsKey(candidate, span)),
             ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocolsAsync(chainValues, candidate, context, span),
             ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocolsAsync(chainItems, candidate, context, span),
@@ -116,33 +116,6 @@ internal static class PyContainment
         }
     }
 
-    // Dict key/item views hash their candidates like CPython instead of
-    // scanning past unhashable ones, so validate first through the shared
-    // key helper (which names the inner type for tuples).
-    private static bool ContainsInValidatedView(IEnumerable<object> view, object candidate, LythonSourceSpan span)
-    {
-        LythonRuntime.ValidateDictionaryKey(candidate, span);
-        return ContainsInTypedSequence(view, candidate);
-    }
-
-    // R13b: view membership consults member == like the sequence scans so
-    // custom keys and values match through the ambient push at the
-    // WithProtocols entry.
-    private static bool ContainsInValidatedViewWithProtocols(IEnumerable<object> view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        LythonRuntime.ValidateDictionaryKey(candidate, span);
-        foreach (var item in view)
-        {
-            PyStructuralGuard.NoteWork(context, span);
-            if (LythonRuntime.MembershipEquals(item, candidate, context, span))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // ChainMap view membership scans the underlying mappings directly instead
     // of materializing a merged snapshot per check. Keys consult containment
     // (never factories); items stop at the first map holding the key like a
@@ -166,11 +139,11 @@ internal static class PyContainment
 
     private static bool ContainsInChainMapItems(ChainMapItemsView view, object candidate, LythonSourceSpan span)
     {
-        LythonRuntime.ValidateDictionaryKey(candidate, span);
-        if (candidate is not PyTuple pair || pair.Count != 2)
+        if (!PyTupleLike.TryGetItems(candidate, out var pair) || pair.Count != 2)
         {
             return false;
         }
+        LythonRuntime.ValidateDictionaryKey(pair[0], span);
 
         foreach (var map in view.Owner.Maps)
         {
@@ -203,11 +176,11 @@ internal static class PyContainment
 
     private static bool ContainsInChainMapItemsWithProtocols(ChainMapItemsView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        LythonRuntime.ValidateDictionaryKey(candidate, span);
-        if (candidate is not PyTuple pair || pair.Count != 2)
+        if (!PyTupleLike.TryGetItems(candidate, out var pair) || pair.Count != 2)
         {
             return false;
         }
+        LythonRuntime.ValidateDictionaryKey(pair[0], span);
 
         foreach (var map in view.Owner.Maps)
         {
@@ -240,11 +213,11 @@ internal static class PyContainment
 
     private static async ValueTask<bool> ContainsInChainMapItemsWithProtocolsAsync(ChainMapItemsView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        LythonRuntime.ValidateDictionaryKey(candidate, span);
-        if (candidate is not PyTuple pair || pair.Count != 2)
+        if (!PyTupleLike.TryGetItems(candidate, out var pair) || pair.Count != 2)
         {
             return false;
         }
+        LythonRuntime.ValidateDictionaryKey(pair[0], span);
 
         foreach (var map in view.Owner.Maps)
         {

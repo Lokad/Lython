@@ -1,12 +1,21 @@
 # Benchmark experimental history
 
+The [dictionary-view milestone](results/2026-11-05-dictionary-view-relations/README.md)
+consolidates24 relation bodies, removes one raw equality set/two membership scans
+and native items-to-items tuple records. Focus372public/132internal per actual11/10
+passes. B30359.07s/B30459.02s all gates; final native-view elapsed−80.17%/−79.28%,
+current spread4.49%, still5.76× CPython. Complete text mixed; no broad CPU/allocation
+claim. The reflected-dispatch and terminal contains failures stay preserved.
+Mapping extraction/duplicate/rest defects and full view qualification remain open.
+
 The [Counter key-traversal milestone](results/2026-11-05-counter-key-traversal/README.md)
 removes four temporary key HashSets/three unions and corrects Python effects,
 ordering, aliases and source mutation with funded live traversal. Focused187public/
 104internal per actual11/10 pass. Final59.12s source pair: native-key Counter
 elapsed−10.62%/−12.10%, current spread1.65%; complete CSV+0.84%/−0.55% mixed.
 Original59.03s prototype and failed conditions preserved; no broad CPU/allocation
-claim. E3b storage coupling and full qualification of this later source stay open.
+claim. Counter delivery is now fully qualified: cached42119563175 GREEN/all8. E3b storage
+coupling stays open.
 
 The [contextual nested-hash milestone](results/2026-11-05-nested-hash-protocols/README.md)
 corrects slice/defining-dataclass hash protocols, admits field snapshots before

@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "353b28b1 plus final E3b1 including terminal explicit-contains completion checks",
+  "coreSHA256": {
+    "candidate": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b",
+    "control": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b",
+    "reference": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "ef3222eb349d8385df24c6001b9f2bf57bdbd6e47501cdea75161a52829cf9ce",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs": "9c02ecd7f77fa781496ec528629812d47ddb7c1dc2b685bc18ff23ed5c2fac29",
+    "src/Lokad.Lython/Runtime/PyContainment.Views.cs": "1efa3ed43f370102e79d216c5149763c8586fd6aef2cfdfc898ae43393270899",
+    "src/Lokad.Lython/Runtime/PyContainment.cs": "ad30fb2cf53f1b2c1796730cc9e03608839018cf6940b454a844e3b04d60a954",
+    "src/Lokad.Lython/Runtime/PyEquality.cs": "9492fe88db07c7497ee6f662e70c3ade3dd99c64dd2ecff208411dca2737bc6f",
+    "tests/Lokad.Lython.PublicApi.Tests/DictionaryViewRelationTests.cs": "13979426da57df6cc384e60a0add86925c18f99a773b4f6fab8ab705a5488164",
+    "tests/Lokad.Lython.Tests/DictionaryViewTraversalOwnershipTests.cs": "c2b8eb620d9f8090b8fe77eda94ea59221ae138c8296307a78d1df73c5f7881c"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused372public/132internal per actual11/10, zero-warning/error build. Counter baseline353b28b1 has delivery42119563175 in progress; not current view qualification. Correct native-key/native-value baseline for elapsed control; incorrect callback/unhashable-value baselines excluded."
+}

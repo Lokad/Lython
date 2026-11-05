@@ -587,6 +587,9 @@ internal sealed partial class LythonRuntime
             return invocation.Value;
         }
 
+        if (PyContainment.IsSetView(left) || PyContainment.IsSetView(right))
+            return await PyContainment.CompareSetViewsAsync(left, right, "__eq__", context, span, true).ConfigureAwait(false);
+
         // N01: no ambient scope spans awaits here. Async element paths carry
         // ExecutionContext explicitly; the synchronous fallback below needs
         // ambient only for its own synchronous duration.
@@ -1382,6 +1385,10 @@ internal sealed partial class LythonRuntime
                 (method is "__le__" or "__ge__" || !PyEquality.CountersEqual(leftCounter, rightCounter));
         }
 
+        if ((PyContainment.IsSetView(left) || PyContainment.IsSetView(right)) &&
+            PyContainment.IsSetViewOperand(left) && PyContainment.IsSetViewOperand(right))
+            return PyContainment.CompareSetViews(left, right, method, context, span);
+
         // A NotImplemented answer declines like a missing slot (CPython reflected
         // dispatch): the root object slots always decline, so unsupported orderings
         // keep the relational fallback instead of reading NotImplemented as a value.
@@ -1571,6 +1578,10 @@ internal sealed partial class LythonRuntime
             return await MultisetCompareAsync(leftCounter, rightCounter, operation, context, span).ConfigureAwait(false) &&
                 (methods.Left is "__le__" or "__ge__" || !await CountersEqualAsync(leftCounter, rightCounter, context, span).ConfigureAwait(false));
         }
+
+        if ((PyContainment.IsSetView(left) || PyContainment.IsSetView(right)) &&
+            PyContainment.IsSetViewOperand(left) && PyContainment.IsSetViewOperand(right))
+            return await PyContainment.CompareSetViewsAsync(left, right, methods.Left, context, span, true).ConfigureAwait(false);
 
         // Same precedence as the sync twin above; a successful result flows
         // back raw, otherwise the relational fallback stays a bool.

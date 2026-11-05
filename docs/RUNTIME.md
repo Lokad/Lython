@@ -354,8 +354,10 @@ Dictionary write-key equality also requires synchronous completion. Native-key
 lookup equality can suspend under RunAsync; string, integer and tuple lookups
 share the same resolution and current execution context.
 
-Counter comparisons traverse both live key sources in Python order; value
-comparisons and truth tests can suspend under RunAsync. Each active traversal
+Counter comparisons traverse both live key sources in Python order. Dictionary
+view relations use dictionary membership, comparing stored pairs directly for two
+items views. Value comparisons and truth tests can suspend under RunAsync. Each
+active traversal
 conservatively reserves the source backing until callbacks and cleanup finish,
 including after a callback clears the source. This can require additional shared
 allowance even when a particular callback does not mutate it.

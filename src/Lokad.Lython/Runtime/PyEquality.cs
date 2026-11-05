@@ -37,6 +37,13 @@ internal static class PyEquality
             }
         }
 
+        if (PyContainment.IsSetView(left) || PyContainment.IsSetView(right))
+        {
+            var context = PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
+            return PyContainment.CompareSetViews(left, right, "__eq__", context,
+                PyStructuralGuard.AmbientSpan ?? new LythonSourceSpan(0, 0, 0, 0));
+        }
+
         // Keep identity after numeric comparison: a boxed NaN must remain unequal to
         // itself even when both operands happen to reference the same boxed object.
         if (ReferenceEquals(left, right))
@@ -215,21 +222,6 @@ internal static class PyEquality
                             || leftRange.Step == rightRange.Step)));
         }
 
-        if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView)
-        {
-            using (PyStructuralGuard.EnterPair(left, right, null))
-            {
-                // Dict keys and items views compare as sets like CPython;
-                // anything else falls through to the default comparison.
-                if (!IsSetComparableViewOperand(left) || !IsSetComparableViewOperand(right))
-                {
-                    return false;
-                }
-
-                var leftItems = new HashSet<object>(ViewComparisonItems(left), PyValueComparer.Instance);
-                return leftItems.SetEquals(ViewComparisonItems(right));
-            }
-        }
 
         if (left is PyInstance leftInstance && right is PyInstance rightInstance)
         {
@@ -287,18 +279,6 @@ internal static class PyEquality
         return Equals(left, right);
     }
 
-    private static bool IsSetComparableViewOperand(object value)
-        => value is PySet or LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView;
-
-    private static IEnumerable<object> ViewComparisonItems(object value) => value switch
-    {
-        PySet set => set,
-        LythonRuntime.DictKeysView keys => keys,
-        LythonRuntime.DictItemsView items => items,
-        ChainMapKeysView chainKeys => chainKeys,
-        ChainMapItemsView chainItems => chainItems,
-        _ => [],
-    };
 
     private static bool BoundMethodsEqual(object left, object right)
     {

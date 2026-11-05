@@ -1,0 +1,18 @@
+{
+  "sourceRevision": "353b28b1 plus final E3b1 including terminal explicit-contains completion checks",
+  "sourceFilesVerified": true,
+  "coreSHA256": {
+    "candidate": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b",
+    "control": "f2078b20384d8c9d8ccad6f8f99a2b4b4b984ee46d5f08bd1a7d6b1d0506ad6b",
+    "reference": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7"
+  },
+  "focusedInternalPerActualTarget": 132,
+  "focusedPublicPerActualTarget": 372,
+  "targets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "qualification": "Focused Release only for view source. Baseline Counter353b28b1 independently qualifies cached42119563175 GREEN/all8; that result does not qualify the later view changes.",
+  "retention": "Retain one view relation/lookup path, no temporary equality set or native item tuples; remove24 duplicate relation bodies and two membership scans. Final59.02s pair native view elapsed-80.17/-79.28%, current spread4.49%; initial-80.68/-81.05%, spread1.92%. Complete text mixed and current controls variable; no broad CPU/allocation/latency claim.",
+  "limitations": "Conservative retained-source backing admission may deny earlier. Protocol-key callbacks and set membership retain existing sync-only boundaries; native dictionary lookups and view values are genuinely async. Mapping-rest/dynamic duplicate/extraction-phase defects and dataclass storage coupling remain E3b2/next storage source gate; full view delivery pending."
+}

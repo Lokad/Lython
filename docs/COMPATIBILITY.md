@@ -78,6 +78,9 @@ copies and set pop reuse stored keys without rehashing. Nested unhashability nam
 the failing value. Equality candidates use the actual Python hash, independently
 of the internal structural index. Set add preserves positive equality even if its
 callback clears the set; membership/removal require a current retained match.
+Dictionary-view membership and comparisons use dictionary key protocols; item
+values may be unhashable. Native view methods preserve NotImplemented and
+reflected ChainMap-view behavior.
 Counter algebra uses dictionary key protocols, and comparisons visit both sources
 in order, treating missing counts as zero and observing source mutation. Ordinary
 Counter ordering operators and explicit methods use the same value semantics.

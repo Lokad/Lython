@@ -1,0 +1,44 @@
+{
+  "complete": true,
+  "elapsedSeconds": 59.066798749845475,
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 2.278922776119403,
+        "control": 2.3656966153846155,
+        "CPython": 1.1745981875,
+        "reference": 2.3064139848484846
+      },
+      "ratio": 1.9401722226132783,
+      "referenceDeltaPercent": -1.1919459780281971,
+      "controlPercent": 3.8076691397578966,
+      "iqrPercent": {
+        "candidate": 1.0267963341098385,
+        "control": 0.5891040843523181,
+        "CPython": 0.711039030315213,
+        "reference": 0.7847312596112633
+      }
+    },
+    {
+      "case": "pure.dict-view-validation.256",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 0.4525957380952381,
+        "control": 0.44390688563049857,
+        "CPython": 0.07939490364725095,
+        "reference": 2.342933328125
+      },
+      "ratio": 5.700564108070547,
+      "referenceDeltaPercent": -80.68251739551458,
+      "controlPercent": -1.9197822103466655,
+      "iqrPercent": {
+        "candidate": 2.5566183813464307,
+        "control": 2.1722059647287524,
+        "CPython": 1.9098840126076566,
+        "reference": 5.585176802906396
+      }
+    }
+  ]
+}
