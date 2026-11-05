@@ -34,7 +34,9 @@ checkpoint-count/location relaxation.
 
 The earlier D57 layout is fully withdrawn and D56 source is separately qualified
 via42065949621/all8; that receipt does not qualify D59. Batch Windows/Ubuntu,
-original stress and installed consumers at this retained delivery. A representative
+original stress and installed consumers at this retained delivery:
+[CI42074585232](https://github.com/Lokad/Lython/actions/runs/42074585232) is running
+on retained13d69be6. A representative
 CPython refresh covers the coherent retained group; no extra isolated D59 timing.
 Publication remains postponed; broader whole-script performance work stays open.
 

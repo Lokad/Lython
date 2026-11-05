@@ -1,0 +1,1118 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 3fdf03cb..d9623412 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -497,6 +497,7 @@ internal sealed partial class ExecutableCodeObject
+         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
+         IsFunctionScope = isFunctionScope;
+         OperandCapacity = operandLayout.MaximumDepth;
++        LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
+         NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
+         if (NativeBody is null) ExecutableStackLayout.ForwardValues(this, blocks);
+         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
+@@ -554,6 +555,7 @@ internal sealed partial class ExecutableCodeObject
+ 
+     public int OperandCapacity { get; }
+     public int FirstTemporarySlot => LocalNames.Count;
++    public int LastOwnedTemporarySlot { get; }
+     public int ValueStorageCapacity => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+ 
+     public ExecutableNativeBody? NativeBody { get; }
+diff --git a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+index da1f701b..4c371d4f 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableStackLayout.cs
+@@ -4,7 +4,8 @@ namespace Lokad.Lython.Frontend;
+ 
+ // Operand shapes are a compiler invariant. Guest iteration, expansion and
+ // suspension change values, never the number of executable operand slots.
+-internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot)
++internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepths, int FirstTemporarySlot,
++    int LastOwnedTemporarySlot)
+ {
+     internal static ExecutableInstruction[] Linearize(IReadOnlyList<ExecutableBasicBlock> blocks,
+         ExecutableStackLayout layout, out int[] offsets)
+@@ -51,6 +52,9 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+         var depths = new int?[blocks.Count];
+         var pending = new Queue<int>();
+         var maximum = initialDepth;
++        // Generator expressions arrive with their acquired outer cursor. Other
++        // guest values never expose the interpreter's private temporary wrappers.
++        var lastOwnedTemporarySlot = initialDepth == 0 ? -1 : checked(firstTemporarySlot + initialDepth - 1);
+         Enter(entryBlock, initialDepth);
+         while (pending.TryDequeue(out var blockIndex))
+         {
+@@ -81,6 +85,19 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+                 instructions[instructionIndex] = instruction.WithStorageSlots(
+                     checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
+                     checked(firstTemporarySlot + depth));
++                var ownedSlot = instruction.OpCode switch
++                {
++                    ExecutableOpCode.GetIter => inputStart,
++                    // Conservatively include every duplicate, without another
++                    // value-liveness analysis or runtime resource registry.
++                    ExecutableOpCode.Dup => resultSlot + 1,
++                    ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
++                        ExecutableStartComprehension or ExecutableStartCall or
++                        ExecutableStartClassHeader or ExecutableStartFormattedString => resultSlot,
++                    _ => -1
++                };
++                if (ownedSlot >= 0)
++                    lastOwnedTemporarySlot = Math.Max(lastOwnedTemporarySlot, checked(firstTemporarySlot + ownedSlot));
+                 maximum = Math.Max(maximum, depth);
+                 switch (instruction.OpCode)
+                 {
+@@ -112,7 +129,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
+             // existing interpreter never falls through to the next stored block.
+         CompleteBlock:;
+         }
+-        return new(maximum, depths, firstTemporarySlot);
++        return new(maximum, depths, firstTemporarySlot, lastOwnedTemporarySlot);
+ 
+         void Enter(int block, int depth)
+         {
+diff --git a/src/Lokad.Lython/Frontend/StaticAnalysisContext.cs b/src/Lokad.Lython/Frontend/StaticAnalysisContext.cs
+index 38579379..66f917d7 100644
+--- a/src/Lokad.Lython/Frontend/StaticAnalysisContext.cs
++++ b/src/Lokad.Lython/Frontend/StaticAnalysisContext.cs
+@@ -24,11 +24,11 @@ internal sealed class StaticAnalysisContext : IDisposable
+     internal ILythonMemoryBudget RegexMemoryOwner => _regexOwner ??=
+         (MemoryGovernor?.Budget ?? new LythonMemoryBudget()).CreateScope();
+ 
+-    internal void ReserveRegexStorage(long bytes)
++    internal void ReserveRegexStorage(long bytes, LythonSourceSpan span)
+     {
+         if (!RegexMemoryOwner.TryReserve(bytes, out _))
+-            throw MemoryGovernor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, null)
+-                ?? Runtime.RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", null,
++            throw MemoryGovernor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, span)
++                ?? Runtime.RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", span,
+                     LythonFailureReason.SharedMemoryAllowance, requested: bytes);
+     }
+ 
+diff --git a/src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs b/src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs
+index 4bbac853..852deef3 100644
+--- a/src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs
++++ b/src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs
+@@ -166,7 +166,7 @@ internal static class StaticRegexReturnResolver
+             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
+             textValue.Kind == AbstractValueKind.String &&
+             TryGetWindow(arguments, flagsPosition + 1, textValue.RequireText(), bindings, out var window) &&
+-            TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, out var regex))
++            TryCompileRegex(patternSummary.PatternText, patternSummary.Flags ?? GetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings), bindings, span, out var regex))
+         {
+             var text = textValue.RequireText();
+             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
+@@ -197,7 +197,7 @@ internal static class StaticRegexReturnResolver
+             TryGetArgument(arguments, textPosition, textKeyword, bindings, out _, out var textValue) &&
+             textValue.Kind == AbstractValueKind.String &&
+             TryGetWindow(arguments, textPosition + 1, textValue.RequireText(), bindings, out var window) &&
+-            TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, out var regex))
++            TryCompileRegex(patternSummary.PatternText, effectiveFlags, bindings, span, out var regex))
+         {
+             var text = textValue.RequireText();
+             using var inputStorage = bindings.AnalysisContext?.MemoryGovernor?.ReserveTemporary(32L + 3L * text.Length, span);
+@@ -226,7 +226,7 @@ internal static class StaticRegexReturnResolver
+         out bool flagsKnown)
+     {
+         flagsKnown = TryGetRegexOptions(arguments, flagsPosition, flagsKeyword, bindings, out var patternFlags);
+-        if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out _, out var patternValue))
++        if (!TryGetArgument(arguments, patternPosition, patternKeyword, bindings, out var patternExpression, out var patternValue))
+         {
+             summary = default;
+             return false;
+@@ -244,13 +244,14 @@ internal static class StaticRegexReturnResolver
+             return false;
+         }
+ 
+-        summary = CreateRegexPatternSummary(patternValue.RequireText(), flagsKnown ? patternFlags : null, bindings);
++        summary = CreateRegexPatternSummary(patternValue.RequireText(), flagsKnown ? patternFlags : null, bindings,
++            DiagnosticSpan(patternExpression, patternValue));
+         return true;
+     }
+ 
+-    private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings)
++    private static AbstractRegexPatternSummary CreateRegexPatternSummary(string pattern, int? flags, AbstractState bindings, LythonSourceSpan span)
+     {
+-        if (flags is { } known && TryCompileRegex(pattern, known, bindings, out var compiled))
++        if (flags is { } known && TryCompileRegex(pattern, known, bindings, span, out var compiled))
+             return new AbstractRegexPatternSummary(pattern, compiled.Program.CaptureSlotCount, compiled.NamedGroups, compiled.Program.Flags);
+         return new AbstractRegexPatternSummary(pattern, null, new Dictionary<PyString, int>());
+     }
+@@ -314,7 +315,7 @@ internal static class StaticRegexReturnResolver
+             ? options
+             : 0;
+ 
+-    private static bool TryCompileRegex(string pattern, int options, AbstractState bindings,
++    private static bool TryCompileRegex(string pattern, int options, AbstractState bindings, LythonSourceSpan span,
+         [MaybeNullWhen(false)] out StaticAnalysisContext.AnalyzedRegexPattern regex)
+     {
+         var analysis = bindings.AnalysisContext;
+@@ -328,14 +329,14 @@ internal static class StaticRegexReturnResolver
+         {
+             // Encoded input plus cache/owned-handle capacity and growth overlap.
+             var bytes = 256L + 3L * pattern.Length;
+-            analysis.ReserveRegexStorage(bytes);
++            analysis.ReserveRegexStorage(bytes, span);
+             var encoded = Encoding.UTF8.GetBytes(pattern);
+             var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
+-                analysis.RegexMemoryOwner, token), governor, token, null);
++                analysis.RegexMemoryOwner, token), governor, token, span, operationName: "Regex pattern compilation");
+             try
+             {
+                 analysis.OwnRegexPattern(program);
+-                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, null));
++                regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, span));
+                 // Inputs remain funded until every analysis pattern handle ends.
+                 analysis.RegexPatterns[(pattern, options)] = regex;
+                 analysis.RegexPatterns[(pattern, program.Flags)] = regex;
+@@ -385,8 +386,9 @@ internal static class StaticRegexReturnResolver
+         var analysis = bindings.AnalysisContext!;
+         var token = analysis.CancellationToken;
+         using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
+-            analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span);
++            analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
++            operationName: "Regex constant-subject preparation");
+         return LythonRuntime.RegexCompiler.ProviderCall(() => subject.Match((LythonRegexMatchMode)operation, token),
+-            analysis.MemoryGovernor, token, span) is not null;
++            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching") is not null;
+     }
+ }
+diff --git a/src/Lokad.Lython/Public/LythonEngine.cs b/src/Lokad.Lython/Public/LythonEngine.cs
+index e819f19e..6e8525c4 100644
+--- a/src/Lokad.Lython/Public/LythonEngine.cs
++++ b/src/Lokad.Lython/Public/LythonEngine.cs
+@@ -52,7 +52,7 @@ public sealed class LythonEngine
+         }
+         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.SharedMemoryAllowance)
+         {
+-            return Denied(error.Attribution, error.Span);
++            return Denied(error.Attribution, error.Span, error.Message);
+         }
+         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.Cancelled)
+         {
+@@ -69,10 +69,11 @@ public sealed class LythonEngine
+                 .OwnMemoryScope(owner, memoryBudget);
+         }
+ 
+-        LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null)
++        LythonCompiledScript Denied(LythonFailureAttribution? attribution = null, LythonSourceSpan? span = null,
++            string message = "Shared memory budget refused compilation storage.")
+         {
+             IReadOnlyList<LythonDiagnostic> denied = [new("LA0008",
+-                "Shared memory budget refused compilation storage.", LythonDiagnosticSeverity.Error, span)];
++                message, LythonDiagnosticSeverity.Error, span)];
+             LythonExecutionResult Failure() => LythonExecutionResult.CompilationFailed(1, "", "", denied,
+                 attribution ?? new(LythonFailureReason.SharedMemoryAllowance));
+             return new LythonCompiledScript(source, denied, false, (_, _) => Failure(),
+diff --git a/src/Lokad.Lython/Runtime/Calls/CallExpansion.cs b/src/Lokad.Lython/Runtime/Calls/CallExpansion.cs
+index 9b3427f0..825493da 100644
+--- a/src/Lokad.Lython/Runtime/Calls/CallExpansion.cs
++++ b/src/Lokad.Lython/Runtime/Calls/CallExpansion.cs
+@@ -442,7 +442,7 @@ internal static class CallExpansion
+         }
+     }
+ 
+-    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
++    internal sealed class CallArgumentAccumulator : ExecutableTemporaryValue
+     {
+ 
+         private CallArgumentValue[] _values;
+@@ -588,7 +588,7 @@ internal static class CallExpansion
+             finally { Dispose(); }
+         }
+ 
+-        public void Dispose()
++        public override void Dispose()
+         {
+             _values = [];
+             _count = 0;
+diff --git a/src/Lokad.Lython/Runtime/ExecutionState.cs b/src/Lokad.Lython/Runtime/ExecutionState.cs
+index e23cd201..24238570 100644
+--- a/src/Lokad.Lython/Runtime/ExecutionState.cs
++++ b/src/Lokad.Lython/Runtime/ExecutionState.cs
+@@ -294,7 +294,11 @@ internal sealed partial class ExecutionState
+             finally
+             {
+                 try { CloseHashes(); }
+-                finally { CloseSubprocessCompletions(); }
++                finally
++                {
++                    try { CloseSubprocessCompletions(); }
++                    finally { MemoryGovernor.EndFunctionWorkspaceReuse(); }
++                }
+             }
+         }
+     }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs
+index 8b714ceb..958c29e2 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs
+@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
+         {
+             PyChainMap chainMap => LenChainMap(chainMap, span, context),
+             PyRange range => range.Length,
++            PyString text => new BigInteger(text.GetCharacterCount(context.State.CancellationToken, span)),
+             IPySizedValue sized => new BigInteger(sized.Length),
+             IReadOnlyCollection<object> collection => new BigInteger(collection.Count),
+             System.Collections.ICollection collection => new BigInteger(collection.Count),
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index 7cc41386..f21f031a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -10,75 +10,6 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
+-    // Pooled binder value slots for the common layout widths. The consumer
+-    // bound Values remain invocation-owned: nonmirrored executable frames borrow
+-    // them through completion, other frames copy refs out, and dataclass
+-    // dunders read transiently. Captures/exposed locals retain values or cells,
+-    // never this array. ThreadStatic plus take-null with keep-first
+-    // stays safe under recursion, suspension and parallel tests; slots are
+-    // cleared before caching (fresh arrays start null too). Only the user-function paths
+-    // return boxes; colder paths simply do not cache.
+-    [ThreadStatic]
+-    private static object[]? _pooledOneBoundValue;
+-    [ThreadStatic]
+-    private static object[]? _pooledTwoBoundValues;
+-    [ThreadStatic]
+-    private static object[]? _pooledThreeBoundValues;
+-
+-    private static object[] RentBoundValues(int count)
+-    {
+-        if (count == 1)
+-        {
+-            var rented = _pooledOneBoundValue;
+-            if (rented is not null)
+-            {
+-                _pooledOneBoundValue = null;
+-                return rented;
+-            }
+-            return new object[1];
+-        }
+-        if (count == 2)
+-        {
+-            var rented = _pooledTwoBoundValues;
+-            if (rented is not null)
+-            {
+-                _pooledTwoBoundValues = null;
+-                return rented;
+-            }
+-            return new object[2];
+-        }
+-        if (count == 3)
+-        {
+-            var rentedThree = _pooledThreeBoundValues;
+-            if (rentedThree is not null)
+-            {
+-                _pooledThreeBoundValues = null;
+-                return rentedThree;
+-            }
+-            return new object[3];
+-        }
+-        return new object[count];
+-    }
+-
+-    internal static void ReturnBoundValues(object[] values)
+-    {
+-        if (values.Length == 1)
+-        {
+-            Array.Clear(values);
+-            _pooledOneBoundValue ??= values;
+-        }
+-        else if (values.Length == 2)
+-        {
+-            Array.Clear(values);
+-            _pooledTwoBoundValues ??= values;
+-        }
+-        else if (values.Length == 3)
+-        {
+-            Array.Clear(values);
+-            _pooledThreeBoundValues ??= values;
+-        }
+-    }
+-
+     // The function invocation owns this buffer through default lookup and body
+     // completion. Values/cells/snapshots have their own retained ownership.
+     internal static void ReturnBoundArguments(BoundCallArguments bound)
+@@ -86,39 +17,28 @@ internal sealed partial class LythonRuntime
+ 
+     private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, long storageBytes)
+     {
+-        try
+-        {
+-            if (values.Length > 3) Array.Clear(values);
+-            ReturnBoundValues(values);
+-        }
+-        finally { storageOwner?.Release(storageBytes); }
++        if (storageOwner is not null) storageOwner.ReturnFunctionWorkspace(values, storageBytes);
++        else Array.Clear(values);
+     }
+ 
+     private static BoundCallArguments RentFunctionArgumentStorage(
+-        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor? governor, int? storageCapacity)
++        FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor governor, int? storageCapacity)
+     {
+         var parameterCount = plan.LayoutParameterNames.Count;
+         var capacity = storageCapacity ?? parameterCount;
+         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
+-        // Existing one/two/three-slot cleared pools are bounded control storage.
+-        // Unpooled executable storage covers capacity, flags and metadata before
+-        // allocation, without a separate per-call reservation object.
+-        var owner = storageCapacity is not null && capacity > 3
+-            ? governor ?? throw new ArgumentNullException(nameof(governor)) : null;
+-        var bytes = owner is null ? 0 : 64L + 16L * capacity;
+-        owner?.Reserve(bytes, span);
+-        object[] values = [];
++        // One execution-owned cleared workspace covers final capacity, metadata
++        // and presence overflow. Active callers retain it through real cleanup;
++        // only returned idle storage can be reused, including after suspension.
++        var values = governor.RentFunctionWorkspace(capacity, span);
++        var bytes = MemoryGovernor.FunctionWorkspaceBytes(capacity);
+         try
+         {
+-            values = capacity == 0 ? [] : RentBoundValues(capacity);
+-            var bound = new BoundCallArguments(values, new ArgumentPresence(parameterCount), owner, bytes);
+-            owner?.Commit(bytes);
+-            return bound;
++            return new BoundCallArguments(values, new ArgumentPresence(parameterCount), governor, bytes);
+         }
+         catch
+         {
+-            ReturnBoundValues(values);
+-            owner?.ReleaseReserved(bytes);
++            governor.ReturnFunctionWorkspace(values, bytes);
+             throw;
+         }
+     }
+@@ -167,8 +87,8 @@ internal sealed partial class LythonRuntime
+     // Eligible signatures contain only positional parameters. Read existing
+     // operands once into owned bound storage, before a body can suspend.
+     internal static BoundCallArguments BindPositionalFunctionArguments(
+-        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver = null,
+-        MemoryGovernor? governor = null, int? storageCapacity = null)
++        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver,
++        MemoryGovernor governor, int? storageCapacity = null)
+     {
+         var storage = RentFunctionArgumentStorage(plan, span, governor, storageCapacity);
+         var values = storage.Values;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs
+index 4b4e315d..18b554b6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs
+@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
+         // This is a lexical binding lifetime, not an invocation frame. Eager
+         // expressions execute with the original context; closures retain the
+         // real iteration namespace while enclosing cells stay untouched.
+-        internal sealed class InlinedComprehensionScope : IExecutableTemporaryValue
++        internal sealed class InlinedComprehensionScope : ExecutableTemporaryValue
+         {
+ 
+             private readonly ExecutionContext _context;
+@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
+                 context.FunctionClosureContext = Bindings.FunctionClosureContext;
+             }
+ 
+-            public void Dispose()
++            public override void Dispose()
+             {
+                 _context._inlinedComprehension = Previous;
+                 _context.FunctionClosureContext = _previousClosure;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs
+index b7e2b807..634fc792 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs
+@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
+                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _instructionIndex, out _))
+                 return true;
+ 
+-            AbandonFrame(span);
+             _frameReturnValue = signal.Value;
+             _hasFrameReturn = true;
+             return false;
+@@ -23,7 +22,6 @@ internal sealed partial class LythonRuntime
+                 new PendingControl(signal), span, ref _pendingAbrupt, ref _instructionIndex, out _))
+                 return true;
+ 
+-            AbandonFrame(span);
+             return false;
+         }
+ 
+@@ -40,14 +38,12 @@ internal sealed partial class LythonRuntime
+             // rethrow the original CLR exception instead of throwing it anew.
+             if (_codeObject.ExceptionRegions.Count == 0)
+             {
+-                AbandonFrame(span);
+                 return false;
+             }
+             if (!TryHandleAbrupt(_codeObject, _context, ref _stack, _instructionIndex,
+                 new PendingException(ex), span, ref _pendingAbrupt, ref _instructionIndex, out var matchedRegion))
+             {
+                 var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
+-                AbandonFrame(span);
+                 if (!ReferenceEquals(failure, ex)) throw failure;
+                 return false;
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+index 0468d833..9f696d47 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
+                 if (!HasYield && !HasPendingCall)
+                 {
+                     _preparedTypeSubscription = null;
+-                    _stack.RetireTo(_codeObject.FirstTemporarySlot);
++                    AbandonFrame();
+                     _stack.ReleaseStorage();
+                 }
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 1d8d8773..0769bdbd 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -150,12 +150,20 @@ internal sealed partial class LythonRuntime
+         // Abandoning the frame drops its saved handler chain and restores the
+         // active exception from frame entry, like CPython deleting handler
+         // names and restoring the previous exception on frame exit.
+-        private void AbandonFrame(LythonSourceSpan span)
++        private void AbandonFrame()
+         {
+-            _stack.RetireTo(_codeObject.FirstTemporarySlot);
+-            _savedActiveExceptions?.Clear();
+-            AbandonActiveHandlerVars(_context, span);
+-            _context.State.SetCurrentException(_entryActiveException);
++            try { _stack.RetireTo(_codeObject.FirstTemporarySlot); }
++            finally
++            {
++                _savedActiveExceptions?.Clear();
++                try
++                {
++                    if (_context.ActiveHandlerVariables is { Count: > 0 })
++                        AbandonActiveHandlerVars(_context,
++                            CurrentInstructionSpan ?? _codeObject.Instructions[^1].Span);
++                }
++                finally { _context.State.SetCurrentException(_entryActiveException); }
++            }
+         }
+ 
+         // Pops saves for suites this propagation abandoned: a handler stays
+@@ -525,7 +533,6 @@ internal sealed partial class LythonRuntime
+                 return true;
+             }
+ 
+-            AbandonFrame(span);
+             _frameReturnValue = value;
+             _hasFrameReturn = true;
+             return true;
+@@ -707,7 +714,7 @@ internal sealed partial class LythonRuntime
+                     if (!HasYield && !HasPendingCall)
+                     {
+                         _preparedTypeSubscription = null;
+-                        _stack.RetireTo(_codeObject.FirstTemporarySlot);
++                        AbandonFrame();
+                     }
+                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }
+                     finally { if (!HasYield && !HasPendingCall) _stack.ReleaseStorage(); }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+index 2651c47b..05cd08e4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -5,7 +5,10 @@ using Lokad.Lython.Runtime.Text;
+ namespace Lokad.Lython.Runtime;
+ 
+ // Only interpreter-owned storage is disposed during operand-stack unwinding.
+-internal interface IExecutableTemporaryValue : IDisposable;
++internal abstract class ExecutableTemporaryValue : IDisposable
++{
++    public abstract void Dispose();
++}
+ 
+ internal sealed partial class LythonRuntime
+ {
+@@ -40,7 +43,7 @@ internal sealed partial class LythonRuntime
+                 }
+                 case ExecutableFinishComprehension:
+                     var completed = _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
+-                    ((IExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
++                    ((ExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
+                     _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, completed);
+                     break;
+                 case ExecutableStartDisplay start:
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index f6981754..7498ad07 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -253,15 +253,17 @@ internal sealed partial class LythonRuntime
+         private readonly ExecutionContext _context;
+         private long _ownedStorageBytes;
+         private readonly int _firstTemporarySlot;
++        private readonly int _lastOwnedTemporarySlot;
+         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
+         internal bool DeferAsyncDisposal;
+         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
+ 
+-        public ExecutableValueStorage(int capacity, int firstTemporarySlot, ExecutionContext context,
++        public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
+             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
+         {
+             _context = context;
+             _firstTemporarySlot = firstTemporarySlot;
++            _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
+             _nativeIterationPositions = null;
+             _memberCaches = null;
+             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
+@@ -388,7 +390,9 @@ internal sealed partial class LythonRuntime
+             }
+ 
+             var newCount = liveExtent;
+-            for (var i = LiveExtent - 1; i >= newCount; i--)
++            // Compiler-owned wrappers cannot occur above this conservative bound.
++            // Still clear every retired guest reference after private cleanup.
++            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
+             {
+                 if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
+                 {
+@@ -399,7 +403,7 @@ internal sealed partial class LythonRuntime
+                     // disposal can fail; retrying the trim must not enqueue twice.
+                     _items[i] = null!;
+                 }
+-                else if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
++                else if (_items[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
+             }
+             Array.Clear(_items, newCount, LiveExtent - newCount);
+             LiveExtent = newCount;
+@@ -547,7 +551,7 @@ internal sealed partial class LythonRuntime
+                 + 48L * codeObject.CapturedLocalSlots.Count);
+         // The compiler-sized operand lifetime funds private frame arrays before any
+         // are allocated. Escaping cells acquire their separate retained charge.
+-        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot,
++        var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
+             context, span, bytes, argumentsAreLocals ? boundArguments.Values : null);
+         try
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+index 4698dd5e..5753d381 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs
+@@ -92,7 +92,8 @@ internal sealed partial class LythonRuntime
+             _span = span;
+             OwnerMemoryGovernor = frame.MemoryGovernor;
+             // EstimateStorage already funds this retained frame's metadata.
+-            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot, frame, span, 0, null);
++            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot,
++                code.LastOwnedTemporarySlot, frame, span, 0, null);
+             try
+             {
+                 var locals = stack.Values;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs b/src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs
+index f491432c..44b6ac04 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs
+@@ -19,7 +19,8 @@ internal sealed partial class LythonRuntime
+         internal const int PythonAsciiFlag = 256;
+ 
+         internal static T ProviderCall<T>(Func<T> operation, MemoryGovernor? governor,
+-            CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null)
++            CancellationToken cancellationToken, LythonSourceSpan? span, PyString? pattern = null,
++            string operationName = "Regex provider")
+         {
+             governor?.ThrowIfAdmissionFailed();
+             if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+@@ -56,8 +57,8 @@ internal sealed partial class LythonRuntime
+                 throw error.Failure switch
+                 {
+                     LythonRegexFailure.Capability => RuntimeErrors.Capability(error.Message, span),
+-                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission(error.Message, error.RequestedBytes, span)
+-                        ?? RuntimeErrors.Attributed("MemoryError", error.Message, span,
++                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {error.Message}", error.RequestedBytes, span, error)
++                        ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {error.Message}", span,
+                             LythonFailureReason.SharedMemoryAllowance, requested: error.RequestedBytes),
+                     _ => CreatePatternErrorFailure(error.Message, pattern, error.Position, governor, cancellationToken, span),
+                 };
+diff --git a/src/Lokad.Lython/Runtime/MemoryGovernor.cs b/src/Lokad.Lython/Runtime/MemoryGovernor.cs
+index 2d703cba..d1293c71 100644
+--- a/src/Lokad.Lython/Runtime/MemoryGovernor.cs
++++ b/src/Lokad.Lython/Runtime/MemoryGovernor.cs
+@@ -10,6 +10,50 @@ internal sealed class MemoryGovernor
+     // through an uncharged window; estimates intentionally need only be safe.
+     private readonly ILythonMemoryReservation _ownership;
+     internal ILythonMemoryBudget Budget { get; }
++    private object[]? _functionWorkspace;
++    private bool _functionWorkspaceReuseEnded;
++
++    internal static long FunctionWorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
++
++    internal object[] RentFunctionWorkspace(int capacity, LythonSourceSpan span)
++    {
++        ThrowIfAdmissionFailed();
++        var cached = _functionWorkspace;
++        _functionWorkspace = null;
++        if (cached is not null)
++        {
++            if (cached.Length == capacity) return cached;
++            // End idle ownership before a different allocation. This is normal
++            // eviction, never recovery/retry after an admission refusal.
++            Release(FunctionWorkspaceBytes(cached.Length));
++        }
++        if (capacity == 0) return [];
++        var bytes = FunctionWorkspaceBytes(capacity);
++        Reserve(bytes, span);
++        try
++        {
++            var values = new object[capacity];
++            Commit(bytes);
++            return values;
++        }
++        catch { ReleaseReserved(bytes); throw; }
++    }
++
++    internal void ReturnFunctionWorkspace(object[] values, long bytes)
++    {
++        Array.Clear(values);
++        if (!_functionWorkspaceReuseEnded && _functionWorkspace is null && values.Length != 0)
++            _functionWorkspace = values;
++        else Release(bytes);
++    }
++
++    internal void EndFunctionWorkspaceReuse()
++    {
++        _functionWorkspaceReuseEnded = true;
++        if (_functionWorkspace is not { } cached) return;
++        _functionWorkspace = null;
++        Release(FunctionWorkspaceBytes(cached.Length));
++    }
+ 
+     public MemoryGovernor(ILythonMemoryBudget? budget)
+     {
+diff --git a/src/Lokad.Lython/Runtime/ProjectionBudget.cs b/src/Lokad.Lython/Runtime/ProjectionBudget.cs
+index 6965932e..32da1b24 100644
+--- a/src/Lokad.Lython/Runtime/ProjectionBudget.cs
++++ b/src/Lokad.Lython/Runtime/ProjectionBudget.cs
+@@ -14,6 +14,7 @@ internal sealed class ProjectionBudget
+     }
+ 
+     public long CurrentBytes { get; private set; }
++    internal CancellationToken CancellationToken => _cancellationToken;
+ 
+     internal ProjectionException? AdmissionFailure { get; private set; }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PublicProjection.cs b/src/Lokad.Lython/Runtime/PublicProjection.cs
+index 2b327e45..10ff850a 100644
+--- a/src/Lokad.Lython/Runtime/PublicProjection.cs
++++ b/src/Lokad.Lython/Runtime/PublicProjection.cs
+@@ -106,7 +106,8 @@ internal static class PublicProjection
+ 
+     public static string ProjectString(PyString text, ProjectionBudget? budget)
+     {
+-        budget?.Reserve(32L + (2L * text.GetUtf16CodeUnitCount()));
++        budget?.CheckCancellation();
++        budget?.Reserve(32L + (2L * text.GetUtf16CodeUnitCount(budget.CancellationToken)));
+         return text.AsString();
+     }
+ 
+@@ -139,7 +140,8 @@ internal static class PublicProjection
+ 
+     public static string ProjectPath(PyPath path, ProjectionBudget? budget)
+     {
+-        budget?.Reserve(32L + (2L * path.Value.GetUtf16CodeUnitCount()));
++        budget?.CheckCancellation();
++        budget?.Reserve(32L + (2L * path.Value.GetUtf16CodeUnitCount(budget.CancellationToken)));
+         return path.Value.AsString();
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs b/src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs
+index f0f4903d..f50c7524 100644
+--- a/src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs
++++ b/src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs
+@@ -169,7 +169,7 @@ internal static partial class PyDataclass
+             {
+                 // Generated dunders enter no frame, so the rented
+                 // bound-values box is returned on every exit path.
+-                LythonRuntime.ReturnBoundValues(bound.Values);
++                LythonRuntime.ReturnBoundArguments(bound);
+             }
+         }
+ 
+@@ -327,7 +327,7 @@ internal static partial class PyDataclass
+             {
+                 // Generated dunders enter no frame, so the rented
+                 // bound-values box is returned on every exit path.
+-                LythonRuntime.ReturnBoundValues(bound.Values);
++                LythonRuntime.ReturnBoundArguments(bound);
+             }
+         }
+     }
+@@ -443,7 +443,7 @@ internal static partial class PyDataclass
+             {
+                 // Generated dunders enter no frame, so the rented
+                 // bound-values box is returned on every exit path.
+-                LythonRuntime.ReturnBoundValues(bound.Values);
++                LythonRuntime.ReturnBoundArguments(bound);
+             }
+         }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyIteration.cs b/src/Lokad.Lython/Runtime/PyIteration.cs
+index dbedf1fd..0d631bbc 100644
+--- a/src/Lokad.Lython/Runtime/PyIteration.cs
++++ b/src/Lokad.Lython/Runtime/PyIteration.cs
+@@ -230,7 +230,7 @@ internal static partial class PyIteration
+         };
+     }
+ 
+-    internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
++    internal sealed class Cursor : ExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
+     {
+         private object? _value;
+         private readonly LythonSourceSpan _span;
+@@ -424,7 +424,7 @@ internal static partial class PyIteration
+             }
+         }
+ 
+-        public void Dispose()
++        public override void Dispose()
+         {
+             _disposed = true;
+             try { DisposeSynchronousEnumerator(); }
+diff --git a/src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs b/src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs
+index 431943f5..c9302d6f 100644
+--- a/src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs
++++ b/src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs
+@@ -8,7 +8,7 @@ namespace Lokad.Lython.Runtime.Text;
+ /// governor. Callers that finish with a value should use a consuming conversion or
+ /// <see cref="Release"/> so the mutable capacity is not retained in the execution budget.
+ /// </summary>
+-internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
++internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
+ {
+     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+ 
+@@ -224,7 +224,7 @@ internal sealed class GovernedByteBuilder : IExecutableTemporaryValue
+         _committedCapacity = 0;
+     }
+ 
+-    void IDisposable.Dispose() => Release();
++    public override void Dispose() => Release();
+ 
+     private void EnsureAdditionalCapacity(int additionalBytes)
+     {
+diff --git a/src/Lokad.Lython/Runtime/Text/PyString.cs b/src/Lokad.Lython/Runtime/Text/PyString.cs
+index f4a7371a..d03d11ec 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyString.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyString.cs
+@@ -48,57 +48,54 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+     {
+         get
+         {
+-            return _runeLength >= 0 ? _runeLength : (_runeLength = CountRunes(Utf8Span));
+-
+-            static int CountRunes(ReadOnlySpan<byte> utf8)
+-            {
+-                var count = 0;
+-                for (var i = 0; i < utf8.Length;)
+-                {
+-                    i += GetRuneLength(utf8[i]);
+-                    count++;
+-                }
+-
+-                return count;
+-            }
++            if (_runeLength >= 0) return _runeLength;
++            var context = PyStructuralGuard.AmbientContext;
++            var span = PyStructuralGuard.AmbientSpan;
++            context?.CheckExecution(span);
++            return GetCharacterCount(context?.State.CancellationToken ?? default, span);
+         }
+     }
+ 
++    internal int GetCharacterCount(CancellationToken cancellationToken, LythonSourceSpan? span)
++        => _runeLength >= 0 ? _runeLength
++            : (_runeLength = CountUtf8Units(false, cancellationToken, span));
++
+     /// <summary>
+     /// Counts the UTF-16 code units the decoded CLR string needs. Astral runes
+     /// (4-byte UTF-8 sequences) decode to a surrogate pair, so this exceeds
+     /// <see cref="Length"/> whenever astral characters are present. Projection
+     /// budgets must use this width: rune counts undercharge astral payloads.
+     /// </summary>
+-    public int GetUtf16CodeUnitCount()
++    public int GetUtf16CodeUnitCount(CancellationToken cancellationToken = default, LythonSourceSpan? span = null)
++    {
++        var context = PyStructuralGuard.AmbientContext;
++        span ??= PyStructuralGuard.AmbientSpan;
++        context?.CheckExecution(span);
++        if (!cancellationToken.CanBeCanceled) cancellationToken = context?.State.CancellationToken ?? default;
++        return CountUtf8Units(true, cancellationToken, span);
++    }
++
++    private int CountUtf8Units(bool utf16, CancellationToken cancellationToken, LythonSourceSpan? span)
+     {
++        var source = Utf8Span;
+         var units = 0;
+-        var bytes = Utf8Span;
+-        for (var i = 0; i < bytes.Length;)
+-        {
+-            var lead = bytes[i];
+-            if (lead < 0x80)
+-            {
+-                units += 1;
+-                i += 1;
+-            }
+-            else if (lead < 0xE0)
++        // Count both widths without decoding or creating a CLR string. Keep
++        // cancellation ranges on scalar boundaries, deferring at most three bytes.
++        for (var offset = 0; offset < source.Length;)
++        {
++            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
++            var end = offset + Math.Min(4096, source.Length - offset);
++            while (end < source.Length && (source[end] & 0xC0) == 0x80) end--;
++            var count = 0; // A bounded chunk cannot overflow this subtotal.
++            while (offset < end)
+             {
+-                units += 1;
+-                i += 2;
+-            }
+-            else if (lead < 0xF0)
+-            {
+-                units += 1;
+-                i += 3;
+-            }
+-            else
+-            {
+-                units += 2;
+-                i += 4;
++                var width = GetRuneLength(source[offset]);
++                count += utf16 && width == 4 ? 2 : 1;
++                offset += width;
+             }
++            units = checked(units + count);
+         }
+-
++        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+         return units;
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+index a1b54a32..c95d0625 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs
+@@ -136,6 +136,11 @@ internal static partial class PyStringOps
+                 offset += width;
+             }
+         }
++        return CheckCaseOutputCapacity(capacity, span);
++    }
++
++    private static int CheckCaseOutputCapacity(long capacity, LythonSourceSpan? span)
++    {
+         if (capacity > Array.MaxLength) throw RuntimeErrors.Memory("cased string exceeds supported capacity", span);
+         return (int)capacity;
+     }
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+index 10b6e9a8..63f8aa64 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -34,12 +34,15 @@ internal static partial class PyStringOps
+         MemoryGovernor.TemporaryMemoryReservation? scratch = null;
+         try
+         {
+-            if (reverse)
++            if (casing is { } collectedMapping)
++                CollectCasedWhitespace(source, collectedMapping, ref ranges, ref count, ref outputBytes,
++                    ref scratchBytes, ref scratch, governor, span, context);
++            else if (reverse)
+                 CollectWhitespaceReverse(source, maxSplit, ref ranges, ref count, ref outputBytes,
+-                    ref scratchBytes, ref scratch, governor, span, context, casing);
++                    ref scratchBytes, ref scratch, governor, span, context);
+             else
+                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
+-                    ref scratchBytes, ref scratch, governor, span, context, casing);
++                    ref scratchBytes, ref scratch, governor, span, context);
+ 
+             // Admit final backing and all fragments together. Each value keeps
+             // its own payload; adoption transfers the completed list capacity.
+@@ -81,82 +84,134 @@ internal static partial class PyStringOps
+     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
+         scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
++        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+     {
++        // Each chunk decodes at most 64 complete scalars; a final scalar may
++        // cross the byte boundary by at most three bytes. No shared work counter.
+         var start = -1;
+         var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+         for (var position = 0; position < source.Length;)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
+-            if (IsPythonWhitespace(rune))
++            context?.CheckExecution(span);
++            var chunkEnd = position + Math.Min(64, source.Length - position);
++            do
+             {
+-                if (start >= 0)
++                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+-                    start = -1;
+-                    remaining--;
++                    if (start >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        start = -1;
++                        remaining--;
++                    }
+                 }
+-            }
+-            else if (start < 0)
++                else if (start < 0)
++                {
++                    start = position;
++                    if (remaining == 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        return;
++                    }
++                }
++                position += width;
++            } while (position < chunkEnd);
++        }
++        if (start >= 0)
++            AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
++                ref scratchBytes, ref scratch, governor, span, context);
++    }
++
++    // Cased whitespace splitting is always unbounded. Its existing scalar walk
++    // computes output capacity; ordinary split/rsplit have no casing work.
++    private static void CollectCasedWhitespace(ReadOnlySpan<byte> source, CaseMapping mapping,
++        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
++        ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
++        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
++    {
++        var maximumCaseWidth = mapping == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
++        var start = -1;
++        long extraCapacity = 0;
++        for (var position = 0; position < source.Length;)
++        {
++            context?.CheckExecution(span);
++            var chunkEnd = position + Math.Min(64, source.Length - position);
++            do
+             {
+-                start = position;
+-                if (remaining == 0)
++                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+-                    return;
++                    if (start >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context,
++                            CheckCaseOutputCapacity(position - start + extraCapacity, span));
++                        start = -1;
++                        extraCapacity = 0;
++                    }
+                 }
+-            }
+-            position += width;
++                else
++                {
++                    if (start < 0) start = position;
++                    if (width > 1) extraCapacity += maximumCaseWidth - width;
++                }
++                position += width;
++            } while (position < chunkEnd);
+         }
+         if (start >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
+-                ref scratchBytes, ref scratch, governor, span, context, source, casing);
++                ref scratchBytes, ref scratch, governor, span, context,
++                CheckCaseOutputCapacity(source.Length - start + extraCapacity, span));
+     }
+ 
+     private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,
+         scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
++        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+     {
+         var end = -1;
+         for (var position = source.Length; position > 0;)
+         {
+-            PyStructuralGuard.NoteWork(context, span);
+-            Rune.DecodeLastFromUtf8(source[..position], out var rune, out var width);
+-            if (IsPythonWhitespace(rune))
++            context?.CheckExecution(span);
++            var chunkStart = Math.Max(0, position - 64);
++            do
+             {
+-                if (end >= 0)
++                Rune.DecodeLastFromUtf8(source[..position], out var rune, out var width);
++                if (IsPythonWhitespace(rune))
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+-                    end = -1;
+-                    remaining--;
++                    if (end >= 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, position, end, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        end = -1;
++                        remaining--;
++                    }
+                 }
+-            }
+-            else if (end < 0)
+-            {
+-                end = position;
+-                if (remaining == 0)
++                else if (end < 0)
+                 {
+-                    AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
+-                        ref scratchBytes, ref scratch, governor, span, context, source, casing);
+-                    return;
++                    end = position;
++                    if (remaining == 0)
++                    {
++                        AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
++                            ref scratchBytes, ref scratch, governor, span, context);
++                        return;
++                    }
+                 }
+-            }
+-            position -= width;
++                position -= width;
++            } while (position > chunkStart);
+         }
+         if (end >= 0)
+             AppendWhitespaceRange(ref ranges, ref count, 0, end, ref outputBytes,
+-                ref scratchBytes, ref scratch, governor, span, context, source, casing);
++                ref scratchBytes, ref scratch, governor, span, context);
+     }
+ 
+     private static void AppendWhitespaceRange(scoped ref Span<(int Start, int End, int Capacity)> ranges,
+         ref int count, int start, int end, ref long outputBytes, ref long scratchBytes,
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor, LythonSourceSpan? span,
+-        LythonRuntime.ExecutionContext? context, ReadOnlySpan<byte> source, CaseMapping? casing)
++        LythonRuntime.ExecutionContext? context, int? casedCapacity = null)
+     {
+         if (count == ranges.Length)
+         {
+@@ -178,8 +233,7 @@ internal static partial class PyStringOps
+             scratch?.Shrink(scratchBytes);
+             scratchBytes = bytes;
+         }
+-        var outputCapacity = casing is { } mapping
+-            ? CaseOutputCapacity(source[start..end], mapping, context, span) : end - start;
++        var outputCapacity = casedCapacity ?? end - start;
+         ranges[count++] = (start, end, outputCapacity);
+         outputBytes = checked(outputBytes + PyString.EstimateApproximateBytes(outputCapacity));
+     }

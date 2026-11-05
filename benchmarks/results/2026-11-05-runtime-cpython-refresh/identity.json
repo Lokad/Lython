@@ -1,0 +1,45 @@
+{
+  "sourceRevision": "13d69be620a7a3f25ae9d3728763c623fea0bef9 retained production; built before commit metadata on f8ebdc7c plus D59 patch",
+  "coreSHA256": {
+    "candidate": "ec4b63788bb3cfe66d35e5d338873def52454b7da1085ee0e4fcdcaa0f0b65a7",
+    "control": "ec4b63788bb3cfe66d35e5d338873def52454b7da1085ee0e4fcdcaa0f0b65a7",
+    "reference": "6cb05f8ef304ec9c60e68cb3fb7a41cb5108200b74c354912f2f0afbbf7a12ad"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "68efa1ea171371c366151ab9d27c71b7345c1d2f35ac8cf20f7b5b91569add93",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "de2c0ba277cb1d0c1895f32395ba0400759bd32e5365f9e57ab657c13edfc77a",
+    "src/Lokad.Lython/Frontend/StaticAnalysisContext.cs": "eec49e8a5792f510ebab2890bdb7617a7e1b2fda3bf26c8cb16748fdb4f18eb5",
+    "src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs": "7e0f0b3b6366de34058d543f9b0a739b74d1187076ce64f2dc7173944503548d",
+    "src/Lokad.Lython/Public/LythonEngine.cs": "fbd53efcaa76801214a4a579fc041b2d93b402d76926e76d533379a09ce3bcfd",
+    "src/Lokad.Lython/Runtime/Calls/CallExpansion.cs": "647e7280e79420935ed82857077b966a5e2e0ef34b455948f01fd4cc6869f438",
+    "src/Lokad.Lython/Runtime/ExecutionState.cs": "2d7a3e6db8aea2906a2569953134db54b6cc4f7f411550bdab3b35a46b715fc0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.cs": "a857591c46e5d1a3850d7c38885f3302840019cdbfe8d0e33e64b9fe1dcfda15",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "bc8ba07eef5ff2c6bfa93319199e2fa8457d9d61d1b32c518bc38f3892d9816c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs": "2d1d9e9e1e419e2c35c9e1d25574ce641b760cd592245d407c41839132c3b7b1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "d55c22a4d78a3dd8c572f933a51f1e937e85f34bde744e976af2b920e27b5b5e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "5c845912137bc68836dd988ac756946c7f4ee8a4f126f706bc765e9c073d4c79",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "da4f1f811ea39d86704e4c1cfddde3fb18cd98beb33625ffc0212c60b23bd158",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "c1bb90ee4385fa8e4da2719824fdd26eaf28c7c8d3fa64adab5aac325c701162",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "8d9a625512d3acd2c1b471f840b01cb74cec13a9b98c2d419d4bfba2ad58d5b5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "108c0270ea45395f041d6405c1bddccfb3983d624af8ce262464d77b4f7a0fb4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs": "a8566cc2e3e3bd3d7083e8e3647b5b260d770582b36cad2ca20345d6d0b612a1",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "88067e9fcaa0410d4369cd54e8e3ffa5fe8a5fe3bfb1cde732871742ff80b323",
+    "src/Lokad.Lython/Runtime/ProjectionBudget.cs": "11796d337962b16f3a420c5e8079ceec1fef70950dd4a81fce56376ea16702d3",
+    "src/Lokad.Lython/Runtime/PublicProjection.cs": "255497ff65099b0fb801dcc70810b952259697d0d0e3cd265d03712123f1ee78",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "6dadff12080a5d611f258aa503db8e6a0a924001652d47d1aa17747d5f9215a4",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "bee5d992df9ed50ff7995b59b86caa053fba62fc55dcd9b5ef6cc20f3de7050b",
+    "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs": "ca5239feb1591e4b11eeb00b313d603d796c712cbb74ba67b36f6e7cc5d0eb2e",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "6a494e2fbfe24aa4c948d174f76e8612b41733e6e5e7279321fb00b809a61b21",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "b897887d96c4841fecf3ecde05645be107db0df123c85fc792469bf6c79531af",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "febf16bfb39774902dce89fd1e41e716e04d8d5ac83341ba6c0df7eb2053664f"
+  },
+  "qualification": "Full4143internal/16004public per actual11/10 pass; final13d CI42074585232 running. b69 D55/D56 delivery42065949621 GREEN/all8 cached. D57 absent.",
+  "reference": "Previously measured/fully qualified9c1d source documented74de3388, frozen6cb before commit metadata; CI42029990429 GREEN/all8 cached.",
+  "changes": "Coherent retained workspace/text/compiler-bounded retirement/frame-exit correction checkpoint; same complete scripts/host boundary. No per-change CPU/allocation attribution."
+}
