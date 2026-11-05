@@ -27,7 +27,9 @@ clock. Lython relinquishes its previous public result before invoking again,
 inside the clock. CPython also retains its final local code reference, while
 Lython disposes each compile-run script inside timing. These existing lifetime
 boundaries differ; the comparison does not establish equal live memory or cleanup
-cost. The final response payload remains available through serialization.
+cost. The final response payload remains available through serialization. A
+successful Lython worker exit also requires its shared reservation balance to
+return to zero after result and cached-compilation disposal, outside timing.
 
 File jobs perform matched fixture reset before every invocation, outside the
 reported execution clock, and include complete output verification inside it. The

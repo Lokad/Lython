@@ -30,6 +30,8 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
             foreach (var script in _compiled.Values) script.Dispose();
             _compiled.Clear();
         }
+        if (MemoryBudget.ReservedBytes != 0)
+            throw new InvalidOperationException("Comparison worker cleanup retained a memory reservation.");
     }
 
     private async Task ProcessRequestsAsync(Stream input, Stream output, CancellationToken cancellationToken)
