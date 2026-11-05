@@ -2,7 +2,8 @@
 
 2026-11-05. **Retain** the complete target family over ee2674a5, measured prototype
 core **d3735439**, versus qualified **e958c9b1/core1f5919c0**. Final cleanup changes
-only comments/whitespace after measurement. Full delivery qualification pending;
+only comments/whitespace after measurement. Exact **7dcc3b48** passes full Windows/Ubuntu actual11/10, original stress
+and installed Release consumers ([cached terminal CI](delivery-ci-status.json));
 publication postponed. Whole-script performance remains an active objective.
 
 Assignment, retained augmented reads, deletion, unpacking, assertions and explicit

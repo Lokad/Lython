@@ -1,5 +1,15 @@
 # Benchmark experimental history
 
+The [current complete-script CPU/source gate](results/2026-11-05-current-script-cpu/README.md)
+closes39s/two cases on qualified7dcc/a4ce:783text/1022ordinaryCSV guest samples,
+unknown5.11/8.51%, one truncated map line each and collector conditions preserved.
+Initial6% pre-gate failure has no guest samples and remains alongside one settled
+correction. Type/dispatch and storage callers remain visible; inclusive costs are
+not removable overhead. Fields/row construction is already bulk-admitted. Select
+owned native CSV input transport to remove the hidden line string/copy/admission,
+with explicit in-place, cursor, failure and pending-owner proofs before code.
+No allocation/speedup claim or additional profiling campaign.
+
 The [complete target-instruction family](results/2026-11-05-executable-targets/README.md)
 retains measuredd3735439 over qualified1f59. Remove9 operation records, retained
 delete syntax, generic target routing and always-async target/delete dispatch;
@@ -7,8 +17,8 @@ reuse executable operands and preserve spans, evaluation order and awaited owner
 4111internal/7360public per actual11/10 pass.139.94s/five process-isolated jobs/all
 gates: fresh text7.27–7.31% lower/.05% current spread, async5.60–5.67% lower/.07%,
 ordinaryCSV2.04–2.36% lower. Warmtext controls differ2.99%; reportIQR up to7.47%
-is inconclusive. Allocation/CPU/real-I/O latency unmeasured. Full delivery pending,
-publication held; the complete performance objective remains active.
+is inconclusive. Allocation/CPU/real-I/O latency unmeasured. Full7dcc/42014687629
+delivery GREEN/all8/cached, publication held; the complete performance objective remains active.
 
 The [qualified dictionary/construction CPython checkpoint](results/2026-11-05-dictionary-cpython-checkpoint/README.md)
 compares exact final1f59/e958 with previous402, an identical-current process and

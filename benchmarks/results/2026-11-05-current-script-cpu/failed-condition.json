@@ -1,0 +1,74 @@
+{
+  "kind": "Pre-capture quiet failure",
+  "exitCode": 3,
+  "guestSamplesCollected": false,
+  "workersRemaining": false,
+  "gate": {
+    "quiet": false,
+    "reasons": [
+      "Idle CPU exceeds three-percent median or five-percent maximum."
+    ],
+    "windows": [
+      {
+        "seconds": 0.502852764,
+        "busyPercent": 6,
+        "stealPercent": 0,
+        "clean": true,
+        "reasons": [],
+        "before": {
+          "utc": "2026-11-05T10:58:23.4219962+00:00",
+          "timestamp": 2407672482662668,
+          "clockFrequency": 1000000000,
+          "cpu": [
+            7272397,
+            7769,
+            689665,
+            953802073,
+            993151,
+            0,
+            12165,
+            0
+          ],
+          "noiseCounters": {
+            "pgmajfault": 1859,
+            "pswpin": 0,
+            "pswpout": 0,
+            "memory.some.total_us": 1861078,
+            "memory.full.total_us": 1709856,
+            "throttled:/sys/fs/cgroup/system.slice/lython-b268-current-script-cpu-20261105.service": null,
+            "throttled:/sys/fs/cgroup/system.slice": 0,
+            "throttled:/sys/fs/cgroup": 0
+          },
+          "cgroup": "/system.slice/lython-b268-current-script-cpu-20261105.service"
+        },
+        "after": {
+          "utc": "2026-11-05T10:58:23.9248493+00:00",
+          "timestamp": 2407672985515432,
+          "clockFrequency": 1000000000,
+          "cpu": [
+            7272404,
+            7769,
+            689670,
+            953802261,
+            993151,
+            0,
+            12165,
+            0
+          ],
+          "noiseCounters": {
+            "pgmajfault": 1859,
+            "pswpin": 0,
+            "pswpout": 0,
+            "memory.some.total_us": 1861078,
+            "memory.full.total_us": 1709856,
+            "throttled:/sys/fs/cgroup/system.slice/lython-b268-current-script-cpu-20261105.service": null,
+            "throttled:/sys/fs/cgroup/system.slice": 0,
+            "throttled:/sys/fs/cgroup": 0
+          },
+          "cgroup": "/system.slice/lython-b268-current-script-cpu-20261105.service"
+        }
+      }
+    ]
+  },
+  "archiveSHA256": "cf307e229e55ec922942e2bf89722f07152d9fcf0d187419e7b2d9d294a50ab5"
+}

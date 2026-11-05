@@ -1,0 +1,22 @@
+{
+  "sourceRevision": "7dcc3b48/current complete target family; frozen finala4ce built before commit metadata; full42014687629 active",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+    "Lokad.Lython.dll": "a4ce2b48772195080257e1b49f924305edf8be2e96aa7e265df56b82061966cb"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "b2044790c1c5597fc992eea846f96027bb766bee5479ecc84b624100f45acfbc",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "41dbbaa6703a3af07036db0611d7e27038a77651f405cbc1b85ec64ddb2887b1",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingStatements.cs": "e0277f83cb72b52bbdc4f55dff746de3eb4adbf19025a7af1f72791fdcb0e2ec",
+    "src/Lokad.Lython/Frontend/ExecutableScript.SuspendingTargets.cs": "254ef6c34ce6ece5e8bc2528e447c55328848f4395ce6d84534bfa4d7c8ea621",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "f0b1bd9cbd0eeab4dacfa09efb90a972f63161d764e93281213bf0159127f778",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "dc5e0ca0da8cf0ac5622b4004b4e13575bc564ec6bcddc35980b00c0b01bfc1a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "036ada4e85754cfda46b9e624d11885e0c261eefa5db75ca815926bd5025ea20",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "54d9120c0490ac55cb4d0956d08dccfd74ed3e2d3b924bf60ce6a8a9e5a01fa5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "373a39f8796e4dfbe9ff2e2302e0d5c36195aa8dc08c5de9fbb19d53ccea7bd4"
+  },
+  "qualification": "4111internal/7360public and final85target cases per actual11/10 pass; platform/stress/package pending"
+}

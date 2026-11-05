@@ -1,5 +1,5 @@
 {
-  "decision": "Retain complete target family; full delivery pending",
+  "decision": "Retain complete target family; fully qualified7dcc3b48",
   "baseline": "qualifiede958/frozen1f59",
   "prototype": "ee2674a5 plus target migration; frozen d3735439",
   "focusedPerActualTarget": {
@@ -41,5 +41,12 @@
   "finalCoreSHA256": {
     "net11.0": "a4ce2b48772195080257e1b49f924305edf8be2e96aa7e265df56b82061966cb",
     "net10.0": "1079a6f2b531d10d63d3ceeec0d95ed407f79e67ec0275b84e853ff3b0a21814"
+  },
+  "delivery": {
+    "runId": 42014687629,
+    "revision": "7dcc3b48891a0464492b218940b4cea08c2c3617",
+    "allEightLogicalGates": true,
+    "terminalCached": true,
+    "receipt": "delivery-ci-status.json"
   }
 }
