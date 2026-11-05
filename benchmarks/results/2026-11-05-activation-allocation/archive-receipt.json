@@ -1,0 +1,11 @@
+{
+  "archiveSHA256": "48f791a8754e31f60975cf89627efbbaf9aefc338662fd7c326c1c6f6f8316e6",
+  "ownedSeconds": 32,
+  "serviceBoundSeconds": 90,
+  "allGatesPassed": true,
+  "eventsLost": 0,
+  "source": "a8e476bf/c6d71108",
+  "coreSHA256": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd",
+  "diagnosticOnly": true,
+  "finalStatus": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+}

@@ -1,12 +1,22 @@
 # Benchmark experimental history
 
+The [complete-script allocation assessment](results/2026-11-05-activation-allocation/README.md)
+closes one32s external AllocationTick capture on qualified402, two complete scripts,
+zero loss and all cleanup/identity/quiet gates. Text strings/bytes54.16%, temporary
+reservations11.01%; ordinary interpreter/context26.26% sampled bytes, with genuine
+escaping contexts. These are neither exact counts nor CPU/live-heap evidence.
+Select final list-array construction and lazy cache/nonmaterializing namespace
+reads; no context fusion, tagged values, heap tracing or new runtime framework.
+Source replacements require their own focused and controlled validation.
+
 The [retained CSV/list CPython checkpoint](results/2026-11-05-runtime-cpython-csv-checkpoint/README.md)
 completes439.56s/16jobs/all identity/golden/quiet/join gates on a8e476bf/core402ae9f1.
 Fresh nativeCSV/ordinaryCSV/text/config1.43/1.68/2.15/1.05×CPython3.13.16;
 JSON1.19–1.24×/report1.48–1.57× retain3.65/5.54%controls. Compile1.28/1.36×.
 Coupled text−2–3% versus0997 cannot isolate D34's accepted~1%component debt.
 WarmJSON selected+5.50% versus0997/identical-currentcontrol−0.01% stays unresolved.
-Final D34 platform delivery is active; no new CPU/RSS/startup claim. Whole-script
+Final D34 delivery41977587599 is GREEN/all8gates on c6d71108, cached;
+no new CPU/RSS/startup claim. Whole-script
 objective stays open, with complete activation/transport and actual allocations
 requiring evidence before another coherent redesign.
 
@@ -17,7 +27,7 @@ layer. Each source134s/all gates: allocation−4.7–7.6%, publicreaderelapsed�
 DictReader warm timings control-limited. Finaltext+1.9–5.1% adverse remains; one
 unchanged-bit41s reversed/longer-warmup confirmation+0.8–1.0% with0.20%spread.
 Accept roughly1% warmtext debt, no general CPU/CPython/RSS claim.116internal/431public
-per actualtarget pass; full delivery pending. Preserve failed3.96% quiet pre-gate,
+per actualtarget pass; full delivery41977587599 GREEN/cached. Preserve failed3.96% quiet pre-gate,
 both sources, all controls and real pending-user/refusal cleanup coverage.
 
 The [known/empty list storage policy](results/2026-11-05-known-list-storage/README.md)
