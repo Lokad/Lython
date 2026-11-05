@@ -7,6 +7,18 @@ namespace Lokad.Lython.Tests;
 
 public sealed class ExecutableOperandStackBoundaryTests
 {
+    [Fact]
+    public void RetiringAnOrdinaryDisposableValueDoesNotDisposeIt()
+    {
+        using var stack = new StackView(4);
+        var value = new OrdinaryDisposable();
+        stack.Push(value);
+        stack.Push(new object());
+        stack.RemoveTail(2);
+        Assert.Equal(0, stack.Count);
+        Assert.False(value.Disposed);
+    }
+
     [Theory]
     [InlineData(3)]
     [InlineData(4)]
@@ -93,9 +105,15 @@ public sealed class ExecutableOperandStackBoundaryTests
         Assert.Equal(0, stack.Count);
     }
 
-    private sealed class Temporary(Action dispose) : IExecutableTemporaryValue
+    private sealed class Temporary(Action dispose) : ExecutableTemporaryValue
     {
-        public void Dispose() => dispose();
+        public override void Dispose() => dispose();
+    }
+
+    private sealed class OrdinaryDisposable : IDisposable
+    {
+        public bool Disposed { get; private set; }
+        public void Dispose() => Disposed = true;
     }
 
     // Keep reference order and failed-disposal guarantees while supplying the

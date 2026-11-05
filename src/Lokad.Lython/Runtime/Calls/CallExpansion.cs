@@ -442,7 +442,7 @@ internal static class CallExpansion
         }
     }
 
-    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
+    internal sealed class CallArgumentAccumulator : ExecutableTemporaryValue
     {
 
         private CallArgumentValue[] _values;
@@ -588,7 +588,7 @@ internal static class CallExpansion
             finally { Dispose(); }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _values = [];
             _count = 0;

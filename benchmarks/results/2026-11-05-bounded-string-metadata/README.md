@@ -61,7 +61,9 @@ Final build17.67s, zero warnings/errors. Focus529internal/2037public per actual
 cover scalar-width extremes, supplementary text crossing chunk boundaries,
 cancelled metadata reuse, projection tokens, exact astral admission, first refusal
 and cleanup to baseline. Existing retention/cancellation/codec/CSV checks remain.
-Final platform/stress/installed-consumer delivery pending; publication postponed.
+Final source2183bf18 is fully qualified: CI42038712714 GREEN, Windows/Ubuntu,
+actual.NET11/10, original stress and installed Release consumers, all eight gates.
+The [terminal status](delivery-ci-status.json) is cached; publication postponed.
 
 Cancellation checks bound traversal when a current token is supplied. Native len
 and projection supply it; context-free callers have no host token. Unit entry/

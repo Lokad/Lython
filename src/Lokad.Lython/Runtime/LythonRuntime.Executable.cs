@@ -399,7 +399,7 @@ internal sealed partial class LythonRuntime
                     // disposal can fail; retrying the trim must not enqueue twice.
                     _items[i] = null!;
                 }
-                else if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
+                else if (_items[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
             }
             Array.Clear(_items, newCount, LiveExtent - newCount);
             LiveExtent = newCount;

@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
         // This is a lexical binding lifetime, not an invocation frame. Eager
         // expressions execute with the original context; closures retain the
         // real iteration namespace while enclosing cells stay untouched.
-        internal sealed class InlinedComprehensionScope : IExecutableTemporaryValue
+        internal sealed class InlinedComprehensionScope : ExecutableTemporaryValue
         {
 
             private readonly ExecutionContext _context;
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
                 context.FunctionClosureContext = Bindings.FunctionClosureContext;
             }
 
-            public void Dispose()
+            public override void Dispose()
             {
                 _context._inlinedComprehension = Previous;
                 _context.FunctionClosureContext = _previousClosure;

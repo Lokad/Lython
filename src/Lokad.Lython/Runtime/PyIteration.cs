@@ -230,7 +230,7 @@ internal static partial class PyIteration
         };
     }
 
-    internal sealed class Cursor : IExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
+    internal sealed class Cursor : ExecutableTemporaryValue, IAsyncDisposable, IEnumerator<object>
     {
         private object? _value;
         private readonly LythonSourceSpan _span;
@@ -424,7 +424,7 @@ internal static partial class PyIteration
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _disposed = true;
             try { DisposeSynchronousEnumerator(); }

@@ -1,5 +1,16 @@
 # Benchmark experimental history
 
+The [executable-temporary contract](results/2026-11-05-executable-temporary-contract/README.md)
+replaces one marker interface with one empty base for the same four private classes;
+no additional instances/storage/modes. D49 offline attribution identifies actual
+RetireTo callers in the existing D43 profile, without claiming removable CPU shares.
+B276140.27s/five jobs/all gates has3–4% identical-current differences. One justified
+unchanged-binary B277114.57s/three-job confirmation supports warm text4.00–5.53%
+lower;CSV.96–2.89% lower varies. Async+0.58–0.99% conflicts with initial−4.24–8.08%:
+preserved unresolved debt. Retain the nominal contract; no allocation/CPU/general
+speedup claim. Focus223/514 per actual target pass; batch full delivery with the
+independent regex diagnostic correction. The overall performance objective remains open.
+
 The [bounded string-metadata correction](results/2026-11-05-bounded-string-metadata/README.md)
 retains shared scalar traversal/current len+projection tokens and removes two
 unbounded loops, with unchanged storage/ownership. Both bulk algorithms withdrawn:
@@ -7,7 +18,8 @@ initial mixedUnicode+306%, refined+36.6/37.1%, despite ASCII~51% lower. Preserve
 both146.77s/five-job blocks/all controls. Final91.80s/three-job diagnostic/all gates
 shows no gross count-script regression (roles within~1%); no speedup/CPU/allocation
 claim. Focus529/2037 and full4124/16001 per actual target pass; final platform/stress/
-installed delivery pending. Bounded checks are distinct from measured in-flight latency.
+installed delivery42038712714 GREEN/all8 on2183bf18, terminal cached. Bounded checks
+are distinct from measured in-flight latency.
 
 The [retained-source CPython checkpoint](results/2026-11-05-current-cpython-checkpoint/README.md)
 measures9c1d/6cb05f8e after executable targets and CSV input/EOF delivery; D46 is

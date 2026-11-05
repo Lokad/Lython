@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "2183bf18 plus D50 nominal executable temporary contract prototype",
+  "coreSHA256": {
+    "candidate": "2f315485cf005170ba61dfc4ca8e2f0a9ae08a16b70e6f42f74cf353332d7e4d",
+    "control": "2f315485cf005170ba61dfc4ca8e2f0a9ae08a16b70e6f42f74cf353332d7e4d",
+    "reference": "3fa1389d735d687726fa73940598a2ca4c103a84b4acab6c03c1d384260dd614"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "223internal/514public temporary, comprehension, call-expansion, cursor, generator, formatting, cancellation/refusal/ownership cases per actual11/10 pass; baseline2183 full4124/16001 per target, full42038712714 stress running.",
+  "changes": "Replace one internal marker interface by empty abstract IDisposable base for four existing sealed reference classes; same Dispose bodies, reverse retirement and awaited pending cursor chain. No additional owner/mode/storage or public API.",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Calls/CallExpansion.cs": "647e7280e79420935ed82857077b966a5e2e0ef34b455948f01fd4cc6869f438",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Comprehensions.cs": "2d1d9e9e1e419e2c35c9e1d25574ce641b760cd592245d407c41839132c3b7b1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "c1bb90ee4385fa8e4da2719824fdd26eaf28c7c8d3fa64adab5aac325c701162",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "c0ac96ab817d2b93c32092b37983483b36934d6e25666b03906ae84ad34e8eed",
+    "src/Lokad.Lython/Runtime/PyIteration.cs": "bee5d992df9ed50ff7995b59b86caa053fba62fc55dcd9b5ef6cc20f3de7050b",
+    "src/Lokad.Lython/Runtime/Text/GovernedByteBuilder.cs": "ca5239feb1591e4b11eeb00b313d603d796c712cbb74ba67b36f6e7cc5d0eb2e",
+    "tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs": "93767f25595b97787373e661f080c91819811ce14777b3c926e8f720c596af04"
+  }
+}

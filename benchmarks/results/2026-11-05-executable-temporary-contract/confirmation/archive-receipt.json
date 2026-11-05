@@ -1,0 +1,10 @@
+{
+  "complete": true,
+  "jobs": 3,
+  "elapsedSeconds": 114.57151095522568,
+  "allWorkersJoined": true,
+  "guestFixtureDirectories": [],
+  "quietBeforeAndAfter": true,
+  "archiveSHA256": "7b2b9b5e6418e04383b67e8f904362fdbb0ea9cb820abf1d06c807cadf0ff080",
+  "correction": "Copied receipt literal said5; authoritative raw confirmation has3 completed jobs. No observations/archive changed."
+}

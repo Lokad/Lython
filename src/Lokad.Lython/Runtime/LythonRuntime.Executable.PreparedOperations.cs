@@ -5,7 +5,10 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 // Only interpreter-owned storage is disposed during operand-stack unwinding.
-internal interface IExecutableTemporaryValue : IDisposable;
+internal abstract class ExecutableTemporaryValue : IDisposable
+{
+    public abstract void Dispose();
+}
 
 internal sealed partial class LythonRuntime
 {
@@ -40,7 +43,7 @@ internal sealed partial class LythonRuntime
                 }
                 case ExecutableFinishComprehension:
                     var completed = _stack.TakeValue(instruction.InputStart + 1, instruction.InputStart + 1);
-                    ((IExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
+                    ((ExecutableTemporaryValue)_stack.TakeValue(instruction.InputStart, instruction.InputStart)).Dispose();
                     _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, completed);
                     break;
                 case ExecutableStartDisplay start:
