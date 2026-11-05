@@ -102,3 +102,23 @@ Test-only correction: clean test build7.87s, **1,130 relevant internal cases per
 actual11/10 pass**, including functools, cancellation, admission, ownership and
 lifetime coverage. Production corec0221b77 is unchanged; no performance rerun.
 Corrected full delivery is a separate checkpoint and remains pending.
+
+The second checkpoint41990811055 passes both full .NET11 suites/platforms, and
+Windows.NET10 internal cases. One Windows.NET10 public comparator-truth case
+times out waiting for normal completion at5s;15,982 other public cases pass.
+The cause remains unresolved: all eight original comparator cases pass unchanged
+locally on both actual frameworks. Preserve the failure; do not attribute it to
+the runtime change or claim a scheduler cause from this single observation.
+
+Minimize the lifetime fixture to two values/one comparison at each comparer,
+ordering or truth boundary; direct equality already needs one comparison.
+Separate tests retain three-value sort/raw-comparison semantics. Preserve the
+five-second deadlines, real gated cancellation, pending/funded users, result and
+budget-baseline assertions; add exactly one owned-file-close assertion per run.
+This reduces repeated artificial25ms host delays and exercises the same actual
+protocol suspension with less work. It does not prove the original timeout fixed.
+Production corec0221b77 remains unchanged, with no retiming. Corrected focused
+public **91 cases per actual11/10** pass in final serial runs after build completion.
+Original, initially overlapping-build and final serial logs are retained; only
+the final serial runs establish the corrected focused result. Full delivery
+remains separate and pending.

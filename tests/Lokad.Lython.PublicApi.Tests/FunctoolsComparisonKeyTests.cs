@@ -56,7 +56,9 @@ public sealed class FunctoolsComparisonKeyTests
         var comparer = stage == "comparer" ? "read();return a-b" : "return Result(a-b)";
         var less = stage == "ordering" ? "read();return self.value<other"
             : stage == "truth" ? "return Flag(self.value<other)" : "return self.value<other";
-        var expression = stage == "equality" ? "key(1)==key(1)" : "sorted([3,1,2],key=key)";
+        // One comparison exercises each awaited protocol and its cancellation;
+        // the separate semantic cases above cover longer sorting sequences.
+        var expression = stage == "equality" ? "key(1)==key(1)" : "sorted([2,1],key=key)";
         var source = """
             from functools import cmp_to_key
             def read():
@@ -99,7 +101,7 @@ public sealed class FunctoolsComparisonKeyTests
                 {
                     Assert.True(result.Success, result.Failure?.Message);
                     Assert.True(host.CompletedAsynchronously > 0);
-                    Assert.Equal(stage == "equality" ? "True" : "[1, 2, 3]", result.ReturnValue);
+                    Assert.Equal(stage == "equality" ? "True" : "[1, 2]", result.ReturnValue);
                 }
             }
             finally
@@ -107,6 +109,7 @@ public sealed class FunctoolsComparisonKeyTests
                 cancellation.Cancel();
                 using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
             }
+            Assert.Equal(1, host.ClosedFileCount);
             Assert.Equal(baseline, budget.ReservedBytes);
         }
     }

@@ -40,5 +40,23 @@
     "focusedPassedPerActualFramework": 1130,
     "exactFundingAndCleanupAssertionsPreserved": true,
     "fullDelivery": "Pending corrected checkpoint"
+  },
+  "secondDeliveryFailure": {
+    "runId": 41990811055,
+    "windowsNet10": "One public comparator truth completion timeout5s; all4109 internal and15982 other public cases pass",
+    "ubuntu": "Both ordinary suites and installed consumer pass; original stress still active at this observation",
+    "cause": "Unresolved; original8cases pass unchanged locally per actual framework",
+    "terminal": false
+  },
+  "comparatorFixtureCorrection": {
+    "productionUnchanged": true,
+    "buildSeconds": 29.26,
+    "originalFocusedPassedPerActualFramework": 8,
+    "correctedFocusedPassedPerActualFramework": 91,
+    "deadlinesSeconds": 5,
+    "oneActualComparison": true,
+    "exactCloseAndBudgetAssertions": true,
+    "verification": "Final serial runs after build completion; initial overlapping-build runs retained but not used as qualification",
+    "fullDelivery": "Pending bounded Windows confirmation or next coherent checkpoint; no automatic new full two-platform campaign for this test-only fixture"
   }
 }
