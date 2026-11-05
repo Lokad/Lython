@@ -1,4 +1,4 @@
-# Complete local augmented-update pipeline — retained, delivery pending
+# Complete local augmented-update pipeline — retained and fully qualified
 
 Measured 2026-11-05, `d946c4e8` plus the archived D61 patch; qualified
 `13d69be6` production frozen before commit metadata is the reference. The
@@ -83,6 +83,8 @@ checks local versus retired-operand domains, without checkpoint-count controls.
 
 One wrong solution filename failed before compilation; [original failure](build-refusal.log)
 and [corrected successful build](build-refusal-corrected.log) are preserved.
-Full local4144internal/16004public per actual11/10 pass. Established Windows/Ubuntu,
-original Stress and installed-consumer qualification remains separate/pending.
+Full local4144internal/16004public per actual11/10 pass. Retained `a63708a7`
+qualified by CI42081657838: Windows/Ubuntu, actual11/10, original Stress and
+installed consumers, all eight gates GREEN. [Terminal receipt](delivery-ci-status.json)
+cached; do not requery or replay unchanged qualification.
 No unchanged previous qualification is replayed. Publication remains postponed.

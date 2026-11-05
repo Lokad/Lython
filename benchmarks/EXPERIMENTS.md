@@ -6,7 +6,8 @@ and five metadata ints. B291166.96s/six complete jobs and one justified same-bin
 B29252.01s CSV confirmation pass all gates. Basicloop elapsed−16.05/16.54%;
 CSV confirmation+0.77/+0.99% possible debt, initial adverse/control discrepancy
 and noisy report retained. No whole-script/causalCPU/allocation claim. Full local
-4144internal/16004public per actual11/10 pass; platform delivery is separate.
+4144internal/16004public per actual11/10 pass; a63708a7 delivery42081657838
+GREEN/all8, terminal receipt cached.
 
 The [retained-runtime CPython refresh](results/2026-11-05-runtime-cpython-refresh/README.md)
 measures13d69be6/ec4b versus qualified9c1d/6cb, CPython3.13.16 and independent
