@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Select custom-key equality candidates by their actual Python hash. Remove
+  candidate sets, sorting and intermediate lists while preserving snapshot
+  ownership, insertion order and the stored-entry structural index.
+
 - Invoke custom key hashes for dictionary/set queries and removal, including
   identity hits, and propagate their errors. Native dictionary copies reuse stored
   keys without invoking hashes again. Report the failing nested unhashable value;

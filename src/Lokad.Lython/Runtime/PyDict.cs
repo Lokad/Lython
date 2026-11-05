@@ -24,8 +24,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     private long _protocolBytes;
     private long _protocolSeq;
 
-    // StructuralHash is frozen at insert: the comparer never dispatches guest
-    // code, so it cannot change under a key object and scans never recompute it.
+    // StructuralHash is frozen at insert for internal stored-entry indexing.
+    // Guest equality candidates use Hash exclusively.
     // Layout stays 24 bytes (long + int + int + reference), covered by the
     // existing per-entry rate.
     internal readonly record struct ProtocolEntry(long Seq, int Hash, int StructuralHash, object Key) : IProtocolSideEntry;
@@ -424,15 +424,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
-        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
-        // Same dispatch set and order as the lookup twin (N10 index): the side
-        // phase scans hash-bucketed candidates, then the store phase below.
+        // Actual-hash candidates retain insertion order; the store fallback
+        // below considers only native keys not already resolved by this index.
         var work = 0;
         if (_protocol is not null)
         {
             using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -465,7 +464,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 context.CheckExecution(useSpan);
             }
 
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
+            if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash))
             {
                 storeHit = probe;
                 break;
@@ -487,7 +486,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
+                if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
                     if (_items.TryGetValue(pair.Key, out var stored))
                     {
@@ -565,17 +564,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
-        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
-        // N10 index: the side phase scans only hash-bucketed candidates in insertion order
-        // (same dispatch set and order as the linear scan, so guest == observes the same
-        // sequence over a pre-dispatch snapshot); the store phase below is untouched.
-        // Candidate copies preflight only candidates; work checks run where dispatch happens.
+        // Snapshot actual-hash candidates in insertion order before dispatch.
+        // The native-store fallback excludes already-indexed protocol keys.
         var work = 0;
         if (_protocol is not null)
         {
             using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -604,7 +600,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 context.CheckExecution(useSpan);
             }
 
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
+            if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash))
             {
                 storeHit = probe;
                 break;
@@ -626,7 +622,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
+                if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
                     value = pair.Value;
                     return true;
@@ -682,7 +678,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             using var storage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span);
             var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex,
-                hash, hash, builtinOnly: true, span, context);
+                hash, span, context);
             foreach (var entry in candidates)
             {
                 context.CheckExecution(span);
@@ -789,7 +785,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             {
                 using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                     ProtocolSideIndex.EstimateSnapshotBytes(_protocol.Count, ProtocolEntryBytes), useSpan);
-                var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+                var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
                 foreach (var entry in candidates)
                 {
                     context.CheckExecution(useSpan);
@@ -814,8 +810,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             foreach (var pair in _items.Entries)
             {
                 context.CheckExecution(useSpan);
-                if (!PyHashProtocols.NeedsProtocolKey(pair.Key) &&
-                    (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash))
+                if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash))
                 {
                     nativeMatch = true;
                     break;
@@ -830,8 +825,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 foreach (var pair in storeSnapshot)
                 {
                     context.CheckExecution(useSpan);
-                    if (PyHashProtocols.NeedsProtocolKey(pair.Key) ||
-                        (PyValueComparer.Instance.GetHashCode(pair.Key) != hash && PyValueComparer.Instance.GetHashCode(pair.Key) != structuralHash)) continue;
+                    if (!PyHashProtocols.IsNativeHashMatch(pair.Key, hash)) continue;
                     var match = ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan);
                     context.CheckExecution(useSpan);
                     if (!match) continue;
@@ -930,15 +924,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
-        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
-        // N10 index: removal scans only hash-bucketed candidates (same dispatch set and
-        // order); the store phase below is untouched. Position fixup rides RemoveSideEntry.
+        // Actual-hash candidates retain insertion order. Position fixup rides
+        // RemoveSideEntry; the store fallback considers native keys only.
         var work = 0;
         if (_protocol is not null)
         {
             using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -964,7 +957,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 context.CheckExecution(useSpan);
             }
 
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
+            if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash))
             {
                 storeHit = probe;
                 break;
@@ -985,7 +978,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
                 }
 
                 var pair = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
+                if (PyHashProtocols.IsNativeHashMatch(pair.Key, hash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(pair.Key, key, context, useSpan)))
                 {
                     _items.Remove(pair.Key);
                     RemoveProtocolShadow(pair.Key);

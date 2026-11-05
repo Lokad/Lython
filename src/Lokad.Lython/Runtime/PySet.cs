@@ -423,14 +423,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 index: duplicate checks scan only hash-bucketed candidates (same dispatch
-        // set and order); the store phase below is untouched.
+        // Snapshot actual-hash candidates in insertion order. The store fallback
+        // considers only native items not already resolved through the index.
         var work = 0;
         if (_protocol is not null)
         {
             using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -455,7 +455,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 context.CheckExecution(useSpan);
             }
 
-            if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
+            if (PyHashProtocols.IsNativeHashMatch(existing, hash))
             {
                 storeHit = probe;
                 break;
@@ -476,7 +476,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 }
 
                 var existing = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+                if (PyHashProtocols.IsNativeHashMatch(existing, hash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
                 {
                     return false;
                 }
@@ -557,14 +557,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var hash = storedHash ?? PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 index: membership scans only hash-bucketed candidates in insertion order
-        // (same dispatch set and order as the linear scan). There is no store phase here.
-        // Candidate copies preflight only candidates; work checks run where dispatch happens.
+        // Snapshot actual-hash candidates in insertion order before dispatch.
+        // There is no native-store phase here.
         var work = 0;
         using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
             ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             if ((++work & 63) == 0)
@@ -604,10 +602,10 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var work = 0;
         using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
             ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, useSpan, context);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
         for (var i = 0; i < candidates.Length; i++)
         {
-            // N10 part 1: budget non-collision scans too; the context may be
+            // Check cancellation during non-collision scans too; the context may be
             // null on context-free paths (identity fast path only then).
             if ((++work & 63) == 0 && context is not null && useSpan is not null)
             {
@@ -649,15 +647,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 index: removal scans only hash-bucketed candidates (same dispatch set and
-        // order); the store phase below is untouched. Position fixup rides RemoveSideEntry.
+        // Snapshot actual-hash candidates in insertion order. Position fixup
+        // rides RemoveSideEntry; the store fallback considers native items only.
         var work = 0;
         if (_protocol is not null)
         {
             using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
                 ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, useSpan, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -683,7 +680,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 context.CheckExecution(useSpan);
             }
 
-            if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
+            if (PyHashProtocols.IsNativeHashMatch(existing, hash))
             {
                 storeHit = probe;
                 break;
@@ -704,7 +701,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 }
 
                 var existing = storeSnapshot[i];
-                if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+                if (PyHashProtocols.IsNativeHashMatch(existing, hash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
                 {
                     _ = _items.Remove(existing);
                     RemoveProtocolShadow(existing);
@@ -971,17 +968,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             if (containsIdentity) continue;
             if (other._protocol is null) return false;
 
-            var builtinOnly = !PyHashProtocols.NeedsProtocolKey(entry.Item);
             var candidatesIndex = other._sideIndex!;
             var capacity = (long)candidatesIndex.PositionsForHash(entry.Hash).Count;
-            if (entry.StructuralHash != entry.Hash)
-                capacity += candidatesIndex.PositionsForHash(entry.StructuralHash).Count;
             if (capacity == 0) return false;
 
-            // Cover positions, sorting, list capacity and the final entry copy.
-            // Duplicate/index-filtered positions deliberately overestimate.
+            // Keep conservative funding for the final candidate array through awaits.
+            // Structural links filtered from the bucket deliberately overestimate.
             using var candidateStorage = context.MemoryGovernor.ReserveTemporary(checked(128L + 128L * capacity), span);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex, entry.Hash, entry.StructuralHash, builtinOnly, span, context);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex, entry.Hash, span, context);
             // SnapshotCandidates needs no second preflight: this copy and its
             // construction scratch are already admitted through the await.
             var found = false;

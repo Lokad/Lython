@@ -7,6 +7,46 @@ public sealed class HashQueryCompatibilityTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["structural collisions do not compare different Python hashes", """
+            from dataclasses import dataclass
+            events=[]
+            @dataclass(unsafe_hash=True,eq=False)
+            class Key:
+             value:int=0
+            def key_hash(self):return self.tag
+            def key_eq(self,other):
+             events.append('eq')
+             return False
+            Key.__hash__=key_hash
+            Key.__eq__=key_eq
+            stored=Key()
+            stored.tag=17
+            query=Key()
+            query.tag=18
+            d={stored:1}
+            s={stored}
+            events.clear()
+            print(d.get(query),query in s,d.pop(query,'missing'))
+            s.discard(query)
+            d[query]=2
+            s.add(query)
+            print(len(d),len(s),d.pop(query))
+            s.remove(query)
+            print(len(d),len(s),events)
+            """, "None False missing\n2 2 2\n1 1 []\n"];
+        yield return ["a changed query hash cannot reuse the stored identity hash", """
+            class Key:
+             tag=17
+             def __hash__(self):return self.tag
+            key=Key()
+            d={key:1}
+            s={key}
+            key.tag=18
+            print(d.get(key,'missing'),key in s,d.pop(key,'missing'))
+            try:s.remove(key)
+            except KeyError:print('KeyError')
+            print(len(d),len(s))
+            """, "missing False missing\nKeyError\n1 1\n"];
         yield return ["dictionary queries and removals", """
             events=[]
             class Key:

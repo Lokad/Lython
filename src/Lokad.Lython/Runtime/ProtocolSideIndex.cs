@@ -3,9 +3,10 @@ namespace Lokad.Lython.Runtime;
 // Shared protocol-key side index (N10): hash-bucketed candidate positions so
 // lookups dispatch guest == only over same-hash entries instead of rescanning
 // every key. Dicts and sets home every protocol entry here under both its
-// frozen protocol hash and its frozen structural hash (either key can match,
-// like the dual-key linear scans this replaces), so per-entry cost covers two
-// bucket references. Positions track the insertion-ordered side list exactly:
+// frozen protocol hash and its frozen structural hash. Only the protocol hash
+// selects equality candidates; structural links serve stored-entry identity
+// lookup. Per-entry cost covers up to two bucket references. Positions track
+// the insertion-ordered side list exactly:
 // removals shift survivors, and the fixup decrements every later position (the
 // same O(n) bound the rescans already paid; inserts and lookups drop to their
 // bucket). Snapshots copy only candidates, never the whole list.
@@ -23,8 +24,6 @@ namespace Lokad.Lython.Runtime;
 internal interface IProtocolSideEntry
 {
     int Hash { get; }
-
-    int StructuralHash { get; }
 }
 
 internal sealed class ProtocolSideIndex
@@ -44,14 +43,10 @@ internal sealed class ProtocolSideIndex
     internal IReadOnlyList<int> PositionsForHash(int hash)
         => _buckets.TryGetValue(hash, out var positions) ? positions : Array.Empty<int>();
 
-    // Shared candidate snapshot (N10): collects both hash buckets (either key can
-    // match, like the dual-key linear scans this replaces), sorts positions to
-    // reproduce insertion order, filters the exact dispatch set (builtinOnly keeps
-    // entry-protocol-hash matches only) so no extra guest == runs, and preflights
-    // only the copied candidates. The transient position set is scratch bounded by
-    // the charged population; the retained copy is governed. With no index (which
-    // never happens when the side list is created through its container, but kept
-    // as a defensive fallback), filters the whole list like the old scans.
+    // Buckets already contain unique positions in insertion order. Filter their
+    // structural links, then copy only actual-hash candidates into the final
+    // array, without temporary sets/lists or sorting. No guest code or await
+    // occurs between counting and copying, so this synchronous borrow is stable.
     // The caller keeps construction/candidate storage through all callbacks,
     // including suspension. This helper does not refund a returned live array.
     internal static long EstimateSnapshotBytes(int count, long entryBytes)
@@ -61,8 +56,6 @@ internal sealed class ProtocolSideIndex
         List<TEntry>? entries,
         ProtocolSideIndex? index,
         int hash,
-        int structuralHash,
-        bool builtinOnly,
         LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
         where TEntry : struct, IProtocolSideEntry
@@ -72,42 +65,24 @@ internal sealed class ProtocolSideIndex
             return [];
         }
 
-        if (index is null)
-        {
-            var fallback = new List<TEntry>(entries.Count);
-            foreach (var entry in entries)
-            {
-                PyStructuralGuard.NoteWork(context, span);
-                if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
-                {
-                    fallback.Add(entry);
-                }
-            }
-
-            return fallback.ToArray();
-        }
-
-        var positions = new HashSet<int>();
-        index.CollectCandidates(hash, structuralHash, positions, context, span);
-        if (positions.Count == 0)
-        {
-            return [];
-        }
-
-        var ordered = new List<int>(positions);
-        ExecutionSort.Sort(ordered, context, span);
-        var snapshot = new List<TEntry>(ordered.Count);
-        foreach (var position in ordered)
+        var positions = index!.PositionsForHash(hash);
+        var count = 0;
+        for (var i = 0; i < positions.Count; i++)
         {
             PyStructuralGuard.NoteWork(context, span);
-            var entry = entries[position];
-            if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
-            {
-                snapshot.Add(entry);
-            }
+            if (entries[positions[i]].Hash == hash) count++;
         }
 
-        return snapshot.ToArray();
+        if (count == 0) return [];
+        var snapshot = new TEntry[count];
+        var next = 0;
+        for (var i = 0; i < positions.Count; i++)
+        {
+            PyStructuralGuard.NoteWork(context, span);
+            var entry = entries[positions[i]];
+            if (entry.Hash == hash) snapshot[next++] = entry;
+        }
+        return snapshot;
     }
 
     // Indexes the side-list position about to be appended. Denies before the
@@ -124,14 +99,14 @@ internal sealed class ProtocolSideIndex
         try
         {
             GetBucket(hash).Add(position);
-            GetBucket(structuralHash).Add(position);
+            if (structuralHash != hash) GetBucket(structuralHash).Add(position);
             _liveCount++;
         }
         catch
         {
             // Host-level failure (OOM) after committing: unwind exactly.
             RemovePosition(hash, position);
-            RemovePosition(structuralHash, position);
+            if (structuralHash != hash) RemovePosition(structuralHash, position);
             if (governor is not null)
             {
                 _committedBytes -= IndexBytesPerEntry;
@@ -148,7 +123,7 @@ internal sealed class ProtocolSideIndex
     public void RemoveAt(int removedPosition, int hash, int structuralHash)
     {
         RemovePosition(hash, removedPosition);
-        RemovePosition(structuralHash, removedPosition);
+        if (structuralHash != hash) RemovePosition(structuralHash, removedPosition);
         _liveCount--;
         foreach (var bucket in _buckets.Values)
         {
@@ -170,37 +145,13 @@ internal sealed class ProtocolSideIndex
     public void RemoveForRollback(int position, int hash, int structuralHash, MemoryGovernor? governor)
     {
         RemovePosition(hash, position);
-        RemovePosition(structuralHash, position);
+        if (structuralHash != hash) RemovePosition(structuralHash, position);
         _liveCount--;
         PruneEmptyBuckets();
         if (governor is not null)
         {
             _committedBytes -= IndexBytesPerEntry;
             governor.Release(IndexBytesPerEntry);
-        }
-    }
-
-    // Merges both buckets into one candidate set (positions may repeat across
-    // buckets; the set dedups). Pure reads for the caller to snapshot from.
-    public void CollectCandidates(int hash, int structuralHash, HashSet<int> into,
-        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
-    {
-        if (_buckets.TryGetValue(hash, out var primary))
-        {
-            foreach (var position in primary)
-            {
-                PyStructuralGuard.NoteWork(context, span);
-                _ = into.Add(position);
-            }
-        }
-
-        if (structuralHash != hash && _buckets.TryGetValue(structuralHash, out var secondary))
-        {
-            foreach (var position in secondary)
-            {
-                PyStructuralGuard.NoteWork(context, span);
-                _ = into.Add(position);
-            }
         }
     }
 
