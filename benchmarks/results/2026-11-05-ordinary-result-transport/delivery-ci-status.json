@@ -1,0 +1,67 @@
+{
+  "sourceRevision": "afc3189e3ba5ea2c41936c3ab1b4654230157129",
+  "runId": 42088051016,
+  "url": "https://github.com/Lokad/Lython/actions/runs/42088051016",
+  "status": "completed",
+  "conclusion": "success",
+  "requiredGates": [
+    {
+      "platform": "tests (ubuntu-latest)",
+      "gate": "Test Release (.NET 11)",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T18:53:25Z",
+      "completedAt": "2026-11-05T18:58:20Z"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "gate": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T18:58:20Z",
+      "completedAt": "2026-11-05T19:03:34Z"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "gate": "Verify Release package consumer",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T19:03:34Z",
+      "completedAt": "2026-11-05T19:03:47Z"
+    },
+    {
+      "platform": "tests (ubuntu-latest)",
+      "gate": "Test original stress scales",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T19:03:47Z",
+      "completedAt": "2026-11-05T19:14:59Z"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "gate": "Test Release (.NET 11)",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T18:53:08Z",
+      "completedAt": "2026-11-05T18:57:46Z"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "gate": "Test Release (.NET 10 checkpoint)",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T18:57:46Z",
+      "completedAt": "2026-11-05T19:02:22Z"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "gate": "Verify Release package consumer",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T19:02:22Z",
+      "completedAt": "2026-11-05T19:02:36Z"
+    },
+    {
+      "platform": "tests (windows-latest)",
+      "gate": "Test original stress scales",
+      "conclusion": "success",
+      "startedAt": "2026-11-05T19:02:36Z",
+      "completedAt": "2026-11-05T19:14:43Z"
+    }
+  ],
+  "terminalResultCached": true,
+  "verifiedAt": "2026-11-05T19:43:08.659775+00:00"
+}

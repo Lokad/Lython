@@ -123,7 +123,9 @@ awaited producer cleanup and budget recovery. Existing augmented/reflected,
 promotion, cell/namespace, generator/comprehension, formatting, exception and
 resource checks remain. No test-only fuel/checkpoint counting or synthetic timing.
 
-Full local4150internal/16004public per actual11/10 pass. Established Windows/Ubuntu,
-original Stress and installed-consumer checkpoint remains separate/pending.
+Full local4150internal/16004public per actual11/10 pass. Retained afc3189e
+qualified42088051016 Windows/Ubuntu, actual11/10, original Stress and installed
+consumers: all eight gates GREEN. [Terminal receipt](delivery-ci-status.json)
+cached; never query/replay unchanged qualification.
 No earlier unchanged qualification is replayed. See current PLAN for the next
 bounded redesign gate; this experiment does not complete the performance objective.
