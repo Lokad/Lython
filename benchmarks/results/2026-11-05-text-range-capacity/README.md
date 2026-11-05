@@ -63,8 +63,8 @@ admission cleanup and budget reuse. Existing semantic tests are retained; no
 implementation-mirroring tests or test-only checkpoint counters were introduced.
 
 Baseline6c776d0d is fully qualified by CI42044419339/all8. **Final D53 has focused
-and diagnostic qualification only**; batch full platform/original stress/installed
-consumers at the next coherent retained-runtime checkpoint. Publication postponed;
+and diagnostic qualification only**; full platform/actual.NET11/10/original stress/
+installed-consumer delivery42051400891 has been dispatched on1fa4773e. Publication postponed;
 the broader performance objective remains open.
 
 [Initial contract](source-contract.md), [final contract](final-contract.md),
