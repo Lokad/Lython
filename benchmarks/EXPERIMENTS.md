@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [current compiler source gate](results/2026-11-05-frontend-source-gate/README.md)
+has774text/728report compiler-thread samples with quiet/goldens/owned cleanup.
+Parsing28/34% and static binding25/20% are inclusive; LoweredScript itself~3%.
+Retain unknown maps and diagnostic corrections. Select one current-source
+precedence consolidation reassessment: earlier6–8% compileCPU/30line deletion
+missed a rigid threshold, while fresh-config controls were inconclusive. No
+automatic promotion or new CPU/speedup claim; whole-script objective remains open.
+
 The [native JSON construction consolidation](results/2026-11-05-json-container-construction/README.md)
 retains combined shell/first-table admission and a shared next-token loop. Final
 six-job165s collection establishes allocation −3.79% JSON/−2.24% report; async
