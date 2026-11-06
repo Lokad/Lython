@@ -4,8 +4,10 @@
 runtime reference `612f7755`/frozen `f2078b20`. [Validation](validation.json):
 zero-warning/error Release build,770 public/78 internal focused tests per actual
 .NET11/10. Nine independent Python goldens and twelve ownership/containment cases.
-Full combined view/mapping delivery remains pending. The prior view attempt failed
-one stale negative fixture; its independent correction is committed separately.
+[Combined delivery](delivery-ci.json) on9d40a6db passed Windows/Ubuntu actual
+.NET11/10, original Stress and installed Release consumers: cached42131217218
+GREEN/all8. The prior view attempt failed one stale negative fixture; its independent
+correction is committed separately. Later P01 changes are outside this qualification.
 
 Mapping matching now checks length before getters, extracts every key before
 lookups, detects dynamic duplicates and captures values before subpatterns.
