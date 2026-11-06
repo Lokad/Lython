@@ -27,9 +27,10 @@ proofs still apply. Receiver/default/keyword binding and source/error, cancellat
 stack and ownership checks remain. Guest callbacks use ordinary executable calls.
 
 Full local Release passes **4,210 internal and 16,078 public tests per actual
-.NET 11/.NET 10 runtime**; focused selections pass 1,059/3,406. Full combined
-F02/F03 Windows/Ubuntu, original stress and installed-package checks are pending.
-K01's cached terminal 42145148043 does not qualify this source.
+.NET 11/.NET 10 runtime**; focused selections pass 1,059/3,406. Combined F02/F03
+Windows/Ubuntu, original stress and installed-package delivery is **GREEN** on
+exact ae3a5a5b, cached terminal42155751891/all8. [Delivery evidence](delivery-ci.json)
+excludes later F04/F05; this terminal run will not be queried again.
 
 ## Comparisons and limitations
 

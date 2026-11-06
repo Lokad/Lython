@@ -52,3 +52,6 @@ cleanup; compile-to-result adds fresh compilation/program disposal. Startup,
 fixture staging/reset, worker transport and final teardown are excluded. Persistent
 CPython imports versus per-execution Lython imports remain an asymmetry. Startup,
 pending-I/O latency, RSS/heap and embedding-process latency remain unmeasured.
+
+Combined F02/F03 delivery on ae3a5a5b is GREEN, cached terminal42155751891/all8.
+[Exact scope and steps](../2026-11-06-unified-invocations/delivery-ci.json) exclude later F04/F05. No unchanged qualification was repeated.

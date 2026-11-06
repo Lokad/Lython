@@ -1,5 +1,5 @@
 {
-  "status": "Retained; full local Release passed. Combined F02/F03 platform/stress/installed consumer qualification pending.",
+  "status": "Committed ae3a5a5b, full local and full delivery GREEN; cached terminal42155751891/all8. Excludes later F04/F05.",
   "sourceBase": "c599dac6",
   "finalMeasuredCore": "53391f2fa283e990d9817fb00b3a71d5146fedddcc0aca39c23f7d6515b6fb21",
   "initialMeasuredCore": "c31e8104f276726ac50d4f6ab7395cb33d23930f96b533f33be519e757952540",
