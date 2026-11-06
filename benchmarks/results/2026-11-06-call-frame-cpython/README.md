@@ -29,5 +29,5 @@ CPython elapsed also differs; historical ratio changes alone do not isolate
 Lython source effects. K01's older warm CSV/text debt remains preserved separately.
 No broad whole-script speedup is established by this checkpoint. Existing earlier
 source qualifications were not replayed. Full local4210internal/16088public and
-installed Release consumers pass both actual runtimes; CI42158371981 on1134d6e8
-remains pending. Publication/tagging postponed; performance objective stays open.
+installed Release consumers pass both actual runtimes; full delivery on1134d6e8 is GREEN, cached42158371981/all8.
+[Scope and steps](../2026-11-06-direct-method-operands/delivery-ci.json) exclude B01. Publication/tagging postponed; performance objective stays open.

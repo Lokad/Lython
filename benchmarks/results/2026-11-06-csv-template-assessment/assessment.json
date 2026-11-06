@@ -1,0 +1,26 @@
+{
+  "status": "Withdrawn production prototype; useful independent Python regressions retained",
+  "sourceBase": "ebaa5850, production equivalent1134d6e8",
+  "candidateCore": "1209666291fcbf21357d5662c42c031fec8c07f2b6c99aa3aacb15e7ff56df37",
+  "referenceCore": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+  "sourceDecision": "Preserve one canonical dictionary table. Reject separate shared-key format; prototype cloned a private immutable header/index template. Initial grow-on-extra cache refined before measurement so normal row capacities never doubled.",
+  "focusedPrototype": {
+    "internalPerActualFramework": 125,
+    "publicPerActualFramework": 415,
+    "independentPythonControls": 4
+  },
+  "measurement": "113.39s/four complete jobs/all gates. Warm ordinary CSV-0.27/-0.38%, variable-width-1.89/-1.86%, fresh ordinary-1.91/-2.56%; JSON control+0.26/+1.60%. No allocation/causalCPU claim.",
+  "decision": "Modest affected-workload changes do not justify new cache/index/replacement-lifetime machinery, especially with no established working-storage or allocation gain. Engineering judgment, not a fixed percentage veto or permanent ban. Preserve all positive/adverse observations; consider a different removed phase if new evidence justifies it.",
+  "removed": "All prototype fields, template preparation and indexed-copy helper. No dormant alternative remains; production tree matches qualified1134d6e8.",
+  "restoration": {
+    "nonincrementalReleaseBuild": true,
+    "warnings": 0,
+    "errors": 0,
+    "publicCanonicalCasesPerActualFramework": 44,
+    "actualRuntimes": [
+      ".NET11RC3",
+      ".NET10.0.8"
+    ]
+  },
+  "remaining": "Whole-script performance objective active. Next gate must establish dominant removable operand/scalar/record work before another prototype. Regex remains independent; publication postponed."
+}

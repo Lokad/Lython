@@ -1,0 +1,37 @@
+{
+  "python": "CPython3.13.2 -I -S -X utf8",
+  "cases": [
+    {
+      "name": "record-template-equal-header-identity",
+      "source": "import csv\nfields=['ab','v']\nr=csv.DictReader(['1,2','3,4'],fieldnames=fields)\nold=fields[0]\nfirst=next(r)\nfields[0]=''.join(['a','b'])\nsecond=next(r)\nprint(next(iter(first)) is old,next(iter(second)) is fields[0],next(iter(second)) is old)\nprint(first,second)\n",
+      "expected": "True True False\n{'ab': '1', 'v': '2'} {'ab': '3', 'v': '4'}\n",
+      "stdout": "True True False\n{'ab': '1', 'v': '2'} {'ab': '3', 'v': '4'}\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "record-template-duplicates-and-rest-collision",
+      "source": "import csv\nr=csv.DictReader(['1,2','3,4,5','6,7,8,9'],fieldnames=['a','a','b'],restkey='a',restval='missing')\nprint(list(r))\n",
+      "expected": "[{'a': '2', 'b': 'missing'}, {'a': '4', 'b': '5'}, {'a': ['9'], 'b': '8'}]\n",
+      "stdout": "[{'a': '2', 'b': 'missing'}, {'a': '4', 'b': '5'}, {'a': ['9'], 'b': '8'}]\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "record-template-capacity-and-independent-rows",
+      "source": "import csv\nr=csv.DictReader(['1,2,3,4','5,6,7,8,extra','9,10,11,12'],fieldnames=['a','b','c','d'])\nfirst=next(r)\nsecond=next(r)\nthird=next(r)\nfirst['a']='changed'\nprint(first,second,third)\n",
+      "expected": "{'a': 'changed', 'b': '2', 'c': '3', 'd': '4'} {'a': '5', 'b': '6', 'c': '7', 'd': '8', None: ['extra']} {'a': '9', 'b': '10', 'c': '11', 'd': '12'}\n",
+      "stdout": "{'a': 'changed', 'b': '2', 'c': '3', 'd': '4'} {'a': '5', 'b': '6', 'c': '7', 'd': '8', None: ['extra']} {'a': '9', 'b': '10', 'c': '11', 'd': '12'}\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "record-template-reentrant-header-replacement",
+      "source": "import csv\nfields=['a']\nevents=[]\nclass Key:\n def __hash__(self):\n  if not events:\n   events.append('active')\n   fields[0]='b'\n   events.append(next(reader))\n  return 17\nkey=Key()\nreader=csv.DictReader(['1,extra','2'],fieldnames=fields,restkey=key)\nrow=next(reader)\nprint(row['a'],events[1]['b'],row[key],fields)\n",
+      "expected": "1 2 ['extra'] ['b']\n",
+      "stdout": "1 2 ['extra'] ['b']\n",
+      "stderr": "",
+      "exitCode": 0
+    }
+  ]
+}

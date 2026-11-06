@@ -1,0 +1,19 @@
+{
+  "sourceRevision": "ebaa5850 docs/F05 runtime1134d6e8 plus B01 canonical header template; exact source snapshot/patch",
+  "coreSHA256": {
+    "candidate": "1209666291fcbf21357d5662c42c031fec8c07f2b6c99aa3aacb15e7ff56df37",
+    "control": "1209666291fcbf21357d5662c42c031fec8c07f2b6c99aa3aacb15e7ff56df37",
+    "reference": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "9640bb0c30e2d22f4618e2dd6cc017b637c40e8653dd1537fd300bcab1c6f827",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "812bd52e37b9208a69f391827a4c5ad3d8bc52d29901fbee80822f4969195b07"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused Release125internal/415public per actual.NET11/10, four independent new Python header/reentrancy goldens, final immutable-capacity design. Prototype, not delivered; F05 qualification separate."
+}

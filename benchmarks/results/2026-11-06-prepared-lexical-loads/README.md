@@ -25,8 +25,9 @@ Both fact masks now discard the shadowed outer value. The golden was unchanged;
 the original failed2768/1 run is preserved. Focused2769public/1098internal pass
 per actual.NET11RC3/.NET10.0.8, zero-warning/error Release build. Existing gates
 include cancellation, terminal admission refusal, suspended users and cleanup.
-Full platform/stress/installed qualification is deliberately batched at the next
-coherent runtime boundary; K01's closed42145148043 does not qualify these changes.
+Full platform/stress/installed qualification subsequently passed on ae3a5a5b,
+cached42155751891/all8; see the linked delivery evidence below. K01's earlier
+qualification did not cover these changes.
 
 B311113.56s/four jobs, quiet Azure F4as_v7 Ubuntu24.04.4/.NET11RC3, unchanged
 workerb94/protocol2, normalGC/tiering, CPython3.13.16, two identical-current roles,

@@ -5,7 +5,7 @@
     "control": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
     "reference": "0050f188b0796de76f744075276cb2e5014f33b8c6b0563164036c5b73c6d450"
   },
-  "status": "Retained; full local Release passes actual.NET11RC3/.NET10.0.8. Coherent platform/stress/installed delivery pending.",
+  "status": "Committed1134d6e8; full local and delivery GREEN, cached terminal42158371981/all8. Excludes B01 prototype.",
   "fullInternalPerFramework": 4210,
   "fullPublicPerFramework": 16088,
   "focusedInternalPerFramework": 428,

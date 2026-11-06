@@ -6,7 +6,9 @@ function globals, and corrects generic type-parameter shadowing in static facts.
 Focused checks pass on both actual runtimes. The 113.56-second CSV comparison is
 inconclusive: identical-current roles straddle the baseline, as does the text
 control. Retained for routing simplification and correctness; no speedup claim.
-Full platform, stress and installed-package qualification remains separate.
+Combined F02/F03 delivery is fully qualified on ae3a5a5b, cached42155751891/all8;
+later F04/F05 is fully qualified on1134d6e8, cached42158371981/all8. These terminal
+qualifications are closed; subsequent CSV template work was withdrawn.
 
 The [current CSV construction source gate](results/2026-11-06-csv-construction-source-gate/README.md)
 records existing native-return helpers and one stable ordinary CSV frame size.
@@ -3027,3 +3029,11 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   CSV/text/JSON/report jobs328.12s/all gates. Primary guide refreshed. Fresh text
   +1.75-2.01% against F04 is accepted regression debt, report variable; no broad
   speedup claim. Ordinary method allocation/elapsed improvements stay separate.
+
+- [CSV header template assessment, B321](results/2026-11-06-csv-template-assessment/README.md):
+  production prototype withdrawn after four complete jobs113.39s/all gates. Ordinary
+  warm CSV essentially flat; variable/fresh gains modest, no allocation gain proved.
+  New cache/lifetime machinery did not justify its cost. All source variants and
+  observations preserved; four independent Python regressions retained. Production
+  restored to qualified1134d6e8, nonincremental rebuild and44 canonical CSV cases
+  pass both actual runtimes. No dormant template or alternate dictionary format.

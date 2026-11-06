@@ -16,7 +16,9 @@ pending argument reads, cancellation, terminal refusal through guest suppression
 finally returns, no later effects and reusable shared allowance. Two expired
 HasReceiver=false checks now require the native shortcut opcode to be absent;
 keyword calls still use the general binder. No public/Python contract changes.
-Final platform/stress/installed consumers are pending; prior F03 CI is separate.
+Full Windows/Ubuntu, original stress and installed-consumer delivery is **GREEN**
+on exact1134d6e8, cached terminal42158371981/all8. [Delivery evidence](delivery-ci.json)
+excludes the later B01 CSV prototype; never requery this terminal run.
 
 ## Whole-script observations
 
