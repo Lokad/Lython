@@ -293,6 +293,11 @@ maps are immutable shared metadata. Python default tuples/dictionaries remain
 distinct per function and reflect later mutation. Private default storage stays
 admitted through awaited evaluation and construction.
 
+Plain builtin functions and constructor parameter layouts are fixed shared
+metadata. Every execution still constructs its own mutable builtin types,
+exception objects and namespace. A function's `__self__` resolves through the
+current caller; shared definitions retain no execution, host or caller token.
+
 Ordinary positional calls to executable functions with slot-local storage advance
 an explicit caller/callee chain in the same engine. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`

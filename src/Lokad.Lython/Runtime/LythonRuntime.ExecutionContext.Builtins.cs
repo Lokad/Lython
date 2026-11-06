@@ -4,29 +4,75 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private static readonly LythonCallableSignature IntSignature
-            = LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
-        private static readonly LythonCallableSignature FloatSignature
-            = LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
-
-        // These fixed plain functions have no receiver, run state or type caches:
-        // BuiltinCallable's mutable slots are gated on builtin type names. Their
-        // __self__ is resolved from the caller context, not stored on the callable.
+        // Plain functions retain no run state. Their __self__ comes from the
+        // active caller; mutable types and their caches are constructed per run.
         private static readonly BuiltinCallable SharedLen = BuiltinCallable.Create("len", Len, LenAsync);
-        private static readonly BuiltinCallable SharedRepr = BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"]);
-        private static readonly BuiltinCallable SharedAscii = BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"]);
-        private static readonly BuiltinCallable SharedFormat = BuiltinCallable.Create("format", Format, FormatAsync, ["value", "format_spec"], requiredCount: 1);
         private static readonly BuiltinCallable SharedAbs = BuiltinCallable.Create("abs", Abs, AbsAsync, ["x"]);
-        private static readonly BuiltinCallable SharedPow = BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2);
-        private static readonly BuiltinCallable SharedRound = BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1);
-        private static readonly BuiltinCallable SharedDivMod = BuiltinCallable.Create("divmod", DivMod, DivModAsync, ["a", "b"]);
-        private static readonly BuiltinCallable SharedBin = BuiltinCallable.Create("bin", Bin, ["number"]);
-        private static readonly BuiltinCallable SharedOct = BuiltinCallable.Create("oct", Oct, ["number"]);
-        private static readonly BuiltinCallable SharedHex = BuiltinCallable.Create("hex", Hex, ["number"]);
-        private static readonly BuiltinCallable SharedChr = BuiltinCallable.Create("chr", Chr, ["i"]);
-        private static readonly BuiltinCallable SharedOrd = BuiltinCallable.Create("ord", Ord, ["c"]);
-        private static readonly BuiltinCallable SharedSorted = BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync);
         private static readonly BuiltinCallable SharedSum = BuiltinCallable.Create(LythonCallableSignature.Create("sum", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sum, SumAsync);
+
+        private static readonly (string Name, object Value)[] SharedFunctions =
+        [
+            ("open", new OpenCallable()),
+            ("print", new PrintCallable()),
+            ("input", BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0)),
+            ("repr", BuiltinCallable.Create("repr", Repr, ReprAsync, ["value"])),
+            ("ascii", BuiltinCallable.Create("ascii", Ascii, AsciiAsync, ["value"])),
+            ("format", BuiltinCallable.Create("format", Format, FormatAsync, ["value", "format_spec"], requiredCount: 1)),
+            ("len", SharedLen),
+            ("sorted", BuiltinCallable.Create(LythonCallableSignature.Create("sorted", ["iterable", "key", "reverse"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Sorted, SortedAsync)),
+            ("any", BuiltinCallable.Create("any", Any, AnyAsync)),
+            ("all", BuiltinCallable.Create("all", All, AllAsync)),
+            ("min", new MinMaxCallable(ExtremumOperation.Minimum)),
+            ("max", new MinMaxCallable(ExtremumOperation.Maximum)),
+            ("sum", SharedSum),
+            ("abs", SharedAbs),
+            ("pow", BuiltinCallable.Create("pow", Pow, ["base", "exp", "mod"], requiredCount: 2)),
+            ("round", BuiltinCallable.Create("round", Round, ["number", "ndigits"], requiredCount: 1)),
+            ("divmod", BuiltinCallable.Create("divmod", DivMod, DivModAsync, ["a", "b"])),
+            ("bin", BuiltinCallable.Create("bin", Bin, ["number"])),
+            ("oct", BuiltinCallable.Create("oct", Oct, ["number"])),
+            ("hex", BuiltinCallable.Create("hex", Hex, ["number"])),
+            ("chr", BuiltinCallable.Create("chr", Chr, ["i"])),
+            ("ord", BuiltinCallable.Create("ord", Ord, ["c"])),
+            ("iter", BuiltinCallable.Create("iter", Iter, IterAsync)),
+            ("next", BuiltinCallable.Create(LythonCallableSignature.Create("next", ["iterator", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2), Next, NextAsync)),
+            ("isinstance", BuiltinCallable.Create("isinstance", IsInstance, ["value", "type"], requiredCount: 2)),
+            ("issubclass", BuiltinCallable.Create("issubclass", IsSubclass, ["type", "base"], requiredCount: 2)),
+            ("getattr", BuiltinCallable.Create("getattr", GetAttr, GetAttrAsync, ["object", "name", "default"], requiredCount: 2)),
+            ("hasattr", BuiltinCallable.Create("hasattr", HasAttr, HasAttrAsync, ["object", "name"], requiredCount: 2)),
+            ("setattr", BuiltinCallable.Create("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3)),
+            ("delattr", BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2)),
+            ("dir", BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0)),
+            ("vars", BuiltinCallable.Create("vars", Vars, VarsAsync, ["object"], requiredCount: 0)),
+            ("globals", BuiltinCallable.Create("globals", Globals)),
+            ("locals", BuiltinCallable.Create("locals", Locals)),
+            ("callable", BuiltinCallable.Create("callable", Callable, ["object"])),
+            ("hash", BuiltinCallable.Create("hash", Hash, HashAsync, ["object"])),
+            ("id", BuiltinCallable.Create("id", Id)),
+        ];
+
+        // Signature interning may lock and package parameter arrays. Do it once
+        // for immutable constructor metadata, independently of each fresh type.
+        private static class BuiltinTypeSignatures
+        {
+            internal static readonly LythonCallableSignature Range = LythonCallableSignature.Create("range");
+            internal static readonly LythonCallableSignature Enumerate = LythonCallableSignature.Create("enumerate", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Reversed = LythonCallableSignature.Create("reversed", ["sequence"]);
+            internal static readonly LythonCallableSignature Map = LythonCallableSignature.Create("map");
+            internal static readonly LythonCallableSignature Filter = LythonCallableSignature.Create("filter", ["function", "iterable"]);
+            internal static readonly LythonCallableSignature Slice = LythonCallableSignature.Create("slice");
+            internal static readonly LythonCallableSignature Bool = LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Int = LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Float = LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Bytes = LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Staticmethod = LythonCallableSignature.Create("staticmethod", ["func"], requiredCount: 1);
+            internal static readonly LythonCallableSignature Classmethod = LythonCallableSignature.Create("classmethod", ["func"], requiredCount: 1);
+            internal static readonly LythonCallableSignature Property = LythonCallableSignature.Create("property", ["fget", "fset", "fdel", "doc"], requiredCount: 0);
+            internal static readonly LythonCallableSignature Super = LythonCallableSignature.Create("super");
+            internal static readonly LythonCallableSignature List = LythonCallableSignature.Create("list", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Tuple = LythonCallableSignature.Create("tuple", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            internal static readonly LythonCallableSignature Set = LythonCallableSignature.Create("set", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        }
 
         internal static bool IsLengthBuiltin(object value) => ReferenceEquals(value, SharedLen);
         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
@@ -73,38 +119,14 @@ internal sealed partial class LythonRuntime
             {
                 ["object"] = objectType,
                 ["type"] = typeType,
-                ["open"] = new OpenCallable(),
-                ["print"] = new PrintCallable(),
-                ["input"] = BuiltinCallable.Create("input", Input, InputAsync, ["prompt"], requiredCount: 0),
                 ["str"] = new StrCallable(),
-                ["repr"] = SharedRepr,
-                ["ascii"] = SharedAscii,
-                ["format"] = SharedFormat,
-                ["len"] = SharedLen,
-                ["sorted"] = SharedSorted,
-                ["any"] = BuiltinCallable.Create("any", Any, AnyAsync),
-                ["all"] = BuiltinCallable.Create("all", All, AllAsync),
-                ["min"] = new MinMaxCallable(ExtremumOperation.Minimum),
-                ["max"] = new MinMaxCallable(ExtremumOperation.Maximum),
-                ["sum"] = SharedSum,
-                ["abs"] = SharedAbs,
-                ["pow"] = SharedPow,
-                ["round"] = SharedRound,
-                ["divmod"] = SharedDivMod,
-                ["bin"] = SharedBin,
-                ["oct"] = SharedOct,
-                ["hex"] = SharedHex,
-                ["chr"] = SharedChr,
-                ["ord"] = SharedOrd,
-                ["range"] = BuiltinCallable.Create("range", Range),
-                ["enumerate"] = BuiltinCallable.Create(LythonCallableSignature.Create("enumerate", ["iterable", "start"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Enumerate),
+                ["range"] = BuiltinCallable.Create(BuiltinTypeSignatures.Range, Range),
+                ["enumerate"] = BuiltinCallable.Create(BuiltinTypeSignatures.Enumerate, Enumerate),
                 ["zip"] = new ZipCallable(),
-                ["iter"] = BuiltinCallable.Create("iter", Iter, IterAsync),
-                ["next"] = BuiltinCallable.Create(LythonCallableSignature.Create("next", ["iterator", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2), Next, NextAsync),
-                ["reversed"] = BuiltinCallable.Create("reversed", Reversed, ["sequence"]),
-                ["map"] = BuiltinCallable.Create("map", Map, MapAsync),
-                ["filter"] = BuiltinCallable.Create("filter", Filter, FilterAsync, ["function", "iterable"]),
-                ["slice"] = BuiltinCallable.Create("slice", Slice),
+                ["reversed"] = BuiltinCallable.Create(BuiltinTypeSignatures.Reversed, Reversed),
+                ["map"] = BuiltinCallable.Create(BuiltinTypeSignatures.Map, Map, MapAsync),
+                ["filter"] = BuiltinCallable.Create(BuiltinTypeSignatures.Filter, Filter, FilterAsync),
+                ["slice"] = BuiltinCallable.Create(BuiltinTypeSignatures.Slice, Slice),
                 ["BaseException"] = new ExceptionTypeValue("BaseException"),
                 ["Exception"] = new ExceptionTypeValue("Exception"),
                 ["ArithmeticError"] = new ExceptionTypeValue("ArithmeticError"),
@@ -147,36 +169,24 @@ internal sealed partial class LythonRuntime
                 ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
                 ["GeneratorExit"] = new ExceptionTypeValue("GeneratorExit"),
                 ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
-                ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool, BoolAsync),
-                ["int"] = BuiltinCallable.Create(IntSignature, Int, IntAsync),
+                ["bool"] = BuiltinCallable.Create(BuiltinTypeSignatures.Bool, Bool, BoolAsync),
+                ["int"] = BuiltinCallable.Create(BuiltinTypeSignatures.Int, Int, IntAsync),
                 ["complex"] = new PyBuiltinRuntimeType("complex", ConstructComplex, null, ConstructComplexAsync),
-                ["float"] = BuiltinCallable.Create(FloatSignature, Float, FloatAsync),
-                ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),
-                ["staticmethod"] = BuiltinCallable.Create("staticmethod", StaticMethod, ["func"], requiredCount: 1),
-                ["classmethod"] = BuiltinCallable.Create("classmethod", ClassMethod, ["func"], requiredCount: 1),
-                ["property"] = BuiltinCallable.Create("property", Property, PropertyAsync, ["fget", "fset", "fdel", "doc"], requiredCount: 0),
-                ["super"] = BuiltinCallable.Create("super", Super),
-                ["isinstance"] = BuiltinCallable.Create("isinstance", IsInstance, ["value", "type"], requiredCount: 2),
-                ["issubclass"] = BuiltinCallable.Create("issubclass", IsSubclass, ["type", "base"], requiredCount: 2),
-                ["getattr"] = BuiltinCallable.Create("getattr", GetAttr, GetAttrAsync, ["object", "name", "default"], requiredCount: 2),
-                ["hasattr"] = BuiltinCallable.Create("hasattr", HasAttr, HasAttrAsync, ["object", "name"], requiredCount: 2),
-                ["setattr"] = BuiltinCallable.Create("setattr", SetAttr, ["object", "name", "value"], requiredCount: 3),
-                ["delattr"] = BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2),
-                ["dir"] = BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0),
-                ["vars"] = BuiltinCallable.Create("vars", Vars, VarsAsync, ["object"], requiredCount: 0),
-                ["globals"] = BuiltinCallable.Create("globals", Globals),
-                ["locals"] = BuiltinCallable.Create("locals", Locals),
-                ["callable"] = BuiltinCallable.Create("callable", Callable, ["object"]),
-                ["hash"] = BuiltinCallable.Create("hash", Hash, HashAsync, ["object"]),
-                ["id"] = BuiltinCallable.Create("id", Id),
-                ["list"] = BuiltinCallable.Create(LythonCallableSignature.Create("list", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), List, ListAsync),
-                ["tuple"] = BuiltinCallable.Create(LythonCallableSignature.Create("tuple", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Tuple, TupleAsync),
+                ["float"] = BuiltinCallable.Create(BuiltinTypeSignatures.Float, Float, FloatAsync),
+                ["bytes"] = BuiltinCallable.Create(BuiltinTypeSignatures.Bytes, Bytes, BytesAsync),
+                ["staticmethod"] = BuiltinCallable.Create(BuiltinTypeSignatures.Staticmethod, StaticMethod),
+                ["classmethod"] = BuiltinCallable.Create(BuiltinTypeSignatures.Classmethod, ClassMethod),
+                ["property"] = BuiltinCallable.Create(BuiltinTypeSignatures.Property, Property, PropertyAsync),
+                ["super"] = BuiltinCallable.Create(BuiltinTypeSignatures.Super, Super),
+                ["list"] = BuiltinCallable.Create(BuiltinTypeSignatures.List, List, ListAsync),
+                ["tuple"] = BuiltinCallable.Create(BuiltinTypeSignatures.Tuple, Tuple, TupleAsync),
                 ["dict"] = new DictCallable(),
-                ["set"] = BuiltinCallable.Create(LythonCallableSignature.Create("set", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Set, SetAsync),
+                ["set"] = BuiltinCallable.Create(BuiltinTypeSignatures.Set, Set, SetAsync),
                 ["Ellipsis"] = PyEllipsis.Instance,
                 ["NotImplemented"] = PyNotImplemented.Instance,
             };
 
+            foreach (var (name, value) in SharedFunctions) builtins.Add(name, value);
             return builtins;
         }
     }

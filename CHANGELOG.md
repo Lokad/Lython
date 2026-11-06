@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare fixed builtin function definitions and constructor signatures once,
+  removing their repeated construction and signature-interning lookups from
+  invocation setup. Preserve private mutable type/exception graphs, builtin
+  namespaces and caller-specific module identities.
+
 - Route pending frame exceptions at resumption after operand cleanup, preserving
   generator delegation and original instruction spans. Remove the duplicate
   return-completion flag and repeated pending-error polling from ordinary

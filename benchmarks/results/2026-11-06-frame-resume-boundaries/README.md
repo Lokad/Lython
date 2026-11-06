@@ -90,3 +90,9 @@ assertions. No architecture-only test or exact-checkpoint counter was added.
 Platform/original Stress/installed-package qualification belongs to the next
 combined delivery checkpoint; it is not inferred from local checks. The previous
 runtime f2ce53db remains fully qualified as GREEN42294911136. Publication postponed.
+
+Delivery closure: runtime source4fad63c5 is fully qualified at evidence/test
+correctiona4a1c306, GREEN42306860444/all eight delivery gates. See the cached
+[receipt](../2026-11-06-current-cpython/delivery-ci-corrected.json) and original
+Ubuntu allocation-test observation there. No runtime change was needed for
+that measurement correction. Later R22 remains separately qualified.

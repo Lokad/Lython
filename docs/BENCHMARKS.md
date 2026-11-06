@@ -18,11 +18,11 @@ Ranges are medians from two independent identical-build processes, not confidenc
 intervals. Control is their absolute difference relative to candidate; IQR is the
 larger Lython-role interquartile range/median. JSON fresh and warm report remain variable.
 These measurements describe the recorded source, not future HEAD. Frozen core
-`c3e65ad3` has the recorded runtime source. Full local ordinary/focused Release
-and installed consumers pass both runtimes. Windows delivery passes; updated
-Ubuntu qualification is pending after an allocation-test measurement failure.
-This source is not yet fully platform-qualified. Private development regex
-adapters are outside the comparison.
+`c3e65ad3` has the recorded runtime source. That source passed Windows/Ubuntu,
+actual .NET11/10, original Stress and installed-package consumers at a4a1c306.
+The original allocation-test measurement failure and corrected endpoint remain
+in the evidence. Later initializer work and private development regex adapters
+are outside this comparison.
 [Identity, observations and qualification](../benchmarks/results/2026-11-06-current-cpython/README.md).
 
 ## Warm execution, compilation and startup
@@ -90,6 +90,7 @@ measure affected workloads; percentages are not additive or broad CPU claims:
 
 | Change / affected workload | Measured result | Limits / evidence |
 | --- | --- | --- |
+| Fixed builtin initialization / configuration | Warm elapsed −1.13–2.44%; fresh −1.43% to +0.13% versus4fad63c5 | Removes2,688B of reflected factory allocation per invocation. Compilation control −1.20–1.63%; text role spread4.10%. No broad CPU gain. [R22](../benchmarks/results/2026-11-06-builtin-initialization/README.md) |
 | Frame resumption / text helpers | Warm elapsed −3.00–5.59%; fresh −0.79% to +0.02% versus f2ce53db | Allocation flat. Unchanged compilation control −1.47–2.23% limits precision; no general CPU or CPython-baseline claim. [R21](../benchmarks/results/2026-11-06-frame-resume-boundaries/README.md) |
 | Shared record keys / JSON and report | JSON warm elapsed −10.89–12.53%; report warm −5.36–8.80%, fresh −8.53–10.52% versus b542b601 | Separate complete-job allocation −14.98–14.99% JSON, −9.43% report. Text confirmation −1.21% to +5.53%; possible regression accepted as debt. CSV coarse CPU adverse. Source pair core67f84196; primary five-script baseline above measures4fad63c5. [R20](../benchmarks/results/2026-11-06-record-layout/README.md) |
 | Caller-owned regex captures / extraction | Warm elapsed −3.62–5.17%; fresh −4.58–6.40% versus b6650f09 | Same optional 0.4 producer; control −2.13% to +0.10%. Direct cursor allocation −20.34% is a separate measurement. Regex remains about 7× CPython. [U04](../benchmarks/results/2026-11-06-regex-capture-ownership/README.md) |

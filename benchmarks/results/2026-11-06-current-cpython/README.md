@@ -39,3 +39,9 @@ Do not label this source fully platform-qualified until those gates pass.
 The previous f2ce53db runtime remains fully qualified under GREEN42294911136.
 Publication/tagging postponed. The performance objective remains active: the text
 gap and earlier source-pair debt are not explained by this aggregate refresh.
+
+Later qualification: corrected measurement assertion commita4a1c306 passes
+CI42306860444, all eight Windows/Ubuntu ordinary11/10, original Stress and
+installed-consumer gates verified in delivery-ci-corrected.json. Production
+runtime source remains4fad63c5 and matches the measured source. The original
+failure is preserved. This closes R21 delivery, not later initializer work.

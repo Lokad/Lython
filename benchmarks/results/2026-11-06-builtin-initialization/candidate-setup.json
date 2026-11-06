@@ -1,0 +1,52 @@
+{
+  "source": "a4a1c306/4fad63c5 runtime",
+  "coreSHA256": "A87CD017C49EE548751D2D22F5977913CCB9DCF14D27DF3778C477BEFBF26088",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "clockFrequency": 10000000,
+  "rows": [
+    {
+      "batch": 0,
+      "iterations": 1024,
+      "elapsedTicks": 72004,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 1,
+      "iterations": 1024,
+      "elapsedTicks": 49459,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 2,
+      "iterations": 1024,
+      "elapsedTicks": 45403,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 3,
+      "iterations": 1024,
+      "elapsedTicks": 40789,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 4,
+      "iterations": 1024,
+      "elapsedTicks": 40988,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 5,
+      "iterations": 1024,
+      "elapsedTicks": 41014,
+      "allocatedBytes": 10625064
+    },
+    {
+      "batch": 6,
+      "iterations": 1024,
+      "elapsedTicks": 37771,
+      "allocatedBytes": 10625064
+    }
+  ],
+  "boundary": "Reflected builtin-table construction only; warm desktop diagnostic, not whole-script or CPU attribution",
+  "forcedCollections": false
+}

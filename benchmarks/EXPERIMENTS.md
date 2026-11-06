@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [R22 builtin initializer](results/2026-11-06-builtin-initialization/README.md)
+prepares fixed functions/signatures once while preserving run-private mutable
+types/namespaces. It removes2,688B of factory allocation per invocation. B368
+completes88s/all gates: config warm−1.13–2.44%, fresh−1.43% to+0.13%; unchanged
+compilation also improves and text has4.10% identical-role spread. No broad CPU
+gain or closure of text debt is established. Focused actual11/10 passes; complete
+delivery qualification remains separate.
+
 The [R20/R21 CPython refresh](results/2026-11-06-current-cpython/README.md)
 records all fifteen compile/warm/fresh jobs in312s. Warm text remains1.88–1.90×
 CPython, JSON1.08–1.09×. Identical-role variation and separate clock boundaries
