@@ -31,7 +31,9 @@ internal static class PyHashProtocols
     // comparer bit-for-bit as before.
     public static bool NeedsProtocolKey(object key) => key switch
     {
-        PyInstance instance => HasCustomSlot(instance, "__eq__") || HasCustomSlot(instance, "__hash__"),
+        // Mutable classes can acquire slots after insertion; their stored keys
+        // always require contextual equality, even with initial object defaults.
+        PyInstance => true,
         PySlice slice => SliceNeedsProtocol(slice),
         _ when PyTupleLike.TryGetItems(key, out var items) => TupleNeedsProtocol(items),
         _ => false,
@@ -58,11 +60,6 @@ internal static class PyHashProtocols
         PyStructuralGuard.NoteWork();
         return NeedsProtocolKey(slice.Start) || NeedsProtocolKey(slice.Stop) || NeedsProtocolKey(slice.Step);
     }
-
-    // Indexed protocol keys are resolved separately. Native-store fallback may
-    // compare only native keys with the query's actual Python hash.
-    public static bool IsNativeHashMatch(object key, int hash)
-        => !NeedsProtocolKey(key) && PyValueComparer.Instance.GetHashCode(key) == hash;
 
     // One normalized hash for public hash(), table buckets and tuple elements.
     public static int GetProtocolHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

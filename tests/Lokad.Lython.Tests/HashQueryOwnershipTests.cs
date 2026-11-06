@@ -22,12 +22,12 @@ public sealed class HashQueryOwnershipTests
         var observedCount = -1;
         hook.RefuseGrowth = bytes =>
         {
-            if (bytes != PySet.ProtocolEntryBytes) return false;
+            if (bytes <= 0) return false;
             observedCount = container.Count;
             return true;
         };
         // Context-free storage insertion is also used by native construction;
-        // it must admit metadata before publishing a retained member.
+        // it must admit native capacity/metadata before publishing a retained member.
         var failure = Assert.Throws<LythonRuntimeException>(() => container.Add(context.Variables["key"]));
         Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);

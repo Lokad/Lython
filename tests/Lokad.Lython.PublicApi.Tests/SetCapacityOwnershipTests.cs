@@ -2,7 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-public sealed class SetNumericStoragePolicyTests : LifetimeScenario
+public sealed class SetCapacityOwnershipTests : LifetimeScenario
 {
     [Theory]
     [InlineData(false)]

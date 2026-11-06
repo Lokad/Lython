@@ -1,0 +1,6 @@
+{
+  "stage": "local catalog validation before upload/launch",
+  "error": "Expected csv-grouping-helpers case; catalog contains scripts.csv-summary-functions.large",
+  "measurementStarted": false,
+  "runtimeChanged": false
+}

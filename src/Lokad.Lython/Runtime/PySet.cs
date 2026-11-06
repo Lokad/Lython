@@ -1,1091 +1,200 @@
 using Lokad.Lython.Runtime.Text;
+using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Runtime;
 
+// Sets use the same actual-hash entry authority as dictionaries. Its shell
+// estimate covers this wrapper too; values are an internal shared None singleton.
 internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
 {
-    private HashSet<object> _items;
-    private MemoryGovernor? _memoryGovernor;
-    private LythonSourceSpan? _allocationSpan;
-    private long _committedBytes;
-    private long _numericStorageBytes;
-
-    // Structural version for iteration safety, mirroring PyDict: bumped on every
-    // actual membership change (not on no-op adds, discards of missing items, or
-    // capacity-only growth). Iteration checks it on every step and raises a
-    // Python error instead of leaking a CLR collection-modified exception or
-    // silently iterating stale storage after a rebuild.
+    private readonly PyDict _store;
     private int _version;
 
-    // Protocol-item side index (R13b): items needing __hash__/__eq__ dispatch
-    // bypass HashSet probing (which cannot run guest code) and scan with
-    // precomputed hashes plus element ==. Dual-homed like PyDict: every
-    // entry lives in the fast table (iteration, Count, copies untouched)
-    // with a shadow here carrying its contextual hash for dispatch scans.
-    // (N10: snapshots preflighted, scans budgeted, side candidates indexed
-    // by protocol hash through the shared ProtocolSideIndex.)
-    private List<ProtocolEntry>? _protocol;
-    private ProtocolSideIndex? _sideIndex;
-    private long _protocolBytes;
-    private long _protocolSeq;
-
-    // StructuralHash is frozen at insert: the comparer never dispatches guest
-    // code, so it cannot change under an item object and scans never recompute it.
-    // Layout stays 24 bytes (long + int + int + reference), covered by the
-    // existing per-entry rate.
-    internal readonly record struct ProtocolEntry(long Seq, int Hash, int StructuralHash, object Item) : IProtocolSideEntry;
-
-    internal const long ProtocolEntryBytes = 64;
-    // Committed capacity, not live CLR capacity: it lags behind after a failed
-    // growth so the retry re-charges instead of riding enlarged storage for free.
-    private int _capacity;
-
-    // MG04: the wrapper plus its empty table object outlive every capacity
-    // decision, so each distinct governed set owns one shell charge for its
-    // lifetime (at the constructed-function shell rate, covering the measured
-    // ~120 omitted bytes per empty set). Backing capacity stays separate:
-    // Clear releases it while the shell persists, and regrowth re-charges it.
-    private const long SetShellBytes = 128;
-    private bool _shellCharged;
-
-    public PySet()
-    {
-        _items = new HashSet<object>(PyValueComparer.Instance);
-    }
-
+    public PySet() : this(PyDict.CreateSetStorage(null, null)) { }
+    private PySet(PyDict store) => _store = store;
     public PySet(MemoryGovernor governor) : this(governor, null) { }
-
-    public PySet(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        : this()
+    public PySet(MemoryGovernor governor, LythonSourceSpan? allocationSpan) : this(PyDict.CreateSetStorage(governor, allocationSpan)) { }
+    public PySet(IEnumerable<object> items) : this(items is PySet source ? new PyDict(source._store) : PyDict.CreateSetStorage(null, null))
     {
-        _memoryGovernor = governor;
-        _allocationSpan = allocationSpan;
-        ChargeShell();
+        if (items is PySet) return;
+        try { foreach (var item in items) Add(item); }
+        catch { ReleaseUnpublishedStorage(); throw; }
     }
-
-    public PySet(IEnumerable<object> items)
-        : this()
-    {
-        foreach (var item in items)
-        {
-            _items.Add(item);
-        }
-    }
-
     public PySet(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
-
     public PySet(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        : this(governor, allocationSpan)
+        : this(items is PySet source ? new PyDict(source._store, governor, allocationSpan) : PyDict.CreateSetStorage(governor, allocationSpan))
     {
+        if (items is PySet) return;
         try
         {
-            // Reserve the table before any copy exists. Sized snapshots then ride
-            // a transient reservation while they coexist with the table; the
-            // snapshot keeps enumeration robust when reentrant user equality code
-            // mutates the source mid-copy.
-            if (items is object[] array)
-            {
-                EnsureCapacity(array.Length);
-                foreach (var item in array)
-                {
-                    _items.Add(item);
-                }
-
-                ChargeInitialNumericStorage();
-                return;
-            }
-
-            if (items is PySet other)
-            {
-                EnsureCapacity(other.Count);
-                if (other.Count == 0)
-                {
-                    return;
-                }
-
-                using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(other.Count), allocationSpan);
-                var materialized = other._items.ToArray();
-                foreach (var item in materialized)
-                {
-                    _items.Add(item);
-                }
-
-                ChargeInitialNumericStorage();
-                return;
-            }
-
-            if (items is ICollection<object> collection)
-            {
-                EnsureCapacity(collection.Count);
-                if (collection.Count == 0)
-                {
-                    return;
-                }
-
-                using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(collection.Count), allocationSpan);
-                var materialized = new object[collection.Count];
-                collection.CopyTo(materialized, 0);
-                foreach (var item in materialized)
-                {
-                    _items.Add(item);
-                }
-
-                ChargeInitialNumericStorage();
-                return;
-            }
-
-            // Lazy source: no count exists to pre-size from, so Add governs each
-            // growth step with the committed-capacity atomicity above instead of
-            // draining the whole source into an uncharged array first. Add funds
-            // each insertion, so no bulk pass is needed here.
-            foreach (var item in items)
-            {
-                _ = Add(item);
-            }
+            if (items is ICollection<object> sized) EnsureCapacity(sized.Count);
+            foreach (var item in items) Add(item);
         }
-        catch
-        {
-            ReleaseUnpublishedStorage();
-            throw;
-        }
+        catch { ReleaseUnpublishedStorage(); throw; }
     }
-
-    private static long EstimateSnapshotBytes(int count) => 24L + (8L * count);
-
-    // Filter scratch holds only references, so an empty bound allocates
-    // nothing and reserves nothing: filtering an empty set stays free even
-    // under a zero budget.
-    private static long EstimateFilterBytes(int count) => count == 0 ? 0L : 24L + (8L * count);
-
-    // Owns the shell once: construction and first-attach are the only paths
-    // that introduce a governed set, so the flag makes each distinct object
-    // pay exactly once while aliases and re-attaches ride free.
-    private void ChargeShell()
-    {
-        if (_shellCharged || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        _memoryGovernor.Reserve(SetShellBytes, _allocationSpan);
-        _memoryGovernor.Commit(SetShellBytes);
-        _shellCharged = true;
-    }
-
-    public PySet(PySet other)
-    {
-        try
-        {
-            _items = new HashSet<object>(other._items, PyValueComparer.Instance);
-            _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
-            _protocolBytes = 0;
-            _protocolSeq = other._protocolSeq;
-            if (other._sideIndex is not null)
-            {
-                _sideIndex = new ProtocolSideIndex();
-                _sideIndex.CloneFrom(other._sideIndex, null, null);
-            }
-            _memoryGovernor = other._memoryGovernor;
-            _allocationSpan = other._allocationSpan;
-            if (_memoryGovernor is not null)
-            {
-                EnsureCapacity(other.Count);
-                ChargeInitialNumericStorage();
-            }
-
-            ChargeShell();
-        }
-        catch
-        {
-            ReleaseUnpublishedStorage();
-            throw;
-        }
-    }
-
+    public PySet(PySet other) : this(new PyDict(other._store)) { }
     public PySet(PySet other, MemoryGovernor governor) : this(other, governor, null) { }
-
     public PySet(PySet other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        : this(other._items, governor, allocationSpan)
-    {
-        try
-        {
-            // The enumerating ctor above homes every entry fast by identity;
-            // re-index protocol items with their contextual hashes.
-            if (other._protocol is not null)
-            {
-                _protocol = new List<ProtocolEntry>(other._protocol);
-                _protocolSeq = other._protocolSeq;
-                var bytes = checked(ProtocolEntryBytes * _protocol.Count);
-                governor.Reserve(bytes, allocationSpan);
-                governor.Commit(bytes);
-                _protocolBytes = bytes;
-            }
+        : this(new PyDict(other._store, governor, allocationSpan)) { }
 
-            if (other._sideIndex is not null)
-            {
-                _sideIndex = new ProtocolSideIndex();
-                _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
-            }
-        }
-        catch
-        {
-            ReleaseUnpublishedStorage();
-            throw;
-        }
-    }
-
-    public int Count => _items.Count;
-
+    public int Count => _store.Count;
     public int Length => Count;
-
-    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _numericStorageBytes;
-
-    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
-
-    public LythonSourceSpan? AllocationSpan => _allocationSpan;
+    internal long CommittedStorageBytes => _store.CommittedStorageBytes;
+    public MemoryGovernor? OwnerMemoryGovernor => _store.OwnerMemoryGovernor;
+    public LythonSourceSpan? AllocationSpan => _store.AllocationSpan;
+    private Context? ActiveContext => PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
+    private LythonSourceSpan Span => PyStructuralGuard.AmbientSpan ?? AllocationSpan ?? PyDict.UnknownKeySpan;
 
     public bool Add(object item)
     {
-        if (PyHashProtocols.NeedsProtocolKey(item))
-        {
-            if (AddProtocolItem(item))
-            {
-                _version++;
-                return true;
-            }
-
-            return false;
-        }
-
-        // Duplicate numeric members require no allowance. Probe before funding
-        // them or growing backing; scalar-free inserts keep the one-lookup path.
-        if (_protocol is not null && TryGetProtocolBuiltin(item, out _))
-        {
-            return false;
-        }
-
-        var committedBefore = CommittedStorageBytes;
-        var numericBytes = NumericBytes(item);
-        if ((numericBytes > 0 || Count >= _capacity) && _items.Contains(item))
-        {
-            return false;
-        }
-
-        ReserveNumericStorage(numericBytes);
-        try
-        {
-            EnsureCapacity(Count + 1);
-            if (!_items.Add(item))
-            {
-                if (numericBytes > 0) _memoryGovernor!.Release(numericBytes);
-                return false;
-            }
-        }
-        catch
-        {
-            if (numericBytes > 0) _memoryGovernor!.Release(numericBytes);
-            throw;
-        }
-
-        _numericStorageBytes += numericBytes;
-        _version++;
-        return true;
+        if (!_store.AddSetKey(item)) return false;
+        _version++; return true;
     }
-
-    public void AttachMemoryGovernor(MemoryGovernor governor)
-        => AttachMemoryGovernor(governor, null);
-
-    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        if (_memoryGovernor is null)
-        {
-            var capacity = _items.EnsureCapacity(0);
-            var backingBytes = capacity == 0 ? 0 : EstimateSlots(0, capacity);
-            long numericBytes = 0;
-            foreach (var item in _items) numericBytes = checked(numericBytes + RuntimeMemoryEstimates.EstimateNumericSlotBytes(item));
-            // Existing index capacity gets a conservative charge in this owner.
-            // It persists through removals and is released on clear or drop;
-            // subsequent index growth retains its own ordinary committed charge.
-            var protocolBytes = checked(ProtocolEntryBytes * (_protocol?.Count ?? 0)
-                + ProtocolSideIndex.IndexBytesPerEntry * (_sideIndex?.LiveCount ?? 0));
-            var bytes = checked(SetShellBytes + backingBytes + numericBytes + protocolBytes);
-            var span = _allocationSpan ?? allocationSpan;
-            governor.Reserve(bytes, span);
-            governor.Commit(bytes);
-            _memoryGovernor = governor;
-            _allocationSpan = span;
-            _shellCharged = true;
-            _committedBytes = backingBytes;
-            _capacity = capacity;
-            _numericStorageBytes = numericBytes;
-            _protocolBytes = protocolBytes;
-            return;
-        }
-
-        _allocationSpan ??= allocationSpan;
-    }
-
+    public bool Contains(object item) => _store.ContainsKey(item);
     public bool Remove(object item)
     {
-        if (!PyHashProtocols.NeedsProtocolKey(item) && RemoveStoredItem(item)) return true;
-        return RemoveProtocolItem(item);
+        if (!_store.Remove(item)) return false;
+        _version++; return true;
     }
-
-    // Pop removes a retained member without querying guest hash slots again.
-    // Public removal must resolve a protocol query first.
-    private bool RemoveStoredItem(object item)
-    {
-        if (!_items.TryGetValue(item, out var stored)) return false;
-        _ = _items.Remove(item);
-        RemoveProtocolShadow(stored);
-        ReleaseNumericStorage(stored);
-        _version++;
-        return true;
-    }
-
     public bool TryPop(out object item)
     {
-        using var enumerator = _items.GetEnumerator();
-        if (!enumerator.MoveNext())
-        {
-            item = PyNone.Instance;
-            return false;
-        }
-
-        item = enumerator.Current;
-        RemoveStoredItem(item);
-        return true;
+        if (!_store.PopSetKey(out item!)) return false;
+        _version++; return true;
     }
-
-    public bool Contains(object item)
-    {
-        if (PyHashProtocols.NeedsProtocolKey(item)) return ContainsProtocolItem(item);
-        if (_items.Contains(item)) return true;
-        return _protocol is not null && ContainsProtocolBuiltin(item);
-    }
-
     public void Clear()
     {
-        // Only an actual membership change trips live iterators: clearing an
-        // already-empty set stays silent like CPython. (The iterator only
-        // observes _items; protocol-only bookkeeping cannot trip it, which
-        // matches the pre-existing iteration surface.)
-        if (Count > 0)
-        {
-            _version++;
-        }
-
-        // The shell stays owned for the object lifetime; only backing capacity is released.
-        if (_memoryGovernor is not null)
-        {
-            if (_committedBytes > 0)
-            {
-                _memoryGovernor.Release(_committedBytes);
-                _committedBytes = 0;
-                _capacity = 0;
-            }
-
-            if (_protocolBytes > 0)
-            {
-                _memoryGovernor.Release(_protocolBytes);
-                _protocolBytes = 0;
-            }
-
-            _sideIndex?.ReleaseAll(_memoryGovernor);
-            _sideIndex = null;
-            ReleaseAllNumericStorage();
-            _items = new HashSet<object>(PyValueComparer.Instance);
-            _protocol = null;
-            return;
-        }
-
-        _items.Clear();
-        _protocol = null;
-        _sideIndex = null;
-        _protocolBytes = 0;
+        if (Count != 0) _version++;
+        _store.ClearSetStorage();
     }
-
-    private LythonRuntime.ExecutionContext? ActiveProtocolContext()
-        => PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
-
-    // Dual-home protocol insert: update nothing (sets hold no values),
-    // returning false when the logical item already lives in either home.
-    private bool AddProtocolItem(object item)
-    {
-        var context = ActiveProtocolContext();
-        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (context is null || useSpan is null) return AddProtocolStructural(item);
-
-        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        if (ResolveProtocolItem(item, hash, context, useSpan, forInsertion: true) is not null) return false;
-        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        return AppendProtocolItem(item, hash, structuralHash);
-    }
-
-    private bool AddProtocolStructural(object item)
-    {
-        if (_protocol is not null)
-        {
-            foreach (var entry in _protocol)
-            {
-                if (ReferenceEquals(entry.Item, item))
-                {
-                    return false;
-                }
-            }
-        }
-
-        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        return AppendProtocolItem(item, structuralHash, structuralHash);
-    }
-
-    private bool AppendProtocolItem(object item, int hash, int structuralHash)
-    {
-        // Protocol keys are instances or tuple-likes, never numeric members.
-        // Admit their metadata before any index, backing or entry publication.
-        var bytes = _memoryGovernor is null ? 0 : ProtocolEntryBytes;
-        _memoryGovernor?.Reserve(bytes, _allocationSpan);
-        var countBefore = Count;
-        var position = _protocol?.Count ?? 0;
-        var indexed = false;
-        try
-        {
-            _protocol ??= new List<ProtocolEntry>();
-            _sideIndex ??= new ProtocolSideIndex();
-            _sideIndex.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
-            indexed = true;
-            EnsureCapacity(Count + 1);
-            if (!_items.Add(item)) return false;
-            _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
-            return true;
-        }
-        finally
-        {
-            if (Count > countBefore)
-            {
-                _memoryGovernor?.Commit(bytes);
-                _protocolBytes += bytes;
-            }
-            else
-            {
-                if (indexed) _sideIndex!.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
-                _memoryGovernor?.ReleaseReserved(bytes);
-            }
-        }
-    }
-
-    private bool ContainsProtocolItem(object item, int? storedHash = null)
-    {
-        var context = ActiveProtocolContext();
-        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (context is null || useSpan is null)
-        {
-            if (_protocol is not null)
-                foreach (var entry in _protocol)
-                    if (ReferenceEquals(entry.Item, item)) return true;
-            return false;
-        }
-
-        var hash = storedHash ?? PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        return ResolveProtocolItem(item, hash, context, useSpan) is not null;
-    }
-
-    private bool ContainsProtocolBuiltin(object item)
-    {
-        if (_protocol is null)
-        {
-            return false;
-        }
-
-        return TryGetProtocolBuiltin(item, out _);
-    }
-
-    private bool TryGetProtocolBuiltin(object item, out object _)
-    {
-        _ = PyNone.Instance;
-        var context = ActiveProtocolContext();
-        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        var hash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 index: builtin probes scan only hash-bucketed candidates in insertion order
-        // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
-        // mutating guest == safe like every other scan.
-        var work = 0;
-        using var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-            ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), useSpan);
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, useSpan, context);
-        for (var i = 0; i < candidates.Length; i++)
-        {
-            // Check cancellation during non-collision scans too; the context may be
-            // null on context-free paths (identity fast path only then).
-            if ((++work & 63) == 0 && context is not null && useSpan is not null)
-            {
-                context.CheckExecution(useSpan);
-            }
-
-            var entry = candidates[i];
-            if (ReferenceEquals(entry.Item, item))
-            {
-                return true;
-            }
-
-            if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool RemoveProtocolItem(object item)
-    {
-        var context = ActiveProtocolContext();
-        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
-        if (context is null || useSpan is null) return RemoveProtocolStructural(item);
-
-        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
-        var stored = ResolveProtocolItem(item, hash, context, useSpan);
-        return stored is not null && RemoveStoredItem(stored);
-    }
-
-    // Custom add/contains/remove share one actual-hash query and one retained
-    // match. Snapshots outlive all callbacks; no CLR comparer invokes guest code.
-    private object? ResolveProtocolItem(object item, int hash,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool forInsertion = false)
-    {
-        long lastSequence = -1;
-        while (true)
-        {
-            context.CheckExecution(span);
-            var sequenceBefore = _protocolSeq;
-            using (var candidatesStorage = _memoryGovernor?.ReserveTemporary(
-                ProtocolSideIndex.EstimateSnapshotBytes(_protocol?.Count ?? 0, ProtocolEntryBytes), span))
-            {
-                var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, span, context);
-                foreach (var entry in candidates)
-                {
-                    context.CheckExecution(span);
-                    if (entry.Seq <= lastSequence) continue;
-                    lastSequence = entry.Seq;
-                    if (!IsCurrentProtocolEntry(entry)) continue;
-                    if (ReferenceEquals(entry.Item, item)) return entry.Item;
-                    var matches = LythonRuntime.ElementEquals(entry.Item, item, context, span);
-                    context.CheckExecution(span);
-                    // Python add accepts positive equality even if the callback
-                    // withdrew that entry; queries/removal need a current match.
-                    if (matches && forInsertion) return entry.Item;
-                    if (matches && IsCurrentProtocolEntry(entry)) return entry.Item;
-                }
-            }
-            if (_protocolSeq != sequenceBefore) continue;
-
-            var nativeMatch = false;
-            foreach (var existing in _items)
-            {
-                context.CheckExecution(span);
-                if (PyHashProtocols.IsNativeHashMatch(existing, hash))
-                {
-                    nativeMatch = true;
-                    break;
-                }
-            }
-
-            if (nativeMatch)
-            {
-                using var nativeStorage = _memoryGovernor?.ReserveTemporary(EstimateSnapshotBytes(_items.Count), span);
-                var nativeItems = _items.ToArray();
-                foreach (var existing in nativeItems)
-                {
-                    context.CheckExecution(span);
-                    if (!PyHashProtocols.IsNativeHashMatch(existing, hash)) continue;
-                    var matches = ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, span);
-                    context.CheckExecution(span);
-                    if (matches && forInsertion) return existing;
-                    if (matches && _items.TryGetValue(existing, out var stored)) return stored;
-                }
-            }
-            if (_protocolSeq == sequenceBefore) return null;
-        }
-    }
-
-    private bool IsCurrentProtocolEntry(ProtocolEntry entry)
-    {
-        var low = 0;
-        var high = (_protocol?.Count ?? 0) - 1;
-        while (low <= high)
-        {
-            var middle = low + (high - low) / 2;
-            var current = _protocol![middle];
-            if (current.Seq == entry.Seq) return ReferenceEquals(current.Item, entry.Item);
-            if (current.Seq < entry.Seq) low = middle + 1;
-            else high = middle - 1;
-        }
-        return false;
-    }
-
-    private bool RemoveProtocolStructural(object item)
-    {
-        if (_protocol is not null)
-        {
-            for (var i = 0; i < _protocol.Count; i++)
-            {
-                if (ReferenceEquals(_protocol[i].Item, item))
-                {
-                    return RemoveStoredItem(_protocol[i].Item);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private void RemoveProtocolShadow(object item)
-    {
-        if (_protocol is null)
-        {
-            return;
-        }
-
-        for (var i = 0; i < _protocol.Count; i++)
-        {
-            if (ReferenceEquals(_protocol[i].Item, item))
-            {
-                var shadow = _protocol[i];
-                _protocol.RemoveAt(i);
-                _sideIndex?.RemoveAt(i, shadow.Hash, shadow.StructuralHash);
-                ReleaseSideBytes(ProtocolEntryBytes);
-                return;
-            }
-        }
-    }
-
-    private void ReleaseSideBytes(long bytes)
-    {
-        if (_memoryGovernor is null || bytes <= 0)
-        {
-            return;
-        }
-
-        _memoryGovernor.Release(bytes);
-        _protocolBytes -= bytes;
-    }
+    public void AttachMemoryGovernor(MemoryGovernor governor) => _store.AttachMemoryGovernor(governor);
+    public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        => _store.AttachMemoryGovernor(governor, allocationSpan);
+    internal void EnsureCapacity(int targetCount)
+        => _store.EnsureNativeCapacity(targetCount, OwnerMemoryGovernor, AllocationSpan);
+    internal void ReleaseUnpublishedStorage() => _store.DiscardUnpublishedStorage();
 
     public void UnionWith(PySet other)
     {
-        foreach (var item in other._items)
+        if (ReferenceEquals(this, other)) return;
+        foreach (var entry in other._store.StoredKeys())
         {
-            _ = Add(item);
+            PyStructuralGuard.NoteWork();
+            if (_store.AddSetKey(entry.Key, entry.Hash)) _version++;
         }
     }
-
-    public void IntersectWith(PySet other)
+    public void IntersectWith(PySet other) => Filter(other, keepContained: true);
+    public void ExceptWith(PySet other) => Filter(other, keepContained: false);
+    private void Filter(PySet other, bool keepContained)
     {
-        var governor = _memoryGovernor;
-        if (governor is null)
+        var context = ActiveContext;
+        var span = Span;
+        var version = _version;
+        // A callback can clear either table. The admitted snapshot owns both
+        // retained key references and their existing scalar/payload headroom.
+        using var storage = OwnerMemoryGovernor?.ReserveTemporary(_store.KeySnapshotBytes, span);
+        var source = _store.StoredKeys().ToArray();
+        var remove = new bool[source.Length];
+        for (var i = 0; i < source.Length; i++)
         {
-            _items.IntersectWith(other._items);
-            return;
+            context?.CheckExecution(span);
+            EnsureUnmodified(version);
+            remove[i] = other._store.ContainsStoredKey(source[i].Key, source[i].Hash, context, span) != keepContained;
         }
-
-        // The filter list holds only references to already-owned items, but
-        // its backing array coexists with the live table, so cover it with a
-        // transient reservation sized by the exact upper bound.
-        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count), _allocationSpan);
-        RebuildFrom(FilterContained(other, keepContained: true));
-    }
-
-    public void ExceptWith(PySet other)
-    {
-        var governor = _memoryGovernor;
-        if (governor is null)
+        EnsureUnmodified(version);
+        for (var i = 0; i < source.Length; i++)
         {
-            _items.ExceptWith(other._items);
-            return;
+            if (!remove[i]) continue;
+            if (_store.RemoveSetEntry(source[i].Key, source[i].Hash)) _version++;
         }
-
-        // Same transient filter scratch as IntersectWith above.
-        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count), _allocationSpan);
-        RebuildFrom(FilterContained(other, keepContained: false));
     }
-
     public void SymmetricExceptWith(PySet other)
     {
-        var governor = _memoryGovernor;
-        if (governor is null)
+        if (ReferenceEquals(this, other)) { Clear(); return; }
+        using var storage = OwnerMemoryGovernor?.ReserveTemporary(other._store.KeySnapshotBytes, Span);
+        var source = other._store.StoredKeys().ToArray();
+        foreach (var entry in source)
         {
-            _items.SymmetricExceptWith(other._items);
-            return;
+            PyStructuralGuard.NoteWork();
+            if (_store.RemoveStoredHashKey(entry.Key, entry.Hash) || _store.AddSetKey(entry.Key, entry.Hash)) _version++;
         }
-
-        // Both tables stay live while the symmetric list is built, so the
-        // transient reservation covers the exact combined upper bound.
-        using var scratch = governor.ReserveTemporary(EstimateFilterBytes(Count + other.Count), _allocationSpan);
-        var symmetric = new List<object>(Count + other.Count);
-        foreach (var item in _items)
-        {
-            if (!other.Contains(item))
-            {
-                symmetric.Add(item);
-            }
-        }
-
-        foreach (var item in other._items)
-        {
-            if (!Contains(item))
-            {
-                symmetric.Add(item);
-            }
-        }
-
-        RebuildFrom(symmetric);
     }
-
-    // Protocol-involved comparisons go manual (counts plus both-direction
-    // Contains, which observes ambient provenance); pure-builtin pairs keep
-    // the HashSet fast path bit-for-bit.
-    private bool HasProtocolItems(PySet other)
-        => (_protocol is not null && _protocol.Count > 0) || (other._protocol is not null && other._protocol.Count > 0);
-
-    public bool SetEquals(PySet other)
-    {
-        if (HasProtocolItems(other))
-        {
-            return Count == other.Count && IsSubsetOf(other) && other.IsSubsetOf(this);
-        }
-
-        return _items.SetEquals(other._items);
-    }
-
+    public bool SetEquals(PySet other) => Count == other.Count && IsSubsetOf(other)
+        && (!_store.HasProtocolKeys && !other._store.HasProtocolKeys || other.IsSubsetOf(this));
     public bool IsSubsetOf(PySet other)
     {
-        if (Count > other.Count)
+        if (Count > other.Count) return false;
+        var context = ActiveContext;
+        var span = Span;
+        if (!_store.HasProtocolKeys && !other._store.HasProtocolKeys)
         {
-            return false;
-        }
-
-        if (HasProtocolItems(other))
-        {
-            foreach (var item in this)
+            foreach (var entry in _store.StoredKeys())
             {
-                // A set already owns the hash recorded when its key was added.
-                // Set-to-set relations must not call guest __hash__ again.
-                var contains = PyHashProtocols.NeedsProtocolKey(item)
-                    ? other._items.Contains(item) || other.ContainsProtocolItem(item, ComparisonEntry(item).Hash)
-                    : other.Contains(item);
-                if (!contains)
-                {
-                    return false;
-                }
+                context?.CheckExecution(span);
+                if (!other._store.ContainsStoredKey(entry.Key, entry.Hash, context, span)) return false;
             }
-
             return true;
         }
-
-        return _items.IsSubsetOf(other._items);
+        using var storage = OwnerMemoryGovernor?.ReserveTemporary(_store.KeySnapshotBytes, span);
+        var version = _version;
+        var source = _store.StoredKeys().ToArray();
+        foreach (var entry in source)
+        {
+            EnsureUnmodified(version);
+            context?.CheckExecution(span);
+            var contained = other._store.ContainsStoredKey(entry.Key, entry.Hash, context, span);
+            EnsureUnmodified(version);
+            if (!contained) return false;
+        }
+        EnsureUnmodified(version);
+        return true;
     }
-
-    private ProtocolEntry ComparisonEntry(object item)
-    {
-        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        if (!PyHashProtocols.NeedsProtocolKey(item))
-        {
-            return new ProtocolEntry(0, structuralHash, structuralHash, item);
-        }
-
-        // Every protocol entry is indexed under its frozen structural hash.
-        // This reads one bucket without a table, snapshot or guest callback.
-        foreach (var position in _sideIndex!.PositionsForHash(structuralHash))
-        {
-            PyStructuralGuard.NoteWork();
-            var entry = _protocol![position];
-            if (ReferenceEquals(entry.Item, item))
-            {
-                return entry;
-            }
-        }
-
-        // unsafe_hash dataclasses (including tuple members) can change their
-        // structural hash after insertion. Recover their existing identity;
-        // ordinary keys still use the bucket above, without another index.
-        foreach (var entry in _protocol!)
-        {
-            PyStructuralGuard.NoteWork();
-            if (ReferenceEquals(entry.Item, item))
-            {
-                return entry;
-            }
-        }
-
-        throw new InvalidOperationException("Set protocol entry is missing its stored hash.");
-    }
-
-    internal async ValueTask<bool> IsSubsetOfAsync(PySet other, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal async ValueTask<bool> IsSubsetOfAsync(PySet other, Context context, LythonSourceSpan span)
     {
         context.CheckExecution(span);
         if (Count > other.Count) return false;
         if (Count == 0 || ReferenceEquals(this, other)) return true;
-        if (!HasProtocolItems(other))
+        if (!_store.HasProtocolKeys && !other._store.HasProtocolKeys)
         {
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
-            return _items.IsSubsetOf(other._items);
+            return IsSubsetOf(other);
         }
-
-        // A callback may clear either set. Retain a funded entry copy instead
-        // of keeping an enumerator's old HashSet backing alive after its refund.
+        using var storage = context.MemoryGovernor.ReserveTemporary(_store.KeySnapshotBytes, span);
         var version = _version;
-        using var sourceStorage = context.MemoryGovernor.ReserveTemporary(checked(24L + ProtocolEntryBytes * (long)Count), span);
-        var source = new ProtocolEntry[Count];
-        var index = 0;
-        using (PyStructuralGuard.PushAmbient(context, span))
-        {
-            foreach (var item in this)
-            {
-                context.CheckExecution(span);
-                source[index++] = ComparisonEntry(item);
-            }
-        }
-
+        var source = _store.StoredKeys().ToArray();
         foreach (var entry in source)
         {
             EnsureUnmodified(version);
             context.CheckExecution(span);
-            bool containsIdentity;
-            using (PyStructuralGuard.PushAmbient(context, span))
-                containsIdentity = other._items.Contains(entry.Item);
-            if (containsIdentity) continue;
-            if (other._protocol is null) return false;
-
-            var candidatesIndex = other._sideIndex!;
-            var capacity = (long)candidatesIndex.PositionsForHash(entry.Hash).Count;
-            if (capacity == 0) return false;
-
-            // Keep conservative funding for the final candidate array through awaits.
-            // Structural links filtered from the bucket deliberately overestimate.
-            using var candidateStorage = context.MemoryGovernor.ReserveTemporary(checked(128L + 128L * capacity), span);
-            var candidates = ProtocolSideIndex.SnapshotCandidates(other._protocol, candidatesIndex, entry.Hash, span, context);
-            // SnapshotCandidates needs no second preflight: this copy and its
-            // construction scratch are already admitted through the await.
-            var found = false;
-            foreach (var candidate in candidates)
-            {
-                context.CheckExecution(span);
-                if (ReferenceEquals(candidate.Item, entry.Item) ||
-                    await LythonRuntime.ElementEqualsAsync(candidate.Item, entry.Item, context, span).ConfigureAwait(false))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) return false;
+            var contained = await other._store.ContainsStoredKeyAsync(entry.Key, entry.Hash, context, span).ConfigureAwait(false);
+            EnsureUnmodified(version);
+            if (!contained) return false;
         }
-
         EnsureUnmodified(version);
         return true;
     }
-
-    public bool IsProperSubsetOf(PySet other)
-    {
-        if (HasProtocolItems(other))
-        {
-            return Count < other.Count && IsSubsetOf(other);
-        }
-
-        return _items.IsProperSubsetOf(other._items);
-    }
-
-    public bool IsSupersetOf(PySet other)
-    {
-        if (HasProtocolItems(other))
-        {
-            return other.IsSubsetOf(this);
-        }
-
-        return _items.IsSupersetOf(other._items);
-    }
-
-    public bool IsProperSupersetOf(PySet other)
-    {
-        if (HasProtocolItems(other))
-        {
-            return Count > other.Count && IsSupersetOf(other);
-        }
-
-        return _items.IsProperSupersetOf(other._items);
-    }
-
+    public bool IsProperSubsetOf(PySet other) => Count < other.Count && IsSubsetOf(other);
+    public bool IsSupersetOf(PySet other) => other.IsSubsetOf(this);
+    public bool IsProperSupersetOf(PySet other) => Count > other.Count && IsSupersetOf(other);
     public bool IsTruthy() => Count != 0;
-
     public IEnumerable<object> Iterate() => this;
-
     public PyString RenderPython(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
-
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
-    // Set iteration checks the structural version on every step and raises a
-    // Python error on change, mirroring PyDict and CPython ("Set changed size
-    // during iteration"). The InvalidOperationException translation is a safety
-    // net: the explicit version above must fire first, but any unguarded
-    // in-place mutation surfaces as a Python error rather than a CLR leak.
     public IEnumerator<object> GetEnumerator()
     {
-        var expectedVersion = _version;
-        using var enumerator = _items.GetEnumerator();
-        while (true)
+        var version = _version;
+        for (var i = 0; ; i++)
         {
-            EnsureUnmodified(expectedVersion);
-            bool moved;
-            try
-            {
-                moved = enumerator.MoveNext();
-            }
-            catch (InvalidOperationException)
-            {
-                throw new LythonRuntimeException("RuntimeError", "Set changed size during iteration", _allocationSpan);
-            }
-
-            if (!moved)
-            {
-                yield break;
-            }
-
-            yield return enumerator.Current;
+            EnsureUnmodified(version);
+            if (i == Count) yield break;
+            // Retain the set, not an abandoned backing array after clear.
+            yield return _store.StoredKeyAt(i);
         }
     }
-
     private void EnsureUnmodified(int expectedVersion)
     {
         if (expectedVersion != _version)
-        {
-            throw new LythonRuntimeException("RuntimeError", "Set changed size during iteration", _allocationSpan);
-        }
+            throw new LythonRuntimeException("RuntimeError", "Set changed size during iteration", AllocationSpan);
     }
-
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-
-    internal void EnsureCapacity(int targetCount)
-    {
-        if (targetCount <= 0)
-        {
-            return;
-        }
-
-        if (targetCount <= _capacity)
-        {
-            return;
-        }
-
-        using var replacement = _memoryGovernor?.ReserveTemporary(checked(96L + (128L * Math.Max(3, targetCount))), _allocationSpan);
-        var newCapacity = _items.EnsureCapacity(targetCount);
-        if (replacement is not null && newCapacity > _capacity)
-        {
-            var bytes = EstimateSlots(_capacity, newCapacity);
-            replacement.Commit(bytes);
-            _committedBytes += bytes;
-        }
-
-        _capacity = newCapacity;
-    }
-
-    private static long EstimateSlots(int previousCapacity, int newCapacity)
-        => (24L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 80L : 0L);
-
-    private long NumericBytes(object value) => _memoryGovernor is null ? 0 : RuntimeMemoryEstimates.EstimateNumericSlotBytes(value);
-
-    private void ReserveNumericStorage(long bytes)
-    {
-        if (bytes == 0) return;
-        _memoryGovernor!.Reserve(bytes, _allocationSpan);
-        _memoryGovernor.Commit(bytes);
-    }
-
-    // One bulk admission; private-construction failure refunds the backing too.
-    private void ChargeInitialNumericStorage()
-    {
-        long bytes = 0;
-        foreach (var item in _items) bytes = checked(bytes + RuntimeMemoryEstimates.EstimateNumericSlotBytes(item));
-        ReserveNumericStorage(bytes);
-        _numericStorageBytes = bytes;
-    }
-
-    // Only for a private result that has neither escaped nor been registered.
-    // Registration denial has its own refund; live mutation must keep charges.
-    internal void ReleaseUnpublishedStorage()
-    {
-        if (_memoryGovernor is not null)
-        {
-            var release = CommittedStorageBytes;
-            if (release > 0)
-            {
-                _memoryGovernor.Release(release);
-            }
-        }
-
-        _committedBytes = 0;
-        _protocolBytes = 0;
-        _sideIndex = null;
-        _capacity = 0;
-        _shellCharged = false;
-        _numericStorageBytes = 0;
-    }
-
-    private void ReleaseNumericStorage(object value)
-    {
-        var bytes = NumericBytes(value);
-        if (bytes == 0) return;
-        var committedBefore = CommittedStorageBytes;
-        _memoryGovernor!.Release(bytes);
-        _numericStorageBytes -= bytes;
-    }
-
-    private void ReleaseAllNumericStorage()
-    {
-        if (_numericStorageBytes == 0) return;
-        var committedBefore = CommittedStorageBytes;
-        _memoryGovernor!.Release(_numericStorageBytes);
-        _numericStorageBytes = 0;
-    }
-
-    private List<object> FilterContained(PySet other, bool keepContained)
-    {
-        var result = new List<object>(Count);
-        foreach (var item in _items)
-        {
-            if (other.Contains(item) == keepContained)
-            {
-                result.Add(item);
-            }
-        }
-
-        return result;
-    }
-
-    private void RebuildFrom(List<object> items)
-    {
-        var committedBefore = CommittedStorageBytes;
-        _items.Clear();
-        ReleaseAllNumericStorage();
-        if (_protocol is not null)
-        {
-            if (_memoryGovernor is not null && _protocolBytes > 0)
-            {
-                _memoryGovernor.Release(_protocolBytes);
-            }
-
-            _protocol = null;
-            _protocolBytes = 0;
-        }
-
-        if (_sideIndex is not null)
-        {
-            _sideIndex.ReleaseAll(_memoryGovernor);
-            _sideIndex = null;
-        }
-
-        EnsureCapacity(items.Count);
-        foreach (var item in items)
-        {
-            Add(item);
-        }
-    }
 }

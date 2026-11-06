@@ -124,22 +124,20 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void SetRemovalUpdatesItsStorageEstimate()
+    public void SetRemovalKeepsRetainedCapacityFunded()
     {
-        // Removing numeric slots updates the retained storage estimate while
-        // keeping the set backing funded.
+        // Removals keep the actual capacity and scalar headroom funded.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var set = new PySet(new object[] { new BigInteger(1), new BigInteger(2) }, governor, span);
-        var slotEstimates = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
 
         var trackedBefore = set.CommittedStorageBytes;
         Assert.True(set.Remove(new BigInteger(1)));
         Assert.True(set.Remove(new BigInteger(2)));
-        Assert.Equal(trackedBefore - slotEstimates, set.CommittedStorageBytes);
+        Assert.Equal(trackedBefore, set.CommittedStorageBytes);
 
         Assert.Equal(
             set.CommittedStorageBytes,
@@ -150,7 +148,7 @@ public sealed class ContainerScalarStorageTests
     public void SetStructuralTwinRemovesHeldBox()
     {
         // Removal resolves the stored identity: discarding via an equal-but-
-        // distinct box evicts the held box and releases exactly its slot estimate.
+        // distinct box evicts the held box while retaining funded capacity.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -161,7 +159,7 @@ public sealed class ContainerScalarStorageTests
         var trackedBefore = set.CommittedStorageBytes;
         Assert.False(set.Add(new BigInteger(7)));
         Assert.True(set.Remove(new BigInteger(7)));
-        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, set.CommittedStorageBytes);
+        Assert.Equal(trackedBefore, set.CommittedStorageBytes);
         Assert.Equal(0, set.Count);
     }
 
@@ -175,7 +173,7 @@ public sealed class ContainerScalarStorageTests
         static PySet BuildSet(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             var set = new PySet(context.MemoryGovernor, span);
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 16; i++)
             {
                 Assert.True(set.Add(new BigInteger(1000 + i)));
             }
@@ -189,19 +187,19 @@ public sealed class ContainerScalarStorageTests
         var denyContext = new LythonRuntime.ExecutionContext(
             host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(8192) },regexProvider:Utf8RegexProvider.Instance);
         var denied = BuildSet(denyContext, span);
-        using var pressure = denyContext.MemoryGovernor.ReserveTemporary(8192 - denyContext.MemoryGovernor.CurrentAccountedBytes - RuntimeMemoryEstimates.ScalarStorageBytes + 1, span);
+        using var pressure = denyContext.MemoryGovernor.ReserveTemporary(8192 - denyContext.MemoryGovernor.CurrentAccountedBytes, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(10, denied.Count);
+        Assert.Equal(16, denied.Count);
         var storedBefore = denied.CommittedStorageBytes;
         Assert.Throws<LythonRuntimeException>(() => denied.Add(new BigInteger(99999)));
-        Assert.Equal(10, denied.Count);
+        Assert.Equal(16, denied.Count);
         Assert.Equal(storedBefore, denied.CommittedStorageBytes);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         var retryContext = new LythonRuntime.ExecutionContext(
             host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(baseline + 65536) },regexProvider:Utf8RegexProvider.Instance);
         var retried = BuildSet(retryContext, span);
         Assert.True(retried.Add(new BigInteger(99999)));
-        Assert.Equal(11, retried.Count);
+        Assert.Equal(17, retried.Count);
         Assert.Equal(measured.Count, retried.Count - 1);
     }
 

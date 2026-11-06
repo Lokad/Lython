@@ -17,11 +17,7 @@ internal sealed partial class LythonRuntime
         => ValidateDictionaryKey(value, span);
 
     internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
-    {
-        var key = ValidateKeyShape(value, span);
-        _ = ComputeStructuralHashCode(key, span);
-        return key;
-    }
+        => ValidateKeyShape(value, span);
 
     // Shared set/dict key validation: hashability is a property of the existing
     // items, so a validated tuple keeps its identity (and nested identities)

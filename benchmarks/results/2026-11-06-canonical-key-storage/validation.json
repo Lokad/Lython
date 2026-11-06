@@ -1,0 +1,25 @@
+{
+  "status": "Full local Release actual.NET11/10 pass; cross-platform/stress/installed consumer K01 delivery pending",
+  "sourceBase": "db3d1908",
+  "finalMeasuredCore": "adbd1b6ba5f7fbda22319b56316b0cd8bdc0725db50bd08baffa1733842b3d32",
+  "fullInternalPerFramework": 4207,
+  "fullPublicPerFramework": 16072,
+  "focusedInternalPerFramework": 442,
+  "focusedPublicPerFramework": 1623,
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "newIndependentPythonGoldens": 9,
+  "independentPython": "CPython3.13.2 -I -S -X utf8",
+  "finalSourceDifference": "Set member ownership blocks received whitespace-only indentation after measurement. Runtime behavior unchanged; frozen source/core identities remain authoritative.",
+  "preservedFailures": "Original native valid-hash rejections, bridge regression, scalar ledger/threshold fixtures, awaited-source-mutation regression and DecimalSignalValidation allocation failure retained in history. Allocation bound unchanged; all final full suites pass.",
+  "obsoleteRemoved": [
+    "Dictionary and set ProtocolEntry shadows",
+    "ProtocolSideIndex",
+    "IProtocolSideEntry",
+    "BCL HashSet backing for guest sets",
+    "Stored structural hash duplication",
+    "Set per-numeric charge/refund ledger",
+    "Orphan IsNativeHashMatch and unused storage copy overload"
+  ],
+  "p01Delivery": "42135195574 GREEN/all8 cached; does not qualify K01"
+}

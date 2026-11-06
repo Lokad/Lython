@@ -372,8 +372,9 @@ conservatively reserves the source backing until callbacks and cleanup finish,
 including after a callback clears the source. This can require additional shared
 allowance even when a particular callback does not mutate it.
 
-Mapping-pattern extraction admits temporary key/value slots with scalar headroom
-and a private seen set, releasing both after synchronous extraction. Captured
+Prepared pattern frames fund capture/working slots with scalar headroom; lowered
+consumers use temporary admission. Only dynamic mapping keys need a private seen
+set, released after synchronous extraction. Captured
 values keep their independent payload owners and surviving binding slots. Rest
 mappings stay charged on publication; a failed unpublished copy is refunded.
 Pattern key/property hooks require synchronous completion; guards and bodies
@@ -432,13 +433,26 @@ Non-strict quoted EOF produces a final row before source/scratch cleanup; its
 independent storage stays funded through cleanup and later guest use. Strict
 quoted EOF fails without publishing that row.
 
-Ordinary dictionaries own their ordered table and retained-capacity accounting
-directly. Namespace and environment views forward to their live backing instead.
-Raw storage scans remain separate from Python's mutation-checked iteration.
-Copies and ownership attachment admit a private destination before publishing it;
-capacity growth keeps the previous table funded through replacement. Native
-owners perform growth admission and private rollback; live view interfaces expose
-mapping access. Rollback rejects live views before refunding their retained backing.
+Dictionaries and sets share one native entry authority: stored Python hashes,
+insertion identities and bucket links live with their keys. Dictionaries preserve
+insertion order; sets can move the last payload when deleting. Copies retain the
+funded capacity and copy entries without rehashing keys. Mutable classes remain
+contextual even if their hash/equality slots initially use object defaults. Current
+entry checks distinguish a removed/reinserted key during callbacks; set insertion
+also preserves positive comparisons whose callback removes its candidate.
+
+Capacity estimates include metadata and scalar headroom, with one reference column
+for sets and two for dictionaries. Removal keeps that capacity funded; set clear
+drops backing before refunding it and retains a charged shell. Growth admits the
+replacement while the old array is funded. Larger payloads keep independent owners.
+Known set operands are borrowed during bulk operations; private materialized operands
+release their backing after use. `set(existing_set)` still makes a distinct copy.
+
+Namespace and environment views keep their live values. Their existing storage
+owners supply stored-key hash metadata for contextual queries; no parallel protocol
+inventory is maintained. Raw scans remain separate from mutation-checked iteration.
+Private construction failure refunds only unpublished backing; live views cannot
+use that rollback. Conservative storage estimates can change admission thresholds.
 
 `str.format` and `format_map` scan field structure and nested specifications as
 borrowed UTF-8. Names, suffixes and the final specification decode only at the

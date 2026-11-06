@@ -21,7 +21,7 @@ public sealed class PrimitiveStorageTests
         var governor = new MemoryGovernor(new LythonMemoryBudget(null));
         var bytes = Make(container, [value, value], governor);
         var baseline = Make(container, [PyNone.Instance, PyNone.Instance], new MemoryGovernor(new LythonMemoryBudget(null)));
-        Assert.Equal(baseline + (container == 0 ? 0 : container == 2 ? 64 : 128), bytes);
+        Assert.Equal(baseline + (container == 1 ? 128 : 0), bytes);
         Assert.Equal(bytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
@@ -83,7 +83,7 @@ public sealed class PrimitiveStorageTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void SaturatedSetEqualityTwinsReleaseTheStoredNumericAllowance(bool booleanStored)
+    public void SaturatedSetEqualityTwinsReuseFundedCapacity(bool booleanStored)
     {
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var governor = new MemoryGovernor(new LythonMemoryBudget(65536));
@@ -96,12 +96,14 @@ public sealed class PrimitiveStorageTests
             Assert.False(set.Add(twin));
             Assert.Equal(before, governor.CurrentCommittedBytes);
             Assert.True(set.Remove(twin));
-            Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+            Assert.Equal(before, governor.CurrentCommittedBytes);
             Assert.True(set.Add(stored));
             Assert.Equal(before, governor.CurrentCommittedBytes);
-            var error = Assert.Throws<LythonRuntimeException>(() => set.Add(false));
+            Assert.True(set.Add(false)); // The second physical slot is already funded.
+            Assert.Equal(before, governor.CurrentCommittedBytes);
+            var error = Assert.Throws<LythonRuntimeException>(() => set.Add(new BigInteger(2)));
             Assert.Equal("MemoryError", error.ExceptionType);
-            Assert.Single(set);
+            Assert.Equal(2, set.Count);
         }
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(set);

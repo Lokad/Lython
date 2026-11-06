@@ -22,6 +22,12 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
         _values = values; _instance = instance; _governor = governor; _span = span;
     }
     public int Count => _values.Count + (_extra?.Count ?? 0);
+    public bool HasProtocolKeys => _extra?.HasProtocolKeys == true;
+    public bool TryGetStoredHash(object key, out uint hash)
+    {
+        if (_extra is not null) return _extra.TryGetStoredHash(key, out hash);
+        hash = 0; return false;
+    }
     public IEnumerable<object> Keys => this.Select(x => x.Key);
     public IEnumerable<object> Values => this.Select(x => x.Value);
     public long CommittedBytes => 384L + 32L * _labelCapacity + _decodedNameBytes + (_extra?.CommittedBytes ?? 0);
@@ -56,7 +62,13 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
         _extra.SetItem(key, value);
         return added;
     }
-    public void AddNew(object key, object value) => SetItem(key, value);
+    public void AddNew(object key, object value, uint? knownHash = null)
+    {
+        RequireWritable();
+        if (key is PyString) { SetItem(key, value); return; }
+        _extra ??= new PyDict(_governor, _span);
+        _extra.AddNew(key, value, knownHash);
+    }
     public bool TrySetExisting(object key, object value) { if (!ContainsKey(key)) return false; SetItem(key, value); return true; }
     public bool Remove(object key)
     {

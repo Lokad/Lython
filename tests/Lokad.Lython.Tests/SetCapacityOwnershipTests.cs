@@ -4,12 +4,12 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class SetNumericStoragePolicyTests
+public sealed class SetCapacityOwnershipTests
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void BooleanTwinRemovalReleasesTheStoredNumericMember(bool truth)
+    public void BooleanTwinRemovalKeepsCapacityFunded(bool truth)
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var set = new PySet(governor);
@@ -17,7 +17,7 @@ public sealed class SetNumericStoragePolicyTests
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(truth));
         Assert.Equal(0, set.Count);
-        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(set.CommittedStorageBytes, governor.CurrentCommittedBytes);
     }
 
@@ -34,7 +34,7 @@ public sealed class SetNumericStoragePolicyTests
         Assert.True(set.Add(value));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(set.Remove(value));
-        Assert.Equal(before - 64, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 
@@ -65,8 +65,9 @@ public sealed class SetNumericStoragePolicyTests
         Assert.Equal(attached.CommittedStorageBytes, attachedGovernor.CurrentCommittedBytes);
         attached.AttachMemoryGovernor(attachedGovernor);
         Assert.Equal(attached.CommittedStorageBytes, attachedGovernor.CurrentCommittedBytes);
+        var beforeClear = attachedGovernor.CurrentCommittedBytes;
         attached.Clear();
-        Assert.Equal(128, attachedGovernor.CurrentCommittedBytes);
+        Assert.InRange(attachedGovernor.CurrentCommittedBytes, 1, beforeClear - 1);
     }
 
     [Fact]
@@ -74,11 +75,13 @@ public sealed class SetNumericStoragePolicyTests
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(256 * 1024));
         var set = new PySet(governor);
+        var shell = governor.CurrentCommittedBytes;
+        Assert.True(shell > 0);
         for (var pass = 0; pass < 100; pass++)
         {
             for (var i = 0; i < 1000; i++) Assert.True(set.Add(new BigInteger(i)));
             set.Clear();
-            Assert.Equal(128, governor.CurrentCommittedBytes);
+            Assert.Equal(shell, governor.CurrentCommittedBytes);
             Assert.Equal(0, governor.CurrentReservedBytes);
         }
     }
@@ -86,14 +89,14 @@ public sealed class SetNumericStoragePolicyTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void NumericTwinRemovalReleasesTheFundedBooleanAllowance(bool truth)
+    public void NumericTwinRemovalKeepsCapacityFunded(bool truth)
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(4096));
         var set = new PySet(governor);
         Assert.True(set.Add(truth));
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(truth ? BigInteger.One : BigInteger.Zero));
-        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(0, set.Count);
     }
 
@@ -104,7 +107,7 @@ public sealed class SetNumericStoragePolicyTests
         var set = new PySet(new object[] { BigInteger.One }, governor);
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(true));
-        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(set.CommittedStorageBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(set);
     }
@@ -122,10 +125,10 @@ public sealed class SetNumericStoragePolicyTests
         var before = governor.CurrentCommittedBytes;
         Assert.True(before >= 128 + 64 + 96);
         Assert.True(set.Remove(member));
-        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(set.CommittedStorageBytes, governor.CurrentCommittedBytes);
         set.Clear();
-        Assert.Equal(128, governor.CurrentCommittedBytes);
+        Assert.InRange(governor.CurrentCommittedBytes, 1, before - 1);
         GC.KeepAlive(member);
     }
 

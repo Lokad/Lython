@@ -505,7 +505,9 @@ internal sealed partial class LythonRuntime
                     {
                         foreach (var argument in arguments)
                         {
-                            result.ExceptWith(MaterializeSet(argument, span, context));
+                            var operand = AsSetOperand(argument, span, context);
+                            try { result.ExceptWith(operand); }
+                            finally { if (argument is not PySet) operand.ReleaseUnpublishedStorage(); }
                         }
                     }
                     catch
@@ -522,7 +524,9 @@ internal sealed partial class LythonRuntime
                     var result = new PySet(set, context.MemoryGovernor, span);
                     try
                     {
-                        result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
+                        var operand = AsSetOperand(arguments[0], span, context);
+                        try { result.SymmetricExceptWith(operand); }
+                        finally { if (arguments[0] is not PySet) operand.ReleaseUnpublishedStorage(); }
                         context.CheckExecution(span);
                     }
                     catch
@@ -605,7 +609,9 @@ internal sealed partial class LythonRuntime
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
-                        set.ExceptWith(MaterializeSet(argument, span, context));
+                        var operand = AsSetOperand(argument, span, context);
+                        try { set.ExceptWith(operand); }
+                        finally { if (argument is not PySet) operand.ReleaseUnpublishedStorage(); }
                     }
 
                     return PyNone.Instance;
@@ -615,7 +621,9 @@ internal sealed partial class LythonRuntime
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
-                        set.ExceptWith(await MaterializeSetAsync(argument, span, context).ConfigureAwait(false));
+                        var operand = argument as PySet ?? await MaterializeSetAsync(argument, span, context).ConfigureAwait(false);
+                        try { set.ExceptWith(operand); }
+                        finally { if (argument is not PySet) operand.ReleaseUnpublishedStorage(); }
                     }
 
                     return PyNone.Instance;
@@ -624,14 +632,18 @@ internal sealed partial class LythonRuntime
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
+                    var operand = AsSetOperand(arguments[0], span, context);
+                    try { set.SymmetricExceptWith(operand); }
+                    finally { if (arguments[0] is not PySet) operand.ReleaseUnpublishedStorage(); }
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }, SetSymmetricDifferenceUpdateSignature, async (arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    set.SymmetricExceptWith(await MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false));
+                    var operand = arguments[0] as PySet ?? await MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false);
+                    try { set.SymmetricExceptWith(operand); }
+                    finally { if (arguments[0] is not PySet) operand.ReleaseUnpublishedStorage(); }
                     context.CheckExecution(span);
                     return PyNone.Instance;
                 }),
@@ -951,6 +963,7 @@ internal sealed partial class LythonRuntime
 
         internal static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {
+            if (value is PySet source) return new PySet(source, context.MemoryGovernor, span);
             var result = new PySet(context.MemoryGovernor, span);
             try
             {
@@ -970,6 +983,11 @@ internal sealed partial class LythonRuntime
 
         internal static async ValueTask<PySet> MaterializeSetAsync(object value, LythonSourceSpan span, ExecutionContext context)
         {
+            if (value is PySet source)
+            {
+                using var ambient = PyStructuralGuard.PushAmbient(context, span);
+                return new PySet(source, context.MemoryGovernor, span);
+            }
             // Async twin of the materializer above: validation and accounting
             // stay identical while each pull can suspend.
             var result = new PySet(context.MemoryGovernor, span);

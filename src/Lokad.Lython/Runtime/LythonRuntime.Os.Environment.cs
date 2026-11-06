@@ -304,10 +304,12 @@ internal sealed partial class LythonRuntime
             if (!((IPyDictStorage)this).ContainsKey(key)) return false;
             SetSubscript(key, value, _allocationSpan); return true;
         }
-        void IPyDictStorage.AddNew(object key, object value) => SetSubscript(key, value, _allocationSpan);
+        void IPyDictStorage.AddNew(object key, object value, uint? knownHash) => SetSubscript(key, value, _allocationSpan);
         bool IPyDictStorage.Remove(object key) => RemoveKey(key, _allocationSpan);
         void IPyDictStorage.Clear() => Clear();
         IEnumerable<KeyValuePair<object, object>> IPyDictStorage.Entries => this;
+        bool IPyDictStorage.HasProtocolKeys => false;
+        bool IPyDictStorage.TryGetStoredHash(object key, out uint hash) { hash = 0; return false; }
         long IPyDictStorage.CommittedBytes => 0; // The shared execution owner retains native backing.
         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()
             => _items.Select(pair => new KeyValuePair<object, object>(EnvString(pair.Key), EnvString(pair.Value))).GetEnumerator();

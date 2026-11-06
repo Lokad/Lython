@@ -1,11 +1,20 @@
 # Benchmark experimental history
 
+The [canonical key-storage milestone](results/2026-11-06-canonical-key-storage/README.md)
+removes dict/set shadows, the shared side index, BCL set backing and per-numeric
+bookkeeping. Nine Python goldens correct custom hashes over unhashable fields;
+full4207internal/16072public pass per actual11/10. Original B307 adverse CSV/text
+results remain. B308 single-query refinement supports set−47%/dataclass−30–31%;
+B309328.85s/twelve jobs refreshes four complete scripts across compile/warm/fresh.
+Fresh CPython ratios~1.44CSV/1.8text/1.12JSON/1.34–1.40report. Warm CSV/text debt
+remains; no broad speedup/CPU/allocation claim. K01 platform/stress/package delivery pending.
+
 The [prepared-pattern milestone](results/2026-11-06-prepared-patterns/README.md)
 replaces raw pattern evaluation/capture dictionaries and the lowered literal CWT
 with compilation-owned work and admitted frame slots. Focus3388public/76internal
 per actual11/10 passes. B306111.20s/four jobs/all gates: record warm−27–29%,
 compile-to-result−25–30%; compile/text controls inconclusive. No allocation or broad
-whole-script gain claim. Original failed launcher retained; P01 delivery pending.
+whole-script gain claim. Original failed launcher retained; P01 delivery db3d1908 is cached42135195574 GREEN/all8.
 
 The [mapping-extraction milestone](results/2026-11-06-mapping-extraction/README.md)
 corrects length/key/value phases, duplicates/rest and immediate native field failure,

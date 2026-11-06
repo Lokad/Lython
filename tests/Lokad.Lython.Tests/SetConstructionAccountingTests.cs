@@ -48,15 +48,15 @@ public sealed class SetConstructionAccountingTests
     public void FailedCopyAdmissionLeavesItsSourceCharged()
     {
         var governor = new MemoryGovernor(new LythonMemoryBudget(2048));
-        var source = new PySet(Enumerable.Range(0, 10).Select(static i => (object)new BigInteger(i)), governor);
+        var source = new PySet(Enumerable.Range(0, 4).Select(static i => (object)new BigInteger(i)), governor);
         var heldBytes = governor.CurrentCommittedBytes;
-        // Retain a real reservation so the next copy can admit only its shell.
+        // Retain a real reservation so the next copy cannot admit its backing.
         using var held = governor.ReserveTemporary(2048 - heldBytes - 128, null);
         var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(source, governor));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(heldBytes, governor.CurrentCommittedBytes);
         Assert.Equal(2048 - heldBytes - 128, governor.CurrentReservedBytes);
-        Assert.Equal(10, source.Count);
+        Assert.Equal(4, source.Count);
         GC.KeepAlive(source);
     }
 
@@ -106,7 +106,7 @@ public sealed class SetConstructionAccountingTests
     }
 
     [Fact]
-    public void SizedCopyHoldsSnapshotTransientlyAlongsideTable()
+    public void SizedCopyKeepsItsValuesAndFunding()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
@@ -118,9 +118,9 @@ public sealed class SetConstructionAccountingTests
         Assert.Equal(100, copy.Count);
         Assert.True(copy.SetEquals(source));
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.True(
-            context.MemoryGovernor.PeakAccountedBytes > context.MemoryGovernor.CurrentCommittedBytes,
-            "Snapshot scratch was never covered while the table was retained.");
+        Assert.Equal(100, source.Count);
+        Assert.True(copy.CommittedStorageBytes > 0);
+        Assert.Equal(copy.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -139,7 +139,8 @@ public sealed class SetConstructionAccountingTests
         Assert.Equal(0, fromSet.Count);
         Assert.Equal(0, fromArray.Count);
         Assert.Equal(0, fromList.Count);
-        Assert.Equal(3 * 128, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(fromSet.CommittedStorageBytes > 0);
+        Assert.Equal(fromSet.CommittedStorageBytes + fromArray.CommittedStorageBytes + fromList.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -222,7 +223,7 @@ public sealed class SetConstructionAccountingTests
         empty.SymmetricExceptWith(other);
 
         Assert.Equal(0, empty.Count);
-        Assert.Equal(2 * 128, governor.CurrentCommittedBytes);
+        Assert.Equal(empty.CommittedStorageBytes + other.CommittedStorageBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
     [Fact]
@@ -237,11 +238,12 @@ public sealed class SetConstructionAccountingTests
 
         set.Clear();
         Assert.Equal(0, set.Count);
-        Assert.Equal(128, context.MemoryGovernor.CurrentCommittedBytes);
+        var cleared = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.InRange(cleared, 1, grown - 1);
 
         set.Add(new BigInteger(1));
         Assert.Equal(1, set.Count);
-        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 128, "Regrowth after clear paid no capacity.");
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > cleared, "Regrowth after clear paid no capacity.");
     }
 
     [Fact]
@@ -252,10 +254,11 @@ public sealed class SetConstructionAccountingTests
         var set = new PySet();
 
         set.AttachMemoryGovernor(first);
-        Assert.Equal(128, first.CurrentCommittedBytes);
+        var shell = first.CurrentCommittedBytes;
+        Assert.True(shell > 0);
 
         set.AttachMemoryGovernor(second);
-        Assert.Equal(128, first.CurrentCommittedBytes);
+        Assert.Equal(shell, first.CurrentCommittedBytes);
         Assert.Equal(0, second.CurrentCommittedBytes);
     }
 
@@ -271,7 +274,8 @@ public sealed class SetConstructionAccountingTests
         var copy = new PySet(source);
 
         Assert.Equal(0, copy.Count);
-        Assert.Equal(before + 128, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.True(copy.CommittedStorageBytes > 0);
+        Assert.Equal(before + copy.CommittedStorageBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

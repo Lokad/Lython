@@ -1,0 +1,43 @@
+{
+  "sourceRevision": "db3d1908dd8328ad0e9960718de6c52c518ad736",
+  "coreSHA256": "c6f923d724713dd86454e576c1beb6a89f53fc29e27ac830b8745fb99f15e32f",
+  "cases": [
+    {
+      "name": "dictionary",
+      "cpython": "10 1\n",
+      "lython": {
+        "ExceptionType": "TypeError",
+        "Message": "unhashable type: 'list'",
+        "Span": "line 7, column 8",
+        "Frames": [
+          "<module> (line 7)"
+        ]
+      }
+    },
+    {
+      "name": "set",
+      "cpython": "True 1\n",
+      "lython": {
+        "ExceptionType": "TypeError",
+        "Message": "unhashable type: 'list'",
+        "Span": "line 7, column 8",
+        "Frames": [
+          "<module> (line 7)"
+        ]
+      }
+    },
+    {
+      "name": "compound dictionary",
+      "cpython": "10 1\n",
+      "lython": {
+        "ExceptionType": "TypeError",
+        "Message": "unhashable type: 'list'",
+        "Span": "line 7, column 8",
+        "Frames": [
+          "<module> (line 7)"
+        ]
+      }
+    }
+  ],
+  "conclusion": "Source gate passed: duplicated structural hash requirement demonstrably rejects three valid Python key cases. Implement canonical actual-hash entry authority, not a dataclass-specific workaround."
+}

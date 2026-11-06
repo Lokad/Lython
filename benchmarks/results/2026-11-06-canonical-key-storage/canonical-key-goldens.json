@@ -1,0 +1,47 @@
+[
+  {
+    "name": "custom hash ignores unhashable field",
+    "source": "from dataclasses import dataclass\n@dataclass(frozen=True)\nclass Key:\n values:list\n def __hash__(self):return 7\nk=Key([1])\nvalues={k:10}\nprint(values[k],len(values))\ncopy=values.copy()\nprint(copy[k],len(copy))\n",
+    "expected": "10 1\n10 1\n"
+  },
+  {
+    "name": "compound custom hash",
+    "source": "from dataclasses import dataclass\n@dataclass(frozen=True)\nclass Key:\n values:list\n def __hash__(self):return 7\nk=Key([1])\nvalues={(k,):10}\nprint(values[(k,)],len(values))\n",
+    "expected": "10 1\n"
+  },
+  {
+    "name": "mutable equality slot",
+    "source": "class Key:pass\nk=Key()\nnumber=hash(k)\nvalues={k:10}\ndef equal(self,other):return True\nKey.__eq__=equal\nprint(values[number])\n",
+    "expected": "10\n"
+  },
+  {
+    "name": "compound mutable equality slot",
+    "source": "class Key:pass\nk=Key()\nnumber=hash(k)\nvalues={(k,):10}\ndef equal(self,other):return True\nKey.__eq__=equal\nprint(values[(number,)])\n",
+    "expected": "10\n"
+  },
+  {
+    "name": "one hash per global query",
+    "source": "scope=globals()\ncalls=[]\nclass Key:\n def __hash__(self):calls.append('hash');return 42\n def __eq__(self,other):return self is other\nk=Key()\nscope[k]=7\nprint(calls)\ncalls.clear()\nprint(scope[k],calls)\ncalls.clear()\nprint(scope.pop(k),calls)\n",
+    "expected": "['hash']\n7 ['hash']\n7 ['hash']\n"
+  },
+  {
+    "name": "object namespace equal key",
+    "source": "class Box:value=1\nbox=Box()\nbox.value=2\nview=box.__dict__\nclass Key:\n def __hash__(self):return hash('value')\n def __eq__(self,other):return other=='value'\nk=Key()\nview[k]=3\nprint(box.value,view['value'])\nprint(view.pop(k))\nprint('value' in view,box.value)\n",
+    "expected": "3 3\n3\nFalse 1\n"
+  },
+  {
+    "name": "set custom hash over unhashable field",
+    "source": "from dataclasses import dataclass\n@dataclass(frozen=True)\nclass Key:\n values:list\n def __hash__(self):return 7\nk=Key([1])\nvalues={k}\nprint(k in values,len(values))\ncopy=values.copy()\nprint(k in copy,values==copy)\n",
+    "expected": "True 1\nTrue True\n"
+  },
+  {
+    "name": "set copies and relations reuse hashes",
+    "source": "calls=[]\nclass Key:\n def __hash__(self):calls.append('hash');return 17\n def __eq__(self,other):return isinstance(other,Key)\nk=Key()\nleft={k}\nright={k}\ncalls.clear()\nprint(left==right,left<=right,len(left.copy()),calls)\n",
+    "expected": "True True 1 []\n"
+  },
+  {
+    "name": "set mutable class equality",
+    "source": "class Key:pass\nk=Key()\nnumber=hash(k)\nvalues={k}\ndef equal(self,other):return True\nKey.__eq__=equal\nprint(number in values)\n",
+    "expected": "True\n"
+  }
+]

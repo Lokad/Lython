@@ -1,0 +1,40 @@
+{
+  "sourceRevision": "db3d1908 plus completed K01 shared actual-hash authority and single-classification query boundary. Frozen source patch/snapshot; reference P01/core0873.",
+  "coreSHA256": {
+    "candidate": "ad74e9c3c472d6a47606fb484f10adf4a60dbe421d71027c27c9a50401edad66",
+    "control": "ad74e9c3c472d6a47606fb484f10adf4a60dbe421d71027c27c9a50401edad66",
+    "reference": "0873ec4624d26e47a7a073b6fb342ca76a0cbd0a54d1a8d92910b0eafe52e8ea"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/IPyDictStorage.cs": "b663128578bb58e040c3199f53cb9f55df97cfdb2b2fee7baa37a1c09da36547",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs": "267b9598510c412823143c713c04e87c1f3b9809c843b3eedc9576ef70cd9480",
+    "src/Lokad.Lython/Runtime/LythonRuntime.GlobalNamespace.cs": "c1546a6e9f210f3d37ba52a5ddb0f20453e3a984c93a01ed3f9162e586181106",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.DequeSet.cs": "c46f5a9b0927f469b3901f93fbd76a4f1ab0311e515cb0ec71d7be3570609690",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Os.Environment.cs": "cbe3a1e2f8017a85653f3b0df5eaddeaeb67ded0948d9ecf18ec85abbdbc28bc",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "3e8cfc4accefab73dc9aa72ddff428a619ec7e8b6a0d81709e6ce5156813e496",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "0d342530ea3e4053ed697a484ed06cfbc834773a6bd79412c3f926340dc98b33",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "bfc4f6f679b76c70bfef75e47fb8d084e522ebf02d386a61509ce69ec6bf6395",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "37714d6576c9a86f5514e3f9bbe163a02dc9e51ab14fc801153e25ced18443fa",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "a0f1efa301a8613d53cfe9acf5ad767707eabff2290a64b4057a0a2705f37832",
+    "src/Lokad.Lython/Runtime/PySet.cs": "592f5f742af40a64b39c2b1172fde9abd334952feb87c8d0be2e48bad2923074",
+    "tests/Lokad.Lython.PublicApi.Tests/CanonicalKeyStorageTests.cs": "d79d86fd6863894b91d09b602e4f5f72a6d2c4266510d4dca61270ba4796e163",
+    "tests/Lokad.Lython.PublicApi.Tests/SetCapacityOwnershipTests.cs": "32f13b3509fc4dfd27245426ea5607be13203e258e9dcdea0463a67fdac9c58f",
+    "tests/Lokad.Lython.Tests/ContainerScalarStorageTests.cs": "80e42516df67e2987f59d1e162e254dfc38afebf27d31f6cbd47e45cee003267",
+    "tests/Lokad.Lython.Tests/HashQueryOwnershipTests.cs": "813ec2a9d4e2d962987be56822d92df81f256f2ea9d720e9ddcd243025a5c9a4",
+    "tests/Lokad.Lython.Tests/PrimitiveStorageTests.cs": "dab4971de65ff49444603cb4c54621eb30b8845f9fea2e31e6030f5304e4d6a9",
+    "tests/Lokad.Lython.Tests/SetCapacityOwnershipTests.cs": "a787870a07cee85bfe8db5f5aa0c7d6c889795d58af60181bf26e13fe180360e",
+    "tests/Lokad.Lython.Tests/SetConstructionAccountingTests.cs": "9767cfbdf8399b9f4e7df175064f16c2c7f09c05124176d5fa8519c42412d506"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Release0warnings/errors. Broad1623public/442internal both actual11/10 on query consolidation; final raw-append duplicate guard38public/21internal .NET11 passes. K01 full qualification pending. P01 already GREEN/all8, never requery.",
+  "deletedSourceFiles": [
+    "src/Lokad.Lython/Runtime/ProtocolSideIndex.cs",
+    "tests/Lokad.Lython.PublicApi.Tests/SetNumericStoragePolicyTests.cs",
+    "tests/Lokad.Lython.Tests/SetNumericStoragePolicyTests.cs"
+  ]
+}

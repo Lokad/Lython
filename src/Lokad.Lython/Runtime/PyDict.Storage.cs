@@ -9,16 +9,20 @@ internal sealed partial class PyDict
     private struct NativeEntry
     {
         internal object? Key, Value;
+        internal long Sequence;
         internal uint Hash;
         internal int Next, Bucket;
+        internal bool Protocol;
     }
 
     // Null identifies a live namespace bridge, not an empty native table.
     private NativeEntry[]? _nativeItems;
-    private int _nativeCount;
+    private int _nativeCount, _nativeProtocolCount;
+    private long _nativeSequence;
     private long _nativeCommittedBytes;
     private const long NativeShellBytes = 192;
-    private const long NativeSlotBytes = 32 + 128;
+    private const long NativeEntryBytes = 40;
+    private long NativeSlotBytes => NativeEntryBytes + (_keysOnly ? 64 : 128);
 
     private static int NativeCapacity(int count)
     {
@@ -32,7 +36,12 @@ internal sealed partial class PyDict
     private static uint NativeHash(object key)
     {
         // Private mixing preserves public hashes and spreads integer key bits.
-        var hash = unchecked((uint)PyValueComparer.Instance.GetHashCode(key));
+        return MixNativeHash(PyValueComparer.Instance.GetHashCode(key));
+    }
+
+    private static uint MixNativeHash(int normalized)
+    {
+        var hash = unchecked((uint)normalized);
         hash ^= hash >> 16;
         hash = unchecked(hash * 0x9e3779b9u);
         return hash ^ (hash >> 16);
@@ -57,17 +66,11 @@ internal sealed partial class PyDict
     internal static PyDict CopyStorage(IEnumerable<KeyValuePair<object, object>> entries,
         MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        if (entries is PyDict source) return new PyDict(source, governor, span);
         var capacity = entries is PyDict dictionary ? dictionary.Count
             : entries.TryGetNonEnumeratedCount(out var count) ? count : 0;
         var copy = new PyDict(capacity, governor, span);
         copy.CopyNativeEntries(entries, governor, span);
-        return copy;
-    }
-
-    private static PyDict CopyStorage(IPyDictStorage source, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        var copy = new PyDict(source.Count, governor, span);
-        copy.CopyNativeEntries(source.Entries, governor, span);
         return copy;
     }
 
@@ -105,6 +108,8 @@ internal sealed partial class PyDict
             entry.Key = previous[index].Key;
             entry.Value = previous[index].Value;
             entry.Hash = previous[index].Hash;
+            entry.Sequence = previous[index].Sequence;
+            entry.Protocol = previous[index].Protocol;
             var bucket = NativeBucket(entry.Hash, capacity);
             entry.Next = items[bucket].Bucket;
             items[bucket].Bucket = index + 1;
@@ -119,9 +124,13 @@ internal sealed partial class PyDict
     }
 
     private int FindNativeIndex(object key)
-        => _nativeCount == 0 ? -1 : FindNativeIndex(key, NativeHash(key));
+    {
+        if (_nativeCount == 0) return -1;
+        if (PyHashProtocols.NeedsProtocolKey(key)) return FindNativeIdentity(key);
+        return FindNativeIndex(key, NativeHash(key));
+    }
 
-    private int FindNativeIndex(object key, uint hash)
+    private int FindNativeIndex(object key, uint hash, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         var items = _nativeItems!;
         if (_nativeCount == 0) return -1;
@@ -130,7 +139,7 @@ internal sealed partial class PyDict
         {
             ref var entry = ref items[index];
             if (entry.Hash == hash && PyValueComparer.Instance.Equals(entry.Key, key)) return index;
-            PyStructuralGuard.NoteWork(null, _allocationSpan);
+            PyStructuralGuard.NoteWork(context, span ?? _allocationSpan);
             index = entry.Next - 1;
         }
         return -1;
@@ -145,14 +154,15 @@ internal sealed partial class PyDict
 
     private bool SetNativeItem(object key, object value)
     {
-        var hash = NativeHash(key);
-        var index = FindNativeIndex(key, hash);
-        if (index >= 0) { _nativeItems![index].Value = value; return false; }
-        AppendNativeItem(key, value, hash);
-        return true;
+        var before = _nativeCount;
+        var context = ActiveProtocolContext();
+        var span = QuerySpan;
+        var protocol = PyHashProtocols.NeedsProtocolKey(key);
+        SetNativeValue(key, value, QueryHash(key, context, span, protocol), protocol, context, span, replaceExisting: true);
+        return _nativeCount != before;
     }
 
-    private void AppendNativeItem(object key, object value, uint hash)
+    private void AppendNativeItem(object key, object value, uint hash, bool protocol = false)
     {
         EnsureNativeCapacity(checked(_nativeCount + 1), _memoryGovernor, _allocationSpan);
         var items = _nativeItems!;
@@ -162,6 +172,9 @@ internal sealed partial class PyDict
         entry.Key = key;
         entry.Value = value;
         entry.Hash = hash;
+        entry.Sequence = ++_nativeSequence;
+        entry.Protocol = protocol;
+        if (protocol) _nativeProtocolCount++;
         entry.Next = items[bucket].Bucket;
         items[bucket].Bucket = index + 1;
         _nativeCount++;
@@ -179,7 +192,14 @@ internal sealed partial class PyDict
     {
         var index = FindNativeIndex(key);
         if (index < 0) return false;
+        RemoveNativeAt(index);
+        return true;
+    }
+
+    private void RemoveNativeAt(int index)
+    {
         var items = _nativeItems!;
+        if (items[index].Protocol) _nativeProtocolCount--;
         var removed = index + 1;
         ref var link = ref items[NativeBucket(items[index].Hash, items.Length)].Bucket;
         while (link != removed)
@@ -188,6 +208,26 @@ internal sealed partial class PyDict
             link = ref items[link - 1].Next;
         }
         link = items[index].Next;
+        if (_keysOnly)
+        {
+            // Sets have no ordered payload contract. Move the last payload into
+            // the hole, preserving physical bucket heads and chain order.
+            var lastIndex = --_nativeCount;
+            if (index != lastIndex)
+            {
+                var moved = items[lastIndex];
+                ref var incoming = ref items[NativeBucket(moved.Hash, items.Length)].Bucket;
+                while (incoming != lastIndex + 1) incoming = ref items[incoming - 1].Next;
+                incoming = index + 1;
+                var bucketHead = items[index].Bucket;
+                items[index] = moved;
+                items[index].Bucket = bucketHead;
+            }
+            var preservedHead = items[lastIndex].Bucket;
+            items[lastIndex] = default;
+            items[lastIndex].Bucket = preservedHead;
+            return;
+        }
         // Atomic structural mutation, as with the previous BCL removal. Chains
         // descend through ordered indices, so prefix links cannot point forward.
         // Preserve physical bucket heads while shifting only the live suffix.
@@ -200,6 +240,8 @@ internal sealed partial class PyDict
             destination.Key = source.Key;
             destination.Value = source.Value;
             destination.Hash = source.Hash;
+            destination.Sequence = source.Sequence;
+            destination.Protocol = source.Protocol;
             destination.Next = source.Next > removed ? source.Next - 1 : source.Next;
         }
         ref var last = ref items[--_nativeCount];
@@ -207,7 +249,8 @@ internal sealed partial class PyDict
         last.Value = null;
         last.Hash = 0;
         last.Next = 0;
-        return true;
+        last.Sequence = 0;
+        last.Protocol = false;
     }
 
     // Native-format proofs cannot enter bridges, decode text or dispatch protocols.
@@ -246,17 +289,26 @@ internal sealed partial class PyDict
     bool IPyDictStorage.ContainsKey(object key) => _nativeItems is not null ? FindNativeIndex(key) >= 0 : _items.ContainsKey(key);
     bool IPyDictStorage.SetItem(object key, object value) => _nativeItems is not null ? SetNativeItem(key, value) : _items.SetItem(key, value);
     bool IPyDictStorage.TrySetExisting(object key, object value) => _nativeItems is not null ? TrySetNativeExisting(key, value) : _items.TrySetExisting(key, value);
-    void IPyDictStorage.AddNew(object key, object value)
+    bool IPyDictStorage.HasProtocolKeys => HasProtocolKeys;
+    bool IPyDictStorage.TryGetStoredHash(object key, out uint hash)
     {
-        if (_nativeItems is null) { _items.AddNew(key, value); return; }
-        var hash = NativeHash(key);
-        if (FindNativeIndex(key, hash) >= 0) throw new ArgumentException("An item with the same key has already been added.");
-        AppendNativeItem(key, value, hash);
+        var index = FindNativeIdentity(key);
+        hash = index < 0 ? 0 : _nativeItems![index].Hash;
+        return index >= 0;
+    }
+    void IPyDictStorage.AddNew(object key, object value, uint? knownHash)
+    {
+        if (_nativeItems is null) { _items.AddNew(key, value, knownHash); return; }
+        var protocol = PyHashProtocols.NeedsProtocolKey(key);
+        var hash = knownHash ?? QueryHash(key, ActiveProtocolContext(), QuerySpan, protocol);
+        if (knownHash is null && FindNativeIndex(key, hash) >= 0)
+            throw new ArgumentException("An item with the same key has already been added.");
+        AppendNativeItem(key, value, hash, protocol);
     }
     bool IPyDictStorage.Remove(object key) => _nativeItems is not null ? RemoveNativeItem(key) : _items.Remove(key);
     void IPyDictStorage.Clear()
     {
-        if (_nativeItems is not null) { Array.Clear(_nativeItems); _nativeCount = 0; }
+        if (_nativeItems is not null) { Array.Clear(_nativeItems); _nativeCount = 0; _nativeProtocolCount = 0; }
         else _items.Clear();
     }
     long IPyDictStorage.CommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _items.CommittedBytes;
@@ -267,9 +319,10 @@ internal sealed partial class PyDict
         _nativeCommittedBytes = 0;
         _nativeItems = [];
         _nativeCount = 0;
+        _nativeProtocolCount = 0;
         return released;
     }
 
-    private static long EstimateNativeSlots(int previousCapacity, int newCapacity)
+    private long EstimateNativeSlots(int previousCapacity, int newCapacity)
         => NativeSlotBytes * (newCapacity - previousCapacity) + (previousCapacity == 0 ? 96L : 0L);
 }

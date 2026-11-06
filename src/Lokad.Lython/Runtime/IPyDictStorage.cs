@@ -19,7 +19,11 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 
     bool TrySetExisting(object key, object value);
 
-    void AddNew(object key, object value);
+    void AddNew(object key, object value, uint? knownHash = null);
+
+    bool HasProtocolKeys { get; }
+
+    bool TryGetStoredHash(object key, out uint hash);
 
     bool Remove(object key);
 

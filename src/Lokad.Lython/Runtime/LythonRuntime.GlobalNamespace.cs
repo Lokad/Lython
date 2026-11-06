@@ -35,6 +35,8 @@ internal sealed partial class LythonRuntime
         }
 
         public int Count => _entries.Count;
+        public bool HasProtocolKeys => _entries.HasProtocolKeys;
+        public bool TryGetStoredHash(object key, out uint hash) => _entries.TryGetStoredHash(key, out hash);
         public IEnumerable<object> Keys => _entries.Keys;
         public IEnumerable<object> Values => this.Select(pair => pair.Value);
         public long CommittedBytes => BridgeBytes + _entries.CommittedBytes + _nameBytes + _nameIndexBytes;
@@ -87,7 +89,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        public void AddNew(object key, object value)
+        public void AddNew(object key, object value, uint? knownHash = null)
         {
             var textKey = key as PyString;
             // Fund the decoded name, metadata record and name lookup entry.
@@ -102,7 +104,7 @@ internal sealed partial class LythonRuntime
                 using var namespaceFunding = _root.MemoryGovernor.ReserveTemporary(growth, _span);
                 EnsureNameCapacity(_names.Count + 1);
                 var named = new NameEntry(key, name, entryBytes);
-                _entries.AddNew(key, named);
+                _entries.AddNew(key, named, knownHash);
                 _names.Add(name, named);
                 _ownedVariables += OwnedChange(name);
                 _root.Variables[name] = value;
@@ -112,7 +114,7 @@ internal sealed partial class LythonRuntime
                 entryFunding.Commit(entryBytes);
                 _nameBytes += entryBytes;
             }
-            else _entries.AddNew(key, value);
+            else _entries.AddNew(key, value, knownHash);
         }
 
         private void EnsureNameCapacity(int count)
