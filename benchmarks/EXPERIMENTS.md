@@ -10,7 +10,9 @@ confirmation observes−1.21% to+5.53%, preserving possible regression as accept
 debt. Retain the coherent redesign for record gains/allocations; the whole-text
 objective stays open. All original failed launch/catalog conditions and partial
 samples are retained; no runtime error or adverse observation is filtered out.
-Full ordinary checks pass both runtimes; platform/Stress/package remain separate.
+Full ordinary checks pass both runtimes. Runtime f2ce53db delivery is GREEN as
+CI42294911136 on1fdca591: Windows/Ubuntu, actual11/10, original Stress and installed
+consumers. Terminal outcome is cached; no unchanged qualification repeat.
 
 The [R19 current CPU gate](results/2026-11-06-current-cpu-records/README.md)
 captures 14.41 s of text/report guest work. Ordinary calls/binding are under 2%

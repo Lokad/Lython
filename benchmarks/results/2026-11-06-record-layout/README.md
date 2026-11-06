@@ -120,5 +120,10 @@ Original failures remain visible:
   manifest ID, validate all jobs before launch and run complete B361. No runtime
   source, timeout, containment assertion or adverse result was removed.
 
-Publication remains postponed. Platform/original Stress/installed consumers are
-qualified at the coherent delivery boundary; do not infer them from local checks.
+Runtime f2ce53db is fully qualified at documentation/evidence head1fdca591:
+CI42294911136 is GREEN on Windows/Ubuntu, actual11/10, original Stress and installed
+package consumers. The exact head/all steps are cached in delivery-ci.json;
+terminal, never query it again. Local explicit Release installed consumers also
+pass both actual runtimes; the core package has no runtime dependencies and the
+adapter remains nonpackable. This closes R20 delivery, not the possible text debt
+or whole-script performance objective. Publication remains postponed.
