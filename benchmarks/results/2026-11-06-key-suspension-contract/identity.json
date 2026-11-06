@@ -1,0 +1,9 @@
+{
+  "sourceRevision": "bf741ec269248c4d1ead4d0d85f8f9585c3652c1",
+  "coreSHA256": {
+    "net11.0": "df1f1f2c25678acd5a2f800cb85f91e8a919973e9d081b270f479b94c1b103cb",
+    "net10.0": "09b0daec352b7eeba337d372778cde1e6ccf269c8713e737e571ff8c0d7fd71a"
+  },
+  "scope": "Private public-API qualification only. No production change or tests requiring permanent rejection. Owned host timing control proves actual suspension; custom hashing rejects before host work. Every result/program is disposed and allowance returns to compilation baseline/zero.",
+  "performanceClaim": null
+}

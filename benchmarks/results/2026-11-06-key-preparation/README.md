@@ -33,7 +33,9 @@ private golden reader's JSON casing error were corrected; no assertions relaxed.
 
 Focused Release454 internal/1220 public per actual.NET11RC3/.NET10.0.8 pass,
 plus22 hash/ownership/depth cases after adding the new refusal/cancellation variants.
-Full local and final delivery status is kept separately in validation.json.
+Committed/pushed bf741ec2: full local Release4,214 internal/16,101 public per
+actual runtime and both installed Release consumers pass. Platform/stress delivery
+42166983759 is running; current status is kept separately in validation.json.
 
 ## B325 complete scripts
 

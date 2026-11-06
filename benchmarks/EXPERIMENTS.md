@@ -3055,3 +3055,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   All original observations retained; no allocation/broad CPU claim. Full local
   Release 4,214 internal/16,101 public per actual runtime pass; final delivery
   qualification remains separate. Whole-script objective stays active.
+
+- [Asynchronous key protocol contract, Q02](results/2026-11-06-key-suspension-contract/README.md):
+  bounded public qualification on bf741ec2, both actual runtimes. Ordinary async
+  host control genuinely suspends; public hash and compound dictionary get reject
+  the same host callback before work starts. No abandoned users; shared funding
+  returns to compilation baseline/zero. Document the required continuation/cycle/
+  ownership boundary without claiming a wrapper fixes it or adding permanent
+  rejection tests. No runtime change or performance claim. Independent whole-script
+  work continues; lazy function namespaces/direct local transport already exist.

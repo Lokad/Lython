@@ -1,5 +1,5 @@
 {
-  "status": "Retained source, full local Release complete on both actual runtimes. Final platform/stress/installed qualification pending.",
+  "status": "Committed/pushed bf741ec2. Full local Release and installed consumers pass; platform/stress delivery42166983759 running.",
   "sourceBase": "62d2c9ca/runtime1134d6e8 plus exact recorded Q01 source hashes",
   "coreSHA256": {
     "candidate": "1507216f09cd29a9fc842fac30862bc16e4c140989880cef100cbb65e6352084",
@@ -26,5 +26,12 @@
     "Custom hashing still requires synchronous completion under RunAsync; Q01 does not fix genuinely suspending hash callbacks.",
     "No allocation, guest-only CPU, RSS or embedding-latency gain measured.",
     "B325 identical text roles differ7.09%; longer-warmup unchanged confirmation does not reproduce9.09% adverse candidate, but modest text cost/role variation remains."
-  ]
+  ],
+  "sourceRevision": "bf741ec269248c4d1ead4d0d85f8f9585c3652c1",
+  "installedReleaseConsumers": [
+    "net11.0",
+    "net10.0"
+  ],
+  "deliveryRunId": 42166983759,
+  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42166983759"
 }
