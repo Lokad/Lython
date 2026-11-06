@@ -338,19 +338,19 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.LoadConst:
                     var constant = RuntimeValue(execution.Code.Constants[instruction.ConstantIndex]);
-                    PublishInstructionResult(ref execution, scope, invocation, instruction, constant);
+                    PublishInstructionResult(ref execution, invocation, instruction, constant);
                     break;
 
                 case ExecutableOpCode.LoadClosure:
-                    PublishInstructionResult(ref execution, scope, invocation, instruction, LoadClosure(execution.Code, invocation!, instruction.ClosureSlot, instruction.Span));
+                    PublishInstructionResult(ref execution, invocation, instruction, LoadClosure(execution.Code, invocation!, instruction.ClosureSlot, instruction.Span));
                     break;
 
                 case ExecutableOpCode.LoadGlobal:
-                    PublishInstructionResult(ref execution, scope, invocation, instruction, ResolveExecutableGlobal(execution.Code.Names[instruction.NameIndex], instruction.Span, scope));
+                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableGlobal(execution.Code.Names[instruction.NameIndex], instruction.Span, scope));
                     break;
 
                 case ExecutableOpCode.LoadName:
-                    PublishInstructionResult(ref execution, scope, invocation, instruction, ResolveExecutableName(execution.Code.Names[instruction.NameIndex], instruction.Span, invocation!));
+                    PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableName(execution.Code.Names[instruction.NameIndex], instruction.Span, invocation!));
                     break;
 
 
@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
                         execution.Stack[instruction.ResultSlot] = PyNone.Instance;
                         execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);
                     }
-                    else PublishInstructionResult(ref execution, scope, invocation, instruction, memberValue);
+                    else PublishInstructionResult(ref execution, invocation, instruction, memberValue);
                     break;
 
                 case ExecutableOpCode.PreloadImplicitSuperArguments:
@@ -555,7 +555,7 @@ internal sealed partial class LythonRuntime
                     ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, ReadOperand(ref execution, first), scope, instruction.Span),
                     _ => throw new InvalidOperationException("Unexpected value operation."),
                 };
-                PublishInstructionResult(ref execution, scope, invocation, instruction, result);
+                PublishInstructionResult(ref execution, invocation, instruction, result);
             }
             catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
         }
@@ -633,7 +633,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.MatchException:
                     var active = scope.State.CurrentException
                         ?? throw new InvalidOperationException("Exception selection requires an active exception.");
-                    PublishInstructionResult(ref execution, scope, invocation, instruction,
+                    PublishInstructionResult(ref execution, invocation, instruction,
                         MatchesCaughtExceptionValue(execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot), active.Identity, invocation!, instruction.Span));
                     return false;
 

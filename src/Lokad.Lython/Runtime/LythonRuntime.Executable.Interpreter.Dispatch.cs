@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Complete:
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.LoadLocal:
-                            PublishInstructionResult(ref execution, scope, invocation, instruction,
+                            PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;
                         case ExecutableOpCode.StoreLocal:
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
                             {
-                                if (nativeNext.HasValue) PublishInstructionResult(ref execution, scope, invocation, instruction, nativeNext.Value);
+                                if (nativeNext.HasValue) PublishInstructionResult(ref execution, invocation, instruction, nativeNext.Value);
                                 else
                                 {
                                     _ = execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);

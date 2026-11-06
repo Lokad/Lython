@@ -82,7 +82,10 @@ Seven CPython goldens and focused296internal/1,078public per actual.NET11/.NET10
 pass on the final source, including real suspension, retained aliases, refused
 growth, native error traces and budget reuse. Earlier broader focused qualification
 and the original full-suite failure remain scoped separately in validation.json.
-Full platform/stress/installed-consumer delivery is pending. The next runtime step
-must address the common execution/early-promotion surcharge or explicitly resolve
-that debt before calling R13 a performance completion. Do not treat another isolated
+Full B delivery is now qualified: exact-source terminal CI42228235593 is green
+on Windows/Ubuntu, both runtimes, packages and original stress coverage. Both local
+installed consumers pass on actual runtimes. The later
+[transport completion](transport/README.md) has focused/measurement qualification
+only. R13 must still resolve its remaining debt before performance completion.
+Do not treat another isolated
 experiment as completion of the substantial whole-script objective. No publication.

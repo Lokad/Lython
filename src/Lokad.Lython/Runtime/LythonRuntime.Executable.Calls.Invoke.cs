@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
                     ? InvokeDictionaryGet(dictionary!, argument!, call.ArgumentCount == 2
                         ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, scope)
                     : InvokeSingleInput(argument!, unary!, call.CallSpan, scope);
-                PublishInstructionResult(ref execution, scope, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
+                PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                 return true;
             }
             catch { execution.Stack.RetireTo(start); throw; }

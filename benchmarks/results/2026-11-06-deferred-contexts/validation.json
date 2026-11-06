@@ -1,6 +1,6 @@
 {
-  "status": "active implementation; performance decision and full delivery pending",
-  "lastFullyQualifiedRevision": "88f1209929697ce1fb6a2d895fcaae5fb0ac2424",
+  "status": "B fully qualified; later C transport has focused/measurement qualification only",
+  "lastFullyQualifiedRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e",
   "candidateSource": "3eff1b37 plus archived R13 B patch, Slice correction and shared no-growth write refinement",
   "measuredCandidateCoreSHA256": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017",
   "releaseBuildBothTargets": {
@@ -41,11 +41,30 @@
     "archiveSHA256": "bf6a43a8f2f956d134985235d88a0a7d2e37041008c914ddff3e9687bb0571b0"
   },
   "fullPlatformStressPackage": {
-    "status": "running",
+    "status": "completed",
     "runId": 42228235593,
-    "url": "https://github.com/Lokad/Lython/actions/runs/42228235593"
+    "url": "https://github.com/Lokad/Lython/actions/runs/42228235593",
+    "conclusion": "success",
+    "runtimeRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e",
+    "majorGates": 8
   },
   "publication": "postponed",
   "decision": "provisionally retain coherent implementation; explicit warm text/JSON/report debt; broader performance objective open",
-  "runtimeRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e"
+  "runtimeRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e",
+  "installedLocalConsumers": {
+    "packageRevision": "abe0defb",
+    "productionRuntimeRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e",
+    "net11.0": "passed actual11.0.0-rc.3.26522.148",
+    "net10.0": "passed actual10.0.8",
+    "coreDependencies": []
+  },
+  "transport": {
+    "status": "retain simplification; focused/measurement only",
+    "focusedPerActualRuntime": {
+      "internal": 526,
+      "public": 1508
+    },
+    "fullDelivery": "batch at next coherent runtime boundary",
+    "evidence": "transport/README.md"
+  }
 }

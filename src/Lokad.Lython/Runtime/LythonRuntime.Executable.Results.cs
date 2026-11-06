@@ -8,22 +8,22 @@ internal sealed partial class LythonRuntime
     internal sealed partial class ExecutionContext
     {
         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
-            => PublishInstructionResult(ref _execution, this, this, instruction, value);
+            => PublishInstructionResult(ref _execution, this, instruction, value);
 
-        private static void PublishInstructionResult(ref ExecutableWorkState execution, ExecutionContext scope,
+        private static void PublishInstructionResult(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
         {
             if (!instruction.HasLocalResult)
             {
                 execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
             }
-            else CompleteLocalResult(ref execution, scope, invocation, instruction, value);
+            else CompleteLocalResult(ref execution, invocation, instruction, value);
         }
 
         // Keep computed guest temporaries out of the long dispatch loop, as
         // ordinary stores do. Unchanged operand publication needs no new fence.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void CompleteLocalResult(ref ExecutableWorkState execution, ExecutionContext scope,
+        private static void CompleteLocalResult(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
         {
             // Preserve the original input retirement and its disposal order.
@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
 
             execution.Stack.ForgetResultInput(instruction.ResultSlot);
             ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 1];
-            scope.CheckExecution(store.Span);
+            execution.Stack.CheckExecution(store.Span);
             StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, store.LocalSlot, value, store.Span);
             execution.InstructionIndex++;
         }
