@@ -14,8 +14,9 @@ full4207internal/16072public pass per actual11/10. Original B307 adverse CSV/tex
 results remain. B308 single-query refinement supports set−47%/dataclass−30–31%;
 B309328.85s/twelve jobs refreshes four complete scripts across compile/warm/fresh.
 Fresh CPython ratios~1.44CSV/1.8text/1.12JSON/1.34–1.40report. Warm CSV/text debt
-remains; no broad speedup/CPU/allocation claim. Local installed Release consumers
-pass both actual runtimes; K01 platform/stress delivery is tracked separately.
+remains; no broad speedup/CPU/allocation claim. K01 source dd76df36 is fully
+qualified: cached terminal 42145148043 GREEN/all eight Windows/Ubuntu runtime,
+original stress and installed-package gates. It does not qualify later F02.
 
 The [prepared-pattern milestone](results/2026-11-06-prepared-patterns/README.md)
 replaces raw pattern evaluation/capture dictionaries and the lowered literal CWT

@@ -1,5 +1,5 @@
 {
-  "status": "Full local Release actual.NET11/10 pass; cross-platform/stress/installed consumer K01 delivery pending",
+  "status": "Fully qualified K01 source dd76df36: local Release actual.NET11/10 and all8 Windows/Ubuntu platform/stress/installed-consumer gates pass",
   "sourceBase": "db3d1908",
   "finalMeasuredCore": "adbd1b6ba5f7fbda22319b56316b0cd8bdc0725db50bd08baffa1733842b3d32",
   "fullInternalPerFramework": 4207,
@@ -21,5 +21,7 @@
     "Set per-numeric charge/refund ledger",
     "Orphan IsNativeHashMatch and unused storage copy overload"
   ],
-  "p01Delivery": "42135195574 GREEN/all8 cached; does not qualify K01"
+  "p01Delivery": "42135195574 GREEN/all8 cached; does not qualify K01",
+  "deliveryRun": 42145148043,
+  "deliveryScope": "K01 canonical dictionary/set storage; Windows/Ubuntu actual.NET11/.NET10, original Stress and installed Release consumers. Excludes subsequent F02 lexical changes."
 }

@@ -4,7 +4,9 @@ K01 ondb3d1908, measured2026-11-06 on the existing quiet Azure Standard_F4as_v7
 Ubuntu24.04.4/four AMD EPYC9V45 vCPUs; .NET11RC3 and CPython3.13.16.
 [Full local validation](validation.json):4207internal/16072public per actual11/10,
 zero-warning/error Release builds, nine independent CPython3.13.2 goldens. Original
-stress, Windows/Ubuntu and installed-consumer K01 qualification is pending.
+stress, Windows/Ubuntu and installed-consumer K01 qualification is complete:
+[cached terminal 42145148043](delivery-ci.json), GREEN/all eight gates, source
+dd76df36. This qualification excludes subsequent F02 lexical-load changes.
 P01 delivery42135195574 is closed GREEN/all8 and excludes these changes.
 
 The existing native entry array now owns keys, stored Python hashes and insertion
