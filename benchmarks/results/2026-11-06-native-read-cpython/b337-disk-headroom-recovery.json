@@ -1,0 +1,553 @@
+{
+  "beforeFreeBytes": 3354624,
+  "targetFreeBytes": 536870912,
+  "removed": [
+    {
+      "name": "b337-payload.tgz",
+      "unit": "lython-b337-native-read-checkpoint-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\native-read-prefix-r07\\checkpoint\\payload.tgz",
+      "sha256": "883574eac1caca8e74307dc09b9895ecd3ee57e83f300dbc563607dccbde68db",
+      "bytes": 1912281,
+      "path": "/home/lokad/lython-bench-checks/b337-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b294-payload.tgz",
+      "unit": "lython-b294-result-transport-refined-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\result-transport-d62\\refinement\\payload.tgz",
+      "sha256": "5aa97d20b370d7890e8b9ee6acc864e04f45c1b804f60887bef69138ed965ba5",
+      "bytes": 3786737,
+      "path": "/home/lokad/lython-bench-checks/b294-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b304-payload.tgz",
+      "unit": "lython-b304-dict-views-final-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-storage-e3b\\completion\\payload.tgz",
+      "sha256": "0f82c7798573cd352c80e16825e2fcf05537a1a38199a7a5822ec8ee58bd07d3",
+      "bytes": 3778822,
+      "path": "/home/lokad/lython-bench-checks/b304-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b303-payload.tgz",
+      "unit": "lython-b303-dict-views-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-storage-e3b\\payload.tgz",
+      "sha256": "7045f789df345501523b79f905b36e4a3f25804513a24b202a1ab5f51b2d79a5",
+      "bytes": 3777660,
+      "path": "/home/lokad/lython-bench-checks/b303-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b302-payload.tgz",
+      "unit": "lython-b302-counter-keys-final-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\counter-keys-d64\\identity-correction\\payload.tgz",
+      "sha256": "911d36c71e41adf1c71537880dde027e2ace5987e1d188831628721aa82a34b1",
+      "bytes": 3776672,
+      "path": "/home/lokad/lython-bench-checks/b302-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b301-payload.tgz",
+      "unit": "lython-b301-counter-keys-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\counter-keys-d64\\payload.tgz",
+      "sha256": "f9ba3b4f25804e9d8102af3ffa3e0e82a62a78f7fe631fafc9a0c0d445681f40",
+      "bytes": 3775863,
+      "path": "/home/lokad/lython-bench-checks/b301-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b320-payload.tgz",
+      "unit": "lython-b320-call-checkpoint-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\direct-methods-f05\\checkpoint\\payload.tgz",
+      "sha256": "bada7d50f4a6dabe2ba38a129e02f0e6365e93332f39d0fb245a6e9b269e1526",
+      "bytes": 3768314,
+      "path": "/home/lokad/lython-bench-checks/b320-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b317-payload.tgz",
+      "unit": "lython-b317-direct-methods-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\direct-methods-f05\\payload.tgz",
+      "sha256": "218ef2cd1399a1f2a7f06b71c1c02fa590e5a4569987f489964d240a27c02319",
+      "bytes": 3763491,
+      "path": "/home/lokad/lython-bench-checks/b317-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b298-payload.tgz",
+      "unit": "lython-b298-set-query-refined-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\set-query-d64\\refinement\\payload.tgz",
+      "sha256": "e01e8eb2d340d81dbc94acfffe2a9dc547677ffd2f609e9fc2ab5a357589c6b4",
+      "bytes": 3757845,
+      "path": "/home/lokad/lython-bench-checks/b298-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b325-payload.tgz",
+      "unit": "lython-b325-key-query-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-query-q01\\payload.tgz",
+      "sha256": "06492298f2afd42a29be73cfac26f6085842c131148961c530a4c8e41a83d9e7",
+      "bytes": 3756945,
+      "path": "/home/lokad/lython-bench-checks/b325-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b326-payload.tgz",
+      "unit": "lython-b326-key-query-text-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-query-q01\\text-confirmation\\payload.tgz",
+      "sha256": "75b8846b39e838cb8f9c20dfa707e1e702ce0dca47bb493a9b9c12008e20f0fb",
+      "bytes": 3755945,
+      "path": "/home/lokad/lython-bench-checks/b326-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b297-payload.tgz",
+      "unit": "lython-b297-set-query-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\set-query-d64\\payload.tgz",
+      "sha256": "e86966949ce6fb3a2c2f438e5864c59ae5d20b51e483d8190c4f90b41baae796",
+      "bytes": 3755835,
+      "path": "/home/lokad/lython-bench-checks/b297-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b305-payload.tgz",
+      "unit": "lython-b305-mapping-records-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\mapping-extraction-e3b2\\payload.tgz",
+      "sha256": "e1bfcbc72ae9f5565a6687aab673962721f7080aeda3779504a35faf0f48c71f",
+      "bytes": 3755573,
+      "path": "/home/lokad/lython-bench-checks/b305-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b311-payload.tgz",
+      "unit": "lython-b311-lexical-loads-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\lexical-loads-f02\\payload.tgz",
+      "sha256": "12e98f8e47fee7280ef044ad956c67a96fe421024851a3f7a8e638204c4ab7f8",
+      "bytes": 3754089,
+      "path": "/home/lokad/lython-bench-checks/b311-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b321-payload.tgz",
+      "unit": "lython-b321-record-template-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\record-layout-b01\\payload.tgz",
+      "sha256": "dff5b0009612f83da764e2bee6dcfe5abbdc6a61de7f4076f9a82749de2b22bf",
+      "bytes": 3753312,
+      "path": "/home/lokad/lython-bench-checks/b321-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b291-payload.tgz",
+      "unit": "lython-b291-local-update-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\local-update-d61\\payload.tgz",
+      "sha256": "6ebaac0252e28fbb85cef8fd5724630d0b8d72f51d81ed8ea7fab672577d57fe",
+      "bytes": 3751642,
+      "path": "/home/lokad/lython-bench-checks/b291-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b292-payload.tgz",
+      "unit": "lython-b292-local-update-confirm-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\local-update-d61\\confirmation\\payload.tgz",
+      "sha256": "1349dc0094fa826e71cecd1dc1f67586bc2da057113d532f1f034645209edb66",
+      "bytes": 3751545,
+      "path": "/home/lokad/lython-bench-checks/b292-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b286-payload.tgz",
+      "unit": "lython-b286-operand-retirement-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\operand-retirement-d56\\payload.tgz",
+      "sha256": "8e3f2a5431952a81bbe12840cbce3183e45c7e4de9c62e52a690d833e604cbbf",
+      "bytes": 3745338,
+      "path": "/home/lokad/lython-bench-checks/b286-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b315-payload.tgz",
+      "unit": "lython-b315-nonlocal-owners-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\nonlocal-owners-f04\\payload.tgz",
+      "sha256": "60340fa5b4803bc781db62dec994f990123419ca895fc64a56544fdb302e7f24",
+      "bytes": 3738839,
+      "path": "/home/lokad/lython-bench-checks/b315-payload.tgz",
+      "service": "MainPID=0\nResult=exit-code\nLoadState=loaded\nActiveState=failed\n"
+    },
+    {
+      "name": "b287-payload.tgz",
+      "unit": "lython-b287-instruction-boundary-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\instruction-boundary-d57\\payload.tgz",
+      "sha256": "6db7208956c3fffbc0c1d98d01b2c2fd5808341e18ebac5339d21c579696b3bc",
+      "bytes": 3732695,
+      "path": "/home/lokad/lython-bench-checks/b287-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b288-payload.tgz",
+      "unit": "lython-b288-instruction-boundary-confirm-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\instruction-boundary-d57\\confirmation\\payload.tgz",
+      "sha256": "5ed2baea817d1b589fc1c33370982f184d7828feb92c4add72e77bb28103ed9d",
+      "bytes": 3732497,
+      "path": "/home/lokad/lython-bench-checks/b288-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b284-payload.tgz",
+      "unit": "lython-b284-whitespace-checks-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\whitespace-checks-d55\\payload.tgz",
+      "sha256": "e9ef3194f08322604e4afff137bb3bb52bef4b9f18b2b0a6f71f991d183df90a",
+      "bytes": 3729508,
+      "path": "/home/lokad/lython-bench-checks/b284-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b285-payload.tgz",
+      "unit": "lython-b285-whitespace-checks-confirm-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\whitespace-checks-d55\\confirmation\\payload.tgz",
+      "sha256": "2d7a80033f879e53afaf5e3b5683a8e009df42c22f05088b302ec06cbd486457",
+      "bytes": 3729501,
+      "path": "/home/lokad/lython-bench-checks/b285-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b310-payload.tgz",
+      "unit": "lython-b310-csv-frame-cost-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\frame-source-gate-f01\\payload.tgz",
+      "sha256": "2d91c2d8c3fdb38e8d1f7f2bdcf4ec96b201d1c5d3e22d22e4e1b06f9fd6a1e8",
+      "bytes": 3181682,
+      "path": "/home/lokad/lython-bench-checks/b310-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b322-payload.tgz",
+      "unit": "lython-b322-operand-cost-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\operand-cost-p02\\payload.tgz",
+      "sha256": "8430d942a100adb966e7477bcdb900a9b65256c8067d71af86b3a8aa326066ff",
+      "bytes": 1917552,
+      "path": "/home/lokad/lython-bench-checks/b322-payload.tgz",
+      "service": "MainPID=0\nResult=exit-code\nLoadState=loaded\nActiveState=failed\n"
+    },
+    {
+      "name": "b295-payload.tgz",
+      "unit": "lython-b295-text-pipeline-cost-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\text-pipeline-cost-d63\\payload.tgz",
+      "sha256": "3d2827ce6f24eb213daed6e28d51ffa0d11bcd05b2615f104070e3a13ffd4162",
+      "bytes": 1885275,
+      "path": "/home/lokad/lython-bench-checks/b295-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b289-payload.tgz",
+      "unit": "lython-b289-integer-loop-cost-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\integer-loop-cost-d58\\payload.tgz",
+      "sha256": "4c080ef66697efebaf0ac09c213fb5090281c17e0c5f68cb2a4c61b06c0aa250",
+      "bytes": 1871486,
+      "path": "/home/lokad/lython-bench-checks/b289-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b256-payload.tgz",
+      "unit": "lython-b256-known-list-confirm-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\known-list-confirm-b256\\payload.tgz",
+      "sha256": "909a9d20204c604637bed49796818dc1fe27937c51e0dc1810593118f1e66ec9",
+      "bytes": 39394,
+      "path": "/home/lokad/lython-bench-checks/b256-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b241-payload.tgz",
+      "unit": "lython-b241-text-fresh-confirm-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\text-fresh-confirm-b241\\payload.tgz",
+      "sha256": "5f108613d066955abff26be31ab5ecf78a211aaa9ca9103cdd342a95447bab03",
+      "bytes": 29594,
+      "path": "/home/lokad/lython-bench-checks/b241-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b283-payload.tgz",
+      "unit": "lython-b283-call-workspace-allocation-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\call-workspace-d54\\allocation\\payload.tgz",
+      "sha256": "6f01b3c3747cb90cd03193f4ec19e4c232e911973f769f970196f248a6583b79",
+      "bytes": 26538,
+      "path": "/home/lokad/lython-bench-checks/b283-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b313-payload.tgz",
+      "unit": "lython-b313-unified-frame-allocation-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\unified-frame-f03\\allocation\\payload.tgz",
+      "sha256": "a8943ef40d5fb753780ed009610b4d116f127411c9f311803db9a509526574f4",
+      "bytes": 25527,
+      "path": "/home/lokad/lython-bench-checks/b313-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b318-payload.tgz",
+      "unit": "lython-b318-direct-methods-allocation-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\direct-methods-f05\\allocation\\payload.tgz",
+      "sha256": "1be4c85554785f854035126916ba04d3c84e265f7b5472bdddf779d1eb27f2fd",
+      "bytes": 25403,
+      "path": "/home/lokad/lython-bench-checks/b318-payload.tgz",
+      "service": "MainPID=0\nResult=exit-code\nLoadState=loaded\nActiveState=failed\n"
+    }
+  ],
+  "retained": [
+    {
+      "name": "b290-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b306-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b308-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b309-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b307-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b300-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b296-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b314-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b312-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b299-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b293-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b282-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b271-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b246-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b253-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b222-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b244-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b247-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b245-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b223-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b229-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b243-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b221-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b224-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b227-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b231-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b234-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b236-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b235-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b228-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b225-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b238-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b226-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b239-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b249-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b233-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b232-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b272-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b267-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b252-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b255-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b276-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b270-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b278-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b268-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b240-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b273-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b274-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b275-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b281-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b280-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b279-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b277-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b266-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b254-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b260-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b251-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b250-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b269-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b259-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b248-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b230-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b237-payload.tgz",
+      "reason": "already absent"
+    },
+    {
+      "name": "b220-payload.tgz",
+      "reason": "already absent"
+    }
+  ],
+  "afterFreeBytes": 88391680
+}

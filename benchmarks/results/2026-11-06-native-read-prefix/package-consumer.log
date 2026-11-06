@@ -1,0 +1,21 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net10.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net10.0\Lokad.Lython.dll
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Successfully created package 'D:\code\Lython\artifacts/nuget/Lokad.Lython.0.11.0.nupkg'.
+  Successfully created package 'D:\code\Lython\artifacts/nuget/Lokad.Lython.0.11.0.snupkg'.
+  Determining projects to restore...
+  Restored C:\Users\JoannesVermorel\AppData\Local\Temp\lython-package-1ed00f9eb0ca47ba8a7fabae951c57f7\net11.0\Consumer.csproj (in 171 ms).
+Package runtime: .NET 11.0.0-rc.3.26522.148; net11.0.
+Package consumer passed: 0.11.0
+Package compatibility and mediated file consumer passed.
+Verified net11.0 package D:\code\Lython\artifacts\nuget\Lokad.Lython.0.11.0.nupkg (SHA512 D6B2C5E4F69217F92B8EB94CDD24C058F00909B95A536A395E04F0E7B3AFABE423E08ED2C3949798F35A353BD15FF7A4C63B6E7EC6497ACBB831039AF804E627). Consumer: C:\Users\JoannesVermorel\AppData\Local\Temp\lython-package-1ed00f9eb0ca47ba8a7fabae951c57f7\net11.0
+  Determining projects to restore...
+  Restored C:\Users\JoannesVermorel\AppData\Local\Temp\lython-package-1ed00f9eb0ca47ba8a7fabae951c57f7\net10.0\Consumer.csproj (in 422 ms).
+Package runtime: .NET 10.0.8; net10.0.
+Package consumer passed: 0.11.0
+Package compatibility and mediated file consumer passed.
+Verified net10.0 package D:\code\Lython\artifacts\nuget\Lokad.Lython.0.11.0.nupkg (SHA512 D6B2C5E4F69217F92B8EB94CDD24C058F00909B95A536A395E04F0E7B3AFABE423E08ED2C3949798F35A353BD15FF7A4C63B6E7EC6497ACBB831039AF804E627). Consumer: C:\Users\JoannesVermorel\AppData\Local\Temp\lython-package-1ed00f9eb0ca47ba8a7fabae951c57f7\net10.0

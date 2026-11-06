@@ -62,3 +62,16 @@ byte identity with final HEAD. Final focused1,018/431 passes both runtimes;
 full local.NET11 before this local passed4,229/16,143. Final checkpoint B337
 will measure final source with twelve primary compile/warm/fresh jobs and two
 affected async jobs. No unchanged full-suite replay for the local cleanup.
+
+## Closed delivery / final-source checkpoint
+
+Final4ace68ff is fully qualified: [cached terminal CI](delivery-ci.json) is
+GREEN on Windows/Ubuntu, both runtimes, original Stress and installed consumers.
+[Local installed-consumer log](package-consumer.log) also passes both runtimes.
+Do not query terminal CI or replay unchanged qualification. Later R06 excluded.
+B337 stopped at its loaded-binary identity guard before any timing; its original
+failure and corrected worker-location setup are preserved in the
+[final B338 refresh](../2026-11-06-native-read-cpython/README.md). B338 completes
+all14jobs381.56s with final a45b5c5d/source4ace68ff, confirming async-text elapsed
+−6.91–7.14%, flat synchronous warm text and fresh-text+1.63–2.27% debt versusQ02.
+The earlier pending-checkpoint descriptions above are historical, not live work.

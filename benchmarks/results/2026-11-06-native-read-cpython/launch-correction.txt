@@ -1,0 +1,1 @@
+The old combined extract/setup launcher refused the already prepared directory before starting any service. This standalone launcher starts exactly one corrected collection after Ready verified the actual loaded candidate core.

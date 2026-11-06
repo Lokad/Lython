@@ -1,0 +1,8 @@
+{
+  "complete": false,
+  "jobs": 0,
+  "reason": "Worker core identity mismatch before first timing; original failed collection retained",
+  "allWorkersJoined": true,
+  "guestFixtureDirectories": [],
+  "archiveSHA256": "40c999ce69815f8d939ae97af9a584eded6faf67196fb2716411c867729849dc"
+}

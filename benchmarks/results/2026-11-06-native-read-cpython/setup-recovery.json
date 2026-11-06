@@ -1,0 +1,9 @@
+{
+  "initialFailure": "ENOSPC while unpacking; no earlier service/worker started",
+  "serviceBefore": "MainPID=0\nLoadState=not-found\n",
+  "verifiedTransferSHA256": "883574eac1caca8e74307dc09b9895ecd3ee57e83f300dbc563607dccbde68db",
+  "freeBytesBeforeExtraction": 78090240,
+  "expandedPayloadBytes": 6431406,
+  "freeBytesBeforeSoleLaunch": 77238272,
+  "sourceAndWorkerHashesVerifiedBySetup": true
+}

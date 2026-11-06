@@ -3132,3 +3132,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   three jobs/all gates; no allocation/causalCPU gain or compounded percentages.
   Failed disk setup/recovery and all controls preserved. Coherent primary refresh
   and final qualification remain separate; whole-script objective stays active.
+
+- [Final native-read CPython checkpoint, B338](results/2026-11-06-native-read-cpython/README.md):
+  final4ace68ff/frozena45b5c5d, fourteen compile/warm/fresh/async jobs381.56s/all
+  gates. Async text−6.91–7.14% versusQ02; synchronous warm text flat, fresh
+  text+1.63–2.27% explicit debt. Report variable, CSV mostly control-limited.
+  No broad CPU/allocation/RSS claim. Primary guide refreshed to this source.
+  B337's loaded-core identity failure before timings, original ENOSPC and setup
+  corrections preserved. Main worker location corrected and actual loaded core
+  verified through Ready before sole B338 collection. R07 cached terminal
+  42185646656 GREEN/all eight platform/runtime/originalStress/package gates;
+  both local installed consumers pass. Later R06 excluded; objective remains open.

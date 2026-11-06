@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "4ace68ff190007e9ee1602c05d8d2bd5359ee90e",
+  "runId": 42185646656,
+  "url": "https://github.com/Lokad/Lython/actions/runs/42185646656",
+  "conclusion": "success",
+  "allEightDeliveryGates": true,
+  "observedAtUtc": "2026-11-06T08:37:30Z",
+  "jobs": [
+    {"name":"tests (windows-latest)","databaseId":127785214064,"conclusion":"success","completedAt":"2026-11-06T08:32:28Z"},
+    {"name":"tests (ubuntu-latest)","databaseId":127785214396,"conclusion":"success","completedAt":"2026-11-06T08:31:48Z"}
+  ],
+  "gatesPerPlatform": ["Test Release (.NET 11)","Test Release (.NET 10 checkpoint)","Verify Release package consumer","Test original stress scales"],
+  "scope": "Final common native-read proof and single-consumption ValueTask adaptation. Later class-pattern changes excluded. Terminal receipt: do not query again."
+}
