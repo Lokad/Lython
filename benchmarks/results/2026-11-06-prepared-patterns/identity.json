@@ -1,0 +1,36 @@
+{
+  "sourceRevision": "9d40a6db plus P01 canonical prepared matcher and compile-owned literals; frozen source patch/snapshot",
+  "coreSHA256": {
+    "candidate": "0873ec4624d26e47a7a073b6fb342ca76a0cbd0a54d1a8d92910b0eafe52e8ea",
+    "control": "0873ec4624d26e47a7a073b6fb342ca76a0cbd0a54d1a8d92910b0eafe52e8ea",
+    "reference": "887002c2af6997d0b3bd44ef4e5c3ead0a1af05d99acebe078c967f27e26789a"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "99af6995a63fddae74093b952034a93137c4744c89409ae2e15ebdb8218266ba",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs": "adbbfc3cb86e11889316fa3ebc7176bc26f5816479bdb33f66f57b1f4bdd05b4",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs": "f1736b52960ec5642f6461f213df665dffac028795e5401acb41e4a3820c7ba4",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "561491b5d5cd2131f49bad5d241f222f4e08b5d52e3c2b39174817f6d1e452ac",
+    "src/Lokad.Lython/Frontend/LoweredExpression.cs": "48640587c5ebcacf8b1baeea093cc87aa3f5aad8c05364ffe66ddf852e2e2a9b",
+    "src/Lokad.Lython/Frontend/LoweredPattern.cs": "80e5edfed3a3f0ac2caeb878142661ef673fe783c4ac76cd618765b193e50a61",
+    "src/Lokad.Lython/Frontend/LoweredScript.cs": "44fd7d4c5047c74fda4c00bf3a3569c3269313f06c4061ffc90b09b5a11f43f2",
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs": "2daa28466b2fef30fea52d2f8342a3828298d0ea233542b959f3046b72f154ea",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs": "807d6d6845e9f100092f01923fda9315a7f40157cb77fd4530be63e5349abb49",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "47792234133e9866649a37dbc4bbc39068fbed72ed0827c49f84c38c31bd8471",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "9d447ae80b0420700d8d94b34cc2da81e76e978af812af57803193ca1953ff3d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "33b1880672769f4283f510d651d2ea35110db7dd0142afb1dd7c8e511b2a6037",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "a6b8380f835449e1907bc0e62c22bf3427f7f9c436b23cc5b6cca32b8ec0d0de",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "2b7b3a10ab5f539228bada2345cddeac8243fa524854ebf54226e37d21c7312c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.SynchronousDispatch.cs": "9b8c00680b55e0f8820b67ad0054ee81e5d159eccf9d3ba41d61dd1bde7d4338",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.cs": "87590c1e074e59ad8ab917767630ada8a28855fcb0653f6f3358d532f2455386",
+    "src/Lokad.Lython/Runtime/LythonRuntime.LoweredAsync.cs": "e5dab4ad5368f131508fac9c3755ea47b41efab925123984a528df61660f14ae",
+    "tests/Lokad.Lython.PublicApi.Tests/PreparedPatternTests.cs": "18b615469261f6f7e9b6100d700972a1f34bb3db34b666c647c55b7b40c40cf7",
+    "tests/Lokad.Lython.Tests/MappingPatternOwnershipTests.cs": "f97ebe43102077cff773adcab4b49da3a550d20d71412243eed141c1ad0c9d38"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused Release P01 tests recorded separately. Baseline9d all8 platform/stress/package gates green42131217218; does not cover P01."
+}

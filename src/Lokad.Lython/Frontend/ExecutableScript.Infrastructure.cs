@@ -417,18 +417,11 @@ internal sealed partial class ExecutableScript
                 : (candidates ?? []).Concat(_comprehensionNames.SelectMany(static names => names));
         }
 
-        private int InternMatchCase(MatchCaseSyntax matchCase)
+        private int InternMatchCase(LoweredMatchCase matchCase)
         {
-            var localBindings = new Dictionary<string, int>(StringComparer.Ordinal);
-            foreach (var name in EnumeratePatternBindingNames(matchCase.Pattern))
-            {
-                if (_localIndexes.TryGetValue(name, out var slot))
-                {
-                    localBindings[name] = slot;
-                }
-            }
-
-            _matchCases.Add(new ExecutableMatchCaseBinding(matchCase, localBindings));
+            var localBindings = matchCase.Pattern.Bindings.Select(binding =>
+                _localIndexes.TryGetValue(binding.Name, out var slot) ? slot : -1).ToArray();
+            _matchCases.Add(new ExecutableMatchCaseBinding(matchCase.Pattern, matchCase.Syntax.Span, localBindings));
             return _matchCases.Count - 1;
         }
 
@@ -477,60 +470,6 @@ internal sealed partial class ExecutableScript
                 }
 
                 return hash.ToHashCode();
-            }
-        }
-
-        private static IEnumerable<string> EnumeratePatternBindingNames(PatternSyntax pattern)
-        {
-            switch (pattern)
-            {
-                case MatchCapturePatternSyntax capture:
-                    yield return capture.Name;
-                    yield break;
-                case MatchSequencePatternSyntax sequence:
-                    foreach (var item in sequence.Items.SelectMany(EnumeratePatternBindingNames))
-                    {
-                        yield return item;
-                    }
-                    yield break;
-                case MatchMappingPatternSyntax mapping:
-                    foreach (var item in mapping.Items.SelectMany(pair => EnumeratePatternBindingNames(pair.Pattern)))
-                    {
-                        yield return item;
-                    }
-                    if (mapping.RestName is not null)
-                    {
-                        yield return mapping.RestName;
-                    }
-                    yield break;
-                case MatchClassPatternSyntax classPattern:
-                    foreach (var item in classPattern.PositionalPatterns.SelectMany(EnumeratePatternBindingNames))
-                    {
-                        yield return item;
-                    }
-                    foreach (var item in classPattern.KeywordPatterns.SelectMany(pair => EnumeratePatternBindingNames(pair.Pattern)))
-                    {
-                        yield return item;
-                    }
-                    yield break;
-                case MatchStarPatternSyntax star when star.Name is not null:
-                    yield return star.Name;
-                    yield break;
-                case MatchAsPatternSyntax asPattern:
-                    foreach (var item in EnumeratePatternBindingNames(asPattern.Pattern))
-                    {
-                        yield return item;
-                    }
-                    yield return asPattern.Name;
-                    yield break;
-                case MatchOrPatternSyntax orPattern:
-                    foreach (var item in orPattern.Patterns.SelectMany(EnumeratePatternBindingNames))
-                    {
-                        yield return item;
-                    }
-                    yield break;
-                default:
-                    yield break;
             }
         }
 

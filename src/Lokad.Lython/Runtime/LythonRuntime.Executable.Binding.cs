@@ -211,32 +211,26 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryExecuteExecutableMatchCase(
-        ExecutableMatchCaseBinding matchCase,
-        object subject,
-        ExecutionContext context,
-        object[] locals,
-        IReadOnlyList<ExecutableCell?>? localCells)
+        ExecutableMatchCaseBinding matchCase, object subject, ExecutionContext context,
+        object[] locals, IReadOnlyList<ExecutableCell?>? localCells, Span<object> storage)
     {
-        var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-        if (!TryMatchRootPattern(matchCase.Case.Pattern, subject, context, bindings))
+        var pattern = matchCase.Pattern;
+        storage = storage[..pattern.StorageCount];
+        try
         {
-            return false;
-        }
-
-        foreach (var pair in bindings)
-        {
-            StoreName(pair.Key, pair.Value, context, matchCase.Case.Span);
-            if (matchCase.LocalBindingSlots.TryGetValue(pair.Key, out var slot))
+            if (!TryMatchRootPattern(pattern, subject, context, storage)) return false;
+            for (var i = 0; i < pattern.Bindings.Length; i++)
             {
-                locals[slot] = pair.Value;
-                if (localCells?[slot] is ExecutableCell localCell)
-                {
-                    localCell.Value = pair.Value;
-                }
+                var value = storage[i];
+                StoreName(pattern.Bindings[i].Name, value, context, matchCase.Span);
+                var slot = matchCase.LocalBindingSlots[i];
+                if (slot < 0) continue;
+                locals[slot] = value;
+                if (localCells?[slot] is ExecutableCell localCell) localCell.Value = value;
             }
+            return true;
         }
-
-        return true;
+        finally { storage.Clear(); }
     }
 
     private static void ExecuteExecutableImport(

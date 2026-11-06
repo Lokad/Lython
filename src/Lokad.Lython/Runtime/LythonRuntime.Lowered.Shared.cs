@@ -1,5 +1,4 @@
 using Lokad.Lython.Frontend;
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 using System.Numerics;
@@ -8,32 +7,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Lowered expression consumers share compile-owned literal values, like
-    // executable constants. Entries follow the lowered node's lifetime rather
-    // than allocating and charging a fresh literal on each evaluation.
-    private static readonly ConditionalWeakTable<LoweredExpression, object> SharedLiteralCache = new();
-
-    private static PyString SharedStringLiteral(LoweredStringLiteralExpression text)
-        => (PyString)SharedLiteralCache.GetValue(
-            text,
-            static node => PyString.FromString(((LoweredStringLiteralExpression)node).Literal.Value));
-
-    private static PyBytes SharedBytesLiteral(LoweredBytesLiteralExpression bytes)
-        => (PyBytes)SharedLiteralCache.GetValue(
-            bytes,
-            static node => new PyBytes(((LoweredBytesLiteralExpression)node).Literal.Value.ToArray()));
-
-    // Heap integer literals evaluate to shared compile-time magnitudes like
-    // interned strings: the parsed value is bounded by program text and
-    // immutable, so rebuilding (and recharging) it per evaluation made every
-    // loop-carried big literal sticky in tree-walked runs. Entries key on the
-    // lowered node; values unbox into fresh boxes per evaluation, so identity
-    // stays non-aliased and only magnitudes are shared.
-    private static BigInteger SharedIntegerMagnitude(LoweredIntegerLiteralExpression integer)
-        => (BigInteger)SharedLiteralCache.GetValue(
-            integer,
-            static node => ParseInteger(((LoweredIntegerLiteralExpression)node).Literal));
-
     private delegate ValueTask<LoweredBlockFlow> LoweredStatementBlockExecutor(
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
@@ -130,12 +103,12 @@ internal sealed partial class LythonRuntime
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
-                return SharedStringLiteral(text);
+                return text.Value;
             case LoweredBytesLiteralExpression bytes:
-                var bytesValue = SharedBytesLiteral(bytes);
+                var bytesValue = bytes.Value;
                 return bytesValue;
             case LoweredIntegerLiteralExpression integer:
-                return SharedIntegerMagnitude(integer);
+                return integer.Value;
             case LoweredImaginaryLiteralExpression imaginary:
                 return PyComplex.Create(0, Numbers.PyNumberOps.ParseFloat(imaginary.Literal.ValueText[..^1]), context, imaginary.Span);
             case LoweredFloatLiteralExpression floating:

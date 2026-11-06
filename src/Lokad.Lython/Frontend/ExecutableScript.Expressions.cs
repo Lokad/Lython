@@ -29,7 +29,7 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredStringLiteralExpression text:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyString.FromString(text.Literal.Value)), text.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(text.Value), text.Span));
                     return currentBlock;
 
                 case LoweredFormattedStringExpression formatted:
@@ -39,11 +39,11 @@ internal sealed partial class ExecutableScript
                     return CompileLambda(lambda, currentBlock);
 
                 case LoweredBytesLiteralExpression bytes:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyBytes(bytes.Literal.Value.ToArray())), bytes.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(bytes.Value), bytes.Span));
                     return currentBlock;
 
                 case LoweredIntegerLiteralExpression integer:
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNumberOps.ParseInteger(integer.Literal.ValueText)), integer.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(integer.Value), integer.Span));
                     return currentBlock;
 
                 case LoweredImaginaryLiteralExpression imaginary:

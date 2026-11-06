@@ -443,8 +443,9 @@ internal sealed record ExecutableFunctionBinding(
 }
 
 internal sealed record ExecutableMatchCaseBinding(
-    MatchCaseSyntax Case,
-    IReadOnlyDictionary<string, int> LocalBindingSlots);
+    LoweredRootPattern Pattern,
+    LythonSourceSpan Span,
+    int[] LocalBindingSlots);
 
 internal sealed partial class ExecutableCodeObject
 {
@@ -485,6 +486,7 @@ internal sealed partial class ExecutableCodeObject
         MemberCacheCount = memberCacheCount;
         Functions = functions;
         MatchCases = matchCases;
+        PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
@@ -548,7 +550,9 @@ internal sealed partial class ExecutableCodeObject
     public int OperandCapacity { get; }
     public int FirstTemporarySlot => LocalNames.Count;
     public int LastOwnedTemporarySlot { get; }
-    public int ValueStorageCapacity => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+    public int PatternStorageCount { get; }
+    public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+    public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
 
     public ExecutableNativeBody? NativeBody { get; }
 }

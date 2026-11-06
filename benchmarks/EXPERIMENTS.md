@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [prepared-pattern milestone](results/2026-11-06-prepared-patterns/README.md)
+replaces raw pattern evaluation/capture dictionaries and the lowered literal CWT
+with compilation-owned work and admitted frame slots. Focus3388public/76internal
+per actual11/10 passes. B306111.20s/four jobs/all gates: record warm−27–29%,
+compile-to-result−25–30%; compile/text controls inconclusive. No allocation or broad
+whole-script gain claim. Original failed launcher retained; P01 delivery pending.
+
 The [mapping-extraction milestone](results/2026-11-06-mapping-extraction/README.md)
 corrects length/key/value phases, duplicates/rest and immediate native field failure,
 using admitted private working storage and existing cleanup. Focus770public/78internal
@@ -7,7 +14,7 @@ per actual11/10 passes. B30585.11s/three jobs/all gates: native pattern elapsed
 +17.54%/+15.30% is retained regression debt; dataclass/text controls inconclusive.
 Next milestone prepares existing compiled match artifacts rather than undoing
 semantics/admission. Original failures and fresh-process hash-layout evidence remain;
-full combined replacement qualification pending.
+combined replacement delivery9d40a6db is fully qualified: cached42131217218 GREEN/all8.
 
 The [dictionary-view milestone](results/2026-11-05-dictionary-view-relations/README.md)
 consolidates24 relation bodies, removes one raw equality set/two membership scans
@@ -16,7 +23,7 @@ passes. B30359.07s/B30459.02s all gates; final native-view elapsed−80.17%/−7
 current spread4.49%, still5.76× CPython. Complete text mixed; no broad CPU/allocation
 claim. The reflected-dispatch and terminal contains failures stay preserved.
 Mapping extraction/duplicate/rest defects are corrected in the subsequent milestone;
-full combined replacement qualification remains pending after the stale-golden failure.
+combined replacement delivery9d40a6db passed all8 platform/stress/package gates after the stale-golden correction.
 
 The [Counter key-traversal milestone](results/2026-11-05-counter-key-traversal/README.md)
 removes four temporary key HashSets/three unions and corrects Python effects,

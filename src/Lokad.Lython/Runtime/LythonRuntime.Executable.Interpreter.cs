@@ -443,7 +443,8 @@ internal sealed partial class LythonRuntime
                             subject,
                             _context,
                             _locals,
-                            _localCells))
+                            _localCells,
+                            _stack.Values.AsSpan(_codeObject.PatternStorageStart)))
                     {
                         _instructionIndex = instruction.FailureIndex;
                         return true;

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "OR overwrites failed captures",
+    "source": "match [0,7]:\n case [x,0]|[0,x]:print(x)\n",
+    "expected": "7\n"
+  },
+  {
+    "name": "nested working storage",
+    "source": "match {'a':[0,9],'b':{'c':[1,2,3]}}:\n case {'a':([x,0]|[0,x]),'b':{'c':[first,*middle,last]}}:print(x,first,middle,last)\n",
+    "expected": "9 1 [2] 3\n"
+  },
+  {
+    "name": "sequence snapshot before callbacks",
+    "source": "class D:\n def __get__(self,obj,owner):source.clear();return 1\nclass Keys:expected=D()\nsource=[1,2,3,4]\nmatch source:\n case [Keys.expected,*rest,last]:print(rest,last,source)\n",
+    "expected": "[2, 3] 4 []\n"
+  },
+  {
+    "name": "OR captures in lowered class",
+    "source": "class Owner:\n match {'row':[0,8]}:\n  case {'row':([x,0]|[0,x])}:value=x\nprint(Owner.value)\n",
+    "expected": "8\n"
+  },
+  {
+    "name": "starred capture and closure",
+    "source": "def extract(row):\n match row:\n  case {'values':[first,*rest,last]}:\n   def get():return first,rest,last\n   return get\nget=extract({'values':[1,2,3,4]})\nprint(get())\n",
+    "expected": "(1, [2, 3], 4)\n"
+  },
+  {
+    "name": "guard sees successful alternative",
+    "source": "events=[]\ndef guard(value):events.append(value);return False\nmatch [0,7]:\n case ([x,0]|[0,x]) if guard(x):pass\n case _:print(x,events)\n",
+    "expected": "7 [7]\n"
+  }
+]

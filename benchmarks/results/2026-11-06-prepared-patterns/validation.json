@@ -1,0 +1,24 @@
+{
+  "status": "Focused Release checks pass; P01 full platform/stress/package qualification pending",
+  "baselineDelivery": {
+    "source": "9d40a6db",
+    "run": 42131217218,
+    "conclusion": "GREEN/all8"
+  },
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedPublicPerFramework": 3388,
+  "focusedInternalPerFramework": 76,
+  "build": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "independentPython": "CPython3.13.2 -I -S -X utf8",
+  "newPublicGoldens": 6,
+  "newFrameAdmissionCases": 2,
+  "worker": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+  "measuredCore": "0873ec4624d26e47a7a073b6fb342ca76a0cbd0a54d1a8d92910b0eafe52e8ea",
+  "timingInterpretation": "Native record warm/compile-run gain supported in both current processes. Compile and complete text mixed/inconclusive. No allocation, causalCPU, RSS or broad whole-script claim. Original launch failed before measurement due CRLF; retained and corrected without runtime changes."
+}

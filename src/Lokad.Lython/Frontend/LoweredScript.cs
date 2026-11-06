@@ -132,6 +132,7 @@ internal sealed class LoweredScript
                 LowerExpression(matchStatement.Subject),
                 matchStatement.Cases.Select(matchCase => new LoweredMatchCase(
                     matchCase,
+                    LoweredPatternPreparation.Prepare(matchCase.Pattern),
                     LowerStatements(matchCase.Body, classScope),
                     matchCase.Guard is null ? null : LowerExpression(matchCase.Guard))).ToArray()),
             WithStatementSyntax withStatement => new LoweredWithStatement(

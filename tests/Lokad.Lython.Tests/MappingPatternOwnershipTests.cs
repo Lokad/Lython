@@ -11,6 +11,33 @@ public sealed class MappingPatternOwnershipTests
 {
     [Theory]
     [InlineData(false)] [InlineData(true)]
+    public async Task ConstantPatternStorageIsAdmittedBeforeExecution(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+        var marker = new Marker();
+        context.Variables["mark"] = marker;
+        Execute("source={1:10}\n", context);
+        var code = Compile("mark()\nmatch source:\n case {1:value}:mark()\n");
+        hook.RefuseGrowth = _ => true;
+        var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+        {
+            if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+            else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        });
+        Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+        Assert.Equal(0, marker.Calls);
+        Assert.False(context.Variables.ContainsKey("value"));
+        AssertUnwound(context);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
     public async Task CapturePreflightPrecedesKeyGetterAndBody(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

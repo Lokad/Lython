@@ -271,12 +271,8 @@ internal sealed partial class LythonRuntime
             var subject = await EvaluateLoweredExpressionAsync(statement.Subject, context).ConfigureAwait(false);
             foreach (var matchCase in statement.Cases)
             {
-                var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-                if (!TryMatchRootPattern(matchCase.Syntax.Pattern, subject, context, bindings))
+                if (!TryExecuteLoweredPattern(matchCase.Pattern, subject, context))
                     continue;
-
-                foreach (var pair in bindings)
-                    StoreName(pair.Key, pair.Value, context, matchCase.Syntax.Span);
 
                 if (matchCase.Guard is { } guard)
                 {

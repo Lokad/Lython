@@ -1,0 +1,4 @@
+Nov 06 00:07:42 lython-bench systemd[1]: Started lython-b306-prepared-pattern-20261106.service - /bin/sh /home/lokad/lython-bench-checks/prepared-pattern-b306-20261106/run.sh.
+Nov 06 00:07:42 lython-bench sh[3251045]: /home/lokad/lython-bench-checks/prepared-pattern-b306-20261106/run.sh: 1: set: Illegal option -
+Nov 06 00:07:42 lython-bench systemd[1]: lython-b306-prepared-pattern-20261106.service: Main process exited, code=exited, status=2/INVALIDARGUMENT
+Nov 06 00:07:42 lython-bench systemd[1]: lython-b306-prepared-pattern-20261106.service: Failed with result 'exit-code'.

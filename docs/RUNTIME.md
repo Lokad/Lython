@@ -198,6 +198,16 @@ for class suites, annotations, lazy type metadata and actual statement-opcode
 consumers. Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
+Match patterns have one compile-owned lowered representation shared by executable
+code and class suites. Immutable literal keys, capture indexes and required working
+positions are prepared once. Captures stay private until a complete pattern succeeds;
+validated OR alternatives overwrite their own indexed slots. Executable frames admit
+and clear this working capacity, including scalar headroom, before guards or bodies
+run. This can refuse admission earlier than allocating scratch at the matching opcode.
+Lowered consumers use the existing temporary reservation. Dynamic mapping keys retain
+ordered key evaluation, duplicate checks, value extraction and subpattern execution.
+String/bytes literals and integer magnitudes belong to lowered nodes and the existing
+compiled constant owner; no global weak literal cache is needed.
 Successful loop advances and true conditional arms continue at the next
 instruction; they need no unconditional entry jump. Exception routing restores
 the compiler-prepared protected-entry depth.

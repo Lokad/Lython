@@ -3,9 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG03: string literals are shared compile-time constants, free by design
-// like interned constants (distinct literal payload stays bounded by
-// compilation allowance). Retaining one literal a thousand times keeps one copy.
+// String literals share compile-owned payloads funded by compilation ownership.
+// Retaining one literal a thousand times keeps one payload.
 public sealed class LiteralSharingScenarioTests
 {
     private static string Big() => new string('A', 500);

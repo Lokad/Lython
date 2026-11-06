@@ -95,12 +95,12 @@ internal sealed partial class LythonRuntime
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
-                return SharedStringLiteral(text);
+                return text.Value;
             case LoweredBytesLiteralExpression bytes:
-                var bytesValue = SharedBytesLiteral(bytes);
+                var bytesValue = bytes.Value;
                 return bytesValue;
             case LoweredIntegerLiteralExpression integer:
-                return SharedIntegerMagnitude(integer);
+                return integer.Value;
             case LoweredImaginaryLiteralExpression imaginary:
                 return PyComplex.Create(0, Numbers.PyNumberOps.ParseFloat(imaginary.Literal.ValueText[..^1]), context, imaginary.Span);
             case LoweredFloatLiteralExpression floating:

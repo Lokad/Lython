@@ -1,12 +1,4 @@
-using System.Text.RegularExpressions;
 using Lokad.Lython.Frontend;
-using System.Numerics;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -14,265 +6,210 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static object EvaluateConditional(ConditionalExpressionSyntax conditional, ExecutionContext context)
-    {
-        return IsTruthy(EvaluateExpression(conditional.Condition, context), context, conditional.Condition.Span)
+        => IsTruthy(EvaluateExpression(conditional.Condition, context), context, conditional.Condition.Span)
             ? EvaluateExpression(conditional.Consequent, context)
             : EvaluateExpression(conditional.Alternative, context);
-    }
 
-    private static bool TryMatchPattern(PatternSyntax pattern, object subject, ExecutionContext context, Dictionary<string, object> bindings)
+    private static bool TryMatchPattern(LoweredPattern pattern, object subject, ExecutionContext context,
+        Span<object> captures, Span<object> workspace)
     {
-        switch (pattern)
+        context.EnterInterpreterFrame(pattern.Span);
+        try
         {
-            case MatchValuePatternSyntax valuePattern:
-                return AreEqual(subject, EvaluateExpression(valuePattern.Expression, context));
-
-            case MatchSingletonPatternSyntax singletonPattern:
-                return singletonPattern.Value switch
-                {
-                    MatchSingletonKind.None => subject is PyNone,
-                    MatchSingletonKind.True => subject is bool boolean && boolean,
-                    MatchSingletonKind.False => subject is bool boolean && !boolean,
-                    _ => false
-                };
-
-            case MatchCapturePatternSyntax capturePattern:
-                return TryBindPatternName(capturePattern.OriginalBindingName ?? capturePattern.Name, subject, bindings);
-
-            case MatchWildcardPatternSyntax:
-                return true;
-
-            case MatchSequencePatternSyntax sequencePattern:
-                return TryMatchSequencePattern(sequencePattern, subject, context, bindings);
-
-            case MatchMappingPatternSyntax mappingPattern:
-                return TryMatchMappingPattern(mappingPattern, subject, context, bindings);
-
-            case MatchClassPatternSyntax classPattern:
-                return TryMatchClassPattern(classPattern, subject, context, bindings);
-
-            case MatchStarPatternSyntax starPattern:
-                return starPattern.Name is null || TryBindPatternName(starPattern.OriginalBindingName ?? starPattern.Name, subject, bindings);
-
-            case MatchAsPatternSyntax asPattern:
-                return TryMatchPattern(asPattern.Pattern, subject, context, bindings)
-                    && TryBindPatternName(asPattern.OriginalBindingName ?? asPattern.Name, subject, bindings);
-
-            case MatchOrPatternSyntax orPattern:
-                foreach (var candidate in orPattern.Patterns)
-                {
-                    var branchBindings = new Dictionary<string, object>(bindings, StringComparer.Ordinal);
-                    if (!TryMatchPattern(candidate, subject, context, branchBindings))
+            switch (pattern)
+            {
+                case LoweredValuePattern value:
+                    return AreEqual(subject, EvaluateLoweredExpression(value.Expression, context));
+                case LoweredSingletonPattern singleton:
+                    return singleton.Singleton.Value switch
                     {
-                        continue;
-                    }
-
-                    bindings.Clear();
-                    foreach (var pair in branchBindings)
-                    {
-                        bindings[pair.Key] = pair.Value;
-                    }
-
+                        MatchSingletonKind.None => subject is PyNone,
+                        MatchSingletonKind.True => subject is true,
+                        MatchSingletonKind.False => subject is false,
+                        _ => false
+                    };
+                case LoweredCapturePattern capture:
+                    captures[capture.Slot] = RuntimeValue(subject);
                     return true;
-                }
-
-                return false;
-
-            default:
-                throw new InvalidOperationException($"Unknown pattern type: {pattern.GetType().Name}");
+                case LoweredWildcardPattern: return true;
+                case LoweredAsPattern alias:
+                    if (!TryMatchPattern(alias.Pattern, subject, context, captures, workspace)) return false;
+                    captures[alias.Slot] = RuntimeValue(subject);
+                    return true;
+                case LoweredOrPattern alternatives:
+                    foreach (var candidate in alternatives.Patterns)
+                        if (TryMatchPattern(candidate, subject, context, captures, workspace)) return true;
+                    return false;
+                case LoweredSequencePattern sequence:
+                    return TryMatchSequencePattern(sequence, subject, context, captures, workspace);
+                case LoweredMappingPattern mapping:
+                    return TryMatchMappingPattern(mapping, subject, context, captures, workspace);
+                case LoweredClassPattern type:
+                    return TryMatchClassPattern(type, subject, context, captures, workspace);
+                default: throw new InvalidOperationException($"Unknown lowered pattern: {pattern.GetType().Name}");
+            }
+        }
+        finally
+        {
+            context.LeaveInterpreterFrame();
+            context.CheckExecution(pattern.Span);
         }
     }
 
-    private static bool TryMatchSequencePattern(
-        MatchSequencePatternSyntax pattern,
-        object subject,
-        ExecutionContext context,
-        Dictionary<string, object> bindings)
+    private static bool TryMatchSequencePattern(LoweredSequencePattern pattern, object subject,
+        ExecutionContext context, Span<object> captures, Span<object> workspace)
     {
-        if (!TryGetPatternSequence(subject, out var items))
+        IReadOnlyList<object>? items = subject switch
         {
-            return false;
-        }
-
-        var starIndex = -1;
-        for (var i = 0; i < pattern.Items.Count; i++)
+            PyList list => list,
+            PyTuple tuple => tuple,
+            UrllibParseModule.UrlResult result => result,
+            _ => null
+        };
+        if (items is null) return false;
+        var count = pattern.Items.Length;
+        var star = pattern.StarIndex;
+        if (star < 0 ? items.Count != count : items.Count < count - 1) return false;
+        var values = workspace[..count];
+        // Extract all positions before invoking any subpattern. In particular,
+        // a descriptor/equality callback may mutate a matched list.
+        for (var i = 0; i < count; i++)
         {
-            if (pattern.Items[i] is MatchStarPatternSyntax)
+            context.CheckExecution(pattern.Span);
+            if (i == star)
             {
-                starIndex = i;
-                break;
-            }
-        }
-
-        if (starIndex < 0)
-        {
-            if (items.Count != pattern.Items.Count)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < pattern.Items.Count; i++)
-            {
-                if (!TryMatchPattern(pattern.Items[i], items[i], context, bindings))
+                if (pattern.Items[i] is LoweredWildcardPattern) continue;
+                var length = items.Count - count + 1;
+                var rest = new PyList(length, context.MemoryGovernor, pattern.Span);
+                try
                 {
-                    return false;
+                    for (var j = 0; j < length; j++)
+                    {
+                        context.CheckExecution(pattern.Span);
+                        rest.Add(items[star + j]);
+                    }
+                    values[i] = rest;
                 }
+                catch { rest.DiscardUnpublishedStorage(); throw; }
             }
-
-            return true;
+            else values[i] = items[star < 0 || i < star ? i : items.Count - count + i];
         }
-
-        var beforeCount = starIndex;
-        var afterCount = pattern.Items.Count - starIndex - 1;
-        if (items.Count < beforeCount + afterCount)
+        for (var i = 0; i < count; i++)
         {
-            return false;
+            if (i == star && pattern.Items[i] is LoweredWildcardPattern) continue;
+            if (!TryMatchPattern(pattern.Items[i], values[i], context, captures, workspace[count..])) return false;
         }
-
-        for (var i = 0; i < beforeCount; i++)
-        {
-            if (!TryMatchPattern(pattern.Items[i], items[i], context, bindings))
-            {
-                return false;
-            }
-        }
-
-        var starPattern = (MatchStarPatternSyntax)pattern.Items[starIndex];
-        var starItems = new object[items.Count - beforeCount - afterCount];
-        for (var i = 0; i < starItems.Length; i++)
-        {
-            starItems[i] = items[beforeCount + i];
-        }
-        if (starPattern.Name is not null &&
-            !TryBindPatternName(
-                starPattern.OriginalBindingName ?? starPattern.Name,
-                new PyList(starItems, context.MemoryGovernor, pattern.Span),
-                bindings))
-        {
-            return false;
-        }
-
-        for (var i = 0; i < afterCount; i++)
-        {
-            var patternIndex = starIndex + 1 + i;
-            var itemIndex = items.Count - afterCount + i;
-            if (!TryMatchPattern(pattern.Items[patternIndex], items[itemIndex], context, bindings))
-            {
-                return false;
-            }
-        }
-
         return true;
     }
 
-    private static bool TryMatchMappingPattern(
-        MatchMappingPatternSyntax pattern,
-        object subject,
-        ExecutionContext context,
-        Dictionary<string, object> bindings)
+    private static bool TryMatchMappingPattern(LoweredMappingPattern pattern, object subject,
+        ExecutionContext context, Span<object> captures, Span<object> workspace)
     {
-        if (subject is not PyDict dict || dict.Count < pattern.Items.Count)
-        {
-            return false;
-        }
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, pattern.Span);
-
-        var count = pattern.Items.Count;
-        if (count == 0) return TryBindMappingRest(pattern, dict, [], context, bindings);
-
-        // Captures own references and scalar-box headroom while callbacks can
-        // mutate the source. Larger payloads retain their independent owners.
-        var capacity = checked(2 * count);
-        using var scratch = context.MemoryGovernor.ReserveTemporary(PyList.EstimateCapacityBytes(capacity), pattern.Span);
-        var captured = new object[capacity];
-        var seen = new PySet(context.MemoryGovernor, pattern.Span);
+        var count = pattern.Items.Length;
+        if (subject is not PyDict dict || dict.Count < count) return false;
+        using var ambient = PyStructuralGuard.PushAmbient(context, pattern.Span);
+        var dynamic = pattern.ConstantKeys is null;
+        ReadOnlySpan<object> keys = dynamic ? workspace[..count] : pattern.ConstantKeys;
+        var offset = dynamic ? count : 0;
+        var values = workspace.Slice(offset, count);
+        PySet? seen = null;
         try
         {
-            seen.EnsureCapacity(count);
-            // Python extracts every key before fetching values or matching any
-            // subpattern; getters must observe that order even on a later miss.
-            for (var i = 0; i < count; i++)
+            if (dynamic && count != 0)
             {
-                var item = pattern.Items[i];
-                captured[i] = EvaluateExpression(item.Key, context);
-                context.CheckExecution(item.Key.Span);
+                seen = new PySet(context.MemoryGovernor, pattern.Span);
+                seen.EnsureCapacity(count);
+                for (var i = 0; i < count; i++)
+                {
+                    workspace[i] = EvaluateLoweredExpression(pattern.Items[i].Key, context);
+                    context.CheckExecution(pattern.Items[i].Key.Span);
+                }
             }
-
             for (var i = 0; i < count; i++)
             {
                 var span = pattern.Items[i].Key.Span;
-                var key = ValidateDictionaryKey(captured[i], span);
-                var duplicate = seen.Contains(key);
-                context.CheckExecution(span);
-                if (duplicate)
+                var key = ValidateDictionaryKey(keys[i], span);
+                if (seen is not null)
                 {
-                    var rendered = PyRendering.ToReprPyString(key, new(context));
+                    var duplicate = seen.Contains(key);
                     context.CheckExecution(span);
-                    throw new LythonRuntimeException("ValueError", "mapping pattern checks duplicate key (" + rendered + ")", span);
+                    if (duplicate)
+                    {
+                        var rendered = PyRendering.ToReprPyString(key, new(context));
+                        context.CheckExecution(span);
+                        throw new LythonRuntimeException("ValueError", "mapping pattern checks duplicate key (" + rendered + ")", span);
+                    }
+                    seen.Add(key);
+                    context.CheckExecution(span);
                 }
-                seen.Add(key);
-                context.CheckExecution(span);
                 var found = dict.TryGetValue(key, out var value, context, span);
                 context.CheckExecution(span);
                 if (!found) return false;
-                captured[count + i] = value!;
+                values[i] = value!;
             }
-
             for (var i = 0; i < count; i++)
+                if (!TryMatchPattern(pattern.Items[i].Pattern, values[i], context, captures, workspace[(offset + count)..])) return false;
+            if (pattern.RestSlot < 0) return true;
+            var rest = new PyDict(dict, context.MemoryGovernor, pattern.Span);
+            var published = false;
+            try
             {
-                context.CheckExecution(pattern.Items[i].Pattern.Span);
-                var matches = TryMatchPattern(pattern.Items[i].Pattern, captured[count + i], context, bindings);
-                context.CheckExecution(pattern.Items[i].Pattern.Span);
-                if (!matches) return false;
+                foreach (var key in keys)
+                {
+                    context.CheckExecution(pattern.Span);
+                    var removed = rest.TryRemove(key, out _);
+                    context.CheckExecution(pattern.Span);
+                    if (!removed) throw RuntimeErrors.MissingKey(key, pattern.Span);
+                }
+                captures[pattern.RestSlot] = rest;
+                context.CheckExecution(pattern.Span);
+                published = true;
+                return true;
             }
-            return TryBindMappingRest(pattern, dict, captured.AsSpan(0, count), context, bindings);
+            finally { if (!published) context.MemoryGovernor.RefundUnpublishedValue(rest); }
         }
-        finally { seen.ReleaseUnpublishedStorage(); }
+        finally { seen?.ReleaseUnpublishedStorage(); }
     }
 
-    private static bool TryBindMappingRest(MatchMappingPatternSyntax pattern, PyDict dict,
-        ReadOnlySpan<object> keys, ExecutionContext context, Dictionary<string, object> bindings)
+    private static bool TryMatchRootPattern(LoweredRootPattern pattern, object subject,
+        ExecutionContext context, Span<object> storage)
+        => TryMatchPattern(pattern.Root, subject, context, storage[..pattern.Bindings.Length],
+            storage[pattern.Bindings.Length..]);
+
+    private static bool TryExecuteLoweredPattern(LoweredRootPattern pattern, object subject,
+        ExecutionContext context)
     {
-        if (pattern.RestName is null) return true;
-        var rest = new PyDict(dict, context.MemoryGovernor, pattern.Span);
-        var published = false;
+        using var admission = context.MemoryGovernor.ReserveTemporary(PyList.EstimateCapacityBytes(pattern.StorageCount), pattern.Root.Span);
+        var storage = new object[pattern.StorageCount];
         try
         {
-            foreach (var key in keys)
-            {
-                context.CheckExecution(pattern.Span);
-                var removed = rest.TryRemove(key, out _);
-                context.CheckExecution(pattern.Span);
-                if (!removed) throw RuntimeErrors.MissingKey(key, pattern.Span);
-            }
-            var bound = TryBindPatternName(pattern.OriginalBindingName ?? pattern.RestName, rest, bindings);
-            context.CheckExecution(pattern.Span);
-            if (!bound) return false;
-            published = true;
+            if (!TryMatchRootPattern(pattern, subject, context, storage)) return false;
+            for (var i = 0; i < pattern.Bindings.Length; i++)
+                StoreName(pattern.Bindings[i].Name, storage[i], context, pattern.Root.Span);
             return true;
         }
-        finally { if (!published) context.MemoryGovernor.RefundUnpublishedValue(rest); }
+        finally { Array.Clear(storage); }
     }
 
     private static bool TryMatchClassPattern(
-        MatchClassPatternSyntax pattern,
+        LoweredClassPattern pattern,
         object subject,
         ExecutionContext context,
-        Dictionary<string, object> bindings)
+        Span<object> captures, Span<object> workspace)
     {
-        var classValue = TryResolvePatternClassValue(pattern.ClassExpression, context);
+        var classValue = EvaluateLoweredExpression(pattern.Expression, context);
         if (classValue is PyTypedDictType)
             throw new LythonRuntimeException("TypeError", "TypedDict does not support instance or class checks.", pattern.Span);
         if (classValue is UrllibParseModule.UrlResultType urlType)
         {
             if (subject is not UrllibParseModule.UrlResult result || !ReferenceEquals(result.Type, urlType)) return false;
-            if (pattern.PositionalPatterns.Count > urlType.Fields.Length)
+            if (pattern.PositionalPatterns.Length > urlType.Fields.Length)
                 throw RuntimeErrors.Type("too many positional URL result subpatterns", pattern.Span);
             var names = new HashSet<string>(StringComparer.Ordinal);
-            for (var i = 0; i < pattern.PositionalPatterns.Count; i++)
+            for (var i = 0; i < pattern.PositionalPatterns.Length; i++)
             {
                 names.Add(urlType.Fields[i]);
-                if (!TryMatchPattern(pattern.PositionalPatterns[i], result[i], context, bindings)) return false;
+                if (!TryMatchPattern(pattern.PositionalPatterns[i], result[i], context, captures, workspace)) return false;
             }
             foreach (var keyword in pattern.KeywordPatterns)
             {
@@ -280,7 +217,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     if (!PyMemberAccess.TryResolve(subject, keyword.Name, context, keyword.Pattern.Span, out var member) ||
-                        !TryMatchPattern(keyword.Pattern, member, context, bindings)) return false;
+                        !TryMatchPattern(keyword.Pattern, member, context, captures, workspace)) return false;
                 }
                 catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError") { return false; }
             }
@@ -293,7 +230,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            if (pattern.PositionalPatterns.Count != 0)
+            if (pattern.PositionalPatterns.Length != 0)
             {
                 if (!runtimeType.TryGetMatchArgs(out var matchArgs))
                 {
@@ -303,18 +240,18 @@ internal sealed partial class LythonRuntime
                         pattern.Span);
                 }
 
-                if (pattern.PositionalPatterns.Count > matchArgs.Count)
+                if (pattern.PositionalPatterns.Length > matchArgs.Count)
                 {
                     throw new LythonRuntimeException(
                         "TypeError",
-                        $"Class '{runtimeType.Name}' accepts {matchArgs.Count} positional class pattern argument(s), {pattern.PositionalPatterns.Count} given.",
+                        $"Class '{runtimeType.Name}' accepts {matchArgs.Count} positional class pattern argument(s), {pattern.PositionalPatterns.Length} given.",
                         pattern.Span);
                 }
 
-                for (var i = 0; i < pattern.PositionalPatterns.Count; i++)
+                for (var i = 0; i < pattern.PositionalPatterns.Length; i++)
                 {
                     if (!PyMemberAccess.TryResolve(subject, matchArgs[i], context, pattern.Span, out var memberValue) ||
-                        !TryMatchPattern(pattern.PositionalPatterns[i], RuntimeValue(memberValue), context, bindings))
+                        !TryMatchPattern(pattern.PositionalPatterns[i], RuntimeValue(memberValue), context, captures, workspace))
                     {
                         return false;
                     }
@@ -328,7 +265,7 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                if (!TryMatchPattern(keyword.Pattern, RuntimeValue(memberValue), context, bindings))
+                if (!TryMatchPattern(keyword.Pattern, RuntimeValue(memberValue), context, captures, workspace))
                 {
                     return false;
                 }
@@ -337,33 +274,27 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        if (!TryGetPatternClassName(pattern.ClassExpression, out var className))
-        {
-            throw new LythonRuntimeException(
-                "TypeError",
-                "match class patterns require a simple class name or dotted class name.",
-                pattern.Span);
-        }
+        var className = pattern.ClassName;
 
         if (!DoesSubjectMatchPatternClass(className, subject))
         {
             return false;
         }
 
-        if (pattern.PositionalPatterns.Count != 0)
+        if (pattern.PositionalPatterns.Length != 0)
         {
             return className switch
             {
                 "list" when subject is PyList => TryMatchSequencePattern(
-                    new MatchSequencePatternSyntax(pattern.PositionalPatterns, pattern.Span),
+                    pattern.Sequence,
                     subject,
                     context,
-                    bindings),
+                    captures, workspace),
                 "tuple" when subject is PyTuple => TryMatchSequencePattern(
-                    new MatchSequencePatternSyntax(pattern.PositionalPatterns, pattern.Span),
+                    pattern.Sequence,
                     subject,
                     context,
-                    bindings),
+                    captures, workspace),
                 _ => throw new LythonRuntimeException(
                     "TypeError",
                     $"match class pattern '{className}(...)' does not support positional subpatterns in Lython.",
@@ -379,104 +310,13 @@ internal sealed partial class LythonRuntime
             }
 
             memberValue = RuntimeValue(memberValue);
-            if (!TryMatchPattern(keyword.Pattern, memberValue, context, bindings))
+            if (!TryMatchPattern(keyword.Pattern, memberValue, context, captures, workspace))
             {
                 return false;
             }
         }
 
         return true;
-    }
-
-    private static bool TryGetPatternSequence(object subject, out IReadOnlyList<object> items)
-    {
-        switch (subject)
-        {
-            case PyList list:
-                items = list.ToArray();
-                return true;
-            case PyTuple tuple:
-                items = tuple.ToArray();
-                return true;
-            case UrllibParseModule.UrlResult result:
-                items = result;
-                return true;
-            default:
-                items = Array.Empty<object>();
-                return false;
-        }
-    }
-
-    private static bool TryBindPatternName(string name, object value, Dictionary<string, object> bindings)
-    {
-        value = RuntimeValue(value);
-        if (bindings.TryGetValue(name, out var existing))
-        {
-            return AreEqual(existing, value);
-        }
-
-        bindings[name] = value;
-        return true;
-    }
-
-    private static bool TryMatchRootPattern(PatternSyntax pattern, object subject,
-        ExecutionContext context, Dictionary<string, object> bindings)
-    {
-        if (!TryMatchPattern(pattern, subject, context, bindings)) return false;
-        if (!EnumerateCanonicalPatternBindings(pattern).Any(p => p.SourceName != p.BindingName)) return true;
-        // Distinct source captures can collapse to one mangled binding. Python
-        // stores them in the first OR alternative's canonical capture order.
-        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(64L + 96L * bindings.Count), pattern.Span);
-        var captured = new Dictionary<string, object>(bindings, StringComparer.Ordinal);
-        bindings.Clear();
-        foreach (var (source, binding) in EnumerateCanonicalPatternBindings(pattern))
-            if (captured.TryGetValue(source, out var value)) bindings[binding] = value;
-        return true;
-    }
-
-    private static IEnumerable<(string SourceName, string BindingName)> EnumerateCanonicalPatternBindings(PatternSyntax pattern)
-    {
-        string? own = null;
-        IEnumerable<PatternSyntax> children = [];
-        switch (pattern)
-        {
-            case MatchCapturePatternSyntax capture: own = capture.Name; break;
-            case MatchStarPatternSyntax star: own = star.Name; break;
-            case MatchAsPatternSyntax alias: children = [alias.Pattern]; own = alias.Name; break;
-            case MatchMappingPatternSyntax mapping: children = mapping.Items.Select(p => p.Pattern); own = mapping.RestName; break;
-            case MatchSequencePatternSyntax sequence: children = sequence.Items; break;
-            case MatchClassPatternSyntax type: children = type.PositionalPatterns.Concat(type.KeywordPatterns.Select(p => p.Pattern)); break;
-            case MatchOrPatternSyntax alternatives: children = alternatives.Patterns.Take(1); break;
-        }
-        foreach (var child in children)
-            foreach (var binding in EnumerateCanonicalPatternBindings(child)) yield return binding;
-        if (own is not null) yield return (pattern.OriginalBindingName ?? own, own);
-    }
-
-    private static bool TryGetPatternClassName(ExpressionSyntax expression, out string className)
-    {
-        switch (expression)
-        {
-            case IdentifierExpressionSyntax identifier:
-                className = identifier.Name;
-                return true;
-            case MemberExpressionSyntax member when TryGetPatternClassName(member.Target, out var prefix):
-                className = prefix + "." + member.MemberName;
-                return true;
-            default:
-                className = string.Empty;
-                return false;
-        }
-    }
-
-    private static object? TryResolvePatternClassValue(ExpressionSyntax expression, ExecutionContext context)
-    {
-        return expression switch
-        {
-            IdentifierExpressionSyntax identifier => ResolveIdentifier(identifier, context),
-            MemberExpressionSyntax member => ResolveMember(member, context),
-            _ => null
-        };
     }
 
     private static bool DoesSubjectMatchPatternClass(string className, object subject)

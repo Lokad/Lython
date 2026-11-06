@@ -521,7 +521,7 @@ internal sealed partial class ExecutableScript
                 var failBlock = i == statement.Cases.Count - 1 ? afterBlock : CreateBlock();
 
                 AddInstruction(nextCaseBlock, ExecutableInstruction.LoadLocal(subjectSlot, matchCase.Syntax.Span));
-                AddInstruction(nextCaseBlock, ExecutableInstruction.MatchCase(InternMatchCase(matchCase.Syntax), failBlock, matchCase.Syntax.Span));
+                AddInstruction(nextCaseBlock, ExecutableInstruction.MatchCase(InternMatchCase(matchCase), failBlock, matchCase.Syntax.Span));
                 var successBlock = nextCaseBlock;
                 if (matchCase.Guard is { } guard)
                 {

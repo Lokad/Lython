@@ -553,7 +553,7 @@ internal sealed partial class LythonRuntime
         // is needed for nonmirrored executable functions.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
-        long bytes = 0;
+        long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
         if (codeObject.CapturedLocalSlots.Count != 0)
             bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.LocalNames.Count)
                 + 48L * codeObject.CapturedLocalSlots.Count);
