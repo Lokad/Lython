@@ -1,0 +1,6 @@
+[
+  "match [1,2]:\n case list(value):print(value)\n case _:print('no match')\n",
+  "match [1,2]:\n case list(a,b):print(a,b)\n case _:print('no match')\n",
+  "match 4:\n case int(value):print(value)\n case _:print('no match')\n",
+  "class C:\n __match_args__=('a',)\n @property\n def a(self):print('a');return 0\n @property\n def b(self):print('b');return 1\nclass K:\n expected=1\nmatch C():\n case C(K.expected,b=x):print(x)\n case _:print('no match')\n"
+]

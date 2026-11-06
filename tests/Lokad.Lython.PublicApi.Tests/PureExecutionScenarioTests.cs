@@ -4656,7 +4656,7 @@ match p:
         parts.append(suffix)
 
 match [10, 20]:
-    case list(left, right):
+    case list([left, right]):
         parts.append(str(left + right))
 
 __lython_file = open("/out.txt", "w")

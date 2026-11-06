@@ -38,9 +38,8 @@ internal sealed record LoweredMappingPattern(MatchMappingPatternSyntax Mapping, 
         + LoweredPatternPreparation.MaximumWorkspace(Items.Select(item => item.Pattern))));
 internal sealed record LoweredClassKeyword(string Name, LoweredPattern Pattern);
 internal sealed record LoweredClassPattern(MatchClassPatternSyntax Class, LoweredExpression Expression,
-    string ClassName, LoweredPattern[] PositionalPatterns, LoweredClassKeyword[] KeywordPatterns,
-    LoweredSequencePattern Sequence)
-    : LoweredPattern(Class, Math.Max(Sequence.WorkspaceCount,
+    LoweredPattern[] PositionalPatterns, LoweredClassKeyword[] KeywordPatterns)
+    : LoweredPattern(Class, Math.Max(LoweredPatternPreparation.MaximumWorkspace(PositionalPatterns),
         LoweredPatternPreparation.MaximumWorkspace(KeywordPatterns.Select(item => item.Pattern))));
 
 internal static class LoweredPatternPreparation
@@ -131,19 +130,12 @@ internal static class LoweredPatternPreparation
                     }
                     return new LoweredMappingPattern(mapping, items, Slot(pattern, mapping.RestName), keys);
                 case MatchClassPatternSyntax type:
-                    var positional = Sequence(type, type.PositionalPatterns);
                     return new LoweredClassPattern(type, LoweredScript.LowerStandaloneExpression(type.ClassExpression),
-                        ClassName(type.ClassExpression), positional.Items,
-                        type.KeywordPatterns.Select(item => new LoweredClassKeyword(item.Name, Lower(item.Pattern))).ToArray(), positional);
+                        type.PositionalPatterns.Select(Lower).ToArray(),
+                        type.KeywordPatterns.Select(item => new LoweredClassKeyword(item.Name, Lower(item.Pattern))).ToArray());
                 default: throw new InvalidOperationException($"Unknown pattern type: {pattern.GetType().Name}");
             }
         }
     }
 
-    private static string ClassName(ExpressionSyntax expression) => expression switch
-    {
-        IdentifierExpressionSyntax identifier => identifier.Name,
-        MemberExpressionSyntax member => ClassName(member.Target) + "." + member.MemberName,
-        _ => throw new InvalidOperationException("Invalid class pattern expression.")
-    };
 }

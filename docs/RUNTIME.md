@@ -223,6 +223,9 @@ and clear this working capacity, including scalar headroom, before guards or bod
 run. This can refuse admission earlier than allocating scratch at the matching opcode.
 Lowered consumers use the existing temporary reservation. Dynamic mapping keys retain
 ordered key evaluation, duplicate checks, value extraction and subpattern execution.
+Class patterns retain only their actual expression and child patterns; no
+synthetic sequence or source-name dispatch table is prepared. Builtin match-self
+patterns borrow the whole subject and reuse existing instance/type checks.
 String/bytes literals and integer magnitudes belong to lowered nodes and the existing
 compiled constant owner; no global weak literal cache is needed.
 Successful loop advances and true conditional arms continue at the next

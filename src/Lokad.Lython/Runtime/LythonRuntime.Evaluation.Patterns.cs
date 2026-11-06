@@ -274,32 +274,20 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        var className = pattern.ClassName;
-
-        if (!DoesSubjectMatchPatternClass(className, subject))
-        {
-            return false;
-        }
+        // Resolve the actual class object, so aliases and shadowed names use
+        // the same type semantics as isinstance rather than source spelling.
+        if (!IsSupportedTypeSpecifier(classValue))
+            throw RuntimeErrors.Type("called match pattern must be a type", pattern.Span);
+        if (!IsInstanceAgainstSingleType(subject, classValue, context)) return false;
 
         if (pattern.PositionalPatterns.Length != 0)
         {
-            return className switch
-            {
-                "list" when subject is PyList => TryMatchSequencePattern(
-                    pattern.Sequence,
-                    subject,
-                    context,
-                    captures, workspace),
-                "tuple" when subject is PyTuple => TryMatchSequencePattern(
-                    pattern.Sequence,
-                    subject,
-                    context,
-                    captures, workspace),
-                _ => throw new LythonRuntimeException(
-                    "TypeError",
-                    $"match class pattern '{className}(...)' does not support positional subpatterns in Lython.",
-                    pattern.Span)
-            };
+            var className = GetBuiltinTypeName(classValue, context);
+            var maximum = className is "bool" or "bytes" or "dict" or "float" or
+                "int" or "list" or "set" or "str" or "tuple" ? 1 : 0;
+            if (pattern.PositionalPatterns.Length > maximum)
+                throw RuntimeErrors.Type($"{className}() accepts {maximum} positional sub-pattern{(maximum == 1 ? "" : "s")} ({pattern.PositionalPatterns.Length} given)", pattern.Span);
+            if (!TryMatchPattern(pattern.PositionalPatterns[0], subject, context, captures, workspace)) return false;
         }
 
         foreach (var keyword in pattern.KeywordPatterns)
@@ -317,33 +305,6 @@ internal sealed partial class LythonRuntime
         }
 
         return true;
-    }
-
-    private static bool DoesSubjectMatchPatternClass(string className, object subject)
-    {
-        return className switch
-        {
-            "list" => subject is PyList,
-            "tuple" => subject is PyTuple,
-            "dict" => subject is PyDict,
-            "set" => subject is PySet,
-            "str" => subject is PyString,
-            "bytes" => subject is PyBytes,
-            "bool" => subject is bool,
-            "int" => Numbers.PyNumberOps.IsInteger(subject),
-            "float" => subject is double,
-            "pathlib.Path" => subject is PyPath,
-            "datetime.timedelta" => subject is PyTimedelta,
-            "datetime.date" => subject is PyDate,
-            "datetime.time" => subject is PyTime,
-            "datetime.datetime" => subject is PyDateTime,
-            "datetime.timezone" => subject is PyTimezone,
-            "statistics.NormalDist" => subject is StatisticsModule.PyNormalDist,
-            "random.Random" => subject is RandomModule.PyRandom,
-            "re.Match" => subject is ReMatchObject,
-            "re.Pattern" => subject is RePatternObject,
-            _ => false
-        };
     }
 
     private static IReadOnlyList<PyType> ResolveClassBases(object[] baseValues, LythonSourceSpan span, ExecutionContext context)

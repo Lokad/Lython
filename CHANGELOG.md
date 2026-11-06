@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve builtin class patterns through their actual type values, including
+  aliases. Match the whole subject for Python's builtin positional patterns;
+  reject extra positions. Remove synthetic sequence storage and duplicate
+  class-name dispatch. Use `list([left, right])` to decompose a list.
+
+- Share ordinary/cased whitespace word discovery and bounded ASCII category
+  runs, preserving Unicode casing, cancellation and admitted output ownership.
+
 - Transfer executable tuple literals into one admitted final backing, removing
   an intermediate copy and its construction overlap. Keep aliases and fund final
   storage before retiring inputs; borrowed-array constructors retain their copy.

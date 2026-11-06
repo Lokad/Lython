@@ -1,0 +1,12 @@
+{
+  "sourceBase": "a24a82dc plus exact R05 source patch/hashes",
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/LoweredPattern.cs": "67a1f22b4355a9cf6e26d778f96a7eb5e7ca8a5dfb30ba2d3c80787ffb04d773",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": "20e563f08d5de2ff387cbd9f8d4553d1740dece15697f76959b28ee7fd9f907d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs": "2f45439e5a24b14dec001bfd2921eccf2849cb194e7baf41a16c3c39911df30e"
+  },
+  "coreSHA256": {
+    "net11.0": "e806a62dfc059a53290395061dbca93cf56143667d6fd9c0e1773c1033cd3107",
+    "net10.0": "30349fa132d170bda1f49a72312b84c095b1048f06f4ed987b47fe6aa3b86802"
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "whole subject and identity",
+    "source": "values = [(bool, True), (bytes, b'ab'), (dict, {'a': 1}),\n          (float, 1.5), (int, 7), (list, [1, 2]),\n          (set, {1}), (str, 'ab'), (tuple, (1, 2))]\nfor kind, source in values:\n    match source:\n        case kind(value):\n            assert value is source\n        case _:\n            raise AssertionError('builtin did not match')\nsource = [1, 2]\nmatch source:\n    case list(value): value.append(3)\nprint(source)",
+    "expected": "[1, 2, 3]\n",
+    "exitCode": 0,
+    "stdout": "[1, 2, 3]\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "empty subjects and nested patterns",
+    "source": "for kind, source in [(list, []), (tuple, ()), (dict, {}), (set, set()), (str, ''), (bytes, b'')]:\n    match source:\n        case kind(value): assert value is source\n        case _: raise AssertionError('empty did not match')\nmatch [1, [2, 3]]:\n    case list([first, list([middle, last])]): print(first, middle, last)",
+    "expected": "1 2 3\n",
+    "exitCode": 0,
+    "stdout": "1 2 3\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "excess positions and failed-type short circuit",
+    "source": "for kind, source in [(list, [1, 2]), (tuple, (1, 2)), (int, 7)]:\n    try:\n        match source:\n            case kind(a, b): raise AssertionError('accepted excess positions')\n    except TypeError as error:\n        print(error)\nmatch 42:\n    case list(a, b): raise AssertionError('wrong type matched')\n    case _: print('skip')",
+    "expected": "list() accepts 1 positional sub-pattern (2 given)\ntuple() accepts 1 positional sub-pattern (2 given)\nint() accepts 1 positional sub-pattern (2 given)\nskip\n",
+    "exitCode": 0,
+    "stdout": "list() accepts 1 positional sub-pattern (2 given)\r\ntuple() accepts 1 positional sub-pattern (2 given)\r\nint() accepts 1 positional sub-pattern (2 given)\r\nskip\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "actual aliases and shadowed names",
+    "source": "Kind = list\nlist = int\nmatch [10, 20]:\n    case Kind([left, right]): print(left + right)\nmatch 7:\n    case list(value): print(value)\nlist = 17\ntry:\n    match []:\n        case list(): raise AssertionError('non-class matched')\nexcept TypeError: print('not a class')",
+    "expected": "30\n7\nnot a class\n",
+    "exitCode": 0,
+    "stdout": "30\r\n7\r\nnot a class\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "runtime class alias and lowered class body",
+    "source": "import pathlib\nPath = pathlib.Path\nmatch Path('/docs/guide.md'):\n    case Path(name=name, suffix=suffix): print(name, suffix)\nclass Owner:\n    match [4, 5]:\n        case list([left, right]): total = left + right\nprint(Owner.total)",
+    "expected": "guide.md .md\n9\n",
+    "exitCode": 0,
+    "stdout": "guide.md .md\r\n9\r\n",
+    "stderr": ""
+  },
+  {
+    "name": "zero positional builtin and invalid callable",
+    "source": "value = range(3)\nassert isinstance(value, range)\nmatch value:\n    case range(): print('range')\ntry:\n    match value:\n        case range(item): pass\nexcept TypeError: print('no positions')\ndef factory(): return list\ntry:\n    match []:\n        case factory(): pass\nexcept TypeError: print('not a class')",
+    "expected": "range\nno positions\nnot a class\n",
+    "exitCode": 0,
+    "stdout": "range\r\nno positions\r\nnot a class\r\n",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,159 @@
+diff --git a/src/Lokad.Lython/Frontend/LoweredPattern.cs b/src/Lokad.Lython/Frontend/LoweredPattern.cs
+index f6f6c247..96496044 100644
+--- a/src/Lokad.Lython/Frontend/LoweredPattern.cs
++++ b/src/Lokad.Lython/Frontend/LoweredPattern.cs
+@@ -38,9 +38,8 @@ internal sealed record LoweredMappingPattern(MatchMappingPatternSyntax Mapping,
+         + LoweredPatternPreparation.MaximumWorkspace(Items.Select(item => item.Pattern))));
+ internal sealed record LoweredClassKeyword(string Name, LoweredPattern Pattern);
+ internal sealed record LoweredClassPattern(MatchClassPatternSyntax Class, LoweredExpression Expression,
+-    string ClassName, LoweredPattern[] PositionalPatterns, LoweredClassKeyword[] KeywordPatterns,
+-    LoweredSequencePattern Sequence)
+-    : LoweredPattern(Class, Math.Max(Sequence.WorkspaceCount,
++    LoweredPattern[] PositionalPatterns, LoweredClassKeyword[] KeywordPatterns)
++    : LoweredPattern(Class, Math.Max(LoweredPatternPreparation.MaximumWorkspace(PositionalPatterns),
+         LoweredPatternPreparation.MaximumWorkspace(KeywordPatterns.Select(item => item.Pattern))));
+ 
+ internal static class LoweredPatternPreparation
+@@ -131,19 +130,12 @@ internal static class LoweredPatternPreparation
+                     }
+                     return new LoweredMappingPattern(mapping, items, Slot(pattern, mapping.RestName), keys);
+                 case MatchClassPatternSyntax type:
+-                    var positional = Sequence(type, type.PositionalPatterns);
+                     return new LoweredClassPattern(type, LoweredScript.LowerStandaloneExpression(type.ClassExpression),
+-                        ClassName(type.ClassExpression), positional.Items,
+-                        type.KeywordPatterns.Select(item => new LoweredClassKeyword(item.Name, Lower(item.Pattern))).ToArray(), positional);
++                        type.PositionalPatterns.Select(Lower).ToArray(),
++                        type.KeywordPatterns.Select(item => new LoweredClassKeyword(item.Name, Lower(item.Pattern))).ToArray());
+                 default: throw new InvalidOperationException($"Unknown pattern type: {pattern.GetType().Name}");
+             }
+         }
+     }
+ 
+-    private static string ClassName(ExpressionSyntax expression) => expression switch
+-    {
+-        IdentifierExpressionSyntax identifier => identifier.Name,
+-        MemberExpressionSyntax member => ClassName(member.Target) + "." + member.MemberName,
+-        _ => throw new InvalidOperationException("Invalid class pattern expression.")
+-    };
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+index c845b0bd..5bd60777 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs
+@@ -723,6 +723,7 @@ internal sealed partial class LythonRuntime
+             "float" or
+             "list" or
+             "tuple" or
++            "range" or
+             "slice" or
+             "classmethod" or "staticmethod" or "property" or
+             "dict" or
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs
+index 2ec2c49d..a12a7de0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs
+@@ -274,32 +274,20 @@ internal sealed partial class LythonRuntime
+             return true;
+         }
+ 
+-        var className = pattern.ClassName;
+-
+-        if (!DoesSubjectMatchPatternClass(className, subject))
+-        {
+-            return false;
+-        }
++        // Resolve the actual class object, so aliases and shadowed names use
++        // the same type semantics as isinstance rather than source spelling.
++        if (!IsSupportedTypeSpecifier(classValue))
++            throw RuntimeErrors.Type("called match pattern must be a type", pattern.Span);
++        if (!IsInstanceAgainstSingleType(subject, classValue, context)) return false;
+ 
+         if (pattern.PositionalPatterns.Length != 0)
+         {
+-            return className switch
+-            {
+-                "list" when subject is PyList => TryMatchSequencePattern(
+-                    pattern.Sequence,
+-                    subject,
+-                    context,
+-                    captures, workspace),
+-                "tuple" when subject is PyTuple => TryMatchSequencePattern(
+-                    pattern.Sequence,
+-                    subject,
+-                    context,
+-                    captures, workspace),
+-                _ => throw new LythonRuntimeException(
+-                    "TypeError",
+-                    $"match class pattern '{className}(...)' does not support positional subpatterns in Lython.",
+-                    pattern.Span)
+-            };
++            var className = GetBuiltinTypeName(classValue, context);
++            var maximum = className is "bool" or "bytes" or "dict" or "float" or
++                "int" or "list" or "set" or "str" or "tuple" ? 1 : 0;
++            if (pattern.PositionalPatterns.Length > maximum)
++                throw RuntimeErrors.Type($"{className}() accepts {maximum} positional sub-pattern{(maximum == 1 ? "" : "s")} ({pattern.PositionalPatterns.Length} given)", pattern.Span);
++            if (!TryMatchPattern(pattern.PositionalPatterns[0], subject, context, captures, workspace)) return false;
+         }
+ 
+         foreach (var keyword in pattern.KeywordPatterns)
+@@ -319,33 +307,6 @@ internal sealed partial class LythonRuntime
+         return true;
+     }
+ 
+-    private static bool DoesSubjectMatchPatternClass(string className, object subject)
+-    {
+-        return className switch
+-        {
+-            "list" => subject is PyList,
+-            "tuple" => subject is PyTuple,
+-            "dict" => subject is PyDict,
+-            "set" => subject is PySet,
+-            "str" => subject is PyString,
+-            "bytes" => subject is PyBytes,
+-            "bool" => subject is bool,
+-            "int" => Numbers.PyNumberOps.IsInteger(subject),
+-            "float" => subject is double,
+-            "pathlib.Path" => subject is PyPath,
+-            "datetime.timedelta" => subject is PyTimedelta,
+-            "datetime.date" => subject is PyDate,
+-            "datetime.time" => subject is PyTime,
+-            "datetime.datetime" => subject is PyDateTime,
+-            "datetime.timezone" => subject is PyTimezone,
+-            "statistics.NormalDist" => subject is StatisticsModule.PyNormalDist,
+-            "random.Random" => subject is RandomModule.PyRandom,
+-            "re.Match" => subject is ReMatchObject,
+-            "re.Pattern" => subject is RePatternObject,
+-            _ => false
+-        };
+-    }
+-
+     private static IReadOnlyList<PyType> ResolveClassBases(object[] baseValues, LythonSourceSpan span, ExecutionContext context)
+     {
+         if (baseValues.Length == 0)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/PureExecutionScenarioTests.cs b/tests/Lokad.Lython.PublicApi.Tests/PureExecutionScenarioTests.cs
+index 91778374..0b9feff5 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/PureExecutionScenarioTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/PureExecutionScenarioTests.cs
+@@ -4656,7 +4656,7 @@ match p:
+         parts.append(suffix)
+ 
+ match [10, 20]:
+-    case list(left, right):
++    case list([left, right]):
+         parts.append(str(left + right))
+ 
+ __lython_file = open("/out.txt", "w")
+diff --git a/tests/README.md b/tests/README.md
+index a2f94cff..550d4e5f 100644
+--- a/tests/README.md
++++ b/tests/README.md
+@@ -38,6 +38,9 @@ Tuple queries also preserve earlier hash effects and errors before a later
+ unhashable element. Refusal or cancellation in that earlier callback remains
+ terminal, preserves the container and releases working funding after cleanup.
+ Mixed hash/equality callbacks keep single-object and pair cycles independent.
++Builtin class-pattern goldens preserve whole-subject identity, nested sequences,
++actual aliases, shadowed class names, excess-position errors and lowered class
++bodies. Both execution APIs return shared funding to baseline after cleanup.
+ Structural controls retain immediate reversed-pair rejection, cross-thread
+ state disposal and out-of-order unwind without retaining active identities.
+ [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)

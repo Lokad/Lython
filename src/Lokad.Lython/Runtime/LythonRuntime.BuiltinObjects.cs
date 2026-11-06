@@ -723,6 +723,7 @@ internal sealed partial class LythonRuntime
             "float" or
             "list" or
             "tuple" or
+            "range" or
             "slice" or
             "classmethod" or "staticmethod" or "property" or
             "dict" or

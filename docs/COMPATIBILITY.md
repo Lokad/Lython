@@ -82,6 +82,12 @@ Mapping-pattern subjects currently use native dict values. Patterns check the
 subject length before key getters, extract all keys
 and values before subpatterns, reject dynamic duplicate keys, and construct rest
 by copying the current mapping then deleting matched keys in order.
+Builtin class patterns use the evaluated type, including aliases. `bool`, `bytes`,
+`dict`, `float`, `int`, `list`, `set`, `str` and `tuple` accept one positional
+pattern against the whole subject. Use `list([first, second])` to decompose a
+list; `list(first, second)` raises `TypeError` as in Python. User-class attribute
+extraction is still interleaved with subpatterns, and value patterns retain
+limitations for custom equality; these are compatibility gaps.
 Dictionary-view membership and comparisons use dictionary key protocols; item
 values may be unhashable. Native view methods preserve NotImplemented and
 reflected ChainMap-view behavior.
