@@ -63,5 +63,7 @@ guest execution or I/O. Startup/staging/reset/transport/final teardown excluded.
 CPython imports persist; Lython isolates imports. Full sources/fixtures and all
 measured responses are retained. Startup, genuinely suspended-I/O latency, RSS and
 embedding latency remain unmeasured. Both installed Release consumers pass; final
-platform/stress/package CI42170841788 on794e552b is pending, separate from timing.
+platform/stress/package CI42170841788 on794e552b is cached GREEN/all eight gates,
+[independent of timing](../2026-11-06-executable-tuple-backing/delivery-ci.json).
+The terminal qualification excludes later R03 changes; never query it again.
 Publication/tagging postponed; the complete-script performance objective stays open.

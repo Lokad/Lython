@@ -3089,4 +3089,5 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   327.85s/all gates. Primary guide refreshed; no broad primary speedup. Fresh
   CSV+2.18–4.41% and text+3.11–7.95% versus R02 remain explicit possible regression
   debt; text identical-role spread4.69%. Affected compound-key gains stay separate.
-  Installed consumers pass, final CI42170841788 pending. Whole objective active.
+  Installed consumers pass, cached terminal CI42170841788 GREEN/all eight gates
+  on794e552b. Excludes later R03; whole objective active.

@@ -1,5 +1,5 @@
 {
-  "status": "Committed source794e552b includes R02/R04; full local and installed consumers pass. Combined platform/stress/package CI42170841788 running; not yet qualified.",
+  "status": "Fully qualified on committed794e552b: full local Release, both installed consumers and cached terminal42170841788 GREEN/all eight Windows/Ubuntu runtime, original stress and package gates. Excludes R03.",
   "sourceBase": "1863cb3e plus recorded R04 source patch/hash",
   "coreSHA256": {
     "candidate": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
@@ -20,12 +20,13 @@
   ],
   "removed": "Private intermediate tuple backing copy, its duplicate final-backing admission and construction overlap, stale preflight7249 name.",
   "retained": "Existing private-array transfer helper with capacity/scalar admission before ownership publication/operand retirement. Borrowed-array constructors still copy; aliases, pending users and cleanup unchanged.",
-  "limitations": "CSV +0.67/-2.16% has2.81% identical-role spread; inconclusive. No process allocation percentage or broad CPU/RSS/embedding gain measured. Do not add source-pair deltas. Primary table still1134d6e8 until coherent refresh.",
+  "limitations": "CSV +0.67/-2.16% has2.81% identical-role spread; inconclusive. No process allocation percentage or broad CPU/RSS/embedding gain measured. Do not add source-pair deltas. B331 primary table identifies794e552b; fresh CSV/text regression debt remains explicit.",
   "combinedDeliverySourceRevision": "794e552b",
   "deliveryRunId": 42170841788,
   "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42170841788",
   "installedReleaseConsumers": [
     "net11.0",
     "net10.0"
-  ]
+  ],
+  "deliveryReceipt": "../2026-11-06-executable-tuple-backing/delivery-ci.json"
 }

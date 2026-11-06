@@ -1,5 +1,5 @@
 {
-  "status": "Committed source794e552b includes R02/R04; full local and installed consumers pass. Combined platform/stress/package CI42170841788 running; not yet qualified.",
+  "status": "Fully qualified on committed794e552b: full local Release, both installed consumers and cached terminal42170841788 GREEN/all eight Windows/Ubuntu runtime, original stress and package gates. Excludes R03.",
   "sourceBase": "d319dffa/production bf741ec2 plus recorded R02 patch and hashes",
   "coreSHA256": {
     "candidate": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc",
@@ -40,5 +40,6 @@
   "installedReleaseConsumers": [
     "net11.0",
     "net10.0"
-  ]
+  ],
+  "deliveryReceipt": "../2026-11-06-executable-tuple-backing/delivery-ci.json"
 }
