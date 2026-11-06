@@ -1,5 +1,5 @@
 {
-  "status": "Focused Release checks pass; P01 full platform/stress/package qualification pending",
+  "status": "Focused checks and full delivery pass",
   "baselineDelivery": {
     "source": "9d40a6db",
     "run": 42131217218,
@@ -20,5 +20,11 @@
   "newFrameAdmissionCases": 2,
   "worker": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
   "measuredCore": "0873ec4624d26e47a7a073b6fb342ca76a0cbd0a54d1a8d92910b0eafe52e8ea",
-  "timingInterpretation": "Native record warm/compile-run gain supported in both current processes. Compile and complete text mixed/inconclusive. No allocation, causalCPU, RSS or broad whole-script claim. Original launch failed before measurement due CRLF; retained and corrected without runtime changes."
+  "timingInterpretation": "Native record warm/compile-run gain supported in both current processes. Compile and complete text mixed/inconclusive. No allocation, causalCPU, RSS or broad whole-script claim. Original launch failed before measurement due CRLF; retained and corrected without runtime changes.",
+  "delivery": {
+    "source": "db3d1908",
+    "run": 42135195574,
+    "conclusion": "GREEN/all8",
+    "scope": "Windows/Ubuntu actual.NET11/10, original Stress and installed Release package consumers. Subsequent K01 excluded."
+  }
 }

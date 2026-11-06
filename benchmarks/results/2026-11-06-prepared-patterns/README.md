@@ -6,7 +6,9 @@ P01 prototype on9d40a6db, measured2026-11-06, core`0873ec46`; reference
 roles, machine gates and measurements. [Validation](validation.json): zero-warning/
 error Release build,3388public/76internal per actual.NET11/10, six independent
 CPython goldens and two additional frame-admission cases. Baseline9d is qualified
-GREEN/all8; P01 full platform/stress/package qualification is pending.
+GREEN/all8. [P01 delivery](delivery-ci.json) ondb3d1908 is also fully qualified:
+Windows/Ubuntu actual.NET11/10, original Stress and installed Release consumers,
+cached42135195574 GREEN/all8. Later K01 work is outside this qualification.
 
 One compile-owned lowered pattern is consumed by executable and lowered class
 paths. It replaces raw syntax/expression matching, runtime name walks, capture
