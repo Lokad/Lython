@@ -1,5 +1,6 @@
 using System.Numerics;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
@@ -23,9 +24,11 @@ public sealed class BytesSliceAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var source = new PyBytes(new byte[256], sourceContext.MemoryGovernor, span);
         var baseline = sourceBudget.ReservedBytes;
-        var result = representation ? (IPyGovernedValue)source.RenderPython(new PyRenderingContext(context))
-                                    : (IPyGovernedValue)PyIndexing.ReadSliceCore(source, 1, null, 2, span, context);
-        Assert.Same(context.MemoryGovernor, result.OwnerMemoryGovernor);
+        var result = representation ? (object)source.RenderPython(new PyRenderingContext(context))
+                                    : PyIndexing.ReadSliceCore(source, 1, null, 2, span, context);
+        var resultGovernor = representation ? Assert.IsType<PyString>(result).OwnerMemoryGovernor
+                                           : Assert.IsType<PyBytes>(result).OwnerMemoryGovernor;
+        Assert.Same(context.MemoryGovernor, resultGovernor);
         Assert.Equal(baseline, sourceBudget.ReservedBytes);
         Assert.True(resultBudget.ReservedBytes > 0);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

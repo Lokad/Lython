@@ -1,0 +1,90 @@
+[
+  {
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "corePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter44\\out\\Lokad.Lython\\Release\\net11.0\\Lokad.Lython.dll",
+    "coreSha256": "C569A342421440C45FFD67C50666F2B8B12D38DF6BF15FBA7DA781A0307C840E",
+    "actualBeforeBytes": 64,
+    "modelBytes": 72,
+    "actualAfterBytes": 64,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "baseline",
+    "framework": "net11.0"
+  },
+  {
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "corePath": "D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net11.0\\Lokad.Lython.dll",
+    "coreSha256": "E1D7755D4A23C6C1F93616D7CA68B80A1537EBA94917460A99A76C8D5AF2B6EB",
+    "actualBeforeBytes": 56,
+    "modelBytes": 72,
+    "actualAfterBytes": 56,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "candidate",
+    "framework": "net11.0"
+  },
+  {
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "corePath": "D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net11.0\\Lokad.Lython.dll",
+    "coreSha256": "E1D7755D4A23C6C1F93616D7CA68B80A1537EBA94917460A99A76C8D5AF2B6EB",
+    "actualBeforeBytes": 56,
+    "modelBytes": 72,
+    "actualAfterBytes": 56,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "candidate",
+    "framework": "net11.0"
+  },
+  {
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "corePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter44\\out\\Lokad.Lython\\Release\\net11.0\\Lokad.Lython.dll",
+    "coreSha256": "C569A342421440C45FFD67C50666F2B8B12D38DF6BF15FBA7DA781A0307C840E",
+    "actualBeforeBytes": 64,
+    "modelBytes": 72,
+    "actualAfterBytes": 64,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "baseline",
+    "framework": "net11.0"
+  },
+  {
+    "runtime": ".NET 10.0.8",
+    "corePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter44\\out\\Lokad.Lython\\Release\\net10.0\\Lokad.Lython.dll",
+    "coreSha256": "48AAA5AA56596048D86A3EEC3DDC8BA3A2BE48406335DFB6F9046C4A7E3B8E45",
+    "actualBeforeBytes": 64,
+    "modelBytes": 72,
+    "actualAfterBytes": 64,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "baseline",
+    "framework": "net10.0"
+  },
+  {
+    "runtime": ".NET 10.0.8",
+    "corePath": "D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+    "coreSha256": "25D74AB61C7DCB56493A27653A218B46B3C080B5F6DD266D9A768D0D9108F50E",
+    "actualBeforeBytes": 56,
+    "modelBytes": 72,
+    "actualAfterBytes": 56,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "candidate",
+    "framework": "net10.0"
+  },
+  {
+    "runtime": ".NET 10.0.8",
+    "corePath": "D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+    "coreSha256": "25D74AB61C7DCB56493A27653A218B46B3C080B5F6DD266D9A768D0D9108F50E",
+    "actualBeforeBytes": 56,
+    "modelBytes": 72,
+    "actualAfterBytes": 56,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "candidate",
+    "framework": "net10.0"
+  },
+  {
+    "runtime": ".NET 10.0.8",
+    "corePath": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\adapter44\\out\\Lokad.Lython\\Release\\net10.0\\Lokad.Lython.dll",
+    "coreSha256": "48AAA5AA56596048D86A3EEC3DDC8BA3A2BE48406335DFB6F9046C4A7E3B8E45",
+    "actualBeforeBytes": 64,
+    "modelBytes": 72,
+    "actualAfterBytes": 64,
+    "note": "Reuse the existing managed actual-object allocation probe; one preallocated payload and escaping objects. Ignore its historical synthetic window model. No elapsed/CPU/RSS/admission-size claim.",
+    "role": "baseline",
+    "framework": "net10.0"
+  }
+]

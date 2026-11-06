@@ -84,13 +84,13 @@ internal static partial class PyStringOps
             ? value
             : SliceUtf8(value, startByte, endByte,
                 value.OwnerMemoryGovernor ?? PyStructuralGuard.AmbientContext?.MemoryGovernor,
-                value.AllocationSpan ?? PyStructuralGuard.AmbientSpan);
+                PyStructuralGuard.AmbientSpan);
     }
 
     private static PyString MapCase(PyString value, CaseMapping mapping, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         context ??= PyStructuralGuard.AmbientContext;
-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         var source = value.Utf8Bytes.Span;
         var capacity = CaseOutputCapacity(source, mapping, context, span);
         context?.CheckExecution(span);
@@ -505,7 +505,7 @@ internal static partial class PyStringOps
 
     private static PyString SliceByByteRange(PyString value, int startByte, int endByte)
     {
-        return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
+        return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
     }
 
     private static GovernedByteBuilder CreateBuilder(PyString value)
@@ -514,7 +514,7 @@ internal static partial class PyStringOps
     private static GovernedByteBuilder CreateBuilder(PyString value, int capacity)
         => value.OwnerMemoryGovernor is null
             ? new GovernedByteBuilder(capacity)
-            : new GovernedByteBuilder(value.OwnerMemoryGovernor, value.AllocationSpan, capacity);
+            : new GovernedByteBuilder(value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan, capacity);
 
     private static GovernedByteBuilder CreateBuilder(MemoryGovernor? governor, LythonSourceSpan? span)
         => CreateBuilder(governor, span, 0);

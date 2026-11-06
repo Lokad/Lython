@@ -84,7 +84,6 @@ public class DirectStringLowerTests
             var failureSpan = Assert.IsType<LythonSourceSpan>(failure.Span);
             Assert.Equal(exposed ? "method()" : "text." + Method + "()", sourceCode.Substring(failureSpan.Start, failureSpan.Length));
             Assert.Equal(exposed ? 3 : 2, failureSpan.Line);
-            Assert.Same(allocationSpan, text.AllocationSpan);
             Assert.True(context.MemoryGovernor.LastDeniedReservationBytes >= text.Utf8Bytes.Length);
             Assert.Equal(source, text.AsString());
             Assert.Equal(1, pad.Calls);

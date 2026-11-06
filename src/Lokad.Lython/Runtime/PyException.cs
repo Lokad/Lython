@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyException : IPyHashableValue, IPyGovernedValue
+internal sealed class PyException : IPyHashableValue
 {
     public PyException(PythonExceptionIdentity identity, string message, object? value, PyTuple? args)
     {

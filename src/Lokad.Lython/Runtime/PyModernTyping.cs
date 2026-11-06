@@ -34,7 +34,7 @@ internal sealed class PyLazyTypeValue(LoweredExpression expression, LythonRuntim
 }
 
 internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes,
-    IPyRenderableValue, IPyIterableValue, IPyHashableValue, IPyGovernedValue
+    IPyRenderableValue, IPyIterableValue, IPyHashableValue
 {
     internal static readonly PyBuiltinRuntimeType TypeVarType = TypeObject("TypeVar", TypeParameterKind.TypeVar);
     internal static readonly PyBuiltinRuntimeType TypeVarTupleType = TypeObject("TypeVarTuple", TypeParameterKind.TypeVarTuple);
@@ -131,7 +131,7 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     }
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     private sealed class HasDefaultMethod(PyTypeParameter parameter, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue
+        LythonRuntime.IPyBoundEngineMethod
     {
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;
@@ -178,8 +178,7 @@ internal sealed record PyUnpackedType(object Value) : IPyRenderableValue, IPyDyn
     }
 }
 
-internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue, IPyDynamicAttributes,
-    IPyGovernedValue
+internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue, IPyDynamicAttributes
 {
     public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
     public LythonSourceSpan? AllocationSpan { get; private init; }
@@ -197,7 +196,7 @@ return value;
 }
 
 internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes, IPySubscriptableValue,
-    IPyRenderableValue, IPyHashableValue, IPyGovernedValue
+    IPyRenderableValue, IPyHashableValue
 {
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("typing.TypeAliasType",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use a type statement to define a type alias in Lython.", span));

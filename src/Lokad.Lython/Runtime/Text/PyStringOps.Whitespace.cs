@@ -38,7 +38,7 @@ internal static partial class PyStringOps
         CaseMapping? casing = null)
     {
         governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         context ??= PyStructuralGuard.AmbientContext;
         governor?.ThrowIfAdmissionFailed();
         context?.CheckExecution(span);

@@ -115,7 +115,7 @@ internal sealed class ObjectNamespaceStorage : IPyDictStorage
 }
 
 internal sealed class PyMappingProxy : IPySubscriptableValue, IPyIterableValue, IPyContainsValue, IPyHashableValue,
-    IPyTruthyValue, IPySizedValue, IPyRenderableValue, IPyGovernedValue, IPyDynamicAttributes, IChainMapSource
+    IPyTruthyValue, IPySizedValue, IPyRenderableValue, IPyDynamicAttributes, IChainMapSource
 {
     internal PyDict Dictionary { get; }
     internal PyMappingProxy(PyDict dictionary, MemoryGovernor governor, LythonSourceSpan span)

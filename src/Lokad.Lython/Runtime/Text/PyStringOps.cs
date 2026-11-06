@@ -74,7 +74,7 @@ internal static partial class PyStringOps
     public static PyList SplitLines(PyString value, bool keepEnds, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         var lines = governor is null ? new PyList() : new PyList([], governor, span);
         var source = value.Utf8Bytes.Span;
         var startByte = 0;
@@ -130,7 +130,7 @@ internal static partial class PyStringOps
     public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         var parts = governor is null ? new PyList() : new PyList([], governor, span);
         var source = value.Utf8Bytes.Span;
         var needle = separator.Utf8Bytes.Span;
@@ -158,7 +158,7 @@ internal static partial class PyStringOps
     public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         if (separator.Length == 0)
         {
             throw new InvalidOperationException("empty separator");
@@ -210,7 +210,7 @@ internal static partial class PyStringOps
     public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         governor ??= value.OwnerMemoryGovernor;
-        span ??= value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         if (separator.Length == 0)
         {
             throw new InvalidOperationException("empty separator");
@@ -354,7 +354,7 @@ internal static partial class PyStringOps
 
     public static PyString Center(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center, value.OwnerMemoryGovernor, value.AllocationSpan, default);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Center, value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan, default);
     }
 
     internal static PyString Center(PyString value, int width, PyString? fillChar,
@@ -366,7 +366,7 @@ internal static partial class PyStringOps
 
     public static PyString LJust(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left, value.OwnerMemoryGovernor, value.AllocationSpan, default);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Left, value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan, default);
     }
 
     internal static PyString LJust(PyString value, int width, PyString? fillChar,
@@ -378,7 +378,7 @@ internal static partial class PyStringOps
 
     public static PyString RJust(PyString value, int width, PyString? fillChar)
     {
-        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right, value.OwnerMemoryGovernor, value.AllocationSpan, default);
+        return Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right, value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan, default);
     }
 
     internal static PyString RJust(PyString value, int width, PyString? fillChar,
@@ -386,7 +386,7 @@ internal static partial class PyStringOps
         => Pad(value, width, fillChar ?? PyString.FromString(" "), PadMode.Right, governor, span, cancellationToken);
 
     public static PyString ZFill(PyString value, int width)
-        => ZFill(value, width, value.OwnerMemoryGovernor, value.AllocationSpan, default);
+        => ZFill(value, width, value.OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan, default);
 
     internal static PyString ZFill(PyString value, int width, MemoryGovernor? governor,
         LythonSourceSpan? span, CancellationToken cancellationToken)
@@ -428,7 +428,7 @@ internal static partial class PyStringOps
         LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         context ??= PyStructuralGuard.AmbientContext;
-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
         try
         {

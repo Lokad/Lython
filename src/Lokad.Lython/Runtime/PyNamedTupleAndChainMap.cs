@@ -488,7 +488,7 @@ internal sealed class TupleGetterSetMethod : LythonRuntime.ICallable, IPyDynamic
     }
 }
 
-internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyHashableValue, IPyGovernedValue
+internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyDynamicAttributes, IPyHashableValue
 {
     private readonly PyNamedTupleType _type;
     private readonly object[] _values;

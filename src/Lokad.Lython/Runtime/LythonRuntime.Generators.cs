@@ -12,8 +12,7 @@ internal sealed partial class LythonRuntime
         { PythonCause = cause, PythonContext = cause, SuppressPythonContext = true };
     }
 
-    internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
-        IPyGovernedValue
+    internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue
     {
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;

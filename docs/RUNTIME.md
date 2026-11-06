@@ -38,6 +38,11 @@ Lython records that terminal origin at its host boundary; handlers, suppression,
 finally returns and later host failures cannot replace it. No external sticky
 error is needed. Cancellation uses `OperationCanceledException` separately.
 
+Text values retain their storage owner, without retaining a source-of-birth span.
+Allocation failures use the requesting operation's explicit or current synchronous
+provenance. Internal helpers used without an execution context may have no span;
+the public execution boundary still reports its active Python instruction.
+
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before
 reporting the contract failure and releasing its borrowed storage. Text/binary

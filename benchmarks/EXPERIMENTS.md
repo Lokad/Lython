@@ -1,12 +1,27 @@
 # Benchmark experimental history
 
+The [text-provenance milestone](results/2026-11-06-text-operation-provenance/README.md)
+deletes per-string birth spans, the unused governing interface and hidden
+constructor funding flag. Actual shells shrink64→56B on both runtimes; whole-job
+allocation drops4.28% text and roughly2.4–2.7% CSV on both APIs. B351140.60s
+retains text elapsed+1.6–2.2% as debt, with other controls mixed; no broad CPU gain.
+Focused checks and full public.NET11 pass; the corrected native ownership fixture
+and original failures remain. Full R17 delivery is pending separately.
+
+[Immutable dev44 adapter development](results/2026-11-06-adapter-dev44/README.md)
+passes84internal/421public per actual runtime against62141d4d using the selected
+range/token bridge. Normal0.4 pin/core decoupling remain. The next cursor working-
+allowance migration has a precise owner/refusal contract; absent one-shot owner
+overrides defer only that affected part, not independent work or core releases.
+
 The [explicit dictionary-context milestone](results/2026-11-06-dictionary-context/README.md)
 uses current CPU evidence to remove ambient installation/rediscovery from native
 queries and funded writes, preserving structural/protocol provenance. Focused
 365internal/1,281public per actual runtime pass. B350's140.32s complete-script
 source pair favors fresh CSV/text/JSON; warm CSV is inconclusive and report has
 6.92% identical-role divergence. All adverse evidence remains; no broad CPU or
-allocation claim. Full C+R14 delivery is pending separately.
+allocation claim. Combined C+R14 runtime62141d4d is fully qualified by cached
+terminal CI42243450458, GREEN/all8 platform/runtime/package/original-Stress gates.
 
 The [prepared lexical-load milestone](results/2026-11-06-prepared-lexical-loads/README.md)
 uses compiler binding facts to retire general lexical searches for ordinary

@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 // Sets use the same actual-hash entry authority as dictionaries. Its shell
 // estimate covers this wrapper too; values are an internal shared None singleton.
-internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
+internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPySizedValue
 {
     private readonly PyDict _store;
     private int _version;

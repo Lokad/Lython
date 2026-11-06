@@ -1,0 +1,112 @@
+{
+  "identity": {
+    "developmentOnly": true,
+    "promoted": false,
+    "coreRevision": "62141d4ddcb4118aebda9eb537bf6af5276a9ac6",
+    "normalPin": "0.4.0 unchanged",
+    "variant": "Existing selected native ranges/current-operation local token bridge; newer immutable producer baseline",
+    "providerSHA256": "15a4d9c5ddf284ff01a7409d4c7b1347881fd2b29315e9018621db004736b896",
+    "packages": {
+      "Lokad.Utf8Regex": {
+        "sha256": "241a0566d41729460174c8580e33d29b918021581ca24229a1a284a85615b84b",
+        "revision": "c410be73b6a61ba1e1cd798c9319c2682e494d38",
+        "version": "0.5.0-dev.44",
+        "libraries": {
+          "lib/net10.0/Lokad.Utf8Regex.dll": "a99c777e0eb04ab9d0fa60767105d0e77c6f0b39170cbd44b10fdcc34f979617",
+          "lib/net11.0/Lokad.Utf8Regex.dll": "b61af63d12b2f3b6d3387fcb9b87303584bdf473748a1aad5d809afbc6145e1d"
+        },
+        "relevantSurface": [
+          "T:Lokad.Utf8Regex.IUtf8MemoryAllowance",
+          "M:Lokad.Utf8Regex.IUtf8MemoryAllowance.TryReserve(System.UInt64)",
+          "M:Lokad.Utf8Regex.IUtf8MemoryAllowance.Release(System.UInt64)",
+          "M:Lokad.Utf8Regex.Utf8MatchContext.TryGetGroup(System.Int32,Lokad.Utf8Regex.Utf8GroupContext@)",
+          "M:Lokad.Utf8Regex.Utf8MatchContext.TryGetGroup(System.String,Lokad.Utf8Regex.Utf8GroupContext@)",
+          "M:Lokad.Utf8Regex.Utf8RangeMatch.TryGetGroup(System.Int32,Lokad.Utf8Regex.Utf8CaptureRange@)",
+          "M:Lokad.Utf8Regex.Utf8RangeMatch.TryGetGroup(System.String,Lokad.Utf8Regex.Utf8CaptureRange@)",
+          "M:Lokad.Utf8Regex.Utf8Regex.Compile(System.ReadOnlySpan{System.Byte},System.Text.RegularExpressions.RegexOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8Regex.Compile(System.String,System.Text.RegularExpressions.RegexOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8Regex.GetGroupNames",
+          "M:Lokad.Utf8Regex.Utf8Regex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Nullable{System.Int32},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8Regex.IsMatch(System.ReadOnlySpan{System.Byte},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8Regex.Count(System.ReadOnlySpan{System.Byte},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8RegexMatchCursor.MoveNextRetained(Lokad.Utf8Regex.Utf8RetainedRangeMatch@,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8RegexProgramOwner.IsMatch(System.ReadOnlySpan{System.Byte},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8RegexProgramOwner.Count(System.ReadOnlySpan{System.Byte},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8RegexProgramOwner.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Nullable{System.Int32},System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.Utf8RegexProgramOwner.TryReplace(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32@,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "T:Lokad.Utf8Regex.Utf8RetainedRangeMatch",
+          "P:Lokad.Utf8Regex.Utf8RetainedRangeMatch.Match",
+          "P:Lokad.Utf8Regex.Utf8RetainedRangeMatch.ChargedBytes",
+          "M:Lokad.Utf8Regex.Utf8RetainedRangeMatch.Dispose"
+        ]
+      },
+      "Lokad.Utf8Regex.PythonRe": {
+        "sha256": "8b1db5beb46c6ba61a060d547e4df825cd4769be19baaba140f6053d420a32de",
+        "revision": "c410be73b6a61ba1e1cd798c9319c2682e494d38",
+        "version": "0.5.0-dev.44",
+        "libraries": {
+          "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "bbc23d8565bd2a2683a81e8b92968a0d17bef9a2d7517bbe3c3b5737b1776bc9",
+          "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "a1654b75b7dd150375e293cefab47f0e408b1951708791ee5cb993b1868fa8dc"
+        },
+        "relevantSurface": [
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonDetailedMatchData.TryGetGroup(System.Int32,Lokad.Utf8Regex.PythonRe.Utf8PythonGroupMatchData@)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchContext.TryGetGroup(System.Int32,Lokad.Utf8Regex.PythonRe.Utf8PythonGroupContext@)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchContext.TryGetGroupValueString(System.Int32,System.String@)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRangeMatch.TryGetGroup(System.Int32,Lokad.Utf8Regex.PythonRe.Utf8PythonCaptureRange@)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNextRetained(Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch@,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.String,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.ReadOnlySpan{System.Byte},Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.GetGroupNames",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte})",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte})",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte})",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.TryGetGroupNumber(System.ReadOnlySpan{System.Byte},System.Int32@,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.SubnRetained(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,System.Threading.CancellationToken)",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.SubnRetained(System.ReadOnlySpan{System.Byte},System.String,System.Int32,System.Int32,System.Threading.CancellationToken)",
+          "T:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch",
+          "P:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch.Match",
+          "P:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch.ChargedBytes",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch.Dispose",
+          "T:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedSubnResult",
+          "P:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedSubnResult.Result",
+          "P:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedSubnResult.ChargedBytes",
+          "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedSubnResult.Dispose"
+        ]
+      }
+    }
+  },
+  "checks": {
+    "internal-net11.0": {
+      "passed": 84
+    },
+    "public-net11.0": {
+      "passed": 421
+    },
+    "net11.0-loadedFiles": {
+      "Lokad.Lython": "c569a342421440c45ffd67c50666f2b8b12d38df6bf15fba7da781a0307c840e",
+      "Lokad.Lython.Utf8Regex": "2d058a238d31e472531e514ab725fa747ee0e0f397b0b6be2da79180a61b8679",
+      "Lokad.Utf8Regex": "b61af63d12b2f3b6d3387fcb9b87303584bdf473748a1aad5d809afbc6145e1d",
+      "Lokad.Utf8Regex.PythonRe": "a1654b75b7dd150375e293cefab47f0e408b1951708791ee5cb993b1868fa8dc"
+    },
+    "internal-net10.0": {
+      "passed": 84
+    },
+    "public-net10.0": {
+      "passed": 421
+    },
+    "net10.0-loadedFiles": {
+      "Lokad.Lython": "48aaa5aa56596048d86a3eec3ddc8ba3a2be48406335dfb6f9046c4a7e3b8e45",
+      "Lokad.Lython.Utf8Regex": "f0dc9f64878ae04d0b9ce2281201ee9295fb7afa2e46a3743e02836aaa12e5d4",
+      "Lokad.Utf8Regex": "a99c777e0eb04ab9d0fa60767105d0e77c6f0b39170cbd44b10fdcc34f979617",
+      "Lokad.Utf8Regex.PythonRe": "bbc23d8565bd2a2683a81e8b92968a0d17bef9a2d7517bbe3c3b5737b1776bc9"
+    }
+  },
+  "limitations": "Focused private adapter development only; no released/safety/whole-script promotion"
+}

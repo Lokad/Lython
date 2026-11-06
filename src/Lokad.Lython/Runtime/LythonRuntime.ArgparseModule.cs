@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
 
     }
 
-    internal sealed class ArgparseNamespaceObject : IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue, IPyGovernedValue
+    internal sealed class ArgparseNamespaceObject : IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue
     {
         private PyDict _members;
         public MemoryGovernor OwnerMemoryGovernor { get; }

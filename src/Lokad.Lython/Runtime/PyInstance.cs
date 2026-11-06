@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue
+internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable
 {
     private readonly Dictionary<string, object> _attributes;
     private PyDict? _namespace;

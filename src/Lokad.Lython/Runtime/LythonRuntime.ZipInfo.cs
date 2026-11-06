@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     /// current field values (header offset, sizes, flags), matching CPython,
     /// so cross-archive and manually constructed infos behave uniformly.
     /// </summary>
-    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
+    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue, IPyHashableValue
     {
         // Constructed infos retain the 12-field wrapper beside governed payloads;
         // charge the constructed-value unit at the guest factory. Directory-backed

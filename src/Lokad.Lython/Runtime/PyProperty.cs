@@ -10,7 +10,7 @@ internal interface IPyDeletableDescriptor
 
 internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor,
     IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember, IPyMutableDynamicAttributes,
-    IPyDeletableDynamicAttributes, IPyGovernedValue
+    IPyDeletableDynamicAttributes
 {
     // Accessors, documentation and ownership metadata live in this shell.
     // Numeric fields carry conservative storage allowances, without identity maps.

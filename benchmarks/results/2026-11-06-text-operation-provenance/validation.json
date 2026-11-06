@@ -1,0 +1,19 @@
+{
+  "runtimeCoreSHA256": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb",
+  "focusedPerActualRuntime": {
+    "internal": 328,
+    "public": 1122
+  },
+  "net11Internal": {
+    "originalFullPassed": 4260,
+    "originalFullFailed": 1,
+    "correctedFixturePassed": 1,
+    "remainingFailures": 0,
+    "note": "Full original run and targeted correction retained; no assertion relaxed. Operation provenance scopes end before native rollback observations."
+  },
+  "net11PublicPassed": 16187,
+  "net10CorrectedOwnershipFamilyPassed": 5,
+  "platformStressPackage": "Pending next coherent delivery boundary; prior621 fully qualified separately",
+  "newPublicOptions": false,
+  "publication": false
+}

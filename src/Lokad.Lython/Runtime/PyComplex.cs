@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 internal sealed class PyComplex(double real, double imaginary) : IPyRenderableValue, IPyTruthyValue,
-    IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue
+    IPyContextualDynamicAttributes, IPyHashableValue
 {
     private const long ValueBytes = 96;
     public double Real { get; } = real;
@@ -70,7 +70,7 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
         return method;
     }
     private sealed class Method(PyComplex receiver, bool conjugate, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue
+        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod
     {
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;

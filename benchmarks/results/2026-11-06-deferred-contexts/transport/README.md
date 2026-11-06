@@ -34,5 +34,7 @@ funding, Closed, joins and fixture cleanup. Raw archive SHA256
 All evidence is persistent; no worker/fixture/collection remains. Both-target
 Release build has zero warnings/errors; focused526internal/1,508public per actual
 .NET11/.NET10 pass, including ownership, liveness, refusal, cancellation and real
-I/O. Full B qualification does not qualify this patch; batch its platform/stress/
-installed-consumer delivery with the next meaningful runtime boundary.
+I/O. At measurement, full B qualification did not qualify this patch. Combined
+R13C+R14 runtime62141d4d later passed all8 platform/runtime/original-Stress/package
+gates in cached terminal CI42243450458. This qualifies the combined source;
+B348's measured revision and its adverse/uncertain observations remain unchanged.

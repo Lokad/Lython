@@ -5,7 +5,7 @@ using Lokad.Lython.Runtime.Text;
 namespace Lokad.Lython.Runtime;
 
 internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableValue, IPyIterableValue,
-    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue
+    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("types.GenericAlias",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use generic subscripting in Lython.", span));

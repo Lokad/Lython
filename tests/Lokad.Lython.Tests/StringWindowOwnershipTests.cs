@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
+using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
@@ -78,13 +79,17 @@ public sealed class StringWindowOwnershipTests
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {
-            var governor = new MemoryGovernor(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var governor = context.MemoryGovernor;
             var source = PyString.FromString(new string('x', 8192), governor, Span);
             var funded = governor.CurrentAccountedBytes;
             Assert.True(budget.TryReserve(limit - budget.ReservedBytes, out var fill));
             using (fill)
             {
-                var failure = Assert.Throws<LythonRuntimeException>(() => source.SliceByByteRange(1, 2));
+                LythonRuntimeException failure;
+                using (PyStructuralGuard.PushAmbient(context, Span))
+                    failure = Assert.Throws<LythonRuntimeException>(() => source.SliceByByteRange(1, 2));
+                // Native observations and rollback follow the stopped operation.
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Equal(Span, failure.Span);
                 Assert.Equal(funded, governor.CurrentAccountedBytes);

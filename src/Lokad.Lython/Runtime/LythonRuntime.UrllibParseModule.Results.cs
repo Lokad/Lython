@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal sealed class UrlResult : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue,
-            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue
+            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue
         {
             private const long ShellBytes = 64;
             private readonly PyTuple _values;

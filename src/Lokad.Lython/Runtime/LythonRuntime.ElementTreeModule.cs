@@ -350,7 +350,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal sealed class Element : IPyMutableDynamicAttributes, IPyIterableValue, IPyIndexableValue,
-            IPySizedValue, IPyTruthyValue, IPyGovernedValue, IPyOwnershipSnapshot
+            IPySizedValue, IPyTruthyValue, IPyOwnershipSnapshot
         {
             private const long ShellBytes = 128;
             internal readonly PyString Tag;

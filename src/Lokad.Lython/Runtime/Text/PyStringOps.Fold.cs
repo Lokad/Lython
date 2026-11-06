@@ -805,7 +805,7 @@ internal static partial class PyStringOps
     public static PyString CaseFold(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         context ??= PyStructuralGuard.AmbientContext;
-        span ??= PyStructuralGuard.AmbientSpan ?? value.AllocationSpan;
+        span ??= PyStructuralGuard.AmbientSpan;
         var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
         try
         {

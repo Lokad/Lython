@@ -174,8 +174,7 @@ internal sealed class PyDataclassKwOnlyMarker : IPyRenderableValue
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 }
 
-internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicAttributes,
-    IPyGovernedValue
+internal sealed class PyDataclassInitVarMarker : IPyRenderableValue, IPyDynamicAttributes
 {
     public static readonly PyDataclassInitVarMarker Instance = new();
 

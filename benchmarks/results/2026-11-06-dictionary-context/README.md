@@ -43,7 +43,10 @@ Both-target Release build has zero warnings/errors. Focused365internal/1,281publ
 checks per actual .NET11RC3/.NET10.0.8 pass, including protocol effects, native
 mutation, refusal, retained aliases and real I/O. A contextual-hash cancellation
 regression verifies the active origin and restoration of outer provenance.
-Full local .NET11 ordinary suites pass:4,260internal/16,187public. C+R14
-platform/stress/installed-package qualification is pending separately.
+Full local .NET11 ordinary suites pass:4,260internal/16,187public. Combined
+R13C+R14 runtime62141d4d is fully qualified by terminal CI42243450458, GREEN
+all8 Windows/Ubuntu, both runtimes, original Stress and installed-package gates.
+Local installed consumers pass actual.NET11RC3/.NET10.0.8. Terminal status is
+cached in delivery-ci.json; never query that completed run again.
 Publication remains postponed. Whole-script performance and independent regex
 development remain active.

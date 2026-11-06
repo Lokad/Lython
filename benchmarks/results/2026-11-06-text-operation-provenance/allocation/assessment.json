@@ -1,0 +1,182 @@
+{
+  "wholeJobAllocationOnly": true,
+  "rows": [
+    {
+      "api": "sync",
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBytes": {
+        "before": 3698319.5,
+        "candidate": 3599611.5,
+        "before-control": 3698302.5
+      },
+      "deltaPercent": -2.668996012918845,
+      "controlPercent": -0.00045966823580823046
+    },
+    {
+      "api": "sync",
+      "case": "scripts.text-summary-helpers.large",
+      "medianBytes": {
+        "before": 1729065.5,
+        "candidate": 1654989.0,
+        "before-control": 1728919.0
+      },
+      "deltaPercent": -4.284192819763044,
+      "controlPercent": -0.008472784865587446
+    },
+    {
+      "api": "sync",
+      "case": "scripts.json-summary-helpers.large",
+      "medianBytes": {
+        "before": 3166353.0,
+        "candidate": 3059710.5,
+        "before-control": 3166326.5
+      },
+      "deltaPercent": -3.367991503158363,
+      "controlPercent": -0.0008369250048878563
+    },
+    {
+      "api": "sync",
+      "case": "scripts.report-render.large",
+      "medianBytes": {
+        "before": 3712657.0,
+        "candidate": 3646765.5,
+        "before-control": 3712457.0
+      },
+      "deltaPercent": -1.774780164178913,
+      "controlPercent": -0.005386977574284302
+    },
+    {
+      "api": "sync",
+      "case": "scripts.config-edit.large",
+      "medianBytes": {
+        "before": 239706.0,
+        "candidate": 231338.5,
+        "before-control": 239330.0
+      },
+      "deltaPercent": -3.4907344830750975,
+      "controlPercent": -0.15685881871959628
+    },
+    {
+      "api": "sync",
+      "case": "scripts.scalar-above-range.large",
+      "medianBytes": {
+        "before": 544326.5,
+        "candidate": 544270.5,
+        "before-control": 544326.5
+      },
+      "deltaPercent": -0.010287942990094834,
+      "controlPercent": 0.0
+    },
+    {
+      "api": "sync",
+      "case": "scripts.fixed-text-padding.large",
+      "medianBytes": {
+        "before": 553462.5,
+        "candidate": 541090.5,
+        "before-control": 553434.5
+      },
+      "deltaPercent": -2.2353818009350213,
+      "controlPercent": -0.005059060008583138
+    },
+    {
+      "api": "sync",
+      "case": "scripts.fixed-text-slices.large",
+      "medianBytes": {
+        "before": 331298.5,
+        "candidate": 318954.5,
+        "before-control": 331326.5
+      },
+      "deltaPercent": -3.7259450314444553,
+      "controlPercent": 0.00845159274793783
+    },
+    {
+      "api": "async",
+      "case": "scripts.csv-summary-helpers.large",
+      "medianBytes": {
+        "before": 4059440.5,
+        "candidate": 3960926.5,
+        "before-control": 4059442.0
+      },
+      "deltaPercent": -2.42678763243358,
+      "controlPercent": 3.695090493582853e-05
+    },
+    {
+      "api": "async",
+      "case": "scripts.text-summary-helpers.large",
+      "medianBytes": {
+        "before": 1729877.5,
+        "candidate": 1655905.5,
+        "before-control": 1729893.0
+      },
+      "deltaPercent": -4.276140940615736,
+      "controlPercent": 0.0008960172035221703
+    },
+    {
+      "api": "async",
+      "case": "scripts.json-summary-helpers.large",
+      "medianBytes": {
+        "before": 3167526.5,
+        "candidate": 3060910.5,
+        "before-control": 3167526.5
+      },
+      "deltaPercent": -3.365907120271927,
+      "controlPercent": 0.0
+    },
+    {
+      "api": "async",
+      "case": "scripts.report-render.large",
+      "medianBytes": {
+        "before": 3713718.5,
+        "candidate": 3648715.0,
+        "before-control": 3713661.0
+      },
+      "deltaPercent": -1.7503615311715182,
+      "controlPercent": -0.0015483133683935613
+    },
+    {
+      "api": "async",
+      "case": "scripts.config-edit.large",
+      "medianBytes": {
+        "before": 240114.0,
+        "candidate": 231762.0,
+        "before-control": 240114.0
+      },
+      "deltaPercent": -3.478347784802216,
+      "controlPercent": 0.0
+    },
+    {
+      "api": "async",
+      "case": "scripts.scalar-above-range.large",
+      "medianBytes": {
+        "before": 544718.5,
+        "candidate": 544662.5,
+        "before-control": 544718.5
+      },
+      "deltaPercent": -0.010280539397877764,
+      "controlPercent": 0.0
+    },
+    {
+      "api": "async",
+      "case": "scripts.fixed-text-padding.large",
+      "medianBytes": {
+        "before": 553840.5,
+        "candidate": 541496.5,
+        "before-control": 553854.5
+      },
+      "deltaPercent": -2.228800530116526,
+      "controlPercent": 0.0025278035824305434
+    },
+    {
+      "api": "async",
+      "case": "scripts.fixed-text-slices.large",
+      "medianBytes": {
+        "before": 331718.5,
+        "candidate": 319346.5,
+        "before-control": 331690.5
+      },
+      "deltaPercent": -3.7296683784594498,
+      "controlPercent": -0.008440891900818315
+    }
+  ],
+  "limitations": "Includes fixture reset and full checked job; process allocation across isolated images sharing CoreLib. Busy Windows elapsed/CPU remain diagnostic. Original failed witness retained separately."
+}

@@ -1,0 +1,11 @@
+{
+  "coreSHA256": {
+    "baseline": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2",
+    "candidate": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb"
+  },
+  "toolSHA256": "89be9b1ce09cf6c1d178d469a2d0c491476cfa9c8183c64b0930968143f7d42f",
+  "catalogSHA256": "6e04ce83e2c72f5aefc65077320d80f4684680b104e130cc23358018f64609f5",
+  "boundary": "Existing whole-job diagnostic includes fixture reset, mediated I/O, validation and prior-result cleanup. Precise process allocation in isolated images sharing CoreLib; busy Windows elapsed/CPU are diagnostic only. No forced GC.",
+  "roles": "Baseline/candidate/identical baseline control",
+  "normalPin": "0.4.0, unrelated to private dev44"
+}

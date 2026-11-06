@@ -6,7 +6,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource
+internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource
 {
     private readonly PyDict _items;
 
@@ -180,7 +180,7 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", null)
         };
 }
-internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource
+internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPySizedValue, IChainMapSource
 {
     private readonly PyDict _items;
 
@@ -309,7 +309,7 @@ internal sealed class PyDequeFullException : InvalidOperationException
     }
 }
 
-internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
+internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
 {
     private readonly LinkedList<object> _items = [];
 

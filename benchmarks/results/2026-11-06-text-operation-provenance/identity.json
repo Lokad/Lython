@@ -1,0 +1,98 @@
+{
+  "sourceRevision": "62141d4d plus R17 explicit text operation provenance; source snapshots authoritative",
+  "referenceSourceRevision": "62141d4d; B350 frozen source-equivalent9e05892e",
+  "coreSHA256": {
+    "candidate": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb",
+    "control": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb",
+    "reference": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseModule.cs": "bacae29a509c60188f8d7c5da55efd16cb18e2807acbbdd18895bc7abf7c234a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ElementTreeModule.cs": "c81f939919a8ad84b7bc84f67795998e0cb30aae557bb6dad1ebe609eb4a7bf6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Partial.cs": "349208f6a24f2c50d93d226dedd43fc1ed3c861b64e01fcfbdae8115898a4363",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "617be36bea4d869cb6ba0c438389452400526e8adbb9d79284088020c48e822d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Results.cs": "a750527d0750f03fc7f1599bb3b91ba84ea9a66320f75a0aaeed99b3b8e02cd2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ZipInfo.cs": "ee77be95cd2675065a2c46531be304df26174cfc754773e177f58da2522ed9d2",
+    "src/Lokad.Lython/Runtime/PyBytes.cs": "69cd52d8a117411a2bcc9bff9bc4cc0bafd6aa7fe386d7ce0d7450a54fd09844",
+    "src/Lokad.Lython/Runtime/PyCollections.cs": "08f538672a9df4deed99ed59e991f55cb5baa24b8f5c23c9613219450e4f498d",
+    "src/Lokad.Lython/Runtime/PyComplex.cs": "662783ec7a8abb5966360bb02e7e6c78b666a7c82499e007c47476bef975af38",
+    "src/Lokad.Lython/Runtime/PyDataclass.Values.cs": "d9166747b885e011d7d163826086391c778a0bb72962f1a47a10239a5e0c82b6",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "7f6e2785782f1d1b9c69427b0aa3f52e96c35e13e32099948a0ca17cb12f5358",
+    "src/Lokad.Lython/Runtime/PyException.cs": "d94cbe944d885f28dd75cbf4dd9f9994547469a71de1b3de51a00add9759950e",
+    "src/Lokad.Lython/Runtime/PyGenericAlias.cs": "10ee3fd118cc86bcb592f450ab73ef1f7aec3ffc1f808c3795e5d551ffd01a6f",
+    "src/Lokad.Lython/Runtime/PyInstance.cs": "3f14033a26eec40ff32c359bb2c169ba413afdff03457dee2c270acecc690d93",
+    "src/Lokad.Lython/Runtime/PyList.cs": "70d54ce4cd295929927f6e22b3232e1443f4d355a92f711c425d0d04188b711a",
+    "src/Lokad.Lython/Runtime/PyModernTyping.cs": "45418bba547769676266b71a23ccca5a1fcd2312252ed1685722a40b95367f61",
+    "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs": "66b81b5e366da48065ae87d86aaa0ce22ee4d8a30c76a34343338edbf1134bba",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "84209f85c27fab712fc53b9768d016cc847efcc740c86574ed83bef3a9e0a72a",
+    "src/Lokad.Lython/Runtime/PyProperty.cs": "9afe8dad4a2307dda4ecad79232a79dbac7625b4aa38494d69ccfc2c01933498",
+    "src/Lokad.Lython/Runtime/PySet.cs": "5905d47b64f57e4373e9c5204755175c316a341aced00a6c73355ceec9a316e2",
+    "src/Lokad.Lython/Runtime/PyTuple.cs": "33de06f818f4fafe69e23690a3966effa0b47060839fc072334e7f822795efe8",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "23f95e4e49b7959f790e9f0d45ff772e8e993ce545f2578d2d9568ed9141e1d1",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Fold.cs": "f24abf7c1eacf62d4a0fd81df250aba570bfe2aa1faefd02cb3cfc58452e1446",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "e9a95d9f7b73a13d6efd25ab30a2bba5c2a9ece0788f3a6aafe631e3acc12c19",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "9e87d4342e8ba3a690732d1546e19a258c4a90c7831d53eb281ad09dca1787a4",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": "5c6fab538830f7ff53a5656160579426b74610ce152503c406e37907f9d68d76",
+    "tests/Lokad.Lython.Tests/BytesSliceAccountingTests.cs": "96ff8796e28a455999dc736e20af77e028ef554c765fb5bc43917bd82aa80a66",
+    "tests/Lokad.Lython.Tests/DirectStringLowerTests.cs": "e4b252e4cd83b11fca1b848d7ad768d1d2ebd7d919ac0a066afa752c3834b868",
+    "tests/Lokad.Lython.Tests/TextOperationProvenanceTests.cs": "bf528ab864b8ca6707a9b63dc31f2fb9149aab5c7e6aae6c78209e7202f09ed6"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 328,
+      "coreSHA256": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 1122,
+      "coreSHA256": "e1d7755d4a23c6c1f93616d7ca68b80a1537eba94917460a99a76c8d5af2b6eb"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 328,
+      "coreSHA256": "25d74ab61c7dcb56493a27653a218b46b3c080b5f6dd266d9a768d0d9108f50e"
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 1122,
+      "coreSHA256": "25d74ab61c7dcb56493a27653a218b46b3c080b5f6dd266d9a768d0d9108f50e"
+    }
+  },
+  "deletedSourceFiles": [
+    "src/Lokad.Lython/Runtime/IPyGovernedValue.cs"
+  ],
+  "baselineNormalizedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseModule.cs": "ae254b3517bf593f23c92547b53c46ad1fc6a89b3224f0e434a5accade77a6d6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ElementTreeModule.cs": "175d5465720ace11cb228886c30fcb46419a9f5a4f2ec4bde6c37283fa6455ef",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Functools.Partial.cs": "0f8f4fb9f8ae6a23f940e3ee8f57a2ae4c89a209eddf93a47f5d9c3f0a89e96f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Generators.cs": "52d3edbd3d8f9e34dbbca766a627f3354288cef5ff295480850816a7531acbdf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Results.cs": "18de09a517cd2f12e805e1b2fede9afe3d5ff499d54d99c45f4e6c621d03cd67",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ZipInfo.cs": "200e1d5b153a19a3999b04ea8cced579b8b971a87406153b55578cc715b9e059",
+    "src/Lokad.Lython/Runtime/PyBytes.cs": "97c2b11e1ead308c06bece3a325a5946b1666d9ddcbbd9a7e63674975ebfaf60",
+    "src/Lokad.Lython/Runtime/PyCollections.cs": "45b8b6689f9f8c4a8f81eed579c2d96b0f5934c815f1c08da623f3759e04a45f",
+    "src/Lokad.Lython/Runtime/PyComplex.cs": "53c3fc1843fad84708e2c8264fb1291b637bb0c5531fbba95acfb3109f8fccaa",
+    "src/Lokad.Lython/Runtime/PyDataclass.Values.cs": "f4e71cc7ff022af84a5b8a7b16d30a62f1691459257f1e626b2b97fea53426e6",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "aff8563199f18c99c7d8ded235704d22a9c35b99de49f9110310d137158e7f81",
+    "src/Lokad.Lython/Runtime/PyException.cs": "f88c53138c808dc4dd6e5143be1ca02838e6ab85a65840c4c27cd9a208e17f9d",
+    "src/Lokad.Lython/Runtime/PyGenericAlias.cs": "c33f1b49c98c27cc95694ca19d4773d158b49768270726b1e28831c89c0a5887",
+    "src/Lokad.Lython/Runtime/PyInstance.cs": "416ea544d5a2d14e8bb25cb1627b4ab741992a591707c27c8a09475b9536b626",
+    "src/Lokad.Lython/Runtime/PyList.cs": "afca24ec3a20133eea480dc4d0be87c672797321f33d01c9f2a718125b0d9e35",
+    "src/Lokad.Lython/Runtime/PyModernTyping.cs": "1d824227242e14ddc1eca8d9a0baffe42092fb3534a908031d36f407e912fe42",
+    "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs": "713bff0335c11356008c559ce13186e0f8d4028aeae3ced75e786bc3efbab911",
+    "src/Lokad.Lython/Runtime/PyNamespaceView.cs": "a0f1efa301a8613d53cfe9acf5ad767707eabff2290a64b4057a0a2705f37832",
+    "src/Lokad.Lython/Runtime/PyProperty.cs": "69de76be9508f86d7260d084e3e3021cd188a26b9746570ae8272cbc0fd57d4d",
+    "src/Lokad.Lython/Runtime/PySet.cs": "d9409e02f4a033a84e2c036d6135f2f557176113a814c40ccc328ccfb43418e9",
+    "src/Lokad.Lython/Runtime/PyTuple.cs": "38d11e5434e90fcce4a0b660fc4ef05e0a84d8ba140846494278118d0533e8f2",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "6a494e2fbfe24aa4c948d174f76e8612b41733e6e5e7279321fb00b809a61b21",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Fold.cs": "2423bb31cf0efd7cfe63069367dfff09b139fd68ec5e6501a26a5219f2568018",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "b897887d96c4841fecf3ecde05645be107db0df123c85fc792469bf6c79531af",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "344455cb1678c6a2888c89aaf990ed875c0150486c82d90b8ae0fba90d4d7edb",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.cs": "8f27ed0440f79b59b7895ee485099733c6c63ae3dd8825ba8a6e319516c41cb0",
+    "tests/Lokad.Lython.Tests/BytesSliceAccountingTests.cs": "9ed73d3860f8c29a34b3b4b6323be6481891bb8ddb827acd18378a7c092eb1bd",
+    "tests/Lokad.Lython.Tests/DirectStringLowerTests.cs": "a67aa01add7dd8febdd89db2096c5d86863aece6585782e07e7c69003d45a0bb",
+    "src/Lokad.Lython/Runtime/IPyGovernedValue.cs": "e7eb6ffe4fc09cbb624c7492c29e675b95f2f0304323786bcfc6f514c1a594bc"
+  }
+}
