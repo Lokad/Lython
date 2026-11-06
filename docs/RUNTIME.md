@@ -214,6 +214,15 @@ operand storage when default attribute lookup proves an ordinary function bindin
 They do not construct a temporary bound-method object. Selection precedes argument
 evaluation; custom lookup hooks, descriptors and exposed method values keep their
 normal Python behavior. Both execution APIs use the same calling convention.
+Ordinary positional class calls also borrow the existing operand storage. The
+engine's default allocator needs no class-prefixed argument copy, and user
+allocators/initializers bind the class or instance directly into function locals.
+One construction sequence serves both APIs, selecting the actual returned type's
+initializer after allocation. Static/classmethod and descriptor initializers keep
+their binding rules; descriptor/body I/O can suspend under `RunAsync`.
+Arguments and the new instance remain owned until those users and cleanup finish.
+Dynamic engine callables receive admitted owned argument copies when required;
+these copies conservatively remain charged to the execution/result owner.
 Suspended generators keep their state until completion and own one context handle.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working

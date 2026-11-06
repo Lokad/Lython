@@ -1,0 +1,33 @@
+{
+  "status": "Retained, focused both runtimes and full local.NET11 pass; final platform/stress/package delivery pending.",
+  "source": "5563ccdd plus exact five-file R09 source hashes/patch",
+  "independentPythonCases": 10,
+  "focused": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 5698,
+    "Lokad.Lython.Tests-net11.0": 915,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 5698,
+    "Lokad.Lython.Tests-net10.0": 915
+  },
+  "newTests": {
+    "public": 16,
+    "internal": 10
+  },
+  "measurement": {
+    "complete": true,
+    "jobs": 4,
+    "elapsedSeconds": 113.57615791773424,
+    "allWorkersJoined": true,
+    "guestFixtureDirectories": [],
+    "quietBeforeAndAfter": true,
+    "archiveSHA256": "204a2d87e066c71d06f7a5d84e5f2b0edea0e6d33cd21eb4b8e0c847b3726b07"
+  },
+  "limitations": "No allocation percentage, causal CPU or broad primary speedup. Dynamic owned argument arrays conservatively batch/result-owned; tiny admission thresholds change. R06 terminal receipt excludes this source. Publication postponed.",
+  "fullLocalNet11": {
+    "internal": 4249,
+    "public": 16176,
+    "publicScope": "Original full run passed. No unchanged public replay after fixture-only correction.",
+    "internalScope": "Original four zero-headroom fixtures corrected to fund argument transport while allowing less than one instance shell; all4249 rerun pass."
+  },
+  "finalAffectedFixturesPerRuntime": 30,
+  "productionSourceHashesStillMatchB341": true
+}

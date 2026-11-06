@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Share class construction across execution APIs and pass ordinary positional
+  arguments directly from operands. Remove default-allocator class copies and
+  compiled initializer receiver repackaging. Select a returned subtype's actual
+  initializer and support staticmethod/classmethod/descriptor initializers, with
+  awaited host I/O, retained arguments and terminal cancellation/admission refusal.
+
 - Extract class-pattern attributes before subpatterns, resolve `__match_args__`
   descriptors, reject duplicate attributes and treat extraction `AttributeError`
   as mismatch. Reuse namedtuple field metadata and contextual value equality.

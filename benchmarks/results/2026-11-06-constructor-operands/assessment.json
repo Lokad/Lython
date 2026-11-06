@@ -1,0 +1,69 @@
+{
+  "rows": [
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "warm",
+      "medians": {
+        "candidate": 9.377828705882353,
+        "control": 9.307648235294117,
+        "CPython": 4.1654900277777775,
+        "reference": 9.603413625
+      },
+      "deltasVsQualifiedR06Percent": [
+        -2.3490076333939736,
+        -3.0797943445436404
+      ],
+      "controlSpreadPercent": 0.748365882863844,
+      "currentIqrPercent": 0.9145764382634529
+    },
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "compile-run",
+      "medians": {
+        "candidate": 9.61139425,
+        "control": 9.649272266666665,
+        "CPython": 4.3351817142857145,
+        "reference": 9.811468666666666
+      },
+      "deltasVsQualifiedR06Percent": [
+        -2.0391892739401563,
+        -1.653130693379723
+      ],
+      "controlSpreadPercent": 0.39409492193773765,
+      "currentIqrPercent": 1.7313096900587444
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medians": {
+        "candidate": 4.6692955454545455,
+        "control": 4.6845924375,
+        "CPython": 3.2663912173913046,
+        "reference": 4.76700378125
+      },
+      "deltasVsQualifiedR06Percent": [
+        -2.0496781684916865,
+        -1.7287870438481123
+      ],
+      "controlSpreadPercent": 0.3276059931641262,
+      "currentIqrPercent": 2.258690353785993
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medians": {
+        "candidate": 2.3182767538461535,
+        "control": 2.300859984848485,
+        "CPython": 1.1709801875,
+        "reference": 2.3011330606060607
+      },
+      "deltasVsQualifiedR06Percent": [
+        0.7450109484576029,
+        -0.011867012918576059
+      ],
+      "controlSpreadPercent": 0.7512808368877022,
+      "currentIqrPercent": 0.6301523924924649
+    }
+  ],
+  "decision": "Retain shared construction and four Python fixes, ordinary constructor operand transport and compiled receiver binding. Class elapsed\u22122.35/\u22123.08% warm,\u22122.04/\u22121.65% fresh; unchanged CSV also\u22122.05/\u22121.73%, text+0.745/\u22120.012%. Modest diagnostic elapsed, no causal CPU/allocation/broad speedup claim; do not compound R06/R07 source pairs or declare earlier debt paid."
+}

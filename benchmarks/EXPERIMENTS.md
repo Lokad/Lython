@@ -3165,3 +3165,15 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   class-prepend copy, bound initializer/compiled-receiver copy and duplicate
   sync/async construction. Existing ordinary function/direct-local work stays.
   Correctness/source/cost gates precede any prototype; no predicted gain.
+
+- [Shared constructor sequence/operands, R09/B341](results/2026-11-06-constructor-operands/README.md):
+  remove ordinary class-call/allocator/compiled initializer repackaging and duplicate
+  construction drivers, preserving shared managed call admission. Four Python
+  initializer-selection/binding gaps corrected.10isolated Python goldens, focused
+  5,698public/915internal per actual runtime and final local.NET11(4,249/16,176)
+  pass. Four original zero-headroom fixture failures retained; admitted argument
+  copies now get headroom below one instance shell, preserving placeholder detection.
+  B341113.58s/four whole-script jobs/all gates: class warm−2.35/−3.08%, fresh
+  −2.04/−1.65%; unchangedCSV similarly improves, textstraddles reference. Retain
+  simplification/correctness; no causalCPU/allocation/broad speedup or compounded
+  debt-repayment claim. Final delivery qualification pending; objective open.

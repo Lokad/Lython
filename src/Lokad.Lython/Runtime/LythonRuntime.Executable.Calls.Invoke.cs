@@ -88,22 +88,29 @@ internal sealed partial class LythonRuntime
                 {
                     result = InvokeSingleInput(_stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, this);
                 }
+                else if (call.IsPositionalOnly && target is PyType type)
+                {
+                    var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(type, arguments,
+                        call.CallSpan, this, callSite: call), start);
+                    result = InvokeCallableFromOperands(type, arguments, call.CallSpan, this, callSite: call);
+                }
                 else if (target is PyFunctionBase function)
                 {
                     var site = call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true } ? null : call;
                     var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                     var receiver = call.HasReceiver && _stack[start] is not PyNone ? _stack[start] : null;
-                    if (asynchronous) return CompleteCallValue(InvokeFunctionFromOperandsAsync(function, arguments,
+                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(function, arguments,
                         call.CallSpan, this, receiver, site), start);
-                    result = InvokeFunctionFromOperands(function, arguments.Span, call.CallSpan, this, receiver, site);
+                    result = InvokeCallableFromOperands(function, arguments, call.CallSpan, this, receiver, site);
                 }
                 else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
                 {
                     var site = call.IsPositionalOnly && method is PyFunction { SupportsPositionalBinding: true } ? null : call;
                     var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                    if (asynchronous) return CompleteCallValue(InvokeFunctionFromOperandsAsync(method, arguments,
+                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(method, arguments,
                         call.CallSpan, this, bound.Receiver, site), start);
-                    result = InvokeFunctionFromOperands(method, arguments.Span, call.CallSpan, this, bound.Receiver, site);
+                    result = InvokeCallableFromOperands(method, arguments, call.CallSpan, this, bound.Receiver, site);
                 }
                 else
                 {

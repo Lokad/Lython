@@ -1,0 +1,28 @@
+{
+  "sourceRevision": "5563ccdd HEAD plus R09 constructor operands; exact source patch/hashes; DLL built before receipt-only5563 commit",
+  "coreSHA256": {
+    "candidate": "b909322bcc0b65650386fd7614ce706e85bc1f44166b20e3eca494d6b1cad924",
+    "control": "b909322bcc0b65650386fd7614ce706e85bc1f44166b20e3eca494d6b1cad924",
+    "reference": "5c0283e19513a2a53ee615e5aeffc7f3ec2a36bda2c490225f146317af2283f7"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.ObjectAndBytes.cs": "59ca828ddf8930b1e751dfac8f10abb9afe6ad16f38a6d73158dd3b0331008de",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "21c05d2ece8f6b0dc63de99b5011ae3932e196fe642433a983973be9a3da4a58",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "bffa595e5f9e23bda9ca8d28e74d9c86b7ac79a155228a94f21aff13bb14d30a",
+    "src/Lokad.Lython/Runtime/PyBoundMethod.cs": "6a4dc2480908709309cd1195baf0f131e225ebd6f1786b3232f06934d2d6240f",
+    "src/Lokad.Lython/Runtime/PyType.cs": "33341d5a76d66a03b040c0c6f0b187ae9db3278073aabccc946aadf946832f35"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 5698,
+    "Lokad.Lython.Tests-net11.0": 915,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 5698,
+    "Lokad.Lython.Tests-net10.0": 915
+  },
+  "referenceSourceRevision": "a2a6129012160e7a5a31bd59375fd48125c3310c / verified installed package02749D69"
+}

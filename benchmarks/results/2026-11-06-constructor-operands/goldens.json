@@ -1,0 +1,52 @@
+[
+  {
+    "name": "ordinary and inherited initializer",
+    "source": "class A:\n def __init__(self,x=7):self.x=x\nclass B(A):pass\nprint(A().x,B(9).x)\n",
+    "expected": "7 9\n"
+  },
+  {
+    "name": "selected class survives argument rebinding",
+    "source": "class A:\n def __init__(self,x):self.x=x\nSelected=A\ndef argument():\n global A\n A=17\n return 9\nprint(Selected(argument()).x)\n",
+    "expected": "9\n"
+  },
+  {
+    "name": "unrelated allocator return skips init",
+    "source": "class A:\n def __new__(cls,x):print('new',x);return 7\n def __init__(self,x):raise AssertionError('wrong init')\nprint(A(9))\n",
+    "expected": "new 9\n7\n"
+  },
+  {
+    "name": "returned subtype owns initializer",
+    "source": "class A:\n def __new__(cls):print('new');return object.__new__(B)\n def __init__(self):print('A init')\nclass B(A):\n def __init__(self):print('B init')\nprint(type(A()).__name__)\n",
+    "expected": "new\nB init\nB\n"
+  },
+  {
+    "name": "staticmethod initializer receives original args",
+    "source": "class A:\n @staticmethod\n def __init__(x):print('init',x)\nA(7)\n",
+    "expected": "init 7\n"
+  },
+  {
+    "name": "classmethod initializer receives class",
+    "source": "class A:\n @classmethod\n def __init__(cls,x):print(cls.__name__,x)\nA(7)\n",
+    "expected": "A 7\n"
+  },
+  {
+    "name": "initializer descriptor binds instance",
+    "source": "class D:\n def __get__(self,obj,owner):\n  print(obj is None,owner.__name__)\n  def initialize(x):print('init',x)\n  return initialize\nclass A:__init__=D()\nA(7)\n",
+    "expected": "False A\ninit 7\n"
+  },
+  {
+    "name": "allocator changes initializer before selection",
+    "source": "class A:\n def __new__(cls,x):\n  print('new')\n  cls.__init__=replacement\n  return object.__new__(cls)\n def __init__(self,x):raise AssertionError('old init')\ndef replacement(self,x):print('replacement',x)\nA(9)\n",
+    "expected": "new\nreplacement 9\n"
+  },
+  {
+    "name": "keyword defaults and variadics",
+    "source": "class A:\n def __init__(self,x=2,*extra,flag=3,**rest):print(x,extra,flag,rest)\nA()\nA(7,8,9,flag=4,other=5)\n",
+    "expected": "2 () 3 {}\n7 (8, 9) 4 {'other': 5}\n"
+  },
+  {
+    "name": "non None initializer and non callable init",
+    "source": "class A:\n def __init__(self):return 7\ntry:A()\nexcept TypeError:print('bad return')\nclass B:__init__=17\ntry:B()\nexcept TypeError:print('bad callable')\n",
+    "expected": "bad return\nbad callable\n"
+  }
+]

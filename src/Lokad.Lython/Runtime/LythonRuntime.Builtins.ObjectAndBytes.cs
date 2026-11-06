@@ -349,6 +349,8 @@ internal sealed partial class LythonRuntime
         return new PyClassMethod(callable);
     }
 
+    internal static bool IsDefaultObjectNew(object slot) => slot is ObjectNewMethod;
+
     private sealed class ObjectNewMethod : ICallable, IPyDynamicAttributes, IClassOwnedMember, IPyRenderableValue
     {
         // object.__new__ is a builtin method: CPython reports the short

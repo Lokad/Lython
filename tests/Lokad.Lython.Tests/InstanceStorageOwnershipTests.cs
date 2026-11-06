@@ -92,11 +92,14 @@ public sealed class InstanceStorageOwnershipTests
         var type = new PyType("Alias", [], new() { ["__new__"] = allocator });
         var instance = new PyInstance(type, context.MemoryGovernor, Span);
         allocator.Result = instance;
-        PinRemaining(context.MemoryGovernor);
+        // Allow admitted argument transport, but not an extra instance shell.
+        // Returning an alias must never construct a discarded placeholder.
+        var headroom = PyInstance.InstanceShellBytes - 1;
+        PinRemaining(context.MemoryGovernor, headroom);
         var before = context.MemoryGovernor.CurrentAccountedBytes;
         var result = asynchronous ? await type.InvokeAsync([], Span, context) : type.Invoke([], Span, context);
         Assert.Same(instance, result);
-        Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentAccountedBytes - before, 0, headroom);
     }
 
     [Theory]
@@ -107,15 +110,17 @@ public sealed class InstanceStorageOwnershipTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) },regexProvider:Utf8RegexProvider.Instance);
         var wanted = new object();
         var type = new PyType("Foreign", [], new() { ["__new__"] = new Allocator { Result = wanted } });
-        PinRemaining(context.MemoryGovernor);
+        var headroom = PyInstance.InstanceShellBytes - 1;
+        PinRemaining(context.MemoryGovernor, headroom);
+        var before = context.MemoryGovernor.CurrentAccountedBytes;
         var result = asynchronous ? await type.InvokeAsync([], Span, context) : type.Invoke([], Span, context);
         Assert.Same(wanted, result);
-        Assert.Equal(4096, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.InRange(context.MemoryGovernor.CurrentCommittedBytes - before, 0, headroom);
     }
 
-    private static long PinRemaining(MemoryGovernor governor)
+    private static long PinRemaining(MemoryGovernor governor, long headroom)
     {
-        var bytes = 4096 - governor.CurrentAccountedBytes;
+        var bytes = 4096 - headroom - governor.CurrentAccountedBytes;
         governor.Reserve(bytes, Span);
         governor.Commit(bytes);
         return bytes;

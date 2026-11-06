@@ -53,6 +53,12 @@ Class extraction goldens cover descriptor metadata, requested-name validation,
 duplicate/error order, mutation snapshots and contextual equality/truth.
 Cancellation/refusal cannot become an AttributeError mismatch; scratch is
 admitted before effects and extracted aliases stay funded through a suspended body.
+Constructor goldens cover allocator/initializer order, returned subtype binding,
+static/classmethod and descriptor initializers, defaults and variadics. Real
+allocator/descriptor/initializer I/O retains arguments after source rebinding;
+successful escaping results stay charged. Cancellation/refusal stops later hooks,
+awaits cleanup and restores shared funding. Native hooks cannot hide first failure
+by returning an otherwise valid object or None.
 Structural controls retain immediate reversed-pair rejection, cross-thread
 state disposal and out-of-order unwind without retaining active identities.
 [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)

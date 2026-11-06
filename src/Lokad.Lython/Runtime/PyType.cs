@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Numbers;
 using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
@@ -227,119 +228,130 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal void SetJsonBase(JsonBaseKind kind) => JsonBase = kind;
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => InvokeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => InvokeCoreAsync(arguments, span, context, true);
+
+    internal object InvokeFromOperands(ReadOnlyMemory<object?> operands, ExecutableCallSite call,
+        LythonRuntime.ExecutionContext context)
+        => InvokeCoreAsync([], call.CallSpan, context, false, operands, call).GetAwaiter().GetResult();
+
+    internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlyMemory<object?> operands, ExecutableCallSite call,
+        LythonRuntime.ExecutionContext context)
+        => InvokeCoreAsync([], call.CallSpan, context, true, operands, call);
+
+    private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, bool asynchronous, ReadOnlyMemory<object?> operands = default,
+        ExecutableCallSite? call = null)
     {
         context.CheckExecution(span);
+        CallArgumentValue[]? materialized = call is null ? arguments : null;
         if (ReferenceEquals(MetaType, this))
-        {
-            return InvokeBuiltInType(arguments, span, context);
-        }
+            return InvokeBuiltInType(materialized ??= CopyPositionalArguments(operands, context, span), span, context);
 
         object instance;
-        if (TryGetMember("__new__", out var allocator))
+        if (!TryGetMember("__new__", out var allocator) || LythonRuntime.IsDefaultObjectNew(allocator))
         {
-            if (allocator is not LythonRuntime.ICallable newCallable)
-            {
-                throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __new__.", span);
-            }
-
-            var newArguments = new CallArgumentValue[arguments.Length + 1];
-            newArguments[0] = CallArgumentValue.Positional(this);
-            Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
-            instance = newCallable.Invoke(newArguments, span, context);
+            // The sealed engine allocator only checks the prepended class and
+            // creates this admitted instance. No class-prefixed argument copy.
+            instance = new PyInstance(this, context.MemoryGovernor, span);
+        }
+        else if (allocator is PyFunctionBase function)
+        {
+            var site = function is PyExecutableFunction { SupportsDirectPositional: true } or
+                PyFunction { SupportsPositionalBinding: true } ? null : call;
+            instance = call is null
+                ? asynchronous ? await function.InvokeAsync(arguments, span, context, this).ConfigureAwait(false)
+                    : function.Invoke(arguments, span, context, this)
+                : asynchronous ? await function.InvokeFromOperandsAsync(operands.Span, span, context, this, site).ConfigureAwait(false)
+                    : function.InvokeFromOperands(operands.Span, span, context, this, site);
         }
         else
         {
-            var fresh = new PyInstance(this, context.MemoryGovernor, span);
-            instance = fresh;
-        }
-
-        if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
-        {
-            return instance;
-        }
-
-        if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
-        {
-            LythonRuntime.JsonSubclassSupport.RunEngineInit(this, pyInstance, arguments, span, context);
-            return pyInstance;
-        }
-
-        if (TryGetMember("__init__", out var initializer))
-        {
-            if (initializer is not IPyBindableCallable bindable)
+            if (allocator is not LythonRuntime.ICallable callable)
+                throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __new__.", span);
+            // Dynamic engine callables may retain their argument array. Admit
+            // and commit its owned copy rather than refunding it after the call.
+            var count = call is null ? arguments.Length : operands.Length;
+            var bytes = checked(32L + 32L * (count + 1L));
+            using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            var prefixed = new CallArgumentValue[checked(count + 1)];
+            prefixed[0] = CallArgumentValue.Positional(this);
+            for (var i = 0; i < count; i++)
             {
-                throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __init__.", span);
+                if ((i & 63) == 0) context.CheckExecution(span);
+                prefixed[i + 1] = call is null ? arguments[i] : CallArgumentValue.Positional(operands.Span[i] ?? PyNone.Instance);
             }
-
-            var bound = (LythonRuntime.ICallable)bindable.Bind(pyInstance);
-            var result = bound.Invoke(arguments, span, context);
-            if (!ReferenceEquals(result, PyNone.Instance))
-            {
-                throw new LythonRuntimeException("TypeError", $"__init__ for class '{Name}' must return None.", span);
-            }
-
-            return pyInstance;
+            storage.Commit(bytes);
+            instance = asynchronous
+                ? await callable.InvokeAsync(prefixed, span, context).ConfigureAwait(false)
+                : callable.Invoke(prefixed, span, context);
         }
+        context.CheckExecution(span);
+        if (instance is not PyInstance result || !result.Type.IsSubtypeOf(this)) return instance;
 
-        return pyInstance;
+        // A custom allocator may return a subtype or mutate the initializer.
+        // Resolve on the actual result only after allocation has completed.
+        var actualType = result.Type;
+        if (actualType.JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(actualType, context))
+        {
+            materialized ??= CopyPositionalArguments(operands, context, span);
+            if (asynchronous)
+                await LythonRuntime.JsonSubclassSupport.RunEngineInitAsync(actualType, result, materialized, span, context).ConfigureAwait(false);
+            else LythonRuntime.JsonSubclassSupport.RunEngineInit(actualType, result, materialized, span, context);
+            context.CheckExecution(span);
+            return result;
+        }
+        if (!actualType.TryLookupInMro("__init__", 0, out var initializer, out _)) return result;
+        object initialized;
+        if (initializer is PyFunctionBase initialize)
+        {
+            // Ordinary functions bind self directly into invocation-owned locals.
+            // No transient bound method or receiver-prefixed argument array.
+            var site = initialize is PyExecutableFunction { SupportsDirectPositional: true } or
+                PyFunction { SupportsPositionalBinding: true } ? null : call;
+            initialized = call is null
+                ? asynchronous ? await initialize.InvokeAsync(arguments, span, context, result).ConfigureAwait(false)
+                    : initialize.Invoke(arguments, span, context, result)
+                : asynchronous ? await initialize.InvokeFromOperandsAsync(operands.Span, span, context, result, site).ConfigureAwait(false)
+                    : initialize.InvokeFromOperands(operands.Span, span, context, result, site);
+        }
+        else
+        {
+            var bound = asynchronous
+                ? await PyAttributeLookup.BindForInstanceAsync(result, initializer, context, span).ConfigureAwait(false)
+                : PyAttributeLookup.BindForInstance(result, initializer, context, span);
+            context.CheckExecution(span);
+            if (bound is not LythonRuntime.ICallable callable)
+                throw new LythonRuntimeException("TypeError", $"Class '{actualType.Name}' has a non-callable __init__.", span);
+            materialized ??= CopyPositionalArguments(operands, context, span);
+            initialized = asynchronous
+                ? await callable.InvokeAsync(materialized, span, context).ConfigureAwait(false)
+                : callable.Invoke(materialized, span, context);
+        }
+        context.CheckExecution(span);
+        if (!ReferenceEquals(initialized, PyNone.Instance))
+            throw new LythonRuntimeException("TypeError", $"__init__ for class '{actualType.Name}' must return None.", span);
+        return result;
     }
 
-    public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static CallArgumentValue[] CopyPositionalArguments(ReadOnlyMemory<object?> operands,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (operands.IsEmpty) return [];
+        var bytes = checked(32L + 32L * operands.Length);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
         context.CheckExecution(span);
-        if (ReferenceEquals(MetaType, this))
+        var arguments = new CallArgumentValue[operands.Length];
+        for (var i = 0; i < arguments.Length; i++)
         {
-            return InvokeBuiltInType(arguments, span, context);
+            if ((i & 63) == 0) context.CheckExecution(span);
+            arguments[i] = CallArgumentValue.Positional(operands.Span[i] ?? PyNone.Instance);
         }
-
-        object instance;
-        if (TryGetMember("__new__", out var allocator))
-        {
-            if (allocator is not LythonRuntime.ICallable newCallable)
-            {
-                throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __new__.", span);
-            }
-
-            var newArguments = new CallArgumentValue[arguments.Length + 1];
-            newArguments[0] = CallArgumentValue.Positional(this);
-            Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
-            instance = await newCallable.InvokeAsync(newArguments, span, context).ConfigureAwait(false);
-        }
-        else
-        {
-            var fresh = new PyInstance(this, context.MemoryGovernor, span);
-            instance = fresh;
-        }
-
-        if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
-        {
-            return instance;
-        }
-
-        if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
-        {
-            await LythonRuntime.JsonSubclassSupport.RunEngineInitAsync(this, pyInstance, arguments, span, context).ConfigureAwait(false);
-            return pyInstance;
-        }
-
-        if (TryGetMember("__init__", out var initializer))
-        {
-            if (initializer is not IPyBindableCallable bindable)
-            {
-                throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __init__.", span);
-            }
-
-            var bound = (LythonRuntime.ICallable)bindable.Bind(pyInstance);
-            var result = await bound.InvokeAsync(arguments, span, context).ConfigureAwait(false);
-            if (!ReferenceEquals(result, PyNone.Instance))
-            {
-                throw new LythonRuntimeException("TypeError", $"__init__ for class '{Name}' must return None.", span);
-            }
-
-            return pyInstance;
-        }
-
-        return pyInstance;
+        storage.Commit(bytes);
+        return arguments;
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");

@@ -46,6 +46,10 @@ numeric promotion, floor division/modulo, comparisons, hashing and ordinary
 containers follow Python within the supported operations. Decimal behavior is
 provided by the contained `decimal` module. Special methods use type lookup where
 Python requires it; ordinary attribute access still observes guest descriptors.
+Class construction initializes the actual subtype returned by `__new__`; unrelated
+returns skip initialization. Ordinary, staticmethod, classmethod and descriptor
+initializers preserve Python binding. `RunAsync` can await allocator bodies,
+initializer descriptors and initializer bodies through mediated host operations.
 
 List sorting hides the receiver's items while key/comparison callbacks run.
 Callbacks see an empty list; append/pop mutations are detected even if the final

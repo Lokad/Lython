@@ -1,0 +1,42 @@
+[
+  [
+    "ordinary and inherited initializer",
+    "class A:\n def __init__(self,x=7):self.x=x\nclass B(A):pass\nprint(A().x,B(9).x)\n"
+  ],
+  [
+    "selected class survives argument rebinding",
+    "class A:\n def __init__(self,x):self.x=x\nSelected=A\ndef argument():\n global A\n A=17\n return 9\nprint(Selected(argument()).x)\n"
+  ],
+  [
+    "unrelated allocator return skips init",
+    "class A:\n def __new__(cls,x):print('new',x);return 7\n def __init__(self,x):raise AssertionError('wrong init')\nprint(A(9))\n"
+  ],
+  [
+    "returned subtype owns initializer",
+    "class A:\n def __new__(cls):print('new');return object.__new__(B)\n def __init__(self):print('A init')\nclass B(A):\n def __init__(self):print('B init')\nprint(type(A()).__name__)\n"
+  ],
+  [
+    "staticmethod initializer receives original args",
+    "class A:\n @staticmethod\n def __init__(x):print('init',x)\nA(7)\n"
+  ],
+  [
+    "classmethod initializer receives class",
+    "class A:\n @classmethod\n def __init__(cls,x):print(cls.__name__,x)\nA(7)\n"
+  ],
+  [
+    "initializer descriptor binds instance",
+    "class D:\n def __get__(self,obj,owner):\n  print(obj is None,owner.__name__)\n  def initialize(x):print('init',x)\n  return initialize\nclass A:__init__=D()\nA(7)\n"
+  ],
+  [
+    "allocator changes initializer before selection",
+    "class A:\n def __new__(cls,x):\n  print('new')\n  cls.__init__=replacement\n  return object.__new__(cls)\n def __init__(self,x):raise AssertionError('old init')\ndef replacement(self,x):print('replacement',x)\nA(9)\n"
+  ],
+  [
+    "keyword defaults and variadics",
+    "class A:\n def __init__(self,x=2,*extra,flag=3,**rest):print(x,extra,flag,rest)\nA()\nA(7,8,9,flag=4,other=5)\n"
+  ],
+  [
+    "non None initializer and non callable init",
+    "class A:\n def __init__(self):return 7\ntry:A()\nexcept TypeError:print('bad return')\nclass B:__init__=17\ntry:B()\nexcept TypeError:print('bad callable')\n"
+  ]
+]
