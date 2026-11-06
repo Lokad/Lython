@@ -9,6 +9,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 ResumePendingCall();
+                RoutePendingFrameException();
                 _ = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _);
             }
             finally

@@ -55,8 +55,8 @@ internal sealed partial class LythonRuntime
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
+        // Python None is PyNone; null means no explicit return has completed.
         internal object? ReturnValue;
-        internal bool HasReturn;
 
         public ExecutableWorkState()
         {
@@ -67,7 +67,6 @@ internal sealed partial class LythonRuntime
             Stack = default;
             InstructionIndex = 0;
             ReturnValue = null;
-            HasReturn = false;
         }
     }
 

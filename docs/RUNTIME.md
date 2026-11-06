@@ -257,6 +257,11 @@ Actual executable frame exit restores the entry exception state and removes
 abandoned handler bindings, including cancellation or refused admission at
 instruction entry. Yielded generators and pending calls retain their frame state;
 native cleanup and cursor disposal finish before owned storage is released.
+Pending child-call failures and generator exceptions route when the frame resumes,
+after pending operand cleanup. Active delegation forwards the exception to its
+delegate. Completed returns use the return value itself as their marker; Python
+None remains a real value. Ordinary instruction execution retains cancellation
+and admission checks without polling a separate pending-exception/return flag.
 
 Private loops over exact builtin lists and tuples keep the sequence in its operand
 slot and advance by index. One fixed-size position array is admitted on first use

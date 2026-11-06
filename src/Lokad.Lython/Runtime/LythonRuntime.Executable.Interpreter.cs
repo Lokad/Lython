@@ -86,7 +86,6 @@ internal sealed partial class LythonRuntime
             HasYield = false;
             YieldValue = PyNone.Instance;
             _execution.ReturnValue = null;
-            _execution.HasReturn = false;
             _savedActiveExceptions = null;
             _entryActiveException = null;
             _caller = null;
@@ -562,8 +561,8 @@ internal sealed partial class LythonRuntime
 
         // Ordinary returns deliver without throwing: a cleanup that handles
         // them in-frame routes through TryHandleAbrupt, otherwise the frame
-        // records the value and exits normally (the Execute loop-end picks up
-        // the flags). Frames without protected regions skip the routing scan
+        // records the value and exits normally at that control-flow instruction.
+        // Frames without protected regions skip the routing scan
         // (and its per-return signal box) entirely. Propagated signals from
         // nested calls still arrive through the per-instruction catch below,
         // which stays as the routing backstop.
@@ -576,7 +575,6 @@ internal sealed partial class LythonRuntime
             }
 
             execution.ReturnValue = value;
-            execution.HasReturn = true;
             return true;
         }
 
@@ -687,7 +685,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal bool HasFrameReturn => _execution.HasReturn;
+        internal bool HasFrameReturn => _execution.ReturnValue is not null;
 
         internal object FrameReturnValue => _execution.ReturnValue.RequireNotNull();
 
@@ -714,6 +712,7 @@ internal sealed partial class LythonRuntime
             {
                 ResumePendingCall();
                 if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+                RoutePendingFrameException();
                 while (true)
                 {
                     var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span);
@@ -745,7 +744,7 @@ internal sealed partial class LythonRuntime
                     // A relinquished cursor must finish before another guest
                     // instruction or handler observes its cleanup effects.
                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                    if (_execution.HasReturn || HasYield) return;
+                    if (_execution.ReturnValue is not null || HasYield) return;
                     if (!jumped) _execution.InstructionIndex++;
                 }
             }

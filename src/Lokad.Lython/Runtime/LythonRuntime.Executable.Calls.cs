@@ -230,7 +230,7 @@ internal sealed partial class LythonRuntime
                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
                         if (pause == InstructionPause.Boundary)
                         {
-                            CompletePendingCall(work.HasReturn ? work.ReturnValue : PyNone.Instance, null);
+                            CompletePendingCall(work.ReturnValue ?? PyNone.Instance, null);
                             return this;
                         }
                         if (pause != InstructionPause.ContextRequired)

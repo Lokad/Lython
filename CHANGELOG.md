@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Route pending frame exceptions at resumption after operand cleanup, preserving
+  generator delegation and original instruction spans. Remove the duplicate
+  return-completion flag and repeated pending-error polling from ordinary
+  execution. Instruction cancellation and memory-admission checks remain.
+
 - Share immutable native key metadata across matching JSON and CSV records while
   keeping values independent. Remove the separate sorted JSON key hint and
   coupled key/value entries; key-only sets omit values storage. Preserve mutable

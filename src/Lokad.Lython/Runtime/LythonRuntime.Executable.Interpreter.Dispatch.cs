@@ -26,12 +26,6 @@ internal sealed partial class LythonRuntime
                 scope.State.CheckExecution(instruction.Span);
                 try
                 {
-                    if (invocation is not null && invocation._injectedException is not null && invocation._delegation is null)
-                    {
-                        var injected = invocation!._injectedException;
-                        invocation!._injectedException = null;
-                        throw injected;
-                    }
                     switch (instruction.OpCode)
                     {
                         case ExecutableOpCode.Complete:
@@ -272,6 +266,17 @@ internal sealed partial class LythonRuntime
                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
                                 return InstructionPause.ContextRequired;
                             jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
+                            if (execution.ReturnValue is not null)
+                            {
+                                // Keep the returning instruction/span current and
+                                // finish queued native disposal before leaving.
+                                if (asynchronous && execution.Stack.HasPendingDisposals)
+                                {
+                                    pending = new(jumped);
+                                    return InstructionPause.Disposal;
+                                }
+                                return InstructionPause.Boundary;
+                            }
                             break;
                         default:
                             throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
@@ -305,7 +310,6 @@ internal sealed partial class LythonRuntime
                     pending = new(jumped);
                     return InstructionPause.Disposal;
                 }
-                if (execution.HasReturn) return InstructionPause.Boundary;
                 if (!jumped) execution.InstructionIndex++;
             }
             return InstructionPause.Boundary;

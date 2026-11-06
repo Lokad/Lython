@@ -4,6 +4,19 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // Resume/child completion are the only producers of pending exceptions.
+        // Settle operand cleanup first, then route once before executing again.
+        // Active delegation forwards its injected exception at YieldFrom instead.
+        private void RoutePendingFrameException()
+        {
+            if (_injectedException is not { } injected || _delegation is not null
+                || _execution.InstructionIndex >= _execution.Code.Instructions.Length) return;
+            var span = _execution.Code.Instructions[_execution.InstructionIndex].Span;
+            CheckExecution(span);
+            _injectedException = null;
+            if (!TryRouteRuntimeException(injected, span)) throw injected;
+        }
+
         // Synchronous and asynchronous dispatch must unwind the same frame state.
         private bool TryRouteReturn(ReturnSignal signal, LythonSourceSpan span)
         {
@@ -12,7 +25,6 @@ internal sealed partial class LythonRuntime
                 return true;
 
             _execution.ReturnValue = signal.Value;
-            _execution.HasReturn = true;
             return false;
         }
 
