@@ -1,5 +1,5 @@
 {
-  "status": "Committed933a7fff. Focused both actual runtimes/full local.NET11 and both installed Release consumers pass. CI42201490733 running independently; later R10 excluded.",
+  "status": "Fully qualified933a7fff: focused both actual runtimes/full local.NET11/both installed consumers and cached terminal42201490733 GREEN/all eight Windows/Ubuntu/runtime/originalStress/package gates. Later R10 excluded.",
   "source": "5563ccdd plus exact five-file R09 source hashes/patch",
   "independentPythonCases": 10,
   "focused": {

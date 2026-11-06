@@ -80,3 +80,10 @@ Committed **933a7fff**. Both actual [installed Release consumers](package-consum
 pass; the exact package hash is in validation.json. CI42201490733 is running
 independently for final platform/runtime/originalStress/package gates. Later R10
 work is excluded. No publication or unchanged full-suite replay.
+
+## Closed platform delivery
+
+Exact **933a7fff** is fully qualified: [cached terminal42201490733](delivery-ci.json)
+is GREEN/all eight Windows/Ubuntu/runtime/originalStress/package gates. Earlier
+running observations are historical. Never query terminal CI or replay unchanged
+qualification. Later R10 constructor-frame prototypes are excluded.
