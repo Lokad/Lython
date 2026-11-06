@@ -3083,3 +3083,10 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   R02; CSV control spread2.81% leaves its result inconclusive. Full local Release
   4,215 internal/16,103 public per actual runtime pass. Final qualification batches
   with R02; no measured allocation percentage or broad CPU claim.
+
+- [Construction CPython checkpoint, B331](results/2026-11-06-construction-cpython/README.md):
+  COMPLETE on committed794e552b/frozen4011fcad, twelve compile/warm/fresh jobs
+  327.85s/all gates. Primary guide refreshed; no broad primary speedup. Fresh
+  CSV+2.18–4.41% and text+3.11–7.95% versus R02 remain explicit possible regression
+  debt; text identical-role spread4.69%. Affected compound-key gains stay separate.
+  Installed consumers pass, final CI42170841788 pending. Whole objective active.

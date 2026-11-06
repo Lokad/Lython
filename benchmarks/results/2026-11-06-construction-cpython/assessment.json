@@ -1,0 +1,79 @@
+{
+  "sourceRevision": "794e552bc996cadaa15f44344a3fd0eb242f5a94",
+  "frozenCoreSHA256": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
+  "reference": "R02/core867ebf7a, source1863cb3e",
+  "warm": [
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "candidateDeltaPercent": -1.5617374511111781,
+      "identicalControlDeltaPercent": -0.7982030861481304,
+      "controlSpreadPercent": 0.7756479494788193,
+      "referenceIqrPercent": 1.9005808001267879
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "candidateDeltaPercent": 2.2957787820847564,
+      "identicalControlDeltaPercent": 0.33549541801596305,
+      "controlSpreadPercent": 1.9162895941627123,
+      "referenceIqrPercent": 0.29943041284685723
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "candidateDeltaPercent": 1.3780233598363667,
+      "identicalControlDeltaPercent": 0.14478272654812052,
+      "controlSpreadPercent": 1.216477292036866,
+      "referenceIqrPercent": 0.30407801565493037
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "candidateDeltaPercent": -3.117579062515885,
+      "identicalControlDeltaPercent": -1.1868025977127994,
+      "controlSpreadPercent": 1.9929069134729582,
+      "referenceIqrPercent": 2.93031332519008
+    }
+  ],
+  "fresh": [
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "compile-run",
+      "candidateDeltaPercent": 4.407133599164692,
+      "identicalControlDeltaPercent": 2.1761665180532797,
+      "controlSpreadPercent": 2.136795642409306,
+      "referenceIqrPercent": 0.6921134902137926
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "candidateDeltaPercent": 3.109296042135923,
+      "identicalControlDeltaPercent": 7.949751498614499,
+      "controlSpreadPercent": 4.6944898687898196,
+      "referenceIqrPercent": 0.3104072555634209
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "compile-run",
+      "candidateDeltaPercent": 0.8634073219608851,
+      "identicalControlDeltaPercent": 1.7324914075690145,
+      "controlSpreadPercent": 0.8616445831876041,
+      "referenceIqrPercent": 1.032536883226429
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile-run",
+      "candidateDeltaPercent": -0.5322047682948972,
+      "identicalControlDeltaPercent": 1.5865257426141088,
+      "controlSpreadPercent": 2.1300668281362123,
+      "referenceIqrPercent": 4.161645818035916
+    }
+  ],
+  "decision": "No broad primary speedup. Retain measured affected compound-key gains and removed mechanisms, accepting explicit possible primary fresh CSV/text regression debt. Fresh text identical-role variation prevents simple attribution. Next text work must preserve this evidence and distinguish warm from fresh; no automatic retiming or permanent closure.",
+  "limitations": [
+    "No process allocation, guest-only CPU, startup/RSS/embedding-latency measurement.",
+    "Final platform/stress CI42170841788 on794e552b remains pending; installed consumers pass.",
+    "Historical deltas and CPython process timings are not additive or causal source comparisons."
+  ]
+}
