@@ -32,3 +32,10 @@ completion claim. No new timing campaign for this semantic correction.
 Combined R03/R05 full platform/originalStress/installed qualification remains
 pending; older794e552b receipt excludes both. Publication/tagging postponed;
 whole-script performance objective remains active.
+
+Combined R03/R05 source51db4209 is committed/pushed. Full local.NET11 passes
+4,215 internal/16,112 public; both actual.NET11/10 installed Release consumers
+pass. [Exact validation scope](../2026-11-06-builtin-class-patterns/validation.json).
+CI42174873217 is running on that source for Windows/Ubuntu, both runtimes,
+originalStress and package consumers. This is pending, not a green receipt.
+No earlier terminal qualification covers these changes.

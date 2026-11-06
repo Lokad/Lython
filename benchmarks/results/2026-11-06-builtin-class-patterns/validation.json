@@ -1,0 +1,19 @@
+{
+  "status": "Committed/pushed51db4209 combines R03/R05. Full local.NET11 and installed consumers pass; focused checks pass both actual runtimes. Platform/originalStress/full.NET10 CI running; not fully qualified.",
+  "sourceRevision": "51db4209b93d004767d47342cef52cb0e3a6e063",
+  "focusedPerActualRuntime": {
+    "internal": 320,
+    "public": 3056
+  },
+  "fullLocalNet11": {
+    "internal": 4215,
+    "public": 16112
+  },
+  "installedConsumers": [
+    "net11.0 actual11RC3",
+    "net10.0 actual10.0.8"
+  ],
+  "deliveryRunId": 42174873217,
+  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42174873217",
+  "limitations": "No R05 performance claim; refined R03 warm result inconclusive. B331 primary table remains794e552b. User-class extraction/value-protocol defects remain. Publication postponed."
+}
