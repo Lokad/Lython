@@ -209,6 +209,11 @@ can retain that context's names and cells without retaining refunded workspace.
 Nonlocal ownership comes from immutable scope facts and lexical parent links;
 invocations do not rebuild a separate owner dictionary. Executable reads use
 captured cells, and dynamic reads and writes resolve the same lexical owners.
+Immediate instance-method calls keep the selected function and receiver in their
+operand storage when default attribute lookup proves an ordinary function binding.
+They do not construct a temporary bound-method object. Selection precedes argument
+evaluation; custom lookup hooks, descriptors and exposed method values keep their
+normal Python behavior. Both execution APIs use the same calling convention.
 Suspended generators keep their state until completion and own one context handle.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working

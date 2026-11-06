@@ -21,7 +21,7 @@ public sealed class CountedReplaceExecutionTests
     [InlineData("return text.replace('a','b',count=1)")]
     [InlineData("method=text.replace\nreturn method('a','b',1)")]
     public void KeywordAndExposedMethodsRetainGeneralBinding(string source)
-        => Assert.False(Assert.Single(Compile(source).CallSites).HasReceiver);
+        => Assert.DoesNotContain(Compile(source).Instructions, instruction => instruction.OpCode == ExecutableOpCode.LoadCallReceiver);
 
     private static ExecutableCodeObject Compile(string source)
         => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;

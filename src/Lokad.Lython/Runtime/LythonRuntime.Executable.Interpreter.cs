@@ -15,8 +15,15 @@ internal sealed partial class LythonRuntime
     {
         private bool TryLoadDirectCallReceiver(ExecutableInstruction instruction)
         {
-            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver) return false;
+            if (instruction.OpCode is not (ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)) return false;
             var name = _codeObject.Names[instruction.NameIndex];
+            if (_stack[instruction.InputStart] is PyInstance instance &&
+                PyAttributeLookup.TryResolveInstanceFunctionForCall(instance, name, out var function))
+            {
+                _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, function);
+                return true;
+            }
+            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver) return false;
             var operation = _stack[instruction.InputStart] switch
             {
                 PyList when name == "append" => DirectListAppend,
@@ -343,10 +350,10 @@ internal sealed partial class LythonRuntime
 
 
                 case ExecutableOpCode.LoadCallReceiver:
-                    if (TryLoadDirectCallReceiver(instruction)) break;
-                    goto case ExecutableOpCode.LoadCallMember;
-                case ExecutableOpCode.LoadMember:
                 case ExecutableOpCode.LoadCallMember:
+                    if (TryLoadDirectCallReceiver(instruction)) break;
+                    goto case ExecutableOpCode.LoadMember;
+                case ExecutableOpCode.LoadMember:
                     var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                     var memberName = _codeObject.Names[instruction.NameIndex];
                     if (!TryReadMemberCache(instruction, target, out var memberValue))
@@ -359,7 +366,7 @@ internal sealed partial class LythonRuntime
                         memberValue = resolvedMember;
                         PublishMemberCache(instruction, target, memberValue);
                     }
-                    if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
+                    if (instruction.OpCode is ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember)
                     {
                         _stack[instruction.ResultSlot] = PyNone.Instance;
                         _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);

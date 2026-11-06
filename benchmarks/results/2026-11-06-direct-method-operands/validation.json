@@ -1,0 +1,22 @@
+{
+  "sourceBase": "5932fe20",
+  "coreSHA256": {
+    "candidate": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+    "control": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+    "reference": "0050f188b0796de76f744075276cb2e5014f33b8c6b0563164036c5b73c6d450"
+  },
+  "status": "Retained; full local Release passes actual.NET11RC3/.NET10.0.8. Coherent platform/stress/installed delivery pending.",
+  "fullInternalPerFramework": 4210,
+  "fullPublicPerFramework": 16088,
+  "focusedInternalPerFramework": 428,
+  "focusedPublicPerFramework": 3047,
+  "warnings": 0,
+  "errors": 0,
+  "independentPythonControls": 7,
+  "independentWholeWorkloadFiles": true,
+  "preservation": "Default/keyword/inherited/own binding, selection before argument mutation, class/static methods, custom lookup/descriptors, exposed method identity/metadata. Actual pending argument read cancellation awaits cleanup and reuses shared budget. Refused argument is terminal even through suppressed MemoryError/finally return; method/later effects never run.",
+  "deletedPhase": "Single-target ordinary immediate-member transport and its bound-method construction/display-name/unpacking. Both immediate member instructions use existing receiver/target operands. Existing native eligibility, binder/frame runner and dynamic protocols retained; exposed values still use PyBoundMethod.",
+  "discardedAssertions": "Two keyword native-method tests assumed HasReceiver=false. They now assert the native shortcut opcode is absent, preserving the general-binding obligation.",
+  "noNew": "Public APIs/options, runtime dependencies, cache, arena, backend, owners, limits or token policy.",
+  "measurementLimits": "Elapsed diagnostic; controls also change. Allocation is whole-process, includes fixture/reset/reflection/background storage. No guest-onlyCPU/RSS/embedding claim. Existing primary four-script benchmark refresh at coherent checkpoint, not another optimization campaign."
+}

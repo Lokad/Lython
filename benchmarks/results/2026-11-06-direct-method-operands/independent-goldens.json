@@ -1,0 +1,61 @@
+{
+  "python": "CPython3.13.2 -I -S -X utf8",
+  "cases": [
+    {
+      "name": "inherited defaults and exposed identity",
+      "source": "class Base:\n def f(self,value=2,*,scale=3):return value*scale\nclass Child(Base):pass\nobj=Child()\nprint(obj.f(),obj.f(4,scale=5),Child.f(obj,3),obj.f.__self__ is obj,obj.f.__func__ is Base.f,obj.f is obj.f)\n",
+      "expected": "6 20 9 True True False\n",
+      "stdout": "6 20 9 True True False\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "binding precedes arguments",
+      "source": "class C:\n def run(self,value):return 'old'+value\ndef replacement(self,value):return 'new'+value\nc=C()\ndef change():\n C.run=replacement\n c.run=lambda value:'own'+value\n return ':value'\nprint(c.run(change()),c.run(':later'),C.run(c,':class'))\n",
+      "expected": "old:value own:later new:class\n",
+      "stdout": "old:value own:later new:class\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "custom attribute lookup",
+      "source": "class C:\n def __getattribute__(self,name):\n  if name=='run':\n   print('lookup')\n   return lambda value:'hook'+value\n  return object.__getattribute__(self,name)\n def run(self,value):return 'unreachable'\nprint(C().run(':ok'))\n",
+      "expected": "lookup\nhook:ok\n",
+      "stdout": "lookup\nhook:ok\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "descriptor before argument",
+      "source": "class D:\n def __get__(self,obj,owner):\n  print('get')\n  return lambda value:'descriptor'+value\nclass C:run=D()\ndef argument():print('argument');return ':ok'\nprint(C().run(argument()))\n",
+      "expected": "get\nargument\ndescriptor:ok\n",
+      "stdout": "get\nargument\ndescriptor:ok\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "static class and own functions",
+      "source": "class C:\n @staticmethod\n def static(value=2):return value+1\n @classmethod\n def classed(cls,value=3):return cls.__name__,value\n def run(self,value):return value\nc=C()\nc.run=lambda value:value+7\nprint(c.static(),c.classed(value=8),c.run(3))\n",
+      "expected": "3 ('C', 8) 10\n",
+      "stdout": "3 ('C', 8) 10\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "missing attribute fallback",
+      "source": "class C:\n def __getattr__(self,name):return lambda value:name+value\nprint(C().missing(':ok'))\n",
+      "expected": "missing:ok\n",
+      "stdout": "missing:ok\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "argument failure prevents invocation",
+      "source": "class C:\n def run(self,value):print('called')\ndef argument():raise ValueError('bad')\ntry:C().run(argument())\nexcept ValueError as error:print(str(error))\n",
+      "expected": "bad\n",
+      "stdout": "bad\n",
+      "stderr": "",
+      "exitCode": 0
+    }
+  ]
+}

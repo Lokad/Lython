@@ -1,0 +1,82 @@
+{
+  "complete": true,
+  "elapsedSeconds": 113.04272054089233,
+  "timing": [
+    {
+      "case": "scripts.csv-method-summary.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.916752612903226,
+        "control": 4.868936903225806,
+        "CPython": 3.2365698043478264,
+        "reference": 5.104137966666667
+      },
+      "ratio": 1.5191245392879635,
+      "referenceDeltaPercent": -3.671243900286192,
+      "controlPercent": -0.9725059087157484,
+      "iqrPercent": {
+        "candidate": 1.724039190278316,
+        "control": 0.40922227150545476,
+        "CPython": 0.3003696660576858,
+        "reference": 1.15798985815032
+      }
+    },
+    {
+      "case": "scripts.csv-method-summary.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate": 5.191313107142856,
+        "control": 5.241280785714286,
+        "CPython": 3.4341287499999997,
+        "reference": 5.296569678571429
+      },
+      "ratio": 1.5116827250995923,
+      "referenceDeltaPercent": -1.9872592605439277,
+      "controlPercent": 0.9625248475704229,
+      "iqrPercent": {
+        "candidate": 1.4587005777309483,
+        "control": 0.680380317618927,
+        "CPython": 0.6069516176410041,
+        "reference": 1.1221737443798887
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.72101171875,
+        "control": 4.674751090909091,
+        "CPython": 3.237437760869565,
+        "reference": 4.738792393939393
+      },
+      "ratio": 1.4582555920648654,
+      "referenceDeltaPercent": -0.37521532304588545,
+      "controlPercent": -0.9798880112324326,
+      "iqrPercent": {
+        "candidate": 1.1056256976167946,
+        "control": 0.9214861065426946,
+        "CPython": 1.2936169456123112,
+        "reference": 2.5370419617645705
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 2.2753158507462685,
+        "control": 2.29340403030303,
+        "CPython": 1.1597148923076923,
+        "reference": 2.358445109375
+      },
+      "ratio": 1.961961397441974,
+      "referenceDeltaPercent": -3.524748500539032,
+      "controlPercent": 0.7949744450129304,
+      "iqrPercent": {
+        "candidate": 1.1914612845418744,
+        "control": 1.3249697257614805,
+        "CPython": 1.0472726532733587,
+        "reference": 0.682849923493359
+      }
+    }
+  ]
+}

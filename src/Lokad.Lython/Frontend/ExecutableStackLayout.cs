@@ -228,7 +228,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         {
             ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadClosure or
                 ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName or ExecutableOpCode.LoadMember or
-                ExecutableOpCode.LoadCallMember or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or
+                ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or
                 ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSlice or
                 ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or
                 ExecutableOpCode.Subscript or ExecutableOpCode.Slice or ExecutableOpCode.Call or
@@ -251,8 +251,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or
                 ExecutableOpCode.StoreName or ExecutableOpCode.PopTop or ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.MatchCase or ExecutableOpCode.Return or ExecutableOpCode.ExitContextManager => (1, 0),
-            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallReceiver => (1, 2),
-            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.GetIter or
+            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember => (1, 2),
+            ExecutableOpCode.LoadMember or ExecutableOpCode.GetIter or
                 ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or
                 ExecutableOpCode.Unary or ExecutableOpCode.MatchException or
                 ExecutableOpCode.Yield or ExecutableOpCode.YieldFrom => (1, 1),

@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
         {
             if (!site.IsPositionalOnly) return false;
             var function = target as PyExecutableFunction;
-            object? receiver = null;
+            object? receiver = site.HasReceiver && _stack[start] is not PyNone ? _stack[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
             {
                 function = method;

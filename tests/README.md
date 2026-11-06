@@ -69,6 +69,12 @@ Active frame inspections are borrows: after completion, operand checks require
 detached storage and bindings. Surviving namespace observations preserve the
 independent unchanged-target checks after cancellation or admission refusal.
 
+[Ordinary method calls](Lokad.Lython.PublicApi.Tests/OrdinaryMethodCallTests.cs)
+preserve selected receivers and functions through argument-side rebinding, custom
+lookup and descriptors. Pending argument reads cancel with awaited cleanup and
+shared-budget reuse; refused admission prevents invocation even when guest cleanup
+returns. Exposed method values keep their Python identity and metadata behavior.
+
 ## Focused development
 
 Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,

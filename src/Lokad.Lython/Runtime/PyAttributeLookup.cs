@@ -4,6 +4,25 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyAttributeLookup
 {
+    // Immediate calls can carry an ordinary non-data function and receiver in
+    // their existing operands. Exposed attributes still create bound methods.
+    // No cache: mutable instance/type lookup is repeated before the arguments.
+    internal static bool TryResolveInstanceFunctionForCall(PyInstance instance, string memberName,
+        [MaybeNullWhen(false)] out PyFunctionBase function)
+    {
+        if (instance.Type.TryLookupInMro("__getattribute__", 0, out var lookup, out _) &&
+            LythonRuntime.IsDefaultObjectGetAttribute(lookup) &&
+            !instance.TryGetOwnAttribute(memberName, out _) &&
+            instance.Type.TryLookupInMro(memberName, 0, out var member, out _) &&
+            member is PyFunctionBase found)
+        {
+            function = found;
+            return true;
+        }
+        function = null;
+        return false;
+    }
+
     public static bool TryResolveTypeMember(PyType type, string memberName, [MaybeNullWhen(false)] out object value)
     {
         // Own-dict docstrings (stored at creation or assigned later) win over the

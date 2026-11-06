@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
             var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
             if (TryReadMemberCache(instruction, target, out var cached))
             {
-                if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
+                if (instruction.OpCode is ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember)
                 {
                     _stack[instruction.ResultSlot] = PyNone.Instance;
                     _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, cached);
@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
             if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target,
                 _codeObject.Names[instruction.NameIndex], instruction.Span, this);
             PublishMemberCache(instruction, target, member.Value);
-            if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
+            if (instruction.OpCode is ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember)
             {
                 _stack[instruction.ResultSlot] = PyNone.Instance;
                 _stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, member.Value);

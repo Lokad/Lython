@@ -92,9 +92,10 @@ internal sealed partial class LythonRuntime
                 {
                     var site = call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true } ? null : call;
                     var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
+                    var receiver = call.HasReceiver && _stack[start] is not PyNone ? _stack[start] : null;
                     if (asynchronous) return CompleteCallValue(InvokeFunctionFromOperandsAsync(function, arguments,
-                        call.CallSpan, this, callSite: site), start);
-                    result = InvokeFunctionFromOperands(function, arguments.Span, call.CallSpan, this, callSite: site);
+                        call.CallSpan, this, receiver, site), start);
+                    result = InvokeFunctionFromOperands(function, arguments.Span, call.CallSpan, this, receiver, site);
                 }
                 else if (target is PyBoundMethod { Function: PyFunctionBase method } bound)
                 {
