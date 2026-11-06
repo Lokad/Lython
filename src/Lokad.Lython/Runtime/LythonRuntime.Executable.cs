@@ -55,6 +55,8 @@ internal sealed partial class LythonRuntime
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
+        internal object? ReturnValue;
+        internal bool HasReturn;
 
         public ExecutableWorkState()
         {
@@ -64,6 +66,8 @@ internal sealed partial class LythonRuntime
             ClosureCells = null;
             Stack = default;
             InstructionIndex = 0;
+            ReturnValue = null;
+            HasReturn = false;
         }
     }
 
@@ -277,7 +281,7 @@ internal sealed partial class LythonRuntime
         private object[] _items;
         private int[]? _nativeIterationPositions;
         private ExecutableMemberCache?[]? _memberCaches;
-        private readonly ExecutionContext _context;
+        private readonly ExecutionState _state;
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
         private readonly int _lastOwnedTemporarySlot;
@@ -288,7 +292,7 @@ internal sealed partial class LythonRuntime
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
         {
-            _context = context;
+            _state = context.State;
             _firstTemporarySlot = firstTemporarySlot;
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
@@ -311,7 +315,7 @@ internal sealed partial class LythonRuntime
             _memberCaches = null;
             var bytes = _ownedStorageBytes;
             _ownedStorageBytes = 0;
-            _context.MemoryGovernor.Release(bytes);
+            _state.MemoryGovernor.Release(bytes);
         }
 
         internal ExecutableMemberCache?[] GetMemberCaches(int count, LythonSourceSpan span)
@@ -319,11 +323,11 @@ internal sealed partial class LythonRuntime
             if (_memberCaches is { } existing) return existing;
             var bytes = checked(32L + 64L * count);
             var ownedBytes = checked(_ownedStorageBytes + bytes);
-            var governor = _context.MemoryGovernor;
+            var governor = _state.MemoryGovernor;
             governor.Reserve(bytes, span);
             try
             {
-                _context.CheckExecution(span);
+                _state.CheckExecution(span);
                 var caches = new ExecutableMemberCache?[count];
                 governor.Commit(bytes);
                 _ownedStorageBytes = ownedBytes;
@@ -385,7 +389,7 @@ internal sealed partial class LythonRuntime
                 // enumerator objects; it shares this frame's storage lifetime.
                 var bytes = checked(32L + 4L * (_items.Length - _firstTemporarySlot));
                 var frameBytes = checked(_ownedStorageBytes + bytes);
-                using var storage = _context.MemoryGovernor.ReserveTemporary(bytes, span);
+                using var storage = _state.MemoryGovernor.ReserveTemporary(bytes, span);
                 var positions = new int[_items.Length - _firstTemporarySlot];
                 storage.Commit(bytes);
                 _nativeIterationPositions = positions;
@@ -577,6 +581,17 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals)
     {
+        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+        context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
+    }
+
+    private static ExecutableWorkState CreateExecutableWorkState(
+        ExecutableCodeObject codeObject,
+        ExecutionContext context,
+        BoundCallArguments boundArguments,
+        IReadOnlyList<ExecutableCell>? closureCells,
+        bool argumentsAreLocals)
+    {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
         // is needed for nonmirrored executable functions.
@@ -618,7 +633,15 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            context.InitializeExecutableExecution(codeObject, locals, localCells, closureCells, stack);
+            return new ExecutableWorkState
+            {
+                Code = codeObject,
+                Locals = locals,
+                LocalCells = localCells,
+                ClosureCells = closureCells,
+                Stack = stack,
+                InstructionIndex = codeObject.EntryIndex
+            };
         }
         catch
         {

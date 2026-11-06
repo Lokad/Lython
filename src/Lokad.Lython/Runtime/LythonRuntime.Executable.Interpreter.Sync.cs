@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 ResumePendingCall();
-                _ = ExecuteInstructionPrefix(false, out _, out _);
+                _ = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _);
             }
             finally
             {

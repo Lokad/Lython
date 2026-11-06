@@ -1,0 +1,53 @@
+{
+  "sourceRevision": "3eff1b37 plus R13 B patch: deferred contexts through the shared instruction engine",
+  "referenceSourceRevision": "88f1209929697ce1fb6a2d895fcaae5fb0ac2424; B343 source-equivalent core, exact qualified R10 source hashes",
+  "coreSHA256": {
+    "candidate": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017",
+    "control": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017",
+    "reference": "1d1eff1235841847ff75e254bb878767d8b6a5e5f47aea1cfabc99e7f68203b0"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "33b2b428c183c337f3bd6637d4bed6acc38e42711843b827af76a76d97396ca8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "bc6b4647df629fd3a388ad9cd63c80488877d5813babaa940fa75409a8eea3fb",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "73d0daa51bdd46b48eeea8af074ed5d98bfb193ec1df553225400be7a7aa17a1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "ed625f59b8217e417e0cc4eb22065b012354040c176f410e0fb827aeee7f8fa4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "7e04e7d673e7f91dcca603f3cee0be3814faa27566b584e10f6c192f5ec11210",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "f04e34ebba6f3aad4a748e764fa94cc114b453558e6f32289229b5ce9eb5f7e0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "662fb3fce66e5ffd8e14798ee6d05bd2661fae50a8dd798b241f95e92204e18f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "2c0c586325ae26f8faac7d12e8e5199e94dd4cd72c722d1870bfd25aa5946763",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "c6273d57f82bcef196fe977a5300d10f63a14b7ceaa5e51b56bae2ac9e1b5b76",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "ca1944617c040b7eb8e38987a3c1cb96727b97c3a47194d4ba628b30ea3d6a8d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "dd1fb503823b561f35a8ff6ce2fa31343b9e89d1c883e7b8e87c765eacf2e12d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "ec7c71b8e938188cce74c0cc0b1f89d58babcaf6c50ab7ab1ed3dd88dd2aa6a5",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "24cb9e3296c1134b3ec1d9211942b72909ef223bc0d02aa40432251cc67f8cc0",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "b81c10aeb48c835d10d344446d357defe8550f44367f0c7d85f948bd390b59a3",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "9c8e7e29a185bdb9a706d63c14e63aba14ade3d195a68abef3518599a3fad01b",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "b3c8404740f086c9f54efa8e9983e394e6cd4760a27db58249bb30c2d9f73d60",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "59398aba9970d018c4a0e98df32564de16fa75e2dc2c2335dfcaf4861b33b252",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "8cbdca1fd2a1ded182ccc6f7b09b8f7720a9b1676947d00a2dc6762ed527af7c"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 296,
+      "coreSHA256": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 1078,
+      "coreSHA256": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 296,
+      "coreSHA256": "13920d7c9c001a8a08b53d8028b0e6dda82609129645d7ca64dbbf37045be3a6"
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 1078,
+      "coreSHA256": "13920d7c9c001a8a08b53d8028b0e6dda82609129645d7ca64dbbf37045be3a6"
+    }
+  }
+}

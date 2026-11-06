@@ -99,6 +99,14 @@ Active frame inspections are borrows: after completion, operand checks require
 detached storage and bindings. Surviving namespace observations preserve the
 independent unchanged-target checks after cancellation or admission refusal.
 
+[Deferred helper contexts](Lokad.Lython.PublicApi.Tests/DeferredFunctionContextTests.cs)
+preserve modified locals, module globals, prior writes, late protocols/slices and
+function traces when native work reaches a scope boundary. Real I/O keeps aliases
+funded through cancellation and awaited cleanup. The
+[admission controls](Lokad.Lython.Tests/DeferredFunctionOwnershipTests.cs) verify
+that capacity growth sees current function locals, refusal leaves the target
+unchanged and earlier writes are never replayed.
+
 [Ordinary method calls](Lokad.Lython.PublicApi.Tests/OrdinaryMethodCallTests.cs)
 preserve selected receivers and functions through argument-side rebinding, custom
 lookup and descriptors. Pending argument reads cancel with awaited cleanup and

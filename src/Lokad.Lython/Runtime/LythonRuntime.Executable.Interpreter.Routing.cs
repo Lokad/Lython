@@ -11,8 +11,8 @@ internal sealed partial class LythonRuntime
                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _execution.InstructionIndex, out _))
                 return true;
 
-            _frameReturnValue = signal.Value;
-            _hasFrameReturn = true;
+            _execution.ReturnValue = signal.Value;
+            _execution.HasReturn = true;
             return false;
         }
 

@@ -186,6 +186,9 @@ internal sealed partial class LythonRuntime
                 : _callCompletion == CallCompletion.TypeGetter ? 2 : 1;
             BoundCallArguments bound = default;
             ExecutionContext? frame = null;
+            ExecutableWorkState work = default;
+            var ownsWork = false;
+            var functionEntered = false;
             var callEntered = _callCompletion == CallCompletion.Constructor;
             var transferred = false;
             try
@@ -214,14 +217,42 @@ internal sealed partial class LythonRuntime
                     CompletePendingCall(nativeValue, null);
                     return this;
                 }
-                frame = function.EnterInvocationFrame(bound, span);
-                if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value))
+                if (function.CanDeferInvocationContext)
                 {
-                    CompletePendingCall(value, null);
-                    return this;
+                    var scope = function.DefinitionContext;
+                    scope.EnterFunctionCall(span);
+                    functionEntered = true;
+                    var entryException = State.CurrentException;
+                    try
+                    {
+                        work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells, argumentsAreLocals: true);
+                        ownsWork = true;
+                        var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
+                        if (pause == InstructionPause.Boundary)
+                        {
+                            CompletePendingCall(work.HasReturn ? work.ReturnValue : PyNone.Instance, null);
+                            return this;
+                        }
+                        if (pause != InstructionPause.ContextRequired)
+                            throw new InvalidOperationException("A borrowed invocation cannot suspend.");
+                        frame = function.EnterInvocationFrame(bound, span, enterFunctionCall: false);
+                        frame.AdoptExecutableExecution(ref work, entryException);
+                        ownsWork = false;
+                    }
+                    finally { State.SetCurrentException(entryException); }
                 }
-                InitializeExecutableFrame(function.CodeObject, frame, bound,
-                    function.ClosureCells, argumentsAreLocals: true);
+                else
+                {
+                    frame = function.EnterInvocationFrame(bound, span);
+                    functionEntered = true;
+                    if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value))
+                    {
+                        CompletePendingCall(value, null);
+                        return this;
+                    }
+                    InitializeExecutableFrame(function.CodeObject, frame, bound,
+                        function.ClosureCells, argumentsAreLocals: true);
+                }
                 frame.EnterExecutableSlots();
                 frame._caller = this;
                 frame._boundStorageOwner = bound.StorageOwner;
@@ -234,6 +265,8 @@ internal sealed partial class LythonRuntime
                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
                 if (frame is not null && error is LythonRuntimeException runtimeError)
                     PyFunctionBinding.AnnotateException(runtimeError, frame, function.Name, span);
+                else if (functionEntered && error is LythonRuntimeException borrowedError)
+                    PyFunctionBinding.AnnotateException(borrowedError, function.DefinitionContext, function.Name, span);
                 CompletePendingCall(null, error);
                 return this;
             }
@@ -243,9 +276,13 @@ internal sealed partial class LythonRuntime
                 {
                     try
                     {
-                        frame?.LeaveFunctionCall();
-                        if (bound.Values is not null) ReturnBoundArguments(bound);
-                        frame?.DetachExecutableExecution();
+                        try { if (ownsWork) work.Stack.ReleaseStorage(); }
+                        finally
+                        {
+                            if (functionEntered) State.LeaveFunctionCall();
+                            if (bound.Values is not null) ReturnBoundArguments(bound);
+                            frame?.DetachExecutableExecution();
+                        }
                     }
                     finally { if (callEntered) LeaveInterpreterFrame(); }
                 }

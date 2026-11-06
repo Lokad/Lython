@@ -162,6 +162,11 @@ internal sealed partial class PyDict
         LythonRuntime.ExecutionContext? context, LythonSourceSpan span, bool replaceExisting)
     {
         var index = ResolveNativeKey(key, hash, protocol, context, span);
+        return PublishNativeValue(index, key, value, hash, protocol, replaceExisting);
+    }
+
+    private object PublishNativeValue(int index, object key, object value, uint hash, bool protocol, bool replaceExisting)
+    {
         if (index >= 0)
         {
             if (replaceExisting) _nativeItems![index].Value = value;

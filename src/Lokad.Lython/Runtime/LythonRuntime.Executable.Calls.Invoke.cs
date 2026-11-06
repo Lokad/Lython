@@ -7,6 +7,32 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // The same native selection serves ordinary and not-yet-materialized
+        // invocations. A false result has performed no operation or admission.
+        private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, ExecutableCallSite call, int start, object target)
+        {
+            var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
+            var dictionary = call.HasReceiver && ReferenceEquals(target, DirectDictionaryGet)
+                ? execution.Stack[start] as PyDict : null;
+            var nativeGet = dictionary is not null && dictionary.CanReadKeySynchronously(argument!);
+            var shape = NativeReturnShape.Other;
+            var unary = call.IsPositionalOnly && call.ArgumentCount == 1
+                ? SelectNativeUnaryOperation(target, argument, NativeReturnShape.Other, out shape) : null;
+            if (invocation is null && shape == NativeReturnShape.Other) unary = null;
+            if (!nativeGet && unary is null) return false;
+            try
+            {
+                var result = nativeGet
+                    ? InvokeDictionaryGet(dictionary!, argument!, call.ArgumentCount == 2
+                        ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, scope)
+                    : InvokeSingleInput(argument!, unary!, call.CallSpan, scope);
+                PublishInstructionResult(ref execution, scope, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
+                return true;
+            }
+            catch { execution.Stack.RetireTo(start); throw; }
+        }
+
         // The opcode has already read its evaluated target and offered it to the
         // linear frame runner. Both APIs use the same remaining call selection.
         private ValueTask ExecuteOrdinaryCall(ExecutableCallSite call, int start, object target, bool asynchronous)
@@ -82,11 +108,6 @@ internal sealed partial class LythonRuntime
                 {
                     result = InvokeDictionarySetDefault((PyDict)_execution.Stack[start], _execution.Stack[start + call.ArgumentOffset],
                         call.ArgumentCount == 2 ? _execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, this);
-                }
-                else if (call.IsPositionalOnly && call.ArgumentCount == 1 &&
-                    SelectNativeUnaryOperation(target, _execution.Stack[start + call.ArgumentOffset], NativeReturnShape.Other, out _) is { } nativeOperation)
-                {
-                    result = InvokeSingleInput(_execution.Stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, this);
                 }
                 else if (target is PyFunctionBase function)
                 {

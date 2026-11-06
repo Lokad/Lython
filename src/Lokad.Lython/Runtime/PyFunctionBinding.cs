@@ -11,7 +11,8 @@ internal static class PyFunctionBinding
         BoundCallArguments boundArguments,
         bool mirrorBoundArguments,
         PyType? ownerType,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        bool enterFunctionCall = true)
     {
         var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
         frame.FunctionName = bindingPlan.CallableName;
@@ -38,7 +39,7 @@ internal static class PyFunctionBinding
             else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper();
         }
 
-        frame.EnterFunctionCall(span);
+        if (enterFunctionCall) frame.EnterFunctionCall(span);
         return frame;
     }
 

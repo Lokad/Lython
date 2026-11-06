@@ -429,7 +429,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     internal LythonRuntime.ExecutionContext EnterInvocationFrame(
         BoundCallArguments boundArguments,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        bool enterFunctionCall = true)
         => PyFunctionBinding.EnterInvocationFrame(
             _closure,
             _scopeFacts,
@@ -437,5 +438,6 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             boundArguments,
             RequiresArgumentMirroring,
             OwnerType,
-            span);
+            span,
+            enterFunctionCall);
 }

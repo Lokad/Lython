@@ -1,0 +1,46 @@
+{
+  "status": "active implementation; performance decision and full delivery pending",
+  "lastFullyQualifiedRevision": "88f1209929697ce1fb6a2d895fcaae5fb0ac2424",
+  "candidateSource": "3eff1b37 plus archived R13 B patch, Slice correction and shared no-growth write refinement",
+  "measuredCandidateCoreSHA256": "1daf56c3a11814c568e9ea3e60d8c600b5fd1eea6b8e31ddf16a6be79a9bb017",
+  "releaseBuildBothTargets": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "focusedPerActualRuntime": {
+    "internal": 296,
+    "public": 1078
+  },
+  "earlierBroadFocusPerActualRuntime": {
+    "internal": 1597,
+    "public": 4213,
+    "scope": "Slice-corrected source before final shared-write/class-cell refinement"
+  },
+  "cpythonSemanticGoldens": 7,
+  "initialFullLocalNet11": {
+    "internalPassed": 4259,
+    "publicPassed": 16185,
+    "publicFailed": 1,
+    "failure": "Slice context guard omitted; corrected and focused-qualified through both APIs"
+  },
+  "b346": {
+    "terminal": true,
+    "complete": true,
+    "jobs": 12,
+    "seconds": 228.42726823920384,
+    "archiveSHA256": "8c5d5ba696ebbc423aaf9bf3a5a7b939c4ef7d68d7f806ed93bf93da28d0aea3",
+    "qualificationScope": "pre-correction prototype; uncertainty/adverse observations preserved"
+  },
+  "b347": {
+    "complete": true,
+    "jobs": 12,
+    "elapsedSeconds": 328.0986974919215,
+    "allWorkersJoined": true,
+    "guestFixtureDirectories": [],
+    "quietBeforeAndAfter": true,
+    "archiveSHA256": "bf6a43a8f2f956d134985235d88a0a7d2e37041008c914ddff3e9687bb0571b0"
+  },
+  "fullPlatformStressPackage": "pending coherent delivery",
+  "publication": "postponed",
+  "decision": "provisionally retain coherent implementation; explicit warm text/JSON/report debt; broader performance objective open"
+}

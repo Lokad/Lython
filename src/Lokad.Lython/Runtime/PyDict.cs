@@ -58,6 +58,22 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     // Check after argument evaluation: a guest callback may have inserted a
     // protocol key. This is the same native proof used by subscript execution.
     internal bool CanReadKeySynchronously(object key) => key is PyString && !HasProtocolKeys;
+
+    // Defer lexical-context construction only while mutation cannot enter a
+    // host admission hook or a guest key protocol. Growth uses the ordinary path.
+    internal bool TryWriteKeyWithoutAdmission(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        if (key is not PyString || _nativeItems is null || HasProtocolKeys ||
+            !ReferenceEquals(_memoryGovernor, governor)) return false;
+        governor.ThrowIfAdmissionFailed();
+        var hash = NativeHash(key);
+        var index = FindNativeIndex(key, hash, PyStructuralGuard.AmbientContext, span);
+        if (index < 0 && _nativeCount == _nativeItems.Length) return false;
+        var before = _nativeCount;
+        PublishNativeValue(index, key, value, hash, protocol: false, replaceExisting: true);
+        if (_nativeCount != before) _version++;
+        return true;
+    }
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
         => OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);

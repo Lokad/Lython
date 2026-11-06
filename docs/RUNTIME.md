@@ -371,6 +371,15 @@ admission. Both paths share the existing operations, cancellation and ownership.
 Synchronous calls, asynchronous calls and native return expressions share unary
 builtin selection; ordinary calls keep broader protocol/error behavior while
 native returns require a closed result proof.
+Other closed module helpers can begin with their owned local/operand storage and
+the same instruction dispatch, without a lexical context. Scope-sensitive work,
+guest protocols, nested calls and host operations create the ordinary context at
+the current instruction and adopt that storage; bindings and prior effects are
+not replayed. Protected and capturing bodies start with their normal context.
+Native dictionary writes use this deferred context only when an already funded
+table needs neither capacity growth nor key protocols. Growth creates the context
+before admission. Operand storage retains shared execution services rather than
+lexical identity; cancellation, nesting admission and cleanup remain unchanged.
 General binding and
 other native/protocol callbacks use their general invocation routes. A bound
 function body reuses its call admission rather than adding a second logical

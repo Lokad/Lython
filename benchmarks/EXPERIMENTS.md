@@ -3188,6 +3188,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 ## Current allocation/lifecycle gate (2026-11-06)
 
+[R13 deferred contexts](results/2026-11-06-deferred-contexts/README.md) builds on
+that gate with one shared instruction engine and explicit adoption of current
+locals/operands. B346's adverse/uncertain observations and Slice failure remain
+visible. Corrected B347 improves CSV elapsed about6% in both roles, while warm
+text remains adverse, JSON mixed and report variable. Provisionally retain the
+coherent implementation with explicit debt; full delivery and the broader
+performance objective remain pending. No broad CPU/exact-allocation claim.
+
 [R12/B345 origins](results/2026-11-06-current-allocation/README.md): two complete maintained scripts,256 jobs each/1.886s capture, all source/quiet/golden/funding/cleanup gates. Current CSV context allocations remain visible (sampled424B objects); text is dominated by token storage rather than contexts. Approximate triggering-type attribution is not CPU/exact/live evidence. Original B344 CRLF launch failure preserved. Select shared executable work-state/context-on-demand source proof; do not replay slower caller records, arenas or shared CSV-key machinery.
 
 ## Shared executable work state (2026-11-06)

@@ -31,12 +31,7 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
                     {
-                        var receiver = _execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
-                        var key = _execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
-                        var value = _execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
-                        var targetSpan = (LythonSourceSpan)_execution.Code.Constants[instruction.TargetSpanIndex]!;
-                        if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, key, value, targetSpan, this);
-                        else SetSubscriptValue(receiver, key, value, targetSpan, this);
+                        mutation = ExecuteSubscriptStore(ref _execution, instruction, this, asynchronous);
                         break;
                     }
                     case ExecutableOpCode.ReadRetainedSubscript:
@@ -148,6 +143,35 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             return CompleteTargetMutation(mutation, instruction.LiveExtent);
+        }
+
+        private static ValueTask ExecuteSubscriptStore(ref ExecutableWorkState execution,
+            in ExecutableInstruction instruction, ExecutionContext scope, bool asynchronous)
+        {
+            var first = instruction.InputStart;
+            var receiver = execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
+            var key = execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
+            var value = execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
+            var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
+            if (asynchronous) return SetHeaderSubscriptAsync(receiver, key, value, span, scope);
+            SetSubscriptValue(receiver, key, value, span, scope);
+            return default;
+        }
+
+        private static bool TryExecuteSubscriptStoreWithoutContext(ref ExecutableWorkState execution,
+            in ExecutableInstruction instruction, ExecutionContext scope)
+        {
+            var first = instruction.InputStart;
+            var receiver = execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
+            if (receiver is not PyDict table) return false;
+            var key = execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
+            var value = execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
+            var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
+            using var ambient = PyStructuralGuard.PushAmbient(scope, span);
+            if (!table.TryWriteKeyWithoutAdmission(key, value, scope.MemoryGovernor, span)) return false;
+            try { scope.CheckExecution(span); }
+            finally { execution.Stack.RetireTo(instruction.LiveExtent); }
+            return true;
         }
 
         private ValueTask CompleteTargetMutation(ValueTask pending, int liveExtent)

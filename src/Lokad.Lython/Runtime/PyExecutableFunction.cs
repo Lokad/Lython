@@ -35,6 +35,14 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     internal ExecutableCodeObject CodeObject => _codeObject;
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
+    internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
+
+    internal bool CanDeferInvocationContext => OwnerType is null && SupportsDirectPositional &&
+        !_codeObject.ScopeFacts.RequiresClassCell &&
+        _codeObject.CapturedLocalSlots.Count == 0 && _closureCells.Count == 0 &&
+        _codeObject.ExceptionRegions.Count == 0 && Closure.ParentContext is null &&
+        !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
+        Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
     {
