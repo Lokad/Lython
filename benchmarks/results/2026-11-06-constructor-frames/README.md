@@ -62,3 +62,5 @@ post-admission initializer mutation cannot restart allocation and retaining nati
 initializers keep positional/keyword packets after caller-pool retirement.
 Final delivery status belongs in validation.json; previous933 platform qualification
 does not qualify this source. Publication remains postponed.
+
+Committed source88f12099: final local4,255internal/16,176public pass; both actual installed Release consumers pass (package908B7184, core dependencies empty, adapter nonpackable). Exact-source platform/stress CI42208020544 is running; final status is tracked separately in validation.json. No publication.
