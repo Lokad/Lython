@@ -68,3 +68,10 @@ pass; [validation](validation.json) records the exact package hash. Delivery
 CI42191963552 is running independently; latest observation both platforms have
 passed Release11/10 and package gates and are executing originalStress. Later
 constructor work is excluded. No unchanged local suite replay.
+
+## Closed platform delivery
+
+Exact **a2a61290** is fully qualified: [cached terminal42191963552](delivery-ci.json)
+is GREEN/all eight Windows/Ubuntu, .NET11/10, originalStress and package gates.
+Earlier pending observations above are historical. Never query this terminal run
+or replay unchanged checks. Later R09 constructor prototypes are excluded.

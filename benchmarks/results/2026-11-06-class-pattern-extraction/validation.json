@@ -1,5 +1,5 @@
 {
-  "status": "Committed a2a61290, full local.NET11 and focused both runtimes pass. Both actual installed consumers pass; CI42191963552 live for platform/runtime/originalStress/package gates.",
+  "status": "Fully qualified exacta2a61290: full local.NET11, focused both actual runtimes, both installed consumers and cached terminal42191963552 GREEN/all eight Windows/Ubuntu/runtime/originalStress/package gates. Later R09 excluded.",
   "source": "ddbda0cf plus exact four-file R06 source hashes/patch",
   "independentPythonCases": 16,
   "focused": {
