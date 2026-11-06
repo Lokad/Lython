@@ -34,7 +34,13 @@ public sealed class DiscoveryAdmissionTests
                 Assert.Equal(success, result.Success);
                 Assert.True(host.AllocatedAtGate > 0);
                 if (!success) Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-                var allocated = (host.AllocatedAtSecondGate == 0 ? GC.GetTotalAllocatedBytes(true) : host.AllocatedAtSecondGate) - host.AllocatedAtGate;
+                // Refusal ends the preflight boundary. Exception formatting and
+                // asynchronous unwind can allocate after storage was denied.
+                var endpoint = success
+                    ? host.AllocatedAtSecondGate == 0 ? GC.GetTotalAllocatedBytes(true) : host.AllocatedAtSecondGate
+                    : budget.AllocatedAtFirstRefusal;
+                Assert.True(endpoint >= host.AllocatedAtGate);
+                var allocated = endpoint - host.AllocatedAtGate;
                 Assert.InRange(allocated, 0, 128 * 1024);
             }
             Assert.Equal(0, budget.Root.ReservedBytes);

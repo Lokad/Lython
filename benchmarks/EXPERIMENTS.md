@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [R20/R21 CPython refresh](results/2026-11-06-current-cpython/README.md)
+records all fifteen compile/warm/fresh jobs in312s. Warm text remains1.88–1.90×
+CPython, JSON1.08–1.09×. Identical-role variation and separate clock boundaries
+remain explicit. It updates the primary guide without attributing each change's
+CPU benefit. Original Ubuntu allocation-test failure and its corrected preflight
+measurement boundary are preserved; updated delivery qualification is separate.
+
 The [R21 frame-boundary simplification](results/2026-11-06-frame-resume-boundaries/README.md)
 routes pending exceptions only on resumption and deletes the duplicate return
 flag. All instruction guards and cleanup ordering remain. B366 completes109s/all
