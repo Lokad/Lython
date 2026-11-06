@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [b6650f09 delivery comparison](results/2026-11-06-delivery-cpython/README.md)
+refreshes compile/warm/fresh against CPython for four large scripts and the existing
+small configuration edit.15jobs/311.43s, two identical current roles, all goldens,
+quiet/funding/cleanup/archive gates pass. Fresh ratios1.31/1.75–1.83/1.12/1.44–1.46/
+1.21–1.22x; text fresh/report/warm CSV remain variable. Separate Windows/Ubuntu,
+both-runtime/original Stress/package qualification is GREEN as CI42258608463.
+The current guide uses this source; earlier adverse source pairs remain separate.
+
+
 [Native cursor working admission](results/2026-11-06-native-cursor-admission/README.md)
 qualifies a private immutabledev44 adapter against b6650f09:84internal/427public
 per actual11/10, real interruption/refusal/retained ownership and256KiB bounded

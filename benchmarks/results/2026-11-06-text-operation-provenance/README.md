@@ -82,7 +82,8 @@ correction passes.NET11; all5 related cases pass.NET10. Full public.NET11 passes
 16,187. Logs/final regression sources are retained, including the intermediate
 fixture failure that correctly refused guest length work after admission failed.
 
-Platform/stress/installed-package qualification for R17 is pending the next
-coherent delivery boundary. Baseline621's terminal CI42243450458 is fully green
-and cached separately. No publication, RSS, exact live-heap or host-latency claim.
+Combined R17/P01 runtime b6650f09 is fully qualified: terminal CI42258608463
+passes Windows/Ubuntu, both runtimes, original Stress and installed packages.
+[Cached qualification and current comparison](../2026-11-06-delivery-cpython/README.md).
+Baseline621's terminal CI42243450458 remains cached separately. No publication, RSS, exact live-heap or host-latency claim.
 The performance objective and independent regex track remain open.

@@ -20,5 +20,6 @@ Focused Release: 169 public / 45 internal checks pass on actual .NET 11 RC3 and
 .NET 10.0.8; public checks include both public execution APIs, formula caches,
 shared allowance cleanup and existing workbook/date-system coverage. Builds have
 zero warnings/errors. Original failed build is preserved with its correction.
-Full platform/original Stress/installed-package qualification is batched with R17
-at this delivery checkpoint. No performance magnitude is inferred from this fix.
+Combined R17/P01 runtime b6650f09 is fully qualified: terminal CI42258608463
+passes Windows/Ubuntu, both runtimes, original Stress and installed packages.
+[Cached qualification and current comparison](../2026-11-06-delivery-cpython/README.md). No performance magnitude is inferred from this fix.

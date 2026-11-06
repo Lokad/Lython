@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "b6650f09126c0a411ac4549edecd8b109b0bc21b",
+  "referenceSourceRevision": "Unused historical reference image; primary measurement is CPython plus two identical current roles",
+  "coreSHA256": {
+    "candidate": "54b53c7f5dfac5558ed9ce953a252e02846ba47975ada633a194026018610e15",
+    "control": "54b53c7f5dfac5558ed9ce953a252e02846ba47975ada633a194026018610e15",
+    "reference": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused actual11/10 and installed package consumers pass; CI42258608463 in progress",
+  "deletedSourceFiles": [
+    "src/Lokad.Lython/Runtime/IPyGovernedValue.cs"
+  ],
+  "purpose": "Coherent R13C/R14/R17/P01 delivery CPython refresh, not a new source-pair optimization"
+}
