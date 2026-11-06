@@ -40,7 +40,12 @@
     "quietBeforeAndAfter": true,
     "archiveSHA256": "bf6a43a8f2f956d134985235d88a0a7d2e37041008c914ddff3e9687bb0571b0"
   },
-  "fullPlatformStressPackage": "pending coherent delivery",
+  "fullPlatformStressPackage": {
+    "status": "running",
+    "runId": 42228235593,
+    "url": "https://github.com/Lokad/Lython/actions/runs/42228235593"
+  },
   "publication": "postponed",
-  "decision": "provisionally retain coherent implementation; explicit warm text/JSON/report debt; broader performance objective open"
+  "decision": "provisionally retain coherent implementation; explicit warm text/JSON/report debt; broader performance objective open",
+  "runtimeRevision": "9a152ee0fa42bde1063e0447dd5cbcf9a9e2be1e"
 }
