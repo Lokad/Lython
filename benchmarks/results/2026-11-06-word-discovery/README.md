@@ -59,13 +59,14 @@ Greek final sigma and expanding dotted-I/ligatures. Original stdout CRLF is
 preserved; only the independent harness newline comparison was normalized.
 No runtime fix followed from that Windows harness mismatch.
 
-Full platform/originalStress/installed checks batch at the next coherent delivery;
-older794e552b receipt does not qualify R03. Publication/tagging postponed.
+Combined R03/R05 full platform/originalStress/installed qualification passes on
+51db4209; the exact terminal receipt below excludes later Q02. Publication/tagging postponed.
 Whole-script objective remains active.
 
 Combined R03/R05 source51db4209 is committed/pushed. Full local.NET11 passes
 4,215 internal/16,112 public; both actual.NET11/10 installed Release consumers
 pass. [Exact validation scope](../2026-11-06-builtin-class-patterns/validation.json).
-CI42174873217 is running on that source for Windows/Ubuntu, both runtimes,
-originalStress and package consumers. This is pending, not a green receipt.
-No earlier terminal qualification covers these changes.
+Cached terminal CI42174873217 is GREEN/all eight Windows/Ubuntu, both-runtime,
+originalStress and installed-package gates on that source.
+[Exact receipt](../2026-11-06-builtin-class-patterns/delivery-ci.json).
+Never query the closed run again. This excludes the later Q02 prototype.

@@ -3099,12 +3099,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   reference (+1.59/-0.93%); fresh-1.39/-0.85%, unchanged CSV roughly flat.
   Simplification retained without a warm/CPU/allocation claim. Both~86s collections
   pass all gates; failed initial disk checks and every adverse observation remain.
-  Focused checks pass both actual runtimes; combined delivery remains separate.
+  Focused checks pass both actual runtimes; combined delivery51db4209 is cached
+  terminal42174873217 GREEN/all eight. Excludes later Q02.
 
 - [Builtin class-pattern correction, R05](results/2026-11-06-builtin-class-patterns/README.md):
   use actual evaluated types and Python whole-subject positional matching; remove
   source-name dispatch and artificial sequence/workspace preparation. Six CPython
   goldens and focused3,056 public/320 internal per actual runtime pass. Combined
   R03/R05 source51db4209 passes full local.NET11 (4,215/16,112) and both installed
-  consumers. CI42174873217 running; original extraction/value-protocol defects
+  consumers. Cached terminal42174873217 GREEN/all eight; later Q02 excluded.
+  Original extraction/value-protocol defects
   remain separate. No R05 speedup claim or unchanged benchmark replay.
