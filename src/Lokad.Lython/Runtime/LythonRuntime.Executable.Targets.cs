@@ -167,8 +167,7 @@ internal sealed partial class LythonRuntime
             var key = execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
             var value = execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
             var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
-            using var ambient = PyStructuralGuard.PushAmbient(scope, span);
-            if (!table.TryWriteKeyWithoutAdmission(key, value, scope.MemoryGovernor, span)) return false;
+            if (!table.TryWriteKeyWithoutAdmission(key, value, scope, span)) return false;
             try { scope.CheckExecution(span); }
             finally { execution.Stack.RetireTo(instruction.LiveExtent); }
             return true;

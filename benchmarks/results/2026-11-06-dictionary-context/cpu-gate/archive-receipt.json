@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "workloads": 2,
+  "allUsersJoined": true,
+  "fixturesRemoved": true,
+  "quietBeforeAfter": true,
+  "archiveSHA256": "750598e9456e4344af9fe2ccc5ca5d8c7e40124e16b034035e0381b44549e256",
+  "guestCpuSeconds": {
+    "scripts.text-summary-helpers.large": 2.08,
+    "scripts.csv-summary-functions.large": 2.1000000000000005
+  }
+}

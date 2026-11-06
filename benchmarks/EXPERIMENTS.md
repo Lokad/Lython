@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [explicit dictionary-context milestone](results/2026-11-06-dictionary-context/README.md)
+uses current CPU evidence to remove ambient installation/rediscovery from native
+queries and funded writes, preserving structural/protocol provenance. Focused
+365internal/1,281public per actual runtime pass. B350's140.32s complete-script
+source pair favors fresh CSV/text/JSON; warm CSV is inconclusive and report has
+6.92% identical-role divergence. All adverse evidence remains; no broad CPU or
+allocation claim. Full C+R14 delivery is pending separately.
+
 The [prepared lexical-load milestone](results/2026-11-06-prepared-lexical-loads/README.md)
 uses compiler binding facts to retire general lexical searches for ordinary
 function globals, and corrects generic type-parameter shadowing in static facts.

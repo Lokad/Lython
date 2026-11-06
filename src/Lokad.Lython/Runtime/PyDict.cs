@@ -61,13 +61,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     // Defer lexical-context construction only while mutation cannot enter a
     // host admission hook or a guest key protocol. Growth uses the ordinary path.
-    internal bool TryWriteKeyWithoutAdmission(object key, object value, MemoryGovernor governor, LythonSourceSpan span)
+    internal bool TryWriteKeyWithoutAdmission(object key, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        var governor = context.MemoryGovernor;
         if (key is not PyString || _nativeItems is null || HasProtocolKeys ||
             !ReferenceEquals(_memoryGovernor, governor)) return false;
         governor.ThrowIfAdmissionFailed();
         var hash = NativeHash(key);
-        var index = FindNativeIndex(key, hash, PyStructuralGuard.AmbientContext, span);
+        var index = FindNativeIndex(key, hash, context, span);
         if (index < 0 && _nativeCount == _nativeItems.Length) return false;
         var before = _nativeCount;
         PublishNativeValue(index, key, value, hash, protocol: false, replaceExisting: true);
@@ -121,6 +122,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_nativeItems is null) return TryGetBridgeValue(key, context, span, out value);
+        // Own provenance here. Native string queries cannot invoke guest
+        // protocols or structural traversal and already have context explicitly.
+        using var ambient = CanReadKeySynchronously(key)
+            ? default : PyStructuralGuard.PushAmbient(context, span);
         var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
@@ -131,7 +136,6 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     {
         if (!CanReadKeySynchronously(key)) return ReadProtocolKeyAsync(key, context, span);
         context.CheckExecution(span);
-        using var ambient = PyStructuralGuard.PushAmbient(context, span);
         var found = TryGetValue(key, out var value, context, span);
         return new((found, value ?? PyNone.Instance));
     }

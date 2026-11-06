@@ -85,4 +85,49 @@ public sealed class NativeDictionaryMutationTests
             return hash;
         }
     }
+
+    [Fact]
+    public void ExplicitQueryKeepsItsContextAndRestoresOuterProvenanceOnCancellation()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            using var cancellation = new CancellationTokenSource();
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            var outer = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                new LythonRunOptions { MemoryBudget = owner });
+            var dictionary = new PyDict(context.MemoryGovernor);
+            for (var index = 0; index < 128; index++) dictionary.SetItem((object)double.NaN, BigInteger.One);
+            var span = new LythonSourceSpan(7, 3, 7, 12);
+            var outerSpan = new LythonSourceSpan(2, 1, 2, 4);
+            var baseline = budget.ReservedBytes;
+            using (PyStructuralGuard.PushAmbient(outer, outerSpan))
+            {
+                var key = new ContextualHash(context, span, cancellation,
+                    PyValueComparer.Instance.GetHashCode(double.NaN));
+                var error = Assert.Throws<LythonRuntimeException>(() => dictionary.TryGetValue(key, out _, context, span));
+                Assert.Equal("execution canceled", error.Message);
+                Assert.Equal(span, error.Span);
+                Assert.Same(outer, PyStructuralGuard.AmbientContext);
+                Assert.Equal(outerSpan, PyStructuralGuard.AmbientSpan);
+            }
+            Assert.Equal(128, dictionary.Count);
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class ContextualHash(LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+        CancellationTokenSource cancellation, int hash) : IPyHashableValue
+    {
+        public int GetPyHashCode()
+        {
+            Assert.Same(context, PyStructuralGuard.AmbientContext);
+            Assert.Equal(span, PyStructuralGuard.AmbientSpan);
+            cancellation.Cancel();
+            return hash;
+        }
+    }
 }

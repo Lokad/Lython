@@ -1,0 +1,41 @@
+{
+  "sourceRevision": "89d81ae3 plus R14 explicit dictionary operation context",
+  "referenceSourceRevision": "66ae029d; B348 frozen source-equivalent977da8d6",
+  "coreSHA256": {
+    "candidate": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2",
+    "control": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2",
+    "reference": "977da8d61a4bbd9b448b70f23ee3cf82e659f2c6e481279091e703f9a05d5937"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Assignments.cs": "e06de6f76706fb2a377ea235bc6bb3fbccbe3b2eb2ddcbd8ca9f9b9d7d469c0e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "616961da34d946b584926355c691c75c64fc71f90547e5a76f1ec98a13e4ec50",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "45f350f601d91d6cc54d32445c308b50936c22e95e21c9347aa93cd89fc8fc33",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "d782e0c51eddaac964bbc281b42983b50a05bb3289b3a584ddcae33280076b07",
+    "src/Lokad.Lython/Runtime/PyIndexing.cs": "a481e68638d46642a3824f67bebf4af3a7dbd6f72ff6c55ed7eb15cbc052c2a7",
+    "tests/Lokad.Lython.Tests/NativeDictionaryMutationTests.cs": "6763b658544a6873c921f05cca6a5c37409bd68b4fdf7b85952c8d30b24e2a00"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 365,
+      "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 1281,
+      "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 365,
+      "coreSHA256": "4df0ee4767c34b221da9b00f679361e51c123ca4e5339f25e0920bda2752bfe2"
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 1281,
+      "coreSHA256": "4df0ee4767c34b221da9b00f679361e51c123ca4e5339f25e0920bda2752bfe2"
+    }
+  }
+}

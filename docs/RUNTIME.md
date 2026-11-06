@@ -427,6 +427,10 @@ Contextual key preparation computes the hash and equality-dispatch requirement
 in one walk. Tuple elements and slice bounds are visited in Python order: an
 earlier hash callback runs before a later unhashable value is rejected. Native
 dictionary copies retain stored hashes without replaying callbacks.
+Explicit dictionary queries carry their execution context into hashing and probing.
+Native string reads and already-funded string-key writes avoid ambient state;
+structural and protocol queries establish it at the query boundary and restore
+the caller's provenance when they finish or fail.
 Generated dataclass hashes admit their field snapshot before reads, complete all
 reads before hashing fields and keep that storage funded through pending callbacks.
 Hash guards carry the execution's explicit cycle state across awaits; no ambient

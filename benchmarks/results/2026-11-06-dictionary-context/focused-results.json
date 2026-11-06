@@ -1,0 +1,18 @@
+{
+  "Lokad.Lython.Tests-net11.0": {
+    "passed": 365,
+    "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  },
+  "Lokad.Lython.PublicApi.Tests-net11.0": {
+    "passed": 1281,
+    "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  },
+  "Lokad.Lython.Tests-net10.0": {
+    "passed": 365,
+    "coreSHA256": "4df0ee4767c34b221da9b00f679361e51c123ca4e5339f25e0920bda2752bfe2"
+  },
+  "Lokad.Lython.PublicApi.Tests-net10.0": {
+    "passed": 1281,
+    "coreSHA256": "4df0ee4767c34b221da9b00f679361e51c123ca4e5339f25e0920bda2752bfe2"
+  }
+}

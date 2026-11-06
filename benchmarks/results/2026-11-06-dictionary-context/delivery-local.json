@@ -1,0 +1,10 @@
+{
+  "Lokad.Lython.Tests": {
+    "passed": 4260,
+    "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  },
+  "Lokad.Lython.PublicApi.Tests": {
+    "passed": 16187,
+    "coreSHA256": "9e05892eefe8ccff91aff019f84962a6eef3a5fb2657e2c56413c5741c1b21d2"
+  }
+}

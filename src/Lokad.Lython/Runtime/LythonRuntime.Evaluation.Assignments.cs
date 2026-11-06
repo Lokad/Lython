@@ -192,6 +192,11 @@ internal sealed partial class LythonRuntime
 
     internal static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is PyDict native && native.TryWriteKeyWithoutAdmission(index, value, context, span))
+        {
+            context.CheckExecution(span);
+            return;
+        }
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         // Slice objects assign through the shared slice path on lists like
         // CPython; every other receiver keeps its existing behaviour.

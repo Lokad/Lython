@@ -2009,8 +2009,7 @@ internal sealed partial class LythonRuntime
 
         internal static object Get(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
         {
-            using var ambientScope = PyStructuralGuard.PushAmbient(context, span);
-            return dict.TryGetValue(ValidateDictionaryKey(key, span), out var found) ? found : fallback;
+            return dict.TryGetValue(ValidateDictionaryKey(key, span), out var found, context, span) ? found : fallback;
         }
 
         internal static object SetDefault(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)

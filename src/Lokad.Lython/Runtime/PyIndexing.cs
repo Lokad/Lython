@@ -64,7 +64,9 @@ internal static class PyIndexing
 
     public static object ReadIndex(object target, object index, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
-        // R13b: protocol-key lookups below observe ambient provenance.
+        if (target is PyDict dict) return ReadDictIndex(dict, index, span, context);
+
+        // Other structural operations still observe ambient provenance.
         using var _ambientScope = context is null
             ? default(PyStructuralGuard.AmbientScope)
             : PyStructuralGuard.PushAmbient(context, span);
@@ -75,11 +77,6 @@ internal static class PyIndexing
         if (target is LythonRuntime.ReMatchObject match)
         {
             return LythonRuntime.ReMatchMembers.GetSubscript(match, index, span, context);
-        }
-
-        if (target is PyDict dict)
-        {
-            return ReadDictIndex(dict, index, span);
         }
 
         if (target is PyCounter counter)
@@ -153,7 +150,7 @@ internal static class PyIndexing
             var key = CreateMappingSliceKey(start, end, step, context, span);
             if (target is PyDict dict)
             {
-                return ReadDictIndex(dict, key, span);
+                return ReadDictIndex(dict, key, span, context);
             }
 
             if (target is PyCounter counter)
@@ -408,15 +405,17 @@ internal static class PyIndexing
         return BigInteger.Clamp(value, lower, upper);
     }
 
-    private static object ReadDictIndex(PyDict dict, object index, LythonSourceSpan span)
+    private static object ReadDictIndex(PyDict dict, object index, LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
     {
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
-        if (!dict.TryGetValue(key, out var value))
+        var found = context is null ? dict.TryGetValue(key, out var value)
+            : dict.TryGetValue(key, out value, context, span);
+        if (!found)
         {
             throw RuntimeErrors.MissingKey(index, span);
         }
 
-        return value;
+        return value!;
     }
 
     private static object ReadCounterIndex(PyCounter counter, object index, LythonSourceSpan span)

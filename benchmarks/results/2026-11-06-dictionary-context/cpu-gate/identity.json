@@ -1,0 +1,20 @@
+{
+  "runtimeRevision": "66ae029d",
+  "headRevision": "89d81ae335c4375c95b01cf2eb624c50bf84c5d9",
+  "files": {
+    "Lokad.Lython.dll": "977da8d61a4bbd9b448b70f23ee3cf82e659f2c6e481279091e703f9a05d5937",
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "56148ed6f6ee2062254f1ad61e01089293bb56b5ac13de1c9dc140fbf831b874",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "737d56e7babb9ddf5bdd9630c6c12c6f36385e1dec272efc9a2f5620276029d6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "39ffd5b2a2c52067c707728108ed7dbfc393ce7bd2c9d120c689153d13b1f6f3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "10ef0d978bb165b79eb0526b5d6cbd766891a3c98736cc0f135a1aa31cc5db47",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "f8329ce7610190b7cd470cafdae602b1cac0139dd2fa50ecdf2f88ff415fd727"
+  },
+  "sourceScope": "Committed runtime66ae029d; source-equivalent frozen core977da8d6, validated B348/focused both actual runtimes. Full delivery source9a is separate.",
+  "purpose": "R14 bounded current text/CSV CPU attribution; no source-pair speedup/allocation/RSS claim"
+}

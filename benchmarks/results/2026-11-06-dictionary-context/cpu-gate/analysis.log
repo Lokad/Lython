@@ -1,0 +1,204 @@
+text samples 414 mapped 87 methods {'ExecuteInstructionPrefix': 70, 'CompleteLocalResult': 17} unmapped []
+groups {'Mirror': {'leaf': 0, 'inclusive': 0}, 'TryInsert': {'leaf': 0, 'inclusive': 0}, 'CompleteLocalResult': {'leaf': 17, 'inclusive': 17}, 'StoreExecutableLocal': {'leaf': 0, 'inclusive': 0}, 'BeginPendingCall': {'leaf': 9, 'inclusive': 130}, 'CreateExecutableWorkState': {'leaf': 0, 'inclusive': 0}, 'PyDict': {'leaf': 17, 'inclusive': 31}, 'MemoryGovernor': {'leaf': 8, 'inclusive': 16}, 'TryResize': {'leaf': 0, 'inclusive': 0}, 'Reserve': {'leaf': 0, 'inclusive': 0}, 'SplitWhitespace': {'leaf': 14, 'inclusive': 89}, 'CsvRecordParser': {'leaf': 0, 'inclusive': 0}, 'PyIndexing': {'leaf': 0, 'inclusive': 0}, 'CheckExecution': {'leaf': 0, 'inclusive': 0}, 'PrepareQueryKey': {'leaf': 7, 'inclusive': 21}, 'PyStructuralGuard': {'leaf': 0, 'inclusive': 0}}
+
+ ExecuteInstructionPrefix G_M000_IG08 14
+G_M000_IG08:                ;; offset=0x00E1
+       xor      edx, edx
+       mov      dword ptr [rbp-0x30], edx
+       mov      edx, dword ptr [rdi+0x28]
+       cmp      edx, ebx
+       jae      G_M000_IG296
+       shl      rdx, 5
+       lea      rdx, bword ptr [rcx+rdx+0x10]
+       mov      bword ptr [rbp-0x268], rdx
+       mov      rdx, gword ptr [rsi+0xB0]
+       mov      r8, bword ptr [rbp-0x268]
+       mov      r8, gword ptr [r8]
+       mov      r10, gword ptr [rdx+0x80]
+       mov      r10, gword ptr [r10+0x20]
+       test     r10, r10
+       jne      G_M000_IG291
+       mov      rdx, gword ptr [rdx+0x170]
+       test     rdx, rdx
+       jne      G_M000_IG289
+
+ ExecuteInstructionPrefix G_M000_IG10 9
+G_M000_IG10:                ;; offset=0x0140
+       mov      rdx, gword ptr [rbp-0x248]
+       cmp      gword ptr [rdx+0x78], 0
+       jne      G_M000_IG121
+
+ ExecuteInstructionPrefix G_M000_IG11 9
+G_M000_IG11:                ;; offset=0x0152
+       mov      rdx, bword ptr [rbp-0x268]
+       mov      edx, dword ptr [rdx+0x1C]
+       cmp      edx, 63
+       ja       G_M000_IG122
+       lea      r8, [reloc @RWD00]
+       mov      r8d, dword ptr [r8+4*rdx]
+       lea      r10, G_M000_IG02
+       add      r8, r10
+       jmp      r8
+
+ ExecuteInstructionPrefix G_M000_IG07 8
+G_M000_IG07:                ;; offset=0x00C0
+       mov      edi, dword ptr [rbx+0x28]
+       mov      rcx, gword ptr [rbp-0x260]
+       mov      eax, dword ptr [rcx+0x08]
+       cmp      edi, eax
+       mov      rdi, rbx
+       mov      rsi, gword ptr [rbp-0x240]
+       jge      G_M000_IG294
+       mov      ebx, eax
+
+ ExecuteInstructionPrefix G_M000_IG18 5
+G_M000_IG18:                ;; offset=0x0226
+       mov      rdx, gword ptr [r15]
+       movsxd   r8, r14d
+       mov      r10d, dword ptr [rdx+0x08]
+       cmp      r10, r8
+       jbe      G_M000_IG146
+       lea      r8, bword ptr [rdx+8*r8+0x10]
+       mov      r10, qword ptr [rdx]
+       mov      r10, qword ptr [r10+0x30]
+       test     r13, r13
+       je       G_M000_IG114
+
+ CompleteLocalResult G_M000_IG06 4
+G_M000_IG06:                ;; offset=0x0100
+       mov      gword ptr [rbp-0x48], rdx
+       cmp      word  ptr [rdx+0x0C], 60
+       setne    r8b
+       movzx    r8, r8b
+       mov      dword ptr [rbp-0x2C], r8d
+       test     r15, r15
+       je       G_M000_IG26
+
+ CompleteLocalResult G_M000_IG01 4
+G_M000_IG01:                ;; offset=0x0000
+       push     rbp
+       push     r15
+       push     r14
+       push     r13
+       push     r12
+       push     rbx
+       sub      rsp, 40
+       lea      rbp, [rsp+0x50]
+       mov      rbx, rdi
+       mov      r15, rsi
+       mov      r13, rdx
+       mov      r14, rcx
+
+ ExecuteInstructionPrefix G_M000_IG05 4
+G_M000_IG05:                ;; offset=0x00A6
+       mov      rbx, bword ptr [rbp-0x238]
+       cmp      byte  ptr [rbx+0x2C], 0
+       jne      G_M000_IG294
+       cmp      dword ptr [rbp-0x30], 0
+       jne      SHORT G_M000_IG07
+csv samples 419 mapped 54 methods {'ExecuteInstructionPrefix': 51, 'CompleteLocalResult': 3} unmapped []
+groups {'Mirror': {'leaf': 0, 'inclusive': 0}, 'TryInsert': {'leaf': 0, 'inclusive': 0}, 'CompleteLocalResult': {'leaf': 3, 'inclusive': 6}, 'StoreExecutableLocal': {'leaf': 0, 'inclusive': 0}, 'BeginPendingCall': {'leaf': 11, 'inclusive': 191}, 'CreateExecutableWorkState': {'leaf': 6, 'inclusive': 12}, 'PyDict': {'leaf': 19, 'inclusive': 30}, 'MemoryGovernor': {'leaf': 1, 'inclusive': 1}, 'TryResize': {'leaf': 1, 'inclusive': 13}, 'Reserve': {'leaf': 0, 'inclusive': 0}, 'SplitWhitespace': {'leaf': 0, 'inclusive': 0}, 'CsvRecordParser': {'leaf': 41, 'inclusive': 72}, 'PyIndexing': {'leaf': 10, 'inclusive': 13}, 'CheckExecution': {'leaf': 0, 'inclusive': 0}, 'PrepareQueryKey': {'leaf': 7, 'inclusive': 11}, 'PyStructuralGuard': {'leaf': 0, 'inclusive': 0}}
+
+ ExecuteInstructionPrefix G_M000_IG09 12
+G_M000_IG09:                ;; offset=0x00D1
+       xor      edx, edx
+       mov      dword ptr [rbp-0x30], edx
+       mov      edx, dword ptr [rdi+0x28]
+       cmp      edx, ebx
+       jae      G_M000_IG296
+       shl      rdx, 5
+       lea      rdx, bword ptr [rcx+rdx+0x10]
+       mov      bword ptr [rbp-0x278], rdx
+       mov      rdx, gword ptr [rsi+0xB0]
+       mov      r8, bword ptr [rbp-0x278]
+       mov      r8, gword ptr [r8]
+       mov      r10, gword ptr [rdx+0x80]
+       mov      r10, gword ptr [r10+0x20]
+       test     r10, r10
+       jne      G_M000_IG293
+       mov      rdx, gword ptr [rdx+0x170]
+       test     rdx, rdx
+       jne      G_M000_IG291
+
+ ExecuteInstructionPrefix G_M000_IG11 8
+G_M000_IG11:                ;; offset=0x0134
+       mov      r8, bword ptr [rbp-0x278]
+       mov      r8d, dword ptr [r8+0x1C]
+       cmp      r8d, 63
+       ja       G_M000_IG143
+       lea      r10, [reloc @RWD00]
+       mov      r10d, dword ptr [r10+4*r8]
+       lea      r11, G_M000_IG02
+       add      r10, r11
+       jmp      r10
+
+ ExecuteInstructionPrefix G_M000_IG08 4
+G_M000_IG08:                ;; offset=0x00B5
+       mov      eax, dword ptr [rdi+0x28]
+       mov      rcx, gword ptr [rbp-0x270]
+       mov      ebx, dword ptr [rcx+0x08]
+       cmp      eax, ebx
+       mov      rsi, gword ptr [rbp-0x250]
+       jge      G_M000_IG287
+
+ ExecuteInstructionPrefix G_M000_IG18 3
+G_M000_IG18:                ;; offset=0x0216
+       mov      r8, gword ptr [r15]
+       movsxd   r10, r14d
+       mov      r11d, dword ptr [r8+0x08]
+       cmp      r11, r10
+       jbe      G_M000_IG164
+       lea      r10, bword ptr [r8+8*r10+0x10]
+       mov      r11, qword ptr [r8]
+       mov      r11, qword ptr [r11+0x30]
+       test     r13, r13
+       je       G_M000_IG31
+
+ ExecuteInstructionPrefix G_M000_IG05 3
+G_M000_IG05:                ;; offset=0x009B
+       mov      rdi, bword ptr [rbp-0x248]
+       cmp      byte  ptr [rdi+0x2C], 0
+       jne      G_M000_IG287
+
+ ExecuteInstructionPrefix G_M000_IG117 2
+G_M000_IG117:                ;; offset=0x0942
+       mov      r8, bword ptr [rbp-0x278]
+       mov      r15d, dword ptr [r8+0x10]
+       mov      rdi, bword ptr [rbp-0x248]
+       lea      r8, bword ptr [rdi+0x30]
+       cmp      byte  ptr [rbx], bl
+       mov      r8, gword ptr [r8]
+       cmp      byte  ptr [rbx+0x24], 0
+       setne    r10b
+       movzx    r10, r10b
+       add      r10d, r15d
+       cmp      r10d, dword ptr [r8+0x08]
+       jae      G_M000_IG286
+       mov      r14, gword ptr [r8+8*r10+0x10]
+       test     r14, r14
+       je       G_M000_IG241
+       mov      rsi, gword ptr [rbp-0x250]
+       mov      rdx, gword ptr [rbp-0x258]
+       mov      rcx, rbx
+
+ ExecuteInstructionPrefix G_M000_IG116 2
+G_M000_IG116:                ;; offset=0x08F5
+       mov      rdi, bword ptr [rbp-0x248]
+       mov      r8, gword ptr [rdi]
+       mov      r8, gword ptr [r8+0x68]
+       mov      r10, bword ptr [rbp-0x278]
+       cmp      dword ptr [r10+0x1C], 44
+       jne      G_M000_IG239
+       mov      r10, bword ptr [rbp-0x278]
+       mov      r10d, dword ptr [r10+0x08]
+       mov      r11, 0x7C42A3F805C8
+       cmp      qword ptr [r8], r11
+       jne      G_M000_IG240
+       cmp      dword ptr [r8+0x08], r10d
+       jbe      G_M000_IG207
+       mov      rbx, gword ptr [r8+8*r10+0x10]
+
+ ExecuteInstructionPrefix G_M000_IG06 2
+G_M000_IG06:                ;; offset=0x00AC
+       cmp      dword ptr [rbp-0x30], 0
+       jne      SHORT G_M000_IG08
