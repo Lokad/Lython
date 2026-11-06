@@ -88,9 +88,13 @@ by copying the current mapping then deleting matched keys in order.
 Builtin class patterns use the evaluated type, including aliases. `bool`, `bytes`,
 `dict`, `float`, `int`, `list`, `set`, `str` and `tuple` accept one positional
 pattern against the whole subject. Use `list([first, second])` to decompose a
-list; `list(first, second)` raises `TypeError` as in Python. User-class attribute
-extraction is still interleaved with subpatterns, and value patterns retain
-limitations for custom equality; these are compatibility gaps.
+list; `list(first, second)` raises `TypeError` as in Python. Class patterns resolve
+`__match_args__` through descriptors, check only requested positional names and
+extract attributes before testing subpatterns. Duplicate attributes raise
+`TypeError`; `AttributeError` during extraction means mismatch. Named tuples
+expose their existing field tuple as `__match_args__`. Value patterns use Python
+equality and truth protocols. Pattern hooks must complete synchronously, including
+when called through `RunAsync`; genuinely suspending pattern hooks remain unsupported.
 Dictionary-view membership and comparisons use dictionary key protocols; item
 values may be unhashable. Native view methods preserve NotImplemented and
 reflected ChainMap-view behavior.

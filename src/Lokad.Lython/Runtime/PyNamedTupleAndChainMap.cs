@@ -209,7 +209,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             "__name__" => _nameValue,
             "__annotations__" => _annotations ??= _governor is null ? new PyDict() : new PyDict(_governor, _allocationSpan),
             "__new__" => GetNewSlot(),
-            "_fields" => _fieldsTuple,
+            "_fields" or "__match_args__" => _fieldsTuple,
             "_field_defaults" => GetFieldDefaults(),
             "_make" => new BoundNamedTupleMake(this),
             _ => PyNone.Instance
@@ -572,7 +572,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
             return true;
         }
 
-        if ((name == "_fields" || name == "_field_defaults" || name == "_make" || name == "__annotations__") && _type.TryGetMember(name, out value))
+        if ((name == "_fields" || name == "__match_args__" || name == "_field_defaults" || name == "_make" || name == "__annotations__") && _type.TryGetMember(name, out value))
         {
             return true;
         }

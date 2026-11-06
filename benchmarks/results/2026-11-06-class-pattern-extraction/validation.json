@@ -1,0 +1,21 @@
+{
+  "status": "Focused and full local.NET11 pass; final platform/stress/package delivery pending",
+  "source": "ddbda0cf plus exact four-file R06 source hashes/patch",
+  "independentPythonCases": 16,
+  "focused": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 3057,
+    "Lokad.Lython.Tests-net11.0": 320,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 3057,
+    "Lokad.Lython.Tests-net10.0": 320
+  },
+  "fullLocalNet11": {
+    "internal": 4239,
+    "public": 16160
+  },
+  "measurement": {
+    "jobs": 3,
+    "elapsedSeconds": 86.64044717792422,
+    "archiveSHA256": "14d301e118da6dbef575c1b0e8aa7a2843b05446eb5726db81ca2b4c6fa69c8b"
+  },
+  "limitations": "Pattern hooks still require synchronous completion; suspended bodies and cleanup remain supported. Retained performance debt; no allocation/CPU gain claim. Older4ace delivery excludes this source; publication postponed."
+}

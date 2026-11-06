@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
             switch (pattern)
             {
                 case LoweredValuePattern value:
-                    return AreEqual(subject, EvaluateLoweredExpression(value.Expression, context));
+                    return ElementEquals(subject, EvaluateLoweredExpression(value.Expression, context), context, pattern.Span);
                 case LoweredSingletonPattern singleton:
                     return singleton.Singleton.Value switch
                     {
@@ -200,111 +200,116 @@ internal sealed partial class LythonRuntime
         var classValue = EvaluateLoweredExpression(pattern.Expression, context);
         if (classValue is PyTypedDictType)
             throw new LythonRuntimeException("TypeError", "TypedDict does not support instance or class checks.", pattern.Span);
-        if (classValue is UrllibParseModule.UrlResultType urlType)
-        {
-            if (subject is not UrllibParseModule.UrlResult result || !ReferenceEquals(result.Type, urlType)) return false;
-            if (pattern.PositionalPatterns.Length > urlType.Fields.Length)
-                throw RuntimeErrors.Type("too many positional URL result subpatterns", pattern.Span);
-            var names = new HashSet<string>(StringComparer.Ordinal);
-            for (var i = 0; i < pattern.PositionalPatterns.Length; i++)
-            {
-                names.Add(urlType.Fields[i]);
-                if (!TryMatchPattern(pattern.PositionalPatterns[i], result[i], context, captures, workspace)) return false;
-            }
-            foreach (var keyword in pattern.KeywordPatterns)
-            {
-                if (!names.Add(keyword.Name)) throw RuntimeErrors.Type("duplicate URL result attribute subpattern", pattern.Span);
-                try
-                {
-                    if (!PyMemberAccess.TryResolve(subject, keyword.Name, context, keyword.Pattern.Span, out var member) ||
-                        !TryMatchPattern(keyword.Pattern, member, context, captures, workspace)) return false;
-                }
-                catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError") { return false; }
-            }
-            return true;
-        }
-        if (classValue is PyType runtimeType)
-        {
-            if (subject is not PyInstance instance || !instance.Type.IsSubtypeOf(runtimeType))
-            {
-                return false;
-            }
-
-            if (pattern.PositionalPatterns.Length != 0)
-            {
-                if (!runtimeType.TryGetMatchArgs(out var matchArgs))
-                {
-                    throw new LythonRuntimeException(
-                        "TypeError",
-                        $"Class '{runtimeType.Name}' does not define __match_args__ for positional class patterns.",
-                        pattern.Span);
-                }
-
-                if (pattern.PositionalPatterns.Length > matchArgs.Count)
-                {
-                    throw new LythonRuntimeException(
-                        "TypeError",
-                        $"Class '{runtimeType.Name}' accepts {matchArgs.Count} positional class pattern argument(s), {pattern.PositionalPatterns.Length} given.",
-                        pattern.Span);
-                }
-
-                for (var i = 0; i < pattern.PositionalPatterns.Length; i++)
-                {
-                    if (!PyMemberAccess.TryResolve(subject, matchArgs[i], context, pattern.Span, out var memberValue) ||
-                        !TryMatchPattern(pattern.PositionalPatterns[i], RuntimeValue(memberValue), context, captures, workspace))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            foreach (var keyword in pattern.KeywordPatterns)
-            {
-                if (!PyMemberAccess.TryResolve(subject, keyword.Name, context, keyword.Pattern.Span, out var memberValue))
-                {
-                    return false;
-                }
-
-                if (!TryMatchPattern(keyword.Pattern, RuntimeValue(memberValue), context, captures, workspace))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        // Resolve the actual class object, so aliases and shadowed names use
-        // the same type semantics as isinstance rather than source spelling.
         if (!IsSupportedTypeSpecifier(classValue))
             throw RuntimeErrors.Type("called match pattern must be a type", pattern.Span);
         if (!IsInstanceAgainstSingleType(subject, classValue, context)) return false;
 
-        if (pattern.PositionalPatterns.Length != 0)
+        var positionalCount = pattern.PositionalPatterns.Length;
+        var count = checked(positionalCount + pattern.KeywordPatterns.Length);
+        var values = workspace[..count];
+        var names = workspace.Slice(count, positionalCount);
+        var children = workspace[(count + positionalCount)..];
+        PyTuple? matchArgs = null;
+        var matchSelf = false;
+        long nameBytes = 0;
+        var className = classValue switch
         {
-            var className = GetBuiltinTypeName(classValue, context);
-            var maximum = className is "bool" or "bytes" or "dict" or "float" or
-                "int" or "list" or "set" or "str" or "tuple" ? 1 : 0;
-            if (pattern.PositionalPatterns.Length > maximum)
-                throw RuntimeErrors.Type($"{className}() accepts {maximum} positional sub-pattern{(maximum == 1 ? "" : "s")} ({pattern.PositionalPatterns.Length} given)", pattern.Span);
-            if (!TryMatchPattern(pattern.PositionalPatterns[0], subject, context, captures, workspace)) return false;
+            PyType type => type.Name,
+            UrllibParseModule.UrlResultType type => type.ShortName,
+            INamedRuntimeCallable callable => callable.Name,
+            _ => GetBuiltinTypeName(classValue, context) ?? "type"
+        };
+        if (positionalCount != 0)
+        {
+            if (TryReadPatternAttribute(classValue, "__match_args__", context, pattern.Span, out var metadata))
+            {
+                matchArgs = metadata as PyTuple ?? throw RuntimeErrors.Type(
+                    $"{className}.__match_args__ must be a tuple (got {RuntimeErrors.OperandTypeName(metadata)})", pattern.Span);
+            }
+            else
+            {
+                matchSelf = GetBuiltinTypeName(classValue, context) is "bool" or "bytes" or "dict" or "float" or
+                    "int" or "list" or "set" or "str" or "tuple";
+            }
+            var maximum = matchArgs?.Count ?? (matchSelf ? 1 : 0);
+            if (positionalCount > maximum)
+                throw RuntimeErrors.Type($"{className}() accepts {maximum} positional sub-pattern{(maximum == 1 ? "" : "s")} ({positionalCount} given)", pattern.Span);
+            // Decode only the selected names. Their transient CLR storage stays
+            // admitted until matching ends; no full metadata array or cache.
+            if (matchArgs is not null)
+                for (var i = 0; i < positionalCount; i++)
+                {
+                    context.CheckExecution(pattern.Span);
+                    if (matchArgs[i] is PyString text)
+                        nameBytes = checked(nameBytes + 32L + 2L * text.Utf8Bytes.Length);
+                }
         }
 
-        foreach (var keyword in pattern.KeywordPatterns)
+        using var nameAdmission = context.MemoryGovernor.ReserveTemporary(nameBytes, pattern.Span);
+        try
         {
-            if (!PyMemberAccess.TryResolve(subject, keyword.Name, context, keyword.Pattern.Span, out var memberValue))
+            for (var i = 0; i < positionalCount; i++)
             {
-                return false;
+                context.CheckExecution(pattern.Span);
+                if (matchSelf) { values[i] = subject; continue; }
+                if (matchArgs![i] is not PyString text)
+                    throw RuntimeErrors.Type($"__match_args__ elements must be strings (got {RuntimeErrors.OperandTypeName(matchArgs[i])})", pattern.Span);
+                var name = text.AsString();
+                names[i] = name;
+                for (var previous = 0; previous < i; previous++)
+                {
+                    context.CheckExecution(pattern.Span);
+                    if (name == (string)names[previous])
+                        throw RuntimeErrors.Type($"{className}() got multiple sub-patterns for attribute '{name}'", pattern.Span);
+                }
+                if (!TryReadPatternAttribute(subject, name, context, pattern.Span, out var value)) return false;
+                values[i] = value;
             }
-
-            memberValue = RuntimeValue(memberValue);
-            if (!TryMatchPattern(keyword.Pattern, memberValue, context, captures, workspace))
+            for (var i = 0; i < pattern.KeywordPatterns.Length; i++)
             {
-                return false;
+                var keyword = pattern.KeywordPatterns[i];
+                for (var previous = 0; previous < positionalCount; previous++)
+                {
+                    context.CheckExecution(pattern.Span);
+                    if (keyword.Name == names[previous] as string)
+                        throw RuntimeErrors.Type($"{className}() got multiple sub-patterns for attribute '{keyword.Name}'", pattern.Span);
+                }
+                if (!TryReadPatternAttribute(subject, keyword.Name, context, keyword.Pattern.Span, out var value)) return false;
+                values[positionalCount + i] = value;
             }
+            // Attribute extraction is complete before any subpattern invokes guest
+            // equality/descriptors or mutates the subject. Failed extraction never
+            // publishes captures; the enclosing owner retains and clears scratch.
+            for (var i = 0; i < positionalCount; i++)
+                if (!TryMatchPattern(pattern.PositionalPatterns[i], values[i], context, captures, children)) return false;
+            for (var i = 0; i < pattern.KeywordPatterns.Length; i++)
+                if (!TryMatchPattern(pattern.KeywordPatterns[i].Pattern, values[positionalCount + i], context, captures, children)) return false;
+            return true;
         }
+        finally
+        {
+            names.Clear();
+            values.Clear();
+        }
+    }
 
-        return true;
+    private static bool TryReadPatternAttribute(object subject, string name, ExecutionContext context,
+        LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
+        try
+        {
+            var found = PyMemberAccess.TryResolve(subject, name, context, span, out value);
+            context.CheckExecution(span);
+            return found;
+        }
+        catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
+        {
+            // AttributeError means mismatch, but cannot suppress a first host
+            // refusal or cooperative cancellation hidden by the descriptor.
+            context.CheckExecution(span);
+            value = null;
+            return false;
+        }
     }
 
     private static IReadOnlyList<PyType> ResolveClassBases(object[] baseValues, LythonSourceSpan span, ExecutionContext context)

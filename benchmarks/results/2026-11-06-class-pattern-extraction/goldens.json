@@ -1,0 +1,82 @@
+[
+  {
+    "name": "all attributes before subpatterns",
+    "source": "class C:\n __match_args__=('a',)\n @property\n def a(self):print('a');return 0\n @property\n def b(self):print('b');return 1\nclass K:expected=1\nmatch C():\n case C(K.expected,b=x):print(x)\n case _:print('no match')\n",
+    "expected": "a\nb\nno match\n"
+  },
+  {
+    "name": "duplicate positional names",
+    "source": "class C:\n __match_args__=('a','a')\n @property\n def a(self):print('read');return 7\ntry:\n match C():\n  case C(x,y):print('matched')\nexcept TypeError as error:print(error)\n",
+    "expected": "read\nC() got multiple sub-patterns for attribute 'a'\n"
+  },
+  {
+    "name": "duplicate positional and keyword",
+    "source": "class C:\n __match_args__=('a',)\n @property\n def a(self):print('read');return 7\ntry:\n match C():\n  case C(x,a=y):print('matched')\nexcept TypeError as error:print(error)\n",
+    "expected": "read\nC() got multiple sub-patterns for attribute 'a'\n"
+  },
+  {
+    "name": "unused malformed name",
+    "source": "class C:\n __match_args__=('a',17)\n a=7\nmatch C():\n case C(x):print(x)\n",
+    "expected": "7\n"
+  },
+  {
+    "name": "match args descriptor",
+    "source": "class Args:\n def __get__(self,obj,owner):print('args');return ('a',)\nclass C:\n __match_args__=Args()\n a=7\nmatch C():\n case C(x):print(x)\n",
+    "expected": "args\n7\n"
+  },
+  {
+    "name": "missing attribute mismatch",
+    "source": "class C:\n @property\n def a(self):raise AttributeError('missing')\nmatch C():\n case C(a=x):print(x)\n case _:print('no match')\n",
+    "expected": "no match\n"
+  },
+  {
+    "name": "value comparison protocol",
+    "source": "class V:\n def __eq__(self,other):print('eq');return True\nclass K:expected=7\nmatch V():\n case K.expected:print('match')\n case _:print('no match')\n",
+    "expected": "eq\nmatch\n"
+  },
+  {
+    "name": "object root class",
+    "source": "match 7:\n case object():print('match')\n case _:print('no match')\n",
+    "expected": "match\n"
+  },
+  {
+    "name": "non tuple match args",
+    "source": "class C:__match_args__='a'\ntry:\n match C():\n  case C(x):print(x)\nexcept TypeError as error:print(error)\n",
+    "expected": "C.__match_args__ must be a tuple (got str)\n"
+  },
+  {
+    "name": "later malformed name preserves earlier getter",
+    "source": "class C:\n __match_args__=('a',17)\n @property\n def a(self):print('first');return 7\ntry:\n match C():\n  case C(x,y):pass\nexcept TypeError as error:print(error)\n",
+    "expected": "first\n__match_args__ elements must be strings (got int)\n"
+  },
+  {
+    "name": "subpattern AttributeError is not a mismatch",
+    "source": "class C:a=7\nclass D:\n def __get__(self,obj,owner):raise AttributeError('comparison')\nclass K:expected=D()\ntry:\n match C():\n  case C(a=K.expected):print('match')\n  case _:print('no match')\nexcept AttributeError as error:print(error)\n",
+    "expected": "comparison\n"
+  },
+  {
+    "name": "extraction snapshot survives subject mutation",
+    "source": "class C:\n __match_args__=('a','b')\n def __init__(self):self.a=1;self.b=[7,8]\nsource=C()\nclass D:\n def __get__(self,obj,owner):source.b=[];return 1\nclass K:expected=D()\nmatch source:\n case C(K.expected,[first,last] as held):print(first,last,held,source.b)\n",
+    "expected": "7 8 [7, 8] []\n"
+  },
+  {
+    "name": "native named records share extraction",
+    "source": "from collections import namedtuple\nfrom urllib.parse import urlsplit, SplitResult\nRow=namedtuple('Row','left right')\nmatch Row(3,4):\n case Row(a,right=b):print(a+b)\nmatch urlsplit('https://example.com/a?q=7'):\n case SplitResult(scheme,netloc,path,query,fragment):print(scheme,netloc,path,query,fragment)\ntry:\n match Row(3,4):\n  case Row(a,left=b):pass\nexcept TypeError as error:print(error)\n",
+    "expected": "7\nhttps example.com /a q=7 \nRow() got multiple sub-patterns for attribute 'left'\n"
+  },
+  {
+    "name": "value equality reflection and truth",
+    "source": "class Answer:\n def __bool__(self):print('truth');return True\nclass Left:\n def __eq__(self,other):print('left');return NotImplemented\nclass Right:\n def __eq__(self,other):print('right');return Answer()\nclass K:expected=Right()\nmatch Left():\n case K.expected:print('match')\n",
+    "expected": "left\nright\ntruth\nmatch\n"
+  },
+  {
+    "name": "metadata is skipped without positions",
+    "source": "class Args:\n def __get__(self,obj,owner):raise AssertionError('unused metadata')\nclass C:__match_args__=Args();a=7\nmatch C():\n case C(a=x):print(x)\nmatch 7:\n case object():print('root')\n",
+    "expected": "7\nroot\n"
+  },
+  {
+    "name": "zero positions and wrong type",
+    "source": "class C:a=7\ntry:\n match C():\n  case C(x):pass\nexcept TypeError as error:print(error)\nmatch 7:\n case C(x):raise AssertionError('wrong type')\n case _:print('skip')\n",
+    "expected": "C() accepts 0 positional sub-patterns (1 given)\nskip\n"
+  }
+]

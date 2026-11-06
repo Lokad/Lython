@@ -3143,3 +3143,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   verified through Ready before sole B338 collection. R07 cached terminal
   42185646656 GREEN/all eight platform/runtime/originalStress/package gates;
   both local installed consumers pass. Later R06 excluded; objective remains open.
+
+- [One class-pattern extraction phase, R06/B339](results/2026-11-06-class-pattern-extraction/README.md):
+  delete full metadata copy/decoding, URL duplicate set and separate interleaved
+  matchers; preserve descriptors, Python extraction/error order, namedtuple field
+  metadata and contextual value equality.16 isolated Python goldens, focused
+  3,057 public/320 internal per actual runtime and full local.NET11(4,239/16,160)
+  pass, with cancellation/refusal/retained-alias/awaited-cleanup controls.86.64s
+  complete comparison/all gates: class records+6.37–6.71% warm/+3.38–4.09% fresh;
+  unchanged CSV+2.12–2.29% also adverse. Retain correctness and shared extraction
+  with explicit debt; no allocation/CPU/speedup claim or semantic bypass to
+  recover timing. Final platform/stress/package qualification pending.

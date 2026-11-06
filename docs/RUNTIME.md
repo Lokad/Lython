@@ -226,6 +226,13 @@ ordered key evaluation, duplicate checks, value extraction and subpattern execut
 Class patterns retain only their actual expression and child patterns; no
 synthetic sequence or source-name dispatch table is prepared. Builtin match-self
 patterns borrow the whole subject and reuse existing instance/type checks.
+Class matching uses one extraction phase for user classes, named records and
+builtins. Prepared scratch retains attributes until subpatterns finish; only
+selected positional names are decoded, with temporary storage admitted before
+decoding and cleared before refund. There is no per-match copy of the entire
+`__match_args__` tuple or URL-specific duplicate set. Descriptor lookup, duplicate
+checks and extraction errors precede subpatterns; value patterns share contextual
+equality/truth handling. Pattern callbacks currently require synchronous completion.
 String/bytes literals and integer magnitudes belong to lowered nodes and the existing
 compiled constant owner; no global weak literal cache is needed.
 Successful loop advances and true conditional arms continue at the next

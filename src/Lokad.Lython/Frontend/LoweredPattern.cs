@@ -39,8 +39,9 @@ internal sealed record LoweredMappingPattern(MatchMappingPatternSyntax Mapping, 
 internal sealed record LoweredClassKeyword(string Name, LoweredPattern Pattern);
 internal sealed record LoweredClassPattern(MatchClassPatternSyntax Class, LoweredExpression Expression,
     LoweredPattern[] PositionalPatterns, LoweredClassKeyword[] KeywordPatterns)
-    : LoweredPattern(Class, Math.Max(LoweredPatternPreparation.MaximumWorkspace(PositionalPatterns),
-        LoweredPatternPreparation.MaximumWorkspace(KeywordPatterns.Select(item => item.Pattern))));
+    : LoweredPattern(Class, checked(2 * PositionalPatterns.Length + KeywordPatterns.Length
+        + Math.Max(LoweredPatternPreparation.MaximumWorkspace(PositionalPatterns),
+            LoweredPatternPreparation.MaximumWorkspace(KeywordPatterns.Select(item => item.Pattern)))));
 
 internal static class LoweredPatternPreparation
 {

@@ -1,0 +1,44 @@
+{
+  "rows": [
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "warm",
+      "candidate": 9.714204375,
+      "control": 9.683718875,
+      "reference": 9.103734588235294,
+      "deltasVsFinalR07Percent": [
+        6.705707211122025,
+        6.370839144566198
+      ],
+      "controlSpreadPercent": 0.31382395122810935,
+      "currentIqrPercent": 0.715290180416869
+    },
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "compile-run",
+      "candidate": 9.938328533333333,
+      "control": 10.006507933333333,
+      "reference": 9.6132583125,
+      "deltasVsFinalR07Percent": [
+        3.381478061508547,
+        4.090700655801549
+      ],
+      "controlSpreadPercent": 0.6860248156551174,
+      "currentIqrPercent": 2.1534667452598173
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "candidate": 4.81564471875,
+      "control": 4.80745128125,
+      "reference": 4.70783865625,
+      "deltasVsFinalR07Percent": [
+        2.289926872427528,
+        2.1158886757462803
+      ],
+      "controlSpreadPercent": 0.17014206775052276,
+      "currentIqrPercent": 1.9806661271880244
+    }
+  ],
+  "decision": "Retain corrected Python behavior and common extraction; affected class script slower6.37\u20136.71% warm and3.38\u20134.09% fresh. Unchanged CSV+2.12\u20132.29% also adverse; no causal allocation/CPU/speedup claim. Regression debt explicit; improve common metadata/member path only with a distinct source/cost hypothesis, not a class-only bypass."
+}

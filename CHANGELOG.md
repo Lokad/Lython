@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Extract class-pattern attributes before subpatterns, resolve `__match_args__`
+  descriptors, reject duplicate attributes and treat extraction `AttributeError`
+  as mismatch. Reuse namedtuple field metadata and contextual value equality.
+  Remove the full per-match metadata copy and separate URL matching route;
+  admit selected-name storage and preserve cancellation/refusal through errors.
+
 - Await custom hash descriptors/bodies in public hashing and native dictionary/
   set read paths under RunAsync. Generated dataclass hashes await all field reads
   before hashing; pending snapshots stay funded. Share prepared lookups and remove

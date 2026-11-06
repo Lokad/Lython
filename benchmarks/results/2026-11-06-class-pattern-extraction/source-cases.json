@@ -1,0 +1,38 @@
+[
+  [
+    "all attributes before subpatterns",
+    "class C:\n __match_args__=('a',)\n @property\n def a(self):print('a');return 0\n @property\n def b(self):print('b');return 1\nclass K:expected=1\nmatch C():\n case C(K.expected,b=x):print(x)\n case _:print('no match')\n"
+  ],
+  [
+    "duplicate positional names",
+    "class C:\n __match_args__=('a','a')\n @property\n def a(self):print('read');return 7\ntry:\n match C():\n  case C(x,y):print('matched')\nexcept TypeError as error:print(error)\n"
+  ],
+  [
+    "duplicate positional and keyword",
+    "class C:\n __match_args__=('a',)\n @property\n def a(self):print('read');return 7\ntry:\n match C():\n  case C(x,a=y):print('matched')\nexcept TypeError as error:print(error)\n"
+  ],
+  [
+    "unused malformed name",
+    "class C:\n __match_args__=('a',17)\n a=7\nmatch C():\n case C(x):print(x)\n"
+  ],
+  [
+    "match args descriptor",
+    "class Args:\n def __get__(self,obj,owner):print('args');return ('a',)\nclass C:\n __match_args__=Args()\n a=7\nmatch C():\n case C(x):print(x)\n"
+  ],
+  [
+    "missing attribute mismatch",
+    "class C:\n @property\n def a(self):raise AttributeError('missing')\nmatch C():\n case C(a=x):print(x)\n case _:print('no match')\n"
+  ],
+  [
+    "value comparison protocol",
+    "class V:\n def __eq__(self,other):print('eq');return True\nclass K:expected=7\nmatch V():\n case K.expected:print('match')\n case _:print('no match')\n"
+  ],
+  [
+    "object root class",
+    "match 7:\n case object():print('match')\n case _:print('no match')\n"
+  ],
+  [
+    "non tuple match args",
+    "class C:__match_args__='a'\ntry:\n match C():\n  case C(x):print(x)\nexcept TypeError as error:print(error)\n"
+  ]
+]

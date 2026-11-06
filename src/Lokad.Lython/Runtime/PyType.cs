@@ -209,31 +209,6 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         return Mro.Any(type => ReferenceEquals(type, other));
     }
 
-    public bool TryGetMatchArgs(out IReadOnlyList<string> matchArgs)
-    {
-        if (TryGetMember("__match_args__", out var value) && value is PyTuple tuple)
-        {
-            var names = new string[tuple.Count];
-            var index = 0;
-            foreach (var item in tuple)
-            {
-                if (!PyStringOps.TryAsString(item, out var text))
-                {
-                    matchArgs = Array.Empty<string>();
-                    return false;
-                }
-
-                names[index++] = text.AsString();
-            }
-
-            matchArgs = names;
-            return true;
-        }
-
-        matchArgs = Array.Empty<string>();
-        return false;
-    }
-
     public void SetDataclassMetadata(IReadOnlyList<DataclassFieldSpec> fields, bool reprEnabled, bool eqEnabled, bool orderEnabled, DataclassHashMode hashMode)
     {
         DataclassFields = fields;

@@ -49,6 +49,10 @@ receiver, await equality and propagate cancellation with shared-budget cleanup.
 Builtin class-pattern goldens preserve whole-subject identity, nested sequences,
 actual aliases, shadowed class names, excess-position errors and lowered class
 bodies. Both execution APIs return shared funding to baseline after cleanup.
+Class extraction goldens cover descriptor metadata, requested-name validation,
+duplicate/error order, mutation snapshots and contextual equality/truth.
+Cancellation/refusal cannot become an AttributeError mismatch; scratch is
+admitted before effects and extracted aliases stay funded through a suspended body.
 Structural controls retain immediate reversed-pair rejection, cross-thread
 state disposal and out-of-order unwind without retaining active identities.
 [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)
