@@ -81,3 +81,9 @@ any service launched. Only hash-verified redundant transfer archives were remove
 source images/dependencies/raw evidence remained. Source/worker hashes and free
 space were rechecked before the sole launch. Cleanup/recovery records are retained.
 No live comparison work remains; publication/tagging postponed.
+
+Committed/pushed2adf73f3 contains the recorded refined runtime sources. Both
+installed Release consumers pass on the actual.NET11/10 runtimes. Exact source
+and scope: validation.json; package-consumer.log. CI42180013420 is running for
+Windows/Ubuntu, both runtimes, originalStress and installed consumers. Pending
+qualification is not a green receipt. Earlier51db4209 is closed and never rechecked.

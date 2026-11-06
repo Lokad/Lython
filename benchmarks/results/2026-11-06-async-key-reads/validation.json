@@ -1,5 +1,5 @@
 {
-  "status": "Refined Q02 retained for genuine async read/hash capability and consolidated lookup, with completed-async text regression accepted as explicit debt. Full platform/stress/package qualification pending; prior51db4209 receipt excludes it.",
+  "status": "Committed/pushed2adf73f3. Focused both actual runtimes, full local.NET11 plus added depth checks, and both installed Release consumers pass. Windows/Ubuntu both-runtime originalStress/package CI42180013420 running; not fully qualified.",
   "sourceBase": "9d926e7d plus recorded runtime source hashes/patch; frozenf37ef01a",
   "focusedPerActualRuntime": {
     "public": 1012,
@@ -17,5 +17,12 @@
     "Refined CSV+6.54/+0.72% with5.46% identical-role spread is uncertain; original15.27% spread retained.",
     "Mutations, cache-key protocols, other mapping wrappers and pattern hooks retain synchronous restrictions.",
     "Both workers use completed mediated RAM I/O; actual pending behavior is correctness/ownership qualification, not a latency comparison."
-  ]
+  ],
+  "sourceRevision": "2adf73f376795d42bae7a57cf22b60d9dfe7f181",
+  "installedReleaseConsumers": [
+    "net11.0 actual.NET11RC3",
+    "net10.0 actual.NET10.0.8"
+  ],
+  "deliveryRunId": 42180013420,
+  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42180013420"
 }
