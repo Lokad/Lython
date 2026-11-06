@@ -6,6 +6,24 @@ public sealed class NestedHashProtocolTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["tuple explicit hashes use key protocols", """
+            events=[]
+            class Key:
+             def __hash__(self):events.append('hash');return 17
+            value=(Key(),)
+            first=hash(value)
+            print(value.__hash__()==first,tuple.__hash__(value)==first)
+            print(events)
+            """, "True True\n['hash', 'hash', 'hash']\n"];
+        yield return ["empty set preserves earlier tuple hash effects", """
+            events=[]
+            class Key:
+             def __hash__(self):events.append('hash');raise ValueError('first')
+            try:
+             (Key(),[]) in set()
+            except ValueError as error:print(error)
+            print(events)
+            """, "first\n['hash']\n"];
         yield return ["slice bounds and direct members", """
             events=[]
             class Key:

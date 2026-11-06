@@ -10,6 +10,41 @@ public sealed class ManagedHashBoundaryTests
 {
     [Theory]
     [InlineData(false)] [InlineData(true)]
+    public async Task AsyncPreparationBoundsContinuationNestingAndRecovers(bool cyclic)
+    {
+        await Task.Run(async () =>
+        {
+            await Task.Yield();
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using var owner = budget.CreateScope();
+            var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+            var span = new LythonSourceSpan(31, 4, 2, 1);
+            object key = BigInteger.One;
+            if (cyclic)
+            {
+                var items = new object[1];
+                key = PyTuple.FromOwnedArray(items);
+                items[0] = key;
+            }
+            else
+                for (var i = 0; i <= ExecutionState.MaxInterpreterDepth; i++) key = PyTuple.FromOwnedArray([key]);
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                await PyHashProtocols.GetProtocolHashAsync(key, context, span));
+            Assert.Equal("RecursionError", failure.ExceptionType);
+            Assert.Equal(span, failure.Span);
+            Assert.Equal(0, context.State.StructuralTraversal.Depth);
+            Assert.Empty(context.State.StructuralTraversal.ActivePath!);
+            var small = PyTuple.FromOwnedArray([BigInteger.One]);
+            Assert.Equal(PyHashProtocols.GetProtocolHash(small, context, span), await PyHashProtocols.GetProtocolHashAsync(small, context, span));
+            Assert.Null(PyStructuralGuard.AmbientContext);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            owner.Dispose();
+            Assert.Equal(0, budget.ReservedBytes);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
     public void ClassificationBoundsDeepOrCyclicInputsAndRecovers(bool cyclic)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

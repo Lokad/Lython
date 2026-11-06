@@ -62,14 +62,20 @@ internal static partial class PyContainment
         };
     }
 
-    // Async twin of the mirror above: only the three sequence scans suspend
-    // (one protocol dispatch per element); every other arm wraps its
-    // synchronous helper without allocating a state machine.
+    // Native dictionary/set reads and sequences can suspend through their
+    // explicit context. Other arms retain their existing completion behavior.
     public static ValueTask<bool> ContainsWithProtocolsAsync(object container, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        // R13b: mapping arms below observe ambient provenance. The arms
-        // evaluate synchronously here (sequence scans suspend through
-        // explicit contexts instead), so no thread hop can intervene.
+        if (container is PyDict dict)
+            return dict.ContainsKeyAsync(LythonRuntime.ValidateDictionaryKey(candidate, span), context, span);
+        if (container is PySet set)
+            return set.ContainsAsync(LythonRuntime.ValidateDictionaryKey(candidate, span), context, span);
+        if (container is LythonRuntime.DictKeysView keys)
+            return ContainsInDictKeysAsync(keys, candidate, context, span);
+        if (container is LythonRuntime.DictItemsView items)
+            return ContainsInDictItemsAsync(items, candidate, context, span);
+        // Ambient provenance is only borrowed for each synchronous prefix;
+        // returned pending operations carry their explicit context instead.
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         return container switch
         {
@@ -78,13 +84,9 @@ internal static partial class PyContainment
             PyString text when PyStringOps.TryAsString(candidate, out var part) => new ValueTask<bool>(text.Contains(part)),
             PyString => throw new LythonRuntimeException("TypeError", "'in <string>' requires string as left operand, not " + RuntimeErrors.OperandTypeName(candidate), span),
             PyBytes haystack => LythonRuntime.ContainsBytesAsync(haystack, candidate, context, span, true),
-            PyDict dict => new ValueTask<bool>(dict.ContainsKey(LythonRuntime.ValidateDictionaryKey(candidate, span))),
             PyCounter counter => new ValueTask<bool>(counter.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _)),
             PyDefaultDict defaultDict => new ValueTask<bool>(defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _)),
             PyChainMap chainMap => new ValueTask<bool>(chainMap.ContainsKey(candidate, span)),
-            PySet set => new ValueTask<bool>(ContainsInSet(set, candidate, span)),
-            LythonRuntime.DictKeysView keysView => ContainsInDictKeysAsync(keysView, candidate, context, span),
-            LythonRuntime.DictItemsView itemsView => ContainsInDictItemsAsync(itemsView, candidate, context, span),
             ChainMapKeysView chainKeys => new ValueTask<bool>(chainKeys.Owner.ContainsKey(candidate, span)),
             ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocolsAsync(chainValues, candidate, context, span),
             ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocolsAsync(chainItems, candidate, context, span),
@@ -95,19 +97,12 @@ internal static partial class PyContainment
         };
     }
 
-    // Set membership validates hashability through the shared helper so
-    // unhashable candidates report the CPython type error instead of leaking
-    // the internal control-flow exception. The empty set gets an explicit
-    // check because the underlying lookup short-circuits without hashing.
+    // The shared store hashes even empty queries. Do not prehash structurally:
+    // earlier custom hash effects must precede a later unhashable tuple item.
     private static bool ContainsInSet(PySet set, object candidate, LythonSourceSpan span)
     {
         try
         {
-            if (set.Count == 0)
-            {
-                _ = PyValueComparer.Instance.GetHashCode(candidate);
-            }
-
             return set.Contains(candidate);
         }
         catch (PyUnhashableException error)

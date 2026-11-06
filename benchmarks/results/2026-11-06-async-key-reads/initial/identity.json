@@ -1,0 +1,39 @@
+{
+  "sourceRevision": "d23e5805 HEAD/production51db4209 plus Q02 asynchronous read/hash source patch and new file",
+  "coreSHA256": {
+    "candidate": "98e475ea1b4d32ac7b21272276339fa9a336dc7e61db2540bb0dd76663b0607e",
+    "control": "98e475ea1b4d32ac7b21272276339fa9a336dc7e61db2540bb0dd76663b0607e",
+    "reference": "e9d86337874af2fa5e1c5323b7a2aaba234b89f2d9d99ab5b7c694ffe3c4208d"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "53f1b2fb82695e734157b5cc2416685ef93aaa8cf28795ccbfbcb8d00cd98492",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "1a3fd31aa75698dd114397a9e272e57d0736aa343a9d42b9bb7f12182b963631",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "7b6c2d6eb32ebeeaa13e2b2af2cd05489ee9e1c2f0610390fd7bdf23f58b9642",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "dc92850e0a24fb0e7200f0752ade7c457dc801fa4a4fff5085a062686d49e4d8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Imports.cs": "7c02221d716ab72a42666d7c8d6dda33f8ded5ea1f7dbe09979ba1165ad2280b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Lowered.Shared.cs": "38a6f245ef83ee726db4f70f3bc108e9a32ece7e5f783512c1421306ae7128ef",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "e4806d1124f04f434568ddf00e502eb8f28d9fb3c232c3deab0f57f13951726a",
+    "src/Lokad.Lython/Runtime/PyContainment.Views.cs": "8c864104b2c31f8b178d1ebbf09c0426fc29d827ade8596af76aed93453ee395",
+    "src/Lokad.Lython/Runtime/PyContainment.cs": "4ef7bcbe2a4fce572d27c7deb5602d729708720e16bb10517fc009a90d3f202d",
+    "src/Lokad.Lython/Runtime/PyDataclass.GeneratedMethods.cs": "7da9723b63f9c3e471eacdbbe8f13034337ea1dc80549b47fad3c024602945bd",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "12d48a3bb22afdbf4a3fab87a92d46485415a303ac5a8fce3458e67efae70dab",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "3c4d5820397bb4fba976c9b775566c7efd60fd723b310e8f8c777cf824767362",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "13f55fdcda1bed4764577b5b8f03f9b33bb667a6a24ea042bc7dfb81fadcaae5",
+    "src/Lokad.Lython/Runtime/PySet.cs": "d9409e02f4a033a84e2c036d6135f2f557176113a814c40ccc328ccfb43418e9",
+    "src/Lokad.Lython/Runtime/PySlice.cs": "d2d2c31345b5047659b9b65af215cbf107587521a0aea921d6d00c715f0036a3",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.Async.cs": "13223221f0b8be003c4a085052e09ca86cf1fb76c98efe0e7bd17905d6364f5e"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 1012,
+    "Lokad.Lython.Tests-net11.0": 426,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 1012,
+    "Lokad.Lython.Tests-net10.0": 426
+  },
+  "referencePackageSourceRevision": "51db4209b93d004767d47342cef52cb0e3a6e063"
+}

@@ -643,10 +643,10 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
-        if (target is PyDict { HasProtocolKeys: true } dictionary && !PyHashProtocols.NeedsProtocolKey(index))
+        if (target is PyDict dictionary)
         {
             var key = ValidateDictionaryKey(index, span);
-            var found = await dictionary.TryGetBuiltinKeyAsync(key, context, span).ConfigureAwait(false);
+            var found = await dictionary.TryGetKeyAsync(key, context, span).ConfigureAwait(false);
             return found.Found ? found.Value : throw RuntimeErrors.MissingKey(key, span);
         }
         if (target is ElementTreeModule.Element element)

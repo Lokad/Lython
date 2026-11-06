@@ -69,9 +69,12 @@ an own hash; assigning `__eq__` later does not revoke an inherited hash.
 
 Native-key dictionary lookups and mutations consider earlier same-hash custom
 keys before selecting an existing native entry, preserving equality effects and
-errors. Under `RunAsync`, native-key lookup equality can suspend for host I/O,
-including integer and tuple keys. Custom key hashing and write-key equality
-retain their synchronous-completion restrictions.
+errors. Under `RunAsync`, public hashing, explicit tuple/slice hashes and generated
+dataclass hashes await supported descriptor, field and hash callbacks. Native
+dictionary get/subscript reads and dictionary/set/view membership expressions
+await key hashing and lookup equality, including compound keys. Mutations,
+cache-key protocols and other mapping wrappers retain synchronous-completion
+restrictions.
 
 Custom-key queries invoke `__hash__` even for an identity hit or empty set; native dictionary
 copies and set pop reuse stored keys without rehashing. Nested unhashability names

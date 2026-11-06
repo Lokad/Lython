@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Await custom hash descriptors/bodies in public hashing and native dictionary/
+  set read paths under RunAsync. Generated dataclass hashes await all field reads
+  before hashing; pending snapshots stay funded. Share prepared lookups and remove
+  protocol-query synchronous detours. Mutation and cache-key restrictions remain.
+  Explicit tuple hashing now follows key protocols, and empty-set queries preserve
+  earlier hash effects before a later unhashable tuple element.
+
 - Resolve builtin class patterns through their actual type values, including
   aliases. Match the whole subject for Python's builtin positional patterns;
   reject extra positions. Remove synthetic sequence storage and duplicate

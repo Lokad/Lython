@@ -1,0 +1,30 @@
+[
+  {
+    "source": "from dataclasses import dataclass\nevents=[]\nclass Key:\n def __init__(self,name):self.name=name\n def __hash__(self):\n  events.append('hash:'+self.name)\n  with open('/call') as marker:marker.read()\n  return 17\n@dataclass(unsafe_hash=True)\nclass Row:\n a:object\n b:object\n def __getattribute__(self,name):\n  if name in ('a','b'):\n   events.append('read:'+name)\n   with open('/bind') as marker:marker.read()\n  return object.__getattribute__(self,name)\nhash(Row(Key('a'),Key('b')))\nprint(events)",
+    "expected": "['read:a', 'read:b', 'hash:a', 'hash:b']\n",
+    "exitCode": 0,
+    "stdout": "['read:a', 'read:b', 'hash:a', 'hash:b']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "class Key:\n def __hash__(self):\n  with open('/call') as marker:marker.read()\n  return hash(holder)\nholder=(Key(),)\ntry:hash(holder)\nexcept RecursionError:print('cycle')\nprint(hash((1,2))==(1,2).__hash__())",
+    "expected": "cycle\nTrue\n",
+    "exitCode": 0,
+    "stdout": "cycle\r\nTrue\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "armed=False\nclass Key:\n def __hash__(self):\n  if armed:\n   with open('/bind') as marker:marker.read()\n  return 17\n def __eq__(self,other):\n  with open('/call') as marker:marker.read()\n  mapping.clear()\n  return True\nmapping={Key():'retained'}\narmed=True\nprint(mapping.get(Key(),'missing'),len(mapping))",
+    "expected": "missing 0\n",
+    "exitCode": 0,
+    "stdout": "missing 0\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True\nclass Probe:\n result=mapping[(key,)]\nprint(Probe.result)",
+    "expected": "descriptor\ncall\nkept\n",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nkept\r\n",
+    "stderr": ""
+  }
+]

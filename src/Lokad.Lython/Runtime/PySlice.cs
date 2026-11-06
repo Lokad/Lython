@@ -89,6 +89,14 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
                 throw RuntimeErrors.Type("slice.__hash__() takes no arguments", span);
             return new BigInteger(PyHashProtocols.GetProtocolHash(owner, context, span));
         }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecution(span);
+            if (arguments.Length != 0)
+                throw RuntimeErrors.Type("slice.__hash__() takes no arguments", span);
+            return new BigInteger(await PyHashProtocols.GetProtocolHashAsync(owner, context, span).ConfigureAwait(false));
+        }
     }
 
     // slice.indices(length) normalises the stored bounds against an explicit

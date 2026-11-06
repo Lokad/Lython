@@ -3110,3 +3110,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   consumers. Cached terminal42174873217 GREEN/all eight; later Q02 excluded.
   Original extraction/value-protocol defects
   remain separate. No R05 speedup claim or unchanged benchmark replay.
+
+- [Async hash/read boundary, Q02/B334/B335](results/2026-11-06-async-key-reads/README.md):
+  retain genuine pending descriptors/hash bodies/dataclass field reads in the
+  stated native read boundary. Delete sync query detours, lookup closures and
+  four redundant completion helpers. Correct explicit tuple and empty-set hash
+  order. Focused1,012 public/429 internal per actual runtime,21 CPython goldens,
+  full local.NET11(4,227/16,137) and additional depth/ownership checks pass.
+  Both86.01s collections pass all gates; consolidated async text+3.72/+5.13%
+  remains accepted performance debt, CSV uncertain. All adverse/control/failure
+  conditions preserved. No CPU/allocation gain or mutation/cache support claim.
+  Final platform/stress/installed qualification batches separately.

@@ -51,6 +51,8 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _version++; return true;
     }
     public bool Contains(object item) => _store.ContainsKey(item);
+    internal ValueTask<bool> ContainsAsync(object item, Context context, LythonSourceSpan span)
+        => _store.ContainsKeyAsync(item, context, span);
     public bool Remove(object item)
     {
         if (!_store.Remove(item)) return false;

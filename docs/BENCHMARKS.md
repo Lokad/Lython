@@ -66,6 +66,11 @@ program/result/process/fixture teardown are outside clocks. CPython retains impo
 modules between invocations; Lython isolates execution imports. This is an embedding
 comparison, not a claim of identical implementations or import caching.
 
+These primary tables use `Run`. The separate [async hash/read diagnostic](../benchmarks/results/2026-11-06-async-key-reads/README.md)
+uses `RunAsync` with completed mediated I/O and records a3.72–5.13% text regression
+against51db4209. This remains explicit performance debt; it measures no genuinely
+pending-I/O latency or broad CPU improvement.
+
 ## Improvements within Lython
 
 CPython is the primary external baseline above. These separate source pairs

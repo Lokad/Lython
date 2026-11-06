@@ -507,6 +507,24 @@ internal static partial class PyDataclass
             }
             return new System.Numerics.BigInteger(PyHashProtocols.ComputeTupleHash(values, context, span));
         }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
+                throw RuntimeErrors.Type($"{typeName}.__hash__() expected a bound instance.", span);
+
+            context.CheckExecution(span);
+            using var guard = PyStructuralGuard.EnterSingle(context.State.StructuralTraversal, instance, span, context);
+            using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(_fieldNames.Length), span);
+            var values = new object[_fieldNames.Length];
+            for (var i = 0; i < values.Length; i++)
+            {
+                context.CheckExecution(span);
+                values[i] = await ReadFieldAsync(instance, _fieldNames[i], context, span).ConfigureAwait(false);
+                context.CheckExecution(span);
+            }
+            return new System.Numerics.BigInteger(await PyHashProtocols.ComputeTupleHashAsync(values, context, span).ConfigureAwait(false));
+        }
     }
 
     internal sealed class DataclassFrozenSetAttrMethod(PyType declaringType, IReadOnlyList<DataclassFieldSpec> fields, PyString? moduleName) : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes

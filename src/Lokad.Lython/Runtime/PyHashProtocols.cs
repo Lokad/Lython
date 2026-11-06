@@ -3,7 +3,7 @@ namespace Lokad.Lython.Runtime;
 // Hash preparation follows Python evaluation order with an explicit execution
 // context. None slots make classes unhashable. Table probing uses the prepared
 // hash and equality requirement; CLR comparers never dispatch guest callbacks.
-internal static class PyHashProtocols
+internal static partial class PyHashProtocols
 {
     // A slot counts as customized when the first MRO type defining it has
     // bases of its own; the root object type (empty bases) carries defaults.
@@ -103,15 +103,17 @@ internal static class PyHashProtocols
 
             var hashValue = hashCallable.Invoke([], span, context);
             context.CheckExecution(span);
-            if (!Numbers.PyNumberOps.TryAsInteger(hashValue, out var integerHash))
-            {
-                throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
-            }
-
-            return PyValueComparer.Instance.GetHashCode(integerHash);
+            return NormalizeProtocolHash(hashValue, span);
         }
 
         return LythonRuntime.ComputeStructuralHashCode(instance, span);
+    }
+
+    private static int NormalizeProtocolHash(object value, LythonSourceSpan span)
+    {
+        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
+            throw RuntimeErrors.Type("__hash__ method should return an integer", span);
+        return PyValueComparer.Instance.GetHashCode(integer);
     }
 
     // Tuple hashing recurses into element hashes with the same combination as

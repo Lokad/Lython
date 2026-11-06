@@ -1,0 +1,21 @@
+{
+  "status": "Refined Q02 retained for genuine async read/hash capability and consolidated lookup, with completed-async text regression accepted as explicit debt. Full platform/stress/package qualification pending; prior51db4209 receipt excludes it.",
+  "sourceBase": "9d926e7d plus recorded runtime source hashes/patch; frozenf37ef01a",
+  "focusedPerActualRuntime": {
+    "public": 1012,
+    "internal": 429
+  },
+  "additionalDepthAndOwnershipPerActualRuntime": 18,
+  "fullLocalNet11": {
+    "internal": 4227,
+    "public": 16137,
+    "scope": "Precedes the two additional async-depth cases; both separately pass on both runtimes. Production source unchanged."
+  },
+  "independentPythonGoldens": 21,
+  "limitations": [
+    "Completed-async text+3.72/+5.13%; native completed-path CPU cost unresolved. No allocation/causalCPU/RSS/embedding claim.",
+    "Refined CSV+6.54/+0.72% with5.46% identical-role spread is uncertain; original15.27% spread retained.",
+    "Mutations, cache-key protocols, other mapping wrappers and pattern hooks retain synchronous restrictions.",
+    "Both workers use completed mediated RAM I/O; actual pending behavior is correctness/ownership qualification, not a latency comparison."
+  ]
+}

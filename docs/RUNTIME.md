@@ -379,14 +379,24 @@ ordinary `__getattribute__`. Binary operators and `divmod` share reflected-metho
 precedence; RunAsync awaits supported descriptor and method callbacks. Sequence
 repetition uses the same type-index conversion for expressions, in-place updates,
 `operator.mul` and direct native methods, preserving callback order and aliases.
-Custom key hashing still requires synchronous completion, including under RunAsync.
-Dictionary write-key equality also requires synchronous completion. Native-key
-lookup equality can suspend under RunAsync; string, integer and tuple lookups
-share the same resolution and current execution context.
+RunAsync awaits custom hash descriptors/bodies for public hashing, explicit tuple/
+slice hashes, generated dataclass hashes and native dictionary reads. Dictionary
+get/subscript and dictionary/set/view membership expressions share the prepared
+lookup, including pending key hashing and equality. Native completed keys return
+directly; the synchronous engine keeps its direct semantic walk. Dictionary/set
+mutations, cache-key protocols and remaining Counter/defaultdict/ChainMap paths
+can still require synchronous completion. Read support does not make every
+mapping operation suspendable.
 Contextual key preparation computes the hash and equality-dispatch requirement
 in one walk. Tuple elements and slice bounds are visited in Python order: an
 earlier hash callback runs before a later unhashable value is rejected. Native
 dictionary copies retain stored hashes without replaying callbacks.
+Generated dataclass hashes admit their field snapshot before reads, complete all
+reads before hashing fields and keep that storage funded through pending callbacks.
+Hash guards carry the execution's explicit cycle state across awaits; no ambient
+thread-local scope spans suspension. Cancelled/refused work awaits cleanup and
+preserves the first failure. Empty set queries use the same ordered preparation;
+they perform no preliminary structural hash.
 Structural hash/equality guards keep active identities in one execution-owned
 path. Single-object and pair cycles remain independent; scope exit removes their
 references, including after asynchronous thread hops. Membership is linear in

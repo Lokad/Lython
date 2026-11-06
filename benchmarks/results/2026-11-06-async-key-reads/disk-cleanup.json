@@ -1,0 +1,18 @@
+{
+  "beforeFreeBytes": 27115520,
+  "removed": [
+    {
+      "path": "/home/lokad/lython-bench-checks/b334-payload.tgz",
+      "sha256": "b15ed9d4e922287a8b49eea788fb314147844e30967ed73c87ba722a65499cd0",
+      "bytes": 3814783,
+      "terminalService": "MainPID=0\nResult=success\nActiveState=inactive\n"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/b333-payload.tgz",
+      "sha256": "ee49a9e087a3892b6a71cb63d911a318bc8c415460f9b30f63fda6768f02fb76",
+      "bytes": 3736079,
+      "terminalService": "MainPID=0\nResult=success\nActiveState=inactive\n"
+    }
+  ],
+  "afterFreeBytes": 34672640
+}

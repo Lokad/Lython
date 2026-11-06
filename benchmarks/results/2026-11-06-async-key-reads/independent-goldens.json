@@ -1,0 +1,138 @@
+[
+  {
+    "expression": "hash(key)",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "hash((key,))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "(key,).__hash__()",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "tuple.__hash__((key,))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "hash(slice(key, 3))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "slice(key, 3).__hash__()",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "hash(Row(key))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "isinstance(result, int)",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "{}.get((key,), 'kept')",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "globals().get((key,), 'kept')",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "mapping[(key,)]",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "mapping.get((key,))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "read((key,))",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "extract(mapping, key)",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result == 'kept'",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "(key,) in mapping",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result is True",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "(key,) in members",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result is True",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "(key,) in mapping.keys()",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result is True",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "((key,), 'kept') in mapping.items()",
+    "source": "from dataclasses import dataclass\narmed = False\nclass Key:\n    def __getattribute__(self, name):\n        raise RuntimeError('ordinary lookup')\n    @property\n    def __hash__(self):\n        if armed:\n            print('descriptor')\n            with open('/bind') as marker: marker.read()\n        def hash_value():\n            if armed:\n                print('call')\n                with open('/call') as marker: marker.read()\n            return 17\n        return hash_value\n@dataclass(unsafe_hash=True)\nclass Row:\n    value: object\ndef extract(mapping, key): return mapping.get((key,))\nkey = Key()\nmapping = {(key,): 'kept'}\nmembers = {(key,)}\nread = mapping.get\narmed = True",
+    "assertion": "result is True",
+    "exitCode": 0,
+    "stdout": "descriptor\r\ncall\r\nok\r\n",
+    "stderr": ""
+  }
+]

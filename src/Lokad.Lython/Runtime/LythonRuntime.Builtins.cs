@@ -708,6 +708,13 @@ internal sealed partial class LythonRuntime
         return new BigInteger(PyHashProtocols.GetProtocolHash(arguments[0], context, span));
     }
 
+    private static async ValueTask<object> HashAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+            throw RuntimeErrors.Type("hash(object) expects one argument.", span);
+        return new BigInteger(await PyHashProtocols.GetProtocolHashAsync(arguments[0], context, span).ConfigureAwait(false));
+    }
+
     private static object Id(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)

@@ -821,15 +821,20 @@ internal sealed partial class LythonRuntime
 
                     return IsTruthy(EvaluateRichComparison(source, arguments[0], "__ge__", "__le__", context, span, static value => value >= 0), context, span);
                 }, TupleGeSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(source, span);
-                }, TupleHashSignature),
+                    return new BigInteger(PyHashProtocols.GetProtocolHash(source, context, span));
+                }, TupleHashSignature, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                        throw RuntimeErrors.Type("tuple.__hash__() expects no arguments.", span);
+                    return new BigInteger(await PyHashProtocols.GetProtocolHashAsync(source, context, span).ConfigureAwait(false));
+                }),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2014,14 +2019,9 @@ internal sealed partial class LythonRuntime
             return dict.SetDefault(ValidateDictionaryKey(key, span), fallback, context.MemoryGovernor, span);
         }
 
-        internal static ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
-            => dict.HasProtocolKeys && !PyHashProtocols.NeedsProtocolKey(key)
-                ? GetNativeKeyAsync(dict, key, fallback, span, context)
-                : new(Get(dict, key, fallback, span, context));
-
-        private static async ValueTask<object> GetNativeKeyAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        internal static async ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
         {
-            var found = await dict.TryGetBuiltinKeyAsync(ValidateDictionaryKey(key, span), context, span).ConfigureAwait(false);
+            var found = await dict.TryGetKeyAsync(ValidateDictionaryKey(key, span), context, span).ConfigureAwait(false);
             return found.Found ? found.Value : fallback;
         }
 

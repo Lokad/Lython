@@ -103,8 +103,8 @@ internal static partial class PyContainment
         PyDict dict, object key, Context? context, LythonSourceSpan span, bool asynchronous)
     {
         LythonRuntime.ValidateDictionaryKey(key, span);
-        if (asynchronous && context is not null && !PyHashProtocols.NeedsProtocolKey(key))
-            return dict.TryGetBuiltinKeyAsync(key, context, span);
+        if (asynchronous && context is not null)
+            return dict.TryGetKeyAsync(key, context, span);
         var found = context is null ? dict.TryGetValue(key, out var value) : dict.TryGetValue(key, out value, context, span);
         return new((found, value ?? PyNone.Instance));
     }

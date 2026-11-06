@@ -1,0 +1,24 @@
+{
+  "initialSetupFailedBeforeLaunch": "setup.py minimum24MiB free assertion",
+  "observedFreeBytesBeforeCorrection": 19038208,
+  "serviceBefore": "MainPID=0\nLoadState=not-found\n",
+  "removedOnlyRedundantVerifiedTransfers": [
+    {
+      "path": "/home/lokad/lython-bench-checks/b330-payload.tgz",
+      "sha256": "5c85e294b30f64c78e91c52eeaca27328fda041420a0c1957551cbcbdf1c05e5",
+      "bytes": 3733819
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/b331-payload.tgz",
+      "sha256": "9b060f5d839a87887e7aaef86c3e14a2fd0e5f9f85954b66247b719411ae5d68",
+      "bytes": 3767681
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/b335-payload.tgz",
+      "sha256": "30735988217bea3ae272971321744061c291d4cb62cdc2a9cb19714b2b600f5d",
+      "bytes": 3811086
+    }
+  ],
+  "sourceAndWorkerIdentitiesReverified": true,
+  "correctedFreeBytes": 30363648
+}

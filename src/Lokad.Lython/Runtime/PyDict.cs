@@ -107,27 +107,31 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
         return index >= 0;
     }
-    internal ValueTask<(bool Found, object Value)> TryGetBuiltinKeyAsync(
+    internal async ValueTask<(bool Found, object Value)> TryGetKeyAsync(
         object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_nativeItems is null) return LookupBridgeAsync();
-        if (!HasProtocolKeys)
-            return new(TryGetValue(key, out var value, context, span) ? (true, value) : (false, PyNone.Instance));
-        return LookupAsync();
-        async ValueTask<(bool Found, object Value)> LookupBridgeAsync()
+        var prepared = await PyHashProtocols.PrepareKeyHashAsync(key, context, span).ConfigureAwait(false);
+        context.CheckExecution(span);
+        var hash = MixNativeHash(prepared.Hash);
+        if (_nativeItems is not null && !HasProtocolKeys && !prepared.Protocol)
         {
-            var (hash, protocol) = PrepareQueryKey(key, context, span);
-            var stored = await ResolveBridgeKeyAsync(key, hash, protocol, context, span, asynchronous: true).ConfigureAwait(false);
+            var nativeIndex = FindNativeIndex(key, hash, context, span);
+            return nativeIndex < 0 ? (false, PyNone.Instance) : (true, _nativeItems[nativeIndex].Value!);
+        }
+        if (_nativeItems is null)
+        {
+            var stored = await ResolveBridgeKeyAsync(key, hash, prepared.Protocol, context, span, asynchronous: true).ConfigureAwait(false);
+            context.CheckExecution(span);
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             return stored is not null && _items.TryGetValue(stored, out var found) ? (true, found) : (false, PyNone.Instance);
         }
-        async ValueTask<(bool Found, object Value)> LookupAsync()
-        {
-            var (hash, protocol) = PrepareQueryKey(key, context, span);
-            var index = await ResolveNativeKeyAsync(key, hash, protocol, context, span).ConfigureAwait(false);
-            return index < 0 ? (false, PyNone.Instance) : (true, _nativeItems[index].Value!);
-        }
+        var index = await ResolveNativeKeyAsync(key, hash, prepared.Protocol, context, span).ConfigureAwait(false);
+        context.CheckExecution(span);
+        return index < 0 ? (false, PyNone.Instance) : (true, _nativeItems[index].Value!);
     }
+
+    internal async ValueTask<bool> ContainsKeyAsync(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => (await TryGetKeyAsync(key, context, span).ConfigureAwait(false)).Found;
 
     internal bool TryGetStringValue(string name, MemoryGovernor governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context, [MaybeNullWhen(false)] out object value)
@@ -144,7 +148,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var governor = context.MemoryGovernor;
         var key = PyString.FromString(name, governor, span);
         var mayEscape = HasProtocolKeys;
-        try { return await TryGetBuiltinKeyAsync(key, context, span).ConfigureAwait(false); }
+        try { return await TryGetKeyAsync(key, context, span).ConfigureAwait(false); }
         finally { if (!mayEscape) governor.RefundUnpublishedValue(key); }
     }
 
