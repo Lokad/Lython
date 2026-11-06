@@ -1,0 +1,39 @@
+{
+  "revision": "ffa1726060f01310c223c8557fd27a5c777fad86",
+  "runtimeSource": "b6650f09 unchanged; later evidence commits only",
+  "files": {
+    "src/Lokad.Lython/Frontend/StaticRegexReturnResolver.cs": "7e0f0b3b6366de34058d543f9b0a739b74d1187076ce64f2dc7173944503548d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexCompiler.cs": "a8566cc2e3e3bd3d7083e8e3647b5b260d770582b36cad2ca20345d6d0b612a1",
+    "src\\Lokad.Lython.Utf8Regex\\Utf8RegexProvider.cs": "2d0a24d39aadd219189a9d488437dcd597835bdc78f48a34e688a25e3155a018",
+    "src\\Lokad.Lython\\Host\\ILythonRegexProvider.cs": "3530fde985a9bb0cd953bca99cd713ba8533e2118bdc7cf6ce4d2419645f6483",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Calls.cs": "4fe33470ca6f5886ec9bb0ab64c34d3c931575da349ef3d42adb07669d0c3a83",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Evaluation.Assignments.cs": "e06de6f76706fb2a377ea235bc6bb3fbccbe3b2eb2ddcbd8ca9f9b9d7d469c0e",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.Operations.cs": "9503d4817ea2c27cfbcb4ddebe998e247ee8ba83c0c273d4332794591719ae67",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Lowered.Shared.cs": "38a6f245ef83ee726db4f70f3bc108e9a32ece7e5f783512c1421306ae7128ef",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.OperatorModule.cs": "40d932990c31b36576919e94837e67378fc14c091afa21cd938da8c7fce53964",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.RegexMatcher.cs": "70a5ddebe9fa8eda2500aa25a74047b9c3782f8053903d6cb0dd997d57cf4ffd",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.RegexModule.cs": "d86c65f34b7693ac85d5012abbfd2c524ff59bc5a1fa1580cc68d234d01fd018",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.RegexObjects.cs": "97d65cbd633231b5341888b990bdc4dfd8ce9492c75af7a388dc179db42d8be7",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.RegexReplacement.cs": "c52669bf29a04d3fc668bdde01e0a3de2442ae576d4186347834924642309aba",
+    "src\\Lokad.Lython\\Runtime\\PyIndexing.cs": "a481e68638d46642a3824f67bebf4af3a7dbd6f72ff6c55ed7eb15cbc052c2a7",
+    "src\\Lokad.Lython\\Runtime\\PyMemberAccess.cs": "44aa981ff167cc8e187df23af8a3417d833b4dbfd77eb5458487f682954eb19f",
+    "src\\Lokad.Lython\\Runtime\\PyRendering.cs": "2124889d654237dcbb6ed463ea550b17bbd5234ca831586cc3602695c164edd9",
+    "src\\Lokad.Lython\\Runtime\\PyType.cs": "c87504c36080776173a2b62bd203ccd0c1edbe89f3bd3f79feb6f1036a1dd6a2",
+    "src\\Lokad.Lython\\Runtime\\RuntimeErrors.cs": "6cf6c774a4aab3d4f3167038802cc30291eb568b0d01f9238548af549e097019",
+    "tests\\Lokad.Lython.PublicApi.Tests\\RegexAdapterLifetimeTests.cs": "3f737574b79b644c324a9069f7eafcbccfd12b57ebfaa70022bbe2f26b0eb86e",
+    "tests\\Lokad.Lython.PublicApi.Tests\\RegexPatternErrorLifetimeTests.cs": "a35a0ccf23b72e91e4a44b26c60efb3000b0c4751a36b5e4a2ef3266b61643c5",
+    "tests\\Lokad.Lython.PublicApi.Tests\\RegexProviderContractTests.cs": "6e75327d3556d5a2a65028632d5aa07c3775a47bf3f4352a224fea56f292de95",
+    "tests\\Lokad.Lython.Tests\\RegexExpansionOwnershipTests.cs": "ba5da663d4014b0b62eb56e73194d4076043645c870fe8819c940d16f759927b",
+    "tools\\PackageSmokeTest\\Program.cs": "ca5c249939e7cac5c5654fb47d4b0940b4a951b14cacd968feaae1840a5160af"
+  },
+  "binaries": {
+    "net11.0/Lokad.Lython.dll": "f9d2fb9c4d5abfec05c13b41adbec3d35a9bbdc8064f00611c923791a77409b1",
+    "net11.0/Lokad.Lython.Utf8Regex.dll": "e0690675b660a33900bcef87f53a431f0ef6140186c462afa60030b0d0ddd5aa",
+    "net11.0/Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "net11.0/Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+    "net10.0/Lokad.Lython.dll": "c4df57cb293d6acb4dd2e9fcdcd3f9c7443c1ea6fc8a3542910d5985627509ec",
+    "net10.0/Lokad.Lython.Utf8Regex.dll": "56dffc7552d9d203249ff8db3b4dc350dbef6ddf0511811203f4e2c0f62f756d",
+    "net10.0/Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "net10.0/Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  }
+}

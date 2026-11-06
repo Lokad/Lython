@@ -349,7 +349,7 @@ internal static class PyRendering
         builder.AppendAscii(", ");
         builder.AppendString(match.End.ToString());
         builder.AppendAscii("), match=");
-        builder.Append(ToReprPyStringCore(match.Value, context, activeContainers));
+        builder.Append(ToReprPyStringCore(match.MaterializeGroup(0, context.Context, PyStructuralGuard.AmbientSpan), context, activeContainers));
         builder.AppendAscii(">");
         return builder.ToPyStringAndRelease();
     }

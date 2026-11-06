@@ -6,20 +6,57 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed record ReCapture(PyString Value, BigInteger Start, BigInteger End);
+    internal readonly record struct ReCaptureRange(int StartByte, int EndByte, int Start, int End);
 
-    internal sealed record ReMatchObject(
-        PyString Value,
-        BigInteger Start,
-        BigInteger End,
-        RePatternObject Pattern,
-        PyString String,
-        BigInteger Pos,
-        BigInteger EndPos,
-        int CaptureSlotCount,
-        IReadOnlyList<ReCapture?> Captures,
-        IReadOnlyDictionary<PyString, int> NamedGroups,
-        int? LastCapturedIndex);
+    // Retained matches own immutable ranges over their already-funded subject.
+    // Current group access owns any new string, independently of cursor scratch.
+    internal sealed class ReMatchObject(RePatternObject pattern, PyString input, int pos, int endPos,
+        ReCaptureRange[] captures, int? lastIndex, MemoryGovernor owner) : IPyContextualDynamicAttributes
+    {
+        public RePatternObject Pattern { get; } = pattern;
+        public PyString String { get; } = input;
+        public int Pos { get; } = pos;
+        public int EndPos { get; } = endPos;
+        public ReCaptureRange[] Captures { get; } = captures;
+        public int CaptureSlotCount => Captures.Length;
+        public IReadOnlyDictionary<PyString, int> NamedGroups => Pattern.NamedGroups;
+        public int? LastCapturedIndex { get; } = lastIndex;
+        public int Start => Captures[0].Start;
+        public int End => Captures[0].End;
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+            => ReMatchMembers.TryGetMember(this, name, context, span, out value);
+
+        internal ReadOnlyMemory<byte> GroupBytes(int index)
+        {
+            var capture = Captures[index];
+            return capture.StartByte < 0 ? ReadOnlyMemory<byte>.Empty
+                : String.Utf8Bytes.Slice(capture.StartByte, capture.EndByte - capture.StartByte);
+        }
+
+        internal PyString MaterializeGroup(int index, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            context ??= PyStructuralGuard.AmbientContext;
+            var governor = context?.MemoryGovernor ?? owner;
+            governor.ThrowIfAdmissionFailed();
+            context?.CheckExecution(span);
+            var bytes = GroupBytes(index);
+            if (bytes.IsEmpty) return PyString.Empty;
+            if (bytes.Length == String.Utf8Bytes.Length) return String;
+            using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(bytes.Length), span);
+            context?.CheckExecution(span);
+            var copy = new byte[bytes.Length];
+            for (var offset = 0; offset < copy.Length;)
+            {
+                context?.CheckExecution(span);
+                var count = Math.Min(4096, copy.Length - offset);
+                bytes.Span.Slice(offset, count).CopyTo(copy.AsSpan(offset, count));
+                offset += count;
+            }
+            context?.CheckExecution(span);
+            return PyString.FromOwnedUtf8(copy, governor, span, storage);
+        }
+    }
 
     internal sealed record RePatternObject(
         PyString Pattern,

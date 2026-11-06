@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
         private readonly RegexSubjectRange _range;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private ILythonRegexSubject? _subject;
+        private RegexMatcher.PreparedSubject? _subject;
         private ILythonRegexCursor? _cursor;
         private RegexScalarPosition _position;
         private bool _finished;
@@ -34,14 +34,11 @@ internal sealed partial class LythonRuntime
                 if (_subject is null)
                 {
                     _subject = RegexMatcher.Prepare(_pattern, _range, _context, _span);
-                    _cursor = RegexCompiler.ProviderCall(() => _subject.Find(_context.State.CancellationToken),
-                        _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern);
+                    _cursor = _subject.Find();
                     _context.State.TrackRegexIterator(this);
                 }
-                var match = RegexCompiler.ProviderCall(() => _cursor!.Next(_context.State.CancellationToken),
-                    _context.MemoryGovernor, _context.State.CancellationToken, _span, _pattern.Pattern);
-                if (match is null) { Dispose(); return false; }
-                value = RegexMatcher.CreateMatchObject(_pattern, _range, match, ref _position, _context, _span);
+                if (!_subject.Next(_cursor!)) { Dispose(); return false; }
+                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, ref _position, _context, _span);
                 return true;
             }
             catch { Dispose(); throw; }
@@ -73,17 +70,19 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature MatchGetItemSignature = LythonCallableSignature.Create("match.__getitem__", ["key"], 1, ArgumentCountLimit.AtMost(1), LythonVariadicParameters.None, 1);
         private readonly record struct RegexGroupBounds(BigInteger Start, BigInteger End);
 
-        public static bool TryGetMember(ReMatchObject match, string name, [MaybeNullWhen(false)] out object value)
+        public static bool TryGetMember(ReMatchObject match, string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("re"),
                 "re" => match.Pattern,
                 "string" => match.String,
-                "pos" => match.Pos,
-                "endpos" => match.EndPos,
+                "pos" => new BigInteger(match.Pos),
+                "endpos" => new BigInteger(match.EndPos),
                 "lastindex" => LastIndex(match),
                 "lastgroup" => LastGroup(match),
+                "regs" => CreateTuple(match.CaptureSlotCount, i =>
+                    CreateTuple(2, j => new BigInteger(j == 0 ? match.Captures[i].Start : match.Captures[i].End), context, span), context, span),
                 "group" => BoundCallable.Create(
                     (arguments, span, context) => GroupCoreAsync(match, arguments, context, span, false).GetAwaiter().GetResult(),
                     (arguments, span, context) => GroupCoreAsync(match, arguments, context, span, true)),
@@ -99,13 +98,8 @@ internal sealed partial class LythonRuntime
                     }
 
                     var defaultValue = arguments.Length == 1 ? arguments[0] : PyNone.Instance;
-                    var groups = new object[Math.Max(0, match.CaptureSlotCount - 1)];
-                    for (var i = 1; i < match.CaptureSlotCount; i++)
-                    {
-                        groups[i - 1] = ResolveIndexedGroup(match, i, span, defaultValue);
-                    }
-
-                    return new PyTuple(groups, context.MemoryGovernor, span);
+                    return CreateTuple(match.CaptureSlotCount - 1,
+                        i => ResolveIndexedGroup(match, i + 1, span, context, defaultValue), context, span);
                 }, MatchGroupsSignature),
                 "groupdict" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -115,10 +109,10 @@ internal sealed partial class LythonRuntime
                     }
 
                     var defaultValue = arguments.Length == 1 ? arguments[0] : PyNone.Instance;
-                    var dict = new PyDict(context.MemoryGovernor, span);
+                    var dict = new PyDict(match.NamedGroups.Count, context.MemoryGovernor, span);
                     foreach (var entry in match.NamedGroups)
                     {
-                        dict.SetItem(entry.Key, ResolveIndexedGroup(match, entry.Value, span, defaultValue));
+                        dict.SetItem(entry.Key, ResolveIndexedGroup(match, entry.Value, span, context, defaultValue));
                     }
 
                     return dict;
@@ -182,7 +176,7 @@ internal sealed partial class LythonRuntime
         {
             key = await CoerceGroupKeyAsync(key, context, span, asynchronous).ConfigureAwait(false);
             return TryResolveGroupIndex(match, key, span, out var index)
-                ? ResolveIndexedGroup(match, index, span)
+                ? ResolveIndexedGroup(match, index, span, context)
                 : throw new LythonRuntimeException("IndexError", "no such group", span);
         }
 
@@ -190,19 +184,17 @@ internal sealed partial class LythonRuntime
         {
             if (arguments.Length == 0)
             {
-                return match.Value;
+                return match.MaterializeGroup(0, context, span);
             }
             if (arguments.Length == 1)
             {
                 return await GetSubscriptCoreAsync(match, arguments[0], span, context, asynchronous).ConfigureAwait(false);
             }
 
-            var groups = new object[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                groups[i] = await GetSubscriptCoreAsync(match, arguments[i], span, context, asynchronous).ConfigureAwait(false);
-            }
-            return new PyTuple(groups, context.MemoryGovernor, span);
+            if (!asynchronous)
+                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments[i], span, context), context, span);
+            return await CreateTupleAsync(arguments.Length,
+                i => GetSubscriptAsync(match, arguments[i], span, context), context, span).ConfigureAwait(false);
         }
 
         private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, object[] arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -238,39 +230,24 @@ internal sealed partial class LythonRuntime
             return integer;
         }
 
-        private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span)
-            => ResolveIndexedGroup(match, index, span, PyNone.Instance);
+        private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span, ExecutionContext? context)
+            => ResolveIndexedGroup(match, index, span, context, PyNone.Instance);
 
-        private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span, object defaultValue)
+        private static object ResolveIndexedGroup(ReMatchObject match, int index, LythonSourceSpan span,
+            ExecutionContext? context, object defaultValue)
         {
             if (index < 0 || index >= match.CaptureSlotCount)
-            {
                 throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span);
-            }
-
-            if (index == 0)
-            {
-                return match.Value;
-            }
-
-            return (object?)match.Captures[index - 1]?.Value ?? defaultValue;
+            return match.Captures[index].StartByte < 0 ? defaultValue : match.MaterializeGroup(index, context, span);
         }
 
         private static RegexGroupBounds ResolveGroupBounds(ReMatchObject match, object group, LythonSourceSpan span)
         {
             if (TryResolveGroupIndex(match, group, span, out var index))
             {
-                if (index == 0)
-                {
-                    return new RegexGroupBounds(match.Start, match.End);
-                }
-
-                var capture = match.Captures[index - 1];
-                return capture is null
-                    ? new RegexGroupBounds(new BigInteger(-1), new BigInteger(-1))
-                    : new RegexGroupBounds(capture.Start, capture.End);
+                var capture = match.Captures[index];
+                return new RegexGroupBounds(capture.Start, capture.End);
             }
-
             throw new LythonRuntimeException("IndexError", "no such group", span);
         }
 

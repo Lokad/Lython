@@ -42,6 +42,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.RegexMatch, "endpos", StaticReturnShape.Integer),
         new(AbstractValueKind.RegexMatch, "lastindex", StaticReturnShape.Unknown),
         new(AbstractValueKind.RegexMatch, "lastgroup", StaticReturnShape.Unknown),
+        new(AbstractValueKind.RegexMatch, "regs", StaticReturnShape.Unknown),
         new(AbstractValueKind.DecimalContext, "prec", StaticReturnShape.Integer),
         new(AbstractValueKind.DecimalContext, "rounding", StaticReturnShape.String),
         new(AbstractValueKind.DecimalContext, "Emin", StaticReturnShape.Integer),

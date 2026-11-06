@@ -784,8 +784,8 @@ sealed class WindowProvider : ILythonRegexProvider
     }
     private sealed class Subject : ILythonRegexSubject
     {
-        public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
-        { token.ThrowIfCancellationRequested(); return new(new LythonRegexCapture?[] { new(2, 3) }, null); }
+        public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
+        { token.ThrowIfCancellationRequested(); captures[0] = new(2, 3); lastIndex = null; return true; }
         public ILythonRegexCursor Find(CancellationToken token)
         { token.ThrowIfCancellationRequested(); return new Cursor(this); }
         public void Dispose() { }
@@ -793,12 +793,13 @@ sealed class WindowProvider : ILythonRegexProvider
     private sealed class Cursor(Subject subject) : ILythonRegexCursor
     {
         private bool _done;
-        public LythonRegexMatch? Next(CancellationToken token)
+        public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            if (_done) return null;
+            lastIndex = null;
+            if (_done) return false;
             _done = true;
-            return subject.Match(LythonRegexMatchMode.Search, token);
+            return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);
         }
         public void Dispose() => _done = true;
     }

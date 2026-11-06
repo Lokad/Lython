@@ -388,7 +388,10 @@ internal static class StaticRegexReturnResolver
         using var subject = LythonRuntime.RegexCompiler.ProviderCall(() => pattern.Prepare(input, window,
             analysis.MemoryGovernor?.Budget ?? new LythonMemoryBudget(), token), analysis.MemoryGovernor, token, span,
             operationName: "Regex constant-subject preparation");
-        return LythonRuntime.RegexCompiler.ProviderCall(() => subject.Match((LythonRegexMatchMode)operation, token),
-            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching") is not null;
+        using var storage = analysis.MemoryGovernor?.ReserveTemporary(checked(32L + 16L * pattern.CaptureSlotCount), span);
+        token.ThrowIfCancellationRequested();
+        var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
+        return LythonRuntime.RegexCompiler.TryMatch(subject, (LythonRegexMatchMode)operation, captures, out _,
+            analysis.MemoryGovernor, token, span, operationName: "Regex constant matching");
     }
 }

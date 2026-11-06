@@ -27,6 +27,7 @@ internal static partial class StaticContracts
         "endpos",
         "lastindex",
         "lastgroup",
+        "regs",
         "group",
         "__getitem__",
         "groups",

@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [capture ownership milestone](results/2026-11-06-regex-capture-ownership/README.md)
+removes provider carriers/arrays and eager retained groups. Same-producer direct
+cursor allocation drops 20.34%; complete regex extraction improves 3.6–5.2% warm
+and 4.6–6.4% fresh in an undisturbed 87 s confirmation, with 2.28% control variation.
+Optional-adapter regex remains roughly 7× CPython. Earlier observed/archive-failed
+conditions and SDK launcher failures remain separate; no process-CPU/RSS claim.
+Full ordinary actual 11/10 checks pass; platform/Stress/package delivery follows.
+
 The [shared-target forwarding assessment](results/2026-11-06-shared-target-assessment/README.md)
 withdraws both prototypes after complete113s source pairs. Initial text−4–5%
 did not recur in the refinement; refined JSON improves4.7–5.4%, CSV stays mixed
@@ -38,7 +46,7 @@ constructor funding flag. Actual shells shrink64→56B on both runtimes; whole-j
 allocation drops4.28% text and roughly2.4–2.7% CSV on both APIs. B351140.60s
 retains text elapsed+1.6–2.2% as debt, with other controls mixed; no broad CPU gain.
 Focused checks and full public.NET11 pass; the corrected native ownership fixture
-and original failures remain. Full R17 delivery is pending separately.
+and original failures remain. Combined R17/P01 delivery is qualified at b6650f09.
 
 [Immutable dev44 adapter development](results/2026-11-06-adapter-dev44/README.md)
 passes84internal/421public per actual runtime against62141d4d using the selected

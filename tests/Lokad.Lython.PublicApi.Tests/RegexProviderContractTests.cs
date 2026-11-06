@@ -775,7 +775,7 @@ public sealed class RegexProviderContractTests
         internal int CaptureSlots = 1;
         internal IReadOnlyList<LythonRegexNamedGroup> GroupNames = [];
         internal Action<ReadOnlyMemory<byte>, LythonRegexWindow>? OnPrepare;
-        internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, LythonRegexMatch?>? MatchFactory;
+        internal Func<ReadOnlyMemory<byte>, LythonRegexWindow, FixtureMatch?>? MatchFactory;
 
         private static void Reserve(ILythonMemoryBudget owner, long bytes)
         {
@@ -864,18 +864,36 @@ public sealed class RegexProviderContractTests
             }
         }
 
+        // Immutable scenario data; provider output itself uses the caller's buffer.
+        internal sealed record FixtureMatch(LythonRegexCapture?[] Captures, int? LastIndex);
+
         private sealed class Subject(CooperatingProvider provider, Pattern pattern, ReadOnlyMemory<byte> input, LythonRegexWindow window, ILythonMemoryScope owner)
             : ILythonRegexSubject
         {
             private bool _disposed;
-            public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
+            public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
+                CancellationToken token)
             {
                 provider.Work("match", token);
-                if (provider.MatchFactory is { } factory) return factory(input, window);
+                lastIndex = null;
+                if (provider.MatchFactory is { } factory)
+                {
+                    var fixture = factory(input, window);
+                    if (fixture is null) return false;
+                    fixture.Captures.CopyTo(captures);
+                    lastIndex = fixture.LastIndex;
+                    return true;
+                }
                 if (provider.Refuse) Reserve(owner, long.MaxValue);
                 var text = Encoding.UTF8.GetString(input.Span);
-                if (!text.Equals("x", (pattern.Flags & 2) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return null;
-                return new(new Captures(input, pattern.CaptureSlotCount, provider.CancelCapture), null);
+                if (!text.Equals("x", (pattern.Flags & 2) != 0 ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return false;
+                for (var i = 0; i < captures.Length; i++)
+                {
+                    if (i == 1) provider.CancelCapture?.Cancel();
+                    token.ThrowIfCancellationRequested();
+                    captures[i] = new(0, input.Length);
+                }
+                return true;
             }
             public ILythonRegexCursor Find(CancellationToken token)
             {
@@ -896,20 +914,14 @@ public sealed class RegexProviderContractTests
         private sealed class Cursor(CooperatingProvider provider, Subject subject) : ILythonRegexCursor
         {
             private bool _done;
-            public LythonRegexMatch? Next(CancellationToken token)
-            { provider.Work("next", token); if (_done) return null; _done = true; return subject.Match(LythonRegexMatchMode.Search, token); }
-            public void Dispose() { provider.CursorDisposed = true; }
-        }
-
-        private sealed class Captures(ReadOnlyMemory<byte> value, int count, CancellationTokenSource? cancel) : IReadOnlyList<LythonRegexCapture?>
-        {
-            public int Count => count;
-            public LythonRegexCapture? this[int index]
+            public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
-                get { if (index == 1) cancel?.Cancel(); return new(0, value.Length); }
+                provider.Work("next", token); lastIndex = null;
+                if (_done) return false;
+                _done = true;
+                return subject.TryMatch(LythonRegexMatchMode.Search, captures, out lastIndex, token);
             }
-            public IEnumerator<LythonRegexCapture?> GetEnumerator() { for (var i = 0; i < count; i++) yield return this[i]; }
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public void Dispose() { provider.CursorDisposed = true; }
         }
 
         public void Dispose() { _cached?.Owner.Dispose(); ReleaseCleanup.Set(); ReleaseCleanup.Dispose(); _work.Dispose(); }

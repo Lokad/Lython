@@ -14,7 +14,7 @@ public sealed class RegexAdapterLifetimeTests
         Assert.True(owner.TryReserve(123, out var unrelated));
         var pattern = Utf8RegexProvider.Instance.Compile("(?P<value>a)"u8.ToArray(), new(32, false), owner, default);
         using (var subject = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default))
-            Assert.NotNull(subject.Match(LythonRegexMatchMode.Match, default));
+            Assert.True(subject.TryMatch(LythonRegexMatchMode.Match, new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
         Assert.True(budget.ReservedBytes > 123);
         pattern.Dispose();
         pattern.Dispose();
@@ -64,15 +64,16 @@ public sealed class RegexAdapterLifetimeTests
                 using var cursor = subject.Find(earlier.Token);
                 earlier.Cancel();
                 var working = budget.ReservedBytes;
+                var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
                 for (var i = 0; i < 4096; i++)
                 {
-                    var match = Assert.IsType<LythonRegexMatch>(cursor.Next(default));
-                    Assert.Equal(i, match.Captures[0]!.Value.StartByte);
+                    Assert.True(cursor.TryNext(captures, out _, default));
+                    Assert.Equal(i, captures[0]!.Value.StartByte);
                     // Native cursor scratch may first grow on advance. Keep
                     // its working capacity funded until exhaustion/disposal.
                     Assert.True(budget.ReservedBytes >= working);
                 }
-                Assert.Null(cursor.Next(default));
+                Assert.False(cursor.TryNext(captures, out _, default));
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
@@ -96,7 +97,7 @@ public sealed class RegexAdapterLifetimeTests
             }
             Assert.Equal(0, working.ReservedBytes);
             using var next = pattern.Prepare("a"u8.ToArray(), new(0, 1, 0, 1), owner, default);
-            Assert.NotNull(next.Match(LythonRegexMatchMode.Match, default));
+            Assert.True(next.TryMatch(LythonRegexMatchMode.Match, new LythonRegexCapture?[pattern.CaptureSlotCount], out _, default));
         }
         Assert.Equal(0, retained.ReservedBytes);
     }

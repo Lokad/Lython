@@ -21,7 +21,7 @@ internal static class RegexCancellationFixture
         {
             using var warm = provider.Compile("(?:a|b){1,3}"u8.ToArray(), new(32, false), warmOwner, default);
             using var subject = warm.Prepare("a!"u8.ToArray(), new(0, 2, 0, 2), warmOwner, default);
-            _ = subject.Match(LythonRegexMatchMode.Search, default);
+            _ = subject.TryMatch(LythonRegexMatchMode.Search, new LythonRegexCapture?[warm.CaptureSlotCount], out _, default);
         }
         Action operation;
         using (var owner = budget.CreateScope())
@@ -39,10 +39,11 @@ internal static class RegexCancellationFixture
                 pattern = provider.Compile("(a+)+$"u8.ToArray(), new(32, false), owner, default);
                 subject = pattern.Prepare(Encoding.UTF8.GetBytes(new string('a', 128) + "!"), new(0, 129, 0, 129), owner, default);
                 if (stage == "cursor") cursor = subject.Find(default);
+                var captures = new LythonRegexCapture?[pattern.CaptureSlotCount];
                 operation = stage switch
                 {
-                    "match" => () => subject.Match(LythonRegexMatchMode.Search, cancellation.Token),
-                    "cursor" => () => cursor!.Next(cancellation.Token),
+                    "match" => () => subject.TryMatch(LythonRegexMatchMode.Search, captures, out _, cancellation.Token),
+                    "cursor" => () => cursor!.TryNext(captures, out _, cancellation.Token),
                     _ => throw new ArgumentException("Unknown cancellation stage.", nameof(stage)),
                 };
             }

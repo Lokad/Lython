@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "jobs": 3,
+  "elapsedSeconds": 86.89302723295987,
+  "allWorkersJoined": true,
+  "guestFixtureDirectories": [],
+  "quietBeforeAndAfter": true,
+  "originalOwnerExitCode": 1,
+  "archiveRecoveredUnderLease": true,
+  "archivedAndVerifiedUnderLease": true,
+  "performanceQualified": false,
+  "archiveSHA256": "2ec2e37efe7d2d55c90fbaaf46fef697c23773f136b6361512ca439d7e1b362a"
+}

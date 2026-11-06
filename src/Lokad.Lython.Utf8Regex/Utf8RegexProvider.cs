@@ -243,13 +243,16 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
         private long MatchBytes => checked(16384L + 128L * Pattern.CaptureSlotCount +
             16L * Input.Length * (Pattern.CaptureSlotCount + 1L) + 16L * Pattern.PatternBytes);
 
-        public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken cancellationToken)
+        public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
+            CancellationToken cancellationToken)
         {
+            lastIndex = null;
+            if (captures.Length != Pattern.CaptureSlotCount) throw new ArgumentException("Capture buffer length must equal CaptureSlotCount.", nameof(captures));
             cancellationToken.ThrowIfCancellationRequested();
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_window.Pos > _window.EndPos)
             {
-                if (mode != LythonRegexMatchMode.Match) return null;
+                if (mode != LythonRegexMatchMode.Match) return false;
                 throw new LythonRegexException(LythonRegexFailure.Capability,
                     "PythonRe 0.4 does not support Python match with pos greater than endpos.");
             }
@@ -260,7 +263,10 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
                 LythonRegexMatchMode.FullMatch => Pattern.Regex.FullMatchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
                 _ => Pattern.Regex.SearchDetailedData(BoundedInput.Span, _startByte, cancellationToken),
             }, cancellationToken, patternSource: Pattern.Regex);
-            return data.Success ? Convert(data, cancellationToken) : null;
+            if (!data.Success) return false;
+            CopyCaptures(data, captures, cancellationToken);
+            lastIndex = data.LastIndex;
+            return true;
         }
 
         public ILythonRegexCursor Find(CancellationToken cancellationToken)
@@ -270,18 +276,16 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             return new Cursor(this, cancellationToken);
         }
 
-        private LythonRegexMatch Convert(Utf8PythonDetailedMatchData data, CancellationToken token)
+        private static void CopyCaptures(Utf8PythonDetailedMatchData data, Span<LythonRegexCapture?> captures, CancellationToken token)
         {
-            var captures = new LythonRegexCapture?[data.CaptureSlotCount];
             for (var i = 0; i < captures.Length; i++)
             {
                 token.ThrowIfCancellationRequested();
-                if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
+                if (!data.TryGetGroup(i, out var group) || !group.Success) { captures[i] = null; continue; }
                 var start = group.StartOffsetInBytes;
                 var end = group.EndOffsetInBytes;
                 captures[i] = new(start, end);
             }
-            return new(captures, data.LastIndex);
         }
 
         public void Dispose() { if (!_disposed) { _disposed = true; _owner.Dispose(); } }
@@ -312,18 +316,26 @@ public sealed class Utf8RegexProvider : ILythonRegexProvider
             private CancellationTokenRegistration Forward(CancellationToken token)
                 => token.Register(static state => ((CancellationTokenSource)state!).Cancel(), _cancellation);
 
-            public LythonRegexMatch? Next(CancellationToken token)
+            public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
+                lastIndex = null;
+                if (captures.Length != _subject.Pattern.CaptureSlotCount) throw new ArgumentException("Capture buffer length must equal CaptureSlotCount.", nameof(captures));
                 token.ThrowIfCancellationRequested();
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                if (_cursor is null) return null;
+                if (_cursor is null) return false;
                 try
                 {
                     using (Forward(token))
                     {
-                        if (Backend(() => _cursor.MoveNext(), token, patternSource: _subject.Pattern.Regex)) return _subject.Convert(_cursor.Current, token);
+                        if (Backend(() => _cursor.MoveNext(), token, patternSource: _subject.Pattern.Regex))
+                        {
+                            var data = _cursor.Current;
+                            CopyCaptures(data, captures, token);
+                            lastIndex = data.LastIndex;
+                            return true;
+                        }
                     }
-                    Close(); return null;
+                    Close(); return false;
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 { Close(); throw new OperationCanceledException(token); }

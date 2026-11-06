@@ -44,27 +44,67 @@ internal sealed partial class LythonRuntime
                     throw;
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
+            { throw ProviderFailure(error, governor, cancellationToken, span, pattern, operationName); }
+        }
+
+        internal static bool TryMatch(ILythonRegexSubject subject, LythonRegexMatchMode mode,
+            Span<LythonRegexCapture?> captures, out int? lastIndex, MemoryGovernor? governor,
+            CancellationToken token, LythonSourceSpan? span, PyString? pattern = null,
+            string operationName = "Regex provider")
+        {
+            governor?.ThrowIfAdmissionFailed();
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            try
             {
+                var success = subject.TryMatch(mode, captures, out lastIndex, token);
                 governor?.ThrowIfAdmissionFailed();
-                throw RuntimeErrors.Cancelled(span);
-            }
-            catch (LythonRegexException error)
-            {
-                governor?.ThrowIfAdmissionFailed();
-                if (error.Failure != LythonRegexFailure.MemoryAdmission && cancellationToken.IsCancellationRequested)
-                    throw RuntimeErrors.Cancelled(span);
-                throw error.Failure switch
-                {
-                    LythonRegexFailure.Capability => RuntimeErrors.Capability(error.Message, span),
-                    LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {error.Message}", error.RequestedBytes, span, error)
-                        ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {error.Message}", span,
-                            LythonFailureReason.SharedMemoryAllowance, requested: error.RequestedBytes),
-                    _ => CreatePatternErrorFailure(error.Message, pattern, error.Position, governor, cancellationToken, span),
-                };
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                return success;
             }
             catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
-            { throw RuntimeErrors.Host("regex provider", error, span); }
+            { throw ProviderFailure(error, governor, token, span, pattern, operationName); }
+        }
+
+        internal static bool TryNext(ILythonRegexCursor cursor, Span<LythonRegexCapture?> captures,
+            out int? lastIndex, MemoryGovernor governor, CancellationToken token,
+            LythonSourceSpan span, PyString pattern)
+        {
+            governor.ThrowIfAdmissionFailed();
+            if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+            try
+            {
+                var success = cursor.TryNext(captures, out lastIndex, token);
+                governor.ThrowIfAdmissionFailed();
+                if (token.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
+                return success;
+            }
+            catch (Exception error) when (error is not LythonRuntimeException and not OutOfMemoryException)
+            { throw ProviderFailure(error, governor, token, span, pattern); }
+        }
+
+        private static LythonRuntimeException ProviderFailure(Exception error, MemoryGovernor? governor,
+            CancellationToken token, LythonSourceSpan? span, PyString? pattern,
+            string operationName = "Regex provider")
+        {
+            if (error is OperationCanceledException)
+            {
+                governor?.ThrowIfAdmissionFailed();
+                return RuntimeErrors.Cancelled(span);
+            }
+            if (error is not LythonRegexException providerError)
+                return RuntimeErrors.Host("regex provider", error, span);
+            governor?.ThrowIfAdmissionFailed();
+            if (providerError.Failure != LythonRegexFailure.MemoryAdmission && token.IsCancellationRequested)
+                return RuntimeErrors.Cancelled(span);
+            return providerError.Failure switch
+            {
+                LythonRegexFailure.Capability => RuntimeErrors.Capability(providerError.Message, span),
+                LythonRegexFailure.MemoryAdmission => governor?.RefuseAdmission($"{operationName}: {providerError.Message}", providerError.RequestedBytes, span, providerError)
+                    ?? RuntimeErrors.Attributed("MemoryError", $"{operationName}: {providerError.Message}", span,
+                        LythonFailureReason.SharedMemoryAllowance, requested: providerError.RequestedBytes),
+                _ => CreatePatternErrorFailure(providerError.Message, pattern, providerError.Position, governor, token, span),
+            };
         }
 
         internal readonly record struct RegexPatternRange(RePatternObject Pattern, RegexSubjectRange Range);

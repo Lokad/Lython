@@ -29,13 +29,40 @@ public sealed class RegexExpansionOwnershipTests
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                 Assert.Equal(before, root.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-                Assert.Equal(new string('x', 4096), match.Value.AsString());
+                Assert.Equal(new string('x', 4096), match.String.AsString());
                 Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(Span)));
             }
         }
         Assert.Equal(0, root.ReservedBytes);
         Assert.True(root.TryReserve(root.LimitBytes!.Value, out var reused));
         reused.Dispose();
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Fact]
+    public void GroupCopyObservesCancellationAfterAdmissionAndRefundsScratch()
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hooked = new AdmissionHook(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            {
+                MemoryBudget = hooked, CancellationToken = cancellation.Token,
+            }, regexProvider: Utf8RegexProvider.Instance);
+            var text = "!" + new string('x', 4096) + "!";
+            var match = Match(context, "!(x+)!", text);
+            using var compiled = match.Pattern.Regex;
+            var before = root.ReservedBytes;
+            hooked.Admitted = bytes => { if (bytes >= 4096) cancellation.Cancel(); };
+            var error = Assert.Throws<LythonRuntimeException>(() => match.MaterializeGroup(1, context, Span));
+            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.Equal(before, root.ReservedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(text, match.String.AsString());
+        }
         Assert.Equal(0, root.ReservedBytes);
     }
 

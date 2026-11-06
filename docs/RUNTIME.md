@@ -1381,6 +1381,21 @@ preserves the original prefix/suffix; splitting returns the window's parts.
 Both extensions preserve original assertion context. Reversed
 substitution bounds raise `ValueError` before invoking replacement callbacks.
 
+`ILythonRegexSubject.TryMatch` and `ILythonRegexCursor.TryNext` fill caller-owned
+capture spans with exactly `CaptureSlotCount` entries, including slot zero and
+null for unmatched groups. They report success and the last-closed group index;
+buffer contents after exhaustion or failure are unspecified. Providers finish
+all writes before returning and retain no buffer reference. Lython admits one
+working buffer per prepared operation and snapshots retained matches separately.
+
+Python matches retain immutable byte/scalar ranges and their original funded
+subject through cursor advances, disposal and cache purge. Position access,
+including `regs`, needs no group-text copy. Partial group strings are admitted
+and copied on access; empty groups use the empty string and full-subject groups
+reuse the original string. Group copies are not cached. Admission refusal can
+therefore occur at group access; it remains terminal and cannot be hidden by
+guest exception handling. Expansion reads the retained ranges directly.
+
 Provider compilation, preparation, matching and enumeration receive the current
 token. Lython replacement/split/result processing checks that same token. Cached
 patterns save no prior token.

@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Replace provider match carriers with caller-owned capture spans through
+  `ILythonRegexSubject.TryMatch` and `ILythonRegexCursor.TryNext`; remove
+  `LythonRegexMatch` and the old `Match`/`Next` signatures. This intentionally
+  breaks provider implementations. Retained Python matches keep immutable ranges
+  over the original subject and admit partial group strings on access, moving
+  possible memory refusal to that access. Expansion reads ranges directly.
+  Add read-only Python `match.regs` scalar bounds.
+
 - Share class construction across execution APIs and pass ordinary positional
   arguments directly from operands. Remove default-allocator class copies and
   compiled initializer receiver repackaging. Select a returned subtype's actual

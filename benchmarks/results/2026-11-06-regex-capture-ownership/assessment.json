@@ -1,0 +1,295 @@
+{
+  "b356": {
+    "jobs": [
+      {
+        "case": "scripts.regex-capture-summary.large",
+        "lane": "warm",
+        "roles": {
+          "CPython": {
+            "milliseconds": 0.3969323333333334,
+            "minimum": 0.3845966354166667,
+            "maximum": 0.40235425781249995,
+            "iqrPercent": 1.9418074092393616,
+            "externalCpuMilliseconds": 0.4427083333333333
+          },
+          "reference": {
+            "milliseconds": 2.96931762,
+            "minimum": 2.91055164,
+            "maximum": 3.00267794,
+            "iqrPercent": 1.5842973376489309,
+            "externalCpuMilliseconds": 3.0
+          },
+          "candidate": {
+            "milliseconds": 2.7393058363636364,
+            "minimum": 2.7218184363636366,
+            "maximum": 2.8749697454545453,
+            "iqrPercent": 2.2841390586935835,
+            "externalCpuMilliseconds": 2.727272727272727
+          },
+          "control": {
+            "milliseconds": 2.8066333333333335,
+            "minimum": 2.7759487962962965,
+            "maximum": 2.9494965185185182,
+            "iqrPercent": 2.5042858123150062,
+            "externalCpuMilliseconds": 2.962962962962963
+          }
+        },
+        "deltaPercent": {
+          "candidate": -7.746284267035186,
+          "control": -5.478844215617007
+        },
+        "ratioToCPython": {
+          "candidate": 6.901190974692502,
+          "control": 7.070810557970837
+        },
+        "currentRoleSpreadPercent": 2.4578305962021707
+      },
+      {
+        "case": "scripts.regex-capture-summary.large",
+        "lane": "compile-run",
+        "roles": {
+          "CPython": {
+            "milliseconds": 0.4497294174174174,
+            "minimum": 0.4457156996996997,
+            "maximum": 0.45180681981981985,
+            "iqrPercent": 1.0138548707325437,
+            "externalCpuMilliseconds": 0.5105105105105106
+          },
+          "reference": {
+            "milliseconds": 3.178895609756098,
+            "minimum": 3.124488780487805,
+            "maximum": 3.2529587804878046,
+            "iqrPercent": 1.53274545723504,
+            "externalCpuMilliseconds": 3.4146341463414633
+          },
+          "candidate": {
+            "milliseconds": 3.0645398139534885,
+            "minimum": 3.0485220697674418,
+            "maximum": 3.143731953488372,
+            "iqrPercent": 0.8340851692198346,
+            "externalCpuMilliseconds": 3.0232558139534884
+          },
+          "control": {
+            "milliseconds": 3.1024467272727274,
+            "minimum": 3.094382681818182,
+            "maximum": 3.1192437272727274,
+            "iqrPercent": 0.15426607281279392,
+            "externalCpuMilliseconds": 3.1818181818181817
+          }
+        },
+        "deltaPercent": {
+          "candidate": -3.5973435381661756,
+          "control": -2.404888107956338
+        },
+        "ratioToCPython": {
+          "candidate": 6.814185808772942,
+          "control": 6.898474076009096
+        },
+        "currentRoleSpreadPercent": 1.2369528745112435
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "lane": "warm",
+        "roles": {
+          "CPython": {
+            "milliseconds": 1.1617474496124032,
+            "minimum": 1.1550219147286822,
+            "maximum": 1.1743001240310076,
+            "iqrPercent": 0.9073013580631245,
+            "externalCpuMilliseconds": 1.2403100775193798
+          },
+          "reference": {
+            "milliseconds": 2.1573388285714286,
+            "minimum": 2.1511097571428572,
+            "maximum": 2.1912601428571428,
+            "iqrPercent": 0.26709129828854666,
+            "externalCpuMilliseconds": 2.2857142857142856
+          },
+          "candidate": {
+            "milliseconds": 2.1576405070422533,
+            "minimum": 2.1507395492957744,
+            "maximum": 2.187167281690141,
+            "iqrPercent": 0.1967929547662525,
+            "externalCpuMilliseconds": 2.2535211267605635
+          },
+          "control": {
+            "milliseconds": 2.15098814084507,
+            "minimum": 2.1414845211267606,
+            "maximum": 2.2019214788732393,
+            "iqrPercent": 0.8547355614967664,
+            "externalCpuMilliseconds": 2.2535211267605635
+          }
+        },
+        "deltaPercent": {
+          "candidate": 0.013983824275975998,
+          "control": -0.2943759989043393
+        },
+        "ratioToCPython": {
+          "candidate": 1.8572371368339242,
+          "control": 1.851510964420632
+        },
+        "currentRoleSpreadPercent": 0.3092702405402159
+      }
+    ],
+    "receipt": {
+      "complete": true,
+      "jobs": 3,
+      "elapsedSeconds": 86.89302723295987,
+      "allWorkersJoined": true,
+      "guestFixtureDirectories": [],
+      "quietBeforeAndAfter": true,
+      "originalOwnerExitCode": 1,
+      "archiveRecoveredUnderLease": true,
+      "archivedAndVerifiedUnderLease": true,
+      "performanceQualified": false,
+      "archiveSHA256": "2ec2e37efe7d2d55c90fbaaf46fef697c23773f136b6361512ca439d7e1b362a"
+    },
+    "performanceQualified": false,
+    "limitation": "B356 includes early SSH status observation and an archive-only owner failure, recovered under lease. B357 undisturbed confirmation; process CPU is coarse tick data, no CPU/RSS/tail claim."
+  },
+  "b357": {
+    "jobs": [
+      {
+        "case": "scripts.regex-capture-summary.large",
+        "lane": "warm",
+        "roles": {
+          "CPython": {
+            "milliseconds": 0.4086364407216495,
+            "minimum": 0.39601914175257735,
+            "maximum": 0.42259424226804126,
+            "iqrPercent": 2.6908248080448227,
+            "externalCpuMilliseconds": 0.4639175257731959
+          },
+          "reference": {
+            "milliseconds": 2.9972252,
+            "minimum": 2.93904206,
+            "maximum": 3.05923062,
+            "iqrPercent": 0.8270643126849411,
+            "externalCpuMilliseconds": 3.2
+          },
+          "candidate": {
+            "milliseconds": 2.842263107142857,
+            "minimum": 2.781025178571429,
+            "maximum": 2.8828613392857143,
+            "iqrPercent": 0.524585118395408,
+            "externalCpuMilliseconds": 2.857142857142857
+          },
+          "control": {
+            "milliseconds": 2.8887496153846155,
+            "minimum": 2.875356673076923,
+            "maximum": 2.954942403846154,
+            "iqrPercent": 0.29177149975321204,
+            "externalCpuMilliseconds": 3.076923076923077
+          }
+        },
+        "deltaPercent": {
+          "candidate": -5.170185171843045,
+          "control": -3.6192003395468686
+        },
+        "ratioToCPython": {
+          "candidate": 6.955481263793892,
+          "control": 7.069241329243914
+        },
+        "currentRoleSpreadPercent": 1.6355455666624996
+      },
+      {
+        "case": "scripts.regex-capture-summary.large",
+        "lane": "compile-run",
+        "roles": {
+          "CPython": {
+            "milliseconds": 0.4469729583333334,
+            "minimum": 0.44552863392857145,
+            "maximum": 0.44931623511904767,
+            "iqrPercent": 0.3338385750059506,
+            "externalCpuMilliseconds": 0.5059523809523809
+          },
+          "reference": {
+            "milliseconds": 3.189054840909091,
+            "minimum": 3.161572272727273,
+            "maximum": 3.26393425,
+            "iqrPercent": 0.9730793491799345,
+            "externalCpuMilliseconds": 3.1818181818181817
+          },
+          "candidate": {
+            "milliseconds": 3.0430388636363634,
+            "minimum": 3.033105659090909,
+            "maximum": 3.1145633636363637,
+            "iqrPercent": 1.1683722857481535,
+            "externalCpuMilliseconds": 3.1818181818181817
+          },
+          "control": {
+            "milliseconds": 2.984951652173913,
+            "minimum": 2.966045913043478,
+            "maximum": 3.041503108695652,
+            "iqrPercent": 1.3058892600517986,
+            "externalCpuMilliseconds": 3.0434782608695654
+          }
+        },
+        "deltaPercent": {
+          "candidate": -4.5786599653176,
+          "control": -6.4001153607316175
+        },
+        "ratioToCPython": {
+          "candidate": 6.808105069674024,
+          "control": 6.678148188884087
+        },
+        "currentRoleSpreadPercent": 1.9460017524955964
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "lane": "warm",
+        "roles": {
+          "CPython": {
+            "milliseconds": 1.149829937984496,
+            "minimum": 1.1464696046511627,
+            "maximum": 1.1534282945736434,
+            "iqrPercent": 0.23786834078640404,
+            "externalCpuMilliseconds": 1.2403100775193798
+          },
+          "reference": {
+            "milliseconds": 2.1926516231884055,
+            "minimum": 2.1770478260869566,
+            "maximum": 2.217794391304348,
+            "iqrPercent": 0.44068672540102816,
+            "externalCpuMilliseconds": 2.1739130434782608
+          },
+          "candidate": {
+            "milliseconds": 2.1948945942028986,
+            "minimum": 2.183892623188406,
+            "maximum": 2.257525695652174,
+            "iqrPercent": 0.7095712304747915,
+            "externalCpuMilliseconds": 2.318840579710145
+          },
+          "control": {
+            "milliseconds": 2.1459679,
+            "minimum": 2.137375828571429,
+            "maximum": 2.1984264714285713,
+            "iqrPercent": 1.1456182545880507,
+            "externalCpuMilliseconds": 2.2857142857142856
+          }
+        },
+        "deltaPercent": {
+          "candidate": 0.1022949104532822,
+          "control": -2.129098972892063
+        },
+        "ratioToCPython": {
+          "candidate": 1.9088862810880245,
+          "control": 1.8663350371287128
+        },
+        "currentRoleSpreadPercent": 2.279935976810199
+      }
+    ],
+    "receipt": {
+      "complete": true,
+      "jobs": 3,
+      "elapsedSeconds": 87.09200810082257,
+      "allWorkersJoined": true,
+      "guestFixtureDirectories": [],
+      "quietBeforeAndAfter": true,
+      "archivedAndVerifiedUnderLease": true,
+      "archiveSHA256": "8852a31b58ca4a0f8b0523345d58fda7307dc387379f590cd82710d074df9bd0"
+    },
+    "performanceQualified": true,
+    "limitation": "B356 includes early SSH status observation and an archive-only owner failure, recovered under lease. B357 undisturbed confirmation; process CPU is coarse tick data, no CPU/RSS/tail claim."
+  }
+}

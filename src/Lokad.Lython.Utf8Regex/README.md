@@ -24,6 +24,8 @@ time and funds current scratch/snapshots instead of all future matches.
 Preparation receives the original subject with scalar pos/endpos and their byte
 bounds. Lython capture results contain byte ranges only; the adapter no longer
 builds a whole-subject coordinate map or transports copied capture strings.
+`TryMatch`/`TryNext` fill the caller's admitted capture span, including every
+unmatched slot, without allocating a Lython match carrier or capture array.
 The pinned backend still creates detailed snapshots internally, a temporary bridge
 independent of core contract development. Pattern handles expose UTF-8 named-group
 entries in capture order; the adapter encodes the backend's string names once.

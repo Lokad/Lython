@@ -75,25 +75,33 @@ public readonly record struct LythonRegexWindow(int Pos, int EndPos, int StartBy
 
 /// <summary>Owns one operation's preparation and working storage.</summary>
 /// <remarks>
-/// Results are borrowed until the next operation or disposal. Dispose cursors
-/// before their subject. Disposal must be nonthrowing, finish cleanup synchronously and refund
+/// The caller owns and funds capture buffers. Providers must not retain them.
+/// Dispose cursors before their subject. Disposal must be nonthrowing, finish cleanup synchronously and refund
 /// only storage whose users have ended; no background work may be abandoned.
 /// </remarks>
 public interface ILythonRegexSubject : IDisposable
 {
-    /// <summary>Matches once using the requested Python operation; null means no match.</summary>
-    LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken cancellationToken);
+    /// <summary>Matches once and writes all capture slots, including null for unmatched groups.</summary>
+    /// <remarks>
+    /// The buffer length equals the pattern's CaptureSlotCount. On success slot zero
+    /// participates and lastIndex identifies the last-closed participating positive group,
+    /// or is null. Buffer contents are unspecified on false or failure. Finish all
+    /// writes before returning; the caller may immediately reuse or retain its data.
+    /// </remarks>
+    bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex,
+        CancellationToken cancellationToken);
 
     /// <summary>Begins Python finditer progression, including adjacent empty/nonempty matches.</summary>
     ILythonRegexCursor Find(CancellationToken cancellationToken);
 }
 
-/// <summary>A disposable Python finditer cursor with borrowed current-match storage.</summary>
+/// <summary>A disposable Python finditer cursor writing caller-owned capture storage.</summary>
 /// <remarks>Disposal is nonthrowing and finishes all cursor users before returning.</remarks>
 public interface ILythonRegexCursor : IDisposable
 {
-    /// <summary>Advances under the current token; null means exhaustion.</summary>
-    LythonRegexMatch? Next(CancellationToken cancellationToken);
+    /// <summary>Advances under the current token; false means exhaustion.</summary>
+    /// <remarks>Buffer and output rules are the same as ILythonRegexSubject.TryMatch.</remarks>
+    bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken cancellationToken);
 }
 
 /// <summary>Selects one Python re matching operation.</summary>
@@ -106,10 +114,6 @@ public enum LythonRegexMatchMode { Search, Match, FullMatch }
 /// the original subject; providers need no copied values or dense coordinate map.
 /// </remarks>
 public readonly record struct LythonRegexCapture(int StartByte, int EndByte);
-
-/// <summary>Contains numeric capture slots (zero included) and the last participating group.</summary>
-/// <remarks>Null slots did not participate. Values and the slot list are borrowed.</remarks>
-public sealed record LythonRegexMatch(IReadOnlyList<LythonRegexCapture?> Captures, int? LastIndex);
 
 /// <summary>Identifies a provider failure without relying on backend exception types.</summary>
 public enum LythonRegexFailure { Pattern, Capability, MemoryAdmission }

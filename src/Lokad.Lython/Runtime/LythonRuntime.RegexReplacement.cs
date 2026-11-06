@@ -34,13 +34,11 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var part = _parts[i];
                 if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
-                else if (part.Group == 0) AppendRegexBytes(builder, match.Value.Utf8Bytes.Span, context, span);
-                else if (match.Captures[part.Group - 1] is { } capture)
-                    AppendRegexBytes(builder, capture.Value.Utf8Bytes.Span, context, span);
+                else AppendRegexBytes(builder, match.GroupBytes(part.Group).Span, context, span);
             }
         }
 
-        internal void AppendTo(GovernedByteBuilder builder, RegexSubjectRange range, LythonRegexMatch match,
+        internal void AppendTo(GovernedByteBuilder builder, RegexSubjectRange range, ReadOnlySpan<LythonRegexCapture?> captures,
             ExecutionContext context, LythonSourceSpan span)
         {
             for (var i = 0; i < count; i++)
@@ -48,7 +46,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 var part = _parts[i];
                 if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
-                else if (match.Captures[part.Group] is { } capture)
+                else if (captures[part.Group] is { } capture)
                     AppendRegexBytes(builder, range.Original.Utf8Bytes.Span.Slice(capture.StartByte,
                         capture.EndByte - capture.StartByte), context, span);
             }

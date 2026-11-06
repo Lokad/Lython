@@ -204,10 +204,10 @@ public sealed class RegexPatternErrorLifetimeTests
         private sealed class Subject(ErrorProvider provider, ILythonRegexSubject inner) : ILythonRegexSubject
         {
             private bool _disposed;
-            public LythonRegexMatch? Match(LythonRegexMatchMode mode, CancellationToken token)
+            public bool TryMatch(LythonRegexMatchMode mode, Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
                 if (provider._stage == "match") provider.Fail();
-                return inner.Match(mode, token);
+                return inner.TryMatch(mode, captures, out lastIndex, token);
             }
             public ILythonRegexCursor Find(CancellationToken token)
             {
@@ -219,10 +219,10 @@ public sealed class RegexPatternErrorLifetimeTests
         private sealed class Cursor(ErrorProvider provider, ILythonRegexCursor inner) : ILythonRegexCursor
         {
             private bool _disposed;
-            public LythonRegexMatch? Next(CancellationToken token)
+            public bool TryNext(Span<LythonRegexCapture?> captures, out int? lastIndex, CancellationToken token)
             {
                 if (provider._stage == "next") provider.Fail();
-                return inner.Next(token);
+                return inner.TryNext(captures, out lastIndex, token);
             }
             public void Dispose() { if (_disposed) return; _disposed = true; inner.Dispose(); provider.CursorsClosed++; }
         }
