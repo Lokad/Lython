@@ -62,3 +62,9 @@ under RunAsync; this milestone does not claim genuinely asynchronous pattern hoo
 
 Final platform, originalStress and installed-package qualification batch at
 delivery. R07's earlier receipt excludes this source. Publication stays postponed.
+
+Committed **a2a61290**. Both actual [installed package consumers](package-consumer.log)
+pass; [validation](validation.json) records the exact package hash. Delivery
+CI42191963552 is running independently; latest observation both platforms have
+passed Release11/10 and package gates and are executing originalStress. Later
+constructor work is excluded. No unchanged local suite replay.

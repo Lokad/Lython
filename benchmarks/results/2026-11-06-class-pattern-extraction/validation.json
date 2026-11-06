@@ -1,5 +1,5 @@
 {
-  "status": "Focused and full local.NET11 pass; final platform/stress/package delivery pending",
+  "status": "Committed a2a61290, full local.NET11 and focused both runtimes pass. Both actual installed consumers pass; CI42191963552 live for platform/runtime/originalStress/package gates.",
   "source": "ddbda0cf plus exact four-file R06 source hashes/patch",
   "independentPythonCases": 16,
   "focused": {
@@ -17,5 +17,7 @@
     "elapsedSeconds": 86.64044717792422,
     "archiveSHA256": "14d301e118da6dbef575c1b0e8aa7a2843b05446eb5726db81ca2b4c6fa69c8b"
   },
-  "limitations": "Pattern hooks still require synchronous completion; suspended bodies and cleanup remain supported. Retained performance debt; no allocation/CPU gain claim. Older4ace delivery excludes this source; publication postponed."
+  "limitations": "Pattern hooks still require synchronous completion; suspended bodies and cleanup remain supported. Retained performance debt; no allocation/CPU gain claim. Older4ace delivery excludes this source; publication postponed.",
+  "deliverySource": "a2a6129012160e7a5a31bd59375fd48125c3310c",
+  "packageSha512": "02749D69D4BD580354975487EF3B88345959AD004CF27ECB69638BDCC2B31952041EC36EE6BF61A6390DE6BD776300E48BB8A187D2D66076016FC7FE01975B8E"
 }

@@ -3154,3 +3154,14 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   unchanged CSV+2.12–2.29% also adverse. Retain correctness and shared extraction
   with explicit debt; no allocation/CPU/speedup claim or semantic bypass to
   recover timing. Final platform/stress/package qualification pending.
+
+- [Remaining runtime cost gate, R08/B340](results/2026-11-06-remaining-runtime-cost/README.md):
+  exacta2a61290/frozenf940bd54, two existing complete text/class-record captures,
+  8.51guestCPU seconds/1,690actual guest-TID samples. All236prefix samples map to
+  unique exact Tier1 listings;125unknown samples/partial maps retained. Full
+  goldens/quiet/funding/Closed/joins/fixture cleanup pass; no live VM work.
+  Text is distributed, not proof for a universal value/frame/text redesign.
+  Select the distinct constructor operand phase: general class-call array,
+  class-prepend copy, bound initializer/compiled-receiver copy and duplicate
+  sync/async construction. Existing ordinary function/direct-local work stays.
+  Correctness/source/cost gates precede any prototype; no predicted gain.

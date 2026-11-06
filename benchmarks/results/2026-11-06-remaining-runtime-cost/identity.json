@@ -1,0 +1,18 @@
+{
+  "sourceRevision": "a2a6129012160e7a5a31bd59375fd48125c3310c; frozen f940bd54 from R06 focused/full checks, precommit assembly metadata; identical source hashes",
+  "files": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+    "Lokad.Lython.dll": "f940bd5443c09d402cedf469516156f31f9db7e71c1ce1de56a3f529a56d1b4e"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/LoweredPattern.cs": "5118362c6456d9e31be0ca8654993dc77e67efd3aae6a8dec4f4cb8e234aee61",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Patterns.cs": "112b67ced61194d8f2d32151550b14836257ed3860f8021e9fa6cc054bc024dc",
+    "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs": "d842fe266838e4196730efd4d6575aec3ae5a259c358026ab07cfe6de858e0fb",
+    "src/Lokad.Lython/Runtime/PyType.cs": "c1770c08eefb1fbd24c3a24f784494521454affbe4c84a544d55ff9166063f01"
+  },
+  "purpose": "Remaining text/record costs after Q01/R07/R06; diagnostic only, not source-pair timing or gain.",
+  "qualification": "Focused both actual runtimes/full local.NET11/both installed consumers pass. CI42191963552 running independently."
+}

@@ -1,0 +1,27 @@
+{
+  "source": "a2a6129012160e7a5a31bd59375fd48125c3310c",
+  "frozenCore": "f940bd5443c09d402cedf469516156f31f9db7e71c1ce1de56a3f529a56d1b4e",
+  "complete": true,
+  "workloads": [
+    {
+      "name": "text",
+      "guestCpuSeconds": 3.59,
+      "samples": 711,
+      "unknownSamples": 52,
+      "prefixSamples": 159,
+      "mappedPrefixSamples": 159,
+      "unmapped": []
+    },
+    {
+      "name": "class-record",
+      "guestCpuSeconds": 4.919999999999999,
+      "samples": 979,
+      "unknownSamples": 73,
+      "prefixSamples": 77,
+      "mappedPrefixSamples": 77,
+      "unmapped": []
+    }
+  ],
+  "decision": "No universal frame/value/text rewrite from distributed samples. Select R09 constructor operand path: current general call arguments, __new__ prepended copy, bound __init__ receiver copy/binding and duplicate sync/async construction are demonstrated source work. Extend existing calling convention, preserve dynamic hooks and remove displaced wrappers. No predicted removable fraction or gain.",
+  "archiveSHA256": "728862da0be6ca1489f0bf6358cc56ec4d2ba7a983394f6c3751c58498051651"
+}
