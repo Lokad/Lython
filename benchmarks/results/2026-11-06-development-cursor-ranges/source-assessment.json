@@ -1,0 +1,42 @@
+{
+  "assessmentOnly": true,
+  "qualified": false,
+  "normalPin": "0.4.0 unchanged",
+  "siblingHead": "1d5b0b80453fe92fa033e95e03408986ff985219",
+  "packages": {
+    "Lokad.Utf8Regex": {
+      "sha256": "eb5d3ad4df2ac25172e330c3a5aeb2e3090658d2f1d9ec4c01ef63ab9c3a9d09",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1"
+      },
+      "libraries": {
+        "lib/net10.0/Lokad.Utf8Regex.dll": "d840124576847bf54d86491e4c2e3982f45073af3825c0e9163e3f5ba8e5abdf",
+        "lib/net11.0/Lokad.Utf8Regex.dll": "785a802c82426fd319a6d0dd0d168d118b6204cd883a2dd2d0f9d4bb85d42e15"
+      }
+    },
+    "Lokad.Utf8Regex.PythonRe": {
+      "sha256": "31c8d9f25b0fe99c17603d6ba3e515a45b4b50879c2e9d83d6b8e33b64a85bb2",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1"
+      },
+      "libraries": {
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "c85b870f9b541b35ecb36cd3a6aaa3e902208d0bbba1692ae4b0909e0dc44642",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "1be9024ab170a0c3a70a81ce4de454de3d7577c51910e30e1c46a95cbc122b94"
+      }
+    }
+  },
+  "cursorDocumentedSurface": [
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNext",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNext(System.Threading.CancellationToken)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNext(Lokad.Utf8Regex.PythonRe.Utf8PythonRangeMatch@)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNext(Lokad.Utf8Regex.PythonRe.Utf8PythonRangeMatch@,System.Threading.CancellationToken)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonMatchCursor.MoveNextRetained(Lokad.Utf8Regex.PythonRe.Utf8PythonRetainedRangeMatch@,System.Threading.CancellationToken)"
+  ],
+  "scope": "Read-only exact local package/source assessment. Neither current source nor dev40 inherits dev29 qualification. No sibling edits, pin promotion, producer safety/performance or released-package claim. Missing native names/one-shot receipts/reversed windows defer only affected final adapter qualification."
+}

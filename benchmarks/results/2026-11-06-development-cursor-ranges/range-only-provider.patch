@@ -1,0 +1,35 @@
+--- src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ private-dev40-range-only/Utf8RegexProvider.cs
+@@ -321,7 +321,12 @@
+                 {
+                     using (Forward(token))
+                     {
+-                        if (Backend(() => _cursor.MoveNext(), token, patternSource: _subject.Pattern.Regex)) return _subject.Convert(_cursor.Current, token);
++                        var next = Backend(() =>
++                        {
++                            var success = _cursor.MoveNext(out var match);
++                            return (success, match);
++                        }, token, patternSource: _subject.Pattern.Regex);
++                        if (next.success) return Convert(next.match, token);
+                     }
+                     Close(); return null;
+                 }
+@@ -330,6 +335,18 @@
+                 catch { Close(); throw; }
+             }
+ 
++            private static LythonRegexMatch Convert(Utf8PythonRangeMatch data, CancellationToken token)
++            {
++                var captures = new LythonRegexCapture?[data.Groups.Length];
++                for (var i = 0; i < captures.Length; i++)
++                {
++                    token.ThrowIfCancellationRequested();
++                    if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
++                    captures[i] = new(group.StartOffsetInBytes, group.EndOffsetInBytes);
++                }
++                return new(captures, data.LastIndex);
++            }
++
+             private void Close()
+             {
+                 _cursor?.Dispose(); _cursor = null;

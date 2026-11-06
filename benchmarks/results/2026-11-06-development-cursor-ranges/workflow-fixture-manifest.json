@@ -1,0 +1,36 @@
+{
+  "Workflows\\Fnmatch\\FilterAndUppercase": {
+    "result.json": "d37d6226bb725f68d5f7bf640ee0d753e9b1eb40e486f8b12b0d2fad623a577d",
+    "script.py": "e4921568499a70ac48b192df9a5c4db644dabe63050bdfbfcfbcb23eff556180",
+    "input\\src\\alpha.txt": "4a31f8a329cdbbab944056fc992eeb5ab5c0b4a78c3bc34e6d7c4a59fd6cf3b6",
+    "input\\src\\beta.md": "a5406fc126c2bf45b47433c7b2676cce32321fd95d9c67a7dff067249abdb712",
+    "input\\src\\gamma.txt": "5c3ceca06dcac248d60af2c9f9472f115313dae759682c67d134f0fd8c5854e6",
+    "expected\\out\\alpha.txt": "19aa12ca4fb3b4c766db324ce399d8dd2be20c172f76cb7b06c08ab27088ae4f",
+    "expected\\out\\gamma.txt": "a9c0a303d01abbc96ded8e84cf7f6148c65bcd489310ae6b100fcca56ec7a6c3"
+  },
+  "Workflows\\RegexRewrite\\BasicSubstitution": {
+    "result.json": "d37d6226bb725f68d5f7bf640ee0d753e9b1eb40e486f8b12b0d2fad623a577d",
+    "script.py": "d10397d1b72a5cd2c5fd10f4faa6c199cf755ba95421462d5bf20815ba99e600",
+    "expected\\output.txt": "4cd1e31685dd788329f4ad777b220ecc2c067322c8eacdda4c7abba2ed7d95fe",
+    "input\\input.txt": "0e66cb5c23f7bce0964b5704e3a29a43ccb2b2c30589337b35c522560b1be0ad"
+  },
+  "Workflows\\RegexRewrite\\InvalidPattern": {
+    "result.json": "6686f41be1cf7db85137ef4deba0f3fd3caab07f34db10c028198deb8852d415",
+    "script.py": "89c0d21117cc85d68d34748a1ba568a3f5a3101e29a62b62fddedf1e11284912",
+    "input\\input.txt": "4a31f8a329cdbbab944056fc992eeb5ab5c0b4a78c3bc34e6d7c4a59fd6cf3b6"
+  },
+  "Workflows\\RegexRewrite\\MultiFileCompiledPattern": {
+    "result.json": "d37d6226bb725f68d5f7bf640ee0d753e9b1eb40e486f8b12b0d2fad623a577d",
+    "script.py": "cdb3053e0e17a413d243049bb841286e28d930eaff4efbb58dc061f31e32ba3d",
+    "input\\docs\\a.txt": "044a9b5a5d90a96b9bcad76b78ebf265a1280afe813315244cd0c52db17d4c85",
+    "input\\docs\\b.txt": "a67b6724eeea12bac9cf37f64e8e09537aaa28cc1c5a57fd707f4a673c3c9596",
+    "input\\docs\\skip.md": "864d7427d896d715016312e9a2d0b7acdd54e07d2df6ba53544c28d0f681cf21",
+    "expected\\out\\a.txt": "1230ef938b3e5668e75d5f1d7330a24f4ae6e0473f448e861abd5a2ddf1c5ac9",
+    "expected\\out\\b.txt": "f569760c152d7ca837b20d1587868b1b63359d3aae8ae1166d6d9a0dc446135c"
+  },
+  "Workflows\\RegexRewrite\\SearchSplitAndEscape": {
+    "result.json": "d37d6226bb725f68d5f7bf640ee0d753e9b1eb40e486f8b12b0d2fad623a577d",
+    "script.py": "49ac6069f92fd19109577e21b33daa3898549868f140f5fa0f94e1bcf70fe083",
+    "expected\\out.txt": "da7bf67176daa8365a3403bd6c1d8e59926c74f286c9ff5f8e827364a93dd617"
+  }
+}

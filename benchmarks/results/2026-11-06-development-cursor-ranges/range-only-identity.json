@@ -1,0 +1,8 @@
+{
+  "developmentOnly": true,
+  "normalPin": "0.4.0 unchanged",
+  "sourceRevision": "f145daa3 (runtime88f12099)",
+  "providerSHA256": "15a4d9c5ddf284ff01a7409d4c7b1347881fd2b29315e9018621db004736b896",
+  "producerSource": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1",
+  "variant": "native ranges; existing local current-token bridge retained"
+}

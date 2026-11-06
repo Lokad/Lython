@@ -1,0 +1,80 @@
+--- src/Lokad.Lython.Utf8Regex/Utf8RegexProvider.cs
++++ private-dev40/Utf8RegexProvider.cs
+@@ -290,7 +290,6 @@
+         {
+             private readonly Subject _subject;
+             private readonly ILythonMemoryScope _owner;
+-            private readonly CancellationTokenSource _cancellation;
+             private Utf8PythonMatchCursor? _cursor;
+             private bool _disposed;
+ 
+@@ -298,19 +297,19 @@
+             {
+                 _subject = subject;
+                 _owner = subject._owner.CreateScope();
+-                _cancellation = new CancellationTokenSource();
+                 try
+                 {
+                     if (subject._window.Pos > subject._window.EndPos) return;
+                     Reserve(_owner, subject.MatchBytes);
+-                    using var registration = Forward(token);
+-                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, _cancellation.Token), token, patternSource: subject.Pattern.Regex);
++                    // Creation validates the subject under this call's token.
++                    // The detached synthetic token cannot retain an earlier caller.
++                    using var creation = new CancellationTokenSource();
++                    using var registration = token.Register(static state => ((CancellationTokenSource)state!).Cancel(), creation);
++                    _cursor = Backend(() => subject.Pattern.Regex.CreateMatchCursor(subject.BoundedInput, subject._startByte, creation.Token), token, patternSource: subject.Pattern.Regex);
++                    token.ThrowIfCancellationRequested();
+                 }
+                 catch { Dispose(); throw; }
+             }
+-
+-            private CancellationTokenRegistration Forward(CancellationToken token)
+-                => token.Register(static state => ((CancellationTokenSource)state!).Cancel(), _cancellation);
+ 
+             public LythonRegexMatch? Next(CancellationToken token)
+             {
+@@ -319,10 +318,12 @@
+                 if (_cursor is null) return null;
+                 try
+                 {
+-                    using (Forward(token))
++                    var next = Backend(() =>
+                     {
+-                        if (Backend(() => _cursor.MoveNext(), token, patternSource: _subject.Pattern.Regex)) return _subject.Convert(_cursor.Current, token);
+-                    }
++                        var success = _cursor.MoveNext(out var match, token);
++                        return (success, match);
++                    }, token, patternSource: _subject.Pattern.Regex);
++                    if (next.success) return Convert(next.match, token);
+                     Close(); return null;
+                 }
+                 catch (OperationCanceledException) when (token.IsCancellationRequested)
+@@ -330,6 +331,18 @@
+                 catch { Close(); throw; }
+             }
+ 
++            private static LythonRegexMatch Convert(Utf8PythonRangeMatch data, CancellationToken token)
++            {
++                var captures = new LythonRegexCapture?[data.Groups.Length];
++                for (var i = 0; i < captures.Length; i++)
++                {
++                    token.ThrowIfCancellationRequested();
++                    if (!data.TryGetGroup(i, out var group) || !group.Success) continue;
++                    captures[i] = new(group.StartOffsetInBytes, group.EndOffsetInBytes);
++                }
++                return new(captures, data.LastIndex);
++            }
++
+             private void Close()
+             {
+                 _cursor?.Dispose(); _cursor = null;
+@@ -340,7 +353,7 @@
+             {
+                 if (_disposed) return;
+                 _disposed = true;
+-                Close(); _cancellation.Dispose();
++                Close();
+             }
+         }
+     }

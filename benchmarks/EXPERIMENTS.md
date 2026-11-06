@@ -3181,3 +3181,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 ## Canonical constructor frames (2026-11-06)
 
 [R10 evidence](results/2026-11-06-constructor-frames/README.md) retains B342 and source-justified B343 refinement, both adverse. One existing frame runner replaces R09 type operand/dual input transport; dynamic retained packets are owned. Final class warm+2.75–3.47%, fresh+1.91–3.44% versus933 are accepted milestone debt, with CSV/text variation explicit. No allocation/CPU/broad speedup claim; whole-script objective remains active.
+
+## Private native cursor ranges (2026-11-06)
+
+[Development adapter evidence](results/2026-11-06-development-cursor-ranges/README.md): exact immutabledev40, both-runtime84 internal/421 public per variant, including real in-flight cancellation. Direct token/range prototype allocated+2.29%; exact producer links creation/advance tokens. Selected private range-only refinement retains the existing local token bridge and reduces direct cursor allocations22.81% on the same producer. Busy Windows elapsed is diagnostic; no whole-script/backend release claim. Normal0.4/core dependency graph unchanged.

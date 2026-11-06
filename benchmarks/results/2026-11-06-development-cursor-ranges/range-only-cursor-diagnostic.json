@@ -1,0 +1,187 @@
+{
+  "developmentOnly": true,
+  "performanceQualified": false,
+  "allocationBoundary": "synchronous same-thread cursor creation/advances/conversion/disposal; precompiled pattern and prepared subject outside clocks; no Lython script or CPython ratio",
+  "sameProducer": true,
+  "sourceIdentity": "f145daa3 runtime88f12099/private-dev40-range-only",
+  "baselineBytes": [
+    28976,
+    28976
+  ],
+  "candidateBytes": [
+    22368,
+    22368
+  ],
+  "allocationDeltaPercent": -22.80508006626173,
+  "results": [
+    {
+      "role": "baseline-0",
+      "performanceQualified": false,
+      "boundary": "synchronous same-thread cursor creation/advances/conversion/disposal; precompiled pattern and prepared subject outside clocks; no Lython script or CPython ratio",
+      "inputBytes": 192,
+      "inputScalars": 160,
+      "matches": 64,
+      "checksum": 734816,
+      "warmups": 32,
+      "rounds": 7,
+      "batch": 128,
+      "milliseconds": [
+        0.15069453125,
+        0.156371875,
+        0.14943046875,
+        0.14412265625,
+        0.141775,
+        0.13216875,
+        0.1360484375
+      ],
+      "allocatedBytes": [
+        28976,
+        28976,
+        28976,
+        28976,
+        28976,
+        28976,
+        28976
+      ],
+      "medianMilliseconds": 0.14412265625,
+      "medianAllocatedBytes": 28976,
+      "finalBudgetBytes": 0,
+      "runtime": "11.0.0",
+      "os": "Microsoft Windows 10.0.26200",
+      "hashes": {
+        "Lokad.Lython": "B9C599BE69C1B62B360A318C012EB2BF65A7578505F501AF8185FCA1C3E0ADD6",
+        "Lokad.Lython.Utf8Regex": "0D9529855DEB9B5682DAA501AFAFD208BA4DAC78AC928D0BBE0594F87DB48749",
+        "Lokad.Utf8Regex": "785A802C82426FD319A6D0DD0D168D118B6204CD883A2DD2D0F9D4BB85D42E15",
+        "Lokad.Utf8Regex.PythonRe": "1BE9024AB170A0C3A70A81CE4DE454DE3D7577C51910E30E1C46A95CBC122B94"
+      },
+      "timingStatus": "Uncontrolled busy Windows host; elapsed diagnostic only. Exact same-thread allocations exclude other threads, startup/compilation and producer caches."
+    },
+    {
+      "role": "range-only-1",
+      "performanceQualified": false,
+      "boundary": "synchronous same-thread cursor creation/advances/conversion/disposal; precompiled pattern and prepared subject outside clocks; no Lython script or CPython ratio",
+      "inputBytes": 192,
+      "inputScalars": 160,
+      "matches": 64,
+      "checksum": 734816,
+      "warmups": 32,
+      "rounds": 7,
+      "batch": 128,
+      "milliseconds": [
+        0.108,
+        0.11271953125,
+        0.11089296875,
+        0.11719140625,
+        0.09971171875,
+        0.09835078125,
+        0.09631015625
+      ],
+      "allocatedBytes": [
+        22368,
+        22368,
+        22368,
+        22368,
+        22368,
+        22368,
+        22368
+      ],
+      "medianMilliseconds": 0.108,
+      "medianAllocatedBytes": 22368,
+      "finalBudgetBytes": 0,
+      "runtime": "11.0.0",
+      "os": "Microsoft Windows 10.0.26200",
+      "hashes": {
+        "Lokad.Lython": "B9C599BE69C1B62B360A318C012EB2BF65A7578505F501AF8185FCA1C3E0ADD6",
+        "Lokad.Lython.Utf8Regex": "384DFF2D586F1F390AB71494AD35CD8ED3F4556A8E2DB0360D29943183B87D3C",
+        "Lokad.Utf8Regex": "785A802C82426FD319A6D0DD0D168D118B6204CD883A2DD2D0F9D4BB85D42E15",
+        "Lokad.Utf8Regex.PythonRe": "1BE9024AB170A0C3A70A81CE4DE454DE3D7577C51910E30E1C46A95CBC122B94"
+      },
+      "timingStatus": "Uncontrolled busy Windows host; elapsed diagnostic only. Exact same-thread allocations exclude other threads, startup/compilation and producer caches."
+    },
+    {
+      "role": "range-only-2",
+      "performanceQualified": false,
+      "boundary": "synchronous same-thread cursor creation/advances/conversion/disposal; precompiled pattern and prepared subject outside clocks; no Lython script or CPython ratio",
+      "inputBytes": 192,
+      "inputScalars": 160,
+      "matches": 64,
+      "checksum": 734816,
+      "warmups": 32,
+      "rounds": 7,
+      "batch": 128,
+      "milliseconds": [
+        0.10471953125,
+        0.11243828125,
+        0.10585078125,
+        0.10330390625,
+        0.101534375,
+        0.09990625,
+        0.09375390625
+      ],
+      "allocatedBytes": [
+        22368,
+        22368,
+        22368,
+        22368,
+        22368,
+        22368,
+        22368
+      ],
+      "medianMilliseconds": 0.10330390625,
+      "medianAllocatedBytes": 22368,
+      "finalBudgetBytes": 0,
+      "runtime": "11.0.0",
+      "os": "Microsoft Windows 10.0.26200",
+      "hashes": {
+        "Lokad.Lython": "B9C599BE69C1B62B360A318C012EB2BF65A7578505F501AF8185FCA1C3E0ADD6",
+        "Lokad.Lython.Utf8Regex": "384DFF2D586F1F390AB71494AD35CD8ED3F4556A8E2DB0360D29943183B87D3C",
+        "Lokad.Utf8Regex": "785A802C82426FD319A6D0DD0D168D118B6204CD883A2DD2D0F9D4BB85D42E15",
+        "Lokad.Utf8Regex.PythonRe": "1BE9024AB170A0C3A70A81CE4DE454DE3D7577C51910E30E1C46A95CBC122B94"
+      },
+      "timingStatus": "Uncontrolled busy Windows host; elapsed diagnostic only. Exact same-thread allocations exclude other threads, startup/compilation and producer caches."
+    },
+    {
+      "role": "baseline-3",
+      "performanceQualified": false,
+      "boundary": "synchronous same-thread cursor creation/advances/conversion/disposal; precompiled pattern and prepared subject outside clocks; no Lython script or CPython ratio",
+      "inputBytes": 192,
+      "inputScalars": 160,
+      "matches": 64,
+      "checksum": 734816,
+      "warmups": 32,
+      "rounds": 7,
+      "batch": 128,
+      "milliseconds": [
+        0.15398828125,
+        0.15116640625,
+        0.1495953125,
+        0.14768828125,
+        0.13789375,
+        0.13178515625,
+        0.13304296875
+      ],
+      "allocatedBytes": [
+        28976,
+        28976,
+        28976,
+        28976,
+        28976,
+        28976,
+        28976
+      ],
+      "medianMilliseconds": 0.14768828125,
+      "medianAllocatedBytes": 28976,
+      "finalBudgetBytes": 0,
+      "runtime": "11.0.0",
+      "os": "Microsoft Windows 10.0.26200",
+      "hashes": {
+        "Lokad.Lython": "B9C599BE69C1B62B360A318C012EB2BF65A7578505F501AF8185FCA1C3E0ADD6",
+        "Lokad.Lython.Utf8Regex": "0D9529855DEB9B5682DAA501AFAFD208BA4DAC78AC928D0BBE0594F87DB48749",
+        "Lokad.Utf8Regex": "785A802C82426FD319A6D0DD0D168D118B6204CD883A2DD2D0F9D4BB85D42E15",
+        "Lokad.Utf8Regex.PythonRe": "1BE9024AB170A0C3A70A81CE4DE454DE3D7577C51910E30E1C46A95CBC122B94"
+      },
+      "timingStatus": "Uncontrolled busy Windows host; elapsed diagnostic only. Exact same-thread allocations exclude other threads, startup/compilation and producer caches."
+    }
+  ],
+  "limitations": "Direct cursor-only exact same-thread allocation diagnostic. Busy Windows elapsed diagnostic only. Existing token bridge deliberately retained; producer creation/advance token separation remains missing. No whole-script/CPython/RSS/producer-safety/final qualification claim."
+}

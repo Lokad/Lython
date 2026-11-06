@@ -1,0 +1,34 @@
+{
+  "developmentOnly": true,
+  "normalPin": "0.4.0 unchanged",
+  "sourceRevision": "f145daa3 (runtime88f12099)",
+  "providerSHA256": "4ed277790207cf88f0c59fbd59a462809eccb3ba06e48578c54fc2529580e35f",
+  "packages": {
+    "Lokad.Utf8Regex": {
+      "sha256": "eb5d3ad4df2ac25172e330c3a5aeb2e3090658d2f1d9ec4c01ef63ab9c3a9d09",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1"
+      },
+      "libraries": {
+        "lib/net10.0/Lokad.Utf8Regex.dll": "d840124576847bf54d86491e4c2e3982f45073af3825c0e9163e3f5ba8e5abdf",
+        "lib/net11.0/Lokad.Utf8Regex.dll": "785a802c82426fd319a6d0dd0d168d118b6204cd883a2dd2d0f9d4bb85d42e15"
+      }
+    },
+    "Lokad.Utf8Regex.PythonRe": {
+      "sha256": "31c8d9f25b0fe99c17603d6ba3e515a45b4b50879c2e9d83d6b8e33b64a85bb2",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1"
+      },
+      "libraries": {
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "c85b870f9b541b35ecb36cd3a6aaa3e902208d0bbba1692ae4b0909e0dc44642",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "1be9024ab170a0c3a70a81ce4de454de3d7577c51910e30e1c46a95cbc122b94"
+      }
+    }
+  }
+}

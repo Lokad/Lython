@@ -1,0 +1,36 @@
+{
+  "developmentOnly": true,
+  "promoted": false,
+  "normalPin": "0.4.0 unchanged",
+  "identity": {
+    "developmentOnly": true,
+    "normalPin": "0.4.0 unchanged",
+    "sourceRevision": "f145daa3 (runtime88f12099)",
+    "providerSHA256": "15a4d9c5ddf284ff01a7409d4c7b1347881fd2b29315e9018621db004736b896",
+    "producerSource": "6f6fdab9e8b2a801db1863bcfd1984dc357262c1",
+    "variant": "native ranges; existing local current-token bridge retained"
+  },
+  "frameworks": {
+    "net11.0": {
+      "internalPassed": 84,
+      "publicPassed": 421,
+      "dllSHA256": {
+        "Lokad.Lython": "b9c599be69c1b62b360a318c012eb2bf65a7578505f501af8185fca1c3e0add6",
+        "Lokad.Lython.Utf8Regex": "384dff2d586f1f390ab71494ad35cd8ed3f4556a8e2db0360d29943183b87d3c",
+        "Lokad.Utf8Regex": "785a802c82426fd319a6d0dd0d168d118b6204cd883a2dd2d0f9d4bb85d42e15",
+        "Lokad.Utf8Regex.PythonRe": "1be9024ab170a0c3a70a81ce4de454de3d7577c51910e30e1c46a95cbc122b94"
+      }
+    },
+    "net10.0": {
+      "internalPassed": 84,
+      "publicPassed": 421,
+      "dllSHA256": {
+        "Lokad.Lython": "11bcaaef84d53ab68163e304f63abf9778ca79c799608357acc3f2eaeef87d65",
+        "Lokad.Lython.Utf8Regex": "67f675b7b22225f90c2a5658cd9abd37e3395b2f0daeb5564466dfc6bbfad9b8",
+        "Lokad.Utf8Regex": "d840124576847bf54d86491e4c2e3982f45073af3825c0e9163e3f5ba8e5abdf",
+        "Lokad.Utf8Regex.PythonRe": "c85b870f9b541b35ecb36cd3a6aaa3e902208d0bbba1692ae4b0909e0dc44642"
+      }
+    }
+  },
+  "limitations": "Focused private ranges/token/ownership only, including actual in-flight compile/match/cursor. Not final released producer/safety/exact-backend-accounting/whole-script qualification."
+}
