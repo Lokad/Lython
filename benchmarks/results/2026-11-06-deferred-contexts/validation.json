@@ -65,6 +65,7 @@
       "public": 1508
     },
     "fullDelivery": "batch at next coherent runtime boundary",
-    "evidence": "transport/README.md"
+    "evidence": "transport/README.md",
+    "runtimeRevision": "66ae029d783fde4611bbbde515067b7491593e9f"
   }
 }

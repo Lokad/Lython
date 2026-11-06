@@ -3188,16 +3188,24 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 
 ## Current allocation/lifecycle gate (2026-11-06)
 
-[R13 deferred contexts](results/2026-11-06-deferred-contexts/README.md) builds on
-that gate with one shared instruction engine and explicit adoption of current
-locals/operands. B346's adverse/uncertain observations and Slice failure remain
-visible. Corrected B347 improves CSV elapsed about6% in both roles, while warm
-text remains adverse, JSON mixed and report variable. Provisionally retain the
-coherent implementation with explicit debt; full delivery and the broader
-performance objective remain pending. No broad CPU/exact-allocation claim.
-
 [R12/B345 origins](results/2026-11-06-current-allocation/README.md): two complete maintained scripts,256 jobs each/1.886s capture, all source/quiet/golden/funding/cleanup gates. Current CSV context allocations remain visible (sampled424B objects); text is dominated by token storage rather than contexts. Approximate triggering-type attribution is not CPU/exact/live evidence. Original B344 CRLF launch failure preserved. Select shared executable work-state/context-on-demand source proof; do not replay slower caller records, arenas or shared CSV-key machinery.
 
 ## Shared executable work state (2026-11-06)
 
 [R13 A foundation](results/2026-11-06-executable-work-state/README.md) removes the redundant frame base/pass-through constructors and groups mutable execution state without a new heap object or route. Distinct slot/lexical local reads preserve the old hidden-method semantics. Focused1,593 internal/4,200 public per actual runtime pass. No native prefix or performance claim; context-on-demand implementation/qualification remains active.
+
+## Deferred contexts and publication transport (2026-11-06)
+
+[R13 B](results/2026-11-06-deferred-contexts/README.md) uses one shared instruction
+engine and adopts current locals/operands. B346's adverse observations and Slice
+failure remain visible. Corrected B347 improves CSV elapsed about6% in both roles;
+warm text remains adverse, JSON mixed and report variable. Runtime9a152ee0 is
+fully qualified by terminal42228235593/all eight platform/runtime/stress/package
+gates and both local installed consumers. This also qualifies the A foundation.
+
+[R13 C](results/2026-11-06-deferred-contexts/transport/README.md) removes the
+duplicate defining-scope parameter from publication, using existing owned services.
+Focused526internal/1,508public per actual runtime and B348/all five gates pass.
+CSV flat, text/JSON favorable, report adverse/uncertain. Retain the deletion;
+batch full C delivery at the next meaningful runtime boundary. No compound debt
+repayment, broad CPU or exact-allocation claim. The whole-script objective stays open.

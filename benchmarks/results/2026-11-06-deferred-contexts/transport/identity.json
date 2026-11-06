@@ -36,5 +36,13 @@
       "passed": 1508,
       "coreSHA256": "dcd26089c52a774c8abb8c4a9770832813ee3a4bf9ba3b576ab3c13db5e3a2a8"
     }
+  },
+  "committedRuntimeRevision": "66ae029d783fde4611bbbde515067b7491593e9f",
+  "normalizedCommittedSourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "56148ed6f6ee2062254f1ad61e01089293bb56b5ac13de1c9dc140fbf831b874",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "737d56e7babb9ddf5bdd9630c6c12c6f36385e1dec272efc9a2f5620276029d6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "39ffd5b2a2c52067c707728108ed7dbfc393ce7bd2c9d120c689153d13b1f6f3",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "10ef0d978bb165b79eb0526b5d6cbd766891a3c98736cc0f135a1aa31cc5db47",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "f8329ce7610190b7cd470cafdae602b1cac0139dd2fa50ecdf2f88ff415fd727"
   }
 }
