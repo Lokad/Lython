@@ -1,0 +1,63 @@
+{
+  "B329": [
+    {
+      "case": "pure.compound-key-grouping.2",
+      "sourceSHA256": "5252b0824325b1b1fa438a8070428f81917adc1263ff33812e09ed4c08533445",
+      "valid": true
+    },
+    {
+      "case": "pure.compound-key-grouping.8",
+      "sourceSHA256": "70cbf8812dfe9c43f8105b4c2396f9aca0f67e52574467ba25d80dcf3ba13837",
+      "valid": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+      "valid": true
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "valid": true
+    }
+  ],
+  "B330": [
+    {
+      "case": "pure.compound-key-grouping.2",
+      "sourceSHA256": "5252b0824325b1b1fa438a8070428f81917adc1263ff33812e09ed4c08533445",
+      "valid": true
+    },
+    {
+      "case": "pure.compound-key-grouping.8",
+      "sourceSHA256": "70cbf8812dfe9c43f8105b4c2396f9aca0f67e52574467ba25d80dcf3ba13837",
+      "valid": true
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "valid": true
+    }
+  ],
+  "B331": [
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "sourceSHA256": "929061767e083c9e583ae95cc3e10b8a91c4df2e267458cf1c859e5bf88452a8",
+      "valid": true
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+      "valid": true
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "sourceSHA256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+      "valid": true
+    },
+    {
+      "case": "scripts.report-render.large",
+      "sourceSHA256": "a6bca31bb615ee5998a7d16e994a7069877cdc2289e210d405d72dd5a6a756f8",
+      "valid": true
+    }
+  ]
+}

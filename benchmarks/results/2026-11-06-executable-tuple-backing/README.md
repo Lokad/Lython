@@ -51,3 +51,8 @@ validation and prior-result cleanup. Compilation/startup/staging/reset/transport
 final teardown excluded. These affected warm jobs do not update the primary
 four-script compile/warm/fresh table. Coherent refresh and final qualification
 remain separate. Complete-script work continues; publication/tagging postponed.
+
+Combined source794e552b is committed/pushed. Both installed Release consumers
+pass. Platform/stress/package delivery42170841788 is running; see validation.json
+for exact scope/status. The B331 primary CPython refresh is independent of this
+affected-workload evidence and will identify its actual source and boundary.

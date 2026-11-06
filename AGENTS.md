@@ -39,6 +39,9 @@ Keep `docs/` concise and about the current implementation. Plans, TODO handoffs,
 delivery receipts, experimental narratives and rejected approaches belong outside
 it. Preserve immutable benchmark evidence under `benchmarks/results/`; its old
 relative references describe the source revision recorded in each artifact.
+Read and write text explicitly as UTF-8. On Windows, use Python `-X utf8` or an
+explicit encoding and PowerShell `-Encoding utf8`; default code pages can corrupt
+documentation and benchmark sources.
 
 ## CI
 

@@ -71,3 +71,8 @@ validation and prior-result cleanup. Compilation, startup, staging/reset,
 transport and final teardown are outside these clocks. The primary four-script
 compile/warm/fresh table remains tied to1134d6e8. Whole-script work continues;
 publication/tagging are postponed.
+
+Combined source794e552b is committed/pushed. Both installed Release consumers
+pass. Platform/stress/package delivery42170841788 is running; see validation.json
+for exact scope/status. The B331 primary CPython refresh is independent of this
+affected-workload evidence and will identify its actual source and boundary.

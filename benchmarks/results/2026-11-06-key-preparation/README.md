@@ -1,4 +1,4 @@
-# One contextual key-preparation walk â€” 2026-11-06
+# One contextual key-preparation walk — 2026-11-06
 
 Retain Q01: remove recursive tuple lookahead and separate contextual
 classification/hash sweeps. One semantic walk returns normalized hash plus the

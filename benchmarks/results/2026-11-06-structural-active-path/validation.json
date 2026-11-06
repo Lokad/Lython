@@ -1,5 +1,5 @@
 {
-  "status": "Retained R02 source; full local Release passes both actual runtimes. Final platform/stress/installed qualification will batch with the next coherent construction checkpoint.",
+  "status": "Committed source794e552b includes R02/R04; full local and installed consumers pass. Combined platform/stress/package CI42170841788 running; not yet qualified.",
   "sourceBase": "d319dffa/production bf741ec2 plus recorded R02 patch and hashes",
   "coreSHA256": {
     "candidate": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc",
@@ -33,5 +33,12 @@
     "unused generated record equality/hash"
   ],
   "remaining": "One bounded active identity vector; membership O(depth), scope identity removal supports out-of-order disposal. Managed admission, cancellation/refusal checks, explicit async state, ownership and public API unchanged.",
-  "limits": "No allocation, guest-only CPU, RSS or embedding-latency gain measured. Deeper membership can do more reference comparisons; validated depth bounds and original stress scales remain unchanged. Q01 full CI receipt does not qualify R02."
+  "limits": "No allocation, guest-only CPU, RSS or embedding-latency gain measured. Deeper membership can do more reference comparisons; validated depth bounds and original stress scales remain unchanged. Q01 full CI receipt does not qualify R02.",
+  "combinedDeliverySourceRevision": "794e552b",
+  "deliveryRunId": 42170841788,
+  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42170841788",
+  "installedReleaseConsumers": [
+    "net11.0",
+    "net10.0"
+  ]
 }
