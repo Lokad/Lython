@@ -72,6 +72,10 @@ comparison, not a claim of identical implementations or import caching.
 
 CPython remains the primary external baseline above. Separate source pairs show:
 
+- One active structural cycle path: complete compound-key aggregation elapsed
+  −14.8–17.1% versus Q01; CSV roughly flat and text control-limited. The managed
+  nesting bound remains, with linear active-path membership. No allocation or
+  broad CPU claim. [Evidence](../benchmarks/results/2026-11-06-structural-active-path/README.md).
 - One contextual key-preparation walk: complete compound-key aggregation elapsed
   −15.5%/−20.5% for widths 2/8 against F05; CSV roughly flat. Original adverse
   text and the unchanged-source confirmation remain visible; no allocation or

@@ -1,0 +1,37 @@
+{
+  "status": "Retained R02 source; full local Release passes both actual runtimes. Final platform/stress/installed qualification will batch with the next coherent construction checkpoint.",
+  "sourceBase": "d319dffa/production bf741ec2 plus recorded R02 patch and hashes",
+  "coreSHA256": {
+    "candidate": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc",
+    "control": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc",
+    "reference": "df1f1f2c25678acd5a2f800cb85f91e8a919973e9d081b270f479b94c1b103cb"
+  },
+  "broadFocusedPerActualRuntime": {
+    "internal": 477,
+    "public": 1913
+  },
+  "finalFocusedPerActualRuntime": {
+    "internal": 38,
+    "public": 42
+  },
+  "independentPythonFamilyCases": 23,
+  "newPythonMixedKindCases": 2,
+  "newOutOfOrderAndReversedCycleControl": true,
+  "fullPerActualRuntime": {
+    "internal": 4215,
+    "public": 16103
+  },
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "removed": [
+    "Pairs and Singles HashSets",
+    "StructuralPairComparer and identity hash calculation",
+    "opposite-pair hash probes",
+    "Scope duplicate identity/kind/active fields",
+    "unused generated record equality/hash"
+  ],
+  "remaining": "One bounded active identity vector; membership O(depth), scope identity removal supports out-of-order disposal. Managed admission, cancellation/refusal checks, explicit async state, ownership and public API unchanged.",
+  "limits": "No allocation, guest-only CPU, RSS or embedding-latency gain measured. Deeper membership can do more reference comparisons; validated depth bounds and original stress scales remain unchanged. Q01 full CI receipt does not qualify R02."
+}

@@ -384,6 +384,10 @@ Contextual key preparation computes the hash and equality-dispatch requirement
 in one walk. Tuple elements and slice bounds are visited in Python order: an
 earlier hash callback runs before a later unhashable value is rejected. Native
 dictionary copies retain stored hashes without replaying callbacks.
+Structural hash/equality guards keep active identities in one execution-owned
+path. Single-object and pair cycles remain independent; scope exit removes their
+references, including after asynchronous thread hops. Membership is linear in
+the active nesting depth, bounded by managed stack admission.
 
 Counter comparisons traverse both live key sources in Python order. Dictionary
 view relations use dictionary membership, comparing stored pairs directly for two

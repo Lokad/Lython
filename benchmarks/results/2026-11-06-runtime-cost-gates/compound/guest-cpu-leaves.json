@@ -1,0 +1,109 @@
+{
+  "activeTids": [
+    "3270561"
+  ],
+  "samples": 1096,
+  "cpuSeconds": 5.5200000000000005,
+  "malformedMapLines": [
+    "0x753cdbcad9a0 309 class System.Runtime.CompilerServices.IAsyncStateMachineBox [System.Private.CoreLib] System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1[System.Threading.Ta"
+  ],
+  "topLeafCpuSamples": [
+    [
+      "[unknown]",
+      157
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.PyEquality::AreEqual(object,object)[OptimizedTier1]",
+      149
+    ],
+    [
+      "instance valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+      69
+    ],
+    [
+      "valuetype [System.Runtime]System.ValueTuple`2<int32,bool> [Lokad.Lython] Lokad.Lython.Runtime.PyHashProtocols::PrepareTupleHash(class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      60
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+      58
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+      51
+    ],
+    [
+      "__tls_get_addr",
+      40
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.Numbers.PyNumberOps::TryAsNumber(object,valuetype Lokad.Lython.Runtime.Numbers.PyNumber&)[OptimizedTier1]",
+      32
+    ],
+    [
+      "class Lokad.Lython.Runtime.PyTuple [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::CreateTupleFromStack(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableValueStorage&,int32,int32,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+      31
+    ],
+    [
+      "instance bool [System.Private.CoreLib] System.Collections.Generic.HashSet`1[Lokad.Lython.Runtime.PyStructuralGuard+StructuralPair]::Remove(!0)[OptimizedTier1]",
+      30
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      30
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.PyTupleLike::TryGetItems(object,class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<object>&)[OptimizedTier1]",
+      27
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Runtime.PyStructuralGuard::CheckDepthAndStack(class Lokad.Lython.Runtime.StructuralGuardState,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+      24
+    ],
+    [
+      "instance bool [System.Private.CoreLib] System.Collections.Generic.HashSet`1[System.__Canon]::Remove(!0)[OptimizedTier1]",
+      21
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteLocalResult(valuetype Lokad.Lython.Frontend.ExecutableInstruction&,object)[OptimizedTier1]",
+      20
+    ],
+    [
+      "void [Lokad.Lython] Lokad.Lython.Runtime.PyStructuralGuard::NoteWork()[OptimizedTier1]",
+      20
+    ],
+    [
+      "valuetype System.Numerics.BigInteger [System.Runtime.Numerics] System.Numerics.BigInteger::DivRem(valuetype System.Numerics.BigInteger,valuetype System.Numerics.BigInteger,valuetype System.Numerics.BigInteger&)[OptimizedTier1]",
+      18
+    ],
+    [
+      "int32 [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ComputeStructuralHashCode(object,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      16
+    ],
+    [
+      "instance bool [Lokad.Lython] Lokad.Lython.Runtime.PyRange+<Iterate>d__21::MoveNext()[OptimizedTier1]",
+      15
+    ],
+    [
+      "object[] [Lokad.Lython] Lokad.Lython.Runtime.PyTuple::CopyGovernedItems(object[],class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan,int64&)[OptimizedTier1]",
+      15
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateModulo(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)[OptimizedTier1]",
+      11
+    ],
+    [
+      "bool [Lokad.Lython] Lokad.Lython.Runtime.PyContainment::IsSetView(object)[OptimizedTier1]",
+      10
+    ],
+    [
+      "class Lokad.Lython.Runtime.StructuralGuardState [Lokad.Lython] Lokad.Lython.Runtime.PyStructuralGuard::get_ThreadState()[OptimizedTier1]",
+      10
+    ],
+    [
+      "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool)[OptimizedTier1]",
+      9
+    ]
+  ],
+  "unknown": 157
+}

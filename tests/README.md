@@ -37,6 +37,9 @@ identify the failing value through slices, tuples, dataclasses and cache keys.
 Tuple queries also preserve earlier hash effects and errors before a later
 unhashable element. Refusal or cancellation in that earlier callback remains
 terminal, preserves the container and releases working funding after cleanup.
+Mixed hash/equality callbacks keep single-object and pair cycles independent.
+Structural controls retain immediate reversed-pair rejection, cross-thread
+state disposal and out-of-order unwind without retaining active identities.
 [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)
 preserve bound ordering, defining dataclass fields and all reads before field
 hashes. Managed slice-depth checks run after real host suspension and recover on

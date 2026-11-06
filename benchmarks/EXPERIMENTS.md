@@ -3064,3 +3064,15 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   ownership boundary without claiming a wrapper fixes it or adding permanent
   rejection tests. No runtime change or performance claim. Independent whole-script
   work continues; lazy function namespaces/direct local transport already exist.
+
+- [Remaining runtime cost gates, B327/B328](results/2026-11-06-runtime-cost-gates/README.md):
+  COMPLETE: 9.19 guest CPU seconds total. Method-CSV does not justify new frame
+  machinery; remaining compound-key work selects one active structural identity
+  path. Actual unknown/inlined work stays explicit; profiling predicts no gain.
+- [Active structural path, B329](results/2026-11-06-structural-active-path/README.md):
+  RETAINED: remove two cycle hash tables, identity comparer/hashing, opposite-pair
+  probes and duplicate scope fields. Immediate cycles, mixed kinds, managed bounds
+  and explicit async unwind remain. Complete compound-key elapsed −14.8–17.1%
+  versus Q01, CSV roughly flat, text control-limited. Full local Release 4,215
+  internal/16,103 public per actual runtime pass; final delivery batches separately.
+  O(depth) membership tradeoff is explicit; no allocation/broad CPU claim.

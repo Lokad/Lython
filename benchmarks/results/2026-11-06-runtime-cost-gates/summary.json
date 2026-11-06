@@ -1,0 +1,26 @@
+{
+  "method-csv": {
+    "archiveSHA256": "1f52cc329bf223f018851614e2f3a13c62329557e47f494b8e85d0762c601613",
+    "guestCpuSeconds": 3.670000000000001,
+    "samples": 730,
+    "unknown": 65,
+    "prefixSamples": 84,
+    "unmappedPrefix": [],
+    "workload": "scripts.csv-method-summary.large",
+    "count": 768,
+    "allGoldenQuietClosedFundingJoinFixtureGates": true,
+    "performanceClaim": null
+  },
+  "compound": {
+    "archiveSHA256": "68bccc9686b53c117acc6dbe009f0ba5050e1c5619c0e877b10dec5b07730ce4",
+    "guestCpuSeconds": 5.5200000000000005,
+    "samples": 1096,
+    "unknown": 157,
+    "prefixSamples": 69,
+    "unmappedPrefix": [],
+    "workload": "pure.compound-key-grouping.8",
+    "count": 768,
+    "allGoldenQuietClosedFundingJoinFixtureGates": true,
+    "performanceClaim": null
+  }
+}

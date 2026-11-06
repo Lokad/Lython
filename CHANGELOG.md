@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Use one active structural identity path for hashing and comparison, removing
+  separate cycle hash tables and their identity comparer. Preserve immediate
+  cycle errors, managed stack limits, asynchronous isolation and cleanup.
+
 - Hash slice bounds through Python protocols, including bound/unbound hash
   methods, with managed recursion protection. Generated dataclass hashes keep
   their defining field plan and read all included fields before hashing them.

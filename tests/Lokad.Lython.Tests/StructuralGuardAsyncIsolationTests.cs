@@ -12,6 +12,37 @@ namespace Lokad.Lython.Tests;
 // errors and absence of roots, plus configured-limit enforcement.
 public sealed class StructuralGuardAsyncIsolationTests
 {
+    [Fact]
+    public void MixedCycleKindsRemainIndependentThroughOutOfOrderDisposal()
+    {
+        var state = new StructuralGuardState();
+        var left = new object();
+        var right = new object();
+        var first = PyStructuralGuard.EnterSingle(state, left, null);
+        var pair = PyStructuralGuard.EnterPair(state, left, right, null);
+        var last = PyStructuralGuard.EnterSingle(state, right, null);
+        Assert.Equal("RecursionError", Assert.Throws<LythonRuntimeException>(
+            () => PyStructuralGuard.EnterSingle(state, left, null)).ExceptionType);
+        Assert.Equal("RecursionError", Assert.Throws<LythonRuntimeException>(
+            () => PyStructuralGuard.EnterPair(state, right, left, null)).ExceptionType);
+
+        first.Dispose();
+        using (PyStructuralGuard.EnterSingle(state, left, null))
+        {
+            // Removing an outer identity must preserve the still-active pair.
+            Assert.Throws<LythonRuntimeException>(() => PyStructuralGuard.EnterPair(state, left, right, null));
+            pair.Dispose();
+            using (PyStructuralGuard.EnterPair(state, right, left, null))
+            {
+                Assert.Throws<LythonRuntimeException>(() => PyStructuralGuard.EnterSingle(state, right, null));
+                last.Dispose();
+                using (PyStructuralGuard.EnterSingle(state, right, null)) { }
+            }
+        }
+        Assert.Equal(0, state.Depth);
+        Assert.Empty(state.ActivePath!);
+    }
+
     // Deterministic hopping host: two persistent workers alternate completions.
     // TaskCompletionSource without RunContinuationsAsynchronously runs the
     // awaiting continuation synchronously on the completing worker, forcing a
@@ -105,8 +136,8 @@ public sealed class StructuralGuardAsyncIsolationTests
         var right = new object();
 
         var scopeA = PyStructuralGuard.EnterPair(stateA, left, right, span: null, context: null);
-        Assert.Equal(1, stateA.Pairs?.Count ?? 0);
-        Assert.Equal(0, stateB.Pairs?.Count ?? 0);
+        Assert.Equal(1, stateA.ActivePath?.Count ?? 0);
+        Assert.Equal(0, stateB.ActivePath?.Count ?? 0);
         Assert.Equal(0, PyStructuralGuard.ThreadPairCountForTests);
 
         // Simulate continuation hopping to another thread: dispose there.
@@ -114,7 +145,7 @@ public sealed class StructuralGuardAsyncIsolationTests
         t.Start();
         t.Join();
 
-        Assert.Equal(0, stateA.Pairs?.Count ?? 0);
+        Assert.Equal(0, stateA.ActivePath?.Count ?? 0);
         Assert.Equal(0, stateA.Depth);
         Assert.Equal(0, PyStructuralGuard.ThreadPairCountForTests);
     }
@@ -132,12 +163,12 @@ public sealed class StructuralGuardAsyncIsolationTests
         using (PyStructuralGuard.EnterPair(stateA, a1, a2, null, null))
         using (PyStructuralGuard.EnterPair(stateB, b1, b2, null, null))
         {
-            Assert.Equal(1, stateA.Pairs?.Count ?? 0);
-            Assert.Equal(1, stateB.Pairs?.Count ?? 0);
+            Assert.Equal(1, stateA.ActivePath?.Count ?? 0);
+            Assert.Equal(1, stateB.ActivePath?.Count ?? 0);
         }
 
-        Assert.Equal(0, stateA.Pairs?.Count ?? 0);
-        Assert.Equal(0, stateB.Pairs?.Count ?? 0);
+        Assert.Equal(0, stateA.ActivePath?.Count ?? 0);
+        Assert.Equal(0, stateB.ActivePath?.Count ?? 0);
     }
 
     [Fact]
@@ -292,6 +323,6 @@ public sealed class StructuralGuardAsyncIsolationTests
         }
 
         Assert.Equal(0, state.Depth);
-        Assert.Equal(0, state.Pairs?.Count ?? 0);
+        Assert.Equal(0, state.ActivePath?.Count ?? 0);
     }
 }

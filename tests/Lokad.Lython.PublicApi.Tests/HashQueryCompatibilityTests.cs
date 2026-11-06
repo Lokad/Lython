@@ -7,6 +7,33 @@ public sealed class HashQueryCompatibilityTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["tuple equality may hash its active operands", """
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              return 7
+             def __eq__(self,other):
+              events.append('equal')
+              return hash(left)==hash(right)
+            left=(Key(),)
+            right=(Key(),)
+            print(left==right,events)
+            """, "True ['equal', 'hash', 'hash']\n"];
+        yield return ["tuple hashing may compare its active operand", """
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              assert left==right
+              return 7
+             def __eq__(self,other):
+              events.append('equal')
+              return True
+            left=(Key(),)
+            right=(Key(),)
+            print(hash(left)==hash(right),events)
+            """, "True ['hash', 'equal', 'hash', 'equal']\n"];
         foreach (var operation in new[] { "table[key]=1", "table.get(key)", "key in table", "set().add(key)", "{key:1}", "hash(key)" })
         {
             yield return ["earlier tuple hash precedes later unhashability: " + operation, """

@@ -63,8 +63,7 @@ public sealed class ManagedStackGuardTests
         Assert.Equal(0, context.State.CurrentRecursionDepth);
         Assert.Equal(0, context.State.CurrentInterpreterDepth);
         Assert.Equal(0, state.Depth);
-        Assert.Null(state.Pairs);
-        Assert.Null(state.Singles);
+        Assert.Null(state.ActivePath);
 
         // A failed entry must not poison subsequent work on a normal stack.
         enter();

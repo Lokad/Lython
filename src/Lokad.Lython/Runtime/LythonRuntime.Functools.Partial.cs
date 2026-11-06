@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             var traversal = context.Context.State.StructuralTraversal;
-            if (traversal.Singles?.Contains(this) == true)
+            if (traversal.ContainsSingle(this))
                 return PyString.FromString("...", context.Context.MemoryGovernor, _allocationSpan);
             using var recursion = PyStructuralGuard.EnterSingle(this, _allocationSpan, context.Context);
             var builder = new GovernedByteBuilder(context.Context.MemoryGovernor, _allocationSpan);

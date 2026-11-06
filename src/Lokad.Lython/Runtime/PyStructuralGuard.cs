@@ -8,16 +8,29 @@ namespace Lokad.Lython.Runtime;
 // storage remains only for context-free synchronous paths that never span
 // an await. Async scopes must use the overloads taking an explicit state so
 // disposal removes entries from the same state that was entered, regardless
-// of which pool thread resumes the continuation. Sharing one mutable set
+// of which pool thread resumes the continuation. Sharing one mutable path
 // across runs is never done: states are per-run, never stored in AsyncLocal,
 // and sequential execution within a run never mutates them concurrently.
 internal sealed class StructuralGuardState
 {
 
     internal int Depth;
-    internal HashSet<PyStructuralGuard.StructuralPair>? Pairs;
-    internal HashSet<object>? Singles;
+    // Only identities on the active structural path, never a guest inventory.
+    // Existing managed admission bounds its length. A null right denotes a
+    // single-object traversal; pair and single cycles remain independent.
+    internal List<PyStructuralGuard.TraversalEntry>? ActivePath;
     internal int WorkTick;
+
+    internal bool ContainsSingle(object value)
+    {
+        if (ActivePath is { } path)
+            for (var index = path.Count - 1; index >= 0; index--)
+            {
+                var entry = path[index];
+                if (entry.Right is null && ReferenceEquals(entry.Left, value)) return true;
+            }
+        return false;
+    }
 }
 
 internal static class PyStructuralGuard
@@ -35,52 +48,37 @@ internal static class PyStructuralGuard
     internal readonly struct Scope : IDisposable
     {
         private readonly StructuralGuardState? _state;
-        private readonly StructuralPair _pair;
-        private readonly object? _single;
-        private readonly bool _isPair;
-        private readonly bool _active;
+        private readonly object? _left;
+        private readonly object? _right;
 
-        internal Scope(StructuralGuardState state, StructuralPair pair)
+        internal Scope(StructuralGuardState state, object? left = null, object? right = null)
         {
             _state = state;
-            _pair = pair;
-            _single = null;
-            _isPair = true;
-            _active = true;
-        }
-
-        internal Scope(StructuralGuardState state, object single)
-        {
-            _state = state;
-            _pair = default;
-            _single = single;
-            _isPair = false;
-            _active = true;
-        }
-
-        internal Scope(StructuralGuardState state)
-        {
-            _state = state;
-            _pair = default;
-            _single = null;
-            _isPair = false;
-            _active = true;
+            _left = left;
+            _right = right;
         }
 
         public void Dispose()
         {
-            if (!_active || _state is null)
+            if (_state is null)
             {
                 return;
             }
 
-            if (_isPair)
+            if (_left is not null && _state.ActivePath is { } path)
             {
-                _state.Pairs?.Remove(_pair);
-            }
-            else if (_single is not null)
-            {
-                _state.Singles?.Remove(_single);
+                // Normal lexical unwind finds the final entry immediately.
+                // Retain out-of-order disposal without storing invalidatable
+                // indices in scopes that can resume on another thread.
+                for (var index = path.Count - 1; index >= 0; index--)
+                {
+                    var entry = path[index];
+                    if (ReferenceEquals(entry.Left, _left) && ReferenceEquals(entry.Right, _right))
+                    {
+                        path.RemoveAt(index);
+                        break;
+                    }
+                }
             }
 
             if (_state.Depth > 0)
@@ -90,17 +88,10 @@ internal static class PyStructuralGuard
         }
     }
 
-    internal readonly record struct StructuralPair(object Left, object Right);
-
-    private sealed class StructuralPairComparer : IEqualityComparer<StructuralPair>
+    internal readonly struct TraversalEntry(object left, object? right)
     {
-        public static readonly StructuralPairComparer Instance = new();
-
-        public bool Equals(StructuralPair x, StructuralPair y)
-            => ReferenceEquals(x.Left, y.Left) && ReferenceEquals(x.Right, y.Right);
-
-        public int GetHashCode(StructuralPair obj)
-            => HashCode.Combine(RuntimeHelpers.GetHashCode(obj.Left), RuntimeHelpers.GetHashCode(obj.Right));
+        internal readonly object Left = left;
+        internal readonly object? Right = right;
     }
 
     internal static Scope EnterPair(object left, object right, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context = null)
@@ -124,17 +115,18 @@ internal static class PyStructuralGuard
 
         CheckDepthAndStack(state, span, context, comparison: true);
 
-        var pairs = state.Pairs ??= new HashSet<StructuralPair>(StructuralPairComparer.Instance);
-        var pair = new StructuralPair(left, right);
-        var swapped = new StructuralPair(right, left);
-        if (pairs.Contains(pair) || pairs.Contains(swapped))
+        var path = state.ActivePath ??= new();
+        for (var index = path.Count - 1; index >= 0; index--)
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
+            var entry = path[index];
+            if (ReferenceEquals(entry.Left, left) && ReferenceEquals(entry.Right, right)
+                || ReferenceEquals(entry.Left, right) && ReferenceEquals(entry.Right, left))
+                throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
         }
 
+        path.Add(new TraversalEntry(left, right));
         state.Depth++;
-        pairs.Add(pair);
-        return new Scope(state, pair);
+        return new Scope(state, left, right);
     }
 
     internal static Scope EnterSingle(object value, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context = null)
@@ -153,12 +145,11 @@ internal static class PyStructuralGuard
     {
         CheckDepthAndStack(state, span, context, comparison: false);
 
-        var singles = state.Singles ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-        if (!singles.Add(value))
-        {
+        if (state.ContainsSingle(value))
             throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
-        }
 
+        var path = state.ActivePath ??= new();
+        path.Add(new TraversalEntry(value, null));
         state.Depth++;
         return new Scope(state, value);
     }
@@ -346,5 +337,15 @@ internal static class PyStructuralGuard
     // per-run and never touches thread state).
     internal static int ThreadDepthForTests => ThreadState.Depth;
 
-    internal static int ThreadPairCountForTests => ThreadState.Pairs?.Count ?? 0;
+    internal static int ThreadPairCountForTests
+    {
+        get
+        {
+            var count = 0;
+            if (ThreadState.ActivePath is { } path)
+                foreach (var entry in path)
+                    if (entry.Right is not null) count++;
+            return count;
+        }
+    }
 }

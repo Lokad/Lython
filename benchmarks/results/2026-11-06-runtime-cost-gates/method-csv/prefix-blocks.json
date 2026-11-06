@@ -1,0 +1,428 @@
+{
+  "totalSamples": 730,
+  "prefixSamples": 84,
+  "uniqueExactSizeTier1Listings": [
+    8679
+  ],
+  "unmapped": [],
+  "blocks": [
+    {
+      "samples": 15,
+      "percentAll": 2.0547945205479454,
+      "percentPrefix": 17.857142857142858,
+      "label": "G_M000_IG08",
+      "offset": 200,
+      "start": 2290,
+      "code": "G_M000_IG08:                ;; offset=0x00C8\n       mov      eax, dword ptr [rdi+0x138]\n       mov      rdx, gword ptr [rbp-0x258]\n       mov      ebx, dword ptr [rdx+0x08]\n       cmp      eax, ebx\n       jge      G_M000_IG189"
+    },
+    {
+      "samples": 10,
+      "percentAll": 1.36986301369863,
+      "percentPrefix": 11.904761904761905,
+      "label": "G_M000_IG11",
+      "offset": 333,
+      "start": 3349,
+      "code": "G_M000_IG11:                ;; offset=0x014D\n       mov      rsi, bword ptr [rbp-0x260]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 63\n       ja       G_M000_IG82\n       lea      r8, [reloc @RWD00]\n       mov      r8d, dword ptr [r8+4*rsi]\n       lea      r9, G_M000_IG02\n       add      r8, r9\n       jmp      r8"
+    },
+    {
+      "samples": 8,
+      "percentAll": 1.095890410958904,
+      "percentPrefix": 9.523809523809524,
+      "label": "G_M000_IG09",
+      "offset": 224,
+      "start": 2519,
+      "code": "G_M000_IG09:                ;; offset=0x00E0\n       xor      esi, esi\n       mov      dword ptr [rbp-0x30], esi\n       mov      esi, dword ptr [rdi+0x138]\n       cmp      esi, ebx\n       jae      G_M000_IG198\n       shl      rsi, 5\n       lea      rsi, bword ptr [rdx+rsi+0x10]\n       mov      bword ptr [rbp-0x260], rsi\n       mov      rsi, gword ptr [rdi+0xD8]\n       mov      r8, bword ptr [rbp-0x260]\n       mov      r8, gword ptr [r8]\n       mov      r9, gword ptr [rsi+0x80]\n       mov      r9, gword ptr [r9+0x20]\n       test     r9, r9\n       jne      G_M000_IG195\n       mov      rsi, gword ptr [rsi+0x170]\n       test     rsi, rsi\n       jne      G_M000_IG193"
+    },
+    {
+      "samples": 7,
+      "percentAll": 0.958904109589041,
+      "percentPrefix": 8.333333333333334,
+      "label": "G_M000_IG18",
+      "offset": 545,
+      "start": 5210,
+      "code": "G_M000_IG18:                ;; offset=0x0221\n       mov      rsi, gword ptr [r15]\n       movsxd   r8, r14d\n       mov      r9d, dword ptr [rsi+0x08]\n       cmp      r9, r8\n       jbe      G_M000_IG103\n       lea      r8, bword ptr [rsi+8*r8+0x10]\n       mov      r9, qword ptr [rsi]\n       mov      r9, qword ptr [r9+0x30]\n       test     r13, r13\n       je       G_M000_IG31"
+    },
+    {
+      "samples": 7,
+      "percentAll": 0.958904109589041,
+      "percentPrefix": 8.333333333333334,
+      "label": "G_M000_IG06",
+      "offset": 188,
+      "start": 2084,
+      "code": "G_M000_IG06:                ;; offset=0x00BC\n       cmp      dword ptr [rbp-0x30], 0\n       jne      SHORT G_M000_IG08"
+    },
+    {
+      "samples": 6,
+      "percentAll": 0.821917808219178,
+      "percentPrefix": 7.142857142857143,
+      "label": "G_M000_IG05",
+      "offset": 168,
+      "start": 1924,
+      "code": "G_M000_IG05:                ;; offset=0x00A8\n       mov      rdi, gword ptr [rbp-0x240]\n       cmp      byte  ptr [rdi+0x142], 0\n       jne      G_M000_IG189"
+    },
+    {
+      "samples": 4,
+      "percentAll": 0.547945205479452,
+      "percentPrefix": 4.761904761904762,
+      "label": "G_M000_IG42",
+      "offset": 1107,
+      "start": 10823,
+      "code": "G_M000_IG42:                ;; offset=0x0453\n       mov      r8, bword ptr [rbp-0x260]\n       mov      ebx, dword ptr [r8+0x10]\n       mov      rdi, gword ptr [rbp-0x240]\n       lea      r8, bword ptr [rdi+0x150]\n       cmp      byte  ptr [rsi], sil\n       mov      r8, gword ptr [r8]\n       movzx    r9, byte  ptr [rsi+0x24]\n       test     r9d, r9d\n       setne    r10b\n       movzx    r10, r10b\n       add      r10d, ebx\n       cmp      r10d, dword ptr [r8+0x08]\n       jae      G_M000_IG188\n       mov      r8, gword ptr [r8+8*r10+0x10]\n       test     r8, r8\n       je       G_M000_IG164\n       cmp      byte  ptr [rsi+0x25], 0\n       je       G_M000_IG57"
+    },
+    {
+      "samples": 3,
+      "percentAll": 0.410958904109589,
+      "percentPrefix": 3.5714285714285716,
+      "label": "G_M000_IG215",
+      "offset": 63,
+      "start": 848,
+      "code": "G_M000_IG215:                ;; offset=0x003F\n       vmovdqa  xmmword ptr [rbp+rax-0x30], xmm8\n       vmovdqa  xmmword ptr [rbp+rax-0x20], xmm8\n       vmovdqa  xmmword ptr [rbp+rax-0x10], xmm8\n       add      rax, 48\n       jne      SHORT G_M000_IG215\n       mov      gword ptr [rbp-0x240], rdi\n       mov      dword ptr [rbp-0x2C], esi\n       mov      bword ptr [rbp-0x248], rdx\n       mov      bword ptr [rbp-0x250], rcx\n       mov      rax, rdx"
+    },
+    {
+      "samples": 2,
+      "percentAll": 0.273972602739726,
+      "percentPrefix": 2.380952380952381,
+      "label": "G_M000_IG43",
+      "offset": 1191,
+      "start": 11486,
+      "code": "G_M000_IG43:                ;; offset=0x04A7\n       mov      r10, 0x7165160272A0\n       cmp      qword ptr [r8], r10\n       jne      SHORT G_M000_IG45"
+    },
+    {
+      "samples": 2,
+      "percentAll": 0.273972602739726,
+      "percentPrefix": 2.380952380952381,
+      "label": "G_M000_IG80",
+      "offset": 2016,
+      "start": 20268,
+      "code": "G_M000_IG80:                ;; offset=0x07E0\n       cmp      byte  ptr [rbp-0x2C], 0\n       jne      G_M000_IG108\n       mov      r8, bword ptr [rbp-0x260]\n       lea      rdi, [rsp]\n       mov      rsi, r8\n       mov      rcx, gword ptr [rsi]\n       mov      gword ptr [rsp], rcx\n       add      rsi, 8\n       add      rdi, 8\n       movsq    \n       movsq    \n       movsq    \n       mov      rdi, gword ptr [rbp-0x240]\n       xor      esi, esi\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteTargetInstruction(Lokad.Lython.Frontend.ExecutableInstruction,bool):System.Threading.Tasks.ValueTask:this]\n       mov      gword ptr [rbp-0x58], rax\n       mov      qword ptr [rbp-0x50], rdx\n       mov      r15, gword ptr [rbp-0x58]\n       movsx    r14, word  ptr [rbp-0x50]\n       test     r15, r15\n       je       G_M000_IG04\n       jmp      G_M000_IG106"
+    },
+    {
+      "samples": 2,
+      "percentAll": 0.273972602739726,
+      "percentPrefix": 2.380952380952381,
+      "label": "G_M000_IG17",
+      "offset": 514,
+      "start": 4915,
+      "code": "G_M000_IG17:                ;; offset=0x0202\n       mov      rdi, gword ptr [rbp-0x240]\n       lea      r15, bword ptr [rdi+0x150]\n       mov      rsi, bword ptr [rbp-0x260]\n       mov      r14d, dword ptr [rsi+0x14]\n       cmp      ebx, dword ptr [r15+0x40]\n       jl       SHORT G_M000_IG24"
+    },
+    {
+      "samples": 2,
+      "percentAll": 0.273972602739726,
+      "percentPrefix": 2.380952380952381,
+      "label": "G_M000_IG10",
+      "offset": 312,
+      "start": 3191,
+      "code": "G_M000_IG10:                ;; offset=0x0138\n       mov      rdi, gword ptr [rbp-0x240]\n       cmp      gword ptr [rdi+0x98], 0\n       jne      G_M000_IG81"
+    },
+    {
+      "samples": 2,
+      "percentAll": 0.273972602739726,
+      "percentPrefix": 2.380952380952381,
+      "label": "G_M000_IG57",
+      "offset": 1349,
+      "start": 13415,
+      "code": "G_M000_IG57:                ;; offset=0x0545\n       cmp      byte  ptr [rbp-0x2C], 0\n       jne      G_M000_IG168\n       mov      edx, ebx\n       mov      rcx, r8\n       xor      r8d, r8d\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteOrdinaryCall(Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object,bool):System.Threading.Tasks.ValueTask:this]\n       mov      gword ptr [rbp-0x58], rax\n       mov      qword ptr [rbp-0x50], rdx\n       mov      r15, gword ptr [rbp-0x58]\n       movsx    r14, word  ptr [rbp-0x50]\n       test     r15, r15\n       je       G_M000_IG04\n       jmp      G_M000_IG166"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG79",
+      "offset": 1998,
+      "start": 20047,
+      "code": "G_M000_IG79:                ;; offset=0x07CE\n       mov      rsi, bword ptr [rbp-0x260]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteStackTransfer(byref):this]\n       jmp      G_M000_IG04"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG36",
+      "offset": 890,
+      "start": 8749,
+      "code": "G_M000_IG36:                ;; offset=0x037A\n       mov      rdi, gword ptr [rbp-0x240]\n       mov      rsi, bword ptr [rbp-0x260]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteControlFlow(byref):bool:this]\n       mov      dword ptr [rbp-0x30], eax\n       jmp      G_M000_IG04"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG16",
+      "offset": 489,
+      "start": 4687,
+      "code": "G_M000_IG16:                ;; offset=0x01E9\n       mov      gword ptr [rbp-0x158], rsi\n       mov      rsi, bword ptr [rbp-0x260]\n       mov      ebx, dword ptr [rsi+0x18]\n       test     ebx, ebx\n       jl       G_M000_IG32"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG01",
+      "offset": 0,
+      "start": 402,
+      "code": "G_M000_IG01:                ;; offset=0x0000\n       push     rbp\n       push     r15\n       push     r14\n       push     r13\n       push     r12\n       push     rbx\n       sub      rsp, 616\n       lea      rbp, [rsp+0x290]\n       xor      eax, eax\n       mov      qword ptr [rbp-0x238], rax\n       vxorps   xmm8, xmm8, xmm8\n       vmovdqa32 xmmword ptr [rbp-0x230], xmm8\n       vmovdqa32 xmmword ptr [rbp-0x220], xmm8\n       mov      rax, -480"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG47",
+      "offset": 1219,
+      "start": 11922,
+      "code": "G_M000_IG47:                ;; offset=0x04C3\n       mov      r9, gword ptr [rdi+0x150]\n       cmp      ebx, dword ptr [r9+0x08]\n       jae      G_M000_IG188\n       mov      r10d, ebx\n       mov      r14, gword ptr [r9+8*r10+0x10]\n       mov      r9, r14\n       test     r9, r9\n       je       G_M000_IG165\n       mov      r10, 0x716515FA1558\n       cmp      qword ptr [r9], r10\n       je       SHORT G_M000_IG49"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG37",
+      "offset": 918,
+      "start": 9058,
+      "code": "G_M000_IG37:                ;; offset=0x0396\n       cmp      byte  ptr [rbp-0x2C], 0\n       jne      G_M000_IG139"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG50",
+      "offset": 1290,
+      "start": 12575,
+      "code": "G_M000_IG50:                ;; offset=0x050A\n       mov      r9, 0x7165160EFB08\n       cmp      qword ptr [r8], r9\n       jne      SHORT G_M000_IG56"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG78",
+      "offset": 1988,
+      "start": 19931,
+      "code": "G_M000_IG78:                ;; offset=0x07C4\n       cmp      byte  ptr [rbp-0x2C], 0\n       jne      G_M000_IG130"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG22",
+      "offset": 621,
+      "start": 5990,
+      "code": "G_M000_IG22:                ;; offset=0x026D\n       mov      dword ptr [r15+0x40], ebx\n       jmp      G_M000_IG04"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG03",
+      "offset": 123,
+      "start": 1449,
+      "code": "G_M000_IG03:                ;; offset=0x007B\n       mov      gword ptr [rcx], rdx\n       mov      rdx, gword ptr [rdi+0x18]\n       mov      rdx, gword ptr [rdx+0x50]\n       mov      gword ptr [rbp-0x258], rdx\n       mov      ebx, dword ptr [rdx+0x08]\n       cmp      dword ptr [rdi+0x138], ebx\n       jge      G_M000_IG189\n       jmp      SHORT G_M000_IG09"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG13",
+      "offset": 405,
+      "start": 3953,
+      "code": "G_M000_IG13:                ;; offset=0x0195\n       mov      r11, bword ptr [rbp-0x260]\n       mov      r15d, dword ptr [r11+0x08]\n       mov      r11, bword ptr [rbp-0x260]\n       mov      r14, gword ptr [r11]\n       xor      r11, r11\n       mov      gword ptr [rbp-0x150], r11"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG41",
+      "offset": 1036,
+      "start": 10280,
+      "code": "G_M000_IG41:                ;; offset=0x040C\n       mov      rsi, gword ptr [rdi+0x18]\n       mov      rsi, gword ptr [rsi+0x68]\n       mov      r8, bword ptr [rbp-0x260]\n       cmp      dword ptr [r8+0x1C], 44\n       jne      G_M000_IG161\n       mov      r8, bword ptr [rbp-0x260]\n       mov      r8d, dword ptr [r8+0x08]\n       mov      r9, 0x716515F879F0\n       cmp      qword ptr [rsi], r9\n       jne      G_M000_IG163\n       cmp      dword ptr [rsi+0x08], r8d\n       jbe      G_M000_IG162\n       mov      rsi, gword ptr [rsi+8*r8+0x10]"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG21",
+      "offset": 610,
+      "start": 5854,
+      "code": "G_M000_IG21:                ;; offset=0x0262\n       mov      rdi, r8\n       mov      rsi, r13\n       call     CORINFO_HELP_ASSIGN_REF"
+    },
+    {
+      "samples": 1,
+      "percentAll": 0.136986301369863,
+      "percentPrefix": 1.1904761904761905,
+      "label": "G_M000_IG12",
+      "offset": 376,
+      "start": 3684,
+      "code": "G_M000_IG12:                ;; offset=0x0178\n       mov      rbx, gword ptr [rdi+0x18]\n       mov      rsi, gword ptr [rdi+0x20]\n       mov      r11, bword ptr [rbp-0x260]\n       mov      r11d, dword ptr [r11+0x1C]\n       cmp      r11d, 4\n       jne      G_M000_IG23"
+    }
+  ],
+  "leafOffsets": [
+    [
+      206,
+      13
+    ],
+    [
+      340,
+      7
+    ],
+    [
+      192,
+      7
+    ],
+    [
+      182,
+      6
+    ],
+    [
+      273,
+      4
+    ],
+    [
+      346,
+      3
+    ],
+    [
+      69,
+      3
+    ],
+    [
+      1204,
+      2
+    ],
+    [
+      539,
+      2
+    ],
+    [
+      327,
+      2
+    ],
+    [
+      555,
+      2
+    ],
+    [
+      569,
+      2
+    ],
+    [
+      2005,
+      1
+    ],
+    [
+      913,
+      1
+    ],
+    [
+      558,
+      1
+    ],
+    [
+      226,
+      1
+    ],
+    [
+      508,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      2088,
+      1
+    ],
+    [
+      1150,
+      1
+    ],
+    [
+      247,
+      1
+    ],
+    [
+      252,
+      1
+    ],
+    [
+      1161,
+      1
+    ],
+    [
+      1244,
+      1
+    ],
+    [
+      1390,
+      1
+    ],
+    [
+      545,
+      1
+    ],
+    [
+      213,
+      1
+    ],
+    [
+      922,
+      1
+    ],
+    [
+      200,
+      1
+    ],
+    [
+      1135,
+      1
+    ],
+    [
+      235,
+      1
+    ],
+    [
+      2080,
+      1
+    ],
+    [
+      1146,
+      1
+    ],
+    [
+      551,
+      1
+    ],
+    [
+      1303,
+      1
+    ],
+    [
+      1988,
+      1
+    ],
+    [
+      625,
+      1
+    ],
+    [
+      144,
+      1
+    ],
+    [
+      423,
+      1
+    ],
+    [
+      1385,
+      1
+    ],
+    [
+      1086,
+      1
+    ],
+    [
+      613,
+      1
+    ],
+    [
+      391,
+      1
+    ]
+  ],
+  "limitations": "Sampling skid/basic-block attribution; methods can include useful inlined operations; not removable CPU or source-pair timing."
+}

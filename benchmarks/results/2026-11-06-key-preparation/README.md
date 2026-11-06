@@ -1,4 +1,4 @@
-# One contextual key-preparation walk — 2026-11-06
+# One contextual key-preparation walk â€” 2026-11-06
 
 Retain Q01: remove recursive tuple lookahead and separate contextual
 classification/hash sweeps. One semantic walk returns normalized hash plus the
@@ -35,7 +35,8 @@ Focused Release454 internal/1220 public per actual.NET11RC3/.NET10.0.8 pass,
 plus22 hash/ownership/depth cases after adding the new refusal/cancellation variants.
 Committed/pushed bf741ec2: full local Release4,214 internal/16,101 public per
 actual runtime and both installed Release consumers pass. Platform/stress delivery
-42166983759 is running; current status is kept separately in validation.json.
+42166983759 is GREEN/all eight on exact bf741ec2, [terminal receipt](delivery-ci.json).
+This excludes the later R02 prototype; never query the terminal run again.
 
 ## B325 complete scripts
 
