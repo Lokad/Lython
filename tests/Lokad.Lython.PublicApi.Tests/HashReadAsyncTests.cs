@@ -142,6 +142,59 @@ public sealed class HashReadAsyncTests
             """, "missing 0\n");
     }
 
+    [Theory]
+    [InlineData("mapping.clear()", "missing 0\n")]
+    [InlineData("del mapping['beta']", "retained 1\n")]
+    public async Task SharedRecordEqualityRevalidatesEntriesAfterSuspension(string mutation, string expected)
+    {
+        await AssertOutputAsync(SharedEqualitySource.Replace("MUTATE", mutation)
+            + "\nprint(mapping.get(Key(), 'missing'), len(mapping))", expected);
+    }
+
+    [Fact]
+    public async Task SharedRecordCancellationAwaitsEqualityCleanup()
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(SharedEqualitySource.Replace("MUTATE", "mapping.clear()")
+            + "\ntry:\n mapping.get(Key())\nfinally:\n return 'must not hide cancellation'", budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var host = new DelayedLythonHost(); host.SeedFile("/call", "data");
+        var entered = host.PauseReadUntilCancellation("/call");
+        using var cancellation = new CancellationTokenSource();
+        var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+        try
+        {
+            var first = await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Same(entered, first);
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+            cancellation.Cancel();
+            using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(result.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        script.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private const string SharedEqualitySource = """
+        import json
+        mapping = json.loads('{"alpha":"retained","beta":"other"}')
+        class Key:
+            def __hash__(self): return hash('alpha')
+            def __eq__(self, other):
+                with open('/call') as marker: marker.read()
+                MUTATE
+                return other == 'alpha'
+        """;
+
     private static async Task AssertOutputAsync(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);

@@ -27,19 +27,30 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     public PyDict(PyDict other) : this(other, other._memoryGovernor, other._allocationSpan) { }
     public PyDict(PyDict other, MemoryGovernor governor) : this(other, governor, null) { }
     public PyDict(PyDict other, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
-        : this(other._nativeItems?.Length ?? other.Count, governor, allocationSpan, other._keysOnly)
+        : this(other._nativeItems is null ? other.Count
+            : other._recordKeys is null ? other._nativeItems.Length : other._nativeValues!.Length,
+            governor, allocationSpan, other._keysOnly)
     {
         try
         {
-            if (other._nativeItems is not null)
+            if (other._recordKeys is not null)
             {
-                // Copy the one table, including stored hashes and insertion
-                // identities. No key is rehashed or repackaged during a copy.
+                other.CopyNativeStorage(_nativeItems!, _nativeValues, allocationSpan);
+                _nativeCount = other._nativeCount;
+                _nativeSequence = other._nativeSequence;
+            }
+            else if (other._nativeItems is not null)
+            {
+                // Copy keys and values without rehashing or repackaging keys;
+                // stored hashes and insertion identities stay intact.
                 for (var offset = 0; offset < other._nativeItems.Length; offset += 4096)
                 {
                     PyStructuralGuard.NoteWork(null, allocationSpan);
                     Array.Copy(other._nativeItems, offset, _nativeItems!, offset,
                         Math.Min(4096, other._nativeItems.Length - offset));
+                    if (_nativeValues is not null)
+                        Array.Copy(other._nativeValues!, offset, _nativeValues, offset,
+                            Math.Min(4096, other._nativeItems.Length - offset));
                 }
                 _nativeCount = other._nativeCount;
                 _nativeProtocolCount = other._nativeProtocolCount;
@@ -69,7 +80,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         governor.ThrowIfAdmissionFailed();
         var hash = NativeHash(key);
         var index = FindNativeIndex(key, hash, context, span);
-        if (index < 0 && _nativeCount == _nativeItems.Length) return false;
+        if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
         var before = _nativeCount;
         PublishNativeValue(index, key, value, hash, protocol: false, replaceExisting: true);
         if (_nativeCount != before) _version++;
@@ -115,7 +126,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var span = QuerySpan;
         var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
-        value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
+        value = index < 0 ? PyNone.Instance : ReadNativeValue(index);
         return index >= 0;
     }
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value,
@@ -128,7 +139,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             ? default : PyStructuralGuard.PushAmbient(context, span);
         var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
-        value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
+        value = index < 0 ? PyNone.Instance : ReadNativeValue(index);
         return index >= 0;
     }
     internal ValueTask<(bool Found, object Value)> TryGetKeyAsync(
@@ -149,7 +160,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         if (_nativeItems is not null && !HasProtocolKeys && !prepared.Protocol)
         {
             var nativeIndex = FindNativeIndex(key, hash, context, span);
-            return nativeIndex < 0 ? (false, PyNone.Instance) : (true, _nativeItems[nativeIndex].Value!);
+            return nativeIndex < 0 ? (false, PyNone.Instance) : (true, ReadNativeValue(nativeIndex));
         }
         if (_nativeItems is null)
         {
@@ -160,7 +171,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         }
         var index = await ResolveNativeKeyAsync(key, hash, prepared.Protocol, context, span).ConfigureAwait(false);
         context.CheckExecution(span);
-        return index < 0 ? (false, PyNone.Instance) : (true, _nativeItems[index].Value!);
+        return index < 0 ? (false, PyNone.Instance) : (true, ReadNativeValue(index));
     }
 
     internal ValueTask<bool> ContainsKeyAsync(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -230,10 +241,11 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         using var retained = _memoryGovernor?.ReserveTemporary(source.CommittedStorageBytes, span);
         if (_nativeItems is not null && source._nativeItems is not null)
         {
-            for (var i = 0; i < source._nativeCount; i++)
+            for (var i = 0; i < source.NativeExtent; i++)
             {
                 context?.CheckExecution(span);
                 source.EnsureUnmodified(expectedVersion);
+                if (!source.IsNativeLive(i)) continue;
                 var entry = source._nativeItems[i];
                 var before = Count;
                 try { SetNativeValue(entry.Key!, PyNone.Instance, entry.Hash, entry.Protocol, context, span, replaceExisting: false); }
@@ -262,8 +274,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             return value;
         }
         var (hash, protocol) = PrepareQueryKey(key, context, span);
+        PrepareNativeKeyMutation(key, hash, protocol);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
-        if (index >= 0) return _nativeItems[index].Value!;
+        if (index >= 0) return ReadNativeValue(index);
         AttachMemoryGovernor(governor, span);
         AppendNativeItem(key, value, hash, protocol);
         _version++;
@@ -275,14 +288,16 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         if (_memoryGovernor is not null) { _allocationSpan ??= allocationSpan; return; }
         var span = _allocationSpan ?? allocationSpan;
         using var overlap = governor.ReserveTemporary(_nativeItems is null
-            ? checked(16L * Count) : _nativeItems.Length == 0 ? 0 : checked(32L + NativeEntryBytes * _nativeItems.Length), span);
+            ? checked(16L * Count) : _nativeItems.Length == 0 ? 0 : checked((_keysOnly ? 32L : 64L) + (NativeKeyBytes + (_keysOnly ? 0 : 8L)) * _nativeItems.Length), span);
         var storage = new PyDict(this, governor, span);
         _nativeItems = storage._nativeItems;
+        _nativeValues = storage._nativeValues;
         _nativeCount = storage._nativeCount;
         _nativeProtocolCount = storage._nativeProtocolCount;
         _nativeSequence = storage._nativeSequence;
         _nativeCommittedBytes = storage._nativeCommittedBytes;
         storage._nativeItems = null;
+        storage._nativeValues = null;
         storage._nativeCount = 0;
         storage._nativeCommittedBytes = 0;
         _items = this;
@@ -315,7 +330,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         if (index < 0) { value = PyNone.Instance; return false; }
-        value = _nativeItems[index].Value!;
+        value = ReadNativeValue(index);
         RemoveNativeAt(index); _version++;
         return true;
     }
@@ -324,9 +339,10 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         if (_nativeItems is not null)
         {
             if (_nativeCount == 0) { key = value = PyNone.Instance; return false; }
-            var last = _nativeItems[_nativeCount - 1];
-            key = last.Key!; value = last.Value!;
-            RemoveNativeAt(_nativeCount - 1); _version++;
+            var index = NativeExtent - 1;
+            while (!IsNativeLive(index)) index--;
+            key = _nativeItems[index].Key!; value = ReadNativeValue(index);
+            RemoveNativeAt(index); _version++;
             return true;
         }
         key = value = PyNone.Instance;
@@ -510,7 +526,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
 
     internal void DiscardUnpublishedStorage()
     {
-        RefundAbortedConstruction(); _items = null!; _nativeItems = null;
+        RefundAbortedConstruction(); _items = null!; _nativeItems = null; _nativeValues = null;
     }
     private void RefundAbortedConstruction()
     {

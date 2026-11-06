@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (first == (byte)'"')
                     {
-                        var (value, end, _) = ReadJsonString(input, (bool)options.Strict, position, context, span);
+                        var (value, end) = ReadJsonString(input, (bool)options.Strict, position, context, span);
                         return new((value, end));
                     }
                     if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
             finally { numericFrame?.LeaveInterpreterFrame(); }
         }
 
-        private static (PyString Value, int End, bool Reused) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, PyString[]? expectedPropertyNames = null)
+        private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expectedPropertyNames = null, int expectedPosition = 0)
         {
             // Lenient rewriting affects only the token; coordinates keep the original document.
             var original = input.Utf8Bytes.Span;
@@ -223,10 +223,10 @@ internal sealed partial class LythonRuntime
                 // The scan already established a complete plain string. No
                 // backend decoding scratch or second token parse is needed.
                 context.CheckExecution(span);
-                var existing = FindJsonPropertyName(expectedPropertyNames, token.Span[1..^1], context, span);
+                var existing = expectedPropertyNames?.FindName(token.Span[1..^1], expectedPosition, context, span);
                 var value = existing ?? PyString.CopyFromUtf8(token.Span[1..^1], context.MemoryGovernor, span);
                 context.CheckExecution(span);
-                return (value, end, existing is not null);
+                return (value, end);
             }
             // Fund backend decoding and, only for lenient bare controls, the
             // exact expanded buffer before allocation. No offset list/copy or
@@ -291,13 +291,13 @@ internal sealed partial class LythonRuntime
                 }
                 else value = CreateString(reader.GetString() ?? string.Empty, context, span);
                 context.CheckExecution(span);
-                var existing = FindJsonPropertyName(expectedPropertyNames, value.Utf8Bytes.Span, context, span);
+                var existing = expectedPropertyNames?.FindName(value.Utf8Bytes.Span, expectedPosition, context, span);
                 if (existing is not null)
                 {
                     if (!ReferenceEquals(value, existing)) context.MemoryGovernor.RefundUnpublishedValue(value);
                     value = existing;
                 }
-                return (value, end, existing is not null);
+                return (value, end);
             }
             catch (JsonException ex)
             {
@@ -338,41 +338,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Both object readers validate the quote first. Keys use the same
-        // decoder and frame policy as string values, without generic dispatch
-        // or a suspension point: JSON string keys never invoke a callback.
-        private static PyString? FindJsonPropertyName(PyString[]? expected, ReadOnlySpan<byte> bytes, ExecutionContext context, LythonSourceSpan span)
-        {
-            var left = 0;
-            var right = (expected?.Length ?? 0) - 1;
-            while (left <= right)
-            {
-                var middle = left + (right - left) / 2;
-                var candidate = expected![middle];
-                context.CheckExecution(span);
-                var other = candidate.Utf8Bytes.Span;
-                var common = Math.Min(bytes.Length, other.Length);
-                var comparison = 0;
-                for (var offset = 0; offset < common; offset += Math.Min(1024, common - offset))
-                {
-                    context.CheckExecution(span);
-                    var length = Math.Min(1024, common - offset);
-                    comparison = bytes.Slice(offset, length).SequenceCompareTo(other.Slice(offset, length));
-                    if (comparison != 0) break;
-                }
-                if (comparison == 0) comparison = bytes.Length.CompareTo(other.Length);
-                if (comparison == 0) return candidate;
-                if (comparison < 0) right = middle - 1;
-                else left = middle + 1;
-            }
-            return null;
-        }
-
-        private static (PyString Value, int End, bool Reused) ReadJsonObjectKey(PyString input, JsonLoadOptions options, int position, ExecutionContext context, LythonSourceSpan span, PyString[] expected)
+        // Keys use the same decoder/frame policy as values, with no callback.
+        private static (PyString Value, int End) ReadJsonObjectKey(PyString input, JsonLoadOptions options, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expected, int expectedPosition)
         {
             context.CheckExecution(span);
             context.EnterInterpreterFrame(span);
-            try { return ReadJsonString(input, (bool)options.Strict, position, context, span, expected); }
+            try { return ReadJsonString(input, (bool)options.Strict, position, context, span, expected, expectedPosition); }
             finally { context.LeaveInterpreterFrame(); }
         }
 
@@ -380,7 +351,7 @@ internal sealed partial class LythonRuntime
             PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
             int depth, int opening, bool isObject, bool asynchronous)
         {
-            var expected = isObject ? context.State.JsonRecordKeys : Array.Empty<PyString>();
+            var expected = isObject ? context.State.JsonRecordLayout : null;
             var bytes = input.Utf8Bytes;
             var position = SkipJsonWhitespace(bytes.Span, opening + 1, context, span);
             // Fund the shell and first native table together when the first
@@ -388,9 +359,11 @@ internal sealed partial class LythonRuntime
             // is unknown: start one block instead of growing a two-slot table.
             var capacity = position < bytes.Length && bytes.Span[position] == (byte)'"' ? 4 : 0;
             object result = isObject && options.ObjectPairsHook is null
-                ? new PyDict(capacity, context.MemoryGovernor, span) : new PyList([], context.MemoryGovernor, span);
+                ? expected is not null && capacity != 0 ? expected.CreateRecord(context, span, capacity)
+                    : new PyDict(capacity, context.MemoryGovernor, span)
+                : new PyList([], context.MemoryGovernor, span);
             return ReadJsonContainerRemainder(input, options, context, span, depth,
-                isObject, asynchronous, result, expected, true, position);
+                isObject, asynchronous, result, expected, position);
         }
 
         // Completed values stay in this ordinary loop. Only an actually pending
@@ -399,7 +372,7 @@ internal sealed partial class LythonRuntime
         private ValueTask<(object Value, int End)> ReadJsonContainerRemainder(
             PyString input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span,
             int depth, bool isObject, bool asynchronous, object result,
-            PyString[] expected, bool matched, int position)
+            PyDict.RecordKeys? expected, int position)
         {
             var bytes = input.Utf8Bytes;
             while (true)
@@ -409,11 +382,11 @@ internal sealed partial class LythonRuntime
                 {
                     if (isObject)
                     {
-                        var finishedDictionary = result as PyDict;
-                        var count = finishedDictionary?.Count ?? ((PyList)result).Count;
-                        if (matched && count == expected.Length) context.State.JsonRecordKeys = expected;
-                        else context.State.RememberJsonRecordKeys(finishedDictionary is not null
-                            ? finishedDictionary.Keys : JsonPairKeys((PyList)result), count, span);
+                        if (result is PyDict finishedDictionary)
+                            context.State.JsonRecordLayout = finishedDictionary.ShareRecordKeys(context, span);
+                        // Pair hooks have no native record to share. Preserve
+                        // the captured hint for name reuse without another index.
+                        else context.State.JsonRecordLayout = expected;
                     }
                     var hook = isObject ? options.ObjectPairsHook ?? options.ObjectHook : null;
                     if (hook is null) return new((result, position + 1));
@@ -435,16 +408,16 @@ internal sealed partial class LythonRuntime
                 PyString? key = null;
                 if (isObject)
                 {
-                    var property = ReadJsonObjectKey(input, options, start, context, span, expected);
+                    var property = ReadJsonObjectKey(input, options, start, context, span, expected,
+                        result is PyDict dictionary ? dictionary.Count : ((PyList)result).Count);
                     key = property.Value;
-                    matched &= property.Reused;
                     start = EnsureJsonColon(bytes.Span, property.End, input, span, context) + 1;
                 }
 
                 var pending = ReadJsonValueAsync(input, options, context, span, depth, start, asynchronous);
                 if (!pending.IsCompleted)
                     return CompleteJsonContainerValueAsync(pending, input, options, context, span,
-                        depth, isObject, asynchronous, result, expected, matched, key);
+                        depth, isObject, asynchronous, result, expected, key);
                 var (value, end) = pending.GetAwaiter().GetResult();
                 AppendJsonContainerValue(result, key, value, context, span);
                 position = NextJsonContainerToken(input, end, isObject, context, span);
@@ -471,26 +444,21 @@ internal sealed partial class LythonRuntime
         private async ValueTask<(object Value, int End)> CompleteJsonContainerValueAsync(
             ValueTask<(object Value, int End)> pending, PyString input, JsonLoadOptions options,
             ExecutionContext context, LythonSourceSpan span, int depth,
-            bool isObject, bool asynchronous, object result, PyString[] expected, bool matched, PyString? key)
+            bool isObject, bool asynchronous, object result, PyDict.RecordKeys? expected, PyString? key)
         {
             var (value, end) = await pending.ConfigureAwait(false);
             AppendJsonContainerValue(result, key, value, context, span);
             return await ReadJsonContainerRemainder(input, options, context, span, depth,
-                isObject, asynchronous, result, expected, matched,
+                isObject, asynchronous, result, expected,
                 NextJsonContainerToken(input, end, isObject, context, span)).ConfigureAwait(false);
         }
 
         private static void AppendJsonContainerValue(object result, PyString? key, object value,
             ExecutionContext context, LythonSourceSpan span)
         {
-            if (result is PyDict dictionary) dictionary.SetItem(key!, value);
+            if (result is PyDict dictionary) dictionary.SetRecordItem(key!, value, context, span);
             else ((PyList)result).Add(key is null ? value : PyTuple.FromOwnedArray([key, value], context.MemoryGovernor, span));
             context.CheckExecution(span);
-        }
-
-        private static IEnumerable<object> JsonPairKeys(PyList pairs)
-        {
-            foreach (var pair in pairs) yield return ((PyTuple)pair)[0];
         }
 
         // Matches a JSON constant literal (NaN/Infinity/-Infinity) like CPython:

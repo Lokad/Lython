@@ -819,14 +819,16 @@ object; replacing it later does not alter the scanner's captured setting.
 Plain JSON strings use the native scan's validated boundary/control facts and an
 independent admitted UTF-8 copy, without a second token parse or decoding scratch.
 Property names can reuse immutable UTF-8 keys from the previous completed native
-object, independently of field order. A sorted key-only snapshot replaces an
-execution-wide name index; names always own their bytes and never borrow input.
+object, independently of field order. The native dictionary key table supplies
+this lookup; names own their bytes and never borrow input. Ordered matching
+records share immutable key/hash/order metadata with independently admitted values.
 Mutable records remain independent. Equal decoded strings have no interning or
 cross-decode identity guarantee; duplicate dictionary entries retain their first
 key and last value. Value strings use the ordinary decoder.
-Snapshots and key payloads remain charged to the execution/result owner through
-nested, reentrant and suspended callbacks. Matching key sets reuse their snapshot;
-changed sets admit replacement metadata before allocation. Replaced snapshot
+Layouts and key payloads remain charged to the execution/result owner through
+nested, reentrant and suspended callbacks. Different order, duplicates and changed
+fields retain ordinary dictionary behavior. New metadata is admitted before
+allocation. Replaced layout
 metadata stays conservatively charged until the bounded execution owner ends,
 so changing schemas can reject earlier. There is no separate cache allowance,
 admission fallback or collector-dependent refund.
@@ -1194,7 +1196,9 @@ alias; iterator fieldnames are materialized once. Dictionary writers share the
 ordinary rendering path and admit writeheader storage before allocation. Header
 mutations remain visible; no duplicate string-only header arrays are maintained.
 Native string-list headers construct each dictionary directly at its admitted
-capacity, including short and extra-width records. Duplicate headers or a colliding
+capacity and reuse immutable key metadata between matching rows. Each row owns
+independent values; header edits remain visible. Short and extra-width records,
+duplicate headers or a colliding
 restkey can leave unused capacity; it remains charged until ownership ends and
 can cause earlier conservative refusal. Dynamic headers retain Python protocols.
 
@@ -1219,8 +1223,9 @@ batch. Arbitrary uninterrupted scans are not promised row-count-independent
 accounting. Completed batches do not accumulate allocation charges.
 
 Dictionary tables keep insertion order, including deletion followed by reinsertion.
-One managed entry array holds native payloads and hash-bucket heads; namespace
-views keep their live backing. Native updates and admitted insertion share one
+One managed array holds keys and hash-bucket heads; dictionaries use a separate
+values array, which key-only sets omit. Namespace views keep their live backing.
+Native updates and admitted insertion share one
 hash/probe. Private bucket mixing leaves Python-visible hashes unchanged.
 Table capacity includes conservative key/value headroom. Removal and clear retain
 that funding and reuse prepaid slots; allowance returns when the owner ends.
@@ -1228,8 +1233,16 @@ Instance attributes use the same capacity-level policy. Growth admits replacemen
 overlap before allocation; unused slots and peaks can cause earlier denial. A
 competing budget user may cause later growth to refuse before a new binding is
 published. After refused admission, even updates within funded capacity stop.
-Middle deletion shifts the live suffix and adjusts its hash links; last deletion
-only unlinks its bucket chain. Repeated middle deletions can have quadratic cost.
+JSON and CSV records can share immutable keys through their existing batch/cache
+owner. Their value capacity grows from actual fields, independently of a previous
+wide layout. Value updates, deletions and clear need no metadata admission;
+deletion leaves an empty value slot. Adding a key first admits private replacement
+storage while the original layout and values remain funded. Protocol-key mutation
+conservatively makes metadata private before guest equality, so it may refuse
+earlier than an ordinary value update. Shared keys retain their funding after
+individual rows clear or change, until their execution/result owner ends.
+Private-table middle deletion shifts the live suffix and adjusts its hash links;
+last deletion only unlinks its bucket chain. Repeated middle deletions can have quadratic cost.
 Collision scans and private growth observe cooperative cancellation. Structural
 payload shifts are atomic; individual CLR allocations and structural mutations
 are not internally interrupted. Native copies admit

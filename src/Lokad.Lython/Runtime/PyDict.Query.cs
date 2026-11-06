@@ -2,6 +2,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class PyDict
 {
+    // Protocol comparisons retain their original key/value borrows across
+    // reentrant mutation and suspension, independently of the live table.
+    private readonly record struct NativeCandidate(object Key, object? Value, long Sequence, uint Hash, bool Protocol);
+
     private (uint Hash, bool Protocol) PrepareQueryKey(object key, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
         try
@@ -23,15 +27,15 @@ internal sealed partial class PyDict
 
     private int FindNativeIdentity(object key)
     {
-        for (var i = 0; i < _nativeCount; i++)
+        for (var i = 0; i < NativeExtent; i++)
         {
             PyStructuralGuard.NoteWork(null, _allocationSpan);
-            if (ReferenceEquals(_nativeItems![i].Key, key)) return i;
+            if (IsNativeLive(i) && ReferenceEquals(_nativeItems![i].Key, key)) return i;
         }
         return -1;
     }
 
-    private int CurrentNativeIndex(in NativeEntry candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private int CurrentNativeIndex(in NativeCandidate candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_keysOnly)
         {
@@ -47,13 +51,13 @@ internal sealed partial class PyDict
         // Insertion identities stay ordered even when removal compacts payloads.
         // A removed/reinserted object is a different entry, including after clear.
         var low = 0;
-        var high = _nativeCount - 1;
+        var high = NativeExtent - 1;
         while (low <= high)
         {
             var middle = low + (high - low) / 2;
             var current = _nativeItems![middle];
             if (current.Sequence == candidate.Sequence)
-                return ReferenceEquals(current.Key, candidate.Key) ? middle : -1;
+                return IsNativeLive(middle) && ReferenceEquals(current.Key, candidate.Key) ? middle : -1;
             if (current.Sequence < candidate.Sequence) low = middle + 1;
             else high = middle - 1;
         }
@@ -68,21 +72,25 @@ internal sealed partial class PyDict
         for (var index = items[NativeBucket(hash, items.Length)].Bucket - 1; index >= 0; index = items[index].Next - 1)
         {
             PyStructuralGuard.NoteWork(context, span);
-            if (items[index].Hash == hash) count++;
+            if (IsNativeLive(index) && items[index].Hash == hash) count++;
         }
         return count;
     }
 
-    private NativeEntry[] SnapshotNativeCandidates(uint hash, int count, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private NativeCandidate[] SnapshotNativeCandidates(uint hash, int count, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (count == 0) return [];
-        var candidates = new NativeEntry[count];
+        var candidates = new NativeCandidate[count];
         var items = _nativeItems!;
         // Chains are newest first; Python equality visits insertion order.
         for (var index = items[NativeBucket(hash, items.Length)].Bucket - 1; index >= 0; index = items[index].Next - 1)
         {
             PyStructuralGuard.NoteWork(context, span);
-            if (items[index].Hash == hash) candidates[--count] = items[index];
+            if (IsNativeLive(index) && items[index].Hash == hash)
+            {
+                var entry = items[index];
+                candidates[--count] = new(entry.Key!, ReadNativeValue(index), entry.Sequence, entry.Hash, entry.Protocol);
+            }
         }
         return candidates;
     }
@@ -161,6 +169,7 @@ internal sealed partial class PyDict
     private object SetNativeValue(object key, object value, uint hash, bool protocol,
         LythonRuntime.ExecutionContext? context, LythonSourceSpan span, bool replaceExisting)
     {
+        PrepareNativeKeyMutation(key, hash, protocol);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         return PublishNativeValue(index, key, value, hash, protocol, replaceExisting);
     }
@@ -169,8 +178,8 @@ internal sealed partial class PyDict
     {
         if (index >= 0)
         {
-            if (replaceExisting) _nativeItems![index].Value = value;
-            return replaceExisting ? value : _nativeItems![index].Value!;
+            if (replaceExisting) StoreNativeValue(index, value);
+            return replaceExisting ? value : ReadNativeValue(index);
         }
         AppendNativeItem(key, value, hash, protocol);
         return value;
@@ -196,14 +205,14 @@ internal sealed partial class PyDict
             return _items.ContainsKey(key) ? key : null;
         }
         using var storage = _memoryGovernor?.ReserveTemporary(checked(32L + NativeSlotBytes * Count), span);
-        var entries = new NativeEntry[Count];
+        var entries = new NativeCandidate[Count];
         var index = 0;
         foreach (var pair in _items.Entries)
         {
             context.CheckExecution(span);
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             var storedHash = _items.TryGetStoredHash(pair.Key, out var foundHash) ? foundHash : NativeHash(pair.Key);
-            entries[index++] = new NativeEntry { Key = pair.Key, Value = pair.Value, Hash = storedHash };
+            entries[index++] = new NativeCandidate(pair.Key, pair.Value, 0, storedHash, false);
         }
         foreach (var entry in entries)
         {
@@ -279,7 +288,7 @@ internal sealed partial class PyDict
     internal static PyDict CreateSetStorage(MemoryGovernor? governor, LythonSourceSpan? span)
         => new(0, governor, span, keysOnly: true);
 
-    internal long KeySnapshotBytes => checked(32L + (NativeEntryBytes + 64L) * Count);
+    internal long KeySnapshotBytes => checked(32L + (NativeKeyBytes + 64L) * Count);
 
     internal bool PopSetKey(out object key)
     {

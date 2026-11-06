@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Share immutable native key metadata across matching JSON and CSV records while
+  keeping values independent. Remove the separate sorted JSON key hint and
+  coupled key/value entries; key-only sets omit values storage. Preserve mutable
+  headers, key order/protocols, retained aliases and cancellation. Adding a new
+  shared-record key admits private replacement before mutation; shared metadata
+  stays charged to the existing batch/result owner. Conservative admission
+  thresholds can change.
+
 - Replace provider match carriers with caller-owned capture spans through
   `ILythonRegexSubject.TryMatch` and `ILythonRegexCursor.TryNext`; remove
   `LythonRegexMatch` and the old `Match`/`Next` signatures. This intentionally

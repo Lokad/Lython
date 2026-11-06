@@ -537,13 +537,24 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return _hashCode;
         }
 
-        var hash = new HashCode();
-        hash.AddBytes(Utf8Span);
-
-        var computed = hash.ToHashCode();
+        var computed = HashUtf8(Utf8Span);
         _hashCode = computed;
         Volatile.Write(ref _hashCodeComputed, true);
         return computed;
+    }
+
+    internal static int HashUtf8(ReadOnlySpan<byte> bytes, LythonRuntime.ExecutionContext? context = null,
+        LythonSourceSpan? span = null)
+    {
+        var hash = new HashCode();
+        for (var offset = 0; offset < bytes.Length;)
+        {
+            context?.CheckExecution(span);
+            var count = Math.Min(4096, bytes.Length - offset);
+            hash.AddBytes(bytes.Slice(offset, count));
+            offset += count;
+        }
+        return hash.ToHashCode();
     }
 
     public static int CompareOrdinal(PyString left, PyString right)

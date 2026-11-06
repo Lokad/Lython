@@ -180,6 +180,10 @@ internal sealed partial class ExecutionState
     private PyDict? _importedModules;
     public PyDict ImportedModules => _importedModules ??= new PyDict(MemoryGovernor);
 
+    // Only immutable keys, never row values; suspended parsers retain their own
+    // layout under this same execution owner's funding.
+    internal PyDict.RecordKeys? JsonRecordLayout { get; set; }
+
     public Dictionary<string, object> BuiltinVariables { get; }
 
 

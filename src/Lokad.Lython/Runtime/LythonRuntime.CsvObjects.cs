@@ -67,6 +67,7 @@ internal sealed partial class LythonRuntime
         private readonly LythonSourceSpan _span;
         public CsvRecordSource Rows { get; }
         private readonly CsvReaderObject _reader;
+        private PyDict.RecordKeys? _recordKeys;
         public object LineNum { get; private set; } = BigInteger.Zero;
 
         public CsvDictReaderObject(CsvRecordSource rows, object fieldNames, object restKey, object restValue,
@@ -143,16 +144,18 @@ internal sealed partial class LythonRuntime
                     // the whole record at its admitted capacity, preserving first
                     // insertion order and the last value for duplicate names.
                     var capacity = checked(names.Count + (row.Length > names.Count ? 1 : 0));
-                    var record = new PyDict(capacity, _context.MemoryGovernor, _span);
+                    var record = _recordKeys?.CreateRecord(_context, _span, capacity)
+                        ?? new PyDict(capacity, _context.MemoryGovernor, _span);
                     using var ambient = PyStructuralGuard.PushAmbient(_context, _span);
                     for (var i = 0; i < names.Count; i++)
                     {
                         _context.CheckExecution(_span);
-                        record.SetItem(names[i], i < row.Length ? row[i] : _restValue);
+                        record.SetRecordItem((PyString)names[i], i < row.Length ? row[i] : _restValue, _context, _span);
                     }
                     if (row.Length > names.Count)
                         record.SetItem(ValidateDictionaryKey(_restKey, _span),
                             RestFields(row, new BigInteger(names.Count)));
+                    _recordKeys = record.ShareRecordKeys(_context, _span);
                     return PyIterationResult.Yield(record);
                 }
                 var result = new PyDict(_context.MemoryGovernor, _span);

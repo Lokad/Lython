@@ -21,19 +21,29 @@ public sealed class JsonPropertyNameStorageTests
             var state = context.State;
             var span = new LythonSourceSpan(0, 0, 0, 0);
             var retained = PyString.FromString("retained-name", context.MemoryGovernor, span);
-            if (populated) state.RememberJsonRecordKeys([retained], 1, span);
-            var snapshot = state.JsonRecordKeys;
+            if (populated)
+            {
+                var first = new PyDict(context.MemoryGovernor, span);
+                first.SetItem(retained, PyNone.Instance);
+                state.JsonRecordLayout = first.ShareRecordKeys(context, span);
+            }
+            var snapshot = state.JsonRecordLayout;
+            var replacement = new PyDict(context.MemoryGovernor, span);
+            replacement.SetItem(retained, PyNone.Instance);
+            replacement.SetItem(PyString.FromString("other-name", context.MemoryGovernor, span), PyNone.Instance);
             var before = budget.ReservedBytes;
             Assert.True(budget.TryReserve(limit - before, out var blocker));
             using (blocker)
             {
-                if (populated) Assert.Same(retained, Assert.Single(snapshot));
-                var failure = Assert.Throws<LythonRuntimeException>(() => state.RememberJsonRecordKeys([retained, retained], 2, span));
+                var failure = Assert.Throws<LythonRuntimeException>(() =>
+                    state.JsonRecordLayout = replacement.ShareRecordKeys(context, span));
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
                 Assert.Equal(limit, budget.ReservedBytes);
-                Assert.Same(snapshot, state.JsonRecordKeys);
+                Assert.Same(snapshot, state.JsonRecordLayout);
+                Assert.Equal(2, replacement.Count);
+                Assert.Same(retained, replacement.Keys.First());
                 Assert.Equal("retained-name", retained.AsString());
             }
             Assert.Equal(before, budget.ReservedBytes);

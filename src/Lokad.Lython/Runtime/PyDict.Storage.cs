@@ -4,11 +4,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class PyDict
 {
-    // Ordered payloads and bucket heads share one array. Payload writes must
-    // preserve the bucket head belonging to the destination's physical slot.
-    private struct NativeEntry
+    // Key metadata and bucket heads share one array; mutable row values are
+    // independent. Key-only sets need no value payload at all.
+    private struct NativeKey
     {
-        internal object? Key, Value;
+        internal object? Key;
         internal long Sequence;
         internal uint Hash;
         internal int Next, Bucket;
@@ -16,13 +16,22 @@ internal sealed partial class PyDict
     }
 
     // Null identifies a live namespace bridge, not an empty native table.
-    private NativeEntry[]? _nativeItems;
+    private NativeKey[]? _nativeItems;
+    private object?[]? _nativeValues;
     private int _nativeCount, _nativeProtocolCount;
     private long _nativeSequence;
     private long _nativeCommittedBytes;
     private const long NativeShellBytes = 192;
-    private const long NativeEntryBytes = 40;
-    private long NativeSlotBytes => NativeEntryBytes + (_keysOnly ? 64 : 128);
+    private const long NativeKeyBytes = 32;
+    private long NativeSlotBytes => NativeKeyBytes + (_keysOnly ? 64 : 136);
+    private int NativeExtent => _recordKeys is null ? _nativeCount : Math.Min(_recordKeys.Count, _nativeValues!.Length);
+    private bool IsNativeLive(int index) => _recordKeys is null ||
+        (uint)index < (uint)_nativeValues!.Length && _nativeValues[index] is not null;
+
+    private long NativeKeyStorageBytes(int capacity)
+        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + 96L * capacity);
+    private long NativeValueStorageBytes(int capacity)
+        => _keysOnly || capacity == 0 ? 0 : checked(32L + 72L * capacity);
 
     private static int NativeCapacity(int count)
     {
@@ -55,7 +64,8 @@ internal sealed partial class PyDict
         capacity = NativeCapacity(capacity);
         var bytes = checked(NativeShellBytes + (capacity == 0 ? 0 : EstimateNativeSlots(0, capacity)));
         using var initial = governor?.ReserveTemporary(bytes, span);
-        _nativeItems = capacity == 0 ? [] : new NativeEntry[capacity];
+        _nativeItems = capacity == 0 ? [] : new NativeKey[capacity];
+        _nativeValues = _keysOnly ? null : capacity == 0 ? [] : new object?[capacity];
         if (initial is not null)
         {
             initial.Commit(bytes);
@@ -97,29 +107,48 @@ internal sealed partial class PyDict
     internal void EnsureNativeCapacity(int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
         var previous = _nativeItems!;
-        if (targetCount <= previous.Length) return;
-        var capacity = NativeCapacity(targetCount);
+        if (_recordKeys is null && targetCount <= previous.Length) return;
+        var capacity = NativeCapacity(Math.Max(targetCount, _recordKeys is null ? previous.Length : _nativeValues!.Length));
         using var replacement = governor?.ReserveTemporary(checked(96L + NativeSlotBytes * capacity), span);
-        var items = new NativeEntry[capacity];
-        for (var index = 0; index < _nativeCount; index++)
-        {
-            PyStructuralGuard.NoteWork(null, span);
-            ref var entry = ref items[index];
-            entry.Key = previous[index].Key;
-            entry.Value = previous[index].Value;
-            entry.Hash = previous[index].Hash;
-            entry.Sequence = previous[index].Sequence;
-            entry.Protocol = previous[index].Protocol;
-            var bucket = NativeBucket(entry.Hash, capacity);
-            entry.Next = items[bucket].Bucket;
-            items[bucket].Bucket = index + 1;
-        }
+        governor?.ThrowIfAdmissionFailed();
+        PyStructuralGuard.AmbientContext?.CheckExecution(span);
+        // An admission callback can already have made this record private.
+        if (_recordKeys is null && targetCount <= _nativeItems!.Length) return;
+        previous = _nativeItems!;
+        var previousValueCapacity = _nativeValues?.Length ?? 0;
+        var shared = _recordKeys is not null;
+        var items = new NativeKey[capacity];
+        var values = _keysOnly ? null : new object?[capacity];
+        CopyNativeStorage(items, values, span);
         _nativeItems = items;
+        _nativeValues = values;
+        _recordKeys = null;
         if (replacement is not null)
         {
-            var bytes = EstimateNativeSlots(previous.Length, capacity);
+            // Shared keys keep their original cache/batch funding. Only private
+            // old storage is relinquished; both replacement arrays overlap it.
+            var bytes = NativeKeyStorageBytes(capacity) - (shared ? 0 : NativeKeyStorageBytes(previous.Length))
+                + NativeValueStorageBytes(capacity) - NativeValueStorageBytes(previousValueCapacity);
             replacement.Commit(bytes);
             _nativeCommittedBytes += bytes;
+        }
+    }
+
+    private void CopyNativeStorage(NativeKey[] items, object?[]? values, LythonSourceSpan? span)
+    {
+        var destination = 0;
+        for (var index = 0; index < NativeExtent; index++)
+        {
+            PyStructuralGuard.NoteWork(null, span);
+            if (!IsNativeLive(index)) continue;
+            var source = _nativeItems![index];
+            var head = items[destination].Bucket;
+            items[destination] = source;
+            items[destination].Bucket = head;
+            if (values is not null) values[destination] = _nativeValues![index];
+            var bucket = NativeBucket(source.Hash, items.Length);
+            items[destination].Next = items[bucket].Bucket;
+            items[bucket].Bucket = ++destination;
         }
     }
 
@@ -138,7 +167,7 @@ internal sealed partial class PyDict
         while (index >= 0)
         {
             ref var entry = ref items[index];
-            if (entry.Hash == hash && PyValueComparer.Instance.Equals(entry.Key, key)) return index;
+            if (IsNativeLive(index) && entry.Hash == hash && PyValueComparer.Instance.Equals(entry.Key, key)) return index;
             PyStructuralGuard.NoteWork(context, span ?? _allocationSpan);
             index = entry.Next - 1;
         }
@@ -148,7 +177,7 @@ internal sealed partial class PyDict
     private bool TryGetNativeValue(object key, [MaybeNullWhen(false)] out object value)
     {
         var index = FindNativeIndex(key);
-        value = index < 0 ? null : _nativeItems![index].Value!;
+        value = index < 0 ? null : ReadNativeValue(index);
         return index >= 0;
     }
 
@@ -164,13 +193,14 @@ internal sealed partial class PyDict
 
     private void AppendNativeItem(object key, object value, uint hash, bool protocol = false)
     {
-        EnsureNativeCapacity(checked(_nativeCount + 1), _memoryGovernor, _allocationSpan);
+        do { EnsureNativeCapacity(checked(_nativeCount + 1), _memoryGovernor, _allocationSpan); }
+        while (_recordKeys is not null || _nativeCount == _nativeItems!.Length);
         var items = _nativeItems!;
         var index = _nativeCount;
         var bucket = NativeBucket(hash, items.Length);
         ref var entry = ref items[index];
         entry.Key = key;
-        entry.Value = value;
+        StoreNativeValue(index, value);
         entry.Hash = hash;
         entry.Sequence = ++_nativeSequence;
         entry.Protocol = protocol;
@@ -184,7 +214,7 @@ internal sealed partial class PyDict
     {
         var index = FindNativeIndex(key);
         if (index < 0) return false;
-        _nativeItems![index].Value = value;
+        StoreNativeValue(index, value);
         return true;
     }
 
@@ -198,6 +228,14 @@ internal sealed partial class PyDict
 
     private void RemoveNativeAt(int index)
     {
+        if (_recordKeys is not null)
+        {
+            // A vacant value removes a shared key without modifying metadata,
+            // allocating or making native cleanup depend on admission.
+            _nativeValues![index] = null;
+            _nativeCount--;
+            return;
+        }
         var items = _nativeItems!;
         if (items[index].Protocol) _nativeProtocolCount--;
         var removed = index + 1;
@@ -238,7 +276,7 @@ internal sealed partial class PyDict
             var bucket = NativeBucket(source.Hash, items.Length);
             if (items[bucket].Bucket == from + 1) items[bucket].Bucket = from;
             destination.Key = source.Key;
-            destination.Value = source.Value;
+            _nativeValues![from - 1] = _nativeValues[from];
             destination.Hash = source.Hash;
             destination.Sequence = source.Sequence;
             destination.Protocol = source.Protocol;
@@ -246,7 +284,7 @@ internal sealed partial class PyDict
         }
         ref var last = ref items[--_nativeCount];
         last.Key = null;
-        last.Value = null;
+        _nativeValues![_nativeCount] = null;
         last.Hash = 0;
         last.Next = 0;
         last.Sequence = 0;
@@ -264,18 +302,20 @@ internal sealed partial class PyDict
     // Raw scans are live; Python iteration separately checks dictionary version.
     private IEnumerable<KeyValuePair<object, object>> NativeEntries()
     {
-        for (var index = 0; index < _nativeCount; index++)
-            yield return new(_nativeItems![index].Key!, _nativeItems[index].Value!);
+        for (var index = 0; index < NativeExtent; index++)
+            if (IsNativeLive(index)) yield return new(_nativeItems![index].Key!, ReadNativeValue(index));
     }
 
     private IEnumerable<object> NativeKeys()
     {
-        for (var index = 0; index < _nativeCount; index++) yield return _nativeItems![index].Key!;
+        for (var index = 0; index < NativeExtent; index++)
+            if (IsNativeLive(index)) yield return _nativeItems![index].Key!;
     }
 
     private IEnumerable<object> NativeValues()
     {
-        for (var index = 0; index < _nativeCount; index++) yield return _nativeItems![index].Value!;
+        for (var index = 0; index < NativeExtent; index++)
+            if (IsNativeLive(index)) yield return ReadNativeValue(index);
     }
 
     int IPyDictStorage.Count => _nativeItems is not null ? _nativeCount : _items.Count;
@@ -309,7 +349,12 @@ internal sealed partial class PyDict
     bool IPyDictStorage.Remove(object key) => _nativeItems is not null ? RemoveNativeItem(key) : _items.Remove(key);
     void IPyDictStorage.Clear()
     {
-        if (_nativeItems is not null) { Array.Clear(_nativeItems); _nativeCount = 0; _nativeProtocolCount = 0; }
+        if (_nativeItems is not null)
+        {
+            if (_recordKeys is null) Array.Clear(_nativeItems);
+            if (_nativeValues is not null) Array.Clear(_nativeValues);
+            _nativeCount = 0; _nativeProtocolCount = 0;
+        }
         else _items.Clear();
     }
     long IPyDictStorage.CommittedBytes => _nativeItems is not null ? _nativeCommittedBytes : _items.CommittedBytes;
@@ -319,11 +364,21 @@ internal sealed partial class PyDict
         var released = _nativeCommittedBytes;
         _nativeCommittedBytes = 0;
         _nativeItems = [];
+        _nativeValues = _keysOnly ? null : [];
+        _recordKeys = null;
         _nativeCount = 0;
         _nativeProtocolCount = 0;
         return released;
     }
 
+    private object ReadNativeValue(int index) => _nativeValues is null ? PyNone.Instance : _nativeValues[index]!;
+
+    private void StoreNativeValue(int index, object value)
+    {
+        if (_nativeValues is not null) _nativeValues[index] = value;
+    }
+
     private long EstimateNativeSlots(int previousCapacity, int newCapacity)
-        => NativeSlotBytes * (newCapacity - previousCapacity) + (previousCapacity == 0 ? 96L : 0L);
+        => NativeKeyStorageBytes(newCapacity) - NativeKeyStorageBytes(previousCapacity)
+            + NativeValueStorageBytes(newCapacity) - NativeValueStorageBytes(previousCapacity);
 }

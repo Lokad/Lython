@@ -32,6 +32,13 @@ first-origin propagation and reusable shared funding after cleanup.
 The same checks refuse set-entry metadata before publication. Reentrant set cases
 distinguish positive insertion equality from a current lookup/removal match and
 keep the stored-hash relation controls, including mutated dataclass fields.
+[Record compatibility](Lokad.Lython.PublicApi.Tests/RecordKeyCompatibilityTests.cs)
+compares JSON/CSV mutation, key order/identity, protocols, hooks and header edits
+with CPython. [Ownership checks](Lokad.Lython.Tests/RecordKeyOwnershipTests.cs)
+preserve independent values, retained key funding, refusal before insertion,
+cancelled replacement, admission-driven mutation and reuse after cleanup. A wide
+prior layout cannot force wide value storage for the next small record. Async
+hash/read controls also mutate shared records during genuinely suspended equality.
 [Nested error goldens](Lokad.Lython.PublicApi.Tests/UnhashableKeyOriginTests.cs)
 identify the failing value through slices, tuples, dataclasses and cache keys.
 Tuple queries also preserve earlier hash effects and errors before a later
