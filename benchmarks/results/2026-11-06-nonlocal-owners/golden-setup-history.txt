@@ -1,0 +1,1 @@
+Initial local golden setup rejected b'3072\r\n' versus b'3072\n' on Windows, exit0/no stderr. Corrected only stdout newline normalization for the local independent Python control. Report.csv remains an exact byte comparison; Linux worker verifies its original LF output/file goldens unchanged. No runtime/source change or VM sample discarded.

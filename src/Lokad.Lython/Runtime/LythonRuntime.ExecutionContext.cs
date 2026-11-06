@@ -28,12 +28,6 @@ internal sealed partial class LythonRuntime
             get => _postponedAnnotations ?? ParentContext?.PostponedAnnotations ?? false;
             set => _postponedAnnotations = value;
         }
-        // Resolution tables are built once in ResolveNonlocalTargets; every
-        // other path has no nonlocal names, so they share one empty table
-        // instead of allocating a dictionary per frame (never mutated:
-        // only TryGetNonlocalTarget reads it).
-        private static readonly Dictionary<string, ExecutionContext> EmptyNonlocalTargets = new(StringComparer.Ordinal);
-
         public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null)
         {
             var builtinVariables = CreateBuiltinVariables();
@@ -43,7 +37,6 @@ internal sealed partial class LythonRuntime
             InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = EmptyNonlocalTargets;
 
             var globals = options?.Globals;
             if (globals is null)
@@ -68,7 +61,6 @@ internal sealed partial class LythonRuntime
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         public static ExecutionContext CreateComprehension(ExecutionContext parent, ScopeDirectiveFacts? facts = null)
@@ -91,7 +83,6 @@ internal sealed partial class LythonRuntime
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = facts ?? ScopeDirectiveFacts.Empty;
-            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
@@ -101,37 +92,30 @@ internal sealed partial class LythonRuntime
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
-            NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
+            ValidateNonlocalTargets();
         }
 
-        private static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        private void ValidateNonlocalTargets()
         {
-            if (scopeFacts.NonlocalNames.Count == 0)
+            if (ScopeFacts.NonlocalNames.Count == 0) return;
+            foreach (var name in ScopeFacts.NonlocalNames)
             {
-                return EmptyNonlocalTargets;
+                State.CheckExecution(null);
+                if (FindNonlocalTarget(name) is null) throw RuntimeErrors.NameNotDefined(name, null);
             }
+        }
 
-            var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
-            foreach (var name in scopeFacts.NonlocalNames)
+        // Scope facts and lexical parent links are immutable. Executable reads
+        // use their captured cells; dynamic reads/stores need no per-call map.
+        private ExecutionContext? FindNonlocalTarget(string name)
+        {
+            for (var current = ParentContext; current?.ParentContext is not null; current = current.ParentContext)
             {
-                for (var current = parent; current is not null && current.ParentContext is not null; current = current.ParentContext)
-                {
-                    if (current.IsClassBody) continue;
-                    if (current.ScopeFacts.IsGlobal(name)) break;
-                    if (current.ScopeFacts.LocalNames.Contains(name))
-                    {
-                        targets[name] = current;
-                        break;
-                    }
-                }
-
-                if (!targets.ContainsKey(name))
-                {
-                    throw RuntimeErrors.NameNotDefined(name, null);
-                }
+                if (current.IsClassBody) continue;
+                if (current.ScopeFacts.IsGlobal(name)) break;
+                if (current.ScopeFacts.LocalNames.Contains(name)) return current;
             }
-
-            return targets;
+            return null;
         }
 
         public static ExecutionContext CreateModule(
@@ -172,7 +156,6 @@ internal sealed partial class LythonRuntime
             InitializeFrameVariables(CreateModuleVariables(scope.SourcePath, scope.Name));
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         private ExecutionContext(ExecutionContext parent, ClassBodyScope _, ScopeDirectiveFacts facts)
@@ -184,7 +167,7 @@ internal sealed partial class LythonRuntime
             SourcePath = parent.SourcePath;
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = facts;
-            NonlocalTargets = ResolveNonlocalTargets(ParentContext!, facts);
+            ValidateNonlocalTargets();
         }
 
         private readonly record struct ModuleScope(string? SourcePath, string Name);
@@ -250,8 +233,6 @@ internal sealed partial class LythonRuntime
 
         internal ScopeDirectiveFacts ScopeFacts { get; }
 
-        private Dictionary<string, ExecutionContext> NonlocalTargets { get; }
-
         private bool _executableSlotsActive;
         internal ExecutableFrameState? CurrentExecutableFrame => _executableSlotsActive ? this : null;
 
@@ -281,11 +262,14 @@ internal sealed partial class LythonRuntime
         public void SetDecimalContext(PyDecimalContext context) => State.DecimalContext = context;
 
         internal bool TryGetNonlocalTarget(string name, [MaybeNullWhen(false)] out ExecutionContext context)
-            => NonlocalTargets.TryGetValue(name, out context);
+        {
+            context = ScopeFacts.IsNonlocal(name) ? FindNonlocalTarget(name) : null;
+            return context is not null;
+        }
 
         internal bool TryReadNonlocalValue(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (NonlocalTargets.TryGetValue(name, out var target))
+            if (TryGetNonlocalTarget(name, out var target))
             {
                 if (target.CurrentExecutableFrame is { } frame && frame.TryResolveLocalOrClosure(name, out value)) return true;
                 if (target.Frame.TryGetVariable(name, out value) && !ReferenceEquals(value, UninitializedLocal)) return true;

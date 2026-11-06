@@ -1,0 +1,25 @@
+{
+  "status": "Final quiet gate failed; timings invalid for qualification",
+  "jobs": [
+    {
+      "case": "scripts.csv-nonlocal-summary.large",
+      "medianMilliseconds": {
+        "candidate": 4.80909896875,
+        "control": 4.887086741935484,
+        "CPython": 3.01078128,
+        "reference": 5.065368133333333
+      },
+      "qualified": false
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "medianMilliseconds": {
+        "candidate": 4.766692375,
+        "control": 5.018411766666667,
+        "CPython": 3.290608652173913,
+        "reference": 4.83812596875
+      },
+      "qualified": false
+    }
+  ]
+}

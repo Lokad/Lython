@@ -3012,3 +3012,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   slots/contiguous call packets/native graph reuse, with explicit snapshot/span
   fences and deletion milestone. Optimistic payload bounds are not a compiler,
   semantic validation or speedup. B207 implementation and timing remain open.
+
+- [Unified invocations, B312/B313/B314](results/2026-11-06-unified-invocations/README.md):
+  remove the separate interpreter object and detach relinquished workspace from
+  retained lexical contexts. Initial CSV allocation -1.77/-1.79%; final method
+  return diagnostic improves versus that prototype, not a broad CSV claim.
+- [Nonlocal ownership facts, B315/B316](results/2026-11-06-nonlocal-owners/README.md):
+  remove per-call owner maps. Focused Release passes both actual runtimes; affected
+  nested CSV elapsed -3.25/-3.94%, ordinary CSV flat/slightly adverse. Original
+  invalid final quiet gate and all samples preserved; one unchanged confirmation.

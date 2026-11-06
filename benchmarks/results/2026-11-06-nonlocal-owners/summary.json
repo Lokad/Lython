@@ -1,0 +1,44 @@
+{
+  "complete": true,
+  "elapsedSeconds": 59.35214759781957,
+  "timing": [
+    {
+      "case": "scripts.csv-nonlocal-summary.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.935182258064516,
+        "control": 4.900255806451613,
+        "CPython": 3.01010466,
+        "reference": 5.101122933333333
+      },
+      "ratio": 1.6395384265690336,
+      "referenceDeltaPercent": -3.2530224704932498,
+      "controlPercent": -0.707703379258795,
+      "iqrPercent": {
+        "candidate": 1.8752956471522813,
+        "control": 0.6331144134476646,
+        "CPython": 0.7170375265290366,
+        "reference": 1.1273125692429378
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.647769818181819,
+        "control": 4.7289781875,
+        "CPython": 3.228819191489362,
+        "reference": 4.639049363636364
+      },
+      "ratio": 1.4394642569124274,
+      "referenceDeltaPercent": 0.18797934365197833,
+      "controlPercent": 1.747254543469401,
+      "iqrPercent": {
+        "candidate": 1.7219063240001344,
+        "control": 0.6480952128519499,
+        "CPython": 0.8697455315032275,
+        "reference": 1.50034396088294
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "sourceBase": "ae3a5a5b",
+  "measuredCore": {
+    "candidate": "0050f188b0796de76f744075276cb2e5014f33b8c6b0563164036c5b73c6d450",
+    "control": "0050f188b0796de76f744075276cb2e5014f33b8c6b0563164036c5b73c6d450",
+    "reference": "6cb31a1ef8744b0fbdb72283a1f8d6884a109692251e02fef1f8b3444834b370"
+  },
+  "status": "Retained source simplification; focused Release complete, later than pending F03 CI",
+  "internalPerActualFramework": 56,
+  "publicPerActualFramework": 1801,
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "warnings": 0,
+  "errors": 0,
+  "removed": [
+    "NonlocalTargets per-context owner dictionary",
+    "Shared empty owner table",
+    "Eager owner-map construction"
+  ],
+  "preserved": "Eager invalid-target validation and Python error; immutable class/global lexical barriers; executable cells, dynamic locals/reads/writes/deletes and StoreName synchronization; retained owners, cancellation and terminal refusal.",
+  "contractChanges": "No public/Python change. Validation uses existing CheckExecution before each declared name; no new limit, owner, cache or collector.",
+  "limitation": "Potential variable-size admission gap remains an unproven concern; no broad ownership audit. No allocation or causalCPU claim. Whole-script objective active."
+}

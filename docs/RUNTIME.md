@@ -206,6 +206,9 @@ Executable state lives on its invocation's lexical context; a separate interpret
 object is unnecessary. Terminal cleanup finishes pending users, then detaches
 operand storage, private caches, handler records and caller references. Closures
 can retain that context's names and cells without retaining refunded workspace.
+Nonlocal ownership comes from immutable scope facts and lexical parent links;
+invocations do not rebuild a separate owner dictionary. Executable reads use
+captured cells, and dynamic reads and writes resolve the same lexical owners.
 Suspended generators keep their state until completion and own one context handle.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working
