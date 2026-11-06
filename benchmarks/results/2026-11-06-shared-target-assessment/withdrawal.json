@@ -1,0 +1,18 @@
+{
+  "decision": "Withdraw both target-forwarding prototypes; architecture gain insufficient for extra branches/handlers and CSV CPU debt; not a permanent ban or percentage veto",
+  "source": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": {
+      "prototypeSHA256": "40daed94f3ab4121e6e4b375db948404834ef5a3afe312165c8addb3167ff7ed",
+      "restoredNormalizedSHA256": "ca1cd2b0d1ab3d83f718549ff0fdd4d42c9147feb1bf0642a777ffe5852d9912",
+      "freshTimestamp": 1793988872.6335304
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": {
+      "prototypeSHA256": "cf0bb25491353bf3bb5a171385b3d0f6065416004635a2a1c128e99b5d0ff9de",
+      "restoredNormalizedSHA256": "92f79be34ed467b0c6fc4c1467833eab9571126eed4e8d0f4880426be4928eec",
+      "freshTimestamp": 1793988872.6815426
+    }
+  },
+  "sourceRestoredWithoutPreservingTimestamps": true,
+  "noLiveOwnedVMWork": true,
+  "noCIReplayRequiredForUnchangedRuntime": true
+}

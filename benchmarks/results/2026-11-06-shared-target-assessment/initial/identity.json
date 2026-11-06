@@ -1,0 +1,43 @@
+{
+  "sourceRevision": "7f266368 plus R18 shared subscript target execution; patch/snapshot authoritative",
+  "referenceSourceRevision": "b6650f09; B352 frozen fully qualified core54b53c7f",
+  "coreSHA256": {
+    "candidate": "b82dc5fc555c9b0ac88d1820ac96b9ebb334949ffd482e97a64680a5060b1bc5",
+    "control": "b82dc5fc555c9b0ac88d1820ac96b9ebb334949ffd482e97a64680a5060b1bc5",
+    "reference": "54b53c7f5dfac5558ed9ce953a252e02846ba47975ada633a194026018610e15"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "build-Lokad.Lython.Tests": {
+      "exitCode": 0
+    },
+    "build-Lokad.Lython.PublicApi.Tests": {
+      "exitCode": 0
+    },
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 114
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 232
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 114
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 232
+    },
+    "coreSHA256": {
+      "net11.0": "b82dc5fc555c9b0ac88d1820ac96b9ebb334949ffd482e97a64680a5060b1bc5",
+      "net10.0": "948e801cc83c88c210cf3206a450acc6aa5111d8b234cdb08fad28ef38c2533c"
+    }
+  },
+  "deletedSourceFiles": [
+    "src/Lokad.Lython/Runtime/IPyGovernedValue.cs"
+  ],
+  "purpose": "Coherent R13C/R14/R17/P01 delivery CPython refresh, not a new source-pair optimization"
+}

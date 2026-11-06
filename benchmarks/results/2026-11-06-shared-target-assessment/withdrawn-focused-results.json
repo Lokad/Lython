@@ -1,0 +1,24 @@
+{
+  "build-Lokad.Lython.Tests": {
+    "exitCode": 0
+  },
+  "build-Lokad.Lython.PublicApi.Tests": {
+    "exitCode": 0
+  },
+  "Lokad.Lython.Tests-net11.0": {
+    "passed": 114
+  },
+  "Lokad.Lython.PublicApi.Tests-net11.0": {
+    "passed": 232
+  },
+  "Lokad.Lython.Tests-net10.0": {
+    "passed": 114
+  },
+  "Lokad.Lython.PublicApi.Tests-net10.0": {
+    "passed": 232
+  },
+  "coreSHA256": {
+    "net11.0": "f9d2fb9c4d5abfec05c13b41adbec3d35a9bbdc8064f00611c923791a77409b1",
+    "net10.0": "c4df57cb293d6acb4dd2e9fcdcd3f9c7443c1ea6fc8a3542910d5985627509ec"
+  }
+}

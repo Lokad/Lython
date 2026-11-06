@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [shared-target forwarding assessment](results/2026-11-06-shared-target-assessment/README.md)
+withdraws both prototypes after complete113s source pairs. Initial text−4–5%
+did not recur in the refinement; refined JSON improves4.7–5.4%, CSV stays mixed
+with coarse adverse CPU, and compilation controls are adverse. Added forwarding/
+branch complexity is not justified. Both candidates and restored source pass
+114internal/232public per actual11/10; normalized production source is unchanged.
+Raw adverse conditions, bounded refinement and setup corrections remain archived.
+
+
 The [b6650f09 delivery comparison](results/2026-11-06-delivery-cpython/README.md)
 refreshes compile/warm/fresh against CPython for four large scripts and the existing
 small configuration edit.15jobs/311.43s, two identical current roles, all goldens,
