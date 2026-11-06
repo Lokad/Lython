@@ -71,7 +71,7 @@ continuation tests bound deep/cyclic hashes through managed admission and recove
 Full local.NET11 passes4,227 internal/16,137 public before the two additional depth
 cases; those separately pass with the ownership family (18cases) on both actual
 runtimes. Production source is unchanged. Full platform/originalStress/installed
-qualification remains pending;51db4209's closed receipt excludes Q02.
+qualification passes on2adf73f3; exact terminal receipt below excludes R07.
 
 [Initial contract/source/raw data](initial/), [refinement](refined/),
 [validation](validation.json), [focused/build/full logs](focused-checks.tgz).
@@ -84,6 +84,6 @@ No live comparison work remains; publication/tagging postponed.
 
 Committed/pushed2adf73f3 contains the recorded refined runtime sources. Both
 installed Release consumers pass on the actual.NET11/10 runtimes. Exact source
-and scope: validation.json; package-consumer.log. CI42180013420 is running for
-Windows/Ubuntu, both runtimes, originalStress and installed consumers. Pending
-qualification is not a green receipt. Earlier51db4209 is closed and never rechecked.
+and scope: validation.json; package-consumer.log. Cached terminal CI42180013420 is GREEN/all eight
+Windows/Ubuntu, both-runtime, originalStress and installed-consumer gates.
+[Exact receipt](delivery-ci.json). Never query the closed run again; R07 excluded.

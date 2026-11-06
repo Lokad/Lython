@@ -1,5 +1,5 @@
 {
-  "status": "Committed/pushed2adf73f3. Focused both actual runtimes, full local.NET11 plus added depth checks, and both installed Release consumers pass. Windows/Ubuntu both-runtime originalStress/package CI42180013420 running; not fully qualified.",
+  "status": "Fully qualified on committed2adf73f3: focused both actual runtimes, full local.NET11 plus added depth checks, both installed Release consumers and cached42180013420 GREEN/all eight Windows/Ubuntu/runtime/originalStress/package gates. Excludes R07.",
   "sourceBase": "9d926e7d plus recorded runtime source hashes/patch; frozenf37ef01a",
   "focusedPerActualRuntime": {
     "public": 1012,
@@ -24,5 +24,6 @@
     "net10.0 actual.NET10.0.8"
   ],
   "deliveryRunId": 42180013420,
-  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42180013420"
+  "deliveryUrl": "https://github.com/Lokad/Lython/actions/runs/42180013420",
+  "deliveryReceipt": "delivery-ci.json"
 }
