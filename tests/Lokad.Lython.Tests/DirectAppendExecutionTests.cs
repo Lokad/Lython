@@ -198,7 +198,7 @@ public sealed class DirectAppendExecutionTests
 
     private static object[] Operands(object frame)
     {
-        var stack = frame.GetType().GetField("_stack", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(frame)!;
+        var stack = ((LythonRuntime.ExecutionContext)frame)._execution.Stack;
         var items = (object[])stack.GetType().GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
         var count = (int)stack.GetType().GetProperty("LiveExtent")!.GetValue(stack)!;
         if (items is null)
@@ -206,9 +206,9 @@ public sealed class DirectAppendExecutionTests
             // A completed invocation detaches its entire working state. The
             // surviving lexical context must retain neither slots nor code.
             Assert.Equal(0, count);
-            var fields = BindingFlags.Instance | BindingFlags.NonPublic;
-            Assert.Empty((object[])typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", fields)!.GetValue(frame)!);
-            Assert.Null(typeof(LythonRuntime.ExecutableFrameState).GetField("_codeObject", fields)!.GetValue(frame));
+
+            Assert.Empty(((LythonRuntime.ExecutionContext)frame)._execution.Locals);
+            Assert.Null(((LythonRuntime.ExecutionContext)frame!)._execution.Code);
             return [];
         }
         var first = (int)stack.GetType().GetField("_firstTemporarySlot", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(stack)!;
@@ -220,7 +220,7 @@ public sealed class DirectAppendExecutionTests
         internal int Calls;
         internal object Value { get; } = new();
         internal object? LastArgument;
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
@@ -233,7 +233,7 @@ public sealed class DirectAppendExecutionTests
     private sealed class SuspendedArgument : LythonRuntime.ICallable
     {
         internal object Value { get; init; } = new();
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         internal int Calls;
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

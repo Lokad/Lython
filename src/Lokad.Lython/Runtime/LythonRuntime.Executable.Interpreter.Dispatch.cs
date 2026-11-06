@@ -17,11 +17,11 @@ internal sealed partial class LythonRuntime
         {
             pending = default;
             pendingSpan = default;
-            var instructions = _codeObject.Instructions;
-            while (_instructionIndex < instructions.Length)
+            var instructions = _execution.Code.Instructions;
+            while (_execution.InstructionIndex < instructions.Length)
             {
                 var jumped = false;
-                ref readonly var instruction = ref instructions[_instructionIndex];
+                ref readonly var instruction = ref instructions[_execution.InstructionIndex];
                 State.CheckExecution(instruction.Span);
                 try
                 {
@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.LoadLocal:
                             PublishInstructionResult(instruction,
-                                LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, this));
+                                LoadLocal(_execution.Code, _execution.Locals, instruction.LocalSlot, instruction.Span, this));
                             break;
                         case ExecutableOpCode.StoreLocal:
                             StoreExecutableLocal(instruction);
@@ -68,10 +68,10 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Yield:
-                            YieldValue = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                            YieldValue = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                             HasYield = true;
                             _waitingForSend = true;
-                            _instructionIndex++;
+                            _execution.InstructionIndex++;
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.YieldFrom:
                             if (asynchronous)
@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                             {
                                 if (_delegation is null)
                                 {
-                                    var source = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                                    var source = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
                                     _delegation = new GeneratorDelegation(Iter([source], instruction.Span, this), this, instruction.Span);
                                 }
                                 CompleteDelegatedStep(_delegation.Advance(_sentValue, _injectedException), instruction);
@@ -154,9 +154,9 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Subscript:
                             if (TrySuspendForTypeSubscription(instruction)) return InstructionPause.Boundary;
                             // Evaluate the key before inspecting protocol-key state.
-                            if (!asynchronous || (_stack[instruction.InputStart + 1] is BigInteger &&
-                                 _stack[instruction.InputStart] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
-                                (_stack[instruction.InputStart] is PyDict dictionary && dictionary.CanReadKeySynchronously(_stack[instruction.InputStart + 1])))
+                            if (!asynchronous || (_execution.Stack[instruction.InputStart + 1] is BigInteger &&
+                                 _execution.Stack[instruction.InputStart] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
+                                (_execution.Stack[instruction.InputStart] is PyDict dictionary && dictionary.CanReadKeySynchronously(_execution.Stack[instruction.InputStart + 1])))
                                 ExecuteOperandValueOperation(instruction);
                             else
                             {
@@ -166,13 +166,13 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.ForNext:
-                            if (_stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
+                            if (_execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
                             {
                                 if (nativeNext.HasValue) PublishInstructionResult(instruction, nativeNext.Value);
                                 else
                                 {
-                                    _ = _stack.TakeValue(instruction.InputStart, instruction.InputStart);
-                                    _instructionIndex = instruction.TargetIndex;
+                                    _ = _execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
+                                    _execution.InstructionIndex = instruction.TargetIndex;
                                     jumped = true;
                                 }
                             }
@@ -185,9 +185,9 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.Call:
-                            var call = _codeObject.CallSites[instruction.CallSiteIndex];
+                            var call = _execution.Code.CallSites[instruction.CallSiteIndex];
                             var callStart = instruction.InputStart;
-                            var target = _stack[callStart + call.TargetOffset];
+                            var target = _execution.Stack[callStart + call.TargetOffset];
                             if (TrySuspendForExecutableCall(call, callStart, target)) return InstructionPause.Boundary;
                             if (!asynchronous) ExecuteOrdinaryCall(call, callStart, target, false).GetAwaiter().GetResult();
                             else
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.GetIter:
-                            if (_stack.TryPrepareNativeIteration(instruction.InputStart, instruction.Span)) break;
+                            if (_execution.Stack.TryPrepareNativeIteration(instruction.InputStart, instruction.Span)) break;
                             if (!asynchronous) ExecuteValueOperation(instruction);
                             else
                             {
@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
                             ExecuteValueOperation(instruction);
                             break;
                         case ExecutableOpCode.JumpIfFalse:
-                            if (!asynchronous || _stack[instruction.InputStart] is not PyInstance)
+                            if (!asynchronous || _execution.Stack[instruction.InputStart] is not PyInstance)
                                 jumped = ExecuteControlFlow(instruction);
                             else
                             {
@@ -254,13 +254,13 @@ internal sealed partial class LythonRuntime
                     jumped = true;
                 }
 
-                if (asynchronous && _stack.HasPendingDisposals)
+                if (asynchronous && _execution.Stack.HasPendingDisposals)
                 {
                     pending = new(jumped);
                     return InstructionPause.Disposal;
                 }
                 if (_hasFrameReturn) return InstructionPause.Boundary;
-                if (!jumped) _instructionIndex++;
+                if (!jumped) _execution.InstructionIndex++;
             }
             return InstructionPause.Boundary;
         }

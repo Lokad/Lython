@@ -13,7 +13,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed partial class ExecutionContext : ExecutableFrameState
+    internal sealed partial class ExecutionContext : ExecutionFrame
     {
 
         internal PyDict? GlobalNamespace;
@@ -234,7 +234,7 @@ internal sealed partial class LythonRuntime
         internal ScopeDirectiveFacts ScopeFacts { get; }
 
         private bool _executableSlotsActive;
-        internal ExecutableFrameState? CurrentExecutableFrame => _executableSlotsActive ? this : null;
+        internal ExecutionContext? CurrentExecutableFrame => _executableSlotsActive ? this : null;
 
         // Set once a lambda is born below this frame: executable locals live in
         // slots that vanish on return, so flagged frames also mirror slot stores
@@ -291,10 +291,10 @@ internal sealed partial class LythonRuntime
             _executableSlotsActive = false;
         }
 
-        internal new bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
+        internal bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
         {
             if (TryGetInlinedBinding(name, out var scope)) return scope.Frame.TryGetVariable(name, out value);
-            return CurrentExecutableFrame is { } frame ? frame.TryResolveOwnLocal(name, out value) : Frame.TryGetVariable(name, out value);
+            return CurrentExecutableFrame is { } frame ? frame.TryReadExecutableLocal(name, out value) : Frame.TryGetVariable(name, out value);
         }
 
         internal bool TryResolveImplicitClassValue([MaybeNullWhen(false)] out object value)

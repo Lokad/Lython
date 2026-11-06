@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
@@ -85,8 +84,7 @@ public sealed class CompletedInvocationLifetimeTests
         {
             Context = context; // keep the lexical context itself alive after return
             var frame = context.CurrentExecutableFrame!;
-            var values = (object[])typeof(LythonRuntime.ExecutableFrameState)
-                .GetField("_locals", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(frame)!;
+            var values = frame._execution.Locals;
             Workspace = new(values);
             return PyNone.Instance;
         }

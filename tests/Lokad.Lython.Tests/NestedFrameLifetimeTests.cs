@@ -78,12 +78,12 @@ public sealed class NestedFrameLifetimeTests
     private sealed class Observe : LythonRuntime.ICallable
     {
         internal Context? Context;
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Context = context;
-            Frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
-            Assert.True(Frame.TryResolveOwnLocal("seed", out var seed));
+            Frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(context.CurrentExecutableFrame);
+            Assert.True(Frame.TryReadExecutableLocal("seed", out var seed));
             Assert.Equal(new BigInteger(9), seed);
             return PyNone.Instance;
         }
@@ -97,9 +97,9 @@ public sealed class NestedFrameLifetimeTests
         internal void CheckParent()
         {
             Assert.Same(parent.Frame, parent.Context!.CurrentExecutableFrame);
-            Assert.True(parent.Frame!.TryResolveOwnLocal("seed", out var seed));
+            Assert.True(parent.Frame!.TryReadExecutableLocal("seed", out var seed));
             Assert.Equal(new BigInteger(9), seed);
-            Assert.True(parent.Frame.TryResolveOwnLocal("marker", out var marker));
+            Assert.True(parent.Frame.TryReadExecutableLocal("marker", out var marker));
             Assert.Equal(new BigInteger(10), marker);
         }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)

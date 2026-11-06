@@ -1,0 +1,67 @@
+{
+  "status": "R13 A foundation only; no context-skipping execution path/performance claim. R13 B source/implementation/comparison/delivery remains active.",
+  "sourceBase": "1b9ae3cf, production runtime88f12099",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "957542fe1c087dc43a42ec6e7665accfd3157091716c9ee4312da6a4f6830ffe",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "486aa85ef2a114f1e34cd89cbd27dd09ebcc518731e557fd353b71104474a020",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "73d0daa51bdd46b48eeea8af074ed5d98bfb193ec1df553225400be7a7aa17a1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "7bc47f9a659c6b353d338a1663f66e3ec11993a4e1fcd8f8964882368d32775c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs": "0120c5dd37fdbf9c4420a8211ce362c1e5b32888414d5ec903981b51cead12a1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "2bc7549dfbc1127db2607942f96a9887f102bd72558b3bd9aadc3a3de326c583",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "877b3fadf281523245f7d60649ea6b813507f201a6b374fa91cbb898a77503df",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedDefinitions.cs": "2c0c586325ae26f8faac7d12e8e5199e94dd4cd72c722d1870bfd25aa5946763",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "c6273d57f82bcef196fe977a5300d10f63a14b7ceaa5e51b56bae2ac9e1b5b76",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "19c516e1c7f016ebf8e355f0efae13fc4033da11204aad5ce218d4f369fadc71",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "07fc3b4af59ecfd9afd4f4bedc70387f1525a05829e27b8123b13a54e221e480",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "0af213818a15031bbf315a6663d7be513782b364343b1aaa558d6f21bce1fc5d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "24cb9e3296c1134b3ec1d9211942b72909ef223bc0d02aa40432251cc67f8cc0",
+    "tests/Lokad.Lython.Tests/AsyncExecutableFunctionTests.cs": "ed75dd961cde363319909f3a8274d0a02835e536943080bb06047faa2a9717ee",
+    "tests/Lokad.Lython.Tests/CompletedInvocationLifetimeTests.cs": "1ee5475962debde7d994a5a5b7cb3d40896ca201213c7e824742715f6d5bb017",
+    "tests/Lokad.Lython.Tests/DirectAppendExecutionTests.cs": "fe56b6fc30792fea894effeec8322d1b0be33e81637d10ce03e9cfa922f32b09",
+    "tests/Lokad.Lython.Tests/DirectDictionaryGetTests.cs": "3f11b0c21b77abe7abb8a91893aa98a332abea925b2c1cbbafe5551007f815e7",
+    "tests/Lokad.Lython.Tests/DirectStringJoinTests.cs": "ce71f6afbf9a5fa7390e2b8e09ec4a449faa985a4e7c85106882ea4e8e4d7ed3",
+    "tests/Lokad.Lython.Tests/DirectStringLowerTests.cs": "a67aa01add7dd8febdd89db2096c5d86863aece6585782e07e7c69003d45a0bb",
+    "tests/Lokad.Lython.Tests/DirectStringSplitTests.cs": "53de539da24974bf8a5d3f51b113bccc5e7d9504b88376e9da18a965346980cb",
+    "tests/Lokad.Lython.Tests/DirectStringStartsWithTests.cs": "36ea5c10a4d7bddda16aba7c6fe1e1c015b9d0b07a9f7348eef013bbf42fb33b",
+    "tests/Lokad.Lython.Tests/DirectStringStripTests.cs": "dc67962e7122749a9e99b90df2bf2ecdd776995056785840ddeabe82b75f0e87",
+    "tests/Lokad.Lython.Tests/ExecutableCallTransferTests.cs": "927497076c8f350c834524e157411dc56fa62d21427c08e256af2de0eb79f11d",
+    "tests/Lokad.Lython.Tests/ExecutableValueTransferTests.cs": "44fdfcfa1eed0f4733786087b795067d7e23b34becd5e8a75d33190324f21ec8",
+    "tests/Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs": "a66a750f4f8ad2f6b8733d2bd4f4f766af881c2fa6a4ef3e38b1158d9565df4c",
+    "tests/Lokad.Lython.Tests/NestedFrameLifetimeTests.cs": "81889895b263a68aa2f1134294c763ac33cf623796e6309dda557cb742e8d627",
+    "tests/Lokad.Lython.Tests/OwnedFunctionLocalsTests.cs": "53db79546b4decb90d6d6f79fb5881f9a8fc164f9430a15ba8711d3d1152cfbf",
+    "tests/Lokad.Lython.Tests/PositionalCallTransportTests.cs": "e91d78f191f0513696d456f4a8d72bcf77f9a3eef9795f0feb0e264d31bebb50"
+  },
+  "focused": {
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 1593,
+      "coreSHA256": "816461d475615b72e98f303a82ad327778bee4280ad3ab5a073879451de9bb51"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 4200,
+      "coreSHA256": "816461d475615b72e98f303a82ad327778bee4280ad3ab5a073879451de9bb51"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 1593,
+      "coreSHA256": "4f094db8af671550eb22187b8cf0bdb60a4dca9e786dbc2f95b4362bc1e1d31e"
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 4200,
+      "coreSHA256": "4f094db8af671550eb22187b8cf0bdb60a4dca9e786dbc2f95b4362bc1e1d31e"
+    }
+  },
+  "removed": [
+    "ExecutableFrameState type",
+    "three pass-through frame constructors",
+    "distributed code/locals/cell/operand/IP field declarations",
+    "hidden same-signature local lookup dispatch"
+  ],
+  "preserved": [
+    "one lexical/current context identity",
+    "one inline mutable work state",
+    "native-return/UTF8 formatting paths",
+    "live operand/reference/tail inspections",
+    "cancellation/refusal/retained aliases/actual async cleanup"
+  ],
+  "fullDelivery": "Deferred to coherent R13 B boundary; terminal42208020544 covers source88 only.",
+  "publication": "postponed"
+}

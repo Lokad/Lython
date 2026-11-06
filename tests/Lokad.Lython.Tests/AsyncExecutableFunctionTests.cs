@@ -44,7 +44,7 @@ public sealed class AsyncExecutableFunctionTests
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
             Assert.NotNull(tap.Frame?.CurrentExecutableFrame);
-            Assert.True(tap.Frame!.TryResolveOwnLocal("a", out var a));
+            Assert.True(tap.Frame!.TryReadExecutableLocal("a", out var a));
             Assert.Equal(new BigInteger(7), a);
             tap.Release.TrySetResult();
             if (fail) Assert.Equal("ValueError", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).ExceptionType);
@@ -76,8 +76,8 @@ public sealed class AsyncExecutableFunctionTests
         try
         {
             await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(tap.Frame!.CurrentExecutableFrame);
-            Assert.True(frame.TryResolveOwnLocal("g", out var previous));
+            var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(tap.Frame!.CurrentExecutableFrame);
+            Assert.True(frame.TryReadExecutableLocal("g", out var previous));
             Assert.Equal(new BigInteger(42), previous);
             tap.Release.TrySetCanceled();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);

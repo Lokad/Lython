@@ -3189,3 +3189,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 ## Current allocation/lifecycle gate (2026-11-06)
 
 [R12/B345 origins](results/2026-11-06-current-allocation/README.md): two complete maintained scripts,256 jobs each/1.886s capture, all source/quiet/golden/funding/cleanup gates. Current CSV context allocations remain visible (sampled424B objects); text is dominated by token storage rather than contexts. Approximate triggering-type attribution is not CPU/exact/live evidence. Original B344 CRLF launch failure preserved. Select shared executable work-state/context-on-demand source proof; do not replay slower caller records, arenas or shared CSV-key machinery.
+
+## Shared executable work state (2026-11-06)
+
+[R13 A foundation](results/2026-11-06-executable-work-state/README.md) removes the redundant frame base/pass-through constructors and groups mutable execution state without a new heap object or route. Distinct slot/lexical local reads preserve the old hidden-method semantics. Focused1,593 internal/4,200 public per actual runtime pass. No native prefix or performance claim; context-on-demand implementation/qualification remains active.

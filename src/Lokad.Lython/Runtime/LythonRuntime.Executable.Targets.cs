@@ -19,10 +19,10 @@ internal sealed partial class LythonRuntime
                 {
                     case ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast:
                     {
-                        var receiver = _stack[first + (instruction.ValueLast ? 0 : 1)];
-                        var value = _stack[first + (instruction.ValueLast ? 1 : 0)];
-                        var name = _codeObject.Names[instruction.NameIndex];
-                        var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
+                        var receiver = _execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
+                        var value = _execution.Stack[first + (instruction.ValueLast ? 1 : 0)];
+                        var name = _execution.Code.Names[instruction.NameIndex];
+                        var targetSpan = (LythonSourceSpan)_execution.Code.Constants[instruction.TargetSpanIndex]!;
                         if (asynchronous)
                             mutation = CompleteMemberMutation(PyMemberAccess.TryAssignAsync(receiver, name, value, this, targetSpan),
                                 receiver, name, targetSpan, deleting: false);
@@ -31,10 +31,10 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
                     {
-                        var receiver = _stack[first + (instruction.ValueLast ? 0 : 1)];
-                        var key = _stack[first + (instruction.ValueLast ? 1 : 2)];
-                        var value = _stack[first + (instruction.ValueLast ? 2 : 0)];
-                        var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
+                        var receiver = _execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
+                        var key = _execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
+                        var value = _execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
+                        var targetSpan = (LythonSourceSpan)_execution.Code.Constants[instruction.TargetSpanIndex]!;
                         if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, key, value, targetSpan, this);
                         else SetSubscriptValue(receiver, key, value, targetSpan, this);
                         break;
@@ -45,10 +45,10 @@ internal sealed partial class LythonRuntime
                         try
                         {
                             read = asynchronous
-                                ? ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, this)
-                                : new(ReadSubscriptValue(_stack[first], _stack[first + 1], span, this));
+                                ? ReadLoweredSubscriptAsync(_execution.Stack[first], _execution.Stack[first + 1], span, this)
+                                : new(ReadSubscriptValue(_execution.Stack[first], _execution.Stack[first + 1], span, this));
                         }
-                        catch { _stack.RetireTo(first); throw; }
+                        catch { _execution.Stack.RetireTo(first); throw; }
                         return CompleteTargetRead(read, instruction);
                     }
                     case ExecutableOpCode.ReadRetainedSlice:
@@ -56,33 +56,33 @@ internal sealed partial class LythonRuntime
                         ValueTask<object> read;
                         try
                         {
-                            var receiver = _stack[first];
-                            var start = _stack[first + 1];
-                            var stop = _stack[first + 2];
-                            var step = _stack[first + 3];
+                            var receiver = _execution.Stack[first];
+                            var start = _execution.Stack[first + 1];
+                            var stop = _execution.Stack[first + 2];
+                            var step = _execution.Stack[first + 3];
                             if (receiver is PyInstance instance)
                             {
                                 var key = CreateSliceValue(start, stop, step, span, this);
                                 // Retain this exact key through RHS and augmented store.
-                                _stack[first + 1] = key;
+                                _execution.Stack[first + 1] = key;
                                 read = asynchronous ? GetUserItemAsync(instance, key, this, span)
                                     : new(GetUserItem(instance, key, this, span));
                             }
                             else read = asynchronous ? ReadSliceValueAsync(receiver, start, stop, step, span, this)
                                 : new(ReadSliceValue(receiver, start, stop, step, span, this));
                         }
-                        catch { _stack.RetireTo(first); throw; }
+                        catch { _execution.Stack.RetireTo(first); throw; }
                         return CompleteTargetRead(read, instruction);
                     }
                     case ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast:
                     {
                         var receiverIndex = first + (instruction.ValueLast ? 0 : 1);
-                        var receiver = _stack[receiverIndex];
-                        var start = _stack[receiverIndex + 1];
-                        var stop = _stack[receiverIndex + 2];
-                        var step = _stack[receiverIndex + 3];
-                        var value = _stack[first + (instruction.ValueLast ? 4 : 0)];
-                        var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
+                        var receiver = _execution.Stack[receiverIndex];
+                        var start = _execution.Stack[receiverIndex + 1];
+                        var stop = _execution.Stack[receiverIndex + 2];
+                        var step = _execution.Stack[receiverIndex + 3];
+                        var value = _execution.Stack[first + (instruction.ValueLast ? 4 : 0)];
+                        var targetSpan = (LythonSourceSpan)_execution.Code.Constants[instruction.TargetSpanIndex]!;
                         if (instruction.ValueLast && receiver is PyInstance)
                         {
                             if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, (PySlice)start, value, targetSpan, this);
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
                     }
                     case ExecutableOpCode.UnpackValues:
                     {
-                        var value = _stack.TakeValue(first, instruction.ResultSlot);
+                        var value = _execution.Stack.TakeValue(first, instruction.ResultSlot);
                         if (asynchronous)
                             return CompleteTargetUnpack(MaterializeHeaderSequenceAsync(value, span, this,
                                 instruction.UnpackLayout.MaximumReadCount), instruction);
@@ -103,33 +103,33 @@ internal sealed partial class LythonRuntime
                         return default;
                     }
                     case ExecutableOpCode.FailAssertion:
-                        ThrowAssertionError(instruction.HasAssertionMessage ? _stack.TakeValue(first, instruction.LiveExtent) : null, this, span);
+                        ThrowAssertionError(instruction.HasAssertionMessage ? _execution.Stack.TakeValue(first, instruction.LiveExtent) : null, this, span);
                         return default;
                     case ExecutableOpCode.Raise:
-                        var cause = instruction.HasRaiseCause ? _stack.TakeValue(first + 1, first + 1) : null;
-                        ThrowRaisedValue(_stack.TakeValue(first, instruction.LiveExtent), instruction.HasRaiseCause, cause, this, span);
+                        var cause = instruction.HasRaiseCause ? _execution.Stack.TakeValue(first + 1, first + 1) : null;
+                        ThrowRaisedValue(_execution.Stack.TakeValue(first, instruction.LiveExtent), instruction.HasRaiseCause, cause, this, span);
                         return default;
                     case ExecutableOpCode.DeleteName:
-                        var deletedName = _codeObject.Names[instruction.NameIndex];
+                        var deletedName = _execution.Code.Names[instruction.NameIndex];
                         if (!DeleteName(deletedName, this, span)) throw MissingDeletedName(deletedName, this, span);
                         return default;
                     case ExecutableOpCode.DeleteMember:
                     {
-                        var receiver = _stack[first];
-                        var name = _codeObject.Names[instruction.NameIndex];
+                        var receiver = _execution.Stack[first];
+                        var name = _execution.Code.Names[instruction.NameIndex];
                         mutation = CompleteMemberMutation(asynchronous ? PyMemberAccess.TryDeleteAsync(receiver, name, this, span)
                             : new(PyMemberAccess.TryDelete(receiver, name, this, span)), receiver, name, span, deleting: true);
                         break;
                     }
                     case ExecutableOpCode.DeleteSubscript:
-                        if (asynchronous) mutation = ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, this);
-                        else DeleteSubscriptValue(_stack[first], _stack[first + 1], span, this);
+                        if (asynchronous) mutation = ExecuteResolvedSubscriptDeletionAsync(_execution.Stack[first], _execution.Stack[first + 1], span, this);
+                        else DeleteSubscriptValue(_execution.Stack[first], _execution.Stack[first + 1], span, this);
                         break;
                     case ExecutableOpCode.DeleteSlice:
                     {
-                        var (start, stop, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, first + 1);
-                        if (asynchronous) mutation = ExecuteSliceDeletionAsync(_stack[first], start, stop, step, span, this);
-                        else ExecuteSliceDeletion(_stack[first], start, stop, step, span, this);
+                        var (start, stop, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, first + 1);
+                        if (asynchronous) mutation = ExecuteSliceDeletionAsync(_execution.Stack[first], start, stop, step, span, this);
+                        else ExecuteSliceDeletion(_execution.Stack[first], start, stop, step, span, this);
                         break;
                     }
                     default: throw new InvalidOperationException("Unexpected executable target instruction.");
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
                     or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
                     or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
                     or ExecutableOpCode.DeleteMember or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice)
-                    _stack.RetireTo(instruction.LiveExtent);
+                    _execution.Stack.RetireTo(instruction.LiveExtent);
                 throw;
             }
             return CompleteTargetMutation(mutation, instruction.LiveExtent);
@@ -154,28 +154,28 @@ internal sealed partial class LythonRuntime
         {
             if (!pending.IsCompleted) return AwaitTargetMutationAsync(pending, liveExtent);
             try { pending.GetAwaiter().GetResult(); }
-            finally { _stack.RetireTo(liveExtent); }
+            finally { _execution.Stack.RetireTo(liveExtent); }
             return default;
         }
 
         private async ValueTask AwaitTargetMutationAsync(ValueTask pending, int liveExtent)
         {
             try { await pending.ConfigureAwait(false); }
-            finally { _stack.RetireTo(liveExtent); }
+            finally { _execution.Stack.RetireTo(liveExtent); }
         }
 
         private ValueTask CompleteTargetRead(ValueTask<object> pending, ExecutableInstruction instruction)
         {
             if (!pending.IsCompleted) return AwaitTargetReadAsync(pending, instruction);
-            try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, pending.GetAwaiter().GetResult()); }
-            catch { _stack.RetireTo(instruction.InputStart); throw; }
+            try { _execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, pending.GetAwaiter().GetResult()); }
+            catch { _execution.Stack.RetireTo(instruction.InputStart); throw; }
             return default;
         }
 
         private async ValueTask AwaitTargetReadAsync(ValueTask<object> pending, ExecutableInstruction instruction)
         {
-            try { _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await pending.ConfigureAwait(false)); }
-            catch { _stack.RetireTo(instruction.InputStart); throw; }
+            try { _execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, await pending.ConfigureAwait(false)); }
+            catch { _execution.Stack.RetireTo(instruction.InputStart); throw; }
         }
 
         private ValueTask CompleteMemberMutation(ValueTask<bool> pending, object receiver, string name,
@@ -221,9 +221,9 @@ internal sealed partial class LythonRuntime
                 if (i == layout.StarredTargetIndex)
                 {
                     var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), MemoryGovernor, instruction.Span);
-                    _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i, instruction.ResultSlot + layout.TargetCount - i, rest);
+                    _execution.Stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i, instruction.ResultSlot + layout.TargetCount - i, rest);
                 }
-                else _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i,
+                else _execution.Stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i,
                     instruction.ResultSlot + layout.TargetCount - i, values[layout.HasStarredTarget && i > layout.StarredTargetIndex
                         ? layout.SourceIndexForTrailingTarget(i, values.Count) : i]);
             }

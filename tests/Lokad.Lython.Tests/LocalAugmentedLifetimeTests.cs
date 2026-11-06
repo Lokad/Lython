@@ -116,7 +116,7 @@ public sealed class LocalAugmentedLifetimeTests
         {
             await hold.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(pending.IsCompleted);
-            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
+            Assert.True(observe.Frame!.TryReadExecutableLocal("left", out var left));
             Assert.Same(observe.Left, left);
             var funded = budget.ReservedBytes;
             Assert.True(funded > 0);
@@ -149,13 +149,13 @@ public sealed class LocalAugmentedLifetimeTests
 
     private sealed class Observe : LythonRuntime.ICallable
     {
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         internal object? Left, Right;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
-            Assert.True(Frame.TryResolveOwnLocal("left", out Left));
-            Assert.True(Frame.TryResolveOwnLocal("rhs", out Right));
+            Frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(context.CurrentExecutableFrame);
+            Assert.True(Frame.TryReadExecutableLocal("left", out Left));
+            Assert.True(Frame.TryReadExecutableLocal("rhs", out Right));
             return PyNone.Instance;
         }
     }

@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         {
             if (!instruction.HasLocalResult)
             {
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
+                _execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
             }
             else CompleteLocalResult(instruction, value);
         }
@@ -24,18 +24,18 @@ internal sealed partial class LythonRuntime
             // Preserve the original input retirement and its disposal order.
             // Pending cleanup must finish before the binding becomes visible;
             // the unchanged driver and following store already implement that.
-            if (instruction.LiveExtent < _stack.LiveExtent) _stack.RetireTo(instruction.LiveExtent);
-            if (_stack.HasPendingDisposals)
+            if (instruction.LiveExtent < _execution.Stack.LiveExtent) _execution.Stack.RetireTo(instruction.LiveExtent);
+            if (_execution.Stack.HasPendingDisposals)
             {
-                _stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
+                _execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, value);
                 return;
             }
 
-            _stack.ForgetResultInput(instruction.ResultSlot);
-            ref readonly var store = ref _codeObject.Instructions[_instructionIndex + 1];
+            _execution.Stack.ForgetResultInput(instruction.ResultSlot);
+            ref readonly var store = ref _execution.Code.Instructions[_execution.InstructionIndex + 1];
             CheckExecution(store.Span);
-            StoreLocalValue(_codeObject, _locals, _localCells, this, store.LocalSlot, value, store.Span);
-            _instructionIndex++;
+            StoreLocalValue(_execution.Code, _execution.Locals, _execution.LocalCells, this, store.LocalSlot, value, store.Span);
+            _execution.InstructionIndex++;
         }
     }
 }

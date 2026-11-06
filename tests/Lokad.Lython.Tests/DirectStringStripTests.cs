@@ -109,11 +109,11 @@ public sealed class DirectStringStripTests
     private sealed class Record : LythonRuntime.ICallable
     {
         internal List<object> Values { get; } = [];
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context.CurrentExecutableFrame;
-            Assert.True(Frame!.TryResolveOwnLocal("result", out var value));
+            Assert.True(Frame!.TryReadExecutableLocal("result", out var value));
             Values.Add(value);
             return PyNone.Instance;
         }

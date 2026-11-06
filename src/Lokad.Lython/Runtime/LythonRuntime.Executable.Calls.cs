@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             if (!site.IsPositionalOnly) return false;
             if (target is PyType type) return TrySuspendForExecutableConstructor(type, site, start);
             var function = target as PyExecutableFunction;
-            object? receiver = site.HasReceiver && _stack[start] is not PyNone ? _stack[start] : null;
+            object? receiver = site.HasReceiver && _execution.Stack[start] is not PyNone ? _execution.Stack[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
             {
                 function = method;
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 _preparedCallValue = null;
                 return true;
             }
-            if (_stack[start] is not PyType type ||
+            if (_execution.Stack[start] is not PyType type ||
                 !type.TryLookupInMro("__class_getitem__", 0, out var raw, out _)) return false;
             if (raw is PyInstance descriptor &&
                 descriptor.Type.TryLookupInMro("__get__", 0, out var getter, out _) &&
@@ -111,8 +111,8 @@ internal sealed partial class LythonRuntime
             {
                 // Match raw ternary invocation: prefix self through the binder,
                 // retaining the original receiver and key in their current slots.
-                _stack.PublishValue(start + 2, start + 3, PyNone.Instance);
-                _stack.PublishValue(start + 3, start + 4, type);
+                _execution.Stack.PublishValue(start + 2, start + 3, PyNone.Instance);
+                _execution.Stack.PublishValue(start + 3, start + 4, type);
                 _pendingFunction = function;
                 _pendingReceiver = descriptor;
                 _pendingCallStart = start;
@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
                     callEntered = true;
                 }
                 CheckExecution(span);
-                var operands = _stack.Slice(argumentStart, argumentCount).Span;
+                var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
                 var nativeAttempted = ordinaryCall && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
                 if (nativeAttempted && function.TryExecuteWithoutFrame(operands, span, out var borrowedValue))
                 {
@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     LeaveFunctionCall();
-                    ReturnBoundArguments(_locals, _boundStorageOwner, _boundStorageBytes);
+                    ReturnBoundArguments(_execution.Locals, _boundStorageOwner, _boundStorageBytes);
                 }
                 finally
                 {
@@ -313,7 +313,7 @@ internal sealed partial class LythonRuntime
             }
             if (completion == CallCompletion.TypeGetter)
             {
-                _stack.RetireTo(start + 2);
+                _execution.Stack.RetireTo(start + 2);
                 CheckExecution(span);
                 if (failure is LythonRuntimeException { ExceptionType: "AttributeError" })
                 {
@@ -328,20 +328,20 @@ internal sealed partial class LythonRuntime
                         return; // Resume this subscript without rebinding.
                     }
                     failure = new LythonRuntimeException("TypeError",
-                        $"type '{((PyType)_stack[start]).Name}' is not subscriptable", span);
+                        $"type '{((PyType)_execution.Stack[start]).Name}' is not subscriptable", span);
                 }
             }
             if (completion == CallCompletion.TypeSubscription) CheckExecution(span);
             if (failure is not null)
             {
-                _stack.RetireTo(start);
+                _execution.Stack.RetireTo(start);
                 if (failure is LythonRuntimeException runtimeError) _injectedException = runtimeError;
                 else ExceptionDispatchInfo.Throw(failure);
             }
             else
             {
-                PublishInstructionResult(_codeObject.Instructions[_instructionIndex], RuntimeValue(value));
-                _instructionIndex++;
+                PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], RuntimeValue(value));
+                _execution.InstructionIndex++;
             }
         }
     }

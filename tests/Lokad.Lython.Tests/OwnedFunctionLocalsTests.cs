@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -238,9 +237,8 @@ public sealed class OwnedFunctionLocalsTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Calls++;
-            Storage = (object[])typeof(LythonRuntime.ExecutableFrameState)
-                .GetField("_locals", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(context.CurrentExecutableFrame)!;
-            var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
+            Storage = context.CurrentExecutableFrame!._execution.Locals;
+            var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(context.CurrentExecutableFrame);
             Assert.Equal(4, frame.LocalCapacity);
             Assert.True(Storage.Length >= frame.LocalCapacity);
             return PyNone.Instance;

@@ -45,16 +45,31 @@ internal sealed partial class LythonRuntime
         internal bool RetentionCharged;
     }
 
-    internal class ExecutableFrameState : ExecutionFrame
+    // Mutable execution data is distinct from the lexical context's identity.
+    // The normal engine owns one inline state; handlers borrow it by reference.
+    internal struct ExecutableWorkState
     {
-        protected ExecutableCodeObject _codeObject = null!;
-        protected object[] _locals = [];
-        protected ExecutableCell?[]? _localCells;
-        private IReadOnlyList<ExecutableCell>? _closureCells;
+        internal ExecutableCodeObject Code;
+        internal object[] Locals;
+        internal ExecutableCell?[]? LocalCells;
+        internal IReadOnlyList<ExecutableCell>? ClosureCells;
+        internal ExecutableValueStorage Stack;
+        internal int InstructionIndex;
 
-        protected ExecutableFrameState() { }
-        protected ExecutableFrameState(ExecutionFrame parent) : base(parent) { }
-        protected ExecutableFrameState(ExecutionFrame? parent, Dictionary<string, object> variables) : base(parent, variables) { }
+        public ExecutableWorkState()
+        {
+            Code = null!;
+            Locals = [];
+            LocalCells = null;
+            ClosureCells = null;
+            Stack = default;
+            InstructionIndex = 0;
+        }
+    }
+
+    internal sealed partial class ExecutionContext : ExecutionFrame
+    {
+        internal ExecutableWorkState _execution = new();
 
         internal void InitializeExecutableBindings(
             ExecutableCodeObject codeObject,
@@ -62,31 +77,31 @@ internal sealed partial class LythonRuntime
             ExecutableCell?[]? localCells,
             IReadOnlyList<ExecutableCell>? closureCells)
         {
-            _codeObject = codeObject;
-            _locals = locals;
-            _localCells = localCells;
-            _closureCells = closureCells;
+            _execution.Code = codeObject;
+            _execution.Locals = locals;
+            _execution.LocalCells = localCells;
+            _execution.ClosureCells = closureCells;
         }
 
-        protected void ClearExecutableBindings()
+        private void ClearExecutableBindings()
         {
-            _codeObject = null!;
-            _locals = [];
-            _localCells = null;
-            _closureCells = null;
+            _execution.Code = null!;
+            _execution.Locals = [];
+            _execution.LocalCells = null;
+            _execution.ClosureCells = null;
         }
 
-        public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
+        public bool RequiresLocalVariableMirroring => _execution.Code.RequiresLocalVariableMirroring;
 
-        internal int LocalCapacity => _codeObject.LocalNames.Count;
+        internal int LocalCapacity => _execution.Code.LocalNames.Count;
 
 
 
-        public bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
+        internal bool TryReadExecutableLocal(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var slot))
+            if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var slot))
             {
-                value = _localCells?[slot] is { } cell ? cell.Value : _locals[slot];
+                value = _execution.LocalCells?[slot] is { } cell ? cell.Value : _execution.Locals[slot];
                 if (!ReferenceEquals(value, UninitializedLocal)) return true;
             }
 
@@ -96,9 +111,9 @@ internal sealed partial class LythonRuntime
 
         public bool TryResolveLocalOrClosure(string name, [MaybeNullWhen(false)] out object value)
         {
-            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                var local = _locals[localSlot];
+                var local = _execution.Locals[localSlot];
                 if (!ReferenceEquals(local, UninitializedLocal))
                 {
                     value = local;
@@ -106,9 +121,9 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                var closure = _closureCells[closureSlot].Value;
+                var closure = _execution.ClosureCells[closureSlot].Value;
                 if (!ReferenceEquals(closure, UninitializedLocal))
                 {
                     value = closure;
@@ -122,10 +137,10 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<KeyValuePair<string, object>> EnumerateLocals()
         {
-            foreach (var pair in _codeObject.LocalNameToSlot)
+            foreach (var pair in _execution.Code.LocalNameToSlot)
             {
                 if (pair.Key.StartsWith('<')) continue;
-                var value = _locals[pair.Value];
+                var value = _execution.Locals[pair.Value];
                 if (!ReferenceEquals(value, UninitializedLocal))
                 {
                     yield return new KeyValuePair<string, object>(pair.Key, value);
@@ -138,32 +153,32 @@ internal sealed partial class LythonRuntime
         // it must not copy closure snapshots into a live parent lookup chain.
         public IEnumerable<KeyValuePair<string, object>> EnumerateVisibleLocals()
         {
-            foreach (var name in _codeObject.LocalNames)
-                if (!name.StartsWith('<') && TryResolveOwnLocal(name, out var value))
+            foreach (var name in _execution.Code.LocalNames)
+                if (!name.StartsWith('<') && TryReadExecutableLocal(name, out var value))
                     yield return new(name, value);
-            if (_closureCells is null) yield break;
-            for (var i = 0; i < _codeObject.ClosureNames.Count; i++)
+            if (_execution.ClosureCells is null) yield break;
+            for (var i = 0; i < _execution.Code.ClosureNames.Count; i++)
             {
-                var value = _closureCells[i].Value;
+                var value = _execution.ClosureCells[i].Value;
                 if (!ReferenceEquals(value, UninitializedLocal))
-                    yield return new(_codeObject.ClosureNames[i], value);
+                    yield return new(_execution.Code.ClosureNames[i], value);
             }
         }
 
         public bool TryGetCell(string name, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
-            if (_localCells is not null && _codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            if (_execution.LocalCells is not null && _execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                if (_localCells[localSlot] is ExecutableCell localCell)
+                if (_execution.LocalCells[localSlot] is ExecutableCell localCell)
                 {
                     cell = localCell;
                     return true;
                 }
             }
 
-            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                cell = _closureCells[closureSlot];
+                cell = _execution.ClosureCells[closureSlot];
                 return true;
             }
 
@@ -173,9 +188,9 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetClosureCell(int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
-            if (_closureCells is not null && slot >= 0 && slot < _closureCells.Count)
+            if (_execution.ClosureCells is not null && slot >= 0 && slot < _execution.ClosureCells.Count)
             {
-                cell = _closureCells[slot];
+                cell = _execution.ClosureCells[slot];
                 return true;
             }
 
@@ -185,10 +200,10 @@ internal sealed partial class LythonRuntime
 
         public bool TryStoreLocalOrClosure(string name, object value)
         {
-            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                _locals[localSlot] = value;
-                if (_localCells?[localSlot] is ExecutableCell localCell)
+                _execution.Locals[localSlot] = value;
+                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
                 {
                     localCell.Value = value;
                 }
@@ -196,9 +211,9 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                _closureCells[closureSlot].Value = value;
+                _execution.ClosureCells[closureSlot].Value = value;
                 return true;
             }
 
@@ -207,11 +222,11 @@ internal sealed partial class LythonRuntime
 
         public bool TryDeleteLocalOrClosure(string name)
         {
-            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                var removed = !ReferenceEquals(_locals[localSlot], UninitializedLocal);
-                _locals[localSlot] = UninitializedLocal;
-                if (_localCells?[localSlot] is ExecutableCell localCell)
+                var removed = !ReferenceEquals(_execution.Locals[localSlot], UninitializedLocal);
+                _execution.Locals[localSlot] = UninitializedLocal;
+                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
                 {
                     removed |= !ReferenceEquals(localCell.Value, UninitializedLocal);
                     localCell.Value = UninitializedLocal;
@@ -220,9 +235,9 @@ internal sealed partial class LythonRuntime
                 return removed;
             }
 
-            if (_closureCells is not null && _codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
+            if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
-                var cell = _closureCells[closureSlot];
+                var cell = _execution.ClosureCells[closureSlot];
                 var removed = !ReferenceEquals(cell.Value, UninitializedLocal);
                 cell.Value = UninitializedLocal;
                 return removed;

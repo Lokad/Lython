@@ -111,7 +111,7 @@ public sealed class DirectDictionaryGetTests
     {
         internal object Value { get; } = value;
         internal int Calls;
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;

@@ -52,10 +52,9 @@ public sealed class PositionalCallTransportTests
 
     private static object[] FrameStorage(LythonRuntime.ExecutionContext context)
     {
-        var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutableFrameState>(context.CurrentExecutableFrame);
-        var locals = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var values = Assert.IsType<object[]>(locals.GetValue(frame));
-        var stack = frame.GetType().GetField("_stack", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(frame)!;
+        var frame = Assert.IsAssignableFrom<LythonRuntime.ExecutionContext>(context.CurrentExecutableFrame);
+        var values = Assert.IsType<object[]>(frame._execution.Locals);
+        var stack = frame._execution.Stack;
         Assert.Same(values, stack.GetType().GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(stack));
         return values;
     }
@@ -296,8 +295,7 @@ public sealed class PositionalCallTransportTests
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Frame = context;
-            var locals = typeof(LythonRuntime.ExecutableFrameState).GetField("_locals", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            Storage = Assert.IsType<object[]>(locals.GetValue(context.CurrentExecutableFrame));
+            Storage = Assert.IsType<object[]>(context.CurrentExecutableFrame!._execution.Locals);
             Assert.Same(receiver, Storage[0]);
             Assert.Same(value, Storage[1]);
             Assert.Same(receiver, LythonRuntime.ResolveName("self", span, context));

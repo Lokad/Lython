@@ -86,11 +86,11 @@ public sealed class DirectStringJoinTests
     private sealed class Record : LythonRuntime.ICallable
     {
         internal List<PyString> Values = [];
-        internal LythonRuntime.ExecutableFrameState? Frame;
+        internal LythonRuntime.ExecutionContext? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
             Frame = context.CurrentExecutableFrame;
-            Assert.True(Frame!.TryResolveOwnLocal("result", out var result));
+            Assert.True(Frame!.TryReadExecutableLocal("result", out var result));
             Values.Add(Assert.IsType<PyString>(result));
             return PyNone.Instance;
         }

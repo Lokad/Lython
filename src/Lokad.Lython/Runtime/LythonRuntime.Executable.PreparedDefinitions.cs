@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
                     PublishInstructionResult(instruction, CreatePostponedAnnotationValue(postponed.Annotation, this));
                     break;
                 case ExecutableStoreModuleAnnotation annotation:
-                    var value = _stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+                    var value = _execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
                     await StoreAnnotationEntryAsync(ResolveName("__annotations__", span, this),
                         annotation.Name, value, this, span, asynchronous).ConfigureAwait(false);
                     break;
@@ -41,9 +41,9 @@ internal sealed partial class LythonRuntime
                         };
                         AdmitPreparedDefinitionStorage(64L + 160L * definition.Parameters.Count, span);
                         AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
-                        await ExecuteExecutableFunctionDefinitionAsync(_codeObject,
+                        await ExecuteExecutableFunctionDefinitionAsync(_execution.Code,
                             definition,
-                            _locals, _localCells, this, asynchronous).ConfigureAwait(false);
+                            _execution.Locals, _execution.LocalCells, this, asynchronous).ConfigureAwait(false);
                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
                     }
                     break;
@@ -64,13 +64,13 @@ internal sealed partial class LythonRuntime
                                 foreach (var parameter in parameters)
                                 {
                                     if (parameter.DefaultValue is not null)
-                                        values.Add(parameter.Name, RuntimeValue(_stack[slot++]));
+                                        values.Add(parameter.Name, RuntimeValue(_execution.Stack[slot++]));
                                 }
                                 defaults = values;
                             }
                             function = CreateLambdaFunction(lambda.Expression, parameters, defaults, this, lambda.CodeObject);
                         }
-                        finally { _stack.RetireTo(instruction.ResultSlot); }
+                        finally { _execution.Stack.RetireTo(instruction.ResultSlot); }
                         PublishInstructionResult(instruction, function);
                     }
                     break;
@@ -78,13 +78,13 @@ internal sealed partial class LythonRuntime
                     PublishInstructionResult(instruction, new CallExpansion.CallArgumentAccumulator(header.Count, this, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
                     break;
                 case ExecutableCreateClass create:
-                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
+                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)_execution.Stack.TakeValue(instruction.InputStart + create.Definition.Decorators.Count, instruction.InputStart + create.Definition.Decorators.Count) : null)
                     using (var storage = MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
                     {
                         var definition = create.Definition;
                         var decorators = new LoweredExpression[definition.Decorators.Count];
                         for (var i = decorators.Length - 1; i >= 0; i--)
-                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _stack.TakeValue(instruction.InputStart + i, instruction.InputStart + i));
+                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, _execution.Stack.TakeValue(instruction.InputStart + i, instruction.InputStart + i));
                         definition = definition with { Decorators = decorators };
                         if (accumulator is not null)
                         {
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                         }
                         if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, this).ConfigureAwait(false);
                         else ExecuteLoweredClassDefinition(definition, this);
-                        SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, this);
+                        SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
                     }
                     break;
                 default: throw new InvalidOperationException("Unknown prepared definition operation.");
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
         {
             var result = new Dictionary<LoweredExpression, LoweredExpression>(inputs.Count);
             for (var i = inputs.Count - 1; i >= 0; i--)
-                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, _stack.TakeValue(first + i, first + i));
+                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, _execution.Stack.TakeValue(first + i, first + i));
             return result;
         }
     }
