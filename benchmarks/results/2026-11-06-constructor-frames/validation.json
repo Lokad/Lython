@@ -1,5 +1,5 @@
 {
-  "status": "Retained, focused both runtimes/full local.NET11 and installed Release consumers pass; exact88f12099 platform/stress CI42208020544 in progress.",
+  "status": "Fully qualified exact88f12099: focused both runtimes/full local.NET11/installed Release consumers plus terminal CI42208020544 GREEN/all eight Windows/Ubuntu/runtime/originalStress/package gates. Private dev40 adapter experiments excluded.",
   "source": "8afe8bb1 HEAD plus R10 refinement: one post-allocation initializer selection; exact source patch/hashes",
   "sourceFiles": {
     "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "4fe33470ca6f5886ec9bb0ab64c34d3c931575da349ef3d42adb07669d0c3a83",
@@ -56,5 +56,12 @@
     "coreDependencies": [],
     "adapterPackable": false,
     "published": false
+  },
+  "deliveryCI": {
+    "runId": 42208020544,
+    "source": "88f1209929697ce1fb6a2d895fcaae5fb0ac2424",
+    "status": "completed",
+    "conclusion": "success",
+    "gates": 8
   }
 }
