@@ -1,0 +1,20 @@
+{
+  "status": "Focused qualification only; batch platform/stress/installed-package checks at next coherent runtime delivery",
+  "source": "62901222/runtime dd76df36 plus frozen F02 compiler changes and generic shadowing correction",
+  "candidateCore": "50b6b872378f2b4bbfd6bc3a158629c2207068b539aace80f4fcf625e807d6f3",
+  "referenceCore": "b16fc0d7917f9daba41c25055763a39b5e80bc10178caae84eb20a536a21ad56",
+  "focusedPublicPerActualFramework": 2769,
+  "focusedInternalPerActualFramework": 1098,
+  "actualFrameworks": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "independentCPythonGoldens": 6,
+  "firstFailure": "The unchanged type_parameters golden exposed existing outer-T=str facts in deferred analysis and summaries. First focus passed2768/failed1; both masks corrected, original golden retained.",
+  "k01Qualification": "Cached terminal42145148043 GREEN/all8; source dd76df36 only, does not qualify F02",
+  "apiChanges": false,
+  "productionRuntimeScaffoldingAdded": false,
+  "noAllocationOrCausalCpuClaim": true
+}

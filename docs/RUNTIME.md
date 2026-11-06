@@ -157,6 +157,10 @@ Module facts also pass through lowering into instruction construction. The lexic
 preparation walk decides implicit `super` preloads after seeing later declarations;
 module bindings never supply lexical class cells to child functions.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
+When enclosing compilation supplies complete lexical bindings, ordinary function
+free names use the existing live global/builtin lookup after local and captured
+names. Independently compiled class/generator bodies and type-parameter scopes
+retain general lexical resolution. No global value is frozen or cached by this choice.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.
 Container and callback queries inspect shared fact payloads

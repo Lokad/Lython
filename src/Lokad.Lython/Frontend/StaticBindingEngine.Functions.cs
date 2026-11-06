@@ -20,6 +20,10 @@ internal static partial class StaticBindingEngine
 
         var capturedBindings = bindings.CloneForDeferredBody();
         capturedBindings.Remove(functionDefinition.Name);
+        // Type parameters belong to the function's annotation scope, not to
+        // a same-named value inferred in the defining module or outer function.
+        if (functionDefinition.TypeParameters is { } typeParameters)
+            foreach (var typeParameter in typeParameters) capturedBindings.Remove(typeParameter.Name);
         summary = new AbstractFunctionSummary(functionDefinition.Parameters, functionDefinition.Body, capturedBindings, functionDefinition.Span);
         return true;
     }

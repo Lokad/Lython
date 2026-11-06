@@ -278,6 +278,13 @@ internal sealed partial class ExecutableScript
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
             }
+            else if (_functionParameters is not null && _completeLexicalParent && !_scopeFacts.IsNonlocal(name))
+            {
+                // Locals and all lexical captures were considered above. The
+                // remaining name belongs to the live module/builtin namespace;
+                // no invocation-time search through function frames is needed.
+                AddInstruction(currentBlock, ExecutableInstruction.LoadGlobal(InternName(name), span));
+            }
             else
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadName(InternName(name), span));
@@ -404,7 +411,8 @@ internal sealed partial class ExecutableScript
             // still evaluate in the defining context before TypeScope exists.
             if (candidates is not null && typeParameters is not null)
                 candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
-            return new Builder(parameters, candidates, scopeFacts)
+            return new Builder(parameters, candidates, scopeFacts,
+                completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 })
                 .CompileCodeObject(name, body);
         }
 

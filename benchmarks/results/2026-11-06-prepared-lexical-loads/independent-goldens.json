@@ -1,0 +1,47 @@
+{
+  "python": "CPython3.13.2 -I -S -X utf8",
+  "cases": [
+    {
+      "name": "live_globals_and_builtins",
+      "source": "name = 'module'\ndef read(): return name\nprint(read())\nname = 'later'\nprint(read())\ndel name\ntry: read()\nexcept NameError as error: print(type(error).__name__)\ndef size(): return len([1, 2])\nprint(size())\nlen = lambda value: 77\nprint(size())\ndel len\nprint(size())\n",
+      "expected": "module\nlater\nNameError\n2\n77\n2\n",
+      "actual": "module\nlater\nNameError\n2\n77\n2\n",
+      "exitCode": 0
+    },
+    {
+      "name": "transitive_capture",
+      "source": "value = 2\ndef outer():\n    value = 3\n    def middle():\n        def inner(): return value + len([])\n        return inner\n    return middle()\nread = outer()\nprint(read())\nvalue = 9\nprint(read())\n",
+      "expected": "3\n3\n",
+      "actual": "3\n3\n",
+      "exitCode": 0
+    },
+    {
+      "name": "type_parameters",
+      "source": "T = 'module'\ndef read[T](): return T.__name__\ndef outer[T]():\n    def inner(): return T.__name__\n    return inner\nprint(read(), outer()())\n",
+      "expected": "T T\n",
+      "actual": "T T\n",
+      "exitCode": 0
+    },
+    {
+      "name": "comprehension_capture",
+      "source": "token = 'module'\ndef make(): return [lambda: token for token in [1, 2]]\nreaders = make()\nprint([read() for read in readers])\nprint(token)\n",
+      "expected": "[2, 2]\nmodule\n",
+      "actual": "[2, 2]\nmodule\n",
+      "exitCode": 0
+    },
+    {
+      "name": "class_barrier",
+      "source": "value = 'module'\ndef outer():\n    value = 'outer'\n    class C:\n        value = 'class'\n        def read(self): return value\n    return C\nprint(outer()().read())\n",
+      "expected": "outer\n",
+      "actual": "outer\n",
+      "exitCode": 0
+    },
+    {
+      "name": "enclosing_global_barrier",
+      "source": "value = 'module'\ndef outer():\n    value = 'outer'\n    def middle():\n        global value\n        def inner(): return value\n        return inner\n    return middle()\nprint(outer()())\n",
+      "expected": "module\n",
+      "actual": "module\n",
+      "exitCode": 0
+    }
+  ]
+}

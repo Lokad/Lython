@@ -18,7 +18,7 @@ internal sealed partial class ExecutableScript
 
     public static ExecutableScript Compile(LoweredScript lowered)
     {
-        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax))
+        var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true)
             .CompileCodeObject("<module>", lowered.Statements);
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
@@ -61,6 +61,7 @@ internal sealed partial class ExecutableScript
 
         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
         private readonly HashSet<string> _parentClosureCandidates;
+        private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
 
         internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator, ScopeDirectiveFacts scopeFacts)
@@ -69,10 +70,15 @@ internal sealed partial class ExecutableScript
         internal Builder(
             IReadOnlyList<LoweredFunctionParameter>? functionParameters,
             IEnumerable<string>? parentClosureCandidates,
-            ScopeDirectiveFacts scopeFacts)
+            ScopeDirectiveFacts scopeFacts,
+            bool completeLexicalParent = false)
         {
             _scopeFacts = scopeFacts;
             _functionParameters = functionParameters;
+            // Only enclosing executable compilation supplies complete lexical
+            // bindings. Independently compiled class/generator bodies still use
+            // their live retained namespaces for unresolved names.
+            _completeLexicalParent = completeLexicalParent;
             _parentClosureCandidates = parentClosureCandidates is null
                 ? new HashSet<string>(StringComparer.Ordinal)
                 : new HashSet<string>(parentClosureCandidates, StringComparer.Ordinal);

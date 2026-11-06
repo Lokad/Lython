@@ -1,0 +1,89 @@
+{
+  "complete": true,
+  "elapsedSeconds": 113.55701319267973,
+  "timing": [
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.80216140625,
+        "control": 4.872773677419355,
+        "CPython": 3.237478042553192,
+        "reference": 4.840340875
+      },
+      "ratio": 1.4833031585483254,
+      "referenceDeltaPercent": -0.7887764464522329,
+      "controlPercent": 1.470426859818863,
+      "iqrPercent": {
+        "candidate": 3.3101461831981633,
+        "control": 0.9944299856402995,
+        "CPython": 1.3817368008042767,
+        "reference": 1.209313719046685
+      },
+      "controlReferenceDeltaPercent": 0.6700520326340609
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate": 4.876409516129033,
+        "control": 4.9732303,
+        "CPython": 3.4060676666666665,
+        "reference": 4.887734666666666
+      },
+      "ratio": 1.43168310008982,
+      "referenceDeltaPercent": -0.2317055100160892,
+      "controlPercent": 1.985493292774665,
+      "iqrPercent": {
+        "candidate": 1.331343767967303,
+        "control": 0.166782275630116,
+        "CPython": 0.7021391138931363,
+        "reference": 1.2990755635671396
+      },
+      "controlReferenceDeltaPercent": 1.7491872853982127
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 2.24618425,
+        "control": 2.306581121212121,
+        "CPython": 1.1708748153846154,
+        "reference": 2.271214014925373
+      },
+      "ratio": 1.9183812141882661,
+      "referenceDeltaPercent": -1.1020434340792473,
+      "controlPercent": 2.688865404168017,
+      "iqrPercent": {
+        "candidate": 0.9239073671140549,
+        "control": 0.4852518374400551,
+        "CPython": 0.2844086478771254,
+        "reference": 0.4410942326005181
+      },
+      "controlReferenceDeltaPercent": 1.5571895054509177
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 3.7035915609756094,
+        "control": 3.731443619047619,
+        "CPython": 2.6041226101694916,
+        "reference": 3.740318837209302
+      },
+      "ratio": 1.4222032198148142,
+      "referenceDeltaPercent": -0.9819290234919009,
+      "controlPercent": 0.7520283382618231,
+      "iqrPercent": {
+        "candidate": 3.3133052244724874,
+        "control": 6.912497647406112,
+        "CPython": 1.9007807398795165,
+        "reference": 7.553877853094356
+      },
+      "controlReferenceDeltaPercent": -0.23728506974836083
+    }
+  ],
+  "retained": true,
+  "performanceQualified": false,
+  "decision": "Retain compiler-proven lexical routing and generic-name correctness; elapsed gain not established. Both current CSV roles straddle baseline, native text control also straddles; report noisy. No allocation or causalCPU claim, no further retiming for signs."
+}

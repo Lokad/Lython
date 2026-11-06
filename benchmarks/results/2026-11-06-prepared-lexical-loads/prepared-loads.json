@@ -1,0 +1,70 @@
+[
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "functions": [
+      {
+        "name": "words_from_line",
+        "capacity": 5,
+        "nativeReturn": true,
+        "mirrored": false,
+        "locals": [
+          "line"
+        ],
+        "nameLoads": []
+      }
+    ]
+  },
+  {
+    "id": "scripts.json-summary-helpers.large",
+    "functions": [
+      {
+        "name": "record_amount",
+        "capacity": 5,
+        "nativeReturn": true,
+        "mirrored": false,
+        "locals": [
+          "record"
+        ],
+        "nameLoads": []
+      }
+    ]
+  },
+  {
+    "id": "scripts.report-render.large",
+    "functions": [
+      {
+        "name": "render",
+        "capacity": 6,
+        "nativeReturn": true,
+        "mirrored": false,
+        "locals": [
+          "record"
+        ],
+        "nameLoads": []
+      }
+    ]
+  },
+  {
+    "id": "scripts.csv-summary-functions.large",
+    "functions": [
+      {
+        "name": "accumulate",
+        "capacity": 9,
+        "nativeReturn": false,
+        "mirrored": false,
+        "locals": [
+          "record",
+          "totals",
+          "amount",
+          "kind"
+        ],
+        "nameLoads": [
+          {
+            "operation": "LoadGlobal",
+            "name": "int"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -333,6 +333,8 @@ internal static partial class StaticAbstractInterpreter
                     }
 
                     var functionBindings = bindings.CloneForDeferredBody();
+                    if (functionDefinition.TypeParameters is { } typeParameters)
+                        foreach (var typeParameter in typeParameters) functionBindings.Remove(typeParameter.Name);
                     foreach (var parameter in functionDefinition.Parameters)
                     {
                         functionBindings.Remove(parameter.Name);

@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [prepared lexical-load milestone](results/2026-11-06-prepared-lexical-loads/README.md)
+uses compiler binding facts to retire general lexical searches for ordinary
+function globals, and corrects generic type-parameter shadowing in static facts.
+Focused checks pass on both actual runtimes. The 113.56-second CSV comparison is
+inconclusive: identical-current roles straddle the baseline, as does the text
+control. Retained for routing simplification and correctness; no speedup claim.
+Full platform, stress and installed-package qualification remains separate.
+
 The [current CSV construction source gate](results/2026-11-06-csv-construction-source-gate/README.md)
 records existing native-return helpers and one stable ordinary CSV frame size.
 One owned capture supplies1,540 guest-thread samples/7.75CPU seconds, with10.06%
