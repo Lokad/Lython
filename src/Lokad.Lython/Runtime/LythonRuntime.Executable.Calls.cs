@@ -5,11 +5,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         // Only the active child links to its caller. Caller operands remain owned
         // until the child and its cleanup finish; locals reuse admitted bound storage.
-        private ExecutableFrameInterpreter? _caller;
+        private ExecutionContext? _caller;
         private MemoryGovernor? _boundStorageOwner;
         private long _boundStorageBytes;
         private ExecutableCallSite? _pendingCallSite;
@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
 
         public void Execute()
         {
-            ExecutableFrameInterpreter? current = this;
+            ExecutionContext? current = this;
             while (current is not null)
             {
                 Exception? failure = null;
@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask ExecuteAsync()
         {
-            ExecutableFrameInterpreter? current = this;
+            ExecutionContext? current = this;
             while (current is not null)
             {
                 Exception? failure = null;
@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             if (raw is not (PyClassMethod or PyStaticMethod or PyExecutableFunction)) return false;
-            var member = PyAttributeLookup.BindForType(type, raw, _context, instruction.Span);
+            var member = PyAttributeLookup.BindForType(type, raw, this, instruction.Span);
             if (TryPrepareSubscriptionCallable(member, instruction.Span, start)) return true;
             _preparedTypeSubscription = member;
             return false;
@@ -124,10 +124,10 @@ internal sealed partial class LythonRuntime
         {
             var member = _preparedTypeSubscription!;
             _preparedTypeSubscription = null;
-            return InvokeTypeSubscriptionMemberAsync(member, index, _context, span, asynchronous);
+            return InvokeTypeSubscriptionMemberAsync(member, index, this, span, asynchronous);
         }
 
-        private static ExecutableFrameInterpreter? AdvanceCallFrames(ExecutableFrameInterpreter current, Exception? failure)
+        private static ExecutionContext? AdvanceCallFrames(ExecutionContext current, Exception? failure)
         {
             if (failure is null && current._pendingFunction is not null)
             {
@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
             return caller;
         }
 
-        private ExecutableFrameInterpreter BeginPendingCall()
+        private ExecutionContext BeginPendingCall()
         {
             var function = _pendingFunction!;
             var span = PendingCallSpan;
@@ -170,10 +170,10 @@ internal sealed partial class LythonRuntime
                 // without gaining an ordinary call-opcode admission.
                 if (ordinaryCall)
                 {
-                    _context.EnterInterpreterFrame(span);
+                    EnterInterpreterFrame(span);
                     callEntered = true;
                 }
-                _context.CheckExecution(span);
+                CheckExecution(span);
                 var operands = _stack.Slice(argumentStart, argumentCount).Span;
                 var nativeAttempted = ordinaryCall && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
                 if (nativeAttempted && function.TryExecuteWithoutFrame(operands, span, out var borrowedValue))
@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
                     return this;
                 }
                 bound = function.BindPositionalOperands(
-                    operands, span, _context, _pendingReceiver);
+                    operands, span, this, _pendingReceiver);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
                 if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, out var nativeValue))
                 {
@@ -195,14 +195,14 @@ internal sealed partial class LythonRuntime
                     CompletePendingCall(value, null);
                     return this;
                 }
-                var child = CreateExecutableInterpreter(function.CodeObject, frame, bound,
+                InitializeExecutableFrame(function.CodeObject, frame, bound,
                     function.ClosureCells, argumentsAreLocals: true);
-                frame.EnterExecutableSlots(child);
-                child._caller = this;
-                child._boundStorageOwner = bound.StorageOwner;
-                child._boundStorageBytes = bound.StorageBytes;
+                frame.EnterExecutableSlots();
+                frame._caller = this;
+                frame._boundStorageOwner = bound.StorageOwner;
+                frame._boundStorageBytes = bound.StorageBytes;
                 transferred = true;
-                return child;
+                return frame;
             }
             catch (Exception error)
             {
@@ -220,8 +220,9 @@ internal sealed partial class LythonRuntime
                     {
                         frame?.LeaveFunctionCall();
                         if (bound.Values is not null) ReturnBoundArguments(bound);
+                        frame?.DetachExecutableExecution();
                     }
-                    finally { if (callEntered) _context.LeaveInterpreterFrame(); }
+                    finally { if (callEntered) LeaveInterpreterFrame(); }
                 }
             }
         }
@@ -230,22 +231,23 @@ internal sealed partial class LythonRuntime
         {
             var caller = _caller!;
             var span = caller.PendingCallSpan;
-            _context.LeaveExecutableSlots(null);
+            LeaveExecutableSlots();
             try
             {
                 if (failure is LythonRuntimeException runtimeError)
-                    PyFunctionBinding.AnnotateException(runtimeError, _context, _context.FunctionName!, span);
+                    PyFunctionBinding.AnnotateException(runtimeError, this, FunctionName!, span);
             }
             finally
             {
                 try
                 {
-                    _context.LeaveFunctionCall();
+                    LeaveFunctionCall();
                     ReturnBoundArguments(_locals, _boundStorageOwner, _boundStorageBytes);
                 }
                 finally
                 {
-                    if (caller._callCompletion == CallCompletion.Call) caller._context.LeaveInterpreterFrame();
+                    DetachExecutableExecution();
+                    if (caller._callCompletion == CallCompletion.Call) caller.LeaveInterpreterFrame();
                 }
             }
         }
@@ -275,7 +277,7 @@ internal sealed partial class LythonRuntime
             if (completion == CallCompletion.TypeGetter)
             {
                 _stack.RetireTo(start + 2);
-                _context.CheckExecution(span);
+                CheckExecution(span);
                 if (failure is LythonRuntimeException { ExceptionType: "AttributeError" })
                 {
                     failure = null;
@@ -292,7 +294,7 @@ internal sealed partial class LythonRuntime
                         $"type '{((PyType)_stack[start]).Name}' is not subscriptable", span);
                 }
             }
-            if (completion == CallCompletion.TypeSubscription) _context.CheckExecution(span);
+            if (completion == CallCompletion.TypeSubscription) CheckExecution(span);
             if (failure is not null)
             {
                 _stack.RetireTo(start);

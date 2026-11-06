@@ -68,6 +68,8 @@ public sealed class AsyncExecutableFunctionTests
     public async Task CancelledDefinitionKeepsThePreviousBinding(string source)
     {
         var (code, context, _) = Prepare(source);
+        // Namespace observations survive execution; active slot views do not.
+        context.MirrorLocalStores = true;
         var tap = new SuspendedTap(false);
         context.Variables["tap"] = tap;
         var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context).AsTask();
@@ -79,8 +81,7 @@ public sealed class AsyncExecutableFunctionTests
             Assert.Equal(new BigInteger(42), previous);
             tap.Release.TrySetCanceled();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
-            Assert.True(frame.TryResolveOwnLocal("g", out previous));
-            Assert.Equal(new BigInteger(42), previous);
+            Assert.Equal(new BigInteger(42), context.Variables["g"]);
         }
         finally
         {

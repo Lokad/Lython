@@ -13,7 +13,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed partial class ExecutionContext : ExecutionFrame
+    internal sealed partial class ExecutionContext : ExecutableFrameState
     {
 
         internal PyDict? GlobalNamespace;
@@ -252,7 +252,8 @@ internal sealed partial class LythonRuntime
 
         private Dictionary<string, ExecutionContext> NonlocalTargets { get; }
 
-        internal ExecutableFrameState? CurrentExecutableFrame { get; private set; }
+        private bool _executableSlotsActive;
+        internal ExecutableFrameState? CurrentExecutableFrame => _executableSlotsActive ? this : null;
 
         // Set once a lambda is born below this frame: executable locals live in
         // slots that vanish on return, so flagged frames also mirror slot stores
@@ -295,18 +296,18 @@ internal sealed partial class LythonRuntime
 
         internal bool MirrorsExecutableLocals { get; private set; }
 
-        internal void EnterExecutableSlots(ExecutableFrameState frame)
+        internal void EnterExecutableSlots()
         {
-            CurrentExecutableFrame = frame;
-            MirrorsExecutableLocals = frame.RequiresLocalVariableMirroring;
+            _executableSlotsActive = true;
+            MirrorsExecutableLocals = RequiresLocalVariableMirroring;
         }
 
-        internal void LeaveExecutableSlots(ExecutableFrameState? previous)
+        internal void LeaveExecutableSlots()
         {
-            CurrentExecutableFrame = previous;
+            _executableSlotsActive = false;
         }
 
-        internal bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
+        internal new bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
         {
             if (TryGetInlinedBinding(name, out var scope)) return scope.Frame.TryGetVariable(name, out value);
             return CurrentExecutableFrame is { } frame ? frame.TryResolveOwnLocal(name, out value) : Frame.TryGetVariable(name, out value);

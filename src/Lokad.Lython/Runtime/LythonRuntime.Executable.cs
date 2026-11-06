@@ -45,14 +45,18 @@ internal sealed partial class LythonRuntime
         internal bool RetentionCharged;
     }
 
-    internal class ExecutableFrameState
+    internal class ExecutableFrameState : ExecutionFrame
     {
-        protected readonly ExecutableCodeObject _codeObject;
-        protected readonly object[] _locals;
-        protected readonly ExecutableCell?[]? _localCells;
-        private readonly IReadOnlyList<ExecutableCell>? _closureCells;
+        protected ExecutableCodeObject _codeObject = null!;
+        protected object[] _locals = [];
+        protected ExecutableCell?[]? _localCells;
+        private IReadOnlyList<ExecutableCell>? _closureCells;
 
-        public ExecutableFrameState(
+        protected ExecutableFrameState() { }
+        protected ExecutableFrameState(ExecutionFrame parent) : base(parent) { }
+        protected ExecutableFrameState(ExecutionFrame? parent, Dictionary<string, object> variables) : base(parent, variables) { }
+
+        internal void InitializeExecutableBindings(
             ExecutableCodeObject codeObject,
             object[] locals,
             ExecutableCell?[]? localCells,
@@ -62,6 +66,14 @@ internal sealed partial class LythonRuntime
             _locals = locals;
             _localCells = localCells;
             _closureCells = closureCells;
+        }
+
+        protected void ClearExecutableBindings()
+        {
+            _codeObject = null!;
+            _locals = [];
+            _localCells = null;
+            _closureCells = null;
         }
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
@@ -241,11 +253,11 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
-    private sealed record ExecutableMemberCache(object Target, object Value)
+    internal sealed record ExecutableMemberCache(object Target, object Value)
     {
     }
 
-    private struct ExecutableValueStorage
+    internal struct ExecutableValueStorage
     {
         private object[] _items;
         private int[]? _nativeIterationPositions;
@@ -488,7 +500,7 @@ internal sealed partial class LythonRuntime
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null)
     {
-        var previousExecutableFrame = context.CurrentExecutableFrame;
+        context.EnsureExecutableStateAvailable();
         // Bound function invocations already own their call admission. Raw
         // protocol calls have function/managed-stack protection without an
         // extra logical nesting charge; compiling their bodies preserves that.
@@ -497,17 +509,18 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
             // Even a zero-local module has live operands during calls. Publish
             // the same existing frame that the async entry publishes; local
             // slot counts do not determine whether an invocation is active.
-            context.EnterExecutableSlots(interpreter);
-            interpreter.Execute();
-            return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
+            context.EnterExecutableSlots();
+            context.Execute();
+            return context.HasFrameReturn ? context.FrameReturnValue : null;
         }
         finally
         {
-            context.LeaveExecutableSlots(previousExecutableFrame);
+            context.LeaveExecutableSlots();
+            context.DetachExecutableExecution();
             if (ownsAdmission) context.LeaveInterpreterFrame();
         }
     }
@@ -523,25 +536,26 @@ internal sealed partial class LythonRuntime
         bool argumentsAreLocals = false,
         LythonSourceSpan? entrySpan = null)
     {
-        var previousExecutableFrame = context.CurrentExecutableFrame;
+        context.EnsureExecutableStateAvailable();
         var ownsAdmission = boundArguments.Values is null;
         if (ownsAdmission) context.EnterInterpreterFrame(entrySpan);
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
-            context.EnterExecutableSlots(interpreter);
-            await interpreter.ExecuteAsync().ConfigureAwait(false);
-            return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+            context.EnterExecutableSlots();
+            await context.ExecuteAsync().ConfigureAwait(false);
+            return context.HasFrameReturn ? context.FrameReturnValue : null;
         }
         finally
         {
-            context.LeaveExecutableSlots(previousExecutableFrame);
+            context.LeaveExecutableSlots();
+            context.DetachExecutableExecution();
             if (ownsAdmission) context.LeaveInterpreterFrame();
         }
     }
 
-    private static ExecutableFrameInterpreter CreateExecutableInterpreter(
+    private static void InitializeExecutableFrame(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments boundArguments,
@@ -589,7 +603,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells, stack);
+            context.InitializeExecutableExecution(codeObject, locals, localCells, closureCells, stack);
         }
         catch
         {

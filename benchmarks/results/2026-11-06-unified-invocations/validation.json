@@ -1,0 +1,28 @@
+{
+  "status": "Retained; full local Release passed. Combined F02/F03 platform/stress/installed consumer qualification pending.",
+  "sourceBase": "c599dac6",
+  "finalMeasuredCore": "53391f2fa283e990d9817fb00b3a71d5146fedddcc0aca39c23f7d6515b6fb21",
+  "initialMeasuredCore": "c31e8104f276726ac50d4f6ab7395cb33d23930f96b533f33be519e757952540",
+  "fullInternalPerFramework": 4210,
+  "fullPublicPerFramework": 16078,
+  "focusedInternalPerFramework": 1059,
+  "focusedPublicPerFramework": 3406,
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "meaningfulNewLifetimeChecks": "Escaping closure remains usable while relinquished workspace becomes collectible; retained metadata estimate covers managed shell/empty namespace. Existing nonparallel collection.",
+  "preservedFailures": "Initial 11 expired-local-view assertions, then 24 terminal operand inspectors and four remaining expired-local assertions. They now observe surviving namespaces or require detached slots/code/backing, preserving all live input, physical-tail, argument clearing, refusal/cancellation and cleanup checks.",
+  "obsoleteRemoved": [
+    "Separate ExecutableFrameInterpreter class/allocation/backpointer",
+    "Stored active-frame reference",
+    "Generator duplicate interpreter handle/parameters",
+    "Blanket OwnerType exclusion for already-proven closed native bodies",
+    "Identity-returning frame initializer"
+  ],
+  "unchangedContracts": "Public API, managed safety/stack bounds, host mediation, cancellation, shared allowance, first admission refusal, retained aliases, awaited cleanup. Existing conservative context allowance unchanged.",
+  "performanceLimits": "CSV whole-script elapsed improvement not established. Allocation reduction is measured on initial c31 source, not remeasured on refined source. Method control improves versus initial prototype in B314; reference latency varies across blocks. No causalCPU/RSS/embedding-latency claim.",
+  "remaining": "Whole-script performance objective and independent regex work stay active; publication postponed."
+}

@@ -19,8 +19,9 @@ showing the larger Lython-role IQR. These short observations are diagnostic, wit
 report/control variation visible. They describe the frozen source/core, not later
 HEAD. [Exact source, hashes, machine gates and raw evidence](../benchmarks/results/2026-11-06-canonical-key-storage/checkpoint/identity.json)
 are retained with the [qualification and adverse results](../benchmarks/results/2026-11-06-canonical-key-storage/README.md).
-Full local4207internal/16072public tests pass on actual.NET11/10; K01 cross-platform,
-original stress and installed-consumer qualification is pending. Publication is postponed.
+K01 passed full local, Windows/Ubuntu, original stress and installed-consumer
+qualification on actual.NET11/10 (cached terminal42145148043). That qualification
+does not cover later source changes. Publication is postponed.
 
 ## Warm execution, compilation and startup
 
@@ -80,6 +81,12 @@ CPython remains the primary external baseline above. Separate source pairs show:
 - Native helper returns: allocation−19.92%/−19.31%; elapsed observations remain
   diagnostic. UTF-8 formatting allocation−8.67%; controlled elapsed/CPU evidence
   supports retention while the original adverse timing remains unexplained.
+- Unified invocations remove a duplicate interpreter object. The initial prototype
+  reduced CSV process allocation1.77–1.79%; its refined closed-method return case
+  improved elapsed20.1–20.6% against that prototype. These are different source
+  pairs; broad CSV elapsed improvement remains unproven, and the refined source
+  was not remeasured for allocation.
+  [Sources, controls and adverse results](../benchmarks/results/2026-11-06-unified-invocations/README.md).
 
 These are different source pairs and workloads; percentages are not additive or
 claims about every script. Further complete-script performance work remains active.

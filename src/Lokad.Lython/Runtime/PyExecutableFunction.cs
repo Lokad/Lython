@@ -39,8 +39,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
     {
         // Closed native bodies cannot observe a function namespace or suspend.
-        // Class and nested definitions keep their lexical/class-cell machinery.
-        if (_codeObject.NativeBody is null || OwnerType is not null || Closure.ParentContext is not null
+        // Nested and class-cell scopes keep their lexical machinery.
+        if (_codeObject.NativeBody is null || Closure.ParentContext is not null
             || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.ClassCell is not null
             || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
         {

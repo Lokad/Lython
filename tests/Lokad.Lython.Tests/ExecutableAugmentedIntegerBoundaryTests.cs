@@ -140,10 +140,8 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
     private sealed class BudgetPad(long available, PyString result) : LythonRuntime.ICallable
     {
         internal long Bytes;
-        internal LythonRuntime.ExecutableFrameState? Frame;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
         {
-            Frame = context.CurrentExecutableFrame;
             var governor = context.MemoryGovernor;
             Bytes = HostAllowanceBytes - governor.CurrentAccountedBytes - available;
             governor.Reserve(Bytes, span);
@@ -162,6 +160,9 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
         var budget = new LythonMemoryBudget(HostAllowanceBytes);
         using var owner = budget.CreateScope();
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        // Observe the real namespace after cleanup, not an expired slot borrow.
+        // The compiler still emits the same local arithmetic/store instructions.
+        context.MirrorLocalStores = true;
         var original = BigInteger.Parse("18446744073709551615", CultureInfo.InvariantCulture);
         context.Variables["seed"] = original;
         var padding = new BudgetPad(0, PyString.FromString("funded", context.MemoryGovernor));
@@ -171,8 +172,7 @@ public sealed class ExecutableAugmentedIntegerBoundaryTests
         Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
         Assert.Equal(4, error.Span?.Line);
-        Assert.True(padding.Frame!.TryResolveOwnLocal("left", out var retained));
-        Assert.Equal(original, Assert.IsType<BigInteger>(retained));
+        Assert.Equal(original, Assert.IsType<BigInteger>(context.Variables["left"]));
         Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
         AssertUnwound(context);
         owner.Dispose();

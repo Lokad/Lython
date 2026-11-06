@@ -61,6 +61,14 @@ refusal and explicit cleanup. Repeated-call controls assert stable retained
 capacity, then exact recovery when cache ownership ends. Retained inputs, kwargs,
 closures and suspended users keep their independent funding throughout.
 
+[Completed invocation lifetimes](Lokad.Lython.Tests/CompletedInvocationLifetimeTests.cs)
+keep an escaped closure usable while checking that relinquished workspace becomes
+collectible, and verify retained-context headroom against actual managed shell
+construction. These checks share the existing nonparallel allocation collection.
+Active frame inspections are borrows: after completion, operand checks require
+detached storage and bindings. Surviving namespace observations preserve the
+independent unchanged-target checks after cancellation or admission refusal.
+
 ## Focused development
 
 Put the SDK pinned in `global.json` on PATH (currently .NET 11 RC3,

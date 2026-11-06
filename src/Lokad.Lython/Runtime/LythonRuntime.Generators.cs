@@ -15,7 +15,6 @@ internal sealed partial class LythonRuntime
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
         IPyGovernedValue
     {
-        private ExecutableFrameInterpreter? _interpreter;
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;
         private bool _started, _completed, _running;
@@ -53,7 +52,7 @@ internal sealed partial class LythonRuntime
                 ChargeClosureRetention(context.FunctionClosureContext, governor, span);
                 if (code.RequiresLocalVariableMirroring) RetainLocalsForLambda(context.FunctionClosureContext);
                 frame.Variables[".0"] = outer.Iterator;
-                generator._interpreter!.SeedGeneratorOuter(outer.Iterator, cursor);
+                frame.SeedGeneratorOuter(outer.Iterator, cursor);
                 cursor = null; // ownership transferred to the retained frame
                 return generator;
             }
@@ -107,7 +106,7 @@ internal sealed partial class LythonRuntime
                     cells = new ExecutableCell[code.LocalNames.Count];
                     foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
                 }
-                _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells, stack);
+                frame.InitializeExecutableExecution(code, locals, cells, closureCells, stack);
             }
             catch
             {
@@ -140,17 +139,15 @@ internal sealed partial class LythonRuntime
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
             if (!_started && injected is not null) { CompleteSynchronously(); throw injected; }
             var frame = _frame!;
-            var interpreter = _interpreter!;
-            var previousSlots = frame.CurrentExecutableFrame;
             var previousException = frame.State.CurrentException;
             var entered = false;
             try
             {
-                EnterFrame(frame, interpreter, previousException);
+                EnterFrame(frame, previousException);
                 entered = true;
-                interpreter.Resume(sent, injected);
-                interpreter.Execute();
-                var result = ReadResult(frame, interpreter);
+                frame.Resume(sent, injected);
+                frame.Execute();
+                var result = ReadResult(frame);
                 if (!result.HasValue) CompleteSynchronously();
                 return result;
             }
@@ -163,7 +160,7 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { CompleteSynchronously(); throw; }
-            finally { if (entered) LeaveFrame(frame, previousSlots, previousException); }
+            finally { if (entered) LeaveFrame(frame, previousException); }
         }
 
         private async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected)
@@ -171,17 +168,15 @@ internal sealed partial class LythonRuntime
             if (!CanAdvance(sent, injected)) return PyIterationResult.End;
             if (!_started && injected is not null) { await CompleteAsync(true).ConfigureAwait(false); throw injected; }
             var frame = _frame!;
-            var interpreter = _interpreter!;
-            var previousSlots = frame.CurrentExecutableFrame;
             var previousException = frame.State.CurrentException;
             var entered = false;
             try
             {
-                EnterFrame(frame, interpreter, previousException);
+                EnterFrame(frame, previousException);
                 entered = true;
-                interpreter.Resume(sent, injected);
-                await interpreter.ExecuteAsync().ConfigureAwait(false);
-                var result = ReadResult(frame, interpreter);
+                frame.Resume(sent, injected);
+                await frame.ExecuteAsync().ConfigureAwait(false);
+                var result = ReadResult(frame);
                 if (!result.HasValue) await CompleteAsync(true).ConfigureAwait(false);
                 return result;
             }
@@ -194,7 +189,7 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             catch { await CompleteAsync(true).ConfigureAwait(false); throw; }
-            finally { if (entered) LeaveFrame(frame, previousSlots, previousException); }
+            finally { if (entered) LeaveFrame(frame, previousException); }
         }
 
         private bool CanAdvance(object sent, LythonRuntimeException? injected)
@@ -206,32 +201,32 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private void EnterFrame(ExecutionContext frame, ExecutableFrameInterpreter interpreter, PyException? previousException)
+        private void EnterFrame(ExecutionContext frame, PyException? previousException)
         {
             frame.EnterFunctionCall(_span);
             try { frame.EnterInterpreterFrame(_span); }
             catch { frame.LeaveFunctionCall(); throw; }
             _running = true;
-            frame.EnterExecutableSlots(interpreter);
-            interpreter.SetCallerException(previousException);
-            frame.State.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
+            frame.EnterExecutableSlots();
+            frame.SetCallerException(previousException);
+            frame.State.SetCurrentException(frame.HasActiveHandler ? _suspendedException : previousException);
             _started = true;
         }
 
-        private void LeaveFrame(ExecutionContext frame, ExecutableFrameState? previousSlots, PyException? previousException)
+        private void LeaveFrame(ExecutionContext frame, PyException? previousException)
         {
             _running = false;
             frame.State.SetCurrentException(previousException);
-            frame.LeaveExecutableSlots(previousSlots);
+            frame.LeaveExecutableSlots();
             frame.LeaveInterpreterFrame();
             frame.LeaveFunctionCall();
         }
 
-        private PyIterationResult ReadResult(ExecutionContext frame, ExecutableFrameInterpreter interpreter)
+        private PyIterationResult ReadResult(ExecutionContext frame)
         {
             _suspendedException = frame.State.CurrentException;
-            if (interpreter.HasYield) return PyIterationResult.Yield(interpreter.YieldValue);
-            ReturnValue = interpreter.HasFrameReturn ? interpreter.FrameReturnValue : PyNone.Instance;
+            if (frame.HasYield) return PyIterationResult.Yield(frame.YieldValue);
+            ReturnValue = frame.HasFrameReturn ? frame.FrameReturnValue : PyNone.Instance;
             return PyIterationResult.End;
         }
 
@@ -243,8 +238,8 @@ internal sealed partial class LythonRuntime
         {
             try
             {
-                if (_interpreter is not null)
-                    await _interpreter.ReleaseGeneratorTemporariesAsync(asynchronous).ConfigureAwait(false);
+                if (_frame is not null)
+                    await _frame.ReleaseGeneratorTemporariesAsync(asynchronous).ConfigureAwait(false);
             }
             finally { Complete(); }
         }
@@ -252,8 +247,8 @@ internal sealed partial class LythonRuntime
         private void Complete()
         {
             _completed = true;
+            _frame?.DetachExecutableExecution();
             _frame = null;
-            _interpreter = null;
             _suspendedException = null;
         }
 

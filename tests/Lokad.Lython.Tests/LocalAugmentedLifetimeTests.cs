@@ -66,8 +66,7 @@ public sealed class LocalAugmentedLifetimeTests
                 var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
                 if (refuse) Assert.Same(hold.Refusal, error);
                 else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
-                Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
-                Assert.Same(observe.Left, left);
+                Assert.Same(observe.Left, context.Variables["left"]);
             }
             else Assert.Equal(false, await pending);
         }
@@ -136,8 +135,7 @@ public sealed class LocalAugmentedLifetimeTests
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
             if (refuse) Assert.Same(hold.Refusal, error);
             else Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
-            Assert.True(observe.Frame!.TryResolveOwnLocal("left", out var left));
-            Assert.Same(observe.Left, left);
+            Assert.Same(observe.Left, context.Variables["left"]);
         }
         else Assert.Equal(true, await pending);
         Assert.True(hold.Finished);

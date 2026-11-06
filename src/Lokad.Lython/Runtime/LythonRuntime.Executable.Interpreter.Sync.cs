@@ -2,7 +2,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         private void ExecuteUntilCall()
         {

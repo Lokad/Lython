@@ -21,7 +21,8 @@ public sealed class LambdaExecutableTests
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
         cells[outer.LocalNameToSlot["value"]] = cell;
-        context.EnterExecutableSlots(new LythonRuntime.ExecutableFrameState(outer, values, cells, null));
+        context.InitializeExecutableBindings(outer, values, cells, null);
+        context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
             .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, LythonRuntime.ExecutableCell[]>>();
         var baseline = context.MemoryGovernor.CurrentAccountedBytes;
@@ -40,7 +41,7 @@ public sealed class LambdaExecutableTests
             Assert.Equal(baseline, context.MemoryGovernor.CurrentAccountedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         }
-        finally { context.LeaveExecutableSlots(null); }
+        finally { context.LeaveExecutableSlots(); }
     }
 
     [Theory]

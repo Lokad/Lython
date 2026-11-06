@@ -73,7 +73,8 @@ public sealed class ComprehensionLambdaExecutableTests
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
         cells[outer.LocalNameToSlot["offset"]] = parentCell;
-        context.EnterExecutableSlots(new LythonRuntime.ExecutableFrameState(outer, values, cells, null));
+        context.InitializeExecutableBindings(outer, values, cells, null);
+        context.EnterExecutableSlots();
         var previousClosure = context.FunctionClosureContext;
         var scope = context.EnterComprehension(facts);
         var held = Lokad.Lython.Runtime.Text.PyString.FromString("held", context.MemoryGovernor, null);
@@ -117,7 +118,7 @@ public sealed class ComprehensionLambdaExecutableTests
         {
             if (deny) governor.Release(padding);
             scope.Dispose();
-            context.LeaveExecutableSlots(null);
+            context.LeaveExecutableSlots();
         }
         Assert.Same(previousClosure, context.FunctionClosureContext);
         Assert.False(context.TryGetInlinedBinding("value", out _));

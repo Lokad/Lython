@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         private ValueTask<bool> ExecuteMemberLoadAsync(ExecutableInstruction instruction)
         {
@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
                 else PublishInstructionResult(instruction, cached);
                 return new(false);
             }
-            var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], _context, instruction.Span);
+            var resolved = TryResolveRuntimeMemberAsync(target, _codeObject.Names[instruction.NameIndex], this, instruction.Span);
             if (!resolved.IsCompleted) return AwaitMemberLoadAsync(resolved, target, instruction);
             CompleteMemberLoad(resolved.GetAwaiter().GetResult(), target, instruction);
             return new(false);
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
         private void CompleteMemberLoad((bool Found, object Value) member, object target, ExecutableInstruction instruction)
         {
             if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target,
-                _codeObject.Names[instruction.NameIndex], instruction.Span, _context);
+                _codeObject.Names[instruction.NameIndex], instruction.Span, this);
             PublishMemberCache(instruction, target, member.Value);
             if (instruction.OpCode == ExecutableOpCode.LoadCallReceiver)
             {
@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<bool> ExecuteConditionalJumpAsync(ExecutableInstruction instruction)
         {
-            if (await IsTruthyAsync(_stack.TakeValue(instruction.InputStart, instruction.LiveExtent), _context, instruction.Span).ConfigureAwait(false))
+            if (await IsTruthyAsync(_stack.TakeValue(instruction.InputStart, instruction.LiveExtent), this, instruction.Span).ConfigureAwait(false))
                 return false;
             _instructionIndex = instruction.TargetIndex;
             return true;
@@ -93,8 +93,8 @@ internal sealed partial class LythonRuntime
             if (_delegation is null)
             {
                 var source = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                _delegation = new GeneratorDelegation(await IterAsync([source], instruction.Span, _context).ConfigureAwait(false),
-                    _context, instruction.Span);
+                _delegation = new GeneratorDelegation(await IterAsync([source], instruction.Span, this).ConfigureAwait(false),
+                    this, instruction.Span);
             }
             CompleteDelegatedStep(await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false), instruction);
             return false;
@@ -122,20 +122,20 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.Import:
                     var import = _codeObject.Imports[instruction.ImportIndex];
-                    await ExecuteImportAsync(import, _context).ConfigureAwait(false);
+                    await ExecuteImportAsync(import, this).ConfigureAwait(false);
                     // Import stores update their bound slots directly. Copying
                     // the whole namespace would erase unrelated unmirrored locals.
                     return;
                 case ExecutableOpCode.DefineFunction:
                     await ExecuteExecutableFunctionDefinitionAsync(_codeObject, _codeObject.Functions[instruction.FunctionIndex],
-                        _locals, _localCells, _context, true).ConfigureAwait(false);
+                        _locals, _localCells, this, true).ConfigureAwait(false);
                     return;
                 default:
                     await DispatchLoweredStatementAsync(_codeObject.StatementFallbacks[instruction.StatementFallbackIndex],
-                        _context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
+                        this, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
                     break;
             }
-            SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
+            SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, this);
         }
 
         private async ValueTask<bool> ExecuteContextManagerAsync(ExecutableInstruction instruction)
@@ -143,12 +143,12 @@ internal sealed partial class LythonRuntime
             if (instruction.OpCode == ExecutableOpCode.ResolveContextManager)
             {
                 var target = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                PublishInstructionResult(instruction, await PyContextManagers.ResolveAsync(target, instruction.Span, _context).ConfigureAwait(false));
+                PublishInstructionResult(instruction, await PyContextManagers.ResolveAsync(target, instruction.Span, this).ConfigureAwait(false));
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
-                var enteredContext = await PyContextManagers.EnterAsync(RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span), instruction.Span, _context).ConfigureAwait(false);
+                var enteredContext = await PyContextManagers.EnterAsync(RequireContextManager(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), instruction.Span), instruction.Span, this).ConfigureAwait(false);
                 PublishInstructionResult(instruction, enteredContext);
                 return false;
             }
@@ -158,14 +158,14 @@ internal sealed partial class LythonRuntime
                 if (_pendingAbrupt is PendingException { Exception: var exception } pendingException &&
                     (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                 {
-                    if (await PyContextManagers.ExitAsync(manager, ResolvePythonExceptionType(exception, _context),
-                        CreatePythonExceptionInstance(exception), PyNone.Instance, instruction.Span, _context).ConfigureAwait(false))
+                    if (await PyContextManagers.ExitAsync(manager, ResolvePythonExceptionType(exception, this),
+                        CreatePythonExceptionInstance(exception), PyNone.Instance, instruction.Span, this).ConfigureAwait(false))
                     {
                         RestoreSuppressedCompletion();
                     }
                 }
                 else _ = await PyContextManagers.ExitAsync(manager, PyNone.Instance, PyNone.Instance, PyNone.Instance,
-                    instruction.Span, _context).ConfigureAwait(false);
+                    instruction.Span, this).ConfigureAwait(false);
                 return false;
             }
             throw new InvalidOperationException("Unexpected asynchronous context-manager instruction.");
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
             var slot = instruction.InputStart;
             try
             {
-                var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, _context);
+                var pending = PyIteration.Cursor.CreateAsync(_stack[slot], instruction.Span, this);
                 if (!pending.IsCompleted) return AwaitIteratorCreationAsync(pending, slot);
                 _stack[slot] = pending.GetAwaiter().GetResult();
                 return default;
@@ -201,22 +201,22 @@ internal sealed partial class LythonRuntime
                     case ExecutableOpCode.Subscript:
                         result = _preparedTypeSubscription is not null
                             ? await InvokePreparedTypeSubscription(_stack[first + 1], instruction.Span, true).ConfigureAwait(false)
-                            : await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, _context).ConfigureAwait(false);
+                            : await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, this).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Slice:
                         var (start, end, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, instruction.InputStart + 1);
-                        result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, _context).ConfigureAwait(false);
+                        result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, this).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Binary:
                         result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator,
-                            ReadOperand(first), ReadOperand(instruction.SecondInput), _context, instruction.Span).ConfigureAwait(false);
+                            ReadOperand(first), ReadOperand(instruction.SecondInput), this, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Augmented:
                         result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
-                            instruction.AugmentedOperator, _context, instruction.Span).ConfigureAwait(false);
+                            instruction.AugmentedOperator, this, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Unary:
-                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), _context, instruction.Span).ConfigureAwait(false);
+                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), this, instruction.Span).ConfigureAwait(false);
                         break;
                     default: throw new InvalidOperationException("Unexpected value operation.");
                 }

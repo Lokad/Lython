@@ -12,7 +12,7 @@ internal abstract class ExecutableTemporaryValue : IDisposable
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         private ValueTask ExecutePreparedOperationAsync(ExecutableInstruction instruction, bool asynchronous)
         {
@@ -23,15 +23,15 @@ internal sealed partial class LythonRuntime
                 case ExecutableStartComprehension start:
                 {
                     var comprehensionOuter = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var scope = _context.EnterComprehension(start.ScopeFacts);
+                    var scope = EnterComprehension(start.ScopeFacts);
                     var onStack = false;
                     try
                     {
                         object result = start.Kind switch
                         {
-                            ExecutableDisplayKind.Set => new PySet(_context.MemoryGovernor, span),
-                            ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
-                            _ => new PyList([], _context.MemoryGovernor, span),
+                            ExecutableDisplayKind.Set => new PySet(MemoryGovernor, span),
+                            ExecutableDisplayKind.Dictionary => new PyDict(MemoryGovernor, span),
+                            _ => new PyList([], MemoryGovernor, span),
                         };
                         _stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, scope);
                         onStack = true;
@@ -49,25 +49,25 @@ internal sealed partial class LythonRuntime
                 case ExecutableStartDisplay start:
                     object collection = start.Kind switch
                     {
-                        ExecutableDisplayKind.Set => new PySet(_context.MemoryGovernor, span),
-                        ExecutableDisplayKind.Dictionary => new PyDict(_context.MemoryGovernor, span),
-                        _ => new PyList([], _context.MemoryGovernor, span),
+                        ExecutableDisplayKind.Set => new PySet(MemoryGovernor, span),
+                        ExecutableDisplayKind.Dictionary => new PyDict(MemoryGovernor, span),
+                        _ => new PyList([], MemoryGovernor, span),
                     };
                     PublishInstructionResult(instruction, collection);
                     break;
                 case ExecutableFinishTuple:
                     var expanded = (PyList)_stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, _context.MemoryGovernor, span);
+                    var tuple = expanded.Count == 0 ? PyTuple.Empty : new PyTuple(expanded, MemoryGovernor, span);
                     PublishInstructionResult(instruction, tuple);
                     break;
                 case ExecutableStartCall call:
                     var targetSlot = instruction.InputStart;
-                    try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
+                    try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, this, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
                     catch { _stack.RetireTo(targetSlot); throw; }
                     break;
                 case ExecutableStartFormattedString formatted:
-                    var output = new GovernedByteBuilder(_context.MemoryGovernor, span, formatted.InitialCapacity,
-                        _context.State.CancellationToken);
+                    var output = new GovernedByteBuilder(MemoryGovernor, span, formatted.InitialCapacity,
+                        State.CancellationToken);
                     try { PublishInstructionResult(instruction, output); }
                     catch { output.Release(); throw; }
                     break;
@@ -105,20 +105,20 @@ internal sealed partial class LythonRuntime
                     if (!append.Unpacking) Add(value);
                     else if (asynchronous)
                     {
-                        await foreach (var item in ToSequenceAsync(value, span, _context).ConfigureAwait(false)) Add(item);
+                        await foreach (var item in ToSequenceAsync(value, span, this).ConfigureAwait(false)) Add(item);
                     }
-                    else foreach (var item in ToSequence(value, span, _context)) Add(item);
+                    else foreach (var item in ToSequence(value, span, this)) Add(item);
                     break;
 
                     void Add(object item)
                     {
-                        _context.CheckExecution(span);
-                        if (destination is PyList list) AddListDisplayValue(list, item, span, _context);
+                        CheckExecution(span);
+                        if (destination is PyList list) AddListDisplayValue(list, item, span, this);
                         else if (destination is PySet set)
                         {
-                            using var ambient = PyStructuralGuard.PushAmbient(_context, span);
+                            using var ambient = PyStructuralGuard.PushAmbient(this, span);
                             set.Add(ValidateSetItem(item, span));
-                            _context.CheckExecution(span);
+                            CheckExecution(span);
                         }
                     }
                 case ExecutableStoreDictionaryItem item:
@@ -131,34 +131,34 @@ internal sealed partial class LythonRuntime
                     else if (itemValue is PyInstance mapping)
                     {
                         var keysMember = asynchronous
-                            ? await TryResolveRuntimeMemberAsync(mapping, "keys", _context, span).ConfigureAwait(false)
-                            : TryResolveRuntimeMember(mapping, "keys", _context, span, out var member)
+                            ? await TryResolveRuntimeMemberAsync(mapping, "keys", this, span).ConfigureAwait(false)
+                            : TryResolveRuntimeMember(mapping, "keys", this, span, out var member)
                                 ? (Found: true, Value: member) : (Found: false, Value: (object)PyNone.Instance);
                         if (!keysMember.Found) throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(mapping) + "' object is not a mapping", span);
                         var keys = asynchronous
-                            ? await InvokeCallableTargetAsync(keysMember.Value, span, span, _context, () => new ValueTask<CallArgumentValue[]>([])).ConfigureAwait(false)
-                            : InvokeCallableTarget(keysMember.Value, span, span, _context, () => []);
-                        var snapshot = new PyList([], _context.MemoryGovernor, span);
+                            ? await InvokeCallableTargetAsync(keysMember.Value, span, span, this, () => new ValueTask<CallArgumentValue[]>([])).ConfigureAwait(false)
+                            : InvokeCallableTarget(keysMember.Value, span, span, this, () => []);
+                        var snapshot = new PyList([], MemoryGovernor, span);
                         if (asynchronous)
                         {
-                            await foreach (var key in ToSequenceAsync(keys, span, _context).ConfigureAwait(false))
-                                AddListDisplayValue(snapshot, key, span, _context);
+                            await foreach (var key in ToSequenceAsync(keys, span, this).ConfigureAwait(false))
+                                AddListDisplayValue(snapshot, key, span, this);
                         }
-                        else foreach (var key in ToSequence(keys, span, _context)) AddListDisplayValue(snapshot, key, span, _context);
+                        else foreach (var key in ToSequence(keys, span, this)) AddListDisplayValue(snapshot, key, span, this);
                         foreach (var key in snapshot)
-                            Put(key, asynchronous ? await GetUserItemAsync(mapping, key, _context, span).ConfigureAwait(false)
-                                : GetUserItem(mapping, key, _context, span));
+                            Put(key, asynchronous ? await GetUserItemAsync(mapping, key, this, span).ConfigureAwait(false)
+                                : GetUserItem(mapping, key, this, span));
                     }
-                    else foreach (var pair in EnumerateMappingItems(itemValue, _context, span)) Put(pair.Key, pair.Value);
+                    else foreach (var pair in EnumerateMappingItems(itemValue, this, span)) Put(pair.Key, pair.Value);
                     break;
 
                     void Put(object key, object itemValue)
                     {
-                        _context.CheckExecution(span);
-                        using var ambient = PyStructuralGuard.PushAmbient(_context, span);
+                        CheckExecution(span);
+                        using var ambient = PyStructuralGuard.PushAmbient(this, span);
                         var dictionary = (PyDict)_stack[instruction.InputStart];
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
-                        _context.CheckExecution(span);
+                        CheckExecution(span);
                     }
                 case ExecutableAppendCall argument:
                     var argumentSlot = instruction.ResultSlot;
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableConvertFormattedValue conversion:
                     var convertedField = await FormatSuspendedFieldAsync(_stack.TakeValue(instruction.InputStart, instruction.ResultSlot), conversion.Conversion,
-                        null, _context, span, asynchronous).ConfigureAwait(false);
+                        null, this, span, asynchronous).ConfigureAwait(false);
                     PublishInstructionResult(instruction, convertedField);
                     break;
                 case ExecutableFormatField field:
@@ -187,14 +187,14 @@ internal sealed partial class LythonRuntime
                     {
                         var formattedDestination = (GovernedByteBuilder)_stack[instruction.InputStart];
                         if (fieldValue is PyInstance instance)
-                            formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, _context, span, asynchronous).ConfigureAwait(false));
-                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, _context, span, field.PreparedFormat);
+                            formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, this, span, asynchronous).ConfigureAwait(false));
+                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, this, span, field.PreparedFormat);
                     }
-                    else PublishInstructionResult(instruction, await FormatSuspendedFieldAsync(fieldValue, null, specifier, _context, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
+                    else PublishInstructionResult(instruction, await FormatSuspendedFieldAsync(fieldValue, null, specifier, this, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                    var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, _context,
+                    var generatorExpression = await PyGenerator.CreateExpressionAsync(comprehension.CodeObject, this,
                         outer, comprehension.OuterSpan, span, asynchronous).ConfigureAwait(false);
                     PublishInstructionResult(instruction, generatorExpression);
                     break;

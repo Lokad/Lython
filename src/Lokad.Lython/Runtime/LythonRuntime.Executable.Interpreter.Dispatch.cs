@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         private enum InstructionPause { Boundary, Operation, Disposal }
 
@@ -22,7 +22,7 @@ internal sealed partial class LythonRuntime
             {
                 var jumped = false;
                 ref readonly var instruction = ref instructions[_instructionIndex];
-                _context.State.CheckExecution(instruction.Span);
+                State.CheckExecution(instruction.Span);
                 try
                 {
                     if (_injectedException is not null && _delegation is null)
@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                             return InstructionPause.Boundary;
                         case ExecutableOpCode.LoadLocal:
                             PublishInstructionResult(instruction,
-                                LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, _context));
+                                LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, this));
                             break;
                         case ExecutableOpCode.StoreLocal:
                             StoreExecutableLocal(instruction);
@@ -85,7 +85,7 @@ internal sealed partial class LythonRuntime
                                 if (_delegation is null)
                                 {
                                     var source = _stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
-                                    _delegation = new GeneratorDelegation(Iter([source], instruction.Span, _context), _context, instruction.Span);
+                                    _delegation = new GeneratorDelegation(Iter([source], instruction.Span, this), this, instruction.Span);
                                 }
                                 CompleteDelegatedStep(_delegation.Advance(_sentValue, _injectedException), instruction);
                             }

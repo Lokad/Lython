@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
         {
@@ -33,8 +33,8 @@ internal sealed partial class LythonRuntime
 
             _stack.ForgetResultInput(instruction.ResultSlot);
             ref readonly var store = ref _codeObject.Instructions[_instructionIndex + 1];
-            _context.CheckExecution(store.Span);
-            StoreLocalValue(_codeObject, _locals, _localCells, _context, store.LocalSlot, value, store.Span);
+            CheckExecution(store.Span);
+            StoreLocalValue(_codeObject, _locals, _localCells, this, store.LocalSlot, value, store.Span);
             _instructionIndex++;
         }
     }

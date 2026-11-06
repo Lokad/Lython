@@ -202,6 +202,11 @@ for class suites, annotations, lazy type metadata and actual statement-opcode
 consumers. Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
+Executable state lives on its invocation's lexical context; a separate interpreter
+object is unnecessary. Terminal cleanup finishes pending users, then detaches
+operand storage, private caches, handler records and caller references. Closures
+can retain that context's names and cells without retaining refunded workspace.
+Suspended generators keep their state until completion and own one context handle.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working
 positions are prepared once. Captures stay private until a complete pattern succeeds;
@@ -252,7 +257,7 @@ distinct per function and reflect later mutation. Private default storage stays
 admitted through awaited evaluation and construction.
 
 Ordinary positional calls to executable functions with slot-local storage advance
-an explicit caller/callee chain in the same interpreter. Type subscription uses
+an explicit caller/callee chain in the same engine. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
 value array until its body and awaited cleanup finish. Local bindings occupy its

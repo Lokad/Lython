@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class ExecutableFrameInterpreter
+    internal sealed partial class ExecutionContext
     {
         // Target shape and physical operands are compiler-owned instructions.
         // Only incomplete protocol operations enter an async continuation.
@@ -24,9 +24,9 @@ internal sealed partial class LythonRuntime
                         var name = _codeObject.Names[instruction.NameIndex];
                         var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
                         if (asynchronous)
-                            mutation = CompleteMemberMutation(PyMemberAccess.TryAssignAsync(receiver, name, value, _context, targetSpan),
+                            mutation = CompleteMemberMutation(PyMemberAccess.TryAssignAsync(receiver, name, value, this, targetSpan),
                                 receiver, name, targetSpan, deleting: false);
-                        else SetMemberValue(receiver, name, value, targetSpan, _context);
+                        else SetMemberValue(receiver, name, value, targetSpan, this);
                         break;
                     }
                     case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
@@ -35,8 +35,8 @@ internal sealed partial class LythonRuntime
                         var key = _stack[first + (instruction.ValueLast ? 1 : 2)];
                         var value = _stack[first + (instruction.ValueLast ? 2 : 0)];
                         var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
-                        if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, key, value, targetSpan, _context);
-                        else SetSubscriptValue(receiver, key, value, targetSpan, _context);
+                        if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, key, value, targetSpan, this);
+                        else SetSubscriptValue(receiver, key, value, targetSpan, this);
                         break;
                     }
                     case ExecutableOpCode.ReadRetainedSubscript:
@@ -45,8 +45,8 @@ internal sealed partial class LythonRuntime
                         try
                         {
                             read = asynchronous
-                                ? ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, _context)
-                                : new(ReadSubscriptValue(_stack[first], _stack[first + 1], span, _context));
+                                ? ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], span, this)
+                                : new(ReadSubscriptValue(_stack[first], _stack[first + 1], span, this));
                         }
                         catch { _stack.RetireTo(first); throw; }
                         return CompleteTargetRead(read, instruction);
@@ -62,14 +62,14 @@ internal sealed partial class LythonRuntime
                             var step = _stack[first + 3];
                             if (receiver is PyInstance instance)
                             {
-                                var key = CreateSliceValue(start, stop, step, span, _context);
+                                var key = CreateSliceValue(start, stop, step, span, this);
                                 // Retain this exact key through RHS and augmented store.
                                 _stack[first + 1] = key;
-                                read = asynchronous ? GetUserItemAsync(instance, key, _context, span)
-                                    : new(GetUserItem(instance, key, _context, span));
+                                read = asynchronous ? GetUserItemAsync(instance, key, this, span)
+                                    : new(GetUserItem(instance, key, this, span));
                             }
-                            else read = asynchronous ? ReadSliceValueAsync(receiver, start, stop, step, span, _context)
-                                : new(ReadSliceValue(receiver, start, stop, step, span, _context));
+                            else read = asynchronous ? ReadSliceValueAsync(receiver, start, stop, step, span, this)
+                                : new(ReadSliceValue(receiver, start, stop, step, span, this));
                         }
                         catch { _stack.RetireTo(first); throw; }
                         return CompleteTargetRead(read, instruction);
@@ -85,51 +85,51 @@ internal sealed partial class LythonRuntime
                         var targetSpan = (LythonSourceSpan)_codeObject.Constants[instruction.TargetSpanIndex]!;
                         if (instruction.ValueLast && receiver is PyInstance)
                         {
-                            if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, (PySlice)start, value, targetSpan, _context);
-                            else SetSubscriptValue(receiver, (PySlice)start, value, targetSpan, _context);
+                            if (asynchronous) mutation = SetHeaderSubscriptAsync(receiver, (PySlice)start, value, targetSpan, this);
+                            else SetSubscriptValue(receiver, (PySlice)start, value, targetSpan, this);
                         }
-                        else if (asynchronous) mutation = ExecuteSliceAssignmentAsync(receiver, start, stop, step, value, targetSpan, _context);
-                        else ExecuteSliceAssignment(receiver, start, stop, step, value, targetSpan, _context);
+                        else if (asynchronous) mutation = ExecuteSliceAssignmentAsync(receiver, start, stop, step, value, targetSpan, this);
+                        else ExecuteSliceAssignment(receiver, start, stop, step, value, targetSpan, this);
                         break;
                     }
                     case ExecutableOpCode.UnpackValues:
                     {
                         var value = _stack.TakeValue(first, instruction.ResultSlot);
                         if (asynchronous)
-                            return CompleteTargetUnpack(MaterializeHeaderSequenceAsync(value, span, _context,
+                            return CompleteTargetUnpack(MaterializeHeaderSequenceAsync(value, span, this,
                                 instruction.UnpackLayout.MaximumReadCount), instruction);
-                        using var materialized = MaterializeUnpackingSequence(value, span, _context, instruction.UnpackLayout.MaximumReadCount);
+                        using var materialized = MaterializeUnpackingSequence(value, span, this, instruction.UnpackLayout.MaximumReadCount);
                         PublishUnpackedTarget(materialized.Items, instruction);
                         return default;
                     }
                     case ExecutableOpCode.FailAssertion:
-                        ThrowAssertionError(instruction.HasAssertionMessage ? _stack.TakeValue(first, instruction.LiveExtent) : null, _context, span);
+                        ThrowAssertionError(instruction.HasAssertionMessage ? _stack.TakeValue(first, instruction.LiveExtent) : null, this, span);
                         return default;
                     case ExecutableOpCode.Raise:
                         var cause = instruction.HasRaiseCause ? _stack.TakeValue(first + 1, first + 1) : null;
-                        ThrowRaisedValue(_stack.TakeValue(first, instruction.LiveExtent), instruction.HasRaiseCause, cause, _context, span);
+                        ThrowRaisedValue(_stack.TakeValue(first, instruction.LiveExtent), instruction.HasRaiseCause, cause, this, span);
                         return default;
                     case ExecutableOpCode.DeleteName:
                         var deletedName = _codeObject.Names[instruction.NameIndex];
-                        if (!DeleteName(deletedName, _context, span)) throw MissingDeletedName(deletedName, _context, span);
+                        if (!DeleteName(deletedName, this, span)) throw MissingDeletedName(deletedName, this, span);
                         return default;
                     case ExecutableOpCode.DeleteMember:
                     {
                         var receiver = _stack[first];
                         var name = _codeObject.Names[instruction.NameIndex];
-                        mutation = CompleteMemberMutation(asynchronous ? PyMemberAccess.TryDeleteAsync(receiver, name, _context, span)
-                            : new(PyMemberAccess.TryDelete(receiver, name, _context, span)), receiver, name, span, deleting: true);
+                        mutation = CompleteMemberMutation(asynchronous ? PyMemberAccess.TryDeleteAsync(receiver, name, this, span)
+                            : new(PyMemberAccess.TryDelete(receiver, name, this, span)), receiver, name, span, deleting: true);
                         break;
                     }
                     case ExecutableOpCode.DeleteSubscript:
-                        if (asynchronous) mutation = ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, _context);
-                        else DeleteSubscriptValue(_stack[first], _stack[first + 1], span, _context);
+                        if (asynchronous) mutation = ExecuteResolvedSubscriptDeletionAsync(_stack[first], _stack[first + 1], span, this);
+                        else DeleteSubscriptValue(_stack[first], _stack[first + 1], span, this);
                         break;
                     case ExecutableOpCode.DeleteSlice:
                     {
                         var (start, stop, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, first + 1);
-                        if (asynchronous) mutation = ExecuteSliceDeletionAsync(_stack[first], start, stop, step, span, _context);
-                        else ExecuteSliceDeletion(_stack[first], start, stop, step, span, _context);
+                        if (asynchronous) mutation = ExecuteSliceDeletionAsync(_stack[first], start, stop, step, span, this);
+                        else ExecuteSliceDeletion(_stack[first], start, stop, step, span, this);
                         break;
                     }
                     default: throw new InvalidOperationException("Unexpected executable target instruction.");
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
         private void RequireMemberMutation(bool succeeded, object receiver, string name, LythonSourceSpan span, bool deleting)
         {
             if (succeeded) return;
-            if (deleting) throw PyMemberAccess.CreateMissingMemberError(receiver, name, span, _context, operation: MissingMemberOperation.Delete);
+            if (deleting) throw PyMemberAccess.CreateMissingMemberError(receiver, name, span, this, operation: MissingMemberOperation.Delete);
             throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", span);
         }
 
@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
             {
                 if (i == layout.StarredTargetIndex)
                 {
-                    var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), _context.MemoryGovernor, instruction.Span);
+                    var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), MemoryGovernor, instruction.Span);
                     _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i, instruction.ResultSlot + layout.TargetCount - i, rest);
                 }
                 else _stack.PublishValue(instruction.ResultSlot + layout.TargetCount - 1 - i,

@@ -16,8 +16,9 @@ public sealed class NativeAggregateStateTests
         var context = Context();
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
         CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyTuple.Empty)];
-        var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
-        context.EnterExecutableSlots(previous);
+        var previous = context;
+        context.InitializeExecutableBindings(Compile("pass\n").EntryPoint, [], null, null);
+        context.EnterExecutableSlots();
         var funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentCommittedBytes;
         context.MemoryGovernor.Reserve(funding, Span);
         var initial = context.MemoryGovernor.CurrentReservedBytes;
@@ -31,7 +32,7 @@ public sealed class NativeAggregateStateTests
         finally
         {
             context.MemoryGovernor.ReleaseReserved(funding);
-            context.LeaveExecutableSlots(null);
+            context.LeaveExecutableSlots();
         }
     }
 
@@ -142,8 +143,9 @@ public sealed class NativeAggregateStateTests
         using (var owner = budget.CreateScope())
         {
             var context = Context(owner);
-            var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
-            context.EnterExecutableSlots(previous);
+            var previous = context;
+            context.InitializeExecutableBindings(Compile("pass\n").EntryPoint, [], null, null);
+            context.EnterExecutableSlots();
             var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
             var source = new FailingSource(context, budget);
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
@@ -156,7 +158,7 @@ public sealed class NativeAggregateStateTests
                 Assert.True(source.Checked);
                 Assert.True(budget.ReservedBytes >= source.MinimumFunding);
             }
-            finally { context.LeaveExecutableSlots(null); }
+            finally { context.LeaveExecutableSlots(); }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
