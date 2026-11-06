@@ -1,0 +1,27 @@
+using System.Collections;
+using System.Reflection;
+using System.Text.Json;
+using Lokad.Lython;
+
+using var catalog = JsonDocument.Parse(File.ReadAllText(args[0]));
+var results = new List<object>();
+foreach (var item in catalog.RootElement.GetProperty("cases").EnumerateArray())
+{
+    if (!item.GetProperty("id").GetString()!.StartsWith("scripts.")) continue;
+    using var script = new LythonEngine().Compile(item.GetProperty("source").GetString()!);
+    if (!script.IsValid) throw new Exception(string.Join(";", script.Diagnostics));
+    var runner = (Delegate)typeof(LythonCompiledScript).GetField("_runner", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(script)!;
+    var executable = runner.Target!.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        .Select(f => f.GetValue(runner.Target)).Single(v => v?.GetType().Name == "ExecutableScript")!;
+    var code = executable.GetType().GetProperty("CodeObject")?.GetValue(executable)
+        ?? executable.GetType().GetProperties().Single(p => p.PropertyType.Name == "ExecutableCodeObject").GetValue(executable)!;
+    var functions = ((IEnumerable)code.GetType().GetProperty("Functions")!.GetValue(code)!).Cast<object>().Select(f =>
+    {
+        var child = f.GetType().GetProperty("CodeObject")!.GetValue(f)!;
+        object? Read(string name) => child.GetType().GetProperty(name)!.GetValue(child);
+        return new { name = Read("Name"), capacity = Read("ValueStorageCapacity"), nativeReturn = Read("NativeBody") is not null,
+            mirrored = Read("RequiresLocalVariableMirroring"), locals = ((IEnumerable)Read("LocalNames")!).Cast<object>().ToArray() };
+    }).ToArray();
+    results.Add(new { id = item.GetProperty("id").GetString(), functions });
+}
+Console.WriteLine(JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true }));

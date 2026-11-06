@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [current CSV construction source gate](results/2026-11-06-csv-construction-source-gate/README.md)
+records existing native-return helpers and one stable ordinary CSV frame size.
+One owned capture supplies1,540 guest-thread samples/7.75CPU seconds, with10.06%
+unknown and the partial symbol map preserved. It does not establish frame-only
+dominance or an elapsed/allocation gain. No pool/cache/arena prototype was added;
+record staging and lookup/transport remain separate redesign candidates.
+
 The [canonical key-storage milestone](results/2026-11-06-canonical-key-storage/README.md)
 removes dict/set shadows, the shared side index, BCL set backing and per-numeric
 bookkeeping. Nine Python goldens correct custom hashes over unhashable fields;
@@ -7,7 +14,8 @@ full4207internal/16072public pass per actual11/10. Original B307 adverse CSV/tex
 results remain. B308 single-query refinement supports set−47%/dataclass−30–31%;
 B309328.85s/twelve jobs refreshes four complete scripts across compile/warm/fresh.
 Fresh CPython ratios~1.44CSV/1.8text/1.12JSON/1.34–1.40report. Warm CSV/text debt
-remains; no broad speedup/CPU/allocation claim. K01 platform/stress/package delivery pending.
+remains; no broad speedup/CPU/allocation claim. Local installed Release consumers
+pass both actual runtimes; K01 platform/stress delivery is tracked separately.
 
 The [prepared-pattern milestone](results/2026-11-06-prepared-patterns/README.md)
 replaces raw pattern evaluation/capture dictionaries and the lowered literal CWT
