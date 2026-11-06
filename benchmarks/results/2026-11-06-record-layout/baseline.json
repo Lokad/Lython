@@ -1,0 +1,27 @@
+{
+  "revision": "b542b6015ac9b9265ffa229e43cdc3cb76614634",
+  "state": "design selected; canonical migration not started",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/PyDict.cs": "7f6e2785782f1d1b9c69427b0aa3f52e96c35e13e32099948a0ca17cb12f5358",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "667d9202d0ac0814ce31998f86e5fb02cf3f954be678087c233195472fc0338e",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "b81c10aeb48c835d10d344446d357defe8550f44367f0c7d85f948bd390b59a3",
+    "src/Lokad.Lython/Runtime/ExecutionState.JsonRecordKeys.cs": "5f0237e86f6c7d7251722f5ae4a128023c4b63d44089a8b2065ad46d3678aa25",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "e1641b728fac7529ae61ad2b75071817c7a33256ae6b71b27f8d7b8347043f41",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "2bbb717467106121ecfb052342a4adf00f713aba9b3ed3a06d3c9ed02cc02a21",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "b4c9dee879f36ad352b9224b55339c7295dfe01912fc0c1644405fbb8788385e"
+  },
+  "coreSHA256": {
+    "net11.0": "d970460eff25afb89dae78e5030bcc9cdc8b16c112ce56cbfb1536ec7aecdd59",
+    "net10.0": "d088b8c70a562fdabc505381d8ef7f04c302c44d5943f68199724ec7bd77aa1a"
+  },
+  "frozenBinaries": {
+    "net10.0\\Lokad.Lython.dll": "d088b8c70a562fdabc505381d8ef7f04c302c44d5943f68199724ec7bd77aa1a",
+    "net10.0\\Lokad.Lython.Utf8Regex.dll": "a652e14e912a3c4c7f90ea7b76337ebbf612b51245c64d7a0e5fa27e5bc92216",
+    "net10.0\\Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "net10.0\\Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+    "net11.0\\Lokad.Lython.dll": "d970460eff25afb89dae78e5030bcc9cdc8b16c112ce56cbfb1536ec7aecdd59",
+    "net11.0\\Lokad.Lython.Utf8Regex.dll": "51c750a13e8ba5666d54e2379cbb699ab7841a2b1efa0dcc2078def9821e028f",
+    "net11.0\\Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "net11.0\\Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  }
+}

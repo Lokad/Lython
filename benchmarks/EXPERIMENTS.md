@@ -1,11 +1,23 @@
 # Benchmark experimental history
 
+The [R20 record-storage milestone](results/2026-11-06-record-layout/README.md)
+splits canonical keys/values and shares immutable JSON/CSV metadata, deleting the
+separate sorted JSON hint. B361 completes the quiet five-job source pair in140s:
+JSON warm−10.9–12.5%, report warm−5.4–8.8%/fresh−8.5–10.5%. Separate full-job
+allocation falls about15% JSON/9.4% report. CSV elapsed improves modestly while
+coarse CPU is adverse. Text has5.28% identical-build variation; a bounded59s
+confirmation observes−1.21% to+5.53%, preserving possible regression as accepted
+debt. Retain the coherent redesign for record gains/allocations; the whole-text
+objective stays open. All original failed launch/catalog conditions and partial
+samples are retained; no runtime error or adverse observation is filtered out.
+Full ordinary checks pass both runtimes; platform/Stress/package remain separate.
+
 The [R19 current CPU gate](results/2026-11-06-current-cpu-records/README.md)
 captures 14.41 s of text/report guest work. Ordinary calls/binding are under 2%
 of observed leaves; text prefix plus inlined work remains 20.6%, and report JSON
 reading 11.9%. These are attribution, not predicted savings. Select a canonical
 immutable record-key storage redesign with explicit ordinary-dictionary regression
-debt and deletion of the separate JSON hint; implementation is still pending.
+debt and deletion of the separate JSON hint; R20 implements that selected design.
 Original archive-permission failure and verified recovery are retained.
 
 The [capture ownership milestone](results/2026-11-06-regex-capture-ownership/README.md)

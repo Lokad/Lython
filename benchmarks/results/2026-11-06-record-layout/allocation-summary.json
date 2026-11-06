@@ -1,0 +1,386 @@
+{
+  "sync": {
+    "rows": [
+      {
+        "case": "scripts.csv-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 3599535.0,
+          "candidate": 3141438.5,
+          "before-control": 3599450.5
+        },
+        "candidateChangePercent": -12.726546623383294,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5571634,
+            "PeakRootBytes": 5670226
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3737138,
+            "PeakRootBytes": 3835730
+          },
+          "before": {
+            "PeakExecutionBytes": 5571634,
+            "PeakRootBytes": 5670226
+          }
+        }
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 1655015.5,
+          "candidate": 1655093.0,
+          "before-control": 1655017.5
+        },
+        "candidateChangePercent": 0.004682735599748078,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          },
+          "candidate": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          },
+          "before": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          }
+        }
+      },
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 3059710.5,
+          "candidate": 2601134.5,
+          "before-control": 3059710.5
+        },
+        "candidateChangePercent": -14.987561731738996,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5888855,
+            "PeakRootBytes": 5988343
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4054311,
+            "PeakRootBytes": 4153799
+          },
+          "before": {
+            "PeakExecutionBytes": 5888855,
+            "PeakRootBytes": 5988343
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "allocatedBytesPerJob": {
+          "before": 3646913.5,
+          "candidate": 3302823.0,
+          "before-control": 3646530.0
+        },
+        "candidateChangePercent": -9.435115475044853,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5221343,
+            "PeakRootBytes": 5306015
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3845543,
+            "PeakRootBytes": 3930215
+          },
+          "before": {
+            "PeakExecutionBytes": 5221343,
+            "PeakRootBytes": 5306015
+          }
+        }
+      },
+      {
+        "case": "scripts.config-edit.large",
+        "allocatedBytesPerJob": {
+          "before": 231354.0,
+          "candidate": 231266.5,
+          "before-control": 230962.0
+        },
+        "candidateChangePercent": -0.03782082868677428,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 394617,
+            "PeakRootBytes": 461657
+          },
+          "candidate": {
+            "PeakExecutionBytes": 394625,
+            "PeakRootBytes": 461665
+          },
+          "before": {
+            "PeakExecutionBytes": 394617,
+            "PeakRootBytes": 461657
+          }
+        }
+      },
+      {
+        "case": "scripts.scalar-above-range.large",
+        "allocatedBytesPerJob": {
+          "before": 544270.5,
+          "candidate": 544270.5,
+          "before-control": 544270.5
+        },
+        "candidateChangePercent": 0.0,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          },
+          "candidate": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          },
+          "before": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-padding.large",
+        "allocatedBytesPerJob": {
+          "before": 541118.5,
+          "candidate": 541090.5,
+          "before-control": 541090.5
+        },
+        "candidateChangePercent": -0.00517446733017124,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          },
+          "candidate": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          },
+          "before": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-slices.large",
+        "allocatedBytesPerJob": {
+          "before": 318954.5,
+          "candidate": 318982.5,
+          "before-control": 318954.5
+        },
+        "candidateChangePercent": 0.008778681598786697,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          },
+          "candidate": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          },
+          "before": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          }
+        }
+      }
+    ],
+    "allGoldensPassed": true,
+    "allBalancesZero": true,
+    "ownedFixturesRemoved": true,
+    "imageIsolationVerified": true
+  },
+  "async": {
+    "rows": [
+      {
+        "case": "scripts.csv-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 3960954.5,
+          "candidate": 3502578.0,
+          "before-control": 3960940.5
+        },
+        "candidateChangePercent": -11.572374789965401,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5571634,
+            "PeakRootBytes": 5670226
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3737138,
+            "PeakRootBytes": 3835730
+          },
+          "before": {
+            "PeakExecutionBytes": 5571634,
+            "PeakRootBytes": 5670226
+          }
+        }
+      },
+      {
+        "case": "scripts.text-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 1655933.5,
+          "candidate": 1656009.5,
+          "before-control": 1655949.0
+        },
+        "candidateChangePercent": 0.004589556283507434,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          },
+          "candidate": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          },
+          "before": {
+            "PeakExecutionBytes": 1957079,
+            "PeakRootBytes": 2038871
+          }
+        }
+      },
+      {
+        "case": "scripts.json-summary-helpers.large",
+        "allocatedBytesPerJob": {
+          "before": 3060910.5,
+          "candidate": 2602291.0,
+          "before-control": 3060910.5
+        },
+        "candidateChangePercent": -14.983107150633778,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5888855,
+            "PeakRootBytes": 5988343
+          },
+          "candidate": {
+            "PeakExecutionBytes": 4054311,
+            "PeakRootBytes": 4153799
+          },
+          "before": {
+            "PeakExecutionBytes": 5888855,
+            "PeakRootBytes": 5988343
+          }
+        }
+      },
+      {
+        "case": "scripts.report-render.large",
+        "allocatedBytesPerJob": {
+          "before": 3648172.0,
+          "candidate": 3304202.5,
+          "before-control": 3648320.0
+        },
+        "candidateChangePercent": -9.42854393926602,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 5221343,
+            "PeakRootBytes": 5306015
+          },
+          "candidate": {
+            "PeakExecutionBytes": 3845543,
+            "PeakRootBytes": 3930215
+          },
+          "before": {
+            "PeakExecutionBytes": 5221343,
+            "PeakRootBytes": 5306015
+          }
+        }
+      },
+      {
+        "case": "scripts.config-edit.large",
+        "allocatedBytesPerJob": {
+          "before": 231762.0,
+          "candidate": 231690.0,
+          "before-control": 231762.0
+        },
+        "candidateChangePercent": -0.031066352551323284,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 394617,
+            "PeakRootBytes": 461657
+          },
+          "candidate": {
+            "PeakExecutionBytes": 394625,
+            "PeakRootBytes": 461665
+          },
+          "before": {
+            "PeakExecutionBytes": 394617,
+            "PeakRootBytes": 461657
+          }
+        }
+      },
+      {
+        "case": "scripts.scalar-above-range.large",
+        "allocatedBytesPerJob": {
+          "before": 545051.0,
+          "candidate": 545051.0,
+          "before-control": 545079.0
+        },
+        "candidateChangePercent": 0.0,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          },
+          "candidate": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          },
+          "before": {
+            "PeakExecutionBytes": 335,
+            "PeakRootBytes": 40111
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-padding.large",
+        "allocatedBytesPerJob": {
+          "before": 541510.5,
+          "candidate": 541482.5,
+          "before-control": 541510.5
+        },
+        "candidateChangePercent": -0.005170721528025002,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          },
+          "candidate": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          },
+          "before": {
+            "PeakExecutionBytes": 291453,
+            "PeakRootBytes": 337469
+          }
+        }
+      },
+      {
+        "case": "scripts.fixed-text-slices.large",
+        "allocatedBytesPerJob": {
+          "before": 319346.5,
+          "candidate": 319346.5,
+          "before-control": 319374.5
+        },
+        "candidateChangePercent": 0.0,
+        "admittedPeaks": {
+          "before-control": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          },
+          "candidate": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          },
+          "before": {
+            "PeakExecutionBytes": 570764,
+            "PeakRootBytes": 613516
+          }
+        }
+      }
+    ],
+    "allGoldensPassed": true,
+    "allBalancesZero": true,
+    "ownedFixturesRemoved": true,
+    "imageIsolationVerified": true
+  }
+}

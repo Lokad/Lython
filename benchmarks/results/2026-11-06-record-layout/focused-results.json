@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 735
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 2400
+    },
+    "net11.0": {
+      "coreSHA256": "67f841962f56ef0df5a1bbcfe78a0f4d60259bb5d17b6490508f32bde80992f6"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 735
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 2400
+    },
+    "net10.0": {
+      "coreSHA256": "5a561eb6b6b0299e4489e40bf67d3da6ae1cd1930d6adf456f57c0aacaf99be6"
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Dict|FullyQualifiedName~Hash|FullyQualifiedName~Set|FullyQualifiedName~Json|FullyQualifiedName~Csv|FullyQualifiedName~RecordKey)",
+  "sourceBase": "b542b601 runtime; db55033e HEAD plus R20 prototype"
+}

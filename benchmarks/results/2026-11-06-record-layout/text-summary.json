@@ -1,0 +1,68 @@
+{
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.3011999999999997,
+        "control": 2.2530804179104478,
+        "reference": 2.2806190746268657,
+        "CPython": 1.2362628281249999
+      },
+      "processCpuMilliseconds": {
+        "candidate": 2.4242424242424243,
+        "control": 2.3880597014925375,
+        "reference": 2.3880597014925375,
+        "CPython": 1.25
+      },
+      "iqrPercent": {
+        "candidate": 0.5834607372174907,
+        "control": 0.5752489255373725,
+        "reference": 0.7386319260602798,
+        "CPython": 0.9523198071971549
+      },
+      "candidateChangePercent": {
+        "candidate": 0.9024271348998303,
+        "control": -1.2075079535552646
+      },
+      "currentRoleDifferencePercent": 2.091064752718235,
+      "CPythonRatio": {
+        "candidate": 1.8614164784766325,
+        "control": 1.8224930545939186
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.165206242857143,
+        "control": 2.2243594852941175,
+        "reference": 2.1077475,
+        "CPython": 1.1673753720930233
+      },
+      "processCpuMilliseconds": {
+        "candidate": 2.285714285714286,
+        "control": 2.3529411764705883,
+        "reference": 2.2222222222222223,
+        "CPython": 1.2403100775193798
+      },
+      "iqrPercent": {
+        "candidate": 0.8434623750161143,
+        "control": 0.42811068315137274,
+        "reference": 0.21691172158376495,
+        "CPython": 0.8037951138823983
+      },
+      "candidateChangePercent": {
+        "candidate": 2.7260733487831423,
+        "control": 5.532540557828569
+      },
+      "currentRoleDifferencePercent": 2.7319911270400667,
+      "CPythonRatio": {
+        "candidate": 1.8547643668163716,
+        "control": 1.9054363647452959
+      }
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 59.4419819759205
+}

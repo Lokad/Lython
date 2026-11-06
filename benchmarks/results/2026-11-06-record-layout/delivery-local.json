@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  4274, Skipped:     0, Total:  4274, Duration: 23 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)",
+        "Passed!  - Failed:     0, Passed: 16200, Skipped:     0, Total: 16200, Duration: 1 m 53 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  4274, Skipped:     0, Total:  4274, Duration: 23 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)",
+        "Passed!  - Failed:     0, Passed: 16200, Skipped:     0, Total: 16200, Duration: 1 m 52 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "environment": {
+    "DOTNET_ROOT": "C:/Users/JoannesVermorel/.dotnet11",
+    "DOTNET_HOST_PATH": "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe"
+  },
+  "source": "db55033e plus R20 prototype; frozen focused-results hashes",
+  "stress": "Original scales reserved for combined platform checkpoint",
+  "package": "Pending retention decision"
+}
