@@ -1,5 +1,5 @@
 {
-  "status": "Retained, focused both runtimes and full local.NET11 pass; final platform/stress/package delivery pending.",
+  "status": "Committed933a7fff. Focused both actual runtimes/full local.NET11 and both installed Release consumers pass. CI42201490733 running independently; later R10 excluded.",
   "source": "5563ccdd plus exact five-file R09 source hashes/patch",
   "independentPythonCases": 10,
   "focused": {
@@ -29,5 +29,7 @@
     "internalScope": "Original four zero-headroom fixtures corrected to fund argument transport while allowing less than one instance shell; all4249 rerun pass."
   },
   "finalAffectedFixturesPerRuntime": 30,
-  "productionSourceHashesStillMatchB341": true
+  "productionSourceHashesStillMatchB341": true,
+  "deliverySource": "933a7fff",
+  "packageSha512": "F1EE672187A97BBD942919769181F45CD4B75213296CB8CC47B8065726DCEED0872C1C2C4E7715D7F789CD1FE488490C7C40858E003F2C9A50AA07E9F508F880"
 }

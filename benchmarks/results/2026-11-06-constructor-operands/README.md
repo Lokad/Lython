@@ -75,3 +75,8 @@ B341; fixture/generated-metadata changes do not imply new measured bytes.
 
 Final platform, originalStress and installed-consumer qualification batch at
 delivery. R06's closed receipt excludes this source. Publication stays postponed.
+
+Committed **933a7fff**. Both actual [installed Release consumers](package-consumer.log)
+pass; the exact package hash is in validation.json. CI42201490733 is running
+independently for final platform/runtime/originalStress/package gates. Later R10
+work is excluded. No publication or unchanged full-suite replay.
