@@ -157,8 +157,8 @@ internal sealed partial class PyDict
         var before = _nativeCount;
         var context = ActiveProtocolContext();
         var span = QuerySpan;
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        SetNativeValue(key, value, QueryHash(key, context, span, protocol), protocol, context, span, replaceExisting: true);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
+        SetNativeValue(key, value, hash, protocol, context, span, replaceExisting: true);
         return _nativeCount != before;
     }
 
@@ -299,8 +299,9 @@ internal sealed partial class PyDict
     void IPyDictStorage.AddNew(object key, object value, uint? knownHash)
     {
         if (_nativeItems is null) { _items.AddNew(key, value, knownHash); return; }
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = knownHash ?? QueryHash(key, ActiveProtocolContext(), QuerySpan, protocol);
+        var (hash, protocol) = knownHash is uint storedHash
+            ? (storedHash, PyHashProtocols.NeedsProtocolKey(key))
+            : PrepareQueryKey(key, ActiveProtocolContext(), QuerySpan);
         if (knownHash is null && FindNativeIndex(key, hash) >= 0)
             throw new ArgumentException("An item with the same key has already been added.");
         AppendNativeItem(key, value, hash, protocol);

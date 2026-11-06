@@ -17,14 +17,10 @@ internal sealed partial class LythonRuntime
         => ValidateDictionaryKey(value, span);
 
     internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
-        => ValidateKeyShape(value, span);
-
-    // Shared set/dict key validation: hashability is a property of the existing
-    // items, so a validated tuple keeps its identity (and nested identities)
-    // instead of rebuilding copies that break `is` checks downstream. Validation
-    // never transforms items; anything unhashable throws UnhashableType.
-    private static object ValidateKeyShape(object value, LythonSourceSpan? span)
     {
+        // Coarse shape rejection can precede construction, but nested elements
+        // must be visited by the actual hash walk in Python order. In particular,
+        // an earlier __hash__ callback precedes a later unhashable tuple element.
         // The None slot is established at class creation; this check never
         // invokes guest code or infers hashability from a later __eq__ edit.
         if (value is PyInstance instance && PyHashProtocols.HasDisabledHash(instance))
@@ -34,27 +30,12 @@ internal sealed partial class LythonRuntime
 
         var normalized = value switch
         {
-            PyTuple tuple => ValidateTupleKey(tuple, span),
             IPyHashableValue => value,
             _ when PyNumberOps.TryAsNumber(value, out _) => value,
             _ => throw RuntimeErrors.UnhashableType(value, span)
         };
 
         return normalized;
-    }
-
-    private static PyTuple ValidateTupleKey(PyTuple tuple, LythonSourceSpan? span)
-    {
-        using (PyStructuralGuard.EnterSingle(tuple, span))
-        {
-            for (var i = 0; i < tuple.Count; i++)
-            {
-                PyStructuralGuard.NoteWork();
-                ValidateKeyShape(tuple[i], span);
-            }
-
-            return tuple;
-        }
     }
 
     private static long EstimateObjectArrayBytes(int count) => 32L + (16L * count);

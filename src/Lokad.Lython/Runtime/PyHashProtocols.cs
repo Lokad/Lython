@@ -1,11 +1,8 @@
 namespace Lokad.Lython.Runtime;
 
-// Contextual key hashing (R13b): user-defined __hash__ slots dispatch with an
-// explicit execution context. None slots make classes unhashable. Slot checks
-// are pure MRO walks (no guest code), so key validation stays context-free; hash
-// *invocation* needs a context. Table probing never dispatches through the
-// CLR comparer: protocol keys use precomputed hashes and scan
-// with precomputed hashes plus element ==.
+// Hash preparation follows Python evaluation order with an explicit execution
+// context. None slots make classes unhashable. Table probing uses the prepared
+// hash and equality requirement; CLR comparers never dispatch guest callbacks.
 internal static class PyHashProtocols
 {
     // A slot counts as customized when the first MRO type defining it has
@@ -63,67 +60,82 @@ internal static class PyHashProtocols
 
     // One normalized hash for public hash(), table buckets and tuple elements.
     public static int GetProtocolHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => PrepareKeyHash(key, context, span).Hash;
+
+    // Compute the stored hash and its equality-dispatch requirement together.
+    // Classification must not recursively inspect later elements before an
+    // earlier hash callback has run. No query plan or cache survives this call.
+    internal static (int Hash, bool Protocol) PrepareKeyHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (key is PyInstance instance)
-        {
-            context.CheckExecution(span);
-            if (HasDisabledHash(instance))
-            {
-                throw RuntimeErrors.UnhashableType(key, span);
-            }
-
-            if (HasCustomSlot(instance, "__hash__"))
-            {
-                instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _);
-                var hashMember = PyAttributeLookup.BindForInstance(instance, rawSlot!, context, span);
-                context.CheckExecution(span);
-
-                if (hashMember is not LythonRuntime.ICallable hashCallable)
-                {
-                    throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(hashMember, context) + "' object is not callable", span);
-                }
-
-                var hashValue = hashCallable.Invoke([], span, context);
-                context.CheckExecution(span);
-                if (!Numbers.PyNumberOps.TryAsInteger(hashValue, out var integerHash))
-                {
-                    throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
-                }
-
-                return PyValueComparer.Instance.GetHashCode(integerHash);
-            }
-
-            return LythonRuntime.ComputeStructuralHashCode(key, span);
-        }
-
-        if (PyTupleLike.TryGetItems(key, out var items))
-        {
-            return ComputeTupleHash(items, context, span);
-        }
-
+        if (key is PyInstance instance) return (GetInstanceHash(instance, context, span), true);
         if (key is PySlice slice)
-            return PyValueComparer.NormalizeHash(slice.ComputeHash(context, span));
+        {
+            using var guard = PyStructuralGuard.EnterSingle(slice, span, context);
+            PyStructuralGuard.NoteWork(context, span);
+            var start = PrepareKeyHash(slice.Start, context, span);
+            var stop = PrepareKeyHash(slice.Stop, context, span);
+            var step = PrepareKeyHash(slice.Step, context, span);
+            return (PyValueComparer.NormalizeHash(HashCode.Combine(start.Hash, stop.Hash, step.Hash)),
+                start.Protocol || stop.Protocol || step.Protocol);
+        }
+        if (PyTupleLike.TryGetItems(key, out var items)) return PrepareTupleHash(items, context, span);
+        return (LythonRuntime.ComputeStructuralHashCode(key, span), false);
+    }
 
-        return LythonRuntime.ComputeStructuralHashCode(key, span);
+    private static int GetInstanceHash(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        if (HasDisabledHash(instance))
+        {
+            throw RuntimeErrors.UnhashableType(instance, span);
+        }
+
+        if (HasCustomSlot(instance, "__hash__"))
+        {
+            instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _);
+            var hashMember = PyAttributeLookup.BindForInstance(instance, rawSlot!, context, span);
+            context.CheckExecution(span);
+
+            if (hashMember is not LythonRuntime.ICallable hashCallable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(hashMember, context) + "' object is not callable", span);
+            }
+
+            var hashValue = hashCallable.Invoke([], span, context);
+            context.CheckExecution(span);
+            if (!Numbers.PyNumberOps.TryAsInteger(hashValue, out var integerHash))
+            {
+                throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
+            }
+
+            return PyValueComparer.Instance.GetHashCode(integerHash);
+        }
+
+        return LythonRuntime.ComputeStructuralHashCode(instance, span);
     }
 
     // Tuple hashing recurses into element hashes with the same combination as
     // the structural path, so all-builtin tuples hash identically either way;
-    // only custom-hashed elements take the protocol branch. Cyclic tuples are
-    // rejected by key validation before they can arrive here, with this guard
-    // as the backstop.
+    // only custom-hashed elements take the protocol branch. Cycle/depth checks
+    // belong to this semantic walk, rather than a separate prevalidation pass.
     internal static int ComputeTupleHash(IReadOnlyList<object> items, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => PrepareTupleHash(items, context, span).Hash;
+
+    private static (int Hash, bool Protocol) PrepareTupleHash(IReadOnlyList<object> items, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         using (PyStructuralGuard.EnterSingle(items, span, context))
         {
             var hash = new HashCode();
+            var protocol = false;
             foreach (var item in items)
             {
                 PyStructuralGuard.NoteWork(context, span);
-                hash.Add(GetProtocolHash(item, context, span));
+                var prepared = PrepareKeyHash(item, context, span);
+                hash.Add(prepared.Hash);
+                protocol |= prepared.Protocol;
             }
 
-            return PyValueComparer.NormalizeHash(hash.ToHashCode());
+            return (PyValueComparer.NormalizeHash(hash.ToHashCode()), protocol);
         }
     }
 

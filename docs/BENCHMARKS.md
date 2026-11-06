@@ -72,6 +72,11 @@ comparison, not a claim of identical implementations or import caching.
 
 CPython remains the primary external baseline above. Separate source pairs show:
 
+- One contextual key-preparation walk: complete compound-key aggregation elapsed
+  −15.5%/−20.5% for widths 2/8 against F05; CSV roughly flat. Original adverse
+  text and the unchanged-source confirmation remain visible; no allocation or
+  broad CPU claim. This later change does not update the primary table's revision.
+  [Evidence](../benchmarks/results/2026-11-06-key-preparation/README.md).
 - Ordinary method operands remove temporary bound-method packaging: whole method
   CSV process allocation−7.26–7.28%, warm elapsed−3.67–4.61%, fresh−1.04–1.99%.
   Controls also change; elapsed is diagnostic. [Evidence](../benchmarks/results/2026-11-06-direct-method-operands/README.md).

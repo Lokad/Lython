@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "62d2c9ca/F05 production1134d6e8 plus Q01 single contextual key preparation; exact source snapshot/patch",
+  "coreSHA256": {
+    "candidate": "1507216f09cd29a9fc842fac30862bc16e4c140989880cef100cbb65e6352084",
+    "control": "1507216f09cd29a9fc842fac30862bc16e4c140989880cef100cbb65e6352084",
+    "reference": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs": "9180b04482ab15efb7066262ddaf7966d06a60ee7675216d4cf7d48366fa0d76",
+    "src/Lokad.Lython/Runtime/PyDict.Query.cs": "1cb567ec960a2b76116a8ff34bacbeca41f451538756e635e7f0a6ed353ccde0",
+    "src/Lokad.Lython/Runtime/PyDict.Storage.cs": "667d9202d0ac0814ce31998f86e5fb02cf3f954be678087c233195472fc0338e",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "471822177b74a19033ed3fcf0ef3ad66bbb99d3aaf09ede10ee8ace29128f85d",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "60fcc41375c15f415eefc7691019cb57124044e5303a1b87bf4b5887ec4c08e2",
+    "src/Lokad.Lython/Runtime/PySlice.cs": "7aac14f3c373646736406476e52c0c8768a1fc7f263ac47b1ce2c15a28892eb7"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Focused Release454 internal/1220 public per actual.NET11/10; nine new Python hash-order controls. Q01 prototype, not yet full delivery qualified."
+}

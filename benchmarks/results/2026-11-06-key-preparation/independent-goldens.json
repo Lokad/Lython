@@ -1,0 +1,107 @@
+[
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n table[key]=1\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n table.get(key)\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n key in table\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n set().add(key)\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n {key:1}\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nkey=tuple([Key(),[]])\ntable={}\ntry:\n hash(key)\nexcept TypeError:print(events)",
+    "stdout": "['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  raise ValueError('first')\nkey=tuple([Key(),[]])\ntry:{}[key]=1\nexcept (TypeError,ValueError) as error:print(type(error).__name__,events)",
+    "stdout": "ValueError ['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "from collections import namedtuple\nPair=namedtuple('Pair','first second')\nevents=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 1\nfor key in [((Key(),),[]),slice((Key(),),[]),Pair(Key(),[])]:\n try:{}[key]=1\n except TypeError:print(events)\n events.clear()",
+    "stdout": "['hash']\r\n['hash']\r\n['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Later:\n def __hash__(self):\n  events.append('later')\n  return 2\nclass First:\n def __hash__(self):\n  events.append('first')\n  Later.__hash__=None\n  return 1\nkey=tuple([First(),Later()])\ntry:{}[key]=1\nexcept TypeError:print(events)",
+    "stdout": "['first']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n def __hash__(self):\n  events.append('hash')\n  return 17\nkey=Key()\nprint(key in set(),events)",
+    "stdout": "False ['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "class Key:\n def __hash__(self):return hash(1)\n def __eq__(self,other):return isinstance(other,int) and other==1\nkey=Key()\ns={1}\nprint(key in s)\ns.add(key)\nprint(len(s),next(iter(s)) is key)\ns.remove(key)\nprint(len(s))",
+    "stdout": "True\r\n1 False\r\n0\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "class Key:\n armed=False\n def __hash__(self):return 17\n def __eq__(self,other):\n  if self.armed:s.clear()\n  return True\nstored=Key()\nquery=Key()\nfor operation in ['contains','add','remove']:\n s={stored}\n stored.armed=True\n if operation=='contains':print(query in s,len(s))\n elif operation=='add':\n  s.add(query)\n  print(len(s))\n else:\n  try:s.remove(query)\n  except KeyError:print('KeyError',len(s))",
+    "stdout": "False 0\r\n0\r\nKeyError 0\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "from dataclasses import dataclass\nevents=[]\n@dataclass(unsafe_hash=True,eq=False)\nclass Key:\n value:int=0\ndef key_hash(self):return self.tag\ndef key_eq(self,other):\n events.append('eq')\n return False\nKey.__hash__=key_hash\nKey.__eq__=key_eq\nstored=Key()\nstored.tag=17\nquery=Key()\nquery.tag=18\nd={stored:1}\ns={stored}\nevents.clear()\nprint(d.get(query),query in s,d.pop(query,'missing'))\ns.discard(query)\nd[query]=2\ns.add(query)\nprint(len(d),len(s),d.pop(query))\ns.remove(query)\nprint(len(d),len(s),events)",
+    "stdout": "None False missing\r\n2 2 2\r\n1 1 []\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "class Key:\n tag=17\n def __hash__(self):return self.tag\nkey=Key()\nd={key:1}\ns={key}\nkey.tag=18\nprint(d.get(key,'missing'),key in s,d.pop(key,'missing'))\ntry:s.remove(key)\nexcept KeyError:print('KeyError')\nprint(len(d),len(s))",
+    "stdout": "missing False missing\r\nKeyError\r\n1 1\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\nd={key:7}\nprint(d[key],d.get(key),key in d)\nprint(d.pop(key))\nd[key]=8\ndel d[key]\nprint(events)",
+    "stdout": "7 7 True\r\n7\r\n['hash', 'hash', 'hash', 'hash', 'hash', 'hash', 'hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\ns={key}\nprint(key in s)\ns.add(key)\ns.remove(key)\ns.add(key)\ns.discard(key)\nprint(events)",
+    "stdout": "True\r\n['hash', 'hash', 'hash', 'hash', 'hash', 'hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\ns={key}\nkey.fail=True\nprint(s.pop() is key,len(s),events)",
+    "stdout": "True 0 ['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\nd={key:7}\ncopied=d.copy()\nconstructed=dict(d)\nprint(len(copied),len(constructed),events)",
+    "stdout": "1 1 ['hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\nd={(key,):7}\nprint(d[(key,)],d.get((key,)),(key,) in d)\ndel d[(key,)]\nprint(events)",
+    "stdout": "7 7 True\r\n['hash', 'hash', 'hash', 'hash', 'hash']\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\nd={key:7}\nkey.fail=True\ndef drop():del d[key]\nfor action in [lambda:d[key],lambda:d.get(key),lambda:key in d,lambda:d.pop(key),drop]:\n try:action()\n except ValueError as error:print(str(error))\nkey.fail=False\nprint(len(d),d[key])",
+    "stdout": "hash failed\r\nhash failed\r\nhash failed\r\nhash failed\r\nhash failed\r\n1 7\r\n",
+    "stderr": ""
+  },
+  {
+    "source": "events=[]\nclass Key:\n fail=False\n def __hash__(self):\n  if self.fail:raise ValueError('hash failed')\n  events.append('hash')\n  return 17\nkey=Key()\ns={key}\nkey.fail=True\nfor action in [lambda:key in s,lambda:s.remove(key),lambda:s.discard(key)]:\n try:action()\n except ValueError as error:print(str(error))\nkey.fail=False\nprint(len(s))",
+    "stdout": "hash failed\r\nhash failed\r\nhash failed\r\n1\r\n",
+    "stderr": ""
+  }
+]

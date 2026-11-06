@@ -380,6 +380,10 @@ Custom key hashing still requires synchronous completion, including under RunAsy
 Dictionary write-key equality also requires synchronous completion. Native-key
 lookup equality can suspend under RunAsync; string, integer and tuple lookups
 share the same resolution and current execution context.
+Contextual key preparation computes the hash and equality-dispatch requirement
+in one walk. Tuple elements and slice bounds are visited in Python order: an
+earlier hash callback runs before a later unhashable value is rejected. Native
+dictionary copies retain stored hashes without replaying callbacks.
 
 Counter comparisons traverse both live key sources in Python order. Dictionary
 view relations use dictionary membership, comparing stored pairs directly for two

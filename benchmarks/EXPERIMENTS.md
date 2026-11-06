@@ -3037,3 +3037,21 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   observations preserved; four independent Python regressions retained. Production
   restored to qualified1134d6e8, nonincremental rebuild and44 canonical CSV cases
   pass both actual runtimes. No dormant template or alternate dictionary format.
+
+- [Complete-text cost profile, B322/B323/B324](results/2026-11-06-text-key-cost-profile/README.md):
+  current qualified1134d6e8 source,6.77guestCPU/1346samples, all251 prefix samples
+  uniquely mapped. Required loop/guard/dispatch is not a removable percentage;
+  dictionary query work is a material cluster. Original diagnostic guard failures
+  precede sampling and remain preserved. Select one contextual key-preparation
+  walk plus independently demonstrated Python hash-order corrections; no CPU gain
+  predicted, no new cache or storage format. Whole-script objective remains open.
+
+- [One contextual key preparation, B325/B326](results/2026-11-06-key-preparation/README.md):
+  RETAINED: remove recursive tuple prevalidation and separate contextual classify/
+  hash sweeps, correcting Python callback/error order. Complete compound-key
+  aggregation −15.5%/−20.5%, CSV roughly flat. Original text +9.09%/+1.36% has
+  unstable identical roles; unchanged longer-warmup confirmation does not reproduce
+  that large adverse result, with modest text cost/variation still explicit.
+  All original observations retained; no allocation/broad CPU claim. Full local
+  Release 4,214 internal/16,101 public per actual runtime pass; final delivery
+  qualification remains separate. Whole-script objective stays active.

@@ -2,16 +2,21 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class PyDict
 {
-    private uint QueryHash(object key, LythonRuntime.ExecutionContext? context, LythonSourceSpan span, bool protocol)
+    private (uint Hash, bool Protocol) PrepareQueryKey(object key, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
         try
         {
-            if (!protocol) return NativeHash(key);
-            if (context is not null) return MixNativeHash(PyHashProtocols.GetProtocolHash(key, context, span));
+            if (context is not null)
+            {
+                var prepared = PyHashProtocols.PrepareKeyHash(key, context, span);
+                return (MixNativeHash(prepared.Hash), prepared.Protocol);
+            }
+            var protocol = PyHashProtocols.NeedsProtocolKey(key);
+            if (!protocol) return (NativeHash(key), false);
             // Raw internal consumers can resolve an existing retained object without
             // running guest code. Newly constructed Python keys use an active context.
-            var index = FindNativeIdentity(key);
-            return index >= 0 ? _nativeItems![index].Hash : NativeHash(key);
+            var index = _nativeItems is null ? -1 : FindNativeIdentity(key);
+            return (index >= 0 ? _nativeItems![index].Hash : NativeHash(key), true);
         }
         catch (PyUnhashableException error) { throw RuntimeErrors.UnhashableType(error.Value, span); }
     }
@@ -169,8 +174,7 @@ internal sealed partial class PyDict
         LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         using var ambient = context is null ? default : PyStructuralGuard.PushAmbient(context, span);
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = QueryHash(key, context, span, protocol);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
         var stored = ResolveBridgeKeyAsync(key, hash, protocol, context, span, asynchronous: false).GetAwaiter().GetResult();
         if (stored is not null) return _items.TryGetValue(stored, out value);
         value = PyNone.Instance; return false;
@@ -216,8 +220,9 @@ internal sealed partial class PyDict
         _memoryGovernor?.ThrowIfAdmissionFailed();
         var context = ActiveProtocolContext();
         var span = QuerySpan;
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = storedHash ?? QueryHash(key, context, span, protocol);
+        var (hash, protocol) = storedHash is uint knownHash
+            ? (knownHash, PyHashProtocols.NeedsProtocolKey(key))
+            : PrepareQueryKey(key, context, span);
         if (ResolveNativeKey(key, hash, protocol, context, span, acceptRemovedMatch: true) != -1) return false;
         AppendNativeItem(key, PyNone.Instance, hash, protocol);
         _version++;

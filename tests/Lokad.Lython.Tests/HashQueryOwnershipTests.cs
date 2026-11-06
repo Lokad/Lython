@@ -40,13 +40,17 @@ public sealed class HashQueryOwnershipTests
     }
 
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(false, true, false)]
-    [InlineData(true, false, false)]
-    [InlineData(true, true, false)]
-    [InlineData(true, false, true)]
-    [InlineData(true, true, true)]
-    public async Task QueryProtocolFailureStopsRemovalAndKeepsStorageFunded(bool set, bool cancel, bool equality)
+    [InlineData(false, false, false, false)]
+    [InlineData(false, true, false, false)]
+    [InlineData(true, false, false, false)]
+    [InlineData(true, true, false, false)]
+    [InlineData(true, false, true, false)]
+    [InlineData(true, true, true, false)]
+    [InlineData(false, false, false, true)]
+    [InlineData(false, true, false, true)]
+    [InlineData(true, false, false, true)]
+    [InlineData(true, true, false, true)]
+    public async Task QueryProtocolFailureStopsRemovalAndKeepsStorageFunded(bool set, bool cancel, bool equality, bool laterUnhashable)
     {
         var source = """
             namespace=globals()
@@ -61,7 +65,7 @@ public sealed class HashQueryOwnershipTests
             container=
             """.Replace("HASH_CALLBACK", equality ? "pass" : "arm()")
             .Replace("EQUALITY_CALLBACK", equality ? "arm()" : "pass").TrimEnd() +
-            (set ? "{key}" : "{key:'retained'}") + "\nquery=" + (equality ? "Key()" : "key") + "\neffects=[]\ntry:\n " +
+            (set ? "{key}" : "{key:'retained'}") + "\nquery=" + (laterUnhashable ? "(key,[])" : equality ? "Key()" : "key") + "\neffects=[]\ntry:\n " +
             (set ? "container.remove(query)" : "container.pop(query)") +
             "\nexcept BaseException:effects.append('caught')\nfinally:return 'hidden'\n";
         var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;

@@ -1,0 +1,82 @@
+{
+  "complete": true,
+  "elapsedSeconds": 112.65093791019171,
+  "timing": [
+    {
+      "case": "pure.compound-key-grouping.2",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 3.844845256410256,
+        "control": 3.845413575,
+        "CPython": 0.4563028571428571,
+        "reference": 4.550034029411765
+      },
+      "ratio": 8.426081923932662,
+      "referenceDeltaPercent": -15.49853843824277,
+      "controlPercent": 0.014781312428535642,
+      "iqrPercent": {
+        "candidate": 0.36524960342340124,
+        "control": 0.6313755211622674,
+        "CPython": 4.078288402812505,
+        "reference": 1.1827312965732975
+      }
+    },
+    {
+      "case": "pure.compound-key-grouping.8",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 7.229957,
+        "control": 7.230212619047618,
+        "CPython": 0.9190911393939394,
+        "reference": 9.09250711764706
+      },
+      "ratio": 7.8664200862251015,
+      "referenceDeltaPercent": -20.484450477164394,
+      "controlPercent": 0.003535554189593171,
+      "iqrPercent": {
+        "candidate": 1.1192215679185573,
+        "control": 0.7695150109693547,
+        "CPython": 2.4464405343571314,
+        "reference": 1.4368385459414486
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 2.51119655,
+        "control": 2.333121230769231,
+        "CPython": 1.1671587054263566,
+        "reference": 2.301861121212121
+      },
+      "ratio": 2.151546776222411,
+      "referenceDeltaPercent": 9.094181523759648,
+      "controlPercent": -7.091253738412839,
+      "iqrPercent": {
+        "candidate": 0.6800131461898893,
+        "control": 1.3342054565663235,
+        "CPython": 0.8545306337347708,
+        "reference": 0.4628204868795471
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.6996673636363635,
+        "control": 4.6803502727272726,
+        "CPython": 3.2510210212765958,
+        "reference": 4.69241721875
+      },
+      "ratio": 1.4455973470731112,
+      "referenceDeltaPercent": 0.1545076779914778,
+      "controlPercent": -0.4110310244200832,
+      "iqrPercent": {
+        "candidate": 1.6782283811279044,
+        "control": 1.0598442713032221,
+        "CPython": 1.206648087538955,
+        "reference": 0.5727878084370328
+      }
+    }
+  ]
+}

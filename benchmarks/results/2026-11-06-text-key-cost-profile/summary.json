@@ -1,0 +1,20 @@
+{
+  "sourceRevision": "62d2c9ca; runtime source1134d6e8",
+  "frozenCoreSHA256": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+  "workerSHA256": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+  "workload": "scripts.text-summary-helpers.large",
+  "captureGuestCpuSeconds": 6.77,
+  "totalGuestSamples": 1346,
+  "prefixSamples": 251,
+  "uniquelyMappedPrefixSamples": 251,
+  "unknownSamples": 87,
+  "cpuPrediction": null,
+  "allocationClaim": null,
+  "diagnosticOnly": true,
+  "archiveSHA256": {
+    "observations.tgz": "24dd7eb4a953d7fa471763a319deb9a44d3db9890eb067f1668c9a758587ab03",
+    "failed-overrides.tgz": "4191047ce45f24b3371c84134a68c7c0461e63837928a5866bd91a6dafa6693b",
+    "failed-marker.tgz": "77783665e7915ec199a7c27b9854700c2fbe230ace849b51d1a36f29f63b17f1"
+  },
+  "decision": "Do not assign the instruction-prefix leaf to one removable cost. Completed target helpers already avoid async state machines. Required guard/loop/dispatch remains. Select contextual key preparation: dictionary cluster plus independently demonstrated hash-order bugs; no new cache/format/ledger. Preserve actual cancellation/admission/cycle/depth and stored hashes."
+}

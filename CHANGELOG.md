@@ -20,7 +20,8 @@
 - Invoke custom key hashes for dictionary/set queries and removal, including
   identity hits, and propagate their errors. Native dictionary copies reuse stored
   keys without invoking hashes again. Report the failing nested unhashable value;
-  separate tuple shape validation from hashing to avoid repeated subtree work.
+  prepare contextual hashes and equality requirements in one walk. Earlier tuple
+  hash callbacks and their errors precede later unhashable elements, matching Python.
 
 - Complete ordinary expression and iteration results directly into adjacent local
   bindings, avoiding intermediate result transport when cleanup has finished.

@@ -7,6 +7,59 @@ public sealed class HashQueryCompatibilityTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        foreach (var operation in new[] { "table[key]=1", "table.get(key)", "key in table", "set().add(key)", "{key:1}", "hash(key)" })
+        {
+            yield return ["earlier tuple hash precedes later unhashability: " + operation, """
+                events=[]
+                class Key:
+                 def __hash__(self):
+                  events.append('hash')
+                  return 1
+                key=tuple([Key(),[]])
+                table={}
+                try:
+                 OPERATION
+                except TypeError:print(events)
+                """.Replace("OPERATION", operation), "['hash']\n"];
+        }
+        yield return ["earlier tuple callback error wins over later unhashability", """
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              raise ValueError('first')
+            key=tuple([Key(),[]])
+            try:{}[key]=1
+            except (TypeError,ValueError) as error:print(type(error).__name__,events)
+            """, "ValueError ['hash']\n"];
+        yield return ["nested tuple and slice hashes preserve left-to-right effects", """
+            from collections import namedtuple
+            Pair=namedtuple('Pair','first second')
+            events=[]
+            class Key:
+             def __hash__(self):
+              events.append('hash')
+              return 1
+            for key in [((Key(),),[]),slice((Key(),),[]),Pair(Key(),[])]:
+             try:{}[key]=1
+             except TypeError:print(events)
+             events.clear()
+            """, "['hash']\n['hash']\n['hash']\n"];
+        yield return ["earlier hash can disable the later element hash", """
+            events=[]
+            class Later:
+             def __hash__(self):
+              events.append('later')
+              return 2
+            class First:
+             def __hash__(self):
+              events.append('first')
+              Later.__hash__=None
+              return 1
+            key=tuple([First(),Later()])
+            try:{}[key]=1
+            except TypeError:print(events)
+            """, "['first']\n"];
         yield return ["empty set queries still invoke hashing", """
             events=[]
             class Key:

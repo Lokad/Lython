@@ -34,6 +34,9 @@ distinguish positive insertion equality from a current lookup/removal match and
 keep the stored-hash relation controls, including mutated dataclass fields.
 [Nested error goldens](Lokad.Lython.PublicApi.Tests/UnhashableKeyOriginTests.cs)
 identify the failing value through slices, tuples, dataclasses and cache keys.
+Tuple queries also preserve earlier hash effects and errors before a later
+unhashable element. Refusal or cancellation in that earlier callback remains
+terminal, preserves the container and releases working funding after cleanup.
 [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)
 preserve bound ordering, defining dataclass fields and all reads before field
 hashes. Managed slice-depth checks run after real host suspension and recover on

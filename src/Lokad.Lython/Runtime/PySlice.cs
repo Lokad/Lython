@@ -71,21 +71,13 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
     // Native storage uses structural bounds; Python hashing dispatches each
     // bound with the current context. Both retain the same native combination.
     public int GetPyHashCode()
-        => ComputeHash(null, PyStructuralGuard.AmbientSpan);
-
-    internal int ComputeHash(LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        using var guard = PyStructuralGuard.EnterSingle(this, span, context ?? PyStructuralGuard.AmbientContext);
-        PyStructuralGuard.NoteWork(context, span);
-        return context is not null && span is not null
-            ? HashCode.Combine(
-                PyHashProtocols.GetProtocolHash(Start, context, span),
-                PyHashProtocols.GetProtocolHash(Stop, context, span),
-                PyHashProtocols.GetProtocolHash(Step, context, span))
-            : HashCode.Combine(
-                PyValueComparer.Instance.GetHashCode(Start),
-                PyValueComparer.Instance.GetHashCode(Stop),
-                PyValueComparer.Instance.GetHashCode(Step));
+        using var guard = PyStructuralGuard.EnterSingle(this, PyStructuralGuard.AmbientSpan, PyStructuralGuard.AmbientContext);
+        PyStructuralGuard.NoteWork();
+        return HashCode.Combine(
+            PyValueComparer.Instance.GetHashCode(Start),
+            PyValueComparer.Instance.GetHashCode(Stop),
+            PyValueComparer.Instance.GetHashCode(Step));
     }
 
     private sealed class SliceHashMethod(PySlice owner) : LythonRuntime.ICallable

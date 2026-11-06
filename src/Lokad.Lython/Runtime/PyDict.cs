@@ -93,8 +93,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         if (_nativeItems is null) return TryGetBridgeValue(key, ActiveProtocolContext(), QuerySpan, out value);
         var context = ActiveProtocolContext();
         var span = QuerySpan;
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = QueryHash(key, context, span, protocol);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
         return index >= 0;
@@ -103,8 +102,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_nativeItems is null) return TryGetBridgeValue(key, context, span, out value);
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = QueryHash(key, context, span, protocol);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
         return index >= 0;
@@ -118,16 +116,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         return LookupAsync();
         async ValueTask<(bool Found, object Value)> LookupBridgeAsync()
         {
-            var protocol = PyHashProtocols.NeedsProtocolKey(key);
-            var hash = QueryHash(key, context, span, protocol);
+            var (hash, protocol) = PrepareQueryKey(key, context, span);
             var stored = await ResolveBridgeKeyAsync(key, hash, protocol, context, span, asynchronous: true).ConfigureAwait(false);
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             return stored is not null && _items.TryGetValue(stored, out var found) ? (true, found) : (false, PyNone.Instance);
         }
         async ValueTask<(bool Found, object Value)> LookupAsync()
         {
-            var protocol = PyHashProtocols.NeedsProtocolKey(key);
-            var hash = QueryHash(key, context, span, protocol);
+            var (hash, protocol) = PrepareQueryKey(key, context, span);
             var index = await ResolveNativeKeyAsync(key, hash, protocol, context, span).ConfigureAwait(false);
             return index < 0 ? (false, PyNone.Instance) : (true, _nativeItems[index].Value!);
         }
@@ -172,17 +168,16 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             {
                 var bridgeContext = ActiveProtocolContext();
                 if (bridgeContext is null) { if (!_items.TrySetExisting(key, value)) _items.AddNew(key, value); return; }
-                var bridgeProtocol = PyHashProtocols.NeedsProtocolKey(key);
-                var hash = QueryHash(key, bridgeContext, QuerySpan, bridgeProtocol);
-                var stored = ResolveBridgeKeyAsync(key, hash, bridgeProtocol, bridgeContext, QuerySpan, asynchronous: false).GetAwaiter().GetResult();
+                var (bridgeHash, bridgeProtocol) = PrepareQueryKey(key, bridgeContext, QuerySpan);
+                var stored = ResolveBridgeKeyAsync(key, bridgeHash, bridgeProtocol, bridgeContext, QuerySpan, asynchronous: false).GetAwaiter().GetResult();
                 if (stored is not null) _items.TrySetExisting(stored, value);
-                else _items.AddNew(key, value, hash);
+                else _items.AddNew(key, value, bridgeHash);
                 return;
             }
             var context = ActiveProtocolContext();
             var span = QuerySpan;
-            var protocol = PyHashProtocols.NeedsProtocolKey(key);
-            SetNativeValue(key, value, QueryHash(key, context, span, protocol), protocol, context, span, replaceExisting: true);
+            var (hash, protocol) = PrepareQueryKey(key, context, span);
+            SetNativeValue(key, value, hash, protocol, context, span, replaceExisting: true);
         }
         finally { if (Count > before) _version++; }
     }
@@ -215,8 +210,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var context = ActiveProtocolContext();
         if (_nativeItems is null)
         {
-            var bridgeProtocol = PyHashProtocols.NeedsProtocolKey(key);
-            var bridgeHash = QueryHash(key, context, span, bridgeProtocol);
+            var (bridgeHash, bridgeProtocol) = PrepareQueryKey(key, context, span);
             var stored = ResolveBridgeKeyAsync(key, bridgeHash, bridgeProtocol, context, span, asynchronous: false).GetAwaiter().GetResult();
             if (stored is not null && _items.TryGetValue(stored, out var existing)) return existing;
             var before = Count;
@@ -224,12 +218,11 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             finally { if (Count > before) _version++; }
             return value;
         }
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var hash = QueryHash(key, context, span, protocol);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
         var index = ResolveNativeKey(key, hash, protocol, context, span);
         if (index >= 0) return _nativeItems[index].Value!;
         AttachMemoryGovernor(governor, span);
-        AppendNativeItem(key, value, hash, PyHashProtocols.NeedsProtocolKey(key));
+        AppendNativeItem(key, value, hash, protocol);
         _version++;
         return value;
     }
@@ -268,17 +261,16 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         if (_nativeItems is null)
         {
             var bridgeContext = ActiveProtocolContext();
-            var bridgeProtocol = PyHashProtocols.NeedsProtocolKey(key);
-            var hash = QueryHash(key, bridgeContext, QuerySpan, bridgeProtocol);
-            var stored = ResolveBridgeKeyAsync(key, hash, bridgeProtocol, bridgeContext, QuerySpan, asynchronous: false).GetAwaiter().GetResult();
+            var (bridgeHash, bridgeProtocol) = PrepareQueryKey(key, bridgeContext, QuerySpan);
+            var stored = ResolveBridgeKeyAsync(key, bridgeHash, bridgeProtocol, bridgeContext, QuerySpan, asynchronous: false).GetAwaiter().GetResult();
             if (stored is null || !_items.TryGetValue(stored, out value)) { value = PyNone.Instance; return false; }
             if (_items.Remove(stored)) _version++;
             return true;
         }
         var context = ActiveProtocolContext();
         var span = QuerySpan;
-        var protocol = PyHashProtocols.NeedsProtocolKey(key);
-        var index = ResolveNativeKey(key, QueryHash(key, context, span, protocol), protocol, context, span);
+        var (hash, protocol) = PrepareQueryKey(key, context, span);
+        var index = ResolveNativeKey(key, hash, protocol, context, span);
         if (index < 0) { value = PyNone.Instance; return false; }
         value = _nativeItems[index].Value!;
         RemoveNativeAt(index); _version++;

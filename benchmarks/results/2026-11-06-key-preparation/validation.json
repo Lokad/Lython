@@ -1,0 +1,30 @@
+{
+  "status": "Retained source, full local Release complete on both actual runtimes. Final platform/stress/installed qualification pending.",
+  "sourceBase": "62d2c9ca/runtime1134d6e8 plus exact recorded Q01 source hashes",
+  "coreSHA256": {
+    "candidate": "1507216f09cd29a9fc842fac30862bc16e4c140989880cef100cbb65e6352084",
+    "control": "1507216f09cd29a9fc842fac30862bc16e4c140989880cef100cbb65e6352084",
+    "reference": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571"
+  },
+  "focusedPerActualRuntime": {
+    "internal": 454,
+    "public": 1220
+  },
+  "independentPythonCases": 21,
+  "newPythonOrderCases": 9,
+  "addedTerminalRefusalAndCancellationVariants": 4,
+  "focusedHashOwnershipPerActualRuntime": 22,
+  "fullPerActualRuntime": {
+    "internal": 4214,
+    "public": 16101
+  },
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "limitations": [
+    "Custom hashing still requires synchronous completion under RunAsync; Q01 does not fix genuinely suspending hash callbacks.",
+    "No allocation, guest-only CPU, RSS or embedding-latency gain measured.",
+    "B325 identical text roles differ7.09%; longer-warmup unchanged confirmation does not reproduce9.09% adverse candidate, but modest text cost/role variation remains."
+  ]
+}
