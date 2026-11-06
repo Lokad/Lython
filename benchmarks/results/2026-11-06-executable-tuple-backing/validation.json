@@ -1,0 +1,24 @@
+{
+  "status": "Retained R04 source; full local Release pass. R02/R04 platform/stress/installed qualification next at combined checkpoint.",
+  "sourceBase": "1863cb3e plus recorded R04 source patch/hash",
+  "coreSHA256": {
+    "candidate": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
+    "control": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
+    "reference": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc"
+  },
+  "focusedPerActualRuntime": {
+    "internal": 120,
+    "public": 272
+  },
+  "fullPerActualRuntime": {
+    "internal": 4215,
+    "public": 16103
+  },
+  "actualRuntimes": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "removed": "Private intermediate tuple backing copy, its duplicate final-backing admission and construction overlap, stale preflight7249 name.",
+  "retained": "Existing private-array transfer helper with capacity/scalar admission before ownership publication/operand retirement. Borrowed-array constructors still copy; aliases, pending users and cleanup unchanged.",
+  "limitations": "CSV +0.67/-2.16% has2.81% identical-role spread; inconclusive. No process allocation percentage or broad CPU/RSS/embedding gain measured. Do not add source-pair deltas. Primary table still1134d6e8 until coherent refresh."
+}

@@ -3076,3 +3076,10 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   versus Q01, CSV roughly flat, text control-limited. Full local Release 4,215
   internal/16,103 public per actual runtime pass; final delivery batches separately.
   O(depth) membership tradeoff is explicit; no allocation/broad CPU claim.
+
+- [Executable tuple backing, B330](results/2026-11-06-executable-tuple-backing/README.md):
+  RETAINED: reuse existing private-array ownership transfer, removing the second
+  backing/admission/overlap. Complete compound-key elapsed −6.17–12.29% versus
+  R02; CSV control spread2.81% leaves its result inconclusive. Full local Release
+  4,215 internal/16,103 public per actual runtime pass. Final qualification batches
+  with R02; no measured allocation percentage or broad CPU claim.

@@ -72,6 +72,10 @@ comparison, not a claim of identical implementations or import caching.
 
 CPython remains the primary external baseline above. Separate source pairs show:
 
+- Transferring executable tuple backing removes an intermediate array copy:
+  complete compound-key elapsed −6.17–12.29% versus R02. CSV is inconclusive;
+  no process allocation percentage or broad CPU gain measured.
+  [Evidence](../benchmarks/results/2026-11-06-executable-tuple-backing/README.md).
 - One active structural cycle path: complete compound-key aggregation elapsed
   −14.8–17.1% versus Q01; CSV roughly flat and text control-limited. The managed
   nesting bound remains, with linear active-path membership. No allocation or

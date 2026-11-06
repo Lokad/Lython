@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Transfer executable tuple literals into one admitted final backing, removing
+  an intermediate copy and its construction overlap. Keep aliases and fund final
+  storage before retiring inputs; borrowed-array constructors retain their copy.
+
 - Use one active structural identity path for hashing and comparison, removing
   separate cycle hash tables and their identity comparer. Preserve immediate
   cycle errors, managed stack limits, asynchronous isolation and cleanup.

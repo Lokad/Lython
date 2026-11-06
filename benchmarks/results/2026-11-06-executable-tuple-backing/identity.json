@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "1863cb3e committed R02 plus R04 owned executable tuple backing transfer; exact recorded source patch/hash",
+  "coreSHA256": {
+    "candidate": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
+    "control": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d",
+    "reference": "867ebf7a6b818cad96f473d4a3c45b08d95f6f06bb679d80c878d0e0e4919ecc"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs": "9503d4817ea2c27cfbcb4ddebe998e247ee8ba83c0c273d4332794591719ae67"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.Tests-net11.0": 120,
+    "Lokad.Lython.PublicApi.Tests-net11.0": 272,
+    "Lokad.Lython.Tests-net10.0": 120,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 272
+  }
+}
