@@ -2,7 +2,6 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Lokad.Lython.Runtime.Numbers;
@@ -112,16 +111,24 @@ internal sealed partial class LythonRuntime
     private static double ExcelSerialFromTimedelta(PyTimedelta delta)
         => delta.TotalSeconds() / 86_400.0;
 
-    private static object DateValueFromExcelSerial(double serial, string numberFormat, ExcelDateSystem dateSystem)
+    [Flags]
+    private enum ExcelNumberFormatKind
     {
-        var normalizedFormat = NormalizeNumberFormatForDetection(numberFormat);
-        if (ContainsElapsedTimeToken(normalizedFormat))
+        Numeric = 0,
+        Date = 1,
+        Time = 2,
+        Elapsed = 4,
+    }
+
+    private static object DateValueFromExcelSerial(double serial, ExcelNumberFormatKind format, ExcelDateSystem dateSystem)
+    {
+        if ((format & ExcelNumberFormatKind.Elapsed) != 0)
         {
             return new PyTimedelta(TimeSpan.FromDays(serial));
         }
 
-        var hasDate = normalizedFormat.Contains('y') || normalizedFormat.Contains('d');
-        var hasTime = normalizedFormat.Contains('h') || normalizedFormat.Contains('s');
+        var hasDate = (format & ExcelNumberFormatKind.Date) != 0;
+        var hasTime = (format & ExcelNumberFormatKind.Time) != 0;
         var dateTime = dateSystem switch
         {
             ExcelDateSystem.Windows1900 => DateTime.FromOADate(serial),
@@ -153,27 +160,26 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool IsDateNumberFormat(string numberFormat)
-    {
-        var normalizedFormat = NormalizeNumberFormatForDetection(numberFormat);
-        return normalizedFormat.Contains('y') ||
-               normalizedFormat.Contains('d') ||
-               normalizedFormat.Contains('h') ||
-               normalizedFormat.Contains('s') ||
-               ContainsElapsedTimeToken(normalizedFormat);
-    }
+        => ClassifyNumberFormat(numberFormat, PyStructuralGuard.AmbientContext?.State.CancellationToken ?? default) != ExcelNumberFormatKind.Numeric;
 
-    private static bool ContainsElapsedTimeToken(string normalizedFormat)
-        => normalizedFormat.Contains("[h", StringComparison.Ordinal) ||
-           normalizedFormat.Contains("[m", StringComparison.Ordinal) ||
-           normalizedFormat.Contains("[s", StringComparison.Ordinal);
-
-    private static string NormalizeNumberFormatForDetection(string numberFormat)
+    private static ExcelNumberFormatKind ClassifyNumberFormat(string numberFormat, CancellationToken cancellationToken)
     {
-        var builder = new StringBuilder(numberFormat.Length);
+        // Like openpyxl, classify from the first section, independently of the
+        // cell's sign. Brackets contain metadata, except exact elapsed tokens.
+        var format = ExcelNumberFormatKind.Numeric;
         var inQuote = false;
+        var inMetadata = false;
+        var hasMonth = false;
         for (var index = 0; index < numberFormat.Length; index++)
         {
+            if ((index & 1023) == 0) cancellationToken.ThrowIfCancellationRequested();
             var ch = numberFormat[index];
+            if (ch == ';') break;
+            if (inMetadata)
+            {
+                if (ch == ']') inMetadata = false;
+                continue;
+            }
             if (ch == '"')
             {
                 inQuote = !inQuote;
@@ -191,10 +197,29 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            builder.Append(char.ToLowerInvariant(ch));
+            if (ch == '[')
+            {
+                var token = numberFormat.AsSpan(index + 1);
+                if (token.Length >= 2)
+                {
+                    var unit = char.ToLowerInvariant(token[0]);
+                    if (unit is 'h' or 'm' or 's' &&
+                        (token[1] == ']' || token.Length >= 3 && char.ToLowerInvariant(token[1]) == unit && token[2] == ']'))
+                        format |= ExcelNumberFormatKind.Elapsed;
+                }
+                inMetadata = true;
+                continue;
+            }
+
+            switch (char.ToLowerInvariant(ch))
+            {
+                case 'y': case 'd': format |= ExcelNumberFormatKind.Date; break;
+                case 'h': case 's': format |= ExcelNumberFormatKind.Time; break;
+                case 'm': hasMonth = true; break;
+            }
         }
 
-        return builder.ToString();
+        return format == ExcelNumberFormatKind.Numeric && hasMonth ? ExcelNumberFormatKind.Date : format;
     }
 
     private static string NormalizeWorkbookPath(object value, ExecutionContext context, LythonSourceSpan span)

@@ -56,9 +56,9 @@ internal sealed partial class LythonRuntime
                 var styleId = ReadNonNegativeIntAttribute(cell, "s", span);
                 var cellStyle = ReadCellStyle(cell, cellStyles, span);
                 var format = cellStyle.NumberFormat;
-                var value = ReadCellValue(cell, sharedStrings, format, dateSystem, dataOnly, span);
+                var value = ReadCellValue(cell, sharedStrings, format, dateSystem, dataOnly, context.State.CancellationToken, span);
                 worksheet.SetLoadedCellValue(address.Row, address.Column, value);
-                worksheet.SetLoadedFormulaCachedValue(address.Row, address.Column, ReadFormulaCachedCellValue(cell, sharedStrings, format, dateSystem, span));
+                worksheet.SetLoadedFormulaCachedValue(address.Row, address.Column, ReadFormulaCachedCellValue(cell, sharedStrings, format, dateSystem, context.State.CancellationToken, span));
                 worksheet.SetLoadedFormulaXml(address.Row, address.Column, cell.Element(XlsxMain + "f"));
                 worksheet.SetLoadedCellNumberFormat(address.Row, address.Column, format);
                 worksheet.SetLoadedCellStyleId(address.Row, address.Column, styleId);
@@ -611,6 +611,7 @@ internal sealed partial class LythonRuntime
             string numberFormat,
             ExcelDateSystem dateSystem,
             bool dataOnly,
+            CancellationToken cancellationToken,
             LythonSourceSpan span)
         {
             var formula = cell.Element(XlsxMain + "f");
@@ -619,7 +620,7 @@ internal sealed partial class LythonRuntime
                 return PyString.FromString("=" + formula.Value);
             }
 
-            return ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, span);
+            return ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, cancellationToken, span);
         }
 
         private static object ReadFormulaCachedCellValue(
@@ -627,16 +628,18 @@ internal sealed partial class LythonRuntime
             IReadOnlyList<string> sharedStrings,
             string numberFormat,
             ExcelDateSystem dateSystem,
+            CancellationToken cancellationToken,
             LythonSourceSpan span)
             => cell.Element(XlsxMain + "f") is null
                 ? PyNone.Instance
-                : ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, span);
+                : ReadStoredCellValue(cell, sharedStrings, numberFormat, dateSystem, cancellationToken, span);
 
         private static object ReadStoredCellValue(
             XElement cell,
             IReadOnlyList<string> sharedStrings,
             string numberFormat,
             ExcelDateSystem dateSystem,
+            CancellationToken cancellationToken,
             LythonSourceSpan span)
         {
             var type = (string?)cell.Attribute("t");
@@ -657,15 +660,15 @@ internal sealed partial class LythonRuntime
                 "b" => rawValue == "1",
                 "str" => PyString.FromString(rawValue),
                 "e" => PyString.FromString(rawValue),
-                _ => ParseNumericCell(rawValue, numberFormat, dateSystem),
+                _ => ParseNumericCell(rawValue, numberFormat, dateSystem, cancellationToken),
             };
 
-            static object ParseNumericCell(string rawValue, string numberFormat, ExcelDateSystem dateSystem)
+            static object ParseNumericCell(string rawValue, string numberFormat, ExcelDateSystem dateSystem, CancellationToken cancellationToken)
             {
                 if (double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) &&
-                    IsDateNumberFormat(numberFormat))
+                    ClassifyNumberFormat(numberFormat, cancellationToken) is var format && format != ExcelNumberFormatKind.Numeric)
                 {
-                    return DateValueFromExcelSerial(serial, numberFormat, dateSystem);
+                    return DateValueFromExcelSerial(serial, format, dateSystem);
                 }
 
                 if (rawValue.IndexOfAny(['.', 'e', 'E']) < 0 &&

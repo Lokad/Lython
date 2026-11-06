@@ -1,0 +1,88 @@
+{
+  "checks": [
+    {
+      "label": "build-internal",
+      "arguments": [
+        "build",
+        "tests/Lokad.Lython.Tests",
+        "-c",
+        "Release"
+      ],
+      "exitCode": 0,
+      "seconds": 6.145317300222814,
+      "tail": "proj::TargetFramework=net11.0]\nC:\\Users\\JoannesVermorel\\.dotnet11\\sdk\\11.0.100-rc.3.26522.148\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\Lokad.Lython.Tests.csproj::TargetFramework=net10.0]\nC:\\Users\\JoannesVermorel\\.dotnet11\\sdk\\11.0.100-rc.3.26522.148\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\\code\\Lython\\src\\Lokad.Lython.Utf8Regex\\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net10.0]\nC:\\Users\\JoannesVermorel\\.dotnet11\\sdk\\11.0.100-rc.3.26522.148\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\\code\\Lython\\src\\Lokad.Lython.Utf8Regex\\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]\n  Lokad.Lython -> D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net10.0\\Lokad.Lython.dll\n  Lokad.Lython -> D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net11.0\\Lokad.Lython.dll\n  Lokad.Lython.Utf8Regex -> D:\\code\\Lython\\src\\Lokad.Lython.Utf8Regex\\bin\\Release\\net11.0\\Lokad.Lython.Utf8Regex.dll\n  Lokad.Lython.Utf8Regex -> D:\\code\\Lython\\src\\Lokad.Lython.Utf8Regex\\bin\\Release\\net10.0\\Lokad.Lython.Utf8Regex.dll\n  Lokad.Lython.Tests -> D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll\n  Lokad.Lython.Tests -> D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:05.91\n"
+    },
+    {
+      "label": "Lokad.Lython.PublicApi.Tests-net11.0",
+      "arguments": [
+        "test",
+        "tests/Lokad.Lython.PublicApi.Tests",
+        "-c",
+        "Release",
+        "-f",
+        "net11.0",
+        "--no-build",
+        "--filter",
+        "Category!=Stress&(FullyQualifiedName~OpenPyxl|FullyQualifiedName~GovernedMemoryContractTests)"
+      ],
+      "exitCode": 0,
+      "seconds": 5.626262799836695,
+      "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   169, Skipped:     0, Total:   169, Duration: 2 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+    },
+    {
+      "label": "Lokad.Lython.Tests-net11.0",
+      "arguments": [
+        "test",
+        "tests/Lokad.Lython.Tests",
+        "-c",
+        "Release",
+        "-f",
+        "net11.0",
+        "--no-build",
+        "--filter",
+        "Category!=Stress&(FullyQualifiedName~OpenPyxl|FullyQualifiedName~TextOperationProvenanceTests|FullyQualifiedName~StringWindowOwnershipTests|FullyQualifiedName~DirectStringLowerTests|FullyQualifiedName~InstructionFailureRoutingTests)"
+      ],
+      "exitCode": 0,
+      "seconds": 3.6064007999375463,
+      "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    45, Skipped:     0, Total:    45, Duration: 272 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+    },
+    {
+      "label": "Lokad.Lython.PublicApi.Tests-net10.0",
+      "arguments": [
+        "test",
+        "tests/Lokad.Lython.PublicApi.Tests",
+        "-c",
+        "Release",
+        "-f",
+        "net10.0",
+        "--no-build",
+        "--filter",
+        "Category!=Stress&(FullyQualifiedName~OpenPyxl|FullyQualifiedName~GovernedMemoryContractTests)"
+      ],
+      "exitCode": 0,
+      "seconds": 7.345095399999991,
+      "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   169, Skipped:     0, Total:   169, Duration: 2 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+    },
+    {
+      "label": "Lokad.Lython.Tests-net10.0",
+      "arguments": [
+        "test",
+        "tests/Lokad.Lython.Tests",
+        "-c",
+        "Release",
+        "-f",
+        "net10.0",
+        "--no-build",
+        "--filter",
+        "Category!=Stress&(FullyQualifiedName~OpenPyxl|FullyQualifiedName~TextOperationProvenanceTests|FullyQualifiedName~StringWindowOwnershipTests|FullyQualifiedName~DirectStringLowerTests|FullyQualifiedName~InstructionFailureRoutingTests)"
+      ],
+      "exitCode": 0,
+      "seconds": 4.1979761000256985,
+      "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    45, Skipped:     0, Total:    45, Duration: 283 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)\n"
+    }
+  ],
+  "coreSHA256": {
+    "net11.0": "8bccbe6b2c0dbe18114af6c152e7d31647e0fc7505da45fb3fab5a89dd6793ff",
+    "net10.0": "3b85ad9faeeb3f66ef882773142c6c98a25230e728a38cda775b13c0c3b6a368"
+  }
+}
