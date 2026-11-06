@@ -6,10 +6,27 @@ internal static partial class PyStringOps
 {
     // Python 3.13's 29 whitespace scalars. Keeping this small inventory explicit
     // avoids BCL Unicode-version drift and includes Python's four C0 separators.
-    internal static bool IsPythonWhitespace(Rune rune) => rune.Value is
-        >= 0x09 and <= 0x0D or >= 0x1C and <= 0x20 or
-        0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A or
-        0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
+    internal static bool IsPythonWhitespace(Rune rune) => rune.Value <= 0x7F
+        ? IsAsciiWhitespace((byte)rune.Value)
+        : rune.Value is 0x85 or 0xA0 or 0x1680 or >= 0x2000 and <= 0x200A or
+            0x2028 or 0x2029 or 0x202F or 0x205F or 0x3000;
+
+    private static bool IsAsciiWhitespace(byte value)
+        => value is >= 0x09 and <= 0x0D or >= 0x1C and <= 0x20;
+
+    // The caller has classified the first (or last) ASCII byte. Stop at a
+    // category change or any UTF-8 byte, leaving Unicode decoding to the caller.
+    private static int AsciiWhitespaceRunLength(ReadOnlySpan<byte> chunk, bool whitespace, bool reverse = false)
+    {
+        var width = 1;
+        while (width < chunk.Length)
+        {
+            var value = chunk[reverse ? chunk.Length - width - 1 : width];
+            if (value >= 0x80 || IsAsciiWhitespace(value) != whitespace) break;
+            width++;
+        }
+        return width;
+    }
 
     internal static PyList SplitCasedWhitespace(PyString value, bool upper,
         MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -34,15 +51,12 @@ internal static partial class PyStringOps
         MemoryGovernor.TemporaryMemoryReservation? scratch = null;
         try
         {
-            if (casing is { } collectedMapping)
-                CollectCasedWhitespace(source, collectedMapping, ref ranges, ref count, ref outputBytes,
-                    ref scratchBytes, ref scratch, governor, span, context);
-            else if (reverse)
+            if (reverse)
                 CollectWhitespaceReverse(source, maxSplit, ref ranges, ref count, ref outputBytes,
                     ref scratchBytes, ref scratch, governor, span, context);
             else
                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
-                    ref scratchBytes, ref scratch, governor, span, context);
+                    ref scratchBytes, ref scratch, governor, span, context, casing);
 
             // Admit final backing and all fragments together. Each value keeps
             // its own payload; adoption transfers the completed list capacity.
@@ -84,26 +98,42 @@ internal static partial class PyStringOps
     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
         scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
     {
         // Each chunk decodes at most 64 complete scalars; a final scalar may
         // cross the byte boundary by at most three bytes. No shared work counter.
         var start = -1;
         var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+        var maximumCaseWidth = casing is null ? 0 : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
+        long extraCapacity = 0;
         for (var position = 0; position < source.Length;)
         {
             context?.CheckExecution(span);
             var chunkEnd = position + Math.Min(64, source.Length - position);
             do
             {
-                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
-                if (IsPythonWhitespace(rune))
+                int width;
+                bool whitespace;
+                if (source[position] < 0x80)
+                {
+                    whitespace = IsAsciiWhitespace(source[position]);
+                    width = AsciiWhitespaceRunLength(source[position..chunkEnd], whitespace);
+                }
+                else
+                {
+                    Rune.DecodeFromUtf8(source[position..], out var rune, out width);
+                    whitespace = IsPythonWhitespace(rune);
+                    if (!whitespace && maximumCaseWidth != 0) extraCapacity += maximumCaseWidth - width;
+                }
+                if (whitespace)
                 {
                     if (start >= 0)
                     {
                         AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
-                            ref scratchBytes, ref scratch, governor, span, context);
+                            ref scratchBytes, ref scratch, governor, span, context,
+                            maximumCaseWidth == 0 ? null : CheckCaseOutputCapacity(position - start + extraCapacity, span));
                         start = -1;
+                        extraCapacity = 0;
                         remaining--;
                     }
                 }
@@ -122,49 +152,8 @@ internal static partial class PyStringOps
         }
         if (start >= 0)
             AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
-                ref scratchBytes, ref scratch, governor, span, context);
-    }
-
-    // Cased whitespace splitting is always unbounded. Its existing scalar walk
-    // computes output capacity; ordinary split/rsplit have no casing work.
-    private static void CollectCasedWhitespace(ReadOnlySpan<byte> source, CaseMapping mapping,
-        scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
-        ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
-        LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
-    {
-        var maximumCaseWidth = mapping == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
-        var start = -1;
-        long extraCapacity = 0;
-        for (var position = 0; position < source.Length;)
-        {
-            context?.CheckExecution(span);
-            var chunkEnd = position + Math.Min(64, source.Length - position);
-            do
-            {
-                Rune.DecodeFromUtf8(source[position..], out var rune, out var width);
-                if (IsPythonWhitespace(rune))
-                {
-                    if (start >= 0)
-                    {
-                        AppendWhitespaceRange(ref ranges, ref count, start, position, ref outputBytes,
-                            ref scratchBytes, ref scratch, governor, span, context,
-                            CheckCaseOutputCapacity(position - start + extraCapacity, span));
-                        start = -1;
-                        extraCapacity = 0;
-                    }
-                }
-                else
-                {
-                    if (start < 0) start = position;
-                    if (width > 1) extraCapacity += maximumCaseWidth - width;
-                }
-                position += width;
-            } while (position < chunkEnd);
-        }
-        if (start >= 0)
-            AppendWhitespaceRange(ref ranges, ref count, start, source.Length, ref outputBytes,
                 ref scratchBytes, ref scratch, governor, span, context,
-                CheckCaseOutputCapacity(source.Length - start + extraCapacity, span));
+                maximumCaseWidth == 0 ? null : CheckCaseOutputCapacity(source.Length - start + extraCapacity, span));
     }
 
     private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,
@@ -179,8 +168,19 @@ internal static partial class PyStringOps
             var chunkStart = Math.Max(0, position - 64);
             do
             {
-                Rune.DecodeLastFromUtf8(source[..position], out var rune, out var width);
-                if (IsPythonWhitespace(rune))
+                int width;
+                bool whitespace;
+                if (source[position - 1] < 0x80)
+                {
+                    whitespace = IsAsciiWhitespace(source[position - 1]);
+                    width = AsciiWhitespaceRunLength(source[chunkStart..position], whitespace, reverse: true);
+                }
+                else
+                {
+                    Rune.DecodeLastFromUtf8(source[..position], out var rune, out width);
+                    whitespace = IsPythonWhitespace(rune);
+                }
+                if (whitespace)
                 {
                     if (end >= 0)
                     {

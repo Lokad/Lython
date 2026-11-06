@@ -1,0 +1,10 @@
+{
+  "initialSetupStoppedBeforeService": true,
+  "initialFreeBytes": 356352,
+  "minimumFreeBytes": 25165824,
+  "removedOnlyVerifiedRedundantTransfer": "/home/lokad/lython-bench-checks/b332-payload.tgz",
+  "retainedLocalTransferSHA256": "bff14ef466f66e85283d9c4f004e74fb6c9b15df6604efdaf6d55f910acebfb7",
+  "correctedFreeBytes": 4100096,
+  "sourceAndWorkersReverified": true,
+  "serviceBefore": "MainPID=0\nLoadState=not-found\nActiveState=inactive\n"
+}

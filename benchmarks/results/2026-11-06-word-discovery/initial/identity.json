@@ -1,0 +1,23 @@
+{
+  "sourceRevision": "0a64b922 HEAD/production794e552b plus R03 common bounded UTF-8 word discovery; exact recorded source patch/hash",
+  "coreSHA256": {
+    "candidate": "66688ca6d8e3a837482d47c0f2225d8f11ae7463b832104565f385d913cdd80a",
+    "control": "66688ca6d8e3a837482d47c0f2225d8f11ae7463b832104565f385d913cdd80a",
+    "reference": "4011fcad5fd08531c3acdf52f6f0e61f99b39db2202fea012029548467230b7d"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "e8cf3068b9635a141c8bfc8df82f96e3d34f74a76a15dc74f317ead8b620aba5"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.Tests-net11.0": 315,
+    "Lokad.Lython.PublicApi.Tests-net11.0": 193,
+    "Lokad.Lython.Tests-net10.0": 315,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 193
+  }
+}

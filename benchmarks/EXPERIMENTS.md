@@ -3091,3 +3091,12 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   debt; text identical-role spread4.69%. Affected compound-key gains stay separate.
   Installed consumers pass, cached terminal CI42170841788 GREEN/all eight gates
   on794e552b. Excludes later R03; whole objective active.
+
+- [Common UTF-8 word discovery, B332/B333](results/2026-11-06-word-discovery/README.md):
+  RETAIN the refined common ordinary/cased planner and direct ASCII category runs;
+  delete duplicated discovery and per-ASCII Rune decoding. Withdraw both native
+  search tables after original warm text+2.69–3.69%. Refined warm roles straddle
+  reference (+1.59/-0.93%); fresh-1.39/-0.85%, unchanged CSV roughly flat.
+  Simplification retained without a warm/CPU/allocation claim. Both~86s collections
+  pass all gates; failed initial disk checks and every adverse observation remain.
+  Focused checks pass both actual runtimes; combined delivery remains separate.

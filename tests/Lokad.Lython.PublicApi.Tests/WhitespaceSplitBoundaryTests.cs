@@ -5,6 +5,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class WhitespaceSplitBoundaryTests
 {
     [Theory]
+    [InlineData(63)]
+    [InlineData(64)]
+    [InlineData(65)]
     [InlineData(4095)]
     [InlineData(4096)]
     [InlineData(4097)]
@@ -32,6 +35,11 @@ public sealed class WhitespaceSplitBoundaryTests
             assert ascii_text.rsplit() == words
             assert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]
             assert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]
+            def lower_words(value):return value.lower().split()
+            def upper_words(value):return value.upper().split()
+            cased = 'A' * {{size}} + 'ΟΣ’' + '\u2003' + 'İßﬃ'
+            assert lower_words(cased) == ['a' * {{size}} + 'ος’', 'i\u0307ßﬃ']
+            assert upper_words(cased) == ['A' * {{size}} + 'ΟΣ’', 'İSSFFI']
             print('ok')
             """);
         Assert.True(script.IsValid);

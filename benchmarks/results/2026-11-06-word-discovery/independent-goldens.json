@@ -1,0 +1,44 @@
+[
+  {
+    "size": 63,
+    "source": "left = 'a' * 63 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 63\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 63).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 63).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 63 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 63 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 63 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  },
+  {
+    "size": 64,
+    "source": "left = 'a' * 64 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 64\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 64).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 64).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 64 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 64 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 64 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  },
+  {
+    "size": 65,
+    "source": "left = 'a' * 65 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 65\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 65).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 65).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 65 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 65 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 65 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  },
+  {
+    "size": 4095,
+    "source": "left = 'a' * 4095 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 4095\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4095).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4095).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 4095 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 4095 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 4095 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  },
+  {
+    "size": 4096,
+    "source": "left = 'a' * 4096 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 4096\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4096).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4096).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 4096 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 4096 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 4096 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  },
+  {
+    "size": 4097,
+    "source": "left = 'a' * 4097 + '\\u03b1\\0\\x7f\\U0001f600'\nspace = '\\u2003' * 4097\ntext = ' \\t' + left + space + 'tail \\t'\nassert text.split() == [left, 'tail']\nassert text.split(None, 0) == [left + space + 'tail \\t']\nassert text.split(None, 1) == [left, 'tail \\t']\nassert text.split(None, 2) == [left, 'tail']\nassert text.split(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4097).split() == []\nassert text.rsplit() == [left, 'tail']\nassert text.rsplit(None, 0) == [' \\t' + left + space + 'tail']\nassert text.rsplit(None, 1) == [' \\t' + left, 'tail']\nassert text.rsplit(None, 2) == [left, 'tail']\nassert text.rsplit(None, 2147483647) == [left, 'tail']\nassert (' \\t' * 4097).rsplit() == []\nascii_text = ''.join(chr(i) for i in range(128))\nwords = [ascii_text[:9], ascii_text[14:28], ascii_text[33:]]\nassert ascii_text.split() == words\nassert ascii_text.rsplit() == words\nassert ascii_text.lower() == ascii_text[:65] + 'abcdefghijklmnopqrstuvwxyz' + ascii_text[91:]\nassert ascii_text.upper() == ascii_text[:97] + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ascii_text[123:]\ndef lower_words(value):return value.lower().split()\ndef upper_words(value):return value.upper().split()\ncased = 'A' * 4097 + 'ΟΣ’' + '\\u2003' + 'İßﬃ'\nassert lower_words(cased) == ['a' * 4097 + 'ος’', 'i\\u0307ßﬃ']\nassert upper_words(cased) == ['A' * 4097 + 'ΟΣ’', 'İSSFFI']\nprint('ok')",
+    "exitCode": 0,
+    "stdout": "ok\r\n",
+    "stderr": ""
+  }
+]
