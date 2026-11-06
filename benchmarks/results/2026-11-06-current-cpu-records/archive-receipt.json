@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "capturedSeconds": 14.412613092,
+  "archiveSHA256": "324b74a4f617a475c24322b5694b8c652686154950e4660394a4c47cf5324bd9",
+  "performanceQualified": false,
+  "originalOwnerExitCode": 1,
+  "archiveRecoveredUnderLease": true
+}

@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [R19 current CPU gate](results/2026-11-06-current-cpu-records/README.md)
+captures 14.41 s of text/report guest work. Ordinary calls/binding are under 2%
+of observed leaves; text prefix plus inlined work remains 20.6%, and report JSON
+reading 11.9%. These are attribution, not predicted savings. Select a canonical
+immutable record-key storage redesign with explicit ordinary-dictionary regression
+debt and deletion of the separate JSON hint; implementation is still pending.
+Original archive-permission failure and verified recovery are retained.
+
 The [capture ownership milestone](results/2026-11-06-regex-capture-ownership/README.md)
 removes provider carriers/arrays and eager retained groups. Same-producer direct
 cursor allocation drops 20.34%; complete regex extraction improves 3.6–5.2% warm

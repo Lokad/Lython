@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "b6650f09 frozen54b53c7f; non-regex implementation unchanged by b542b601 U04",
+  "files": {
+    "Lokad.Lython.dll": "54b53c7f5dfac5558ed9ce953a252e02846ba47975ada633a194026018610e15"
+  },
+  "purpose": "R19 bounded current CPU attribution, not a speed comparison; text and report only",
+  "diagnosticOverride": {
+    "DOTNET_PerfMapEnabled": "3"
+  },
+  "overrideSource": "https://learn.microsoft.com/en-us/dotnet/core/runtime-config/debugging-profiling#export-perf-maps-and-jit-dumps",
+  "overrideReason": "Maps only, without duplicate jit dumps. Diagnostic override cannot establish normal-clock CPU speedups."
+}
