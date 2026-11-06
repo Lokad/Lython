@@ -2,26 +2,23 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper |4,096 records /57,361 B|4.912–4.973 ms|3.436 ms|1.43–1.45×|Diagnostic;1.23% control /2.79% IQR|
-| Text summary/helpers |3,072 lines /35,840 B|2.407–2.477 ms|1.336 ms|1.80–1.85×|Diagnostic;2.93% control /1.46% IQR|
-| JSON-lines/helpers |4,096 records /110,592 B|4.710–4.744 ms|4.201 ms|1.12–1.13×|Diagnostic;0.71% control /1.28% IQR|
-| JSON-to-Markdown report |3,072 records /189,441 B|3.771–3.913 ms|2.805 ms|1.34–1.40×|Diagnostic;3.63% control /5.03% IQR|
+| CSV summary/ordinary helper | 4,096 records / 57,361 B | 4.881–4.914 ms | 3.377 ms | 1.45–1.46× | Diagnostic; control 0.67%, IQR 2.22% |
+| Text summary/helpers | 3,072 lines / 35,840 B | 2.382–2.388 ms | 1.260 ms | 1.89× | Diagnostic; control 0.25%, IQR 1.29% |
+| JSON-lines/helpers | 4,096 records / 110,592 B | 4.646–4.721 ms | 4.263 ms | 1.09–1.11× | Diagnostic; control 1.62%, IQR 0.93% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.747–3.788 ms | 2.476 ms | 1.51–1.53× | Variable; control 1.10%, IQR 7.49% |
 
-**2026-11-06;0.11development K01 source based ondb3d1908, frozen coreadbd1b6b;
-CPython3.13.16; .NET11RC3.** These are **compilation plus one execution in an
-already-running host**, including mediated RAM-file I/O, complete result/file
-validation and prior-result cleanup. Process startup and fixture staging/reset are
-excluded. **Ratio=Lython elapsed/CPython elapsed; above one means slower.**
+**2026-11-06; 0.11 development source `1134d6e8`; CPython 3.13.16; .NET 11 RC3.**
+These are **compilation plus one execution in an already-running host**, including
+mediated RAM-file I/O, complete result/file validation and prior-result cleanup.
+Startup and fixture staging/reset are excluded. **Ratio=Lython elapsed/CPython
+elapsed; above one means slower.**
 
 Ranges are medians from two independent identical-build processes, not confidence
-intervals. Control is their relative spread; IQR is interquartile range/median,
-showing the larger Lython-role IQR. These short observations are diagnostic, with
-report/control variation visible. They describe the frozen source/core, not later
-HEAD. [Exact source, hashes, machine gates and raw evidence](../benchmarks/results/2026-11-06-canonical-key-storage/checkpoint/identity.json)
-are retained with the [qualification and adverse results](../benchmarks/results/2026-11-06-canonical-key-storage/README.md).
-K01 passed full local, Windows/Ubuntu, original stress and installed-consumer
-qualification on actual.NET11/10 (cached terminal42145148043). That qualification
-does not cover later source changes. Publication is postponed.
+intervals. Control is the absolute difference relative to the candidate median;
+IQR is interquartile range/median, showing the larger Lython-role IQR. Report
+variation remains visible. Results describe the recorded source and binary,
+not later HEAD. [Identity and raw evidence](../benchmarks/results/2026-11-06-call-frame-cpython/identity.json),
+[qualification and adverse results](../benchmarks/results/2026-11-06-call-frame-cpython/README.md).
 
 ## Warm execution, compilation and startup
 
@@ -29,25 +26,29 @@ Same source, input and invocation/I/O/validation/cleanup boundary, reusing compi
 
 | Warm workload | Lython | CPython | Ratio | Current control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper |4.836–4.939 ms|3.226 ms|1.50–1.53×|2.08% /0.81%|
-| Text summary/helpers |2.245–2.299 ms|1.187 ms|1.89–1.94×|2.36% /0.96%|
-| JSON-lines/helpers |4.406–4.587 ms|4.093 ms|1.08–1.12×|4.12% /0.50%|
-| JSON-to-Markdown report |3.654–3.707 ms|2.629 ms|1.39–1.41×|1.46% /4.65%|
+| CSV summary/ordinary helper | 4.632–4.700 ms | 3.200 ms | 1.45–1.47× | 1.43% / 1.36% |
+| Text summary/helpers | 2.212–2.257 ms | 1.188 ms | 1.86–1.90× | 1.98% / 0.60% |
+| JSON-lines/helpers | 4.515–4.573 ms | 4.162 ms | 1.08–1.10× | 1.30% / 1.00% |
+| JSON-to-Markdown report | 3.690–3.719 ms | 2.607 ms | 1.42–1.43× | 0.78% / 5.10% |
 
 Compilation/program disposal alone; execution and I/O excluded. Do not subtract
 warm and fresh medians to infer compilation:
 
 | Compile-only script | Lython | CPython | Ratio | Current control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper |74.59–74.82µs|62.02µs|1.20–1.21×|0.31% /2.54%|
-| Text summary/helpers |53.93–55.61µs|41.40µs|1.30–1.34×|3.03% /6.16%|
-| JSON-lines/helpers |63.87–65.45µs|50.86µs|1.26–1.29×|2.47% /0.69%|
-| JSON-to-Markdown report |50.35–50.63µs|37.89µs|1.33–1.34×|0.56% /2.87%|
+| CSV summary/ordinary helper | 72.404–73.704 µs | 59.027 µs | 1.23–1.25× | 1.76% / 0.56% |
+| Text summary/helpers | 53.579–54.377 µs | 41.381 µs | 1.29–1.31× | 1.49% / 0.63% |
+| JSON-lines/helpers | 63.435–64.456 µs | 51.213 µs | 1.24–1.26× | 1.61% / 2.47% |
+| JSON-to-Markdown report | 50.464–50.539 µs | 37.779 µs | 1.34–1.34× | 0.15% / 6.60% |
 
 **Startup, genuinely suspended-I/O latency, heap/RSS and embedding latency remain
-unmeasured.** Warm CSV/text are still about1.5×/1.9×CPython. Their observed warm
-regressions versus P01 remain in the evidence; fresh results differ, so there is
-no broad speedup claim.
+unmeasured.** Warm CSV/text remain about1.45–1.47×/1.86–1.90×CPython. Against
+the F04 reference, primary CSV and warm text are mixed, JSON is small/mixed, and
+fresh text is1.75–2.01% slower. That possible regression remains visible in the
+[comparison evidence](../benchmarks/results/2026-11-06-call-frame-cpython/README.md);
+there is no broad speedup claim.
+Report elapsed and compilation remain variable. Cross-block CPython timings also
+change, so earlier ratios alone do not establish a source regression or improvement.
 
 ## Machine, included work and fairness
 
@@ -56,44 +57,44 @@ one thread/core,16GiB RAM/no swap. CPython GCC13.3 PGO/LTO, ordinary GIL/GC,
 no JIT/debug, `-I -S -X utf8`. SDK/runtime11.0.100-rc.3.26522.148 /
 11.0.0-rc.3.26522.148. Independent sequential processes, normal worker GC/tiering,
 quiet endpoints; five-second warmup per role/job and seven rotated150ms rounds.
-Twelve jobs completed in328.85s; all workers joined and fixtures were removed.
+Twelve jobs completed328.12s; all workers joined and fixtures were removed.
 
-Both engines run the same scripts and fixtures, checking complete output/file
-digests on every invocation. Efficient host overrides mediate Lython file access;
-RAM fixtures include reads/writes, while staging/reset is outside elapsed clocks.
-Warm includes invocation and prior-result cleanup. Compile includes construction/
+Both engines run identical scripts/fixtures, checking complete output/file digests
+on every invocation. Efficient host overrides mediate Lython file access. RAM
+fixtures include reads/writes; staging/reset is outside elapsed clocks. Warm
+includes invocation and prior-result cleanup. Compile includes construction/
 disposal; compile-to-result also executes a fresh script. Transport and final
 program/result/process/fixture teardown are outside clocks. CPython retains imported
 modules between invocations; Lython isolates execution imports. This is an embedding
-comparison, not a claim that the implementations or import caching are identical.
+comparison, not a claim of identical implementations or import caching.
 
 ## Improvements within Lython
 
 CPython remains the primary external baseline above. Separate source pairs show:
 
-- Prepared patterns: record warm−27–29%, compile-to-result−25–30%; compile/text
-  inconclusive. [P01 evidence](../benchmarks/results/2026-11-06-prepared-patterns/README.md).
-- Canonical key storage: set bulk−47%, dataclass keys−30–31% in the bounded
-  refinement; substantial machinery removed and valid custom hashes corrected.
-  Warm CSV/text adverse observations remain; final fresh CSV is flat/mixed,
-  text improves5–8%, JSON+1–2% is small and report is variable.
-  [K01 evidence](../benchmarks/results/2026-11-06-canonical-key-storage/README.md).
-- Native helper returns: allocation−19.92%/−19.31%; elapsed observations remain
-  diagnostic. UTF-8 formatting allocation−8.67%; controlled elapsed/CPU evidence
-  supports retention while the original adverse timing remains unexplained.
-- Unified invocations remove a duplicate interpreter object. The initial prototype
-  reduced CSV process allocation1.77–1.79%; its refined closed-method return case
-  improved elapsed20.1–20.6% against that prototype. These are different source
-  pairs; broad CSV elapsed improvement remains unproven, and the refined source
-  was not remeasured for allocation.
-  [Sources, controls and adverse results](../benchmarks/results/2026-11-06-unified-invocations/README.md).
+- Ordinary method operands remove temporary bound-method packaging: whole method
+  CSV process allocation−7.26–7.28%, warm elapsed−3.67–4.61%, fresh−1.04–1.99%.
+  Controls also change; elapsed is diagnostic. [Evidence](../benchmarks/results/2026-11-06-direct-method-operands/README.md).
+- Unified invocations remove a duplicate interpreter object. Initial CSV process
+  allocation−1.77–1.79%; refined method-return elapsed−20.1–20.6% versus that
+  prototype. Refined allocation was not remeasured. [Evidence](../benchmarks/results/2026-11-06-unified-invocations/README.md).
+- Nonlocal owner-map removal: affected nested CSV elapsed−3.25–3.94%, ordinary
+  CSV flat/slightly adverse. [Evidence](../benchmarks/results/2026-11-06-nonlocal-owners/README.md).
+- Prepared patterns: record warm−27–29%, fresh−25–30%; compile/text inconclusive.
+  [P01 evidence](../benchmarks/results/2026-11-06-prepared-patterns/README.md).
+- Canonical key storage: bounded set−47%, dataclass keys−30–31%; machinery removed
+  and custom hashes corrected. Warm CSV/text adverse results remain historical
+  debt. [K01 evidence](../benchmarks/results/2026-11-06-canonical-key-storage/README.md).
+- Native helper returns: allocation−19.92%/−19.31%; elapsed diagnostic. UTF-8
+  formatting allocation−8.67%; controlled elapsed/CPU supports retention, with
+  the original adverse timing unexplained and preserved.
 
-These are different source pairs and workloads; percentages are not additive or
-claims about every script. Further complete-script performance work remains active.
+These percentages are not additive or claims about every script. Substantial
+complete-script performance work remains active.
 
 ## Historical measurements and unresolved workloads
 
-The following were not refreshed to K01 and do not describe its performance:
+The following were not refreshed to1134d6e8 and do not describe its performance:
 
 | Workload | Earlier revision/boundary | Lython / CPython | Status |
 | --- | --- | ---: | --- |

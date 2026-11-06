@@ -3021,3 +3021,9 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   remove per-call owner maps. Focused Release passes both actual runtimes; affected
   nested CSV elapsed -3.25/-3.94%, ordinary CSV flat/slightly adverse. Original
   invalid final quiet gate and all samples preserved; one unchanged confirmation.
+
+- [Call/frame CPython checkpoint, B320](results/2026-11-06-call-frame-cpython/README.md):
+  committed1134d6e8 runtime source, frozen520b3eb0, twelve complete compile/warm/fresh
+  CSV/text/JSON/report jobs328.12s/all gates. Primary guide refreshed. Fresh text
+  +1.75-2.01% against F04 is accepted regression debt, report variable; no broad
+  speedup claim. Ordinary method allocation/elapsed improvements stay separate.

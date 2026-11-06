@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "1134d6e8 committed/pushed F02/F03/F04/F05 source; frozen core520b3eb0 built before commit (assembly metadata references5932fe20), source hashes verified unchanged.",
+  "coreSHA256": {
+    "candidate": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+    "control": "520b3eb0a5d791cd8ae4dcc935bed3c9b7b33b8a9b69d2475099655b0c1e1571",
+    "reference": "0050f188b0796de76f744075276cb2e5014f33b8c6b0563164036c5b73c6d450"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Frontend/ExecutableScript.Expressions.cs": "47b912d709fa7df3914c60c6b15fac55212008446f93a19f5725e38d37a9db10",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "c35866d83704ea15b5e5ea8602467ea63c80d9402d616090a2a9965239d77b51",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "256bc2d9b8ceb1b36b063d6c7bc16b63d50526c8265cf85eae89ef34c2124f20",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "7b59dea9dbc8c22a67288af3d387522a1a0dba3b9caf479535ece3dcbedfa71d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "cf7a51cbec22af5d370604e195e0f259e1ce0382e88fed70f0cf69a6a69f50c4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "a46accbcf902618a4c83243219edde2f5502896a9dab99b6fa4809d4cbd62bd4",
+    "src/Lokad.Lython/Runtime/PyAttributeLookup.cs": "85e026a406d31fd0426dffbca79c653fcc4e6c22ab56964c72519c0d59d373f6"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": "Full local Release4210internal/16088public per actual.NET11RC3/.NET10.0.8. F05 manual CI42158371981 pending. No later runtime changes."
+}
