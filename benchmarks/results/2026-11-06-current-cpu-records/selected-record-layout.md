@@ -18,6 +18,8 @@ that this metadata is its entire cost or predict a speedup.
    protocol callbacks, necessary candidate/value snapshots during suspension,
    and the existing public container. Do not retain the old
    table as a second selectable backend. Reserve both arrays before allocation.
+   Key-only set storage should omit its unused value payload; dictionaries retain
+   independent mutable values. Include sets in storage/admission regressions.
 2. Allow a completed string-key record's native key table to become immutable,
    with one existing execution/cache owner. Each row retains its own admitted
    values. Existing-key replacement needs no key clone; key-set/order mutation

@@ -14,7 +14,8 @@ cursor allocation drops 20.34%; complete regex extraction improves 3.6–5.2% wa
 and 4.6–6.4% fresh in an undisturbed 87 s confirmation, with 2.28% control variation.
 Optional-adapter regex remains roughly 7× CPython. Earlier observed/archive-failed
 conditions and SDK launcher failures remain separate; no process-CPU/RSS claim.
-Full ordinary actual 11/10 checks pass; platform/Stress/package delivery follows.
+Full ordinary actual 11/10 checks pass; b542b601 platform/Stress/package delivery
+is GREEN as CI42279409059. The cached outcome closes this runtime milestone.
 
 The [shared-target forwarding assessment](results/2026-11-06-shared-target-assessment/README.md)
 withdraws both prototypes after complete113s source pairs. Initial text−4–5%

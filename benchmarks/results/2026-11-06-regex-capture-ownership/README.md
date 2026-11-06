@@ -81,5 +81,8 @@ Preserve all original failures and corrections:
   timeout or containment changes. Original logs remain.
 
 Detailed receipts, scripts, failed conditions and snapshots are in
-source-and-check-history.tgz. Platform/original Stress/installed-package delivery
-is tracked separately; publication remains postponed.
+source-and-check-history.tgz. Runtime b542b601 passes Windows/Ubuntu, both runtimes,
+original Stress and installed-package delivery in
+[CI42279409059](https://github.com/Lokad/Lython/actions/runs/42279409059), cached in
+delivery-ci.json. Local explicit Release installed consumers also pass both
+runtimes. Later evidence-only commits require no runtime replay. Publication remains postponed.
