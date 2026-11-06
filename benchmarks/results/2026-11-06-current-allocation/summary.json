@@ -1,0 +1,452 @@
+{
+  "source": "88f12099; existing B343 source-equivalent core1d1eff12, precommit build/receipt metadata explicit",
+  "measurement": {
+    "complete": true,
+    "jobs": 2,
+    "totalCaptureSeconds": 1.886274066,
+    "elapsedSeconds": 22.629227485042065,
+    "allWorkersJoined": true,
+    "guestFixtureDirectories": [],
+    "rawTraceSHA256": {
+      "eventpipe/csv-warm/profile.nettrace": "ece9bcfaf71542205949d3557de52e8bd9ad56b5b99c5a37f7ef895bd4013f08",
+      "eventpipe/text-warm/profile.nettrace": "cb774ceca4757568dbfbb0b11753f281d93cbf8b327ffb0e2e8c5e41abec9a0d"
+    },
+    "archiveSHA256": "a552500b293295b8b40af2565507dba76965be59142ef8ff718e9cd7ed47c82d",
+    "archiveBytes": 1812358,
+    "persistentFreeBytes": 25145344,
+    "quietBeforeAndAfter": true,
+    "rawArchivedBeforeLeaseRelease": true
+  },
+  "observations": [
+    {
+      "case": "text-warm",
+      "count": 256,
+      "captureSeconds": 0.608876193,
+      "guestTids": [
+        "3289816"
+      ],
+      "ticks": 4144,
+      "approximateGuestBytes": 441832352,
+      "missingStackBytes": 0,
+      "sampledTypes": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "approximateBytes": 269709736,
+          "percent": 61.04345568610603
+        },
+        {
+          "type": "System.Byte[]",
+          "approximateBytes": 66257824,
+          "percent": 14.996145868467323
+        },
+        {
+          "type": "System.Object[]",
+          "approximateBytes": 51061696,
+          "percent": 11.5568033370268
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "approximateBytes": 34649104,
+          "percent": 7.842138277823531
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "approximateBytes": 7251496,
+          "percent": 1.6412324645706342
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyList",
+          "approximateBytes": 5010856,
+          "percent": 1.1341079885431296
+        },
+        {
+          "type": "BuiltinCallable",
+          "approximateBytes": 2665000,
+          "percent": 0.6031699552865699
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "approximateBytes": 2451800,
+          "percent": 0.5549163588636443
+        },
+        {
+          "type": "Buffer",
+          "approximateBytes": 959400,
+          "percent": 0.21714118390316514
+        },
+        {
+          "type": "ByteFile",
+          "approximateBytes": 533000,
+          "percent": 0.12063399105731397
+        },
+        {
+          "type": "System.String[]",
+          "approximateBytes": 213200,
+          "percent": 0.048253596422925586
+        },
+        {
+          "type": "System.Func`1[System.Threading.Tasks.ValueTask]",
+          "approximateBytes": 109840,
+          "percent": 0.02486010802576992
+        },
+        {
+          "type": "System.String",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "DrainLease",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "System.Int32[]",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "RuntimeTypeCache",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "ActivatorCache",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "Cursor",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "System.Boolean",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "Entry[]",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        },
+        {
+          "type": "System.Func`3[System.Object,System.Object,System.Boolean]",
+          "approximateBytes": 106600,
+          "percent": 0.024126798211462793
+        }
+      ],
+      "objectSizeSamples": {
+        "Lokad.Lython.Runtime.Text.PyString": {
+          "64": 2530
+        },
+        "System.Byte[]": {
+          "32": 138,
+          "16416": 45,
+          "48": 438
+        },
+        "System.Object[]": {
+          "48": 478,
+          "56": 1
+        },
+        "TemporaryMemoryReservation": {
+          "32": 68
+        },
+        "Lokad.Lython.Runtime.PyList": {
+          "56": 47
+        },
+        "System.Numerics.BigInteger": {
+          "32": 325
+        },
+        "System.String[]": {
+          "56": 1,
+          "32": 1
+        },
+        "System.String": {
+          "48": 1
+        },
+        "BuiltinCallable": {
+          "96": 25
+        },
+        "System.Func`1[System.Threading.Tasks.ValueTask]": {
+          "56": 1
+        },
+        "Entry[System.String,System.Object][]": {
+          "3168": 23
+        },
+        "Buffer": {
+          "40": 9
+        },
+        "ByteFile": {
+          "40": 5
+        },
+        "DrainLease": {
+          "32": 1
+        },
+        "System.Int32[]": {
+          "552": 1
+        },
+        "RuntimeTypeCache": {
+          "168": 1
+        },
+        "ActivatorCache": {
+          "56": 1
+        },
+        "Cursor": {
+          "96": 1
+        },
+        "System.Boolean": {
+          "24": 1
+        },
+        "Entry[]": {
+          "88": 1
+        },
+        "System.Func`3[System.Object,System.Object,System.Boolean]": {
+          "56": 1
+        }
+      }
+    },
+    {
+      "case": "csv-warm",
+      "count": 256,
+      "captureSeconds": 1.277397873,
+      "guestTids": [
+        "3289846"
+      ],
+      "ticks": 13035,
+      "approximateGuestBytes": 1389658576,
+      "missingStackBytes": 0,
+      "sampledTypes": [
+        {
+          "type": "ExecutionContext",
+          "approximateBytes": 441139288,
+          "percent": 31.74443677164052
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "approximateBytes": 197838768,
+          "percent": 14.236501786608626
+        },
+        {
+          "type": "NativeEntry[]",
+          "approximateBytes": 196484488,
+          "percent": 14.139047633236784
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "approximateBytes": 192625320,
+          "percent": 13.86134143499144
+        },
+        {
+          "type": "System.Byte[]",
+          "approximateBytes": 102100704,
+          "percent": 7.347179067097701
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "approximateBytes": 75463344,
+          "percent": 5.430351404530892
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "approximateBytes": 71318528,
+          "percent": 5.132089941493658
+        },
+        {
+          "type": "System.Object[]",
+          "approximateBytes": 56186376,
+          "percent": 4.043178444717489
+        },
+        {
+          "type": "System.Boolean",
+          "approximateBytes": 49572760,
+          "percent": 3.567261833672158
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "approximateBytes": 1705600,
+          "percent": 0.12273518326418043
+        },
+        {
+          "type": "BuiltinCallable",
+          "approximateBytes": 1599000,
+          "percent": 0.11506423431016914
+        },
+        {
+          "type": "ExecutableMemberCache[]",
+          "approximateBytes": 852800,
+          "percent": 0.06136759163209021
+        },
+        {
+          "type": "CheckedSequence",
+          "approximateBytes": 533000,
+          "percent": 0.03835474477005638
+        },
+        {
+          "type": "Cursor",
+          "approximateBytes": 319800,
+          "percent": 0.02301284686203383
+        },
+        {
+          "type": "System.String[]",
+          "approximateBytes": 319800,
+          "percent": 0.02301284686203383
+        },
+        {
+          "type": "System.String",
+          "approximateBytes": 319800,
+          "percent": 0.02301284686203383
+        },
+        {
+          "type": "ExceptionTypeValue",
+          "approximateBytes": 213200,
+          "percent": 0.015341897908022553
+        },
+        {
+          "type": "<>c__DisplayClass6_0",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "CsvDictReaderObject",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "Reservation",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "<>c__DisplayClass172_0",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "MinMaxCallable",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "<GetEnumerator>d__58",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "StrCallable",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "ChunkedTextFileReadState",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        },
+        {
+          "type": "CheckedCollection",
+          "approximateBytes": 106600,
+          "percent": 0.007670948954011277
+        }
+      ],
+      "objectSizeSamples": {
+        "ExecutionContext": {
+          "424": 4138
+        },
+        "System.Numerics.BigInteger": {
+          "32": 1807
+        },
+        "Lokad.Lython.Runtime.Text.PyString": {
+          "64": 1856
+        },
+        "Lokad.Lython.Runtime.PyDict": {
+          "80": 708
+        },
+        "NativeEntry[]": {
+          "184": 1842,
+          "104": 1
+        },
+        "System.Byte[]": {
+          "32": 848,
+          "40": 87,
+          "16416": 22
+        },
+        "System.Boolean": {
+          "24": 465
+        },
+        "TemporaryMemoryReservation": {
+          "32": 669
+        },
+        "System.Object[]": {
+          "48": 522,
+          "40": 1,
+          "176": 2,
+          "104": 1,
+          "128": 1
+        },
+        "Cursor": {
+          "96": 3
+        },
+        "CheckedSequence": {
+          "40": 5
+        },
+        "Entry[System.String,System.Object][]": {
+          "432": 2,
+          "3168": 14
+        },
+        "System.String[]": {
+          "32": 2,
+          "40": 1
+        },
+        "BuiltinCallable": {
+          "96": 15
+        },
+        "<>c__DisplayClass6_0": {
+          "56": 1
+        },
+        "CsvDictReaderObject": {
+          "80": 1
+        },
+        "ExecutableMemberCache[]": {
+          "56": 8
+        },
+        "Reservation": {
+          "56": 1
+        },
+        "<>c__DisplayClass172_0": {
+          "48": 1
+        },
+        "MinMaxCallable": {
+          "24": 1
+        },
+        "System.String": {
+          "32": 1,
+          "40": 1,
+          "48": 1
+        },
+        "<GetEnumerator>d__58": {
+          "40": 1
+        },
+        "ExceptionTypeValue": {
+          "48": 2
+        },
+        "StrCallable": {
+          "96": 1
+        },
+        "ChunkedTextFileReadState": {
+          "136": 1
+        },
+        "Lokad.Lython.Runtime.PyExecutableFunction": {
+          "128": 1
+        },
+        "CheckedCollection": {
+          "48": 1
+        }
+      }
+    }
+  ],
+  "decision": "Select a context-on-demand source gate using the same executable work state/handlers, not saved caller records/arenas/context pools or shared-key dictionaries. First collapse the redundant ExecutableFrameState type and group mutable work state with no extra heap allocation. Preserve current native-return optimizations. Materialize before actual scope/protocol/async work and continue the same instruction/state without restart. Do not predict CPU gains from allocation ticks; source/ownership proof and controlled complete-script comparison required."
+}

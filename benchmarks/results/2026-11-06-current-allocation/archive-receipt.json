@@ -1,0 +1,17 @@
+{
+  "complete": true,
+  "jobs": 2,
+  "totalCaptureSeconds": 1.886274066,
+  "elapsedSeconds": 22.629227485042065,
+  "allWorkersJoined": true,
+  "guestFixtureDirectories": [],
+  "rawTraceSHA256": {
+    "eventpipe/csv-warm/profile.nettrace": "ece9bcfaf71542205949d3557de52e8bd9ad56b5b99c5a37f7ef895bd4013f08",
+    "eventpipe/text-warm/profile.nettrace": "cb774ceca4757568dbfbb0b11753f281d93cbf8b327ffb0e2e8c5e41abec9a0d"
+  },
+  "archiveSHA256": "a552500b293295b8b40af2565507dba76965be59142ef8ff718e9cd7ed47c82d",
+  "archiveBytes": 1812358,
+  "persistentFreeBytes": 25145344,
+  "quietBeforeAndAfter": true,
+  "rawArchivedBeforeLeaseRelease": true
+}

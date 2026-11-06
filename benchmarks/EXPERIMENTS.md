@@ -3185,3 +3185,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
 ## Private native cursor ranges (2026-11-06)
 
 [Development adapter evidence](results/2026-11-06-development-cursor-ranges/README.md): exact immutabledev40, both-runtime84 internal/421 public per variant, including real in-flight cancellation. Direct token/range prototype allocated+2.29%; exact producer links creation/advance tokens. Selected private range-only refinement retains the existing local token bridge and reduces direct cursor allocations22.81% on the same producer. Busy Windows elapsed is diagnostic; no whole-script/backend release claim. Normal0.4/core dependency graph unchanged.
+
+## Current allocation/lifecycle gate (2026-11-06)
+
+[R12/B345 origins](results/2026-11-06-current-allocation/README.md): two complete maintained scripts,256 jobs each/1.886s capture, all source/quiet/golden/funding/cleanup gates. Current CSV context allocations remain visible (sampled424B objects); text is dominated by token storage rather than contexts. Approximate triggering-type attribution is not CPU/exact/live evidence. Original B344 CRLF launch failure preserved. Select shared executable work-state/context-on-demand source proof; do not replay slower caller records, arenas or shared CSV-key machinery.
