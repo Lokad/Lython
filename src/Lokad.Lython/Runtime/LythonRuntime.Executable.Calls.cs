@@ -18,10 +18,10 @@ internal sealed partial class LythonRuntime
         private int _pendingCallStart;
         private object? _completedCallValue;
         private Exception? _completedCallError;
-        private enum CallCompletion { Call, TypeGetter, TypeSubscription }
+        private enum CallCompletion { Call, TypeGetter, TypeSubscription, Constructor }
         private CallCompletion _callCompletion;
         private LythonSourceSpan? _protocolCallSpan;
-        private object? _preparedTypeSubscription;
+        private object? _preparedCallValue;
         private bool HasPendingCall => _pendingCallSite is not null || _protocolCallSpan is not null;
         private LythonSourceSpan PendingCallSpan => _pendingCallSite?.CallSpan ?? _protocolCallSpan!;
 
@@ -52,6 +52,7 @@ internal sealed partial class LythonRuntime
         private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
         {
             if (!site.IsPositionalOnly) return false;
+            if (target is PyType type) return TrySuspendForExecutableConstructor(type, site, start);
             var function = target as PyExecutableFunction;
             object? receiver = site.HasReceiver && _stack[start] is not PyNone ? _stack[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
@@ -67,15 +68,39 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private bool TrySuspendForExecutableConstructor(PyType type, ExecutableCallSite site, int start)
+        {
+            if (!type.CanPrepareExecutableConstructor) return false;
+            EnterInterpreterFrame(site.CallSpan);
+            var transferred = false;
+            try
+            {
+                var instance = new PyInstance(type, MemoryGovernor, site.CallSpan);
+                CheckExecution(site.CallSpan);
+                _preparedCallValue = instance;
+                // Admission may change live metadata. Continue the generic init
+                // stage on this same instance when it no longer fits the runner.
+                if (!type.TryGetExecutableInitializer(out var initialize)) return false;
+                _pendingCallSite = site;
+                _pendingFunction = initialize;
+                _pendingReceiver = instance;
+                _pendingCallStart = start;
+                _callCompletion = CallCompletion.Constructor;
+                transferred = true;
+                return true;
+            }
+            finally { if (!transferred) LeaveInterpreterFrame(); }
+        }
+
         // Type subscription has at most two calls: a raw descriptor getter,
         // then its callable result. Both use the existing admitted frame runner.
         private bool TrySuspendForTypeSubscription(ExecutableInstruction instruction)
         {
             var start = instruction.InputStart;
-            if (_preparedTypeSubscription is { } prepared)
+            if (_preparedCallValue is { } prepared)
             {
                 if (!TryPrepareSubscriptionCallable(prepared, instruction.Span, start)) return false;
-                _preparedTypeSubscription = null;
+                _preparedCallValue = null;
                 return true;
             }
             if (_stack[start] is not PyType type ||
@@ -98,7 +123,7 @@ internal sealed partial class LythonRuntime
             if (raw is not (PyClassMethod or PyStaticMethod or PyExecutableFunction)) return false;
             var member = PyAttributeLookup.BindForType(type, raw, this, instruction.Span);
             if (TryPrepareSubscriptionCallable(member, instruction.Span, start)) return true;
-            _preparedTypeSubscription = member;
+            _preparedCallValue = member;
             return false;
         }
 
@@ -122,8 +147,8 @@ internal sealed partial class LythonRuntime
 
         private ValueTask<object> InvokePreparedTypeSubscription(object index, LythonSourceSpan span, bool asynchronous)
         {
-            var member = _preparedTypeSubscription!;
-            _preparedTypeSubscription = null;
+            var member = _preparedCallValue!;
+            _preparedCallValue = null;
             return InvokeTypeSubscriptionMemberAsync(member, index, this, span, asynchronous);
         }
 
@@ -154,21 +179,21 @@ internal sealed partial class LythonRuntime
         {
             var function = _pendingFunction!;
             var span = PendingCallSpan;
-            var ordinaryCall = _callCompletion == CallCompletion.Call;
+            var ordinaryCall = _pendingCallSite is not null;
             var argumentStart = ordinaryCall ? _pendingCallStart + _pendingCallSite!.ArgumentOffset
                 : _pendingCallStart + (_callCompletion == CallCompletion.TypeGetter ? 2 : 1);
             var argumentCount = ordinaryCall ? _pendingCallSite!.ArgumentCount
                 : _callCompletion == CallCompletion.TypeGetter ? 2 : 1;
             BoundCallArguments bound = default;
             ExecutionContext? frame = null;
-            var callEntered = false;
+            var callEntered = _callCompletion == CallCompletion.Constructor;
             var transferred = false;
             try
             {
                 // Ordinary calls own one admission through child completion.
                 // Raw protocols retain their function/managed-stack checks
                 // without gaining an ordinary call-opcode admission.
-                if (ordinaryCall)
+                if (ordinaryCall && !callEntered)
                 {
                     EnterInterpreterFrame(span);
                     callEntered = true;
@@ -247,7 +272,7 @@ internal sealed partial class LythonRuntime
                 finally
                 {
                     DetachExecutableExecution();
-                    if (caller._callCompletion == CallCompletion.Call) caller.LeaveInterpreterFrame();
+                    if (caller._pendingCallSite is not null) caller.LeaveInterpreterFrame();
                 }
             }
         }
@@ -274,6 +299,18 @@ internal sealed partial class LythonRuntime
             _callCompletion = CallCompletion.Call;
             _completedCallValue = null;
             _completedCallError = null;
+            if (completion == CallCompletion.Constructor)
+            {
+                var instance = (PyInstance)_preparedCallValue!;
+                _preparedCallValue = null;
+                CheckExecution(span);
+                if (failure is null)
+                {
+                    if (!ReferenceEquals(value, PyNone.Instance))
+                        failure = new LythonRuntimeException("TypeError", $"__init__ for class '{instance.Type.Name}' must return None.", span);
+                    else value = instance;
+                }
+            }
             if (completion == CallCompletion.TypeGetter)
             {
                 _stack.RetireTo(start + 2);
@@ -287,7 +324,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (value is not PyNone)
                     {
-                        _preparedTypeSubscription = value;
+                        _preparedCallValue = value;
                         return; // Resume this subscript without rebinding.
                     }
                     failure = new LythonRuntimeException("TypeError",

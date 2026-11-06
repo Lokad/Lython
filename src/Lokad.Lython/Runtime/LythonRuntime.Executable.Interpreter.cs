@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
             _completedCallError = null;
             _callCompletion = CallCompletion.Call;
             _protocolCallSpan = null;
-            _preparedTypeSubscription = null;
+            _preparedCallValue = null;
         }
 
         // The mutable stack lives in this invocation, including across generator
@@ -539,7 +539,7 @@ internal sealed partial class LythonRuntime
                 // reuses their first slot before result admission; no extra extent.
                 var result = instruction.OpCode switch
                 {
-                    ExecutableOpCode.Subscript => _preparedTypeSubscription is not null
+                    ExecutableOpCode.Subscript => _preparedCallValue is not null
                         ? InvokePreparedTypeSubscription(_stack[first + 1], instruction.Span, false).GetAwaiter().GetResult()
                         : ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, this),
                     ExecutableOpCode.Slice => ExecuteExecutableSlice(in _stack, instruction.InputStart, instruction.SliceParts, instruction.Span, this),
@@ -750,7 +750,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (!HasYield && !HasPendingCall)
                     {
-                        _preparedTypeSubscription = null;
+                        _preparedCallValue = null;
                         AbandonFrame();
                     }
                     try { if (_stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false); }

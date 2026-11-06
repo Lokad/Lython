@@ -88,13 +88,6 @@ internal sealed partial class LythonRuntime
                 {
                     result = InvokeSingleInput(_stack[start + call.ArgumentOffset], nativeOperation, call.CallSpan, this);
                 }
-                else if (call.IsPositionalOnly && target is PyType type)
-                {
-                    var arguments = _stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
-                    if (asynchronous) return CompleteCallValue(InvokeCallableFromOperandsAsync(type, arguments,
-                        call.CallSpan, this, callSite: call), start);
-                    result = InvokeCallableFromOperands(type, arguments, call.CallSpan, this, callSite: call);
-                }
                 else if (target is PyFunctionBase function)
                 {
                     var site = call.IsPositionalOnly && function is PyExecutableFunction { SupportsDirectPositional: true } ? null : call;
@@ -114,11 +107,9 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    if (asynchronous) return CompleteCallValue(InvokeExecutableGeneralTargetAsync(call, start, target), start);
-                    using var storage = ReserveExecutableCallArguments(call, this);
-                    var arguments = PrepareExecutableCallArguments(call, ref _stack, start, this);
-                    try { result = InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, this, arguments); }
-                    finally { ReturnCallArguments(arguments); }
+                    var pending = InvokeExecutableGeneralTargetAsync(call, start, target, asynchronous);
+                    if (asynchronous) return CompleteCallValue(pending, start);
+                    result = pending.GetAwaiter().GetResult();
                 }
                 PublishInstructionResult(_codeObject.Instructions[_instructionIndex], result);
                 return default;
@@ -145,11 +136,21 @@ internal sealed partial class LythonRuntime
             catch { _stack.RetireTo(start); throw; }
         }
 
-        private async ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target)
+        private async ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
             using var storage = ReserveExecutableCallArguments(call, this);
             var arguments = PrepareExecutableCallArguments(call, ref _stack, start, this);
-            try { return await InvokeCallableTargetAsync(target, call.TargetSpan, call.CallSpan, this, arguments).ConfigureAwait(false); }
+            try
+            {
+                if (_preparedCallValue is PyInstance instance)
+                {
+                    _preparedCallValue = null;
+                    return await InitializePreparedConstructorAsync(instance, arguments, call.CallSpan, this, asynchronous).ConfigureAwait(false);
+                }
+                return asynchronous
+                    ? await InvokeCallableTargetAsync(target, call.TargetSpan, call.CallSpan, this, arguments).ConfigureAwait(false)
+                    : InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, this, arguments);
+            }
             finally { ReturnCallArguments(arguments); }
         }
     }

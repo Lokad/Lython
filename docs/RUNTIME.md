@@ -319,6 +319,13 @@ frame runner. Other calls share native/general target selection and completed
 stack-value transfer across both APIs. Native results travel as objects;
 potentially asynchronous branches retain operands and argument funding until
 their actual completion. Dynamic calls keep the general binder.
+Ordinary positional construction with the sealed object allocator and a compiled
+initializer uses that same runner: it allocates once, binds self into the final
+locals and publishes the instance only after the initializer returns None.
+Initializer selection observes metadata after allocation. If admission changed it
+to a dynamic hook, initialization continues on the existing instance through the
+general binder. Dynamic engine hooks receive admitted owned argument packets
+when they may retain inputs; their storage remains funded with the execution.
 Operand retirement recognizes the runtime's four temporary-value classes through
 one internal base class and disposes them in reverse order. The existing compiler
 shape pass bounds the slots that can hold private temporaries, including seeded

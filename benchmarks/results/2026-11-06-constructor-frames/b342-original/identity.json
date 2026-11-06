@@ -1,0 +1,32 @@
+{
+  "sourceRevision": "8afe8bb1 HEAD plus R10 canonical constructor frames; exact source patch/hashes",
+  "coreSHA256": {
+    "candidate": "08afa873488eb277fd40c29291bd029859661d7f8301c9e52a2affb051648edc",
+    "control": "08afa873488eb277fd40c29291bd029859661d7f8301c9e52a2affb051648edc",
+    "reference": "1301c1b11ca06c3a2e0d1a3243512cf2c5f0f0e687d1d963465bf3b2598e3da2"
+  },
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "4fe33470ca6f5886ec9bb0ab64c34d3c931575da349ef3d42adb07669d0c3a83",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "b06e95ad895af5bd50f3ecce19913fc96687f62e6f8da95a39dc22a88130a2f2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "fb78c2bad59c9d85b8bf6fb6ad2a175099a302b537bf38b0381452cd21e83318",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "76e1c99fbbf47b8c14ba71ed29ba438818b441cc339c51b04552a5feb34cac15",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "0477cbbbdbaead4b91365df7cebf811c9c70a78bfede40397d49cd211201b700",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "e55b8194c6a2849c217c3e82dd550740dfa9cba6ede8ebc9693b3e7ddd7fb7ba",
+    "src/Lokad.Lython/Runtime/PyType.cs": "57cb00e414d8b4d09738d1c06f39c10c95019af7595ef2a2cd8ec7e45211ac96"
+  },
+  "auxiliaryFiles": {
+    "Lokad.Lython.Benchmarks.dll": "b94fa98cb1c91256a61b36f4bdf1175104a39f43b604c9656cd2f30c34ffa13f",
+    "Lokad.Lython.Utf8Regex.dll": "ca25b98246a9d6ae14521d4221159d6885b3a97d5621c065554f951d40350c6c",
+    "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+    "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe"
+  },
+  "qualification": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 5732,
+    "Lokad.Lython.Tests-net11.0": 921,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 5732,
+    "Lokad.Lython.Tests-net10.0": 921,
+    "additional-retained-packet-net11.0": 16,
+    "additional-retained-packet-net10.0": 16
+  },
+  "referenceSourceRevision": "933a7fffedd4053599e2020a168793b1c7b2b569 / verified installed packageF1EE6721"
+}

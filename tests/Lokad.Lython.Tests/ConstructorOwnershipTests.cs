@@ -75,6 +75,95 @@ public sealed class ConstructorOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task AdmissionMutationInitializesTheExistingInstanceWithoutRestart(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
+        Execute("namespace=globals()\nclass C:\n def __init__(self,value):self.old=value\ndef replacement(self,*values):self.new=values[0]\n", context);
+        var type = Assert.IsType<PyType>(context.Variables["C"]);
+        Assert.True(type.TryGetExecutableInitializer(out _));
+        var replacement = context.Variables["replacement"];
+        var blocker = new RestartBlocker();
+        var code = Compile("result=C(7)\n");
+        var changed = false;
+        hook.AfterGrowth = bytes =>
+        {
+            if (bytes != PyInstance.InstanceShellBytes) return;
+            hook.AfterGrowth = null;
+            Assert.True(type.TrySetMember("__new__", blocker));
+            Assert.True(type.TrySetMember("__init__", replacement));
+            changed = true;
+        };
+        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        Assert.True(changed);
+        var result = Assert.IsType<PyInstance>(context.Variables["result"]);
+        Assert.False(result.TryGetOwnAttribute("old", out _));
+        Assert.True(result.TryGetOwnAttribute("new", out var value));
+        Assert.Equal(new System.Numerics.BigInteger(7), value);
+        Assert.Equal(0, blocker.Calls);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Null(context.CurrentExecutableFrame);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class RestartBlocker : LythonRuntime.ICallable
+    {
+        internal int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Calls++;
+            throw new LythonRuntimeException("AssertionError", "constructor restarted after allocation", span);
+        }
+    }
+
+    [Theory]
+    [InlineData(false, false)] [InlineData(false, true)]
+    [InlineData(true, false)] [InlineData(true, true)]
+    public async Task DynamicInitializerOwnsArgumentsAfterCallerReturnsItsPacket(bool asynchronous, bool keyword)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
+        Execute("namespace=globals()\nclass C:pass\n", context);
+        var type = Assert.IsType<PyType>(context.Variables["C"]);
+        var retainer = new PacketRetainer();
+        Assert.True(type.TrySetMember("__init__", retainer));
+        var code = Compile(keyword ? "result=C(7, named=9)\n" : "result=C(7)\n");
+        var before = budget.ReservedBytes;
+        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        var packet = Assert.IsType<CallArgumentValue[]>(retainer.Arguments);
+        Assert.Equal(keyword ? 2 : 1, packet.Length);
+        Assert.True(packet[0].IsPositional);
+        Assert.Equal(new System.Numerics.BigInteger(7), packet[0].Value);
+        if (keyword)
+        {
+            Assert.Equal("named", packet[1].KeywordName);
+            Assert.Equal(new System.Numerics.BigInteger(9), packet[1].Value);
+        }
+        Assert.True(budget.ReservedBytes >= before + PyInstance.InstanceShellBytes + 32 + 32 * packet.Length);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Null(context.CurrentExecutableFrame);
+        retainer.Arguments = null;
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class PacketRetainer : IPyBindableCallable
+    {
+        internal CallArgumentValue[]? Arguments;
+        public object Bind(object instance) => this;
+        public object Get(object? instance, PyType owner, Context? context, LythonSourceSpan? span) => this;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        { Arguments = arguments; return PyNone.Instance; }
+    }
+
     private static ExecutableCodeObject Compile(string source)
         => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
     private static void Execute(string source, Context context)

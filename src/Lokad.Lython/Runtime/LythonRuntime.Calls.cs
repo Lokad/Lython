@@ -130,26 +130,21 @@ internal sealed partial class LythonRuntime
     }
 
     private static object InvokeCallableFromOperands(
-        object target, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
         object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
         try
         {
             context.CheckExecution(span);
-            return RuntimeValue(target switch
-            {
-                PyFunctionBase function => function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite),
-                PyType type when callSite is not null => type.InvokeFromOperands(arguments, callSite, context),
-                _ => throw new InvalidOperationException("Invalid operand callable.")
-            });
+            return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
 
     private static async ValueTask<object> InvokeCallableFromOperandsAsync(
-        object target, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
+        PyFunctionBase function, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context,
         object? receiver = null, ExecutableCallSite? callSite = null)
     {
         context.EnterInterpreterFrame(span);
@@ -158,13 +153,21 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             // Native bodies finish synchronously; other bodies bind owned values.
             // The caller keeps its operand array alive until this call finishes.
-            var pending = target switch
-            {
-                PyFunctionBase function => function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite),
-                PyType type when callSite is not null => type.InvokeFromOperandsAsync(arguments, callSite, context),
-                _ => throw new InvalidOperationException("Invalid operand callable.")
-            };
+            var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
             return RuntimeValue(await pending.ConfigureAwait(false));
+        }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static async ValueTask<object> InitializePreparedConstructorAsync(PyInstance instance,
+        CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            return await instance.Type.InitializeInstanceAsync(instance, arguments, span, context, asynchronous).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }

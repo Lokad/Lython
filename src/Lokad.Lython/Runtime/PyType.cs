@@ -233,22 +233,29 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => InvokeCoreAsync(arguments, span, context, true);
 
-    internal object InvokeFromOperands(ReadOnlyMemory<object?> operands, ExecutableCallSite call,
-        LythonRuntime.ExecutionContext context)
-        => InvokeCoreAsync([], call.CallSpan, context, false, operands, call).GetAwaiter().GetResult();
+    internal bool CanPrepareExecutableConstructor
+        => JsonBase == JsonBaseKind.None && MetaType is { } meta &&
+            !ReferenceEquals(meta, this) && ReferenceEquals(meta.MetaType, meta) &&
+            TryLookupInMro("__new__", 0, out var allocator, out _) && LythonRuntime.IsDefaultObjectNew(allocator);
 
-    internal ValueTask<object> InvokeFromOperandsAsync(ReadOnlyMemory<object?> operands, ExecutableCallSite call,
-        LythonRuntime.ExecutionContext context)
-        => InvokeCoreAsync([], call.CallSpan, context, true, operands, call);
+    internal bool TryGetExecutableInitializer([MaybeNullWhen(false)] out PyExecutableFunction initializer)
+    {
+        if (TryLookupInMro("__init__", 0, out var value, out _) &&
+            value is PyExecutableFunction { SupportsDirectPositional: true } function)
+        {
+            initializer = function;
+            return true;
+        }
+        initializer = null;
+        return false;
+    }
 
     private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, bool asynchronous, ReadOnlyMemory<object?> operands = default,
-        ExecutableCallSite? call = null)
+        LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         context.CheckExecution(span);
-        CallArgumentValue[]? materialized = call is null ? arguments : null;
         if (ReferenceEquals(MetaType, this))
-            return InvokeBuiltInType(materialized ??= CopyPositionalArguments(operands, context, span), span, context);
+            return InvokeBuiltInType(arguments, span, context);
 
         object instance;
         if (!TryGetMember("__new__", out var allocator) || LythonRuntime.IsDefaultObjectNew(allocator))
@@ -259,13 +266,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         }
         else if (allocator is PyFunctionBase function)
         {
-            var site = function is PyExecutableFunction { SupportsDirectPositional: true } or
-                PyFunction { SupportsPositionalBinding: true } ? null : call;
-            instance = call is null
-                ? asynchronous ? await function.InvokeAsync(arguments, span, context, this).ConfigureAwait(false)
-                    : function.Invoke(arguments, span, context, this)
-                : asynchronous ? await function.InvokeFromOperandsAsync(operands.Span, span, context, this, site).ConfigureAwait(false)
-                    : function.InvokeFromOperands(operands.Span, span, context, this, site);
+            instance = asynchronous
+                ? await function.InvokeAsync(arguments, span, context, this).ConfigureAwait(false)
+                : function.Invoke(arguments, span, context, this);
         }
         else
         {
@@ -273,7 +276,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
                 throw new LythonRuntimeException("TypeError", $"Class '{Name}' has a non-callable __new__.", span);
             // Dynamic engine callables may retain their argument array. Admit
             // and commit its owned copy rather than refunding it after the call.
-            var count = call is null ? arguments.Length : operands.Length;
+            var count = arguments.Length;
             var bytes = checked(32L + 32L * (count + 1L));
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
@@ -282,7 +285,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             for (var i = 0; i < count; i++)
             {
                 if ((i & 63) == 0) context.CheckExecution(span);
-                prefixed[i + 1] = call is null ? arguments[i] : CallArgumentValue.Positional(operands.Span[i] ?? PyNone.Instance);
+                prefixed[i + 1] = arguments[i];
             }
             storage.Commit(bytes);
             instance = asynchronous
@@ -292,15 +295,19 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         context.CheckExecution(span);
         if (instance is not PyInstance result || !result.Type.IsSubtypeOf(this)) return instance;
 
-        // A custom allocator may return a subtype or mutate the initializer.
-        // Resolve on the actual result only after allocation has completed.
+        return await InitializeInstanceAsync(result, arguments, span, context, asynchronous).ConfigureAwait(false);
+    }
+
+    internal async ValueTask<object> InitializeInstanceAsync(PyInstance result, CallArgumentValue[] arguments,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool asynchronous)
+    {
+        context.CheckExecution(span);
         var actualType = result.Type;
         if (actualType.JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(actualType, context))
         {
-            materialized ??= CopyPositionalArguments(operands, context, span);
             if (asynchronous)
-                await LythonRuntime.JsonSubclassSupport.RunEngineInitAsync(actualType, result, materialized, span, context).ConfigureAwait(false);
-            else LythonRuntime.JsonSubclassSupport.RunEngineInit(actualType, result, materialized, span, context);
+                await LythonRuntime.JsonSubclassSupport.RunEngineInitAsync(actualType, result, arguments, span, context).ConfigureAwait(false);
+            else LythonRuntime.JsonSubclassSupport.RunEngineInit(actualType, result, arguments, span, context);
             context.CheckExecution(span);
             return result;
         }
@@ -310,13 +317,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         {
             // Ordinary functions bind self directly into invocation-owned locals.
             // No transient bound method or receiver-prefixed argument array.
-            var site = initialize is PyExecutableFunction { SupportsDirectPositional: true } or
-                PyFunction { SupportsPositionalBinding: true } ? null : call;
-            initialized = call is null
-                ? asynchronous ? await initialize.InvokeAsync(arguments, span, context, result).ConfigureAwait(false)
-                    : initialize.Invoke(arguments, span, context, result)
-                : asynchronous ? await initialize.InvokeFromOperandsAsync(operands.Span, span, context, result, site).ConfigureAwait(false)
-                    : initialize.InvokeFromOperands(operands.Span, span, context, result, site);
+            initialized = asynchronous
+                ? await initialize.InvokeAsync(arguments, span, context, result).ConfigureAwait(false)
+                : initialize.Invoke(arguments, span, context, result);
         }
         else
         {
@@ -326,10 +329,13 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             context.CheckExecution(span);
             if (bound is not LythonRuntime.ICallable callable)
                 throw new LythonRuntimeException("TypeError", $"Class '{actualType.Name}' has a non-callable __init__.", span);
-            materialized ??= CopyPositionalArguments(operands, context, span);
+            // Python functions bind values before suspension. Other engine
+            // callables may retain the packet; do not expose the caller's pool.
+            if (bound is not PyFunctionBase and not PyBoundMethod { Function: PyFunctionBase })
+                arguments = CopyArguments(arguments, context, span);
             initialized = asynchronous
-                ? await callable.InvokeAsync(materialized, span, context).ConfigureAwait(false)
-                : callable.Invoke(materialized, span, context);
+                ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false)
+                : callable.Invoke(arguments, span, context);
         }
         context.CheckExecution(span);
         if (!ReferenceEquals(initialized, PyNone.Instance))
@@ -337,18 +343,18 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         return result;
     }
 
-    private static CallArgumentValue[] CopyPositionalArguments(ReadOnlyMemory<object?> operands,
+    private static CallArgumentValue[] CopyArguments(CallArgumentValue[] source,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (operands.IsEmpty) return [];
-        var bytes = checked(32L + 32L * operands.Length);
+        if (source.Length == 0) return [];
+        var bytes = checked(32L + 32L * source.Length);
         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
         context.CheckExecution(span);
-        var arguments = new CallArgumentValue[operands.Length];
+        var arguments = new CallArgumentValue[source.Length];
         for (var i = 0; i < arguments.Length; i++)
         {
             if ((i & 63) == 0) context.CheckExecution(span);
-            arguments[i] = CallArgumentValue.Positional(operands.Span[i] ?? PyNone.Instance);
+            arguments[i] = source[i];
         }
         storage.Commit(bytes);
         return arguments;

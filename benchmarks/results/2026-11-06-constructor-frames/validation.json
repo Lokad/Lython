@@ -1,0 +1,47 @@
+{
+  "status": "Retained; final focused both runtimes and full local.NET11 pass. Platform/stress/installed-package delivery pending.",
+  "source": "8afe8bb1 HEAD plus R10 refinement: one post-allocation initializer selection; exact source patch/hashes",
+  "sourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "4fe33470ca6f5886ec9bb0ab64c34d3c931575da349ef3d42adb07669d0c3a83",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "b06e95ad895af5bd50f3ecce19913fc96687f62e6f8da95a39dc22a88130a2f2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "fb78c2bad59c9d85b8bf6fb6ad2a175099a302b537bf38b0381452cd21e83318",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs": "76e1c99fbbf47b8c14ba71ed29ba438818b441cc339c51b04552a5feb34cac15",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "0477cbbbdbaead4b91365df7cebf811c9c70a78bfede40397d49cd211201b700",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "e55b8194c6a2849c217c3e82dd550740dfa9cba6ede8ebc9693b3e7ddd7fb7ba",
+    "src/Lokad.Lython/Runtime/PyType.cs": "c87504c36080776173a2b62bd203ccd0c1edbe89f3bd3f79feb6f1036a1dd6a2"
+  },
+  "focused": {
+    "Lokad.Lython.PublicApi.Tests-net11.0": 5732,
+    "Lokad.Lython.Tests-net11.0": 925,
+    "Lokad.Lython.PublicApi.Tests-net10.0": 5732,
+    "Lokad.Lython.Tests-net10.0": 925
+  },
+  "newInternalRegressionCases": 6,
+  "publicBehavior": "No API change; preserve R09 ten CPython constructor goldens and genuine pending allocator/descriptor/initializer coverage.",
+  "ownershipTradeoff": "Dynamic retaining initializer packets, including keyword calls, are admitted and execution/result-owned; conservative retention can reject smaller budgets earlier. No refund before actual users/cleanup finish.",
+  "measurement": {
+    "original": {
+      "complete": true,
+      "jobs": 4,
+      "elapsedSeconds": 113.64932513609529,
+      "allWorkersJoined": true,
+      "guestFixtureDirectories": [],
+      "quietBeforeAndAfter": true,
+      "archiveSHA256": "1dfa63debb65c8b47d11e9709256a62186e66ea0345421548fb85adc1efb8ca6"
+    },
+    "refinement": {
+      "complete": true,
+      "jobs": 4,
+      "elapsedSeconds": 113.41605967283249,
+      "allWorkersJoined": true,
+      "guestFixtureDirectories": [],
+      "quietBeforeAndAfter": true,
+      "archiveSHA256": "7fe6b5627ae25256e52e55b74e1b145ebece13e73eadf87503204b683f98cda4"
+    }
+  },
+  "limitations": "No allocation/causalCPU/broad speedup claim. Default sealed allocator + positional compiled init use existing runner; dynamic allocators, descriptors and keywords retain generic binding. Older933 qualification excludes R10. Publication postponed.",
+  "fullFinalLocalNet11": {
+    "internal": 4255,
+    "public": 16176
+  }
+}

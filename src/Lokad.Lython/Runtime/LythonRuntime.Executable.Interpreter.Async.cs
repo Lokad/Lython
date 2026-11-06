@@ -199,7 +199,7 @@ internal sealed partial class LythonRuntime
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.Subscript:
-                        result = _preparedTypeSubscription is not null
+                        result = _preparedCallValue is not null
                             ? await InvokePreparedTypeSubscription(_stack[first + 1], instruction.Span, true).ConfigureAwait(false)
                             : await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, this).ConfigureAwait(false);
                         break;

@@ -3177,3 +3177,7 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   −2.04/−1.65%; unchangedCSV similarly improves, textstraddles reference. Retain
   simplification/correctness; no causalCPU/allocation/broad speedup or compounded
   debt-repayment claim. Final delivery qualification pending; objective open.
+
+## Canonical constructor frames (2026-11-06)
+
+[R10 evidence](results/2026-11-06-constructor-frames/README.md) retains B342 and source-justified B343 refinement, both adverse. One existing frame runner replaces R09 type operand/dual input transport; dynamic retained packets are owned. Final class warm+2.75–3.47%, fresh+1.91–3.44% versus933 are accepted milestone debt, with CSV/text variation explicit. No allocation/CPU/broad speedup claim; whole-script objective remains active.

@@ -59,6 +59,9 @@ allocator/descriptor/initializer I/O retains arguments after source rebinding;
 successful escaping results stay charged. Cancellation/refusal stops later hooks,
 awaits cleanup and restores shared funding. Native hooks cannot hide first failure
 by returning an otherwise valid object or None.
+Admission-hook mutation also verifies that construction initializes the single
+existing instance when the new initializer needs the general binder; it must not
+restart allocation or call a newly installed allocator.
 Structural controls retain immediate reversed-pair rejection, cross-thread
 state disposal and out-of-order unwind without retaining active identities.
 [Nested hash protocols](Lokad.Lython.PublicApi.Tests/NestedHashProtocolTests.cs)

@@ -1,0 +1,82 @@
+{
+  "complete": true,
+  "elapsedSeconds": 113.64932513609529,
+  "timing": [
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 9.453414176470588,
+        "control": 9.449756625,
+        "CPython": 4.2345574444444445,
+        "reference": 9.306773941176472
+      },
+      "ratio": 2.232444429080318,
+      "referenceDeltaPercent": 1.5756290656779415,
+      "controlPercent": -0.038690270015806494,
+      "iqrPercent": {
+        "candidate": 1.5385235142029847,
+        "control": 0.5480068382184378,
+        "CPython": 0.6738438651479709,
+        "reference": 1.436239133523709
+      }
+    },
+    {
+      "case": "scripts.class-record-summary.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate": 9.983762866666666,
+        "control": 9.812176866666666,
+        "CPython": 4.491452205882353,
+        "reference": 9.6038841875
+      },
+      "ratio": 2.2228362696570962,
+      "referenceDeltaPercent": 3.9554691804915665,
+      "controlPercent": -1.7186505958878828,
+      "iqrPercent": {
+        "candidate": 0.47244645093501053,
+        "control": 2.251070307857526,
+        "CPython": 1.0621312542206605,
+        "reference": 1.4550694778461017
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 4.669456060606061,
+        "control": 4.695559181818182,
+        "CPython": 3.2627737173913043,
+        "reference": 4.693450575757576
+      },
+      "ratio": 1.4311308307152375,
+      "referenceDeltaPercent": -0.5112340007467187,
+      "controlPercent": 0.5590184568250001,
+      "iqrPercent": {
+        "candidate": 1.0175028497576464,
+        "control": 0.8560738559340161,
+        "CPython": 0.7005196052483685,
+        "reference": 0.9315908811653144
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate": 2.285065893939394,
+        "control": 2.282976590909091,
+        "CPython": 1.1522487906976744,
+        "reference": 2.263219014705882
+      },
+      "ratio": 1.9831358578001292,
+      "referenceDeltaPercent": 0.965301152542275,
+      "controlPercent": -0.09143294448725747,
+      "iqrPercent": {
+        "candidate": 0.6724923767034879,
+        "control": 0.7494767513610444,
+        "CPython": 0.26524606476634893,
+        "reference": 0.7673304056839334
+      }
+    }
+  ]
+}
