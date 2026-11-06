@@ -68,8 +68,10 @@ comparison, not a claim of identical implementations or import caching.
 
 These primary tables use `Run`. The separate [async hash/read diagnostic](../benchmarks/results/2026-11-06-async-key-reads/README.md)
 uses `RunAsync` with completed mediated I/O and records a3.72–5.13% text regression
-against51db4209. This remains explicit performance debt; it measures no genuinely
-pending-I/O latency or broad CPU improvement.
+against51db4209. The subsequent [native-read proof](../benchmarks/results/2026-11-06-native-read-prefix/README.md)
+measures async text−6.40–6.47% against2adf73f3, while synchronous text+1.51–2.11%
+remains adverse/control debt. These source pairs are separate; no genuinely
+pending-I/O latency or broad CPU improvement was measured.
 
 ## Improvements within Lython
 

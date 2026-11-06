@@ -3120,4 +3120,15 @@ rewrite improves about5%. Accounted peaks are unchanged, physical RSS unmeasured
   Both86.01s collections pass all gates; consolidated async text+3.72/+5.13%
   remains accepted performance debt, CSV uncertain. All adverse/control/failure
   conditions preserved. No CPU/allocation gain or mutation/cache support claim.
-  Final platform/stress/installed qualification batches separately.
+  Q02 source2adf73f3 is fully qualified, cached terminal42180013420 GREEN/all
+  eight platform/runtime/originalStress/package gates. Excludes later R07.
+
+- [Shared native read proof, R07/B336](results/2026-11-06-native-read-prefix/README.md):
+  reuse the existing subscript proof across native get/prepared lookup and consume
+  completed result adaptation directly. Focused1,018 public/431 internal per
+  actual runtime and three independent Python argument/receiver goldens pass.
+  Complete async text−6.40–6.47% versus Q02, identical-role spread0.071%; CSV
+  inconclusive and synchronous text+1.51–2.11% explicitly adverse.86.02s/all
+  three jobs/all gates; no allocation/causalCPU gain or compounded percentages.
+  Failed disk setup/recovery and all controls preserved. Coherent primary refresh
+  and final qualification remain separate; whole-script objective stays active.

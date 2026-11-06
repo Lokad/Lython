@@ -55,6 +55,9 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
     internal long CommittedStorageBytes => _items.CommittedBytes;
     public int Length => Count;
     internal bool HasProtocolKeys => _nativeItems is null ? _items.HasProtocolKeys : _nativeProtocolCount != 0;
+    // Check after argument evaluation: a guest callback may have inserted a
+    // protocol key. This is the same native proof used by subscript execution.
+    internal bool CanReadKeySynchronously(object key) => key is PyString && !HasProtocolKeys;
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
         => OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
@@ -107,7 +110,17 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         value = index < 0 ? PyNone.Instance : _nativeItems[index].Value!;
         return index >= 0;
     }
-    internal async ValueTask<(bool Found, object Value)> TryGetKeyAsync(
+    internal ValueTask<(bool Found, object Value)> TryGetKeyAsync(
+        object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!CanReadKeySynchronously(key)) return ReadProtocolKeyAsync(key, context, span);
+        context.CheckExecution(span);
+        using var ambient = PyStructuralGuard.PushAmbient(context, span);
+        var found = TryGetValue(key, out var value, context, span);
+        return new((found, value ?? PyNone.Instance));
+    }
+
+    private async ValueTask<(bool Found, object Value)> ReadProtocolKeyAsync(
         object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var prepared = await PyHashProtocols.PrepareKeyHashAsync(key, context, span).ConfigureAwait(false);
@@ -130,8 +143,14 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         return index < 0 ? (false, PyNone.Instance) : (true, _nativeItems[index].Value!);
     }
 
-    internal async ValueTask<bool> ContainsKeyAsync(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => (await TryGetKeyAsync(key, context, span).ConfigureAwait(false)).Found;
+    internal ValueTask<bool> ContainsKeyAsync(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var found = TryGetKeyAsync(key, context, span);
+        return found.IsCompletedSuccessfully ? new(found.Result.Found) : AwaitFound(found);
+
+        static async ValueTask<bool> AwaitFound(ValueTask<(bool Found, object Value)> pending)
+            => (await pending.ConfigureAwait(false)).Found;
+    }
 
     internal bool TryGetStringValue(string name, MemoryGovernor governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context, [MaybeNullWhen(false)] out object value)

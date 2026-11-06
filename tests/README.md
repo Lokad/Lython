@@ -43,6 +43,9 @@ entries after suspended equality clears the table. Pending snapshots and aliases
 stay funded through cancellation/refusal, finally-return cannot hide the first
 failure, and cleanup permits shared-budget reuse. Managed depth/cycle checks also
 run after a real thread-pool continuation and recover for the next hash.
+Dictionary read-prefix controls insert a custom key and rebind the source during
+key/default evaluation. Direct/exposed get and subscript must retain the selected
+receiver, await equality and propagate cancellation with shared-budget cleanup.
 Builtin class-pattern goldens preserve whole-subject identity, nested sequences,
 actual aliases, shadowed class names, excess-position errors and lowered class
 bodies. Both execution APIs return shared funding to baseline after cleanup.

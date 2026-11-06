@@ -1,0 +1,23 @@
+[
+  {
+    "expression": "mapping.get('target', prepare())",
+    "source": "mapping={}\nretained=mapping\nclass Stored:\n def __hash__(self):return hash('target')\n def __eq__(self,other):\n  print('eq')\n  with open('/eq') as marker:marker.read()\n  return other=='target'\ndef prepare():\n global mapping\n retained[Stored()]='kept'\n mapping={}\n return 'fallback'\ndef prepare_key():\n prepare()\n return 'target'\nread=mapping.get",
+    "exitCode": 0,
+    "stdout": "eq\r\nkept 0 1\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "read('target', prepare())",
+    "source": "mapping={}\nretained=mapping\nclass Stored:\n def __hash__(self):return hash('target')\n def __eq__(self,other):\n  print('eq')\n  with open('/eq') as marker:marker.read()\n  return other=='target'\ndef prepare():\n global mapping\n retained[Stored()]='kept'\n mapping={}\n return 'fallback'\ndef prepare_key():\n prepare()\n return 'target'\nread=mapping.get",
+    "exitCode": 0,
+    "stdout": "eq\r\nkept 0 1\r\n",
+    "stderr": ""
+  },
+  {
+    "expression": "mapping[prepare_key()]",
+    "source": "mapping={}\nretained=mapping\nclass Stored:\n def __hash__(self):return hash('target')\n def __eq__(self,other):\n  print('eq')\n  with open('/eq') as marker:marker.read()\n  return other=='target'\ndef prepare():\n global mapping\n retained[Stored()]='kept'\n mapping={}\n return 'fallback'\ndef prepare_key():\n prepare()\n return 'target'\nread=mapping.get",
+    "exitCode": 0,
+    "stdout": "eq\r\nkept 0 1\r\n",
+    "stderr": ""
+  }
+]

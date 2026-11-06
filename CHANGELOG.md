@@ -8,6 +8,8 @@
   protocol-query synchronous detours. Mutation and cache-key restrictions remain.
   Explicit tuple hashing now follows key protocols, and empty-set queries preserve
   earlier hash effects before a later unhashable tuple element.
+  Share the existing native string-key proof across get/subscript/lookup, checking
+  it after arguments and retaining awaited equality when the table changes.
 
 - Resolve builtin class patterns through their actual type values, including
   aliases. Match the whole subject for Python's builtin positional patterns;

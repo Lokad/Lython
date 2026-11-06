@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                     var receiver = (PyDict)_stack[start];
                     var key = _stack[start + call.ArgumentOffset];
                     var fallback = call.ArgumentCount == 2 ? _stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
-                    if (asynchronous)
+                    if (asynchronous && !receiver.CanReadKeySynchronously(key))
                         return CompleteCallValue(InvokeDictionaryGetAsync(receiver, key, fallback, call.CallSpan, this), start);
                     result = InvokeDictionaryGet(receiver, key, fallback, call.CallSpan, this);
                 }

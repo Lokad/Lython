@@ -2019,10 +2019,18 @@ internal sealed partial class LythonRuntime
             return dict.SetDefault(ValidateDictionaryKey(key, span), fallback, context.MemoryGovernor, span);
         }
 
-        internal static async ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
+        internal static ValueTask<object> GetAsync(PyDict dict, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
         {
-            var found = await dict.TryGetKeyAsync(ValidateDictionaryKey(key, span), context, span).ConfigureAwait(false);
-            return found.Found ? found.Value : fallback;
+            var found = dict.TryGetKeyAsync(ValidateDictionaryKey(key, span), context, span);
+            if (!found.IsCompletedSuccessfully) return AwaitValue(found, fallback);
+            var value = found.Result;
+            return new(value.Found ? value.Value : fallback);
+
+            static async ValueTask<object> AwaitValue(ValueTask<(bool Found, object Value)> pending, object defaultValue)
+            {
+                var value = await pending.ConfigureAwait(false);
+                return value.Found ? value.Value : defaultValue;
+            }
         }
 
         internal static Func<PyDict, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)

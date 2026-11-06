@@ -1,0 +1,6 @@
+{
+  "initialSetupFailedBeforeLaunch": "setup.py minimum24MiB free assertion; both unpacked DLLs need11.2MB in addition to compressed transfer",
+  "sourceAndWorkersReverified": true,
+  "serviceBefore": "MainPID=0\nLoadState=not-found\n",
+  "freeBytesBeforeSoleLaunch": 67342336
+}

@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                             // Evaluate the key before inspecting protocol-key state.
                             if (!asynchronous || (_stack[instruction.InputStart + 1] is BigInteger &&
                                  _stack[instruction.InputStart] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
-                                (_stack[instruction.InputStart + 1] is PyString && _stack[instruction.InputStart] is PyDict { HasProtocolKeys: false }))
+                                (_stack[instruction.InputStart] is PyDict dictionary && dictionary.CanReadKeySynchronously(_stack[instruction.InputStart + 1])))
                                 ExecuteOperandValueOperation(instruction);
                             else
                             {

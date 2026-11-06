@@ -387,6 +387,10 @@ directly; the synchronous engine keeps its direct semantic walk. Dictionary/set
 mutations, cache-key protocols and remaining Counter/defaultdict/ChainMap paths
 can still require synchronous completion. Read support does not make every
 mapping operation suspendable.
+String-key reads without stored protocol keys share one native completion proof
+across subscript/get/lookup. It is checked after argument evaluation on the retained
+receiver; argument-side insertion can require the awaited equality path. Completed
+results use direct publication while pending operations retain their borrows.
 Contextual key preparation computes the hash and equality-dispatch requirement
 in one walk. Tuple elements and slice bounds are visited in Python order: an
 earlier hash callback runs before a later unhashable value is rejected. Native

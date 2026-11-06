@@ -1,0 +1,27 @@
+{
+  "status": "R07 retained. Final focused1018/431 pass both actual runtimes. Full local.NET11 before the final single-consumption local passed4229/16143; no unchanged full replay. Final14-job checkpoint and platform/stress/package delivery pending.",
+  "sourceBase": "ff45fafe/production2adf73f3 plus exact four source hashes/patch",
+  "coreSHA256": {
+    "candidate": "63223acfb1b3bd0743a11db85b4a11304aa667c813426e87ad7806fec03d72cd",
+    "control": "63223acfb1b3bd0743a11db85b4a11304aa667c813426e87ad7806fec03d72cd",
+    "reference": "3eed50ececb6bec5a07959f4adb3aeae7e35422130c06babdbb3f6c444fa8e5a"
+  },
+  "focusedPerActualRuntime": {
+    "public": 1018,
+    "internal": 431
+  },
+  "independentPythonGoldens": 3,
+  "limitations": "No allocation/causalCPU/RSS claim. Async CSV inconclusive; synchronous text+1.51\u20132.11% is explicit adverse/control debt. Primary guide remains794e552b until coherent refresh. Publication postponed.",
+  "fullLocalNet11": {
+    "internal": 4229,
+    "public": 16143,
+    "scope": "Before replacing two reads of the completed get ValueTask with one local. Final focused families pass on both runtimes; B337 will measure final source."
+  },
+  "finalCleanupAfterB336": "Consume the completed exposed-get ValueTask once. B336 retains the preceding exact63223acf source; no claim those bytes are final HEAD.",
+  "finalSourceFiles": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "097ceae083ceae421d9c8f370d2abd99a6a7b5b8566e84a7e4f330350944cc50",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "5f74e7a045315d5bd35cb5958766fcad947e1509449474fa054ef963e59980c6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "1888b40d84fd934bd0928c8ee3a4d526fc29de149080941dc394b98b8faf4d17",
+    "src/Lokad.Lython/Runtime/PyDict.cs": "4ec30e8dc2742c11c9d5e15a69b790f49ff9c671661ff75e33fd7e4cc27c21ef"
+  }
+}

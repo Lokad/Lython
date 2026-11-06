@@ -1,0 +1,116 @@
+{
+  "beforeFreeBytes": 21684224,
+  "targetFreeBytes": 67108864,
+  "removed": [
+    {
+      "name": "b336-payload.tgz",
+      "unit": "lython-b336-native-read-prefix-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\native-read-prefix-r07\\payload.tgz",
+      "sha256": "676f7a69d463accc3ce56e7988861687f7c915da0eec121061ccc81902e4de02",
+      "bytes": 3764323,
+      "path": "/home/lokad/lython-bench-checks/b336-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b290-payload.tgz",
+      "unit": "lython-b290-runtime-cpython-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\current-cpython-d60\\payload.tgz",
+      "sha256": "2a7eca17d43fae135d3ca16000a0075018fde9a54bdad77a9aea1019855389f2",
+      "bytes": 3831044,
+      "path": "/home/lokad/lython-bench-checks/b290-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b306-payload.tgz",
+      "unit": "lython-b306b-prepared-pattern-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\prepared-pattern-p01\\payload.tgz",
+      "sha256": "bfeadf9d00c8b33a5ce20ca099060e8e2005b677f70577fe953804b260f05caf",
+      "bytes": 3813438,
+      "path": "/home/lokad/lython-bench-checks/b306-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b308-payload.tgz",
+      "unit": "lython-b308-canonical-key-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-storage-k01\\refinement\\payload.tgz",
+      "sha256": "aeba5d0a125564f83951966b661c8a42d314aa1a51b52a9b0d1013036b8be126",
+      "bytes": 3810884,
+      "path": "/home/lokad/lython-bench-checks/b308-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b309-payload.tgz",
+      "unit": "lython-b309-key-cpython-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-storage-k01\\checkpoint\\payload.tgz",
+      "sha256": "f3a331ff05d0056bf58db904a252ec297a75c3589beebd52ad5daf881bb6df4c",
+      "bytes": 3810610,
+      "path": "/home/lokad/lython-bench-checks/b309-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b307-payload.tgz",
+      "unit": "lython-b307-canonical-key-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\key-storage-k01\\payload.tgz",
+      "sha256": "639b644a66ad135c98a9793c79e7641b174a15894644d95a39cc39ef999d7f64",
+      "bytes": 3806148,
+      "path": "/home/lokad/lython-bench-checks/b307-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b300-payload.tgz",
+      "unit": "lython-b300-nested-hash-refined-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\nested-hash-d64\\refinement\\payload.tgz",
+      "sha256": "e55b7f77ff2f772f060f0f825d3406b341f7e813c20c27059786bdb95bb934be",
+      "bytes": 3804566,
+      "path": "/home/lokad/lython-bench-checks/b300-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b296-payload.tgz",
+      "unit": "lython-b296-keyed-validation-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\keyed-validation-d64\\payload.tgz",
+      "sha256": "950b7b7e0f768f0d459aa9229ef7f438fb6224c0e628e18dbc48c1c4d70db5af",
+      "bytes": 3801637,
+      "path": "/home/lokad/lython-bench-checks/b296-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b314-payload.tgz",
+      "unit": "lython-b314-unified-frame-refinement-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\unified-frame-f03\\refinement\\payload.tgz",
+      "sha256": "fe3de6cff1144ee9467f2a7cd6c3c0e707d05c5ce641c519b70a27dfd7cc9e8f",
+      "bytes": 3798183,
+      "path": "/home/lokad/lython-bench-checks/b314-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b312-payload.tgz",
+      "unit": "lython-b312-unified-frame-20261106",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\unified-frame-f03\\payload.tgz",
+      "sha256": "b9dfcefe1fbd93206462f9068272c16e58bab07f0a96070ceed342e3df2b29c5",
+      "bytes": 3797861,
+      "path": "/home/lokad/lython-bench-checks/b312-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b299-payload.tgz",
+      "unit": "lython-b299-nested-hash-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\nested-hash-d64\\payload.tgz",
+      "sha256": "ba93f7a0b7bf6ecbfe970aac7d8cb636f97f3c96ae210f90016dd2c1f4e9d3e1",
+      "bytes": 3791448,
+      "path": "/home/lokad/lython-bench-checks/b299-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    },
+    {
+      "name": "b293-payload.tgz",
+      "unit": "lython-b293-result-transport-20261105",
+      "localCopy": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\result-transport-d62\\payload.tgz",
+      "sha256": "c654216111caaa03b732b56ffd5f1416b16e0590b1a8bbc33fbc8678fcc69f03",
+      "bytes": 3787003,
+      "path": "/home/lokad/lython-bench-checks/b293-payload.tgz",
+      "service": "MainPID=0\nResult=success\nLoadState=not-found\nActiveState=inactive\n"
+    }
+  ],
+  "retained": [],
+  "afterFreeBytes": 67342336
+}
