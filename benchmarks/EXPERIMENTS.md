@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [R21 frame-boundary simplification](results/2026-11-06-frame-resume-boundaries/README.md)
+routes pending exceptions only on resumption and deletes the duplicate return
+flag. All instruction guards and cleanup ordering remain. B366 completes109s/all
+gates: warm text−3.00–5.59%, fresh−0.79% to+0.02%; unchanged compilation also moves,
+limiting precision. Allocation is flat; no general CPU improvement is established.
+Full local actual11/10 passes; combined platform/Stress/package is separate.
+Failed diagnostic preflights/post-processing and the original limited profile
+remain explicit; no recapture manufactures missing shutdown/quiet proof.
+
 The [R20 record-storage milestone](results/2026-11-06-record-layout/README.md)
 splits canonical keys/values and shares immutable JSON/CSV metadata, deleting the
 separate sorted JSON hint. B361 completes the quiet five-job source pair in140s:

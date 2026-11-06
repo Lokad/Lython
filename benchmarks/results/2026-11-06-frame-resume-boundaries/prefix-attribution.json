@@ -1,0 +1,645 @@
+{
+  "purpose": "Diagnostic leaf IP/block attribution, not speedup or pure dispatch cost",
+  "allGuestSamples": 1355,
+  "prefixSamples": 250,
+  "resolvedPrefixSamples": 250,
+  "partialTier1MapSizes": [
+    10833
+  ],
+  "unresolved": [],
+  "sections": [
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "totalBytes": 11454,
+      "instructions": 2176,
+      "printedThrough": 11454
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "totalBytes": 11454,
+      "instructions": 2176,
+      "printedThrough": 11454
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+      "totalBytes": null,
+      "instructions": 2348,
+      "printedThrough": 10833
+    }
+  ],
+  "topInstructions": [
+    {
+      "codeBytes": 10833,
+      "offset": "0x14c",
+      "assembly": "jne      G_M000_IG107",
+      "samples": 22
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xc3",
+      "assembly": "mov      rcx, gword ptr [rbp-0x260]",
+      "samples": 19
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x112",
+      "assembly": "mov      r10, gword ptr [rdx+0x80]",
+      "samples": 12
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xb1",
+      "assembly": "jne      G_M000_IG294",
+      "samples": 11
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x170",
+      "assembly": "lea      r10, G_M000_IG02",
+      "samples": 9
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x15c",
+      "assembly": "cmp      edx, 63",
+      "samples": 7
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x10f",
+      "assembly": "mov      r8, gword ptr [r8]",
+      "samples": 6
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x11d",
+      "assembly": "test     r10, r10",
+      "samples": 6
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xfa",
+      "assembly": "mov      bword ptr [rbp-0x268], rdx",
+      "samples": 6
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x35",
+      "assembly": "vmovdqa  xmmword ptr [rbp+rax-0x30], xmm8",
+      "samples": 5
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xe3",
+      "assembly": "mov      dword ptr [rbp-0x30], edx",
+      "samples": 5
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x624",
+      "assembly": "xor      r13d, r13d",
+      "samples": 5
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x234",
+      "assembly": "cmp      r10, r8",
+      "samples": 5
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x249",
+      "assembly": "test     r13, r13",
+      "samples": 4
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x147",
+      "assembly": "cmp      gword ptr [rdx+0x78], 0",
+      "samples": 4
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x108",
+      "assembly": "mov      r8, bword ptr [rbp-0x268]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x54e",
+      "assembly": "cmp      r8d, dword ptr [rdx+0x08]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x26e",
+      "assembly": "mov      rsi, r13",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x711",
+      "assembly": "lea      rdx, bword ptr [rdi+0x30]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xe9",
+      "assembly": "cmp      edx, ebx",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x15f",
+      "assembly": "ja       G_M000_IG108",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x8e7",
+      "assembly": "movsx    r12, word  ptr [rbp-0x40]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x120",
+      "assembly": "jne      G_M000_IG291",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x2d7",
+      "assembly": "je       G_M000_IG179",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x101",
+      "assembly": "mov      rdx, gword ptr [rsi+0xB0]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x388",
+      "assembly": "cmp      r8d, dword ptr [rdx+0x08]",
+      "samples": 3
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0xad",
+      "assembly": "cmp      byte  ptr [rbx+0x2C], 0",
+      "samples": 2
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x1b0",
+      "assembly": "mov      r14, gword ptr [rdx]",
+      "samples": 2
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x1a5",
+      "assembly": "mov      r15d, dword ptr [rdx+0x08]",
+      "samples": 2
+    },
+    {
+      "codeBytes": 10833,
+      "offset": "0x1e2",
+      "assembly": "je       G_M000_IG112",
+      "samples": 2
+    }
+  ],
+  "topBlocks": [
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG08",
+      "offset": "0xe1",
+      "samples": 55,
+      "assembly": [
+        "       33D2                 xor      edx, edx",
+        "       8955D0               mov      dword ptr [rbp-0x30], edx",
+        "       8B5728               mov      edx, dword ptr [rdi+0x28]",
+        "       3BD3                 cmp      edx, ebx",
+        "       0F83EB270000         jae      G_M000_IG296",
+        "       48C1E205             shl      rdx, 5",
+        "       488D541110           lea      rdx, bword ptr [rcx+rdx+0x10]",
+        "       48899598FDFFFF       mov      bword ptr [rbp-0x268], rdx",
+        "       488B96B0000000       mov      rdx, gword ptr [rsi+0xB0]",
+        "       4C8B8598FDFFFF       mov      r8, bword ptr [rbp-0x268]",
+        "       4D8B00               mov      r8, gword ptr [r8]",
+        "       4C8B9280000000       mov      r10, gword ptr [rdx+0x80]",
+        "       4D8B5220             mov      r10, gword ptr [r10+0x20]",
+        "       4D85D2               test     r10, r10",
+        "       0F855F270000         jne      G_M000_IG291",
+        "       488B9270010000       mov      rdx, gword ptr [rdx+0x170]",
+        "       4885D2               test     rdx, rdx",
+        "       0F8523270000         jne      G_M000_IG289",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG10",
+      "offset": "0x140",
+      "samples": 26,
+      "assembly": [
+        "       488B95B8FDFFFF       mov      rdx, gword ptr [rbp-0x248]",
+        "       48837A7800           cmp      gword ptr [rdx+0x78], 0",
+        "       0F8518090000         jne      G_M000_IG107",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG07",
+      "offset": "0xc0",
+      "samples": 25,
+      "assembly": [
+        "       8B7B28               mov      edi, dword ptr [rbx+0x28]",
+        "       488B8DA0FDFFFF       mov      rcx, gword ptr [rbp-0x260]",
+        "       8B4108               mov      eax, dword ptr [rcx+0x08]",
+        "       3BF8                 cmp      edi, eax",
+        "       488BFB               mov      rdi, rbx",
+        "       488BB5C0FDFFFF       mov      rsi, gword ptr [rbp-0x240]",
+        "       0F8DE6270000         jge      G_M000_IG294",
+        "       8BD8                 mov      ebx, eax",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG11",
+      "offset": "0x152",
+      "samples": 24,
+      "assembly": [
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       8B521C               mov      edx, dword ptr [rdx+0x1C]",
+        "       83FA3F               cmp      edx, 63",
+        "       0F8727090000         ja       G_M000_IG108",
+        "       4C8D05E8280000       lea      r8, [reloc @RWD00]",
+        "       458B0490             mov      r8d, dword ptr [r8+4*rdx]",
+        "       4C8D15FDFEFFFF       lea      r10, G_M000_IG02",
+        "       4D03C2               add      r8, r10",
+        "       41FFE0               jmp      r8",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG05",
+      "offset": "0xa6",
+      "samples": 15,
+      "assembly": [
+        "       488B9DC8FDFFFF       mov      rbx, bword ptr [rbp-0x238]",
+        "       807B2C00             cmp      byte  ptr [rbx+0x2C], 0",
+        "       0F850E280000         jne      G_M000_IG294",
+        "       837DD000             cmp      dword ptr [rbp-0x30], 0",
+        "       7503                 jne      SHORT G_M000_IG07",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG18",
+      "offset": "0x22a",
+      "samples": 13,
+      "assembly": [
+        "       498B17               mov      rdx, gword ptr [r15]",
+        "       4D63C6               movsxd   r8, r14d",
+        "       448B5208             mov      r10d, dword ptr [rdx+0x08]",
+        "       4D3BD0               cmp      r10, r8",
+        "       0F861A0B0000         jbe      G_M000_IG132",
+        "       4E8D44C210           lea      r8, bword ptr [rdx+8*r8+0x10]",
+        "       4C8B12               mov      r10, qword ptr [rdx]",
+        "       4D8B5230             mov      r10, qword ptr [r10+0x30]",
+        "       4D85ED               test     r13, r13",
+        "       0F8475070000         je       G_M000_IG100",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG32",
+      "offset": "0x35e",
+      "samples": 12,
+      "assembly": [
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       448B7A10             mov      r15d, dword ptr [rdx+0x10]",
+        "       488BBDC8FDFFFF       mov      rdi, bword ptr [rbp-0x238]",
+        "       488D5730             lea      rdx, bword ptr [rdi+0x30]",
+        "       381B                 cmp      byte  ptr [rbx], bl",
+        "       488B12               mov      rdx, gword ptr [rdx]",
+        "       807B2400             cmp      byte  ptr [rbx+0x24], 0",
+        "       410F95C0             setne    r8b",
+        "       450FB6C0             movzx    r8, r8b",
+        "       4503C7               add      r8d, r15d",
+        "       443B4208             cmp      r8d, dword ptr [rdx+0x08]",
+        "       0F83A3240000         jae      G_M000_IG285",
+        "       4E8B74C210           mov      r14, gword ptr [rdx+8*r8+0x10]",
+        "       4D85F6               test     r14, r14",
+        "       0F84011C0000         je       G_M000_IG247",
+        "       488BB5C0FDFFFF       mov      rsi, gword ptr [rbp-0x240]",
+        "       488B95B8FDFFFF       mov      rdx, gword ptr [rbp-0x248]",
+        "       488BCB               mov      rcx, rbx",
+        "       458BC7               mov      r8d, r15d",
+        "       4D8BCE               mov      r9, r14",
+        "       FF155BD9D4FF         call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object):bool]",
+        "       85C0                 test     eax, eax",
+        "       0F85D7FCFFFF         jne      G_M000_IG04",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG90",
+      "offset": "0x891",
+      "samples": 8,
+      "assembly": [
+        "       4883BDB8FDFFFF00     cmp      gword ptr [rbp-0x248], 0",
+        "       0F8416050000         je       G_M000_IG136",
+        "       807DD400             cmp      byte  ptr [rbp-0x2C], 0",
+        "       0F8576050000         jne      G_M000_IG142",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       488D3C24             lea      rdi, [rsp]",
+        "       488BF2               mov      rsi, rdx",
+        "       488B0E               mov      rcx, gword ptr [rsi]",
+        "       48890C24             mov      gword ptr [rsp], rcx",
+        "       4883C608             add      rsi, 8",
+        "       4883C708             add      rdi, 8",
+        "       48A5                 movsq    ",
+        "       48A5                 movsq    ",
+        "       48A5                 movsq    ",
+        "       488BBDB8FDFFFF       mov      rdi, gword ptr [rbp-0x248]",
+        "       33F6                 xor      esi, esi",
+        "       FF153DD1D4FF         call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteTargetInstruction(Lokad.Lython.Frontend.ExecutableInstruction,bool):System.Threading.Tasks.ValueTask:this]",
+        "       488945B8             mov      gword ptr [rbp-0x48], rax",
+        "       488955C0             mov      qword ptr [rbp-0x40], rdx",
+        "       4C8B6DB8             mov      r13, gword ptr [rbp-0x48]",
+        "       4C0FBF65C0           movsx    r12, word  ptr [rbp-0x40]",
+        "       4D85ED               test     r13, r13",
+        "       0F84A7F7FFFF         je       G_M000_IG04",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG13",
+      "offset": "0x19e",
+      "samples": 6,
+      "assembly": [
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       448B7A08             mov      r15d, dword ptr [rdx+0x08]",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       4C8B32               mov      r14, gword ptr [rdx]",
+        "       33D2                 xor      rdx, rdx",
+        "       488995C0FEFFFF       mov      gword ptr [rbp-0x140], rdx",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG14",
+      "offset": "0x1bc",
+      "samples": 6,
+      "assembly": [
+        "       488995B8FEFFFF       mov      gword ptr [rbp-0x148], rdx",
+        "       453B7B08             cmp      r15d, dword ptr [r11+0x08]",
+        "       0F8368260000         jae      G_M000_IG285",
+        "       418BD7               mov      edx, r15d",
+        "       4D8B6CD310           mov      r13, gword ptr [r11+8*rdx+0x10]",
+        "       49BB703180054C730000 mov      r11, 0x734C05803170",
+        "       4D3B2B               cmp      r13, gword ptr [r11]",
+        "       0F8417090000         je       G_M000_IG112",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG319",
+      "offset": "0x2f",
+      "samples": 5,
+      "assembly": [
+        "       C5797F4405C0         vmovdqa  xmmword ptr [rbp+rax-0x40], xmm8",
+        "       C5797F4405D0         vmovdqa  xmmword ptr [rbp+rax-0x30], xmm8",
+        "       C5797F4405E0         vmovdqa  xmmword ptr [rbp+rax-0x20], xmm8",
+        "       4883C030             add      rax, 48",
+        "       75E8                 jne      SHORT G_M000_IG319",
+        "       488945C0             mov      qword ptr [rbp-0x40], rax",
+        "       4889BDC8FDFFFF       mov      bword ptr [rbp-0x238], rdi",
+        "       4889B5C0FDFFFF       mov      gword ptr [rbp-0x240], rsi",
+        "       488995B8FDFFFF       mov      gword ptr [rbp-0x248], rdx",
+        "       894DD4               mov      dword ptr [rbp-0x2C], ecx",
+        "       4C8985B0FDFFFF       mov      bword ptr [rbp-0x250], r8",
+        "       4C898DA8FDFFFF       mov      bword ptr [rbp-0x258], r9",
+        "       498BC0               mov      rax, r8",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG50",
+      "offset": "0x4d1",
+      "samples": 5,
+      "assembly": [
+        "       4883BDB8FDFFFF00     cmp      gword ptr [rbp-0x248], 0",
+        "       0F84D6080000         je       G_M000_IG136",
+        "       488BBDC8FDFFFF       mov      rdi, bword ptr [rbp-0x238]",
+        "       488D5F30             lea      rbx, bword ptr [rdi+0x30]",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       448B7A10             mov      r15d, dword ptr [rdx+0x10]",
+        "       488B13               mov      rdx, gword ptr [rbx]",
+        "       443B7A08             cmp      r15d, dword ptr [rdx+0x08]",
+        "       0F8333230000         jae      G_M000_IG285",
+        "       458BC7               mov      r8d, r15d",
+        "       4A8B54C210           mov      rdx, gword ptr [rdx+8*r8+0x10]",
+        "       4885D2               test     rdx, rdx",
+        "       0F8419010000         je       G_M000_IG65",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG64",
+      "offset": "0x621",
+      "samples": 5,
+      "assembly": [
+        "       4533F6               xor      r14, r14",
+        "       4533ED               xor      r13d, r13d",
+        "       E93AFFFFFF           jmp      G_M000_IG54",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG53",
+      "offset": "0x54a",
+      "samples": 4,
+      "assembly": [
+        "       488B5208             mov      rdx, gword ptr [rdx+0x08]",
+        "       443B4208             cmp      r8d, dword ptr [rdx+0x08]",
+        "       0F83DD220000         jae      G_M000_IG285",
+        "       458BD0               mov      r10d, r8d",
+        "       4E8B74D210           mov      r14, gword ptr [rdx+8*r10+0x10]",
+        "       41BD01000000         mov      r13d, 1",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG16",
+      "offset": "0x1f1",
+      "samples": 4,
+      "assembly": [
+        "       488995B8FEFFFF       mov      gword ptr [rbp-0x148], rdx",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       8B5A18               mov      ebx, dword ptr [rdx+0x18]",
+        "       85DB                 test     ebx, ebx",
+        "       0F8CC7070000         jl       G_M000_IG101",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG21",
+      "offset": "0x26b",
+      "samples": 3,
+      "assembly": [
+        "       498BF8               mov      rdi, r8",
+        "       498BF5               mov      rsi, r13",
+        "       E82A7A36FD           call     CORINFO_HELP_ASSIGN_REF",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG76",
+      "offset": "0x70a",
+      "samples": 3,
+      "assembly": [
+        "       488BBDC8FDFFFF       mov      rdi, bword ptr [rbp-0x238]",
+        "       488D5730             lea      rdx, bword ptr [rdi+0x30]",
+        "       4C8B8598FDFFFF       mov      r8, bword ptr [rbp-0x268]",
+        "       458B4010             mov      r8d, dword ptr [r8+0x10]",
+        "       458BD0               mov      r10d, r8d",
+        "       4C8B1A               mov      r11, gword ptr [rdx]",
+        "       498BDB               mov      rbx, r11",
+        "       448B7B08             mov      r15d, dword ptr [rbx+0x08]",
+        "       453BD7               cmp      r10d, r15d",
+        "       0F83FF200000         jae      G_M000_IG285",
+        "       4A837CD31000         cmp      gword ptr [rbx+8*r10+0x10], 0",
+        "       0F84EC160000         je       G_M000_IG237",
+        "       33DB                 xor      rbx, rbx",
+        "       4B895CD310           mov      gword ptr [r11+8*r10+0x10], rbx",
+        "       44894240             mov      dword ptr [rdx+0x40], r8d",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       8B521C               mov      edx, dword ptr [rdx+0x1C]",
+        "       83FA34               cmp      edx, 52",
+        "       0F8F1C170000         jg       G_M000_IG239",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG03",
+      "offset": "0x7d",
+      "samples": 3,
+      "assembly": [
+        "       498909               mov      gword ptr [r9], rcx",
+        "       488B0F               mov      rcx, gword ptr [rdi]",
+        "       488B4950             mov      rcx, gword ptr [rcx+0x50]",
+        "       48898DA0FDFFFF       mov      gword ptr [rbp-0x260], rcx",
+        "       8B5908               mov      ebx, dword ptr [rcx+0x08]",
+        "       395F28               cmp      dword ptr [rdi+0x28], ebx",
+        "       0F8D2B280000         jge      G_M000_IG294",
+        "       EB45                 jmp      SHORT G_M000_IG08",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG27",
+      "offset": "0x2cf",
+      "samples": 3,
+      "assembly": [
+        "       4883BDB8FDFFFF00     cmp      gword ptr [rbp-0x248], 0",
+        "       0F8436140000         je       G_M000_IG179",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG52",
+      "offset": "0x526",
+      "samples": 2,
+      "assembly": [
+        "       4C8B4308             mov      r8, gword ptr [rbx+0x08]",
+        "       458BD7               mov      r10d, r15d",
+        "       442B5338             sub      r10d, dword ptr [rbx+0x38]",
+        "       453B5008             cmp      r10d, dword ptr [r8+0x08]",
+        "       0F83FA220000         jae      G_M000_IG285",
+        "       478B449010           mov      r8d, dword ptr [r8+4*r10+0x10]",
+        "       443B4228             cmp      r8d, dword ptr [rdx+0x28]",
+        "       0F8DD7000000         jge      G_M000_IG64",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG81",
+      "offset": "0x7b0",
+      "samples": 2,
+      "assembly": [
+        "       4883BDB8FDFFFF00     cmp      gword ptr [rbp-0x248], 0",
+        "       0F84F7050000         je       G_M000_IG136",
+        "       488BBDC8FDFFFF       mov      rdi, bword ptr [rbp-0x238]",
+        "       488D5F30             lea      rbx, bword ptr [rdi+0x30]",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       448B7A10             mov      r15d, dword ptr [rdx+0x10]",
+        "       488B9598FDFFFF       mov      rdx, bword ptr [rbp-0x268]",
+        "       4C8B32               mov      r14, gword ptr [rdx]",
+        "       488B13               mov      rdx, gword ptr [rbx]",
+        "       443B7A08             cmp      r15d, dword ptr [rdx+0x08]",
+        "       0F834A200000         jae      G_M000_IG285",
+        "       458BC7               mov      r8d, r15d",
+        "       4A8B54C210           mov      rdx, gword ptr [rdx+8*r8+0x10]",
+        "       4885D2               test     rdx, rdx",
+        "       744B                 je       SHORT G_M000_IG86",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG04",
+      "offset": "0x9c",
+      "samples": 2,
+      "assembly": [
+        "       807DD400             cmp      byte  ptr [rbp-0x2C], 0",
+        "       0F85CB270000         jne      G_M000_IG290",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG09",
+      "offset": "0x136",
+      "samples": 2,
+      "assembly": [
+        "       4883BDB8FDFFFF00     cmp      gword ptr [rbp-0x248], 0",
+        "       7412                 je       SHORT G_M000_IG11",
+        " "
+      ]
+    },
+    {
+      "codeBytes": 10833,
+      "label": "G_M000_IG51",
+      "offset": "0x513",
+      "samples": 2,
+      "assembly": [
+        "       49B838FDA2E653730000 mov      r8, 0x7353E6A2FD38",
+        "       4C3902               cmp      qword ptr [rdx], r8",
+        "       0F8506010000         jne      G_M000_IG65",
+        " "
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "purpose": "Diagnostic leaf IP/block attribution, not speedup or pure dispatch cost",
+  "allGuestSamples": 1355,
+  "prefixSamples": 250,
+  "resolvedPrefixSamples": 0,
+  "unresolved": [
+    {
+      "method": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+      "codeBytes": 10833,
+      "samples": 250
+    }
+  ],
+  "sections": [
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "totalBytes": 11454,
+      "instructions": 2176
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "totalBytes": 11454,
+      "instructions": 2176
+    },
+    {
+      "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+      "totalBytes": null,
+      "instructions": 2348
+    }
+  ],
+  "topInstructions": [],
+  "topBlocks": []
+}
