@@ -1,0 +1,40 @@
+{
+  "corrected-build-public": {
+    "exitCode": 0
+  },
+  "internal-net11.0": {
+    "passed": 84,
+    "log": "internal-net11.0.log",
+    "retainedFromBeforeTestOnlyFixtureCorrection": true
+  },
+  "corrected-public-net11.0": {
+    "passed": 427
+  },
+  "net11.0-loadedFiles": {
+    "Lokad.Lython": "7845b44c25445b3ef29ebda12c4b2d91b2773c913504a5085c7a59a274b78851",
+    "Lokad.Lython.Utf8Regex": "e5365f0e7860dd9fb554314c04d39854b09effb2ee48cc96b56b42f672a4f56b",
+    "Lokad.Utf8Regex": "b61af63d12b2f3b6d3387fcb9b87303584bdf473748a1aad5d809afbc6145e1d",
+    "Lokad.Utf8Regex.PythonRe": "a1654b75b7dd150375e293cefab47f0e408b1951708791ee5cb993b1868fa8dc"
+  },
+  "internal-net10.0": {
+    "passed": 84
+  },
+  "corrected-public-net10.0": {
+    "passed": 427
+  },
+  "net10.0-loadedFiles": {
+    "Lokad.Lython": "4df67d449e7efbe22a558dbc0187d62218b0a372f395089518d4f17a7193f85d",
+    "Lokad.Lython.Utf8Regex": "169c082d550111b229cff1acff1999d45ab9f7f1896ee0820091cb1a4c84cd41",
+    "Lokad.Utf8Regex": "a99c777e0eb04ab9d0fa60767105d0e77c6f0b39170cbd44b10fdcc34f979617",
+    "Lokad.Utf8Regex.PythonRe": "bbc23d8565bd2a2683a81e8b92968a0d17bef9a2d7517bbe3c3b5737b1776bc9"
+  },
+  "normal-build-public": {
+    "exitCode": 0
+  },
+  "normal-lifetime-net11.0": {
+    "passed": 6
+  },
+  "normal-lifetime-net10.0": {
+    "passed": 6
+  }
+}

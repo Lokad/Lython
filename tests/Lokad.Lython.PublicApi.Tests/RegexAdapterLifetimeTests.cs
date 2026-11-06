@@ -68,7 +68,9 @@ public sealed class RegexAdapterLifetimeTests
                 {
                     var match = Assert.IsType<LythonRegexMatch>(cursor.Next(default));
                     Assert.Equal(i, match.Captures[0]!.Value.StartByte);
-                    Assert.Equal(working, budget.ReservedBytes);
+                    // Native cursor scratch may first grow on advance. Keep
+                    // its working capacity funded until exhaustion/disposal.
+                    Assert.True(budget.ReservedBytes >= working);
                 }
                 Assert.Null(cursor.Next(default));
                 Assert.Equal(baseline, budget.ReservedBytes);

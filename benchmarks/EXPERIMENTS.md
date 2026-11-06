@@ -1,5 +1,19 @@
 # Benchmark experimental history
 
+[Native cursor working admission](results/2026-11-06-native-cursor-admission/README.md)
+qualifies a private immutabledev44 adapter against b6650f09:84internal/427public
+per actual11/10, real interruption/refusal/retained ownership and256KiB bounded
+matching. One existing reservation replaces the cursor subject-size heuristic;
+conservative live high-water capacity ends at cursor Close. Direct working peak
+32,880→2,064B; physical allocation+128B/cursor, busy-host elapsed adverse/diagnostic
++9.1%. Normal0.4 pin/core dependency independence remain unchanged. The earlier
+exact-working-balance fixture failure and all measurements are preserved.
+
+The [Excel number-format correction](results/2026-11-06-openpyxl-number-formats/README.md)
+preserves numeric colors/formula caches with a direct first-section classifier;
+CPython/openpyxl reference plus focused actual11/10 checks pass. No timing claim.
+
+
 The [text-provenance milestone](results/2026-11-06-text-operation-provenance/README.md)
 deletes per-string birth spans, the unused governing interface and hidden
 constructor funding flag. Actual shells shrink64→56B on both runtimes; whole-job
