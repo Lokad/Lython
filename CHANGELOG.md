@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Complete fully supplied positional, unbound closed native helpers directly in call
+  dispatch, removing their synthetic pending-call/completion transition. Preserve
+  argument borrows, stack admission, exception provenance and dynamic or genuinely
+  suspending calls through the existing frame runner.
+
 - Execute multipart formatted helpers through the ordinary operand slots and
   formatter, removing their separate native-body proof/evaluator. Primitive
   fields can run without constructing a function context; dynamic fields resume

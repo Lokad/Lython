@@ -203,12 +203,9 @@ internal sealed partial class LythonRuntime
                 }
                 CheckExecution(span);
                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
+                // Exact ordinary borrows already received their read-only native
+                // attempt in the call opcode. Binding must not repeat that proof.
                 var nativeAttempted = ordinaryCall && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
-                if (nativeAttempted && function.TryExecuteWithoutFrame(operands, span, out var borrowedValue))
-                {
-                    CompletePendingCall(borrowedValue, null);
-                    return this;
-                }
                 bound = function.BindPositionalOperands(
                     operands, span, this, _pendingReceiver);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);

@@ -1,0 +1,33 @@
+{
+  "retiredExpandedFiles": [
+    {
+      "path": "/home/lokad/lython-bench-checks/execution-transport-b377-20261107/perf/text-warm/perf.data",
+      "bytes": 303428,
+      "sha256": "6195c261c3a62494f8ef8f000c25a5a941a50dae15561517f4f62905be02dd94"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/execution-transport-b377-20261107/perf/text-warm/perf.map",
+      "bytes": 1364237,
+      "sha256": "946b41cac1889c63d62516ca8a3d43d735fba7ab98122ea81d44b068ff01f571"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/execution-transport-b377-20261107/perf/text-warm/perf-stacks.txt",
+      "bytes": 646466,
+      "sha256": "8fe96e06c7531c41db9bc291f0989b34b3dd94fef1b65e100f591ec155f94b44"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/execution-transport-b377-20261107/perf/text-warm/prefix-jit.txt",
+      "bytes": 372909,
+      "sha256": "e2a1ace93b9e2741bde355465fc5c3053f7f0642af3058b2e6b82b9cedfc7f17"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/execution-transport-b377-20261107/perf/text-warm/record.json",
+      "bytes": 1918154,
+      "sha256": "379a31c57a0ff7f551b9b9ed379dab974a4c813ab80498a9df4efc20557565ea"
+    }
+  ],
+  "independentCommittedArchive": "ea4739d5:benchmarks/results/2026-11-07-execution-transport/observations.tgz",
+  "allUsersEnded": true,
+  "noSymlinkDependencies": true,
+  "freeBytes": 12079104
+}

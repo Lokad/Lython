@@ -12,6 +12,38 @@ internal sealed partial class LythonRuntime
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, ExecutableCallSite call, int start, object target)
         {
+            // Closed helpers complete here just like native builtins. Borrow the
+            // evaluated arguments without manufacturing a pending call/resume.
+            // Other function calls still use the existing binding/frame runner.
+            if (call.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function
+                && function.CodeObject.NativeBody is not null
+                && (!call.HasReceiver || execution.Stack[start] is PyNone)
+                && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null))
+            {
+                try
+                {
+                    object value;
+                    scope.EnterInterpreterFrame(call.CallSpan);
+                    try
+                    {
+                        scope.CheckExecution(call.CallSpan);
+                        if (!function.TryExecuteWithoutFrame(
+                            execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
+                            call.CallSpan, out value)) return false;
+                    }
+                    catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+                    {
+                        throw translated;
+                    }
+                    finally { scope.LeaveInterpreterFrame(); }
+                    // As in the frame runner, release call admission before
+                    // publishing the result or retiring any caller inputs.
+                    PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
+                    return true;
+                }
+                catch { execution.Stack.RetireTo(start); throw; }
+            }
+
             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
             var dictionary = call.HasReceiver && ReferenceEquals(target, DirectDictionaryGet)
                 ? execution.Stack[start] as PyDict : null;

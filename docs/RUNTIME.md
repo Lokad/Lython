@@ -356,7 +356,10 @@ checks while omitting resumable interpreter storage. Closed module-level helpers
 also borrow their defining module's state and globals directly: they cannot
 observe a separate lexical context, so none is constructed. Fully supplied positional
 calls without a bound receiver borrow their admitted caller operands synchronously,
-without constructing bound argument storage. The native evaluator reads a readonly
+without constructing bound argument storage. These completed helpers run directly
+in call dispatch, before pending-call state is created. Call and function stack
+admission still apply; result publication and input retirement follow completion.
+The native evaluator reads a readonly
 span; it cannot retain that span or suspend. Returning an argument object preserves
 its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
 bindings. Class/nested definitions

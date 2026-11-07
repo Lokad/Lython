@@ -19,6 +19,11 @@ invariants belong in the white-box suite.
 distinguishes entry cancellation/refusal from operation errors, preserving the
 first origin, active Python exception state, stopped effects and released storage.
 
+[Completed helper ownership](Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs)
+triggers real output admission through a helper and its deferred caller. Both
+execution APIs preserve input funding, stop following effects on cancellation or
+first refusal, restore managed depths and return the shared budget after cleanup.
+
 [Executable result lifetimes](Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs)
 keep original operands funded across protocol rebinding and real suspension.
 Native calls, compiled children and subscript callbacks leave targets unchanged

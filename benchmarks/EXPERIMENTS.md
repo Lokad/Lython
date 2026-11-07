@@ -3388,3 +3388,14 @@ The21%prefix includes required checks and useful work; it is not a removable
 dispatch fraction. Select relocation of existing completed native helper calls
 before pending-call construction, deleting the displaced branch. No speedup,
 new full qualification or broad representation rewrite follows from profiling.
+
+## Completed helper calls (2026-11-07)
+
+[R29/B378](results/2026-11-07-execution-transport/implementation.md) relocates the
+existing closed native helper attempt into call dispatch and deletes its pending
+borrow branch. Text warm elapsed improves4.25–7.61%sync/7.63–8.64%async against
+R26 across two baseline/two current roles. Allocation and admitted peaks stay flat.
+Report varies, CSV retains up to3.04%adverse versus differing baseline roles;
+JSON improves. All168s/six-job gates pass. Focused439internal/1,958public per actual
+target and installed consumers pass; full delivery remains pending. Preserve
+R26's possible debt and all controls; no broad CPU or compounded gain claim.
