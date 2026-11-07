@@ -3410,3 +3410,23 @@ R29 delivery42333421800 is terminal GREEN/all eight gates, cached; excludes R30.
 B379 fails before workers due stale generated roots, preserving journal/source
 and unchanged original B373 archive. Its overwritten expanded lifecycle markers
 are explicitly disqualified; immutable archived observations remain authoritative.
+
+## Immutable regex development compatibility (2026-11-07)
+
+[Dev48](results/2026-11-07-regex-dev48-compatibility/README.md) consumes exact
+producerf6b2175e packages in isolation:85internal/488public checks per actual
+runtime pass. Normal0.4 pin/adapter unchanged. The documented API is unchanged;
+working-owner/name-enumeration/cursor-token limitations remain. Preparation and
+stale-restore failures are preserved. This is compatibility, not backend CPU,
+release promotion or full runtime-prototype qualification.
+
+## Prepared class lexical facts (2026-11-07)
+
+[R30/B382](results/2026-11-07-prepared-class-facts/README.md) moves the class-own-cell
+syntax walk into existing prepared facts. Focused 382 internal/1,921 public per
+actual target and independent Python probes pass. Class-factory allocation falls
+7.75% warm; compile adds 1,048 B. Quiet warm elapsed improves 5.83–6.31%, fresh
+3.65–5.33%, with compile +0.70–1.30%. Desktop text adverse remains unexplained but
+is not reproduced in the unchanged quiet control. B381 metadata failure and all
+original conditions remain archived. Retain; batch full delivery at the next
+coherent boundary. No broad CPU gain or performance-objective completion claim.

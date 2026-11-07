@@ -1,0 +1,143 @@
+{
+  "rows": [
+    {
+      "phase": "compile",
+      "case": "scripts.class-factory.small",
+      "allocatedBytesPerJob": {
+        "before": 136194.5,
+        "candidate": 137242.5,
+        "before-control": 136194.5
+      },
+      "allocatedChangePercent": 0.7694877546450041,
+      "desktopElapsedMilliseconds": {
+        "before": 0.2245375,
+        "candidate": 0.24048125,
+        "before-control": 0.25279375
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 0.0,
+        "candidate": 0.0,
+        "before-control": 0.0
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        },
+        "candidate": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        },
+        "before": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        }
+      }
+    },
+    {
+      "phase": "compile",
+      "case": "scripts.text-summary-helpers.large",
+      "allocatedBytesPerJob": {
+        "before": 164386.5,
+        "candidate": 164386.5,
+        "before-control": 164386.5
+      },
+      "allocatedChangePercent": 0.0,
+      "desktopElapsedMilliseconds": {
+        "before": 0.3992625,
+        "candidate": 0.37204375,
+        "before-control": 0.3616375
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 0.0,
+        "candidate": 0.0,
+        "before-control": 0.0
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        },
+        "before": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "scripts.class-factory.small",
+      "allocatedBytesPerJob": {
+        "before": 387006.5,
+        "candidate": 357026.5,
+        "before-control": 386978.5
+      },
+      "allocatedChangePercent": -7.746639914316688,
+      "desktopElapsedMilliseconds": {
+        "before": 1.5408,
+        "candidate": 1.41146875,
+        "before-control": 1.72195
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 1.0781125,
+        "candidate": 1.0015125,
+        "before-control": 1.2638625
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        },
+        "candidate": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        },
+        "before": {
+          "PeakExecutionBytes": 137204,
+          "PeakRootBytes": 201556
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "scripts.text-summary-helpers.large",
+      "allocatedBytesPerJob": {
+        "before": 1653043.5,
+        "candidate": 1652597.0,
+        "before-control": 1652821.5
+      },
+      "allocatedChangePercent": -0.027010783442782405,
+      "desktopElapsedMilliseconds": {
+        "before": 9.10055,
+        "candidate": 10.04594375,
+        "before-control": 8.790525
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 7.69161875,
+        "candidate": 8.24365625,
+        "before-control": 7.4822125
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        },
+        "before": {
+          "PeakExecutionBytes": 1957079,
+          "PeakRootBytes": 2038871
+        }
+      }
+    }
+  ],
+  "allSemanticAndOwnershipGatesPassed": true,
+  "performanceQualified": false,
+  "limitations": "Precise complete-job process allocation includes reset/I/O/checks and prior-result disposal for warm; compile is separate. Shared-ALC process GC and desktop/tiering variation make clocks diagnostic only, not CPU or whole-script quiet-machine performance proof."
+}

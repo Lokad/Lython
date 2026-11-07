@@ -1,0 +1,30 @@
+[
+  {
+    "tfm": "net11.0",
+    "asynchronous": false,
+    "exitCode": 0,
+    "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":137204,\"PeakProjectionMemoryBytes\":40,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":true,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+    "stderr": ""
+  },
+  {
+    "tfm": "net11.0",
+    "asynchronous": true,
+    "exitCode": 0,
+    "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":137204,\"PeakProjectionMemoryBytes\":40,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":true,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":true}}\n",
+    "stderr": ""
+  },
+  {
+    "tfm": "net10.0",
+    "asynchronous": false,
+    "exitCode": 0,
+    "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":137204,\"PeakProjectionMemoryBytes\":40,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":true,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+    "stderr": ""
+  },
+  {
+    "tfm": "net10.0",
+    "asynchronous": true,
+    "exitCode": 0,
+    "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":137204,\"PeakProjectionMemoryBytes\":40,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"528\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":true,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":true}}\n",
+    "stderr": ""
+  }
+]

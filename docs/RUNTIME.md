@@ -161,6 +161,8 @@ facts after the parameter prefix; module stores retain their dynamic namespace.
 Module facts also pass through lowering into instruction construction. The lexical
 preparation walk decides implicit `super` preloads after seeing later declarations;
 module bindings never supply lexical class cells to child functions.
+Class creation reads its prepared own-cell requirement; it does not repeat lexical
+syntax analysis at execution. Each created class still owns its fresh cell.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
 When enclosing compilation supplies complete lexical bindings, ordinary function
 free names use the existing live global/builtin lookup after local and captured

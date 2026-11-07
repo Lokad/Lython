@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "noActiveWorkersOrFixtures": true,
+  "noCompletedJobs": true,
+  "archiveSHA256": "16ffbcb575e17dfe03c0d3dba51cc60649321c26146c26dfbf1ba69fc0e13682",
+  "errors": {
+    "confirmation/startup-scripts.class-factory.small-compile-candidate.stderr": "Comparison worker error: InvalidDataException: Invalid fixture size/text metadata: scripts.class-factory.small\n",
+    "confirmation/scripts.class-factory.small-compile-candidate.stderr": "Comparison worker error: InvalidDataException: Invalid fixture size/text metadata: scripts.class-factory.small\n"
+  }
+}

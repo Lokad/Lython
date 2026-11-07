@@ -10,6 +10,10 @@ internal sealed record ScopeDirectiveFacts(
     // or an enclosed scope. A neighboring method does not supply that demand.
     public bool RequiresClassCell { get; init; }
 
+    // A class's own implicit cell is distinct from an enclosing cell captured
+    // by its suite. Prepare this lexical requirement before execution too.
+    public bool CreatesClassCell { get; init; }
+
     // Lexical setup includes dead branches and excludes nested definition bodies.
     public bool ContainsVariableAnnotations { get; init; }
 
@@ -75,7 +79,8 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts ??= ForFunction([], definition.Body);
+        => definition.PreparedScopeFacts ??= ForFunction([], definition.Body) with
+        { CreatesClassCell = ClassCellSyntaxFacts.RequiresCell(definition) };
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
     {

@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   382, Skipped:     0, Total:   382, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1921, Skipped:     0, Total:  1921, Duration: 28 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   382, Skipped:     0, Total:   382, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1921, Skipped:     0, Total:  1921, Duration: 26 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Class|FullyQualifiedName~Scope|FullyQualifiedName~Super|FullyQualifiedName~Annotation|FullyQualifiedName~Generator|FullyQualifiedName~SharedMemory|FullyQualifiedName~GovernedMemory|FullyQualifiedName~Cancellation)",
+  "coreSHA256": {
+    "net11.0": "75e60e663b77c89083cde84e07ba4e3cb6b5c67eaa4a73d727398d88b312932d",
+    "net10.0": "89ee00978859589506fe357f010e35b77e1473fb457a6b089e57684e92d8e41f"
+  }
+}

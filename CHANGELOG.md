@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare class own-cell requirements with lexical facts, removing repeated syntax
+  analysis during class creation while preserving fresh class/closure cells.
+
 - Complete fully supplied positional, unbound closed native helpers directly in call
   dispatch, removing their synthetic pending-call/completion transition. Preserve
   argument borrows, stack admission, exception provenance and dynamic or genuinely
