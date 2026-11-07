@@ -7,19 +7,6 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Internal operand only: its receiver occupies a separate slot. A guest
-    // list-valued attribute can never be confused with this resolved method.
-    private static readonly object DirectListAppend = new();
-    private static readonly object DirectFileWrite = new();
-    private static readonly object DirectCsvWriterow = new();
-    private static readonly object DirectDictionaryGet = new();
-    private static readonly object DirectDictionarySetDefault = new();
-    private static readonly object DirectStringStartsWith = new();
-    private static readonly object DirectStringEndsWith = new();
-    private static readonly object DirectStringReplace = new();
-    private static readonly object DirectStringSplit = new();
-    private static readonly object DirectStringJoin = new();
-
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = locals[slot];

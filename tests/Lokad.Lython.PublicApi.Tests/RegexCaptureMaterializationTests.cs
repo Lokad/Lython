@@ -48,9 +48,11 @@ public sealed class RegexCaptureMaterializationTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task GroupAccessRefusalIsTerminalAndReturnsWorkingAllowance(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task GroupAccessRefusalIsTerminalAndReturnsWorkingAllowance(bool asynchronous, bool exposed)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var provider = new CompetingProvider(budget);
@@ -58,13 +60,14 @@ public sealed class RegexCaptureMaterializationTests
             import re
             m = re.search(pattern, text)
             positions = m.regs
+            selected = m.group
             try:
-                m.group(1)
+                CALL
             except MemoryError:
                 print('must not run')
             finally:
                 return 'must fail'
-            """, budget);
+            """.Replace("CALL", exposed ? "selected(1)" : "m.group(1)", StringComparison.Ordinal), budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var body = new string('é', 8192);
@@ -78,7 +81,7 @@ public sealed class RegexCaptureMaterializationTests
             Assert.True(provider.SubjectClosed);
             Assert.False(result.Success);
             Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
-            Assert.Equal(5, result.Failure?.Span?.Line);
+            Assert.Equal(6, result.Failure?.Span?.Line);
             Assert.True(result.DeniedReservationBytes >= Encoding.UTF8.GetByteCount(body));
             Assert.Empty(result.StandardOutput);
         }

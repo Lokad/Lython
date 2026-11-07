@@ -15,6 +15,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Receiver methods](Lokad.Lython.PublicApi.Tests/ReceiverMethodSemanticsTests.cs)
+check receiver snapshots, exposed metadata, default presence, invalid-call effects
+and genuinely suspended regex selectors. Concurrent runs keep independent tokens
+and return the shared allowance after awaited cleanup. Capture materialization
+also checks terminal admission refusal through immediate and exposed methods.
+
 [Regex scalar positions](Lokad.Lython.PublicApi.Tests/RegexScalarCursorTests.cs)
 check consecutive Unicode lookbehind/lookahead, callbacks and original windows
 against independent Python output. [Active projection cancellation](Lokad.Lython.Tests/RegexScalarCursorCancellationTests.cs)

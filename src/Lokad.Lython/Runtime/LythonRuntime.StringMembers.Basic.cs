@@ -85,9 +85,6 @@ internal sealed partial class LythonRuntime
         {
             // N17: hot fixed signatures hoisted per family.
             private static readonly LythonCallableSignature StrEncodeSignature = LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0);
-            private static readonly LythonCallableSignature StrReplaceSignature = LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2);
-            private static readonly LythonCallableSignature StrStartsWithSignature = LythonCallableSignature.Create("str.startswith", 1);
-            private static readonly LythonCallableSignature StrEndsWithSignature = LythonCallableSignature.Create("str.endswith", 1);
             public static readonly TextSemanticsMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
@@ -112,23 +109,9 @@ internal sealed partial class LythonRuntime
                             : TextErrorMode.Strict;
                         return EncodeGuestBytes(text, encoding, errors, context, span);
                     }, StrEncodeSignature),
-                    "replace" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length is < 2 or > 3)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", span);
-                        }
-
-                        return Replace(text, arguments[0], arguments[1], arguments.Length == 3 ? arguments[2] : null, span, context);
-                    }, StrReplaceSignature),
-                    "startswith" => BoundCallable.Create(
-                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: false).GetAwaiter().GetResult(),
-                        StrStartsWithSignature,
-                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: true, asynchronous: true)),
-                    "endswith" => BoundCallable.Create(
-                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: false).GetAwaiter().GetResult(),
-                        StrEndsWithSignature,
-                        (arguments, span, context) => InvokeStringAffix(text, arguments, span, context, isStart: false, asynchronous: true)),
+                    "replace" => ReceiverMethods.StringReplace.Bind(text),
+                    "startswith" => ReceiverMethods.StringStartsWith.Bind(text),
+                    "endswith" => ReceiverMethods.StringEndsWith.Bind(text),
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", Lower),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => PyStringOps.Capitalize(receiver, context, span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", GetNoArgumentsOperation(name)!),

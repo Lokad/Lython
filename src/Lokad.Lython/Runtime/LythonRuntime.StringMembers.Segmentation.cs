@@ -77,7 +77,6 @@ internal sealed partial class LythonRuntime
             variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature StrLstripSignature = LythonCallableSignature.Create("str.lstrip", ["chars"], 0);
         private static readonly LythonCallableSignature StrRstripSignature = LythonCallableSignature.Create("str.rstrip", ["chars"], 0);
-            private static readonly LythonCallableSignature StrSplitSignature = LythonCallableSignature.Create("str.split", ["sep", "maxsplit"], 0);
             private static readonly LythonCallableSignature StrRSplitSignature = LythonCallableSignature.Create("str.rsplit", ["sep", "maxsplit"], 0);
             private static readonly LythonCallableSignature StrExpandTabsSignature = LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0);
             public static readonly StringSegmentationMemberProvider Instance = new();
@@ -86,12 +85,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "split" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        return Split(text, arguments.Length >= 1 ? arguments[0] : null,
-                            arguments.Length == 2 ? arguments[1] : null, span, context);
-                    }, StrSplitSignature, (arguments, span, context) => SplitAsync(text,
-                        arguments.Length >= 1 ? arguments[0] : null, arguments.Length == 2 ? arguments[1] : null, span, context)),
+                    "split" => ReceiverMethods.StringSplit.Bind(text),
                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)

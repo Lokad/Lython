@@ -33,9 +33,6 @@ internal sealed partial class LythonRuntime
         // no name-array allocation, bucket scan or lock on cache misses. Each
         // factory call below matches its previous inline arguments exactly, so the
         // interner hands back the same instance and binding facts cannot drift.
-        private static readonly LythonCallableSignature ListAppendSignature = LythonCallableSignature.Create(
-            "list.append", ["value"], requiredCount: 1, maximumPositionalArgumentCount: 1,
-            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature ListExtendSignature = LythonCallableSignature.Create("list.extend", ["iterable"]);
         private static readonly LythonCallableSignature ListIndexSignature = LythonCallableSignature.Create("list.index", ["value", "start", "stop"], 1);
         private static readonly LythonCallableSignature ListCountSignature = LythonCallableSignature.Create("list.count", ["value"]);
@@ -131,7 +128,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "append" => BoundCallable.Create((arguments, span, context) => Append(list, arguments[0], span, context), ListAppendSignature),
+                "append" => ReceiverMethods.ListAppend.Bind(list),
                 "extend" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -1950,13 +1947,7 @@ internal sealed partial class LythonRuntime
     internal static class DictMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
-        private static readonly LythonCallableSignature DictGetSignature = LythonCallableSignature.Create(
-            "dict.get", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
-            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DictPopSignature = LythonCallableSignature.Create("dict.pop", ["key", "default"], 1);
-        private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create(
-            "dict.setdefault", ["key", "default"], requiredCount: 1, maximumPositionalArgumentCount: 2,
-            variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 2);
         private static readonly LythonCallableSignature DictContainsSignature = LythonCallableSignature.Create("dict.__contains__", ["item"]);
         private static readonly LythonCallableSignature DictGetItemSignature = LythonCallableSignature.Create(
             "dict.__getitem__", ["index"], requiredCount: 1, maximumPositionalArgumentCount: 1,
@@ -2060,10 +2051,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "get" => BoundCallable.Create(
-                    (arguments, span, context) => Get(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context),
-                    DictGetSignature,
-                    (arguments, span, context) => GetAsync(dict, arguments[0], arguments.Length == 2 ? arguments[1] : PyNone.Instance, span, context)),
+                "get" => ReceiverMethods.DictionaryGet.Bind(dict),
                 "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", GetNoArgumentsOperation(name)!),
                 "values" => BoundCallable.CreateNoArguments(dict, "dict.values", GetNoArgumentsOperation(name)!),
                 "items" => BoundCallable.CreateNoArguments(dict, "dict.items", GetNoArgumentsOperation(name)!),
@@ -2119,16 +2107,7 @@ internal sealed partial class LythonRuntime
                     return PyNone.Instance;
                 }),
                 "fromkeys" => new BuiltinTypeMethod("dict", "fromkeys", bindsOwner: true, DictFromKeys),
-                "setdefault" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length is < 1 or > 2)
-                    {
-                        throw new LythonRuntimeException("TypeError", "dict.setdefault(key[, default]) expects one key and an optional default.", span);
-                    }
-
-                    var defaultValue = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                    return SetDefault(dict, arguments[0], defaultValue, span, context);
-                }, DictSetDefaultSignature),
+                "setdefault" => ReceiverMethods.DictionarySetDefault.Bind(dict),
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);

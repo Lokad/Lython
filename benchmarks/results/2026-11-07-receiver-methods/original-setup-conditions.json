@@ -1,0 +1,8 @@
+{
+  "catalogFailure": "CSV id incorrectly used summary-helpers instead of summary-functions. StopIteration before driver creation/measurement; original failed condition retained.",
+  "providerFailure": "R35 driver used parameterless engine; the first regex baseline compilation explicitly refused missing provider. Constructor cleanup ran; no observations. Original source/stderr/witness retained in setup-without-provider and Program.without-provider.cs.txt.",
+  "correction": "Reuse the completed R40 provider-aware driver; only case count/warmup/batch/purpose change. No runtime/source/image/catalog/workload or acceptance relaxation.",
+  "vmPreparationGate": "Initial B393 preparation stopped before deployment: local frozen worker7cf37ca5/adapter27211dbe differ from preceding VMb94/51c. Install local worker+adapter identically in both new roles; no prior snapshot changed. Released producer hashes remain identical0.4. Remote setup reverified every core/auxiliary, left8441856free bytes, then launched once.",
+  "regressionFixture": "Initial invalid-call test was statically diagnosed, not run. Move known-invalid regex calls behind an untyped function parameter; independent CPython output unchanged. Original failed log retained; no runtime correction for this fixture.",
+  "initialCompile": "Two corrected compile errors: local method name shadowing; nullable operand annotation. No compiled prototype/observations existed before correction."
+}

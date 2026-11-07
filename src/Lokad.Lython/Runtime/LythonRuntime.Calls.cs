@@ -173,19 +173,6 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // Exact list.append cannot suspend or invoke a guest protocol.
-    private static object InvokeListAppend(PyList receiver, object value, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return ListMembers.Append(receiver, value, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
     // Exact native file writes stage governed output synchronously. Publication
     // remains on the existing flush/close and execution cleanup paths.
     internal static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
@@ -217,32 +204,6 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static object InvokeCsvWriterow(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return RuntimeValue(CsvWriterMembers.WriteRowFromValue(receiver, row, span, context));
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    // Row iteration and the captured output callback can both suspend. Retain
-    // this call frame and its inputs until conversion/publication finish.
-    private static async ValueTask<object> InvokeCsvWriterowAsync(CsvWriterObject receiver, object row, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return RuntimeValue(await CsvWriterMembers.WriteRowFromValueAsync(receiver, row, span, context).ConfigureAwait(false));
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
     private static object InvokeSingleInput<T>(T value,
         Func<T, LythonSourceSpan, ExecutionContext, object> operation, LythonSourceSpan span, ExecutionContext context) where T : class
     {
@@ -251,19 +212,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             return operation(value, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static object InvokeStringAffixFromOperands(PyString receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context, bool isStart)
-    {
-        if (arguments.Length == 1) return InvokeStringAffix(receiver, arguments.Span[0]!, span, context, isStart);
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart, asynchronous: false).GetAwaiter().GetResult();
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -281,45 +229,6 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private static async ValueTask<object> InvokeStringAffixFromOperandsAsync(
-        PyString receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context, bool isStart)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            // The caller keeps the operand memory live until all bound hooks
-            // finish, including descriptor binding and asynchronous host I/O.
-            return await StringMembers.InvokeStringAffix(receiver, arguments, span, context, isStart, asynchronous: true).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static object InvokeStringJoin(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return StringMembers.Join(receiver, parts, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static async ValueTask<object> InvokeStringJoinAsync(PyString receiver, object parts, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return await StringMembers.JoinAsync(receiver, parts, span, context).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
     private static object InvokeStringSplit(PyString receiver, object? separator, object? count, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
@@ -327,19 +236,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             return StringMembers.Split(receiver, separator, count, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static async ValueTask<object> InvokeStringSplitAsync(PyString receiver, object? separator, object count,
-        LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return await StringMembers.SplitAsync(receiver, separator, count, span, context).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -364,30 +260,6 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecution(span);
             return DictMembers.Get(receiver, key, fallback, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static object InvokeDictionarySetDefault(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return DictMembers.SetDefault(receiver, key, fallback, span, context);
-        }
-        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
-        finally { context.LeaveInterpreterFrame(); }
-    }
-
-    private static async ValueTask<object> InvokeDictionaryGetAsync(PyDict receiver, object key, object fallback, LythonSourceSpan span, ExecutionContext context)
-    {
-        context.EnterInterpreterFrame(span);
-        try
-        {
-            context.CheckExecution(span);
-            return await DictMembers.GetAsync(receiver, key, fallback, span, context).ConfigureAwait(false);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -3014,7 +2886,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class BoundCallable : DelegateBoundArgumentsCallable, IPyDynamicAttributes, IPyRenderableValue, IPyBoundEngineMethod, IPyHashableValue
+    private sealed class BoundCallable : BoundArgumentsCallable, IPyDynamicAttributes, IPyRenderableValue, IPyBoundEngineMethod, IPyHashableValue
     {
         public int GetPyHashCode() => HashCode.Combine(RuntimeHelpers.GetHashCode(_receiver), StringComparer.Ordinal.GetHashCode(ShortMethodName(Signature.Name)));
 
@@ -3090,8 +2962,32 @@ internal sealed partial class LythonRuntime
             Func<object[], LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
             Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
-            : base(signature, PythonCallableKind.Method, implementation, asyncImplementation)
-        { }
+            : base(signature, PythonCallableKind.Method)
+        {
+            _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
+        }
+
+        private readonly object? _implementation;
+        private readonly Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
+
+        private BoundCallable(object receiver, ReceiverMethod method)
+            : base(method.Signature, PythonCallableKind.Method)
+        {
+            _receiver = receiver;
+            _implementation = method;
+        }
+
+        internal static BoundCallable Create(object receiver, ReceiverMethod method) => new(receiver, method);
+
+        protected override object InvokeBound(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _implementation is ReceiverMethod method ? method.Invoke(_receiver!, arguments, span, context)
+                : ((Func<object[], LythonSourceSpan, ExecutionContext, object>)_implementation!)(arguments, span, context);
+
+        protected override ValueTask<object> InvokeBoundAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _implementation is ReceiverMethod method ? method.InvokeAsync(_receiver!, arguments, span, context)
+                : _asyncImplementation is null ? new(InvokeBound(arguments, span, context))
+                : _asyncImplementation(arguments, span, context);
 
         private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object>? _presenceImplementation;
         private readonly Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncPresenceImplementation;
@@ -3100,7 +2996,7 @@ internal sealed partial class LythonRuntime
             Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
             LythonCallableSignature signature,
             Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
-            : base(signature, PythonCallableKind.Method, static (_, _, _) => throw new InvalidOperationException("Presence-bound callable invoked without presence."), null)
+            : base(signature, PythonCallableKind.Method)
         {
             _presenceImplementation = implementation;
             _asyncPresenceImplementation = asyncImplementation;

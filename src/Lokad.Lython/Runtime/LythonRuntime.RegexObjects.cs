@@ -70,8 +70,49 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature MatchGetItemSignature = LythonCallableSignature.Create("match.__getitem__", ["key"], 1, ArgumentCountLimit.AtMost(1), LythonVariadicParameters.None, 1);
         private readonly record struct RegexGroupBounds(BigInteger Start, BigInteger End);
 
+        private static readonly ReceiverMethod GroupMethod = new(LythonCallableSignature.Create("bound method"),
+            static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult(),
+            static (receiver, arguments, span, context) => GroupCoreAsync((ReMatchObject)receiver, arguments, context, span, true));
+        private static readonly ReceiverMethod GetItemMethod = new(MatchGetItemSignature,
+            static (receiver, arguments, span, context) => GetSubscript((ReMatchObject)receiver, arguments.Span[0]!, span, context),
+            static (receiver, arguments, span, context) => GetSubscriptAsync((ReMatchObject)receiver, arguments.Span[0]!, span, context));
+        private static readonly ReceiverMethod GroupsMethod = new(MatchGroupsSignature,
+            static (receiver, arguments, span, context) => Groups((ReMatchObject)receiver, arguments.Length == 1 ? arguments.Span[0]! : PyNone.Instance, context, span));
+        private static readonly ReceiverMethod GroupDictMethod = new(MatchGroupDictSignature,
+            static (receiver, arguments, span, context) => GroupDictionary((ReMatchObject)receiver, arguments.Length == 1 ? arguments.Span[0]! : PyNone.Instance, context, span));
+        private static readonly ReceiverMethod ExpandMethod = new(MatchExpandSignature,
+            static (receiver, arguments, span, context) =>
+            {
+                if (!PyStringOps.TryAsString(arguments.Span[0]!, out var template))
+                    throw new LythonRuntimeException("TypeError", "match.expand(template) expects one string argument.", span);
+                return ExpandReplacementTemplate((ReMatchObject)receiver, template, context, span);
+            });
+        private static readonly ReceiverMethod StartMethod = new(MatchStartSignature,
+            static (receiver, arguments, span, context) => GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult().Start,
+            static async (receiver, arguments, span, context) => (await GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, true).ConfigureAwait(false)).Start);
+        private static readonly ReceiverMethod EndMethod = new(MatchEndSignature,
+            static (receiver, arguments, span, context) => GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult().End,
+            static async (receiver, arguments, span, context) => (await GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, true).ConfigureAwait(false)).End);
+        private static readonly ReceiverMethod SpanMethod = new(MatchSpanSignature,
+            static (receiver, arguments, span, context) => BoundsTuple(GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, false).GetAwaiter().GetResult(), context, span),
+            static async (receiver, arguments, span, context) => BoundsTuple(await GetBoundsCoreAsync((ReMatchObject)receiver, arguments, context, span, true).ConfigureAwait(false), context, span));
+
+        internal static ReceiverMethod? GetMethod(string name) => name switch
+        {
+            "group" => GroupMethod,
+            "__getitem__" => GetItemMethod,
+            "groups" => GroupsMethod,
+            "groupdict" => GroupDictMethod,
+            "expand" => ExpandMethod,
+            "start" => StartMethod,
+            "end" => EndMethod,
+            "span" => SpanMethod,
+            _ => null,
+        };
+
         public static bool TryGetMember(ReMatchObject match, string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
+            if (GetMethod(name) is { } method) { value = method.Bind(match); return true; }
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("re"),
@@ -81,90 +122,30 @@ internal sealed partial class LythonRuntime
                 "endpos" => new BigInteger(match.EndPos),
                 "lastindex" => LastIndex(match),
                 "lastgroup" => LastGroup(match),
-                "regs" => CreateTuple(match.CaptureSlotCount, i =>
-                    CreateTuple(2, j => new BigInteger(j == 0 ? match.Captures[i].Start : match.Captures[i].End), context, span), context, span),
-                "group" => BoundCallable.Create(
-                    (arguments, span, context) => GroupCoreAsync(match, arguments, context, span, false).GetAwaiter().GetResult(),
-                    (arguments, span, context) => GroupCoreAsync(match, arguments, context, span, true)),
-                "__getitem__" => BoundCallable.Create(
-                    (arguments, span, context) => GetSubscript(match, arguments[0], span, context),
-                    MatchGetItemSignature,
-                    (arguments, span, context) => GetSubscriptAsync(match, arguments[0], span, context)),
-                "groups" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.groups(default=None) expects zero or one argument.", span);
-                    }
-
-                    var defaultValue = arguments.Length == 1 ? arguments[0] : PyNone.Instance;
-                    return CreateTuple(match.CaptureSlotCount - 1,
-                        i => ResolveIndexedGroup(match, i + 1, span, context, defaultValue), context, span);
-                }, MatchGroupsSignature),
-                "groupdict" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.groupdict(default=None) expects zero or one argument.", span);
-                    }
-
-                    var defaultValue = arguments.Length == 1 ? arguments[0] : PyNone.Instance;
-                    var dict = new PyDict(match.NamedGroups.Count, context.MemoryGovernor, span);
-                    foreach (var entry in match.NamedGroups)
-                    {
-                        dict.SetItem(entry.Key, ResolveIndexedGroup(match, entry.Value, span, context, defaultValue));
-                    }
-
-                    return dict;
-                }, MatchGroupDictSignature),
-                "expand" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var template))
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.expand(template) expects one string argument.", span);
-                    }
-
-                    return ExpandReplacementTemplate(match, template, context, span);
-                }, MatchExpandSignature),
-                "start" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.start(group=0) expects zero or one group identifier.", span);
-                    }
-
-                    return GetBoundsCoreAsync(match, arguments, context, span, false).GetAwaiter().GetResult().Start;
-                }, MatchStartSignature, async (arguments, span, context) =>
-                    (await GetBoundsCoreAsync(match, arguments, context, span, true).ConfigureAwait(false)).Start),
-                "end" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.end(group=0) expects zero or one group identifier.", span);
-                    }
-
-                    return GetBoundsCoreAsync(match, arguments, context, span, false).GetAwaiter().GetResult().End;
-                }, MatchEndSignature, async (arguments, span, context) =>
-                    (await GetBoundsCoreAsync(match, arguments, context, span, true).ConfigureAwait(false)).End),
-                "span" => BoundCallable.Create((arguments, span, context) =>
-                {
-                    if (arguments.Length > 1)
-                    {
-                        throw new LythonRuntimeException("TypeError", "match.span(group=0) expects zero or one group identifier.", span);
-                    }
-
-                    var bounds = GetBoundsCoreAsync(match, arguments, context, span, false).GetAwaiter().GetResult();
-                    return CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
-                }, MatchSpanSignature, async (arguments, span, context) =>
-                {
-                    var bounds = await GetBoundsCoreAsync(match, arguments, context, span, true).ConfigureAwait(false);
-                    return CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
-                }),
+                "regs" => Registers(match, context, span),
                 _ => MissingMemberValue.Instance,
             };
-
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
+
+        private static object Registers(ReMatchObject match, ExecutionContext context, LythonSourceSpan span)
+            => CreateTuple(match.CaptureSlotCount, i =>
+                CreateTuple(2, j => new BigInteger(j == 0 ? match.Captures[i].Start : match.Captures[i].End), context, span), context, span);
+
+        private static object Groups(ReMatchObject match, object defaultValue, ExecutionContext context, LythonSourceSpan span)
+            => CreateTuple(match.CaptureSlotCount - 1,
+                i => ResolveIndexedGroup(match, i + 1, span, context, defaultValue), context, span);
+
+        private static object GroupDictionary(ReMatchObject match, object defaultValue, ExecutionContext context, LythonSourceSpan span)
+        {
+            var dict = new PyDict(match.NamedGroups.Count, context.MemoryGovernor, span);
+            foreach (var entry in match.NamedGroups)
+                dict.SetItem(entry.Key, ResolveIndexedGroup(match, entry.Value, span, context, defaultValue));
+            return dict;
+        }
+
+        private static object BoundsTuple(RegexGroupBounds bounds, ExecutionContext context, LythonSourceSpan span)
+            => CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
 
         internal static object GetSubscript(ReMatchObject match, object key, LythonSourceSpan span, ExecutionContext? context)
             => GetSubscriptCoreAsync(match, key, span, context, false).GetAwaiter().GetResult();
@@ -180,7 +161,7 @@ internal sealed partial class LythonRuntime
                 : throw new LythonRuntimeException("IndexError", "no such group", span);
         }
 
-        private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, object[] arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static async ValueTask<object> GroupCoreAsync(ReMatchObject match, ReadOnlyMemory<object?> arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             if (arguments.Length == 0)
             {
@@ -188,18 +169,18 @@ internal sealed partial class LythonRuntime
             }
             if (arguments.Length == 1)
             {
-                return await GetSubscriptCoreAsync(match, arguments[0], span, context, asynchronous).ConfigureAwait(false);
+                return await GetSubscriptCoreAsync(match, arguments.Span[0]!, span, context, asynchronous).ConfigureAwait(false);
             }
 
             if (!asynchronous)
-                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments[i], span, context), context, span);
+                return CreateTuple(arguments.Length, i => GetSubscript(match, arguments.Span[i]!, span, context), context, span);
             return await CreateTupleAsync(arguments.Length,
-                i => GetSubscriptAsync(match, arguments[i], span, context), context, span).ConfigureAwait(false);
+                i => GetSubscriptAsync(match, arguments.Span[i]!, span, context), context, span).ConfigureAwait(false);
         }
 
-        private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, object[] arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        private static async ValueTask<RegexGroupBounds> GetBoundsCoreAsync(ReMatchObject match, ReadOnlyMemory<object?> arguments, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var key = await CoerceGroupKeyAsync(arguments.Length == 0 ? BigInteger.Zero : arguments[0], context, span, asynchronous).ConfigureAwait(false);
+            var key = await CoerceGroupKeyAsync(arguments.Length == 0 ? BigInteger.Zero : arguments.Span[0]!, context, span, asynchronous).ConfigureAwait(false);
             return ResolveGroupBounds(match, key, span);
         }
 

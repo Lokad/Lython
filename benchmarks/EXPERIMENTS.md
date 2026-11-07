@@ -3608,3 +3608,23 @@ Allocation essentially flat/peaks identical; desktop non-monotonic clocks retain
 853internal/1,224public per actual target plus one active cancellation/owner test
 each and six supervised .NET/CPython cases pass. Full R40 delivery is batched later;
 the green R36/R38 receipt excludes it. No retiming, publication or goal completion.
+
+## R41 shared receiver-method implementations — B393/B394
+
+[R41](results/2026-11-07-receiver-methods/README.md) removes ten opaque method
+markers, their invocation chain, migrated receiver-capturing factories and ten
+orphaned guard helpers. Regex and existing ordinary native method families share
+immutable implementations; immediate calls borrow operands, exposed methods keep
+the binder/metadata. Native no-argument/helper paths and real dynamic wrappers stay.
+Complete regex allocation falls about29.47% on both APIs; controls within0.04% and
+admitted peaks identical. Desktop timings conflict, including sync regex+31–81%.
+B393 quiet regex−7.56–9.19% accompanies adverse CSV+2.05–3.41% and variable JSON.
+Source inspection justifies removing the added one-caller resolver/no-argument
+name checks. B394 changes that work:regex−8.64–10.80%, JSON−4.10 to+2.65%, text
+−1.34 to+1.05%, CSV−1.84 to+2.35%, with differing identical-role controls. Retain
+the simplification/allocation and measured regex gain; control parity, isolated CPU
+and repayment of original CSV debt remain unproved. No unchanged retiming selected.
+Both four-job collections finish114s/all gates, are terminal/archived/verified with
+no workers/fixtures. Original setups, source pairs and all adverse data survive.
+Refined121internal/506public per actual11/10 pass; full platform/Stress/package
+delivery is pending. This does not complete the whole-script performance objective.

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share builtin method implementations independently of their receivers. Common
+  immediate calls borrow evaluated operands; exposed methods keep Python binding
+  and metadata. Remove duplicated method markers, factories and dispatch helpers.
+
 - Avoid repeated Unicode prefix scans for nearby overlapping regex captures by
   moving the existing scalar cursor backwards when nearer. Preserve original
   capture coordinates, current cancellation and subject/result ownership.

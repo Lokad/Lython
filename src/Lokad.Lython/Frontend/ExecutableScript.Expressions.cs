@@ -320,15 +320,7 @@ internal sealed partial class ExecutableScript
                 && callTarget is LoweredMemberExpression receiverMember
                 && receiverMember.Member.MemberName switch
                 {
-                    "get" or "setdefault" => call.Arguments.Count is 1 or 2,
-                    "append" => call.Arguments.Count == 1,
-                    "join" => call.Arguments.Count == 1,
-                    "write" => call.Arguments.Count == 1,
-                    "writerow" => call.Arguments.Count == 1,
-                    "replace" => call.Arguments.Count is 2 or 3,
-                    "split" => call.Arguments.Count is >= 0 and <= 2,
                     "keys" or "values" or "items" => call.Arguments.Count == 0,
-                    "startswith" or "endswith" => call.Arguments.Count is >= 1 and <= 3,
                     _ => call.Arguments.Count == 0 && LythonRuntime.StringMembers.GetNoArgumentsKind(receiverMember.Member.MemberName) is not null
                 };
             var hasReceiver = callTarget is LoweredMemberExpression;

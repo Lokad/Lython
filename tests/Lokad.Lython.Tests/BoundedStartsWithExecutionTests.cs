@@ -17,12 +17,6 @@ public sealed class BoundedStartsWithExecutionTests
         Assert.False(code.RequiresLocalVariableMirroring);
     }
 
-    [Theory]
-    [InlineData("return text.startswith(prefix,start=1)")]
-    [InlineData("method=text.startswith\nreturn method(prefix,start,end)")]
-    public void KeywordAndExposedMethodsRetainGeneralBinding(string source)
-        => Assert.DoesNotContain(Compile(source).Instructions, instruction => instruction.OpCode == ExecutableOpCode.LoadCallReceiver);
-
     private static ExecutableCodeObject Compile(string source)
         => ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!)).EntryPoint;
 }

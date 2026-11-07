@@ -1,0 +1,54 @@
+{
+  "checks": {
+    "internal-focused11.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   276, Skipped:     0, Total:   276, Duration: 526 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ],
+      "sha256": "f906923e730b8cbdbce2cbd9535bb2049527e3f71053b719940dfa2bfcdef421"
+    },
+    "public-focused11.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1279, Skipped:     0, Total:  1279, Duration: 43 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ],
+      "sha256": "de2fe06d137c821c941ed05d9027728af4cbeaa5e1ad0bf7675378f722b70f39"
+    },
+    "test-final-regressions.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    10, Skipped:     0, Total:    10, Duration: 771 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ],
+      "sha256": "be9eb3e02668c4d37e253dabc6e8722f7d0430af8d2a9a105e4ce2cfda87ffe9"
+    },
+    "internal-focused10.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   276, Skipped:     0, Total:   276, Duration: 600 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ],
+      "sha256": "8731c18c52351dd95052fd540874f5c9643e3b86598c77bf350a9d4bc4fbda57"
+    },
+    "public-focused10.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1238, Skipped:     0, Total:  1238, Duration: 38 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ],
+      "sha256": "93f132e24c53d6730cb2bdc300b503f5838b2f1f2536867b54cbf24038d79d7b"
+    },
+    "final-internal-net11.0.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    20, Skipped:     0, Total:    20, Duration: 162 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ],
+      "sha256": "186667639d7b7894c8fc988022dc3e0f9687e0334f171d74440ce0b11ee6f27e"
+    },
+    "final-internal-net10.0.log": {
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    20, Skipped:     0, Total:    20, Duration: 147 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ],
+      "sha256": "e6da1bf598f1afe8f55f4fb916b478d073a68a710a31f52dd596f9db92c73607"
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "bfc2e42738c9e68b676686e6f93617a09fcccbd04cb5a7638a17312f704d2b8c",
+    "net10.0": "f848abe1bb37ffc03ed218582b9dba69f9bd1b44b19c87cc6fafa210a6a2187b"
+  },
+  "qualification": "Focused actual.NET11/10 only; ordinary full platform/Stress/installed consumers pending. Logs overlap; never sum counts. Earlier explicit.NET11 selection included selected Stress cases; .NET10 filter explicitly excludes Stress.",
+  "independentPython": "python-goldens.json: CPython3.13.2 -I -B; outputs checked against fixed assertions.",
+  "retiredArchitectureTests": "Four obsolete absence-of-LoadCallReceiver assertions removed; member read/call distinction checks existing LoadCallMember. Independent public semantics/cancellation/refusal/cleanup remain.",
+  "productionMatchesFrozenComparison": true
+}

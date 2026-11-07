@@ -1,0 +1,50 @@
+{
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/annotation-demand-b389-20261107/candidate/Lokad.Lython.dll",
+      "inode": 843850,
+      "links": 1,
+      "bytes": 5627392,
+      "backup": {
+        "commit": "1971487a1a086d7dfab7e858c752ab1274132cb8",
+        "archive": "benchmarks/results/2026-11-07-regex-scalar-cursor/development.tgz",
+        "archiveSHA256": "024fabbe7a3bbe57de6236670ce88d42171b0480fe3ab420a540a8060df2c989",
+        "member": "baseline/net11.0/Lokad.Lython.dll",
+        "bytes": 5627392,
+        "fileSHA256": "c21c0c4b3537c731d76fe5f96afb0c8f13f2c99a8335e09902c2f4c29a1e7fea"
+      }
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/csv-cost-b391-20261107/candidate/Lokad.Lython.dll",
+      "inode": 843980,
+      "links": 1,
+      "bytes": 5627392,
+      "backup": {
+        "commit": "1971487a1a086d7dfab7e858c752ab1274132cb8",
+        "archive": "benchmarks/results/2026-11-07-regex-scalar-cursor/development.tgz",
+        "archiveSHA256": "024fabbe7a3bbe57de6236670ce88d42171b0480fe3ab420a540a8060df2c989",
+        "member": "baseline/net11.0/Lokad.Lython.dll",
+        "bytes": 5627392,
+        "fileSHA256": "c21c0c4b3537c731d76fe5f96afb0c8f13f2c99a8335e09902c2f4c29a1e7fea"
+      }
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/regex-scalar-cursor-b392-20261107/reference/Lokad.Lython.dll",
+      "inode": 844030,
+      "links": 1,
+      "bytes": 5627392,
+      "backup": {
+        "commit": "1971487a1a086d7dfab7e858c752ab1274132cb8",
+        "archive": "benchmarks/results/2026-11-07-regex-scalar-cursor/development.tgz",
+        "archiveSHA256": "024fabbe7a3bbe57de6236670ce88d42171b0480fe3ab420a540a8060df2c989",
+        "member": "baseline/net11.0/Lokad.Lython.dll",
+        "bytes": 5627392,
+        "fileSHA256": "c21c0c4b3537c731d76fe5f96afb0c8f13f2c99a8335e09902c2f4c29a1e7fea"
+      }
+    }
+  ],
+  "freeBefore": 1306624,
+  "freeAfter": 18194432,
+  "ownersEnded": true,
+  "archiveBackupAlreadyCommitted": true
+}

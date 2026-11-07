@@ -86,7 +86,7 @@ public sealed class MemberCacheAliasTests
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull()));
         var instructions = code.EntryPoint.Instructions.ToArray();
         Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadMember);
-        Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadCallReceiver);
+        Assert.Single(instructions, i => i.OpCode == ExecutableOpCode.LoadCallMember);
     }
 
     [Fact]

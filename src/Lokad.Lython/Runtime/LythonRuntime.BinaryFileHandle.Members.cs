@@ -11,6 +11,7 @@ internal sealed partial class LythonRuntime
         {
             public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             {
+                if (name == "write") { value = ReceiverMethods.BinaryWrite.Bind(this); return true; }
                 if (name == "closed") { value = IsClosed; return true; }
                 if (name == "name" || name == "mode")
                 {
@@ -19,7 +20,7 @@ internal sealed partial class LythonRuntime
                 var arity = name switch
                 {
                     "read" or "readline" or "readlines" => (0, 1),
-                    "write" or "writelines" => (1, 1),
+                    "writelines" => (1, 1),
                     "seek" => (1, 2),
                     "__exit__" => (3, 3),
                     "tell" or "close" or "flush" or "readable" or "writable" or "seekable" or
@@ -51,7 +52,6 @@ internal sealed partial class LythonRuntime
                     case "close": case "__exit__":
                         await CloseAsync(span, asynchronous).ConfigureAwait(false);
                         return name == "close" ? PyNone.Instance : false;
-                    case "write": return Write(args[0], span);
                     case "read": case "readline":
                     {
                         var size = args.Length == 0 || args[0] is PyNone ? -1

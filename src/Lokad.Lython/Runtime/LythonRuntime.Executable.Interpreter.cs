@@ -23,23 +23,34 @@ internal sealed partial class LythonRuntime
                 execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, function);
                 return true;
             }
-            if (instruction.OpCode != ExecutableOpCode.LoadCallReceiver) return false;
-            var operation = execution.Stack[instruction.InputStart] switch
-            {
-                PyList when name == "append" => DirectListAppend,
-                ExecutionContext.TextFileHandle or ExecutionContext.BinaryFileHandle when name == "write" => DirectFileWrite,
-                CsvWriterObject when name == "writerow" => DirectCsvWriterow,
-                PyDict when name == "get" => DirectDictionaryGet,
-                PyDict when name == "setdefault" => DirectDictionarySetDefault,
-                PyDict => DictMembers.GetNoArgumentsOperation(name),
-                Text.PyString when name == "startswith" => DirectStringStartsWith,
-                Text.PyString when name == "endswith" => DirectStringEndsWith,
-                Text.PyString when name == "replace" => DirectStringReplace,
-                Text.PyString when name == "split" => DirectStringSplit,
-                Text.PyString when name == "join" => DirectStringJoin,
-                Text.PyString => StringMembers.GetNoArgumentsOperation(name),
-                _ => null
-            };
+            var receiver = execution.Stack[instruction.InputStart];
+            object? operation = instruction.OpCode == ExecutableOpCode.LoadCallReceiver
+                ? receiver switch
+                {
+                    PyDict => DictMembers.GetNoArgumentsOperation(name),
+                    PyString => StringMembers.GetNoArgumentsOperation(name),
+                    _ => null,
+                }
+                : receiver switch
+                {
+                    PyList when name == "append" => ReceiverMethods.ListAppend,
+                    PyDict when name == "get" => ReceiverMethods.DictionaryGet,
+                    PyDict when name == "setdefault" => ReceiverMethods.DictionarySetDefault,
+                    ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
+                    ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
+                    CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
+                    PyString => name switch
+                    {
+                        "join" => ReceiverMethods.StringJoin,
+                        "split" => ReceiverMethods.StringSplit,
+                        "replace" => ReceiverMethods.StringReplace,
+                        "startswith" => ReceiverMethods.StringStartsWith,
+                        "endswith" => ReceiverMethods.StringEndsWith,
+                        _ => null,
+                    },
+                    ReMatchObject => ReMatchMembers.GetMethod(name),
+                    _ => null,
+                };
             if (operation is null) return false;
             // Keep the evaluated receiver, then append the immutable operation.
             // Arguments are evaluated afterwards and can rebind the source name.

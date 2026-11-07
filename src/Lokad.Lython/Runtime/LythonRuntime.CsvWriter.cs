@@ -10,15 +10,13 @@ internal sealed partial class LythonRuntime
 {
     internal static class CsvWriterMembers
     {
-        private static readonly LythonCallableSignature RowSignature = LythonCallableSignature.Create("csv.writerow", ["row"]);
         private static readonly LythonCallableSignature RowsSignature = LythonCallableSignature.Create("csv.writerows", ["rows"]);
 
         public static bool TryGetMember(CsvWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "writerow" => BoundCallable.Create((args, span, context) => WriteRowFromValue(writer, args[0], span, context),
-                    RowSignature, (args, span, context) => WriteRowFromValueAsync(writer, args[0], span, context)),
+                "writerow" => ReceiverMethods.CsvWriterow.Bind(writer),
                 "writerows" => BoundCallable.Create((args, span, context) => WriteRowsAsync(writer, args[0], span, context, false).GetAwaiter().GetResult(),
                     RowsSignature, (args, span, context) => WriteRowsAsync(writer, args[0], span, context, true)),
                 "getvalue" => BoundCallable.Create((args, span, context) => GetValue(writer, span, context), "csv.getvalue", []),

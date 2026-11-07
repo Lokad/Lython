@@ -38,7 +38,6 @@ internal sealed partial class LythonRuntime
         private sealed class StringLayoutSearchMemberProvider : IStringMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
-            private static readonly LythonCallableSignature StrJoinSignature = LythonCallableSignature.Create("str.join", ["iterable"]);
             private static readonly LythonCallableSignature StrZfillSignature = LythonCallableSignature.Create("str.zfill", ["width"]);
         private static readonly LythonCallableSignature StrCenterSignature = LythonCallableSignature.Create("str.center", ["width", "fillchar"], 1);
         private static readonly LythonCallableSignature StrLjustSignature = LythonCallableSignature.Create("str.ljust", ["width", "fillchar"], 1);
@@ -54,23 +53,7 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
-                    "join" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
-                        }
-
-                        return Join(text, arguments[0], span, context);
-                    }, StrJoinSignature, (arguments, span, context) =>
-                    {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
-                        }
-
-                        return JoinAsync(text, arguments[0], span, context);
-                    }),
+                    "join" => ReceiverMethods.StringJoin.Bind(text),
                     "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),
                     "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust, StrRjustSignature),

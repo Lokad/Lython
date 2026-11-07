@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
                     (arguments, span, context) => ReadAsync(handle, name, arguments, span, context, false).GetAwaiter().GetResult(),
                     LythonCallableSignature.Create("file." + name, [name == "readlines" ? "hint" : "size"], 0),
                     (arguments, span, context) => ReadAsync(handle, name, arguments, span, context, true)),
-                "write" => BoundCallable.Create((arguments, span, _) => Write(handle, arguments[0], span), "file.write", ["text"]),
+                "write" => ReceiverMethods.TextWrite.Bind(handle),
                 "writelines" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)

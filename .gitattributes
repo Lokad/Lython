@@ -242,3 +242,6 @@ benchmarks/results/2026-11-07-ordinary-csv-cost/** -text whitespace=cr-at-eol
 
 # Preserve the Unicode scalar-cursor source pair, controls and validation.
 benchmarks/results/2026-11-07-regex-scalar-cursor/** -text whitespace=cr-at-eol
+
+# Preserve the receiver-method source pairs, adverse controls and allocation evidence.
+benchmarks/results/2026-11-07-receiver-methods/** -text whitespace=cr-at-eol
