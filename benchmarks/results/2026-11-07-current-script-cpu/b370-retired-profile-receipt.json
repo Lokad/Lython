@@ -1,0 +1,9 @@
+{
+  "retiredExactExpandedCopy": "/home/lokad/lython-bench-checks/architecture-20261031-07c150a6/perf/text-warm/perf.data",
+  "bytes": 6287952,
+  "rawSHA256": "0202d623b7614e28d4e4f45e120432e26b82372b4831e1ceebcbb85f6f2016fe",
+  "independentArchiveSHA256": "930742071d9d1578cf61e9dc02a29adc2df1d53d6fc2498e0134238eb55190cd",
+  "freeBytes": 16904192,
+  "allUsersEnded": true,
+  "noSymlinkDependencies": true
+}

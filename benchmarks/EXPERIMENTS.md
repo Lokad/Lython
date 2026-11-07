@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [current R24 CPU gate](results/2026-11-07-current-script-cpu/README.md)
+profiles exactec134e8c text/report for about5guestCPU seconds: ordinary calls~2%,
+text prefix21%including inlined work, report JSON~10%. Unknowns, original export
+failure and observer-delay deviation remain explicit; no speedup/CPU cause follows.
+Source inspection identifies a distinct post-R20 CSV opportunity: adopt completed
+DictReader row values under shared keys. Ownership/header-reentry proof comes
+before promotion or timing. Whole-script/text objectives remain open.
+
 The [validated-program reuse milestone](results/2026-11-06-regex-program-reuse/README.md)
 removes duplicate frontend/runtime compilation under the existing compiled owner.
 B36988.55s/all gates: extraction warm−8.34–9.64%, fresh−6.47–6.53%, with moving
