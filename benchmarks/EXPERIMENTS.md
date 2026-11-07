@@ -3988,3 +3988,25 @@ remain mixed with between-process spreads. Preserve adverse report CPU +6.94%,
 sync CSV elapsed +0.99% and original noisy desktop CSV +7.45/+13.94%. Allocation
 unchanged; no general CPU/sync gain or objective completion claimed. Retain coherent
 deletion and bounded async elapsed evidence; combined delivery qualification pending.
+
+## R67 retained checkpoint / R68 immutable development adapter
+
+[R67/B421](results/2026-11-07-buffered-checkpoint/README.md): source824fc6bb,
+core15c04e2a,23CPython jobs/478.32s, all goldens/identity/quiet/Closed/join/fixture
+gates and local/remote archive verification pass. Current guide separates
+compilation/warm/fresh and preserves source55e510ff tables historically. Variable
+roles and CPython IQR stay explicit; no source-pair CPU or debt repayment claim.
+Full combined source CI42418518578 remains pending at measurement close.
+
+[R68](results/2026-11-07-regex-dev55/README.md): exact immutable unpublished
+0.5.0-dev.55/d6067925, existing bridge reused byte-for-byte in isolated outputs,
+assets/feed/locks;86internal/514public per actual11/10 pass. Documented names
+unchanged from dev54; DetailedData owner, native name enumeration and independent
+creation/current tokens still require bridges. Normal0.4pin/core unchanged;
+development semantic compatibility is not final released/safety/backend-performance
+qualification. No sibling source edit/build or producer CI replay.
+
+Combined R65/R66 source824fc6bb full delivery CI42418518578 is GREEN:
+Windows/Ubuntu Release actual11/10, original Stress both targets and installed
+core consumers. [Terminal receipt](results/2026-11-07-buffered-lines/delivery-ci.json)
+is cached; no further service query or unchanged qualification.

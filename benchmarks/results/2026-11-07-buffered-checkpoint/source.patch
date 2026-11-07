@@ -1,0 +1,441 @@
+diff --git a/src/Lokad.Lython/Frontend/LexicalScopePreparation.cs b/src/Lokad.Lython/Frontend/LexicalScopePreparation.cs
+index 42276457..05ffbf19 100644
+--- a/src/Lokad.Lython/Frontend/LexicalScopePreparation.cs
++++ b/src/Lokad.Lython/Frontend/LexicalScopePreparation.cs
+@@ -65,8 +65,7 @@ internal static class LexicalScopePreparation
+     {
+         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
+             import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
+-        // Bind once, but finish the module's class-read facts only after child
+-        // scopes are prepared. Their binding facts can then be reused too.
++        // A module owns bindings, not an enclosing class-cell capture.
+         var moduleFacts = ScopeDirectiveFactsCollector.ForFunction([], script.Statements, includeClassCellRequirement: false);
+         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
+         List<CallExpressionSyntax>? preloads = null;
+@@ -145,9 +144,6 @@ internal static class LexicalScopePreparation
+         if (!moduleUsesSuper && preloads is not null)
+             foreach (var call in preloads) call.PreloadImplicitSuperArguments = true;
+ 
+-        if (!moduleFacts.IsGlobal("__class__") && !moduleFacts.LocalNames.Contains("__class__") &&
+-            ClassCellSyntaxFacts.ReferencesFromFunction(script.Statements))
+-            moduleFacts = moduleFacts with { RequiresClassCell = true };
+         script.PreparedScopeFacts = moduleFacts;
+ 
+         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
+diff --git a/src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs b/src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs
+index 0bb84632..fe4bd38d 100644
+--- a/src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs
++++ b/src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs
+@@ -30,7 +30,7 @@ internal sealed record ScopeDirectiveFacts(
+ internal static class ScopeDirectiveFactsCollector
+ {
+     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
+-        => script.PreparedScopeFacts ??= ForFunction([], script.Statements);
++        => script.PreparedScopeFacts ??= ForFunction([], script.Statements, includeClassCellRequirement: false);
+ 
+     public static bool ContainsScopeDirective(IReadOnlyList<StatementSyntax> statements)
+     {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
+index 24b5d2c5..ad707bca 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Read.cs
+@@ -145,143 +145,128 @@ internal sealed partial class LythonRuntime
+             }
+ 
+             public PyString ReadLine(int size)
++                => ReadLineCore(size, asynchronous: false).GetAwaiter().GetResult();
++
++            public ValueTask<PyString> ReadLineAsync(int size)
++                => ReadLineCore(size, asynchronous: true);
++
++            // Native consumers own their destination through the complete line.
++            // The same scanner appends directly; no intermediate string escapes.
++            internal bool ReadLineInto(GovernedByteBuilder destination)
+             {
+-                if (size == 0)
+-                {
+-                    return PyString.Empty;
+-                }
++                var before = destination.Length;
++                _ = ReadLineCore(-1, asynchronous: false, destination).GetAwaiter().GetResult();
++                return destination.Length != before;
++            }
+ 
+-                GovernedByteBuilder? builder = null;
++            internal ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
++            {
++                var before = destination.Length;
++                var line = ReadLineCore(-1, asynchronous: true, destination);
++                if (!line.IsCompletedSuccessfully) return AwaitLineIntoAsync(line, destination, before);
++                _ = line.GetAwaiter().GetResult();
++                return new(destination.Length != before);
++            }
++
++            private static async ValueTask<bool> AwaitLineIntoAsync(ValueTask<PyString> pending,
++                GovernedByteBuilder destination, int before)
++            {
++                _ = await pending.ConfigureAwait(false);
++                return destination.Length != before;
++            }
++
++            private ValueTask<PyString> ReadLineCore(int size, bool asynchronous,
++                GovernedByteBuilder? destination = null)
++            {
++                if (size == 0) return new(PyString.Empty);
++                var ownsBuilder = destination is null;
++                var builder = destination;
++                var remaining = size;
++                var transferred = false;
+                 try
+                 {
+-                    var remaining = size;
+                     while (true)
+                     {
+-                        Refill();
+-                        if (Drained())
+-                        {
+-                            return EmitAccumulated(builder);
+-                        }
+-
+-                        var bytes = _window.Span;
+-                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
+-                        if (remaining >= 0)
+-                        {
+-                            end = WindowEndAfterRunes(end, remaining, out var taken);
+-                            remaining -= taken;
+-                        }
+-
+-                        // A line ending exactly at the window edge may continue past it;
+-                        // appending and pulling more stays correct, costing one extra
+-                        // pull in a rare alignment.
+-                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
++                        _services.CheckExecution(null);
++                        if (_windowConsumed >= _window.Length)
+                         {
+-                            if (builder is null)
++                            if (asynchronous)
+                             {
+-                                var line = CopyWindowRange(_windowConsumed, end);
+-                                Advance(end);
+-                                _services.CheckExecution(null);
+-                                return line;
++                                var refill = RefillAsync();
++                                if (!refill.IsCompleted)
++                                {
++                                    var result = ReadLineAfterRefillAsync(refill, remaining, builder, ownsBuilder);
++                                    transferred = true;
++                                    return result;
++                                }
++                                refill.GetAwaiter().GetResult();
+                             }
+-
+-                            AppendRange(builder, _windowConsumed, end);
+-                            return EmitAccumulated(builder);
++                            else Refill();
+                         }
+-
+-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+-                        AppendRange(builder, _windowConsumed, bytes.Length);
++                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line))
++                            return new(line);
+                     }
+                 }
+-                finally { builder?.Release(); }
++                finally { if (ownsBuilder && !transferred) builder?.Release(); }
+             }
+ 
+-            // Native consumers already own their destination. Finish copying a
+-            // whole physical line before they inspect it; no window borrow escapes.
+-            internal bool ReadLineInto(GovernedByteBuilder destination)
++            // A pending refill transfers the private builder to this one iterative
++            // continuation. Caller-owned destinations remain with their caller.
++            private async ValueTask<PyString> ReadLineAfterRefillAsync(ValueTask refill, int remaining,
++                GovernedByteBuilder? builder, bool ownsBuilder)
+             {
+-                var before = destination.Length;
+-                while (true)
++                try
+                 {
+-                    Refill();
+-                    if (Drained())
++                    await refill.ConfigureAwait(false);
++                    while (true)
+                     {
+                         _services.CheckExecution(null);
+-                        return destination.Length != before;
++                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line)) return line;
++                        await RefillAsync().ConfigureAwait(false);
+                     }
+-                    if (AppendLineWindow(destination)) return true;
+                 }
++                finally { if (ownsBuilder) builder?.Release(); }
+             }
+ 
+-            internal async ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
++            private bool TryReadLineWindow(ref int remaining, ref GovernedByteBuilder? builder,
++                bool ownsBuilder, out PyString line)
+             {
+-                var before = destination.Length;
+-                while (true)
++                if (Drained())
+                 {
+-                    await RefillAsync().ConfigureAwait(false);
+-                    if (Drained())
+-                    {
+-                        _services.CheckExecution(null);
+-                        return destination.Length != before;
+-                    }
+-                    if (AppendLineWindow(destination)) return true;
++                    line = ownsBuilder ? EmitAccumulated(builder) : PyString.Empty;
++                    return true;
+                 }
+-            }
+ 
+-            private bool AppendLineWindow(GovernedByteBuilder destination)
+-            {
+-                var end = TextLineScanning.FindLineEndByte(_window.Span, _windowConsumed, _newline);
+-                var complete = end < _window.Length || EndsWithTerminator();
+-                AppendRange(destination, _windowConsumed, end);
+-                _services.CheckExecution(null);
+-                return complete;
+-            }
+-
+-            public async ValueTask<PyString> ReadLineAsync(int size)
+-            {
+-                if (size == 0)
++                var bytes = _window.Span;
++                var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
++                if (remaining >= 0)
+                 {
+-                    return PyString.Empty;
++                    end = WindowEndAfterRunes(end, remaining, out var taken);
++                    remaining -= taken;
+                 }
+ 
+-                GovernedByteBuilder? builder = null;
+-                try
++                // The decoder's CR holdback makes a terminator at the window
++                // edge complete. An unterminated edge needs another refill.
++                if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
+                 {
+-                    var remaining = size;
+-                    while (true)
++                    if (builder is null)
+                     {
+-                        await RefillAsync().ConfigureAwait(false);
+-                        if (Drained())
+-                        {
+-                            return EmitAccumulated(builder);
+-                        }
+-
+-                        var bytes = _window.Span;
+-                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
+-                        if (remaining >= 0)
+-                        {
+-                            end = WindowEndAfterRunes(end, remaining, out var taken);
+-                            remaining -= taken;
+-                        }
+-
+-                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
+-                        {
+-                            if (builder is null)
+-                            {
+-                                var line = CopyWindowRange(_windowConsumed, end);
+-                                Advance(end);
+-                                _services.CheckExecution(null);
+-                                return line;
+-                            }
+-
+-                            AppendRange(builder, _windowConsumed, end);
+-                            return EmitAccumulated(builder);
+-                        }
+-
+-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+-                        AppendRange(builder, _windowConsumed, bytes.Length);
++                        line = CopyWindowRange(_windowConsumed, end);
++                        Advance(end);
+                     }
++                    else
++                    {
++                        AppendRange(builder, _windowConsumed, end);
++                        line = ownsBuilder ? EmitAccumulated(builder) : PyString.Empty;
++                    }
++                    _services.CheckExecution(null);
++                    return true;
+                 }
+-                finally { builder?.Release(); }
++
++                builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
++                AppendRange(builder, _windowConsumed, bytes.Length);
++                line = PyString.Empty;
++                return false;
+             }
+ 
+             public void Release()
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs
+index 01540249..15ac7d0e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.cs
+@@ -309,27 +309,28 @@ internal sealed partial class LythonRuntime
+                 return true;
+             }
+ 
+-            public async ValueTask<PyIterationResult> TryMoveNextAsync()
++            public ValueTask<PyIterationResult> TryMoveNextAsync()
+             {
+-                var line = await ReadLineAsync(-1).ConfigureAwait(false);
+-                if (!line.IsTruthy())
+-                {
+-                    return PyIterationResult.End;
+-                }
+-
+-                return PyIterationResult.Yield(line);
++                var line = ReadLineAsync(-1);
++                return line.IsCompletedSuccessfully ? new(LineResult(line.GetAwaiter().GetResult())) : AwaitNextLineAsync(line);
+             }
+ 
+-            public async ValueTask<PyString> ReadAsync(int size)
++            private static async ValueTask<PyIterationResult> AwaitNextLineAsync(ValueTask<PyString> line)
++                => LineResult(await line.ConfigureAwait(false));
++
++            private static PyIterationResult LineResult(PyString line)
++                => line.IsTruthy() ? PyIterationResult.Yield(line) : PyIterationResult.End;
++
++            public ValueTask<PyString> ReadAsync(int size)
+             {
+                 EnsureOpen();
+-                return await RequireReader().ReadAsync(size).ConfigureAwait(false);
++                return RequireReader().ReadAsync(size);
+             }
+ 
+-            public async ValueTask<PyString> ReadLineAsync(int size)
++            public ValueTask<PyString> ReadLineAsync(int size)
+             {
+                 EnsureOpen();
+-                return await RequireReader().ReadLineAsync(size).ConfigureAwait(false);
++                return RequireReader().ReadLineAsync(size);
+             }
+ 
+             public async ValueTask<PyList> ReadLinesAsync(long hint)
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs b/tests/Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs
+index 738fe964..a837e50b 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs
+@@ -45,6 +45,100 @@ public sealed class OwnedByteFileTests
+         Assert.Equal(host.OpenFileCount, host.ClosedFileCount);
+     }
+ 
++    [Theory]
++    [InlineData("readline", "complete"), InlineData("readline", "cancel"), InlineData("readline", "refuse")]
++    [InlineData("iterate", "complete"), InlineData("iterate", "cancel"), InlineData("iterate", "refuse")]
++    [InlineData("csv", "complete"), InlineData("csv", "cancel"), InlineData("csv", "refuse")]
++    [InlineData("json", "complete"), InlineData("json", "cancel"), InlineData("json", "refuse")]
++    public async Task PartialLinesKeepStorageThroughPendingRefillAndClose(string mode, string outcome)
++    {
++        var entered = Signal(); var readRelease = Signal(); var closing = Signal(); var closeRelease = Signal();
++        using var cancellation = new CancellationTokenSource();
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        var host = new FileHost { CompletesSynchronously = false };
++        // Two bytes form a complete decoded window without a line terminator.
++        // The next short read suspends after partial line storage already exists.
++        var prefix = mode == "json" ? "\"a"u8.ToArray() : "ab"u8.ToArray();
++        var suffix = mode == "json" ? "\"\n"u8.ToArray() : "\n"u8.ToArray();
++        host.Inner.SeedBytes("/source", [.. prefix, .. suffix]);
++        var reads = 0;
++        host.Read = async (sourceFile, buffer, token) =>
++        {
++            Assert.Equal(cancellation.Token, token);
++            if (++reads == 1) { prefix.CopyTo(buffer); return prefix.Length; }
++            if (reads > 2) return 0;
++            entered.TrySetResult();
++            await readRelease.Task;
++            if (outcome == "refuse")
++            {
++                using var admission = budget.CreateScope();
++                Assert.False(admission.TryReserve(2 * 1024 * 1024, out _));
++                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission,
++                    "line refill refused", requestedBytes: 2 * 1024 * 1024);
++            }
++            suffix.CopyTo(buffer); // Finish the original borrow even after cancellation.
++            return suffix.Length;
++        };
++        host.Dispose = async file =>
++        {
++            closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync();
++            if (outcome == "refuse") throw new LythonHostException(LythonHostFailureKind.Transport, "secondary close failure");
++        };
++        var expression = mode switch
++        {
++            "readline" => "len(source.readline())",
++            "iterate" => "len(next(source))",
++            "csv" => "len(next(csv.reader(source))[0])",
++            _ => "len(json.loads(next(source)))",
++        };
++        var imports = mode is "csv" or "json" ? $"import {mode}\n" : "";
++        using var script = new LythonEngine().Compile(imports +
++            $"try:\n with open('source') as source:\n  print({expression})\nexcept MemoryError:\n print('suppressed')\nfinally:\n return 7\n", budget);
++        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
++        var baseline = budget.ReservedBytes;
++        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
++        try
++        {
++            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
++            var pendingBalance = budget.ReservedBytes;
++            Assert.True(pendingBalance > baseline + 256);
++            if (outcome == "cancel") cancellation.Cancel();
++            Assert.False(run.IsCompleted);
++            Assert.True(budget.ReservedBytes >= pendingBalance);
++            readRelease.TrySetResult();
++            await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
++            Assert.False(run.IsCompleted);
++            Assert.True(budget.ReservedBytes > baseline + 256);
++            Assert.Equal(0, host.Inner.ClosedFileCount);
++            closeRelease.TrySetResult();
++            using (var result = await run.WaitAsync(TimeSpan.FromSeconds(10)))
++            {
++                Assert.Equal(outcome == "complete", result.Success);
++                if (outcome == "complete")
++                    Assert.Equal(mode == "csv" ? "2\n" : mode == "json" ? "1\n" : "3\n", result.StandardOutput);
++                else
++                {
++                    Assert.Empty(result.StandardOutput);
++                    Assert.Equal(outcome == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
++                        result.FailureAttribution?.Reason);
++                    if (outcome == "refuse")
++                    {
++                        Assert.Equal(2 * 1024 * 1024, result.FailureAttribution?.Requested);
++                        Assert.Contains("line refill refused", result.Failure?.Message);
++                    }
++                }
++            }
++            Assert.Equal(2, reads);
++            Assert.Equal(1, host.Inner.ClosedFileCount);
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        finally
++        {
++            readRelease.TrySetResult(); closeRelease.TrySetResult();
++            using var drained = await run.WaitAsync(TimeSpan.FromSeconds(10));
++        }
++    }
++
+     [Theory]
+     [InlineData(false, false), InlineData(true, false)]
+     [InlineData(false, true), InlineData(true, true)]
+diff --git a/tests/README.md b/tests/README.md
+index 39dbc780..dc1872fc 100644
+--- a/tests/README.md
++++ b/tests/README.md
+@@ -98,6 +98,12 @@ keep original operands funded across protocol rebinding and real suspension.
+ Native calls, compiled children and subscript callbacks leave targets unchanged
+ while pending; cancellation or refused admission preserves them and awaits cleanup.
+ 
++[Partial line reads](Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs) use a
++two-byte window followed by a pending refill for readline, file iteration, CSV
++and JSON-lines. Completion, cancellation and refused admission retain funding
++through actual read/close completion; guest suppression and secondary close
++errors cannot replace the first refusal.
++
+ [Hash queries](Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs) preserve
+ Python callback effects and errors, while native copies and set pop use stored
+ keys without rehashing. [Ownership checks](Lokad.Lython.Tests/HashQueryOwnershipTests.cs)

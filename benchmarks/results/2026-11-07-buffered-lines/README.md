@@ -92,3 +92,9 @@ remains postponed. R62's cached green receipt does not qualify newer source.
 [pre-code plan](pre-code-plan.md), [VM receipt](archive-receipt.json),
 [VM raw/source/cores](observations.tgz),
 [local source/cores/tests/failures/raw observations](local-observations.tgz).
+
+Combined R65/R66 source824fc6bb is **FULLY QUALIFIED**, CI42418518578:
+Windows/Ubuntu Release actual.NET11/10, original Stress at both targets and
+installed core-package consumers all pass. [Cached delivery receipt](../2026-11-07-buffered-lines/delivery-ci.json).
+Never query the terminal run again. Launch-time pending statements in immutable
+identities/plans remain historical. This does not qualify later runtime source.

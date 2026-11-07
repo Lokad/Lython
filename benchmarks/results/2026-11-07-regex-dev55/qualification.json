@@ -1,0 +1,65 @@
+{
+  "identity": {
+    "consumerRevision": "824fc6bb25619ef44647bb012c55dd31d37bde4f",
+    "producerVersion": "0.5.0-dev.55",
+    "producerRevision": "d60679252cf6d16a76f7a77a7b50c34899cd0e50",
+    "producerReceiptRevision": "3d1bda081e374da33691438a28bab520425b71d4",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.55.nupkg": {
+        "sha256": "692f69b7c60c76f3f002ff008d7a999740b039d0ac04adb70fc61d19f023829a",
+        "dependencies": []
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.55.nupkg": {
+        "sha256": "5e462008db6f93aa7dfbf35dea36c8772495541336d703f16bdb8073f80748b0",
+        "dependencies": [
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.55]",
+            "exclude": "Build,Analyzers"
+          },
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.55]",
+            "exclude": "Build,Analyzers"
+          }
+        ]
+      }
+    },
+    "bridge": "Existing R59/dev48 native-cursor working-allowance bridge byte-for-byte, isolated outputs/assets/feed/locks; no normal pin change.",
+    "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+    "limitations": "Development contract/semantic compatibility only; no released-adapter, managed-safety or backend-performance certification. Core remains decoupled."
+  },
+  "checks": {
+    "build-Lokad.Lython.Tests": {
+      "exitCode": 0
+    },
+    "build-Lokad.Lython.PublicApi.Tests": {
+      "exitCode": 0
+    },
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 514
+    },
+    "net11.0-loadedFiles": {
+      "Lokad.Lython": "d91a2749d18a3b688302478148e0486bb25ce8e9b9bb50fb2d5f3aeb69e62d50",
+      "Lokad.Lython.Utf8Regex": "402394c5c6aa982f9150095294ce4c5051482644b7ce83b9b2ee96507afec046",
+      "Lokad.Utf8Regex": "d293cee169d322e2050f5b8693e13b91293be1c48cd6f8c5f439eac92c466c50",
+      "Lokad.Utf8Regex.PythonRe": "1249bfb73e2074c5094358680093c0867af6c64992e83a8215a1d2e4258ec280"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 514
+    },
+    "net10.0-loadedFiles": {
+      "Lokad.Lython": "727b885d9957f4adce0bcd4c8b9b16edd107268ab8b034fdea622443d1b61096",
+      "Lokad.Lython.Utf8Regex": "2cfaba2cf6a06b94f014bdf9569a1b4f7af89efad0d7e78a4656713438af436a",
+      "Lokad.Utf8Regex": "df7721876a814cd8e98228f3c03588a5e518211e1647971bbc4da0abeafcd540",
+      "Lokad.Utf8Regex.PythonRe": "f8e0c75ddc2d911fcbb1967d57686c4ac16f022458bb85bb5642867a3572767f"
+    }
+  },
+  "limitations": "Private immutable development adapter only; normal pin/source unchanged; final producer/safety qualification separate"
+}

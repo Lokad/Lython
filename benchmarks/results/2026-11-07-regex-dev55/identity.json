@@ -1,0 +1,30 @@
+{
+  "consumerRevision": "824fc6bb25619ef44647bb012c55dd31d37bde4f",
+  "producerVersion": "0.5.0-dev.55",
+  "producerRevision": "d60679252cf6d16a76f7a77a7b50c34899cd0e50",
+  "producerReceiptRevision": "3d1bda081e374da33691438a28bab520425b71d4",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.55.nupkg": {
+      "sha256": "692f69b7c60c76f3f002ff008d7a999740b039d0ac04adb70fc61d19f023829a",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.55.nupkg": {
+      "sha256": "5e462008db6f93aa7dfbf35dea36c8772495541336d703f16bdb8073f80748b0",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.55]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.55]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Existing R59/dev48 native-cursor working-allowance bridge byte-for-byte, isolated outputs/assets/feed/locks; no normal pin change.",
+  "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+  "limitations": "Development contract/semantic compatibility only; no released-adapter, managed-safety or backend-performance certification. Core remains decoupled."
+}
