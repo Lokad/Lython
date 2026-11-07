@@ -191,6 +191,11 @@ raises use ordinary instructions. Store metadata keeps its target span separate
 from the instruction's guard/routing span. A shared synchronous prefix completes
 ordinary work; incomplete protocols retain their operands until awaited completion
 and retirement. Deletion keeps only its executable shape and name/bounds metadata.
+Formatted construction, literal appends, conversions and fields use ordinary
+instructions and shared operand cleanup. Native fields, including evaluated dynamic
+specifiers, need no lexical context solely for formatting. Actual protocol values
+promote at their original instruction and await their callbacks. Formatting helpers
+keep transient guest values outside the shared dispatch loop.
 The existing shape pass prepares input/result positions, live temporary extents,
 maximum workspace and exception-entry depths. Execution uses those positions
 directly. Fixed-arity arithmetic, local stores and returns can read immutable

@@ -1,11 +1,11 @@
 {
   "b386-checked-source-and-images.tgz": "1edab8685bc8e5147b8148bc9fec2a704b30e19141cb9266e31488c2e1756d74",
-  "b386-comparison-summary.json": "25b806a39b51c097df0a20009f579fdce910facd7862ea7bcc386e518a9f54f7",
-  "b386-focused-initial.json": "df71fdb07519dfece6f497cc537d88945da7155e4dd80ddc766de66fb0d8b4aa",
+  "b386-comparison-summary.json": "08c8616885fb1d6491b101ffdbc40cad5ff80f03f6a7097097f1caf3c8640c11",
+  "b386-focused-initial.json": "38f082865571488af554193aae04242559d6c33eb7628957f09ff7102bef565f",
   "b386-summary.json": "516461c2f1dcf5c9a1ccc9f7a5cc918c3cb41c7c91ae5c301d0a48a173430000",
   "development-b386.tgz": "3d74e3fdb36b8f244f7a6e23a23b36d5bf3d6d9eeb56f92e959d5276c0b41dc6",
   "README.md": "c84dd6773fd5eba5d1aefc6c48aceb31625c403c9d8b056f5f1031fa781b6294",
   "b386/archive-receipt.json": "f12103c57101f2a5736605ba5536557da4fda9ed2f5515d4e44e40e1c9877b42",
   "b386/observations.tgz": "71c95ba09e0eb3021228c0066b315f9e142067037ccfda9bea929bd5e8191a2a",
-  "b386/terminal-status.json": "7f53a5859b432afe16e94f88a4bacd197c1e8ab7a6b28f6a901dc3ed49cb3079"
+  "b386/terminal-status.json": "ecd5c945a72c7501a72c9eafcb68151f1f58d1deba26b86d548530df41a7e10e"
 }

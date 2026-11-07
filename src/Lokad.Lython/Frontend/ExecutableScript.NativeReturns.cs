@@ -70,13 +70,12 @@ internal sealed partial class ExecutableCodeObject
                     depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
                     stack.RemoveRange(stack.Count - 2, 2);
                     break;
-                case ExecutableOpCode.ApplyOperation:
-                    operation = Constants[instruction.ConstantIndex] switch
-                    {
-                        ExecutableConvertFormattedValue => NativeReturnOperation.ConvertFormat,
-                        ExecutableFormatField { DynamicSpecifier: false, Append: false } => NativeReturnOperation.FormatValue,
-                        _ => NativeReturnOperation.Read
-                    };
+                case ExecutableOpCode.ConvertFormattedValue:
+                case ExecutableOpCode.FormatField:
+                    operation = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
+                        ? NativeReturnOperation.ConvertFormat
+                        : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
+                            ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
                     if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member >= 0) return null;
                     first = stack[^1].Value;
                     depth = 1 + stack[^1].Depth;

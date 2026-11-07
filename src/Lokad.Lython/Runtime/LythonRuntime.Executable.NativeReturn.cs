@@ -224,8 +224,7 @@ internal sealed partial class LythonRuntime
                 case NativeReturnOperation.Subscript:
                     return ReadSubscriptValue(first!, second!, instruction.Span, context);
                 case NativeReturnOperation.ConvertFormat:
-                    var conversion = (ExecutableConvertFormattedValue)code.Constants[instruction.ConstantIndex]!;
-                    return FormatInterpolatedStringPart(first!, conversion.Conversion, null, context, instruction.Span);
+                    return FormatInterpolatedStringPart(first!, instruction.FormattedConversion, null, context, instruction.Span);
                 case NativeReturnOperation.FormatValue:
                     var format = (ExecutableFormatField)code.Constants[instruction.ConstantIndex]!;
                     return FormatInterpolatedStringPart(first!, null, format.FormatSpecifier, context, instruction.Span, format.PreparedFormat);

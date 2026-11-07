@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute formatted output through direct instructions, removing its generic
+  prepared-operation detour and wrapper records. Native dynamic specifiers avoid
+  unnecessary function contexts; real protocols still await callbacks and cleanup.
+  Keep transient formatting values outside the shared dispatch loop.
+
 - Carry current cancellation through native string/bytes hashing, explicit hash
   methods and dictionary shortcuts. Reuse bounded byte-hash chunks, publish caches
   only after completion and preserve caller independence and first memory refusal.

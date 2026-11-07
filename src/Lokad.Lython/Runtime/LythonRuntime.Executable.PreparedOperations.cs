@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
@@ -15,51 +16,91 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Formatting shares the ordinary operand slots and cleanup. A dynamic
-        // field asks the existing driver for its function context at that exact
-        // instruction, without repeating earlier fields or their allocations.
-        private static bool TryExecuteImmediateFormatting(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, in ExecutableInstruction instruction)
+        // Keep transient guest values outside the shared dispatch loop, as
+        // result publication does. Only formatting opcodes enter this helper.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool TryExecuteFormattedInstruction(ref ExecutableWorkState execution,
+            ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutionContext context)
         {
-            var operation = (ExecutableOperation)execution.Code.Constants[instruction.ConstantIndex]!;
-            var context = invocation ?? scope;
-            var span = instruction.Span;
-            switch (operation)
+            switch (instruction.OpCode)
             {
-                case ExecutableStartFormattedString formatted:
-                    var output = new GovernedByteBuilder(context.MemoryGovernor, span, formatted.InitialCapacity,
-                        context.State.CancellationToken);
+                case ExecutableOpCode.StartFormattedString:
+                    var output = new GovernedByteBuilder(context.MemoryGovernor, instruction.Span,
+                        instruction.FormattedInitialCapacity, context.State.CancellationToken);
                     try { PublishInstructionResult(ref execution, invocation, instruction, output); }
                     catch { output.Release(); throw; }
                     return true;
-                case ExecutableAppendFormattedText text:
-                    ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).Append(text.Text);
+                case ExecutableOpCode.AppendFormattedText:
+                    ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).Append(
+                        (PyString)execution.Code.Constants[instruction.ConstantIndex]!);
                     return true;
-                case ExecutableFinishFormattedString:
+                case ExecutableOpCode.FinishFormattedString:
                     var formattedResult = ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).ToPyStringAndRelease();
                     execution.Stack.RetireTo(instruction.ResultSlot);
                     PublishInstructionResult(ref execution, invocation, instruction, formattedResult);
                     return true;
-                case ExecutableConvertFormattedValue conversion when IsImmediateFormattedValue(execution.Stack[instruction.InputStart]):
-                    var converted = FormatInterpolatedStringPart(execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot),
-                        conversion.Conversion, null, context, span);
-                    PublishInstructionResult(ref execution, invocation, instruction, converted);
-                    return true;
-                case ExecutableFormatField { DynamicSpecifier: false } field when IsImmediateFormattedValue(execution.Stack[instruction.ResultSlot]):
-                    var value = execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
-                    if (field.Append)
-                        AppendInterpolatedStringPart((GovernedByteBuilder)execution.Stack[instruction.InputStart], value,
-                            null, field.FormatSpecifier, context, span, field.PreparedFormat);
-                    else PublishInstructionResult(ref execution, invocation, instruction,
-                        FormatInterpolatedStringPart(value, null, field.FormatSpecifier, context, span, field.PreparedFormat));
-                    return true;
-                default:
+                case ExecutableOpCode.ConvertFormattedValue:
+                    if (IsImmediateFormattedValue(execution.Stack[instruction.InputStart]))
+                    {
+                        var converted = FormatInterpolatedStringPart(
+                            execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot),
+                            instruction.FormattedConversion, null, context, instruction.Span);
+                        PublishInstructionResult(ref execution, invocation, instruction, converted);
+                        return true;
+                    }
+                    goto case ExecutableOpCode.FormatField;
+                case ExecutableOpCode.FormatField:
+                    if (instruction.OpCode == ExecutableOpCode.FormatField &&
+                        IsImmediateFormattedValue(execution.Stack[instruction.ResultSlot]))
+                    {
+                        var field = (ExecutableFormatField)execution.Code.Constants[instruction.ConstantIndex]!;
+                        var specifier = field.DynamicSpecifier
+                            ? ((PyString)execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString()
+                            : field.FormatSpecifier;
+                        var fieldValue = execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
+                        if (field.Append)
+                            AppendInterpolatedStringPart((GovernedByteBuilder)execution.Stack[instruction.InputStart],
+                                fieldValue, null, specifier, context, instruction.Span, field.PreparedFormat);
+                        else PublishInstructionResult(ref execution, invocation, instruction,
+                            FormatInterpolatedStringPart(fieldValue, null, specifier, context, instruction.Span, field.PreparedFormat));
+                        return true;
+                    }
                     return false;
+                default: throw new InvalidOperationException("Unknown formatted instruction.");
             }
         }
 
         private static bool IsImmediateFormattedValue(object value)
             => value is PyNone or BigInteger or double or bool or PyString or PyBytes;
+
+        // Only actual protocol values need the function context/async driver.
+        // Already-evaluated native values and dynamic specs remain in the prefix.
+        private async ValueTask ExecuteFormattedValueAsync(ExecutableInstruction instruction, bool asynchronous)
+        {
+            var span = instruction.Span;
+            if (instruction.OpCode == ExecutableOpCode.ConvertFormattedValue)
+            {
+                var converted = await FormatSuspendedFieldAsync(
+                    _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot),
+                    instruction.FormattedConversion, null, this, span, asynchronous).ConfigureAwait(false);
+                PublishInstructionResult(instruction, converted);
+                return;
+            }
+            var field = (ExecutableFormatField)_execution.Code.Constants[instruction.ConstantIndex]!;
+            var specifier = field.DynamicSpecifier
+                ? ((PyString)_execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString()
+                : field.FormatSpecifier;
+            var value = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
+            if (field.Append)
+            {
+                var output = (GovernedByteBuilder)_execution.Stack[instruction.InputStart];
+                if (value is PyInstance instance)
+                    output.Append(await FormatInstanceFieldAsync(instance, null, specifier, this, span, asynchronous).ConfigureAwait(false));
+                else AppendInterpolatedStringPart(output, value, null, specifier, this, span, field.PreparedFormat);
+            }
+            else PublishInstructionResult(instruction,
+                await FormatSuspendedFieldAsync(value, null, specifier, this, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
+        }
 
         private ValueTask ExecutePreparedOperationAsync(ExecutableInstruction instruction, bool asynchronous)
         {
@@ -115,7 +156,7 @@ internal sealed partial class LythonRuntime
                 // Display/call and definition operations retain their own
                 // suspension paths. Targets use ordinary opcodes instead.
                 case ExecutableAppendDisplay or ExecutableStoreDictionaryItem or ExecutableAppendCall
-                    or ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableFormatField
+                    or ExecutableFinishCall
                     or ExecutableCreateGeneratorExpression:
                     return ExecutePreparedSuspendingOperationAsync(operation, instruction, asynchronous);
                 case ExecutableAnnotationsEnabled or ExecutablePostponedAnnotation or ExecutableStoreModuleAnnotation
@@ -206,23 +247,6 @@ internal sealed partial class LythonRuntime
                         PublishInstructionResult(instruction, result);
                     }
                     catch { _execution.Stack.RetireTo(accumulatorSlot); throw; }
-                    break;
-                case ExecutableConvertFormattedValue conversion:
-                    var convertedField = await FormatSuspendedFieldAsync(_execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot), conversion.Conversion,
-                        null, this, span, asynchronous).ConfigureAwait(false);
-                    PublishInstructionResult(instruction, convertedField);
-                    break;
-                case ExecutableFormatField field:
-                    var specifier = field.DynamicSpecifier ? ((PyString)_execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString() : field.FormatSpecifier;
-                    var fieldValue = _execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
-                    if (field.Append)
-                    {
-                        var formattedDestination = (GovernedByteBuilder)_execution.Stack[instruction.InputStart];
-                        if (fieldValue is PyInstance instance)
-                            formattedDestination.Append(await FormatInstanceFieldAsync(instance, null, specifier, this, span, asynchronous).ConfigureAwait(false));
-                        else AppendInterpolatedStringPart(formattedDestination, fieldValue, null, specifier, this, span, field.PreparedFormat);
-                    }
-                    else PublishInstructionResult(instruction, await FormatSuspendedFieldAsync(fieldValue, null, specifier, this, span, asynchronous, field.PreparedFormat).ConfigureAwait(false));
                     break;
                 case ExecutableCreateGeneratorExpression comprehension:
                     var outer = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);

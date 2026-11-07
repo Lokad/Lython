@@ -6,7 +6,7 @@ literal data use instruction operands, with the real field descriptor retained.
 Native already-evaluated dynamic specs stay in the existing prefix. Actual protocol
 values promote at their original instruction and await the existing callback and
 cleanup. No expression motion, upfront mutable proof, new engine/policy/owner or
-public option. This source is an active prototype; full delivery/retention pending.
+public option. The lifetime-helper refinement is retained; full delivery is pending.
 
 ## Initial B386 source-pair comparison
 
@@ -79,3 +79,53 @@ The original07a6530e baseline is independently archived under the R33 native-has
 evidence and source2f1f2715. General native-operation safety and all existing
 lowered consumers remain. Publication/tagging and final producer qualification
 stay separate; the whole-script performance objective remains active.
+
+## Retained lifetime-helper refinement — B387
+
+Final checked core6ab7367f/net1041b68d90; same original07a6530e reference, b94 worker,
+normal0.4 adapter and five-job/capture conditions. Transient formatting bodies use
+an ordinary non-inlined helper entered only for formatted opcodes; their generic
+ApplyOperation classification remains deleted. No checks, owners or effects move.
+
+| Workload/lane | Final elapsed change | Current / baseline role spread |
+| --- | ---: | ---: |
+| Static report warm |−4.68 to−1.57%|0.32% /2.93%|
+| Static report fresh |−5.32 to+0.13%|5.23% /0.23%|
+| Dynamic-width report warm |−13.19 to−10.09%|2.82% /0.64%|
+| Unchanged text warm |−2.37 to+1.03%|1.40% /2.06%|
+| Unchanged CSV warm |+0.13 to+2.36%|0.68% /1.53%|
+
+All five jobs/gates pass in142.36s; observe only after06:22:26Z. Archive independently
+retrieved/hash-verified; no remaining users/fixtures and no more service queries.
+Dynamic process-CPU counters agree in direction; static/control CPU remains coarse
+and mixed. Fresh current roles differ5.23%, so the static fresh result is inconclusive.
+Text's initial adverse range is not consistently reproduced; its cause remains
+unproved. This cross-capture result does not isolate register pressure as causal.
+
+Retain the coherent instruction/record deletion, native dynamic context savings and
+existing lifetime fence. Final complete-job warm allocation remains about−15.35%
+for the dynamic report on both APIs; static report/text/CSV are essentially flat,
+all admitted peaks/balances/goldens/cleanup pass. Frontend sources are unchanged
+from B386, so its separate−160B/static and−760B/dynamic compile allocation is reused.
+Do not transfer B386 fresh allocation or desktop elapsed into a new CPU claim.
+
+Explicitly accept possible CSV+0.13–2.36% elapsed debt for this milestone. Text/fresh
+uncertainty and earlier R31/R20/R26 debt remain visible, not parity or algebraically
+repaid by percentages from other captures. No third unchanged retiming is selected;
+future source evidence can justify another bounded redesign. The complete-script
+objective remains active. Final full platform/original Stress/package qualification
+is pending; publication/tagging remains postponed.
+
+Focused203internal/1,141public per actual11/10 and six independent CPython probes
+through both APIs pass on this refined source, including real suspended formatting
+cleanup. [Final comparison](comparison-b387-summary.json), [raw capture](b387/observations.tgz),
+[final allocation](allocation-final.json), [checked sources/images](checked-source-and-images-final.tgz),
+[focused receipt](focused-final.json), [complete development evidence](development-final.tgz).
+
+One expanded B386 core is retired only after matching its independently committed
+1746ba27 archive, verifying its current hash, ended users and absent file/directory
+link dependencies. Original bytes remain committed. The frozen B386 raw archives
+are unchanged. Its sidecar hash manifest is corrected for Git newline conversion
+on three JSON sidecars, with the original producer manifest/hashes retained in the
+final development archive; the existing sidecar blobs and measurement values are
+unchanged. The new byte-preservation attribute prevents that conversion in future.

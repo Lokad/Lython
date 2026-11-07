@@ -72,6 +72,11 @@ internal enum ExecutableOpCode
     Yield,
     YieldFrom,
     AbruptJump,
+    StartFormattedString,
+    AppendFormattedText,
+    FinishFormattedString,
+    ConvertFormattedValue,
+    FormatField,
 }
 
 internal enum ExecutableUnaryOperator
@@ -148,6 +153,7 @@ internal readonly record struct ExecutableInstruction
     public int FunctionIndex => ReadPrimaryOperand(ExecutableOpCode.DefineFunction, nameof(FunctionIndex));
     public int StatementFallbackIndex => ReadPrimaryOperand(ExecutableOpCode.ExecuteFallbackStatement, nameof(StatementFallbackIndex));
     public int ConstantIndex => OpCode is ExecutableOpCode.LoadConst or ExecutableOpCode.ApplyOperation
+        or ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FormatField
         ? _primaryOperand : throw InvalidOperand(nameof(ConstantIndex));
     public int LocalSlot => OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.StoreLocal
             ? _primaryOperand : throw InvalidOperand(nameof(LocalSlot));
@@ -166,6 +172,8 @@ internal readonly record struct ExecutableInstruction
     public int ItemCount => OpCode is ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet
         ? _primaryOperand : throw InvalidOperand(nameof(ItemCount));
     public int PairCount => ReadPrimaryOperand(ExecutableOpCode.MakeDict, nameof(PairCount));
+    public int FormattedInitialCapacity => ReadPrimaryOperand(ExecutableOpCode.StartFormattedString, nameof(FormattedInitialCapacity));
+    public char FormattedConversion => (char)ReadPrimaryOperand(ExecutableOpCode.ConvertFormattedValue, nameof(FormattedConversion));
     public int MatchCaseIndex => ReadPrimaryOperand(ExecutableOpCode.MatchCase, nameof(MatchCaseIndex));
     public int FailureIndex => OpCode == ExecutableOpCode.MatchCase
         ? _secondaryOperand : throw InvalidOperand("BlockIndex");
@@ -202,6 +210,21 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ApplyOperation, span, constantIndex);
+
+    public static ExecutableInstruction StartFormattedString(int capacity, LythonSourceSpan span)
+        => new(ExecutableOpCode.StartFormattedString, span, capacity);
+
+    public static ExecutableInstruction AppendFormattedText(int constantIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.AppendFormattedText, span, constantIndex);
+
+    public static ExecutableInstruction FinishFormattedString(LythonSourceSpan span)
+        => new(ExecutableOpCode.FinishFormattedString, span);
+
+    public static ExecutableInstruction ConvertFormattedValue(char conversion, LythonSourceSpan span)
+        => new(ExecutableOpCode.ConvertFormattedValue, span, conversion);
+
+    public static ExecutableInstruction FormatField(int constantIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.FormatField, span, constantIndex);
 
     public static ExecutableInstruction StoreMember(int nameIndex, int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
         => new(valueLast ? ExecutableOpCode.StoreMemberLast : ExecutableOpCode.StoreMember, span, nameIndex, targetSpanIndex);

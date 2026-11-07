@@ -1,0 +1,20 @@
+{
+  "allocation-final.json": "14eef63a11eb96f379ba315d7c9a218fc894286fe0f2e2afecd2b27d96f3211e",
+  "b386-checked-source-and-images.tgz": "1edab8685bc8e5147b8148bc9fec2a704b30e19141cb9266e31488c2e1756d74",
+  "b386-comparison-summary.json": "08c8616885fb1d6491b101ffdbc40cad5ff80f03f6a7097097f1caf3c8640c11",
+  "b386-focused-initial.json": "38f082865571488af554193aae04242559d6c33eb7628957f09ff7102bef565f",
+  "b386-summary.json": "516461c2f1dcf5c9a1ccc9f7a5cc918c3cb41c7c91ae5c301d0a48a173430000",
+  "checked-source-and-images-final.tgz": "ac108bd921eb09fd3c85a849f45e55c517a911c185f104038549880ff54664fa",
+  "comparison-b387-summary.json": "71140f4eec3dc70842d101a69796e9f96d11835147db35d54cbd9f9e0c689501",
+  "development-b386.tgz": "3d74e3fdb36b8f244f7a6e23a23b36d5bf3d6d9eeb56f92e959d5276c0b41dc6",
+  "development-final.tgz": "98f9ce811749063cc5dd4751c75da2d35f90168fc1fe4aac1f6251d87bf5ec8d",
+  "focused-final.json": "4022dc874e3b3fdc8d9274f008a4461a89f4a99e46837b14bcaf95a0acdc6a3a",
+  "README.md": "17fd04d18fceb05a63206f807d12cf3411f0ef33eab09041f6d737230612ec6d",
+  "sha256-b386.json": "4d38a8b6027d4b0a2628d7d118bfeff3982b89a06150a88f72f23b09a4925d35",
+  "b386/archive-receipt.json": "f12103c57101f2a5736605ba5536557da4fda9ed2f5515d4e44e40e1c9877b42",
+  "b386/observations.tgz": "71c95ba09e0eb3021228c0066b315f9e142067037ccfda9bea929bd5e8191a2a",
+  "b386/terminal-status.json": "ecd5c945a72c7501a72c9eafcb68151f1f58d1deba26b86d548530df41a7e10e",
+  "b387/archive-receipt.json": "b3783730d8a1414d1919cd72dfd993c8ad8608a44af1abc6bbd1729f973e1180",
+  "b387/observations.tgz": "42636853ffd1ac07a3cefd98de9fbca8acb98fbf05f7a0d181d5988bae9d905c",
+  "b387/terminal-status.json": "712c38f644073f0e3d64ac2558ce3768235456c9015409c956a78a9d85a24295"
+}

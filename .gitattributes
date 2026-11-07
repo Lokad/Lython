@@ -224,3 +224,6 @@ benchmarks/results/2026-11-01-frontend-cpu-incomplete/** -text whitespace=cr-at-
 # Preserve the fixed Python-tokenization comparison and source-patch hashes.
 benchmarks/results/2026-11-01-python-tokenization/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-01-python-tokenization/*.patch -text -whitespace
+
+# Preserve the canonical-formatting measurements, receipts and recorded hashes.
+benchmarks/results/2026-11-07-canonical-format-instructions/** -text whitespace=cr-at-eol

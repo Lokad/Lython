@@ -24,6 +24,11 @@ triggers real output admission through a helper and its deferred caller. Both
 execution APIs preserve input funding, stop following effects on cancellation or
 first refusal, restore managed depths and return the shared budget after cleanup.
 
+[Dynamic formatted ownership](Lokad.Lython.Tests/DynamicFormattedOwnershipTests.cs)
+keeps aliases funded through native dynamic padding and real format-callback
+suspension. Cancellation or first refusal prevents publication; callback cleanup
+finishes before funding returns, and the allowance can be reused.
+
 [Executable result lifetimes](Lokad.Lython.Tests/LocalAugmentedLifetimeTests.cs)
 keep original operands funded across protocol rebinding and real suspension.
 Native calls, compiled children and subscript callbacks leave targets unchanged

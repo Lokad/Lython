@@ -3517,3 +3517,18 @@ controls. One source-justified refinement moves guest temporaries out of the
 shared prefix, following its existing lifetime fences. The cause of text's
 adverse timing remains a hypothesis. Final retention/delivery pending; no broad
 CPU/embedding claim or completion of the whole-script objective.
+
+## Retained formatted-instruction lifetime refinement (2026-11-07)
+
+[R35/B387](results/2026-11-07-canonical-format-instructions/README.md#retained-lifetime-helper-refinement--b387)
+keeps formatting temporaries in an ordinary helper entered only by formatted
+opcodes. Generic classification/wrappers stay deleted; focused203internal/
+1,141public per actual11/10 and independent probes pass. Warm dynamic allocation
+remains about−15.35% on both APIs. The one changed-source comparison completes
+142.36s/all five jobs/gates: dynamic elapsed−10.09–13.19%, static warm−1.57–4.68%,
+fresh/text variable. Retain deletion/context savings/lifetime fence and explicitly
+accept CSV+0.13–2.36% possible debt. Prior text's cause is not established or
+algebraically repaid; all original adverse results/source/images remain. No third
+unchanged retiming or broad CPU claim; full delivery and the wider objective remain
+active. Frozen raw archives are unchanged; sidecar hashes are corrected for Git
+newline conversion, with producer hashes preserved and future byte policy explicit.

@@ -60,8 +60,19 @@ internal sealed partial class LythonRuntime
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
+                        case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
+                            or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
+                            if (TryExecuteFormattedInstruction(ref execution, invocation, instruction, invocation ?? scope)) break;
+                            if (invocation is null) return InstructionPause.ContextRequired;
+                            if (!asynchronous) invocation.ExecuteFormattedValueAsync(instruction, false).GetAwaiter().GetResult();
+                            else
+                            {
+                                pending = WithoutJump(invocation.ExecuteFormattedValueAsync(instruction, true));
+                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+                                _ = ConsumeOperation(ref pending);
+                            }
+                            break;
                         case ExecutableOpCode.ApplyOperation:
-                            if (TryExecuteImmediateFormatting(ref execution, scope, invocation, instruction)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous)
                                 invocation!.ExecutePreparedOperationAsync(instruction, false).GetAwaiter().GetResult();

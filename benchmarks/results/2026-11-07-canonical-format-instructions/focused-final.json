@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   203, Skipped:     0, Total:   203, Duration: 242 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1141, Skipped:     0, Total:  1141, Duration: 9 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   203, Skipped:     0, Total:   203, Duration: 212 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1141, Skipped:     0, Total:  1141, Duration: 8 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Format|FullyQualifiedName~NativeReturn|FullyQualifiedName~NativeHelper|FullyQualifiedName~CompletedHelper|FullyQualifiedName~Deferred|FullyQualifiedName~InstructionFailure|FullyQualifiedName~FunctionExecutionBoundary|FullyQualifiedName~ExecutableStorage|FullyQualifiedName~LocalAugmentedLifetime|FullyQualifiedName~CanonicalResult|FullyQualifiedName~Comprehension|FullyQualifiedName~Generator)",
+  "coreSHA256": {
+    "net11.0": "6ab7367fa7990b808145791beb47b61fd792df551012d5a961dc152a60bcc983",
+    "net10.0": "41b68d90f3056a97eb3a52da316de7be149cd12d31f3f64ea5c0e01776e2406d"
+  }
+}

@@ -88,12 +88,13 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 var ownedSlot = instruction.OpCode switch
                 {
                     ExecutableOpCode.GetIter => inputStart,
+                    ExecutableOpCode.StartFormattedString => resultSlot,
                     // Conservatively include every duplicate, without another
                     // value-liveness analysis or runtime resource registry.
                     ExecutableOpCode.Dup => resultSlot + 1,
                     ExecutableOpCode.ApplyOperation when constants[instruction.ConstantIndex] is
                         ExecutableStartComprehension or ExecutableStartCall or
-                        ExecutableStartClassHeader or ExecutableStartFormattedString => resultSlot,
+                        ExecutableStartClassHeader => resultSlot,
                     _ => -1
                 };
                 if (ownedSlot >= 0)
@@ -208,6 +209,8 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                     // Prepared deletion and lowered statement execution may
                     // withdraw a binding. Keep their original local-read checks.
                     else if (instruction.OpCode is ExecutableOpCode.ApplyOperation or ExecutableOpCode.ExecuteFallbackStatement
+                        or ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
+                        or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField
                         or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
                         or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
                         or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
@@ -232,12 +235,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MakeSlice or
                 ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or
                 ExecutableOpCode.Subscript or ExecutableOpCode.Slice or ExecutableOpCode.Call or
-                ExecutableOpCode.ForNext => true,
+                ExecutableOpCode.ForNext or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue => true,
+            ExecutableOpCode.FormatField => constants[instruction.ConstantIndex] is ExecutableFormatField { Append: false },
             ExecutableOpCode.ApplyOperation => constants[instruction.ConstantIndex] is
                 ExecutableStartDisplay or ExecutableFinishComprehension or ExecutableFinishTuple or
-                ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableCreateGeneratorExpression or
-                ExecutableFinishFormattedString or ExecutableCreateLambda or ExecutablePostponedAnnotation or
-                ExecutableAnnotationsEnabled or ExecutableFormatField { Append: false },
+                ExecutableFinishCall or ExecutableCreateGeneratorExpression or
+                ExecutableCreateLambda or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled,
             _ => false,
         };
 
@@ -247,7 +250,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         var (pop, push) = instruction.OpCode switch
         {
             ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadClosure or
-                ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName => (0, 1),
+                ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName or ExecutableOpCode.StartFormattedString => (0, 1),
             ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or
                 ExecutableOpCode.StoreName or ExecutableOpCode.PopTop or ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.MatchCase or ExecutableOpCode.Return or ExecutableOpCode.ExitContextManager => (1, 0),
@@ -255,6 +258,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.LoadMember or ExecutableOpCode.GetIter or
                 ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or
                 ExecutableOpCode.Unary or ExecutableOpCode.MatchException or
+                ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FinishFormattedString or
                 ExecutableOpCode.Yield or ExecutableOpCode.YieldFrom => (1, 1),
             ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => (2, 1),
             ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet => (instruction.ItemCount, 1),
@@ -278,12 +282,17 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.DeleteMember => (1, 0),
             ExecutableOpCode.DeleteSubscript => (2, 0),
             ExecutableOpCode.DeleteSlice => (1 + BitOperations.PopCount((uint)instruction.SliceParts), 0),
+            ExecutableOpCode.AppendFormattedText => (0, 0),
+            ExecutableOpCode.FormatField => constants[instruction.ConstantIndex] is ExecutableFormatField field
+                ? (field.DynamicSpecifier ? 2 : 1, field.Append ? 0 : 1)
+                : throw new InvalidOperationException("Missing formatted-field descriptor."),
             ExecutableOpCode.ApplyOperation => OperationEffect((ExecutableOperation)constants[instruction.ConstantIndex]!),
             _ => throw new InvalidOperationException($"Unknown executable operand effect: {instruction.OpCode}.")
         };
         var minimum = instruction.OpCode switch
         {
-            ExecutableOpCode.ForNext => 1,
+            ExecutableOpCode.ForNext or ExecutableOpCode.AppendFormattedText => 1,
+            ExecutableOpCode.FormatField when constants[instruction.ConstantIndex] is ExecutableFormatField { Append: true } => checked(pop + 1),
             ExecutableOpCode.ReadRetainedSubscript => 2,
             ExecutableOpCode.ReadRetainedSlice => 4,
             _ => pop
@@ -295,8 +304,6 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableAppendDisplay item => checked(2 + item.IteratorDepth),
                 ExecutableStoreDictionaryItem item => checked(pop + 1 + item.IteratorDepth),
                 ExecutableAppendCall => 2,
-                ExecutableAppendFormattedText => 1,
-                ExecutableFormatField { Append: true } => checked(pop + 1),
                 _ => pop
             };
         }
@@ -305,14 +312,12 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
 
     private static (int Pop, int Push) OperationEffect(ExecutableOperation operation) => operation switch
     {
-        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled or ExecutableStartFormattedString => (0, 1),
+        ExecutableStartDisplay or ExecutableStartClassHeader or ExecutablePostponedAnnotation or ExecutableAnnotationsEnabled => (0, 1),
         ExecutableStartComprehension => (1, 3),
         ExecutableFinishComprehension => (2, 1),
-        ExecutableFinishTuple or ExecutableStartCall or ExecutableFinishCall or ExecutableConvertFormattedValue or ExecutableCreateGeneratorExpression or ExecutableFinishFormattedString => (1, 1),
+        ExecutableFinishTuple or ExecutableStartCall or ExecutableFinishCall or ExecutableCreateGeneratorExpression => (1, 1),
         ExecutableAppendDisplay or ExecutableAppendCall or ExecutableStoreModuleAnnotation => (1, 0),
         ExecutableStoreDictionaryItem item => (item.Unpacking ? 1 : 2, 0),
-        ExecutableFormatField field => (field.DynamicSpecifier ? 2 : 1, field.Append ? 0 : 1),
-        ExecutableAppendFormattedText => (0, 0),
         ExecutableCreateFunction function => (function.Inputs.Count, 0),
         ExecutableCreateLambda lambda => (lambda.Expression.Parameters.Count(p => p.DefaultValue is not null), 1),
         ExecutableCreateClass type => (checked(type.Definition.Decorators.Count + (type.ExpandedHeader ? 1 : 0)), 0),
