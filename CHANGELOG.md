@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Identify builtin object/type by their runtime relationship, so user classes with
+  those names retain normal attribute and instance behavior. Preserve immutable
+  builtin aliases, descriptors and per-execution type isolation.
+
 - Execute formatted output through direct instructions, removing its generic
   prepared-operation detour and wrapper records. Native dynamic specifiers avoid
   unnecessary function contexts; real protocols still await callbacks and cleanup.

@@ -78,8 +78,8 @@ internal sealed partial class LythonRuntime
         internal static bool IsAbsoluteBuiltin(object value) => ReferenceEquals(value, SharedAbs);
         internal static bool IsSumBuiltin(object value) => ReferenceEquals(value, SharedSum);
 
-        // Python types are mutable. Every root execution context therefore needs
-        // its own connected object/type graph instead of sharing a cached table.
+        // Retain each run's connected object/metatype graph. Fixed functions
+        // and immutable constructor signatures are shared above.
         private static Dictionary<string, object> CreateBuiltinVariables()
         {
             // Fixed entries: pre-size these per-run tables instead of growing

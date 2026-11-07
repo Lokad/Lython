@@ -15,6 +15,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Builtin root identity](Lokad.Lython.PublicApi.Tests/BuiltinRootIdentityTests.cs)
+checks independently verified Python behavior for user classes named `object` and
+`type`, including descriptors and original builtin aliases. Both execution APIs
+return the shared budget to baseline after cleanup.
+
 [Instruction failure routing](Lokad.Lython.Tests/InstructionFailureRoutingTests.cs)
 distinguishes entry cancellation/refusal from operation errors, preserving the
 first origin, active Python exception state, stopped effects and released storage.

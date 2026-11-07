@@ -1,0 +1,69 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "object-class",
+      "source": "class object:pass\nobject.marker=3\nprint(object.marker)\ndel object.marker\nprint(hasattr(object,'marker'))",
+      "expected": "3\nFalse\n",
+      "stdout": "3\nFalse\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "type-class",
+      "source": "class type:pass\ntype.marker=5\nprint(type.marker)\ndel type.marker\nprint(hasattr(type,'marker'))",
+      "expected": "5\nFalse\n",
+      "stdout": "5\nFalse\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "object-instance",
+      "source": "class object:pass\nvalue=object()\nvalue.marker=7\nprint(value.marker,vars(value))\ndel value.marker\nprint(hasattr(value,'marker'))",
+      "expected": "7 {'marker': 7}\nFalse\n",
+      "stdout": "7 {'marker': 7}\nFalse\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "type-instance-error",
+      "source": "class type:pass\nvalue=type()\ntry:value.missing\nexcept AttributeError as error:print(str(error))",
+      "expected": "'type' object has no attribute 'missing'\n",
+      "stdout": "'type' object has no attribute 'missing'\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "native-controls",
+      "source": "for cls in [object,type,int,str,list,ValueError]:\n try:setattr(cls,'marker',1)\n except TypeError:print('immutable')\n else:print('WRITABLE')",
+      "expected": "immutable\nimmutable\nimmutable\nimmutable\nimmutable\nimmutable\n",
+      "stdout": "immutable\nimmutable\nimmutable\nimmutable\nimmutable\nimmutable\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "original-aliases",
+      "source": "RootObject=object\nRootType=type\nclass object:pass\nclass type:pass\nobject.marker=3\ntype.marker=5\nprint(object.marker,type.marker)\nfor cls in [RootObject,RootType]:\n try:cls.marker=1\n except TypeError:print('immutable')",
+      "expected": "3 5\nimmutable\nimmutable\n",
+      "stdout": "3 5\nimmutable\nimmutable\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "named-type-subclass",
+      "source": "RootType=type\nclass type(RootType):pass\ntype.marker=2\nprint(type.marker,type.__mro__[1] is RootType)\ndel type.marker",
+      "expected": "2 True\n",
+      "stdout": "2 True\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "name": "named-descriptor",
+      "source": "class object:\n @property\n def marker(self):return self.value\n @marker.setter\n def marker(self,value):self.value=value+1\nitem=object()\nitem.marker=6\nprint(item.marker,vars(item))",
+      "expected": "7 {'value': 7}\n",
+      "stdout": "7 {'value': 7}\n",
+      "stderr": "",
+      "exitCode": 0
+    }
+  ]
+}

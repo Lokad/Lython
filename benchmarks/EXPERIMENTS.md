@@ -3543,3 +3543,13 @@ all15jobs in311.96s/all gates. Warm text1.67–1.75x/report1.40–1.42x CPython;
 most cases remain variable, startup/RSS/embedding tails unmeasured. This refresh
 replaces the primary guide snapshot, not prior source-pair evidence or debt.
 No repeated terminal queries, publication, compounded CPU claim or goal completion.
+
+
+## R36 setup source gate and root-identity correction
+
+The [R36 gate](results/2026-11-07-builtin-root-identity/README.md) finds fixed
+functions/signatures already shared; no current evidence selects global type-graph
+sharing. It corrects a demonstrated display-name identity bug without that redesign.
+Focused986internal/2,765public per actual target and eight independent Python
+goldens pass. Original masked probe/unsupported fixture failures are preserved.
+No timing or performance claim; R35's full receipt excludes this later source.

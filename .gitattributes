@@ -230,3 +230,6 @@ benchmarks/results/2026-11-07-canonical-format-instructions/** -text whitespace=
 
 # Preserve the exact B388 comparison and parsed delivery receipt.
 benchmarks/results/2026-11-07-formatted-cpython/** -text whitespace=cr-at-eol
+
+# Preserve root-identity probe conditions and focused qualification bytes.
+benchmarks/results/2026-11-07-builtin-root-identity/** -text whitespace=cr-at-eol

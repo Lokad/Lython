@@ -111,6 +111,12 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public PyType? MetaType { get; private set; }
 
+    // Only the original type is its own metatype. Its single original base
+    // identifies object independently of guest class names or builtin rebinding.
+    internal bool IsBuiltinMetatype => ReferenceEquals(MetaType, this);
+    internal bool IsBuiltinObject => MetaType is { IsBuiltinMetatype: true } meta
+        && meta.Bases.Count == 1 && ReferenceEquals(meta.Bases[0], this);
+
     public bool TryGetOwnMember(string name, [MaybeNullWhen(false)] out object value) => _members.TryGetValue(name, out value);
 
     public IEnumerable<KeyValuePair<string, object>> EnumerateOwnMembers() => _members;
@@ -235,7 +241,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     internal bool CanPrepareExecutableConstructor
         => JsonBase == JsonBaseKind.None && MetaType is { } meta &&
-            !ReferenceEquals(meta, this) && ReferenceEquals(meta.MetaType, meta) &&
+            !IsBuiltinMetatype && meta.IsBuiltinMetatype &&
             TryLookupInMro("__new__", 0, out var allocator, out _) && LythonRuntime.IsDefaultObjectNew(allocator);
 
     internal bool TryGetExecutableInitializer([MaybeNullWhen(false)] out PyExecutableFunction initializer)
@@ -254,7 +260,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         LythonRuntime.ExecutionContext context, bool asynchronous)
     {
         context.CheckExecution(span);
-        if (ReferenceEquals(MetaType, this))
+        if (IsBuiltinMetatype)
             return InvokeBuiltInType(arguments, span, context);
 
         object instance;

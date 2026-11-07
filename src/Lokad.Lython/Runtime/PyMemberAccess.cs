@@ -271,7 +271,7 @@ internal static class PyMemberAccess
 
         if (target is PyType type)
         {
-            if (type.Name is "object" or "type")
+            if (type.IsBuiltinObject || type.IsBuiltinMetatype)
             {
                 throw ImmutableTypeError(target, memberName, span);
             }
@@ -589,12 +589,12 @@ internal static class PyMemberAccess
         // modules and instances keep their own paths above.
         if (target is PyType type)
         {
-            return type.Name is "object" or "type";
+            return type.IsBuiltinObject || type.IsBuiltinMetatype;
         }
 
         return target is not null
             && LythonRuntime.TryGetValueClass(target, context, out var classValue)
-            && classValue is PyType { Name: "type" };
+            && classValue is PyType { IsBuiltinMetatype: true };
     }
 
     private static LythonRuntimeException ImmutableTypeError(object target, string memberName, LythonSourceSpan span)
@@ -633,7 +633,7 @@ internal static class PyMemberAccess
     {
         PyModule => true,
         PyException => true,
-        PyInstance instance => instance.Type.Name != "object",
+        PyInstance instance => !instance.Type.IsBuiltinObject,
         _ => false,
     };
 
@@ -678,7 +678,7 @@ internal static class PyMemberAccess
                 span),
             _ when target is not null
                 && LythonRuntime.TryGetValueClass(target, context, out var classValue)
-                && classValue is PyType { Name: "type" } => new LythonRuntimeException(
+                && classValue is PyType { IsBuiltinMetatype: true } => new LythonRuntimeException(
                 "AttributeError",
                 $"type object '{TypeObjectName(target)}' has no attribute '{memberName}'",
                 span),
