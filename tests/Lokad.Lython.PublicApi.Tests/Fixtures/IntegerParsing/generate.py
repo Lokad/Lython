@@ -16,7 +16,10 @@ def digits(value,base):
     return result or '0'
 
 for base in range(2,37):
-    for label,value in [('uint64',(1<<64)-1),('promoted',1<<64),('chunks',-((1<<129)+57))]:
+    for label,value in [('uint64',(1<<64)-1),('promoted',1<<64),
+                        ('int128-high',1<<127),('uint128',(1<<128)-1),
+                        ('promoted128',1<<128),('negative128',-(1<<128)),
+                        ('chunks',-((1<<129)+57))]:
         text=('-' if value<0 else '')+digits(abs(value),base)
         add(f'base{base}-{label}',text,base)
 spaces=['\t','\n','\v','\f','\r',' ','\x1c','\x1d','\x1e','\x1f','\x85','\xa0','\u1680',

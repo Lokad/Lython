@@ -40,10 +40,12 @@ internal sealed partial class LythonRuntime
         }
         if (radix == 0) radix = 10;
         var unsignedRadix = (uint)radix;
+        var (prefixLimit, remainder) = UInt128.DivRem(UInt128.MaxValue, unsignedRadix);
+        var lastDigitLimit = (uint)remainder;
         var leadingZero = numberBase == 0 && !prefixed && firstDigit == 0;
         var previousDigit = false;
         var sawNonZero = false;
-        ulong small = 0;
+        UInt128 small = 0;
         var large = BigInteger.Zero;
         uint chunk = 0, power = 1;
         var nextCheck = position;
@@ -67,19 +69,17 @@ internal sealed partial class LythonRuntime
             sawNonZero |= digit != 0;
             if (admission is null)
             {
-                if (small <= (ulong.MaxValue - (uint)digit) / unsignedRadix)
-                    small = checked(small * unsignedRadix + (uint)digit);
+                // The prefix/remainder guard proves the next native value fits.
+                // No per-digit division or intermediate magnitude is needed.
+                if (small < prefixLimit || small == prefixLimit && (uint)digit <= lastDigitLimit)
+                    small = small * unsignedRadix + (uint)digit;
                 else
                 {
                     // No major magnitude exists yet. Admit its full upper bound
                     // and replacement overlap before constructing even the seed.
-                    var bits = RuntimeMemoryEstimates.SaturatingMultiply(inputLength, IntegerParseBitsPerDigit(radix));
-                    var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
-                        RuntimeMemoryEstimates.SaturatingAdd(bits, 1));
-                    admission = context.MemoryGovernor.ReserveTemporary(
-                        RuntimeMemoryEstimates.SaturatingMultiply(3, bytes), span);
+                    admission = ReserveIntegerParseMagnitude(inputLength, radix, context, span);
                     context.CheckExecution(span);
-                    large = new BigInteger(small);
+                    large = small;
                     chunk = (uint)digit;
                     power = unsignedRadix;
                 }
@@ -103,8 +103,29 @@ internal sealed partial class LythonRuntime
         if (!previousDigit || leadingZero && sawNonZero)
             throw InvalidIntegerText(original, numberBase, context, span);
         context.CheckExecution(span);
-        var result = admission is null ? new BigInteger(small) : large * power + chunk;
+        BigInteger result;
+        if (admission is null)
+        {
+            // The wider native accumulator is working storage, not an ownership
+            // exemption: a >64bit result needs funded limbs before conversion.
+            if (small > ulong.MaxValue)
+            {
+                admission = ReserveIntegerParseMagnitude(inputLength, radix, context, span);
+                context.CheckExecution(span);
+            }
+            result = small;
+        }
+        else result = large * power + chunk;
         return negative ? -result : result;
+    }
+
+    private static MemoryGovernor.TemporaryMemoryReservation ReserveIntegerParseMagnitude(
+        int inputLength, int radix, ExecutionContext context, LythonSourceSpan span)
+    {
+        var bits = RuntimeMemoryEstimates.SaturatingMultiply(inputLength, IntegerParseBitsPerDigit(radix));
+        var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+            RuntimeMemoryEstimates.SaturatingAdd(bits, 1));
+        return context.MemoryGovernor.ReserveTemporary(RuntimeMemoryEstimates.SaturatingMultiply(3, bytes), span);
     }
 
     private static int ReadIntegerDigit(ReadOnlySpan<byte> input, bool unicode, out int width)

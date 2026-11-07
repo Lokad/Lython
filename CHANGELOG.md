@@ -10,6 +10,8 @@
   exact large-magnitude promotion. Support Unicode decimal string digits, retain
   ASCII bytes grammar, and observe cancellation during long conversion. Admit
   magnitude construction before allocation and preserve first refusal and cleanup.
+  A managed 128-bit accumulator avoids intermediate magnitudes for wider inputs;
+  retained values above 64 bits remain admitted before conversion.
 
 - Forward adjacent plain local/constant operands before assigning executable
   storage. Preserve original error spans and protocol snapshots while removing

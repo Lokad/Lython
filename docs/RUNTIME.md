@@ -665,13 +665,16 @@ count narrowing. Growing results retain allocation preflights and checked native
 count/storage bounds. Floating power overflow raises OverflowError; nonfinite
 inputs retain their Python behavior.
 
-Integer text conversion scans its original UTF-8, keeping small magnitudes in
-native storage and reserving overlapping working magnitudes before promotion to
-BigInteger. Only the retained result is committed; scratch is refunded after
+Integer text conversion scans its original UTF-8 with an unsigned 128-bit native
+accumulator before arbitrary BigInteger growth. Values above 64 bits still admit
+their retained magnitude before conversion, including values that fit the native
+accumulator. Promotion reserves overlapping working magnitudes. Only the retained
+result is committed; scratch is refunded after
 completion or failure. Scans and arithmetic chunks observe the current token.
 String digits use the existing Unicode decimal classification; byte digits use
 ASCII syntax. No decoded CLR text copy is needed, so admission thresholds can
-change while retained storage remains funded.
+change while retained storage remains funded. Native overflow guards use one
+precomputed quotient/remainder; no per-digit division or decoded text is needed.
 
 Dictionary updates
 drain unknown-length pairs without storing their contents, preserving iterator

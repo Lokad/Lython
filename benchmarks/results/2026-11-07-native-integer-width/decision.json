@@ -1,0 +1,9 @@
+{
+  "retained": true,
+  "baseline": "9990d591 production, frozen R49 precommit core; full CI in progress at collection.",
+  "source": "9990d591 plus preserved R50 single-production-file patch; final DivRem source and cores in focused.json",
+  "admittedTradeoff": "Padded CSV +0.99to+1.16% elapsed with stable roles; accept this bounded cost for numeric-string JSON allocation-12.492/-12.487% sync/async and controlled warm-10.68to-12.50%. No UInt64 rescue tier or further unchanged retiming.",
+  "limitations": "Ordinary JSON control variable, no async elapsed/isolated CPU/RSS/tail/asymptotic improvement claim. Post-promotion chunk growth remains. Tiny-budget admission timing may change; every retained >64bit result remains preflighted.",
+  "developmentSHA256": "0fd2fc8f59f5bd67aaf1d6c827ceb0fab5d0776e6408e037b0b44ff6bdc31b6b",
+  "fullDelivery": "Pending coherent Windows/Ubuntu actual11/10 Stress/installed consumer qualification for retained source; earlier R49 delivery is independent."
+}

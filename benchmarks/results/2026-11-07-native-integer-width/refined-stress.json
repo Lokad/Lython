@@ -1,0 +1,10 @@
+{
+  "net11.0": {
+    "exitCode": 0,
+    "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)\n[xUnit.net 00:00:00.09]   Discovering: Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.42]   Discovered:  Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.44]   Starting:    Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.51]   Finished:    Lokad.Lython.WhiteBox.Tests\n  Passed Lokad.Lython.Tests.IntegerTextCancellationTests.CancellationDuringMagnitudeWorkDrainsBeforeRefund [49 ms]\n\nTest Run Successful.\nTotal tests: 1\n     Passed: 1\n Total time: 0.8264 Seconds\n"
+  },
+  "net10.0": {
+    "exitCode": 0,
+    "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.8)\n[xUnit.net 00:00:00.09]   Discovering: Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.47]   Discovered:  Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.49]   Starting:    Lokad.Lython.WhiteBox.Tests\n[xUnit.net 00:00:00.56]   Finished:    Lokad.Lython.WhiteBox.Tests\n  Passed Lokad.Lython.Tests.IntegerTextCancellationTests.CancellationDuringMagnitudeWorkDrainsBeforeRefund [53 ms]\n\nTest Run Successful.\nTotal tests: 1\n     Passed: 1\n Total time: 0.8931 Seconds\n"
+  }
+}

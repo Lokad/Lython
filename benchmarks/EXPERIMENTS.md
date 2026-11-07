@@ -3772,3 +3772,12 @@ after frame cleanup. Initial29cross-frame failures and their correction remain;
 capacity+48–96B; B404 observes search−4.28–5.10%, text−2.10–5.66% with3.26%
 current spread, JSON−5.49–7.67%. Desktop30–50%text gains are diagnostic and not
 transferred. [Evidence and qualification status](results/2026-11-07-declaration-bindings/README.md).
+
+## Managed native integer width (2026-11-07)
+
+R50 uses one UInt128 accumulator/DivRem guard, retains arbitrary chunks and funds
+native>64bit output before conversion.102internal/420public per actual11/10 plus
+real cancellation pass. Allocation numeric strings−12.492/12.487%; B405warm
+−10.68–12.50%, padded CSV+0.99–1.16% accepted explicitly. Initial/refined adverse
+desktop/control data remain. No universal CPU/async/scaling claim or JSON-parser
+change. [Evidence and qualification status](results/2026-11-07-native-integer-width/README.md).

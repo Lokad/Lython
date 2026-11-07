@@ -10,6 +10,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base2-int128-high",
+    "source": "try:\n print(int('10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base2-uint128",
+    "source": "try:\n print(int('11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base2-promoted128",
+    "source": "try:\n print(int('100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base2-negative128",
+    "source": "try:\n print(int('-100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base2-chunks",
     "source": "try:\n print(int('-1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000111001',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -23,6 +43,26 @@
     "name": "base3-promoted",
     "source": "try:\n print(int('11112220022122120101211020120210210211221',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base3-int128-high",
+    "source": "try:\n print(int('101100201022001010121000102002120122110122221010202000122201220121120010200022002',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base3-uint128",
+    "source": "try:\n print(int('202201102121002021012000211012011021221022212021111001022110211020010021100121010',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base3-promoted128",
+    "source": "try:\n print(int('202201102121002021012000211012011021221022212021111001022110211020010021100121011',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base3-negative128",
+    "source": "try:\n print(int('-202201102121002021012000211012011021221022212021111001022110211020010021100121011',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base3-chunks",
@@ -40,6 +80,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base4-int128-high",
+    "source": "try:\n print(int('2000000000000000000000000000000000000000000000000000000000000000',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base4-uint128",
+    "source": "try:\n print(int('3333333333333333333333333333333333333333333333333333333333333333',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base4-promoted128",
+    "source": "try:\n print(int('10000000000000000000000000000000000000000000000000000000000000000',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base4-negative128",
+    "source": "try:\n print(int('-10000000000000000000000000000000000000000000000000000000000000000',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base4-chunks",
     "source": "try:\n print(int('-20000000000000000000000000000000000000000000000000000000000000321',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -53,6 +113,26 @@
     "name": "base5-promoted",
     "source": "try:\n print(int('2214220303114400424121122431',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base5-int128-high",
+    "source": "try:\n print(int('3013030220323124042102424341431241221233040112312340403',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base5-uint128",
+    "source": "try:\n print(int('11031110441201303134210404233413032443021130230130231310',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base5-promoted128",
+    "source": "try:\n print(int('11031110441201303134210404233413032443021130230130231311',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base5-negative128",
+    "source": "try:\n print(int('-11031110441201303134210404233413032443021130230130231311',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base5-chunks",
@@ -70,6 +150,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base6-int128-high",
+    "source": "try:\n print(int('11324454543055553250455021551551121442554522203132',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base6-uint128",
+    "source": "try:\n print(int('23053353530155550541354043543542243325553444410303',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base6-promoted128",
+    "source": "try:\n print(int('23053353530155550541354043543542243325553444410304',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base6-negative128",
+    "source": "try:\n print(int('-23053353530155550541354043543542243325553444410304',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base6-chunks",
     "source": "try:\n print(int('-50151151500355541523152131531524531055551333221145',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -83,6 +183,26 @@
     "name": "base7-promoted",
     "source": "try:\n print(int('45012021522523134134602',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base7-int128-high",
+    "source": "try:\n print(int('1406241064412313155000336513424310163013142502',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base7-uint128",
+    "source": "try:\n print(int('3115512162124626343001006330151620356026315303',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base7-promoted128",
+    "source": "try:\n print(int('3115512162124626343001006330151620356026315304',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base7-negative128",
+    "source": "try:\n print(int('-3115512162124626343001006330151620356026315304',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base7-chunks",
@@ -100,6 +220,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base8-int128-high",
+    "source": "try:\n print(int('2000000000000000000000000000000000000000000',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base8-uint128",
+    "source": "try:\n print(int('3777777777777777777777777777777777777777777',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base8-promoted128",
+    "source": "try:\n print(int('4000000000000000000000000000000000000000000',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base8-negative128",
+    "source": "try:\n print(int('-4000000000000000000000000000000000000000000',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base8-chunks",
     "source": "try:\n print(int('-10000000000000000000000000000000000000000071',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -113,6 +253,26 @@
     "name": "base9-promoted",
     "source": "try:\n print(int('145808576354216723757',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base9-int128-high",
+    "source": "try:\n print(int('11321261117012076573587122018656546120262',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base9-uint128",
+    "source": "try:\n print(int('22642532235024164257285244038424203240533',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base9-promoted128",
+    "source": "try:\n print(int('22642532235024164257285244038424203240534',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base9-negative128",
+    "source": "try:\n print(int('-22642532235024164257285244038424203240534',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base9-chunks",
@@ -130,6 +290,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base10-int128-high",
+    "source": "try:\n print(int('170141183460469231731687303715884105728',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base10-uint128",
+    "source": "try:\n print(int('340282366920938463463374607431768211455',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base10-promoted128",
+    "source": "try:\n print(int('340282366920938463463374607431768211456',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base10-negative128",
+    "source": "try:\n print(int('-340282366920938463463374607431768211456',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base10-chunks",
     "source": "try:\n print(int('-680564733841876926926749214863536422969',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -143,6 +323,26 @@
     "name": "base11-promoted",
     "source": "try:\n print(int('335500516a429071285',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base11-int128-high",
+    "source": "try:\n print(int('555a8020989a11327710815513a946a188727',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base11-uint128",
+    "source": "try:\n print(int('1000a504186892265432152aa27a7929366352',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base11-promoted128",
+    "source": "try:\n print(int('1000a504186892265432152aa27a7929366353',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base11-negative128",
+    "source": "try:\n print(int('-1000a504186892265432152aa27a7929366353',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base11-chunks",
@@ -160,6 +360,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base12-int128-high",
+    "source": "try:\n print(int('2a695925806818735399a37a20a31b3534a8',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base12-uint128",
+    "source": "try:\n print(int('5916b64b41143526a777873841863a6a6993',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base12-promoted128",
+    "source": "try:\n print(int('5916b64b41143526a777873841863a6a6994',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base12-negative128",
+    "source": "try:\n print(int('-5916b64b41143526a777873841863a6a6994',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base12-chunks",
     "source": "try:\n print(int('-b631b09a82286a51933352748350791917b5',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -173,6 +393,26 @@
     "name": "base13-promoted",
     "source": "try:\n print(int('219505a9511a867b73',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base13-int128-high",
+    "source": "try:\n print(int('2373464c8a3cb25ba2b7c6382b2963bb71b',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base13-uint128",
+    "source": "try:\n print(int('47168c9c477c94ba75a2bc735955c7aa138',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base13-promoted128",
+    "source": "try:\n print(int('47168c9c477c94ba75a2bc735955c7aa139',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base13-negative128",
+    "source": "try:\n print(int('-47168c9c477c94ba75a2bc735955c7aa139',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base13-chunks",
@@ -190,6 +430,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base14-int128-high",
+    "source": "try:\n print(int('27c22d5b9734a1517bb1dc612904a79d72',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base14-uint128",
+    "source": "try:\n print(int('51a45cb9506962a31983dac25409715d03',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base14-promoted128",
+    "source": "try:\n print(int('51a45cb9506962a31983dac25409715d04',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base14-negative128",
+    "source": "try:\n print(int('-51a45cb9506962a31983dac25409715d04',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base14-chunks",
     "source": "try:\n print(int('-a368bb94a0d4c5663527d7a4a81502bc49',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -203,6 +463,26 @@
     "name": "base15-promoted",
     "source": "try:\n print(int('2c1d56b648c6cd111',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base15-int128-high",
+    "source": "try:\n print(int('3e2480b3404d8bb9bca3084369ba3e188',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base15-uint128",
+    "source": "try:\n print(int('7d491176809c28848a561186d4857d320',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base15-promoted128",
+    "source": "try:\n print(int('7d491176809c28848a561186d4857d321',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base15-negative128",
+    "source": "try:\n print(int('-7d491176809c28848a561186d4857d321',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base15-chunks",
@@ -220,6 +500,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base16-int128-high",
+    "source": "try:\n print(int('80000000000000000000000000000000',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base16-uint128",
+    "source": "try:\n print(int('ffffffffffffffffffffffffffffffff',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base16-promoted128",
+    "source": "try:\n print(int('100000000000000000000000000000000',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base16-negative128",
+    "source": "try:\n print(int('-100000000000000000000000000000000',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base16-chunks",
     "source": "try:\n print(int('-200000000000000000000000000000039',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -233,6 +533,26 @@
     "name": "base17-promoted",
     "source": "try:\n print(int('67979g60f5428011',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base17-int128-high",
+    "source": "try:\n print(int('13d03cge4242f3e39f9dga60476a8099',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base17-uint128",
+    "source": "try:\n print(int('279078gb8485d7b72e2ag3c08ed3g120',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base17-promoted128",
+    "source": "try:\n print(int('279078gb8485d7b72e2ag3c08ed3g121',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base17-negative128",
+    "source": "try:\n print(int('-279078gb8485d7b72e2ag3c08ed3g121',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base17-chunks",
@@ -250,6 +570,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base18-int128-high",
+    "source": "try:\n print(int('3d51ddf66g5befc8e19d2607hc26e32',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base18-uint128",
+    "source": "try:\n print(int('78a399ccdeb5bd6ha3184c0fh64da63',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base18-promoted128",
+    "source": "try:\n print(int('78a399ccdeb5bd6ha3184c0fh64da64',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base18-negative128",
+    "source": "try:\n print(int('-78a399ccdeb5bd6ha3184c0fh64da64',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base18-chunks",
     "source": "try:\n print(int('-eh2711779b4b58dh262g961dgc992fb',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -263,6 +603,26 @@
     "name": "base19-promoted",
     "source": "try:\n print(int('141c8786h1ccaagh',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base19-int128-high",
+    "source": "try:\n print(int('e09c09h6a4eihac8fchc875gf4di42',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base19-uint128",
+    "source": "try:\n print(int('1910510fd19aig25hc6g5gebeb98h83',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base19-promoted128",
+    "source": "try:\n print(int('1910510fd19aig25hc6g5gebeb98h84',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base19-negative128",
+    "source": "try:\n print(int('-1910510fd19aig25hc6g5gebeb98h84',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base19-chunks",
@@ -280,6 +640,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base20-int128-high",
+    "source": "try:\n print(int('337d04g0ec2d918ac3j85180dfd468',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base20-uint128",
+    "source": "try:\n print(int('66f609c19456i2h147iga2g17b68cf',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base20-promoted128",
+    "source": "try:\n print(int('66f609c19456i2h147iga2g17b68cg',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base20-negative128",
+    "source": "try:\n print(int('-66f609c19456i2h147iga2g17b68cg',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base20-chunks",
     "source": "try:\n print(int('-cdac0j42i8adg5e28fhd05c2f2ch89',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -293,6 +673,26 @@
     "name": "base21-promoted",
     "source": "try:\n print(int('5e8g4ggg7g56dig',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base21-int128-high",
+    "source": "try:\n print(int('g3b663ge01jk6cica417i3a75c602',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base21-uint128",
+    "source": "try:\n print(int('1b71cc7c703ijd4g3k82ff6keb3c03',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base21-promoted128",
+    "source": "try:\n print(int('1b71cc7c703ijd4g3k82ff6keb3c04',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base21-negative128",
+    "source": "try:\n print(int('-1b71cc7c703ijd4g3k82ff6keb3c04',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base21-chunks",
@@ -310,6 +710,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base22-int128-high",
+    "source": "try:\n print(int('48f5dj8i8eli87ecigb8g6egjhchi',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base22-uint128",
+    "source": "try:\n print(int('8h8b5gheh7legf73fb0had7bhd3dd',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base22-promoted128",
+    "source": "try:\n print(int('8h8b5gheh7legf73fb0had7bhd3de',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base22-negative128",
+    "source": "try:\n print(int('-8h8b5gheh7legf73fb0had7bhd3de',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base22-chunks",
     "source": "try:\n print(int('-hch0bbd7cfl7b8e7901cl4f1d477j',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -323,6 +743,26 @@
     "name": "base23-promoted",
     "source": "try:\n print(int('1ddh88h2782i516',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base23-int128-high",
+    "source": "try:\n print(int('162g6gam6d49ik37jk2mdcl41aj6i',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base23-uint128",
+    "source": "try:\n print(int('2c59d9lld38jeh6fgh5m42j82lfdc',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base23-promoted128",
+    "source": "try:\n print(int('2c59d9lld38jeh6fgh5m42j82lfdd',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base23-negative128",
+    "source": "try:\n print(int('-2c59d9lld38jeh6fgh5m42j82lfdd',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base23-chunks",
@@ -340,6 +780,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base24-int128-high",
+    "source": "try:\n print(int('95b794mjicl2m0cbfjnjnd2hdm58',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base24-uint128",
+    "source": "try:\n print(int('iamei9lfd1i5k10n7fnfn25b3kaf',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base24-promoted128",
+    "source": "try:\n print(int('iamei9lfd1i5k10n7fnfn25b3kag',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base24-negative128",
+    "source": "try:\n print(int('-iamei9lfd1i5k10n7fnfn25b3kag',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base24-chunks",
     "source": "try:\n print(int('-1cll5cjj723cbg21mf7n7m4am7gnh',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -353,6 +813,26 @@
     "name": "base25-promoted",
     "source": "try:\n print(int('c9c336o0mlb7eg',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base25-int128-high",
+    "source": "try:\n print(int('31ffc3d7km5eej9ge7bdfk6d7j43',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base25-uint128",
+    "source": "try:\n print(int('6365o71fgjb44dj83en26fd1fd85',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base25-promoted128",
+    "source": "try:\n print(int('6365o71fgjb44dj83en26fd1fd86',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base25-negative128",
+    "source": "try:\n print(int('-6365o71fgjb44dj83en26fd1fd86',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base25-chunks",
@@ -370,6 +850,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base26-int128-high",
+    "source": "try:\n print(int('11gf2k68m8of9j9agmk61a6g4i0o',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base26-uint128",
+    "source": "try:\n print(int('23745echihn4jcil7jec2kd69a1l',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base26-promoted128",
+    "source": "try:\n print(int('23745echihn4jcil7jec2kd69a1m',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base26-negative128",
+    "source": "try:\n print(int('-23745echihn4jcil7jec2kd69a1m',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base26-chunks",
     "source": "try:\n print(int('-46e8b2p9b9k9cpbgfd2o5f0cik5n',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -383,6 +883,26 @@
     "name": "base27-promoted",
     "source": "try:\n print(int('4eo8hfam6fllmp',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base27-int128-high",
+    "source": "try:\n print(int('a9j813g0b2fhchp3k0hjogf3i82',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base27-uint128",
+    "source": "try:\n print(int('kjbg2750m547p8n7d18cm6379g3',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base27-promoted128",
+    "source": "try:\n print(int('kjbg2750m547p8n7d18cm6379g4',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base27-negative128",
+    "source": "try:\n print(int('-kjbg2750m547p8n7d18cm6379g4',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base27-chunks",
@@ -400,6 +920,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base28-int128-high",
+    "source": "try:\n print(int('40j3ek89l5h69q3q6jh2khn6dog',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base28-uint128",
+    "source": "try:\n print(int('81a71cgjeb6cjo7odb65d7icrl3',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base28-promoted128",
+    "source": "try:\n print(int('81a71cgjeb6cjo7odb65d7icrl4',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base28-negative128",
+    "source": "try:\n print(int('-81a71cgjeb6cjo7odb65d7icrl4',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base28-chunks",
     "source": "try:\n print(int('-g2ke2p5b0mcpbkfkqmcaqf8prg9',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -413,6 +953,26 @@
     "name": "base29-promoted",
     "source": "try:\n print(int('1n3rsh11f098ro',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base29-int128-high",
+    "source": "try:\n print(int('1hp3d3elmjg86isj584dklf2djr',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base29-uint128",
+    "source": "try:\n print(int('36l6q70ega3gd8s9ag8rce14rao',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base29-promoted128",
+    "source": "try:\n print(int('36l6q70ega3gd8s9ag8rce14rap',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base29-negative128",
+    "source": "try:\n print(int('-36l6q70ega3gd8s9ag8rce14rap',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base29-chunks",
@@ -430,6 +990,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base30-int128-high",
+    "source": "try:\n print(int('k2chs8jacc5g718abkqgokq448',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base30-uint128",
+    "source": "try:\n print(int('1a4p5qh8koob2e2gknbn3jbm88f',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base30-promoted128",
+    "source": "try:\n print(int('1a4p5qh8koob2e2gknbn3jbm88g',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base30-negative128",
+    "source": "try:\n print(int('-1a4p5qh8koob2e2gknbn3jbm88g',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base30-chunks",
     "source": "try:\n print(int('-2k9kbn4hbjim4s53bgng78negit',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -443,6 +1023,26 @@
     "name": "base31-promoted",
     "source": "try:\n print(int('nd075ib45k86g',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base31-int128-high",
+    "source": "try:\n print(int('8q7cd4uoh31nng3aqs4edr0p74',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base31-uint128",
+    "source": "try:\n print(int('hleoq9ui363gg16lmp8srn1je7',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base31-promoted128",
+    "source": "try:\n print(int('hleoq9ui363gg16lmp8srn1je8',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base31-negative128",
+    "source": "try:\n print(int('-hleoq9ui363gg16lmp8srn1je8',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base31-chunks",
@@ -460,6 +1060,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base32-int128-high",
+    "source": "try:\n print(int('40000000000000000000000000',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base32-uint128",
+    "source": "try:\n print(int('7vvvvvvvvvvvvvvvvvvvvvvvvv',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base32-promoted128",
+    "source": "try:\n print(int('80000000000000000000000000',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base32-negative128",
+    "source": "try:\n print(int('-80000000000000000000000000',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base32-chunks",
     "source": "try:\n print(int('-g000000000000000000000001p',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -473,6 +1093,26 @@
     "name": "base33-promoted",
     "source": "try:\n print(int('b1w8p7j5q9r6g',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base33-int128-high",
+    "source": "try:\n print(int('1s5acer890k5h07uh412q2mo0t',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base33-uint128",
+    "source": "try:\n print(int('3nakotlgi17b10fs1825j5cf1o',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base33-promoted128",
+    "source": "try:\n print(int('3nakotlgi17b10fs1825j5cf1p',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base33-negative128",
+    "source": "try:\n print(int('-3nakotlgi17b10fs1825j5cf1p',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base33-chunks",
@@ -490,6 +1130,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base34-int128-high",
+    "source": "try:\n print(int('ttq3btpo06a5neskugckddplq',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base34-uint128",
+    "source": "try:\n print(int('1ppi6nphe0ckbctn7qwp6qrh9h',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base34-promoted128",
+    "source": "try:\n print(int('1ppi6nphe0ckbctn7qwp6qrh9i',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base34-negative128",
+    "source": "try:\n print(int('-1ppi6nphe0ckbctn7qwp6qrh9i',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base34-chunks",
     "source": "try:\n print(int('-3hh2ddh0s0p6mppcfjvgdjl0kp',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -505,6 +1165,26 @@
     "output": "18446744073709551616\n"
   },
   {
+    "name": "base35-int128-high",
+    "source": "try:\n print(int('evh2xn5qudpcldl13shtyuixn',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base35-uint128",
+    "source": "try:\n print(int('try5wbbiprfp7r727m0oyq2wa',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base35-promoted128",
+    "source": "try:\n print(int('try5wbbiprfp7r727m0oyq2wb',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base35-negative128",
+    "source": "try:\n print(int('-try5wbbiprfp7r727m0oyq2wb',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
+  },
+  {
     "name": "base35-chunks",
     "source": "try:\n print(int('-1okxbtmn2gjvffje4f91eyh5v9',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "-680564733841876926926749214863536422969\n"
@@ -518,6 +1198,26 @@
     "name": "base36-promoted",
     "source": "try:\n print(int('3w5e11264sgsg',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
     "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base36-int128-high",
+    "source": "try:\n print(int('7ksyyizzkutudzbv8aqztecjk',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "170141183460469231731687303715884105728\n"
+  },
+  {
+    "name": "base36-uint128",
+    "source": "try:\n print(int('f5lxx1zz5pnorynqglhzmsp33',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211455\n"
+  },
+  {
+    "name": "base36-promoted128",
+    "source": "try:\n print(int('f5lxx1zz5pnorynqglhzmsp34',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "340282366920938463463374607431768211456\n"
+  },
+  {
+    "name": "base36-negative128",
+    "source": "try:\n print(int('-f5lxx1zz5pnorynqglhzmsp34',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-340282366920938463463374607431768211456\n"
   },
   {
     "name": "base36-chunks",

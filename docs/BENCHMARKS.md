@@ -96,6 +96,13 @@ preserves its distinct sources and adverse controls.
 
 ## Improvements within Lython
 
+The later [native integer-width change](../benchmarks/results/2026-11-07-native-integer-width/README.md)
+reduces numeric-string JSON allocation about12.5% under both APIs, with controlled
+warm elapsed10.7–12.5% lower. Padded CSV is1.0–1.2% slower; that measured tradeoff
+is retained rather than hidden behind another parser tier. Ordinary JSON remains
+variable. These affected-input source pairs do not replace the CPython tables or
+establish async elapsed, larger-input scaling, isolated CPU or embedding latency.
+
 The later [declaration binding layout](../benchmarks/results/2026-11-07-declaration-bindings/README.md)
 uses existing module slots while retaining live namespaces. A bounded source-pair
 comparison observes warm search4.3–5.1%, text2.1–5.7% and ordinary JSON5.5–7.7%
