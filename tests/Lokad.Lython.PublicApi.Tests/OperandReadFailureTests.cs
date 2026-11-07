@@ -12,6 +12,11 @@ public sealed class OperandReadFailureTests
     [InlineData("for missing in []:pass\nfor item in missing:pass", "missing", "NameError")]
     [InlineData("for missing in []:pass\nif missing:print('called')", "missing", "NameError")]
     [InlineData("def fail():\n for left in []:pass\n for right in []:pass\n return left + right\nfail()", "left", "UnboundLocalError")]
+    [InlineData("for value in []:pass\nfor receiver in []:pass\nfor key in []:pass\nreceiver[key]=value", "value", "NameError")]
+    [InlineData("value=1\nfor receiver in []:pass\nfor key in []:pass\nreceiver[key]=value", "receiver", "NameError")]
+    [InlineData("value=1\nreceiver={}\nfor key in []:pass\nreceiver[key]=value", "key", "NameError")]
+    [InlineData("for value in []:pass\n-value", "value", "NameError")]
+    [InlineData("def fail():\n for value in []:pass\n return value\nfail()", "value", "UnboundLocalError")]
     public async Task FailedReadsKeepTheirOriginalSpanAndPrecedeProtocols(string source, string name, string exceptionType)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

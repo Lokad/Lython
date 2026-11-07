@@ -1,0 +1,234 @@
+{
+  "census": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "code": "<module>",
+      "instructions": [
+        85,
+        77
+      ],
+      "capacity": [
+        9,
+        9
+      ],
+      "payloadBytes": [
+        2720,
+        2592
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "code": "words_from_line",
+      "instructions": [
+        6,
+        6
+      ],
+      "capacity": [
+        2,
+        2
+      ],
+      "payloadBytes": [
+        192,
+        192
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "code": "<module>",
+      "instructions": [
+        88,
+        83
+      ],
+      "capacity": [
+        8,
+        8
+      ],
+      "payloadBytes": [
+        2816,
+        2736
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "code": "accumulate",
+      "instructions": [
+        24,
+        17
+      ],
+      "capacity": [
+        5,
+        5
+      ],
+      "payloadBytes": [
+        768,
+        640
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "code": "<module>",
+      "instructions": [
+        96,
+        87
+      ],
+      "capacity": [
+        8,
+        8
+      ],
+      "payloadBytes": [
+        3072,
+        2912
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "code": "record_amount",
+      "instructions": [
+        4,
+        4
+      ],
+      "capacity": [
+        4,
+        4
+      ],
+      "payloadBytes": [
+        128,
+        128
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.report-render.large",
+      "code": "<module>",
+      "instructions": [
+        65,
+        62
+      ],
+      "capacity": [
+        5,
+        5
+      ],
+      "payloadBytes": [
+        2080,
+        2032
+      ],
+      "stride": 32
+    },
+    {
+      "case": "scripts.report-render.large",
+      "code": "render",
+      "instructions": [
+        19,
+        13
+      ],
+      "capacity": [
+        5,
+        5
+      ],
+      "payloadBytes": [
+        608,
+        464
+      ],
+      "stride": 32
+    }
+  ],
+  "compile": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "allocated": {
+        "before": 151914.0,
+        "candidate": 152210.0,
+        "before-control": 151914.0
+      },
+      "changePct": 0.195,
+      "peaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        },
+        "before": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "allocated": {
+        "before": 179218.0,
+        "candidate": 180770.0,
+        "before-control": 179218.0
+      },
+      "changePct": 0.866,
+      "peaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        },
+        "before": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        }
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocated": {
+        "before": 164130.0,
+        "candidate": 164746.0,
+        "before-control": 164130.0
+      },
+      "changePct": 0.375,
+      "peaks": {
+        "before-control": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        },
+        "candidate": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        },
+        "before": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocated": {
+        "before": 136170.0,
+        "candidate": 137306.0,
+        "before-control": 136170.0
+      },
+      "changePct": 0.834,
+      "peaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        },
+        "before": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "checks": {
+    "delivery-Lokad.Lython.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~LoweringArchitectureSubsystem|FullyQualifiedName~LocalAugmentedLifetime)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    70, Skipped:     0, Total:    70, Duration: 289 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+    },
+    "delivery-Lokad.Lython.PublicApi.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~OperandReadFailure|FullyQualifiedName~ClassSubscription)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    47, Skipped:     0, Total:    47, Duration: 1 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+    },
+    "delivery-Lokad.Lython.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~LoweringArchitectureSubsystem|FullyQualifiedName~LocalAugmentedLifetime)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    70, Skipped:     0, Total:    70, Duration: 320 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)\n"
+    },
+    "delivery-Lokad.Lython.PublicApi.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~OperandReadFailure|FullyQualifiedName~ClassSubscription)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    47, Skipped:     0, Total:    47, Duration: 1 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "9eb7a6b58eb4cca8a5b797289b0cd0189a8564efb8132c2385ab3fcb59e286ad",
+    "net10.0": "7fe742dcdd4ef39d924cabbb5f05858ae20753aec361b0e4bb7f4b3c4099933e"
+  },
+  "postFreezeCleanup": {
+    "measuredImagesUnchanged": true,
+    "sourceChanges": {
+      "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.cs": "31978a1a58b66728510e79ce439b9dc794294f0fc1826118d1ee3edf70795766"
+    },
+    "meaning": "Restore the original checked arithmetic and remove leftover prototype comments; this production file now exactly matches the qualified baseline. Frozen B397/B398 full sources remain archived. Delivery source/image rebuild and qualification still pending."
+  },
+  "fullPlatformDeliveryPending": true
+}

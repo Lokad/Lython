@@ -84,6 +84,12 @@ retain their distinct source pairs and adverse results.
 
 ## Improvements within Lython
 
+The later [ordinary-operation transport consolidation](../benchmarks/results/2026-11-07-operand-transport/README.md)
+emits fewer instructions and reduces instruction/read-span payload. Its controlled
+complete-script elapsed results are mostly variable, including inconclusive JSON;
+no substantial CPU gain is established. Separate compile allocation rises 0.20–0.87%.
+It is not included in the CPython revision measured above.
+
 CPython is the primary external baseline above. These separate source pairs
 measure affected workloads; percentages are not additive or broad CPU claims:
 

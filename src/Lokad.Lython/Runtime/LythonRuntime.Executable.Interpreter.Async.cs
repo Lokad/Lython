@@ -190,36 +190,12 @@ internal sealed partial class LythonRuntime
             catch { _execution.Stack.RetireTo(slot); throw; }
         }
 
-        private async ValueTask ExecuteOperandValueOperationAsync(ExecutableInstruction instruction)
+        private async ValueTask ExecuteSliceValueOperationAsync(ExecutableInstruction instruction)
         {
-            var first = instruction.InputStart;
             try
             {
-                object result;
-                switch (instruction.OpCode)
-                {
-                    case ExecutableOpCode.Subscript:
-                        result = _preparedCallValue is not null
-                            ? await InvokePreparedTypeSubscription(_execution.Stack[first + 1], instruction.Span, true).ConfigureAwait(false)
-                            : await ReadLoweredSubscriptAsync(_execution.Stack[first], _execution.Stack[first + 1], instruction.Span, this).ConfigureAwait(false);
-                        break;
-                    case ExecutableOpCode.Slice:
-                        var (start, end, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, instruction.InputStart + 1);
-                        result = await ReadSliceValueAsync(_execution.Stack[first], start, end, step, instruction.Span, this).ConfigureAwait(false);
-                        break;
-                    case ExecutableOpCode.Binary:
-                        result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator,
-                            ReadOperand(first), ReadOperand(instruction.SecondInput), this, instruction.Span).ConfigureAwait(false);
-                        break;
-                    case ExecutableOpCode.Augmented:
-                        result = await EvaluateAugmentedAssignmentAsync(ReadOperand(first), ReadOperand(instruction.SecondInput),
-                            instruction.AugmentedOperator, this, instruction.Span).ConfigureAwait(false);
-                        break;
-                    case ExecutableOpCode.Unary:
-                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), ReadOperand(first), this, instruction.Span).ConfigureAwait(false);
-                        break;
-                    default: throw new InvalidOperationException("Unexpected value operation.");
-                }
+                var (start, end, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, instruction.InputStart + 1);
+                var result = await ReadSliceValueAsync(_execution.Stack[instruction.InputStart], start, end, step, instruction.Span, this).ConfigureAwait(false);
                 PublishInstructionResult(instruction, result);
             }
             catch { _execution.Stack.RetireTo(instruction.ResultSlot); throw; }

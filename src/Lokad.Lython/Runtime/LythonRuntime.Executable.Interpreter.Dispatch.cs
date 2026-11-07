@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private enum InstructionPause { Boundary, Operation, Disposal, ContextRequired }
+        private enum InstructionPause { Continue, Boundary, Operation, Disposal, ContextRequired }
 
         // Both APIs execute completed instructions here, outside an async state
         // machine. An incomplete operation leaves its instruction/span current.
@@ -35,15 +35,8 @@ internal sealed partial class LythonRuntime
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;
                         case ExecutableOpCode.StoreLocal:
-                            StoreExecutableLocal(ref execution, invocation, instruction);
+                            StoreExecutableLocal(ref execution, scope, invocation, instruction);
                             break;
-                        case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
-                            if (invocation is null)
-                            {
-                                if (!TryExecuteSubscriptStoreWithoutContext(ref execution, instruction, scope)) return InstructionPause.ContextRequired;
-                                break;
-                            }
-                            goto case ExecutableOpCode.StoreMember;
                         case ExecutableOpCode.StoreMember:
                         case ExecutableOpCode.StoreMemberLast
                             or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
@@ -156,49 +149,11 @@ internal sealed partial class LythonRuntime
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
-                        case ExecutableOpCode.Binary or ExecutableOpCode.Augmented:
-                            var immediateBinary = (!asynchronous && invocation is not null) ||
-                                (ReadOperand(ref execution, instruction.InputStart) is BigInteger or double or bool &&
-                                 ReadOperand(ref execution, instruction.SecondInput) is BigInteger or double or bool) ||
-                                (ReadOperand(ref execution, instruction.InputStart) is PyString && ReadOperand(ref execution, instruction.SecondInput) is PyString);
-                            if (!immediateBinary && invocation is null) return InstructionPause.ContextRequired;
-                            if (immediateBinary)
-                                ExecuteOperandValueOperation(ref execution, scope, invocation, instruction);
-                            else
-                            {
-                                pending = WithoutJump(invocation!.ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
-                                _ = ConsumeOperation(ref pending);
-                            }
-                            break;
-                        case ExecutableOpCode.Unary:
-                            var immediateUnary = (!asynchronous && invocation is not null) ||
-                                ReadOperand(ref execution, instruction.InputStart) is BigInteger or double or bool;
-                            if (!immediateUnary && invocation is null) return InstructionPause.ContextRequired;
-                            if (immediateUnary)
-                                ExecuteOperandValueOperation(ref execution, scope, invocation, instruction);
-                            else
-                            {
-                                pending = WithoutJump(invocation!.ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
-                                _ = ConsumeOperation(ref pending);
-                            }
-                            break;
-                        case ExecutableOpCode.Subscript:
-                            if (invocation is not null && invocation.TrySuspendForTypeSubscription(instruction)) return InstructionPause.Boundary;
-                            // Evaluate the key before inspecting protocol-key state.
-                            var immediateSubscript = (!asynchronous && invocation is not null) || (execution.Stack[instruction.InputStart + 1] is BigInteger &&
-                                 execution.Stack[instruction.InputStart] is PyList or PyTuple or PyBytes or PyString or PyRange) ||
-                                (execution.Stack[instruction.InputStart] is PyDict dictionary && dictionary.CanReadKeySynchronously(execution.Stack[instruction.InputStart + 1]));
-                            if (!immediateSubscript && invocation is null) return InstructionPause.ContextRequired;
-                            if (immediateSubscript)
-                                ExecuteOperandValueOperation(ref execution, scope, invocation, instruction);
-                            else
-                            {
-                                pending = WithoutJump(invocation!.ExecuteOperandValueOperationAsync(instruction));
-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
-                                _ = ConsumeOperation(ref pending);
-                            }
+                        case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or ExecutableOpCode.Subscript
+                            or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
+                            var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
+                                out pending, out pendingSpan);
+                            if (pause != InstructionPause.Continue) return pause;
                             break;
                         case ExecutableOpCode.ForNext:
                             if (invocation is null) return InstructionPause.ContextRequired;
@@ -251,7 +206,7 @@ internal sealed partial class LythonRuntime
                             if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
                             else
                             {
-                                pending = WithoutJump(invocation!.ExecuteOperandValueOperationAsync(instruction));
+                                pending = WithoutJump(invocation!.ExecuteSliceValueOperationAsync(instruction));
                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                                 _ = ConsumeOperation(ref pending);
                             }

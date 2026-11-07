@@ -29,11 +29,6 @@ internal sealed partial class LythonRuntime
                         else SetMemberValue(receiver, name, value, targetSpan, this);
                         break;
                     }
-                    case ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
-                    {
-                        mutation = ExecuteSubscriptStore(ref _execution, instruction, this, asynchronous);
-                        break;
-                    }
                     case ExecutableOpCode.ReadRetainedSubscript:
                     {
                         ValueTask<object> read;
@@ -143,34 +138,6 @@ internal sealed partial class LythonRuntime
                 throw;
             }
             return CompleteTargetMutation(mutation, instruction.LiveExtent);
-        }
-
-        private static ValueTask ExecuteSubscriptStore(ref ExecutableWorkState execution,
-            in ExecutableInstruction instruction, ExecutionContext scope, bool asynchronous)
-        {
-            var first = instruction.InputStart;
-            var receiver = execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
-            var key = execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
-            var value = execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
-            var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
-            if (asynchronous) return SetHeaderSubscriptAsync(receiver, key, value, span, scope);
-            SetSubscriptValue(receiver, key, value, span, scope);
-            return default;
-        }
-
-        private static bool TryExecuteSubscriptStoreWithoutContext(ref ExecutableWorkState execution,
-            in ExecutableInstruction instruction, ExecutionContext scope)
-        {
-            var first = instruction.InputStart;
-            var receiver = execution.Stack[first + (instruction.ValueLast ? 0 : 1)];
-            if (receiver is not PyDict table) return false;
-            var key = execution.Stack[first + (instruction.ValueLast ? 1 : 2)];
-            var value = execution.Stack[first + (instruction.ValueLast ? 2 : 0)];
-            var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
-            if (!table.TryWriteKeyWithoutAdmission(key, value, scope, span)) return false;
-            try { scope.CheckExecution(span); }
-            finally { execution.Stack.RetireTo(instruction.LiveExtent); }
-            return true;
         }
 
         private ValueTask CompleteTargetMutation(ValueTask pending, int liveExtent)

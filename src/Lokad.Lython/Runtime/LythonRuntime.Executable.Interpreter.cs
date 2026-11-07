@@ -283,20 +283,25 @@ internal sealed partial class LythonRuntime
         // than the long-running dispatch loop. Keep the CLR temporary here so
         // deleting a slot can make its payload collectible before frame exit.
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext? invocation, in ExecutableInstruction instruction)
+        private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
             => StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, instruction.LocalSlot,
-                TakeOperand(ref execution, instruction), instruction.Span);
+                TakeOperand(ref execution, instruction, scope), instruction.Span);
 
-        private object ReadOperand(int source) => ReadOperand(ref _execution, source);
+        private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
+        {
+            if (source < 0) return RuntimeValue(execution.Code.Constants[~source]);
+            var value = execution.Stack[source];
+            if (source < execution.Code.FirstTemporarySlot && ReferenceEquals(value, UninitializedLocal))
+                return LoadLocal(execution.Code, execution.Locals, source,
+                    execution.Code.OperandReadSpan(execution.InstructionIndex, input), scope);
+            return value;
+        }
 
-        private static object ReadOperand(ref ExecutableWorkState execution, int source)
-            => source < 0 ? RuntimeValue(execution.Code.Constants[~source]) : execution.Stack[source];
-
-        private static object TakeOperand(ref ExecutableWorkState execution, in ExecutableInstruction instruction)
+        private static object TakeOperand(ref ExecutableWorkState execution, in ExecutableInstruction instruction, ExecutionContext scope)
         {
             if (instruction.InputStart >= execution.Code.FirstTemporarySlot)
                 return execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-            var value = ReadOperand(ref execution, instruction.InputStart);
+            var value = ReadOperand(ref execution, instruction.InputStart, scope, 0);
             execution.Stack.RetireTo(instruction.LiveExtent);
             return value;
         }
@@ -532,7 +537,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.Slice:
-                    ExecuteOperandValueOperation(ref _execution, this, this, instruction);
+                    ExecuteSliceValueOperation(ref _execution, this, this, instruction);
                     break;
 
                 case ExecutableOpCode.MakeSlice:
@@ -545,26 +550,12 @@ internal sealed partial class LythonRuntime
 
         }
 
-        private static void ExecuteOperandValueOperation(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
+        private static void ExecuteSliceValueOperation(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
-            var first = instruction.InputStart;
             try
             {
-                // Borrow the actual operands through callback reentry. Completion
-                // reuses their first slot before result admission; no extra extent.
-                var result = instruction.OpCode switch
-                {
-                    ExecutableOpCode.Subscript => invocation?._preparedCallValue is not null
-                        ? invocation!.InvokePreparedTypeSubscription(execution.Stack[first + 1], instruction.Span, false).GetAwaiter().GetResult()
-                        : ReadSubscriptValue(execution.Stack[first], execution.Stack[first + 1], instruction.Span, scope),
-                    ExecutableOpCode.Slice => ExecuteExecutableSlice(in execution.Stack, instruction.InputStart, instruction.SliceParts, instruction.Span, scope),
-                    ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator,
-                        ReadOperand(ref execution, first), ReadOperand(ref execution, instruction.SecondInput), scope, instruction.Span),
-                    ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(ReadOperand(ref execution, first), ReadOperand(ref execution, instruction.SecondInput),
-                        instruction.AugmentedOperator, scope, instruction.Span),
-                    ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, ReadOperand(ref execution, first), scope, instruction.Span),
-                    _ => throw new InvalidOperationException("Unexpected value operation."),
-                };
+                var result = ExecuteExecutableSlice(in execution.Stack, instruction.InputStart, instruction.SliceParts, instruction.Span, scope);
                 PublishInstructionResult(ref execution, invocation, instruction, result);
             }
             catch { execution.Stack.RetireTo(instruction.ResultSlot); throw; }
@@ -686,7 +677,7 @@ internal sealed partial class LythonRuntime
                     return true;
 
                 case ExecutableOpCode.Return:
-                    return DeliverReturn(ref execution, invocation, TakeOperand(ref execution, instruction), instruction.Span);
+                    return DeliverReturn(ref execution, invocation, TakeOperand(ref execution, instruction, scope), instruction.Span);
 
                 case ExecutableOpCode.ReturnNone:
                     return DeliverReturn(ref execution, invocation, PyNone.Instance, instruction.Span);

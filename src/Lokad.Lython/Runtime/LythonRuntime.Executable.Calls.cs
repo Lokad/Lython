@@ -94,21 +94,23 @@ internal sealed partial class LythonRuntime
 
         // Type subscription has at most two calls: a raw descriptor getter,
         // then its callable result. Both use the existing admitted frame runner.
-        private bool TrySuspendForTypeSubscription(ExecutableInstruction instruction)
+        private bool TrySuspendForTypeSubscription(ExecutableInstruction instruction, ExecutableInputs inputs)
         {
-            var start = instruction.InputStart;
+            var start = instruction.ResultSlot;
             if (_preparedCallValue is { } prepared)
             {
                 if (!TryPrepareSubscriptionCallable(prepared, instruction.Span, start)) return false;
                 _preparedCallValue = null;
                 return true;
             }
-            if (_execution.Stack[start] is not PyType type ||
+            if (inputs.First is not PyType type ||
                 !type.TryLookupInMro("__class_getitem__", 0, out var raw, out _)) return false;
             if (raw is PyInstance descriptor &&
                 descriptor.Type.TryLookupInMro("__get__", 0, out var getter, out _) &&
                 getter is PyExecutableFunction { SupportsDirectPositional: true } function)
             {
+                _execution.Stack.PublishValue(start, start + 1, inputs.First);
+                _execution.Stack.PublishValue(start + 1, start + 2, inputs.Second!);
                 // Match raw ternary invocation: prefix self through the binder,
                 // retaining the original receiver and key in their current slots.
                 _execution.Stack.PublishValue(start + 2, start + 3, PyNone.Instance);
@@ -121,6 +123,8 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             if (raw is not (PyClassMethod or PyStaticMethod or PyExecutableFunction)) return false;
+            _execution.Stack.PublishValue(start, start + 1, inputs.First);
+            _execution.Stack.PublishValue(start + 1, start + 2, inputs.Second!);
             var member = PyAttributeLookup.BindForType(type, raw, this, instruction.Span);
             if (TryPrepareSubscriptionCallable(member, instruction.Span, start)) return true;
             _preparedCallValue = member;
@@ -366,7 +370,7 @@ internal sealed partial class LythonRuntime
                 }
             }
             if (completion == CallCompletion.TypeSubscription) CheckExecution(span);
-            if (failure is not null)
+                if (failure is not null)
             {
                 _execution.Stack.RetireTo(start);
                 if (failure is LythonRuntimeException runtimeError) _injectedException = runtimeError;

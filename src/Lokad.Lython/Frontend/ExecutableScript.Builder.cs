@@ -143,17 +143,6 @@ internal sealed partial class ExecutableScript
                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
-            var operandLayout = ExecutableStackLayout.Prepare(normalizedBlocks, _constants, _callSites,
-                normalizedRegions, 0, generatorExpression is null ? 0 : 1, _locals.Count);
-            // Syntactic reachability retains handler tails even after an
-            // unconditional raise. Such regions have no executable entry.
-            normalizedRegions = normalizedRegions
-                .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
-                .Select(region => region with
-            {
-                StackDepth = checked(_locals.Count + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value)
-            }).ToArray();
-
             // This builder is single-use; its completed slot maps become code metadata.
             return new ExecutableCodeObject(
                 name,
@@ -176,7 +165,7 @@ internal sealed partial class ExecutableScript
                 _statementFallbacks.ToArray(),
                 requiresLocalVariableMirroring,
                 isFunctionScope: _parameterLayout is not null,
-                operandLayout: operandLayout);
+                initialOperandDepth: generatorExpression is null ? 0 : 1);
 
             int[] CollectCapturedLocalSlots()
             {

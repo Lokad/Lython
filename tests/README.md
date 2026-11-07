@@ -15,6 +15,14 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Direct operand ownership](Lokad.Lython.Tests/DirectOperandOwnershipTests.cs)
+checks three-input subscript stores through protocol rebinding and real suspension.
+Cancellation or first refusal stops mutation and later effects, preserves aliases
+and restores managed depths and shared funding after cleanup. Public
+[operand read failures](Lokad.Lython.PublicApi.Tests/OperandReadFailureTests.cs)
+retain the original failing name/span and evaluation order. Class-subscription
+controls preserve the original type/key through descriptor and body suspension.
+
 [Receiver methods](Lokad.Lython.PublicApi.Tests/ReceiverMethodSemanticsTests.cs)
 check receiver snapshots, exposed metadata, default presence, invalid-call effects
 and genuinely suspended regex selectors. Concurrent runs keep independent tokens

@@ -1,0 +1,7 @@
+{
+  "measuredImagesUnchanged": true,
+  "sourceChanges": {
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.cs": "31978a1a58b66728510e79ce439b9dc794294f0fc1826118d1ee3edf70795766"
+  },
+  "meaning": "Restore the original checked arithmetic and remove leftover prototype comments; this production file now exactly matches the qualified baseline. Frozen B397/B398 full sources remain archived. Delivery source/image rebuild and qualification still pending."
+}

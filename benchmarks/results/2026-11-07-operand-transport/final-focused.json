@@ -1,0 +1,37 @@
+{
+  "checks": {
+    "final-Lokad.Lython.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~LocalAugmentedLifetime|FullyQualifiedName~NestedFrameLifetime|FullyQualifiedName~CompletedHelperCallOwnership|FullyQualifiedName~AsyncExecutableFunction|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~ExecutableOperandStackBoundary|FullyQualifiedName~LoweringArchitectureSubsystem)",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   128, Skipped:     0, Total:   128, Duration: 277 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "final-Lokad.Lython.PublicApi.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~ClassSubscription|FullyQualifiedName~OperandReadFailure|FullyQualifiedName~NativeCallback|FullyQualifiedName~ReceiverMethodSemantics|FullyQualifiedName~Cancellation)",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   676, Skipped:     0, Total:   676, Duration: 31 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "final-Lokad.Lython.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~LocalAugmentedLifetime|FullyQualifiedName~NestedFrameLifetime|FullyQualifiedName~CompletedHelperCallOwnership|FullyQualifiedName~AsyncExecutableFunction|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~ExecutableOperandStackBoundary|FullyQualifiedName~LoweringArchitectureSubsystem)",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   128, Skipped:     0, Total:   128, Duration: 328 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "final-Lokad.Lython.PublicApi.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~ClassSubscription|FullyQualifiedName~OperandReadFailure|FullyQualifiedName~NativeCallback|FullyQualifiedName~ReceiverMethodSemantics|FullyQualifiedName~Cancellation)",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   676, Skipped:     0, Total:   676, Duration: 32 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "8b5ce5bc1b0f066f16c77a79e80ddbe2ed1537f4032d17f204866d1a31849af3",
+    "net10.0": "ed80f283bbb981b143cad4809a0b815d365288c4ee2b63acf7a3ae14b283404b"
+  },
+  "fullDeliveryPending": true
+}

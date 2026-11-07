@@ -3658,3 +3658,29 @@ capture, new arena, stack-policy change, prototype or speedup claim follows yet.
 All raw profiles/maps/JIT/code/gates are archived under lease before RAM removal.
 Local Windows extraction skips only zero-byte Linux FIFO metadata; original archive
 and failed condition stay intact, without a service query or collection restart.
+
+## R43 ordinary-operation operand transport — B397/B398
+
+[R43](results/2026-11-07-operand-transport/README.md) extends the existing indexed
+inputs and folds before one physical-layout pass. Initialized-local tracking,
+invalidation inventories and duplicate value/store selectors disappear. Checked
+reads retain original spans; native helpers and real snapshots remain. An initial
+40-byte instruction is refined back to32 by reusing redundant store metadata.
+The prototype frame snapshot cache/cleanup hooks/64-byte charge are removed;
+raw type getters reuse existing funded scratch. Text85→77instructions, CSV helper
+24→17, report helper19→13; immutable payload smaller, call-dominated workspace flat.
+Initial compile allocation+2.8–3.5% becomes+0.20–0.87%. Original conflicting desktop
+timings, including async text+20.88%, stay separate from controlled VM results.
+
+B397 completes warm text then rejects my invalid `fresh` protocol lane. Original
+stderr/partial observations and failure-archive helper syntax error survive, with
+no workers/fixtures. B398 corrects the lane to `compile-run` with identical frozen
+images;141.38s/all five gates, terminal/archived/hash-verified. Text warm−1.37to+1.11%,
+fresh−2.23to−0.15%, CSV−1.57to+0.76%, JSON−2.37to+6.81% with6.66%identical-current
+spread, report−2.19to−0.73%/IQRup3.92%. Retain consolidation with small compilation
+cost and elapsed/JSON uncertainty; no substantial CPU gain, parity, debt repayment
+or primary CPython refresh. No unchanged retiming selected. Initial/refined1,167
+internal/2,665public per target, cache deletion128/676, final checked-arithmetic
+cleanup/nonincremental delivery70/47 per target pass. Full delivery pending.
+Continue the whole-script objective; next assess duplicate completed-instruction
+checks without replacement counters, fuel or weaker containment.

@@ -70,21 +70,32 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             for (var instructionIndex = 0; instructionIndex < instructions.Length; instructionIndex++)
             {
                 var instruction = instructions[instructionIndex];
-                var (pop, push, minimum) = Effect(instruction, constants, calls);
+                var (pop, push, minimum) = Effect(instruction, constants, calls, firstTemporarySlot);
                 if (depth < minimum)
                     throw new InvalidOperationException($"Executable operand underflow in block {blockIndex}: {instruction.OpCode}, depth {depth}, required {minimum}.");
                 // A raw __class_getitem__ descriptor getter temporarily retains
                 // its two protocol arguments above the ordinary subscript inputs.
                 if (instruction.OpCode == ExecutableOpCode.Subscript)
-                    maximum = Math.Max(maximum, checked(depth + 2));
+                    maximum = Math.Max(maximum, checked(depth - pop + 4));
                 var resultSlot = depth - pop;
                 var inputStart = depth - minimum;
                 depth = checked(resultSlot + push);
                 // Prepare the owned instruction array in this existing shape
                 // pass; linearization preserves these facts while retargeting.
-                instructions[instructionIndex] = instruction.WithStorageSlots(
+                var prepared = instruction.WithStorageSlots(
                     checked(firstTemporarySlot + inputStart), checked(firstTemporarySlot + resultSlot),
                     checked(firstTemporarySlot + depth));
+                if (instruction.ValueInputCount != 0)
+                {
+                    var physical = checked(firstTemporarySlot + inputStart);
+                    var first = instruction.InputStart < firstTemporarySlot ? instruction.InputStart : physical++;
+                    var second = instruction.ValueInputCount > 1
+                        ? instruction.SecondInput < firstTemporarySlot ? instruction.SecondInput : physical++ : int.MaxValue;
+                    var third = instruction.ValueInputCount == 3
+                        ? instruction.ThirdInput < firstTemporarySlot ? instruction.ThirdInput : physical++ : int.MaxValue;
+                    prepared = prepared.WithValueInputs(first, second, third);
+                }
+                instructions[instructionIndex] = prepared;
                 var ownedSlot = instruction.OpCode switch
                 {
                     ExecutableOpCode.GetIter => inputStart,
@@ -147,83 +158,58 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         }
     }
 
-    // Fixed-arity consumers can read an immutable constant or an already-bound
-    // plain local directly. Other consumers keep their evaluated contiguous
-    // packets. Only adjacent leaf reads are removed: callbacks and failable
-    // reads retain their original order and source attribution.
-    internal static void ForwardValues(ExecutableCodeObject code, List<ExecutableBasicBlock> blocks)
+    // Forward adjacent pure leaf inputs before assigning physical positions.
+    // Checked locals keep their original spans in cold metadata; neither branch
+    // initialization facts nor their invalidation inventories are needed.
+    internal static List<(int Block, int Instruction, int Input, LythonSourceSpan Span)> ForwardValues(
+        ExecutableCodeObject code, List<ExecutableBasicBlock> blocks)
     {
-        var initialized = code.IsFunctionScope && !code.RequiresLocalVariableMirroring
-            ? new bool[code.LocalNames.Count] : [];
+        var reads = new List<(int Block, int Instruction, int Input, LythonSourceSpan Span)>();
         for (var block = 0; block < blocks.Count; block++)
         {
-            Array.Clear(initialized);
             var instructions = blocks[block].InstructionArray;
             var kept = 0;
             for (var index = 0; index < instructions.Length; index++)
             {
                 var instruction = instructions[index];
-                var count = instruction.OpCode switch
-                {
-                    ExecutableOpCode.Binary or ExecutableOpCode.Augmented => 2,
-                    ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return => 1,
-                    _ => 0
-                };
+                var count = instruction.ValueInputCount;
                 var first = instruction.InputStart;
                 var second = instruction.SecondInput;
-                var inputBase = kept - count;
-                for (var input = count - 1; input >= 0; input--)
+                var third = count == 3 ? instruction.ThirdInput : int.MaxValue;
+                LythonSourceSpan? firstSpan = null, secondSpan = null, thirdSpan = null;
+                for (var input = count - 1; input >= 0 && kept != 0; input--)
                 {
-                    var previous = inputBase + input;
-                    if (previous < 0) break;
-                    var leaf = instructions[previous];
-                    if (leaf.OpCode is not (ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal)
-                        || leaf.ResultSlot != instruction.ResultSlot + input) break;
+                    var leaf = instructions[kept - 1];
                     int source;
+                    LythonSourceSpan? span = null;
                     if (leaf.OpCode == ExecutableOpCode.LoadConst) source = ~leaf.ConstantIndex;
-                    else if (initialized.Length != 0 && initialized[leaf.LocalSlot]) source = leaf.LocalSlot;
-                    else continue;
-                    if (input == 0) first = source;
-                    else second = source;
-                    // At most one later leaf remains. Preserve that failable
-                    // read in order while dropping the infallible input copy.
-                    if (previous < kept - 1) instructions[previous] = instructions[kept - 1];
+                    else if (leaf.OpCode == ExecutableOpCode.LoadLocal && !code.RequiresLocalVariableMirroring
+                        && !code.CapturedLocalSlots.Contains(leaf.LocalSlot))
+                    {
+                        source = leaf.LocalSlot;
+                        span = leaf.Span;
+                    }
+                    else break;
+                    if (input == 0) { first = source; firstSpan = span; }
+                    else if (input == 1) { second = source; secondSpan = span; }
+                    else { third = source; thirdSpan = span; }
                     kept--;
                 }
-                instruction = count == 0 ? instruction : instruction.WithValueInputs(first, second);
-                // A single guest result can go directly into the adjacent
-                // binding. Keep that store for its span and for pending cleanup.
-                if (instruction.OpCode == ExecutableOpCode.StoreLocal && kept > 0
-                    && instructions[kept - 1] is var producer
-                    && CanForwardResult(producer, code.Constants)
-                    && producer.ResultSlot == instruction.InputStart
-                    && producer.LiveExtent == instruction.InputStart + 1
-                    && instruction.LiveExtent == producer.ResultSlot)
-                    instructions[kept - 1] = producer.WithLocalResult();
+                if (count != 0) instruction = instruction.WithValueInputs(first, second, third);
+                // Keep the store as the pending-cleanup continuation and for its
+                // own guard/span. Direct sources do not consume a producer result.
+                if (instruction.OpCode == ExecutableOpCode.StoreLocal && first == int.MaxValue && kept > 0
+                    && CanForwardResult(instructions[kept - 1], code.Constants))
+                    instructions[kept - 1] = instructions[kept - 1].WithLocalResult();
+                if (firstSpan is not null) reads.Add((block, kept, 0, firstSpan));
+                if (secondSpan is not null) reads.Add((block, kept, 1, secondSpan));
+                if (thirdSpan is not null) reads.Add((block, kept, 2, thirdSpan));
                 instructions[kept++] = instruction;
-                if (initialized.Length != 0)
-                {
-                    if (instruction.OpCode == ExecutableOpCode.StoreLocal
-                        && !code.CapturedLocalSlots.Contains(instruction.LocalSlot))
-                        initialized[instruction.LocalSlot] = true;
-                    // Prepared deletion and lowered statement execution may
-                    // withdraw a binding. Keep their original local-read checks.
-                    else if (instruction.OpCode is ExecutableOpCode.ApplyOperation or ExecutableOpCode.ExecuteFallbackStatement
-                        or ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
-                        or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField
-                        or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
-                        or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
-                        or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
-                        or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
-                        or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
-                        or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
-                        or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice)
-                        Array.Clear(initialized);
-                }
             }
             if (kept != instructions.Length)
                 blocks[block] = blocks[block] with { InstructionArray = instructions[..kept] };
         }
+        return reads;
     }
 
     private static bool CanForwardResult(ExecutableInstruction instruction, IReadOnlyList<object?> constants)
@@ -245,7 +231,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
         };
 
     private static (int Pop, int Push, int Minimum) Effect(ExecutableInstruction instruction,
-        IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls)
+        IReadOnlyList<object?> constants, IReadOnlyList<ExecutableCallSite> calls, int firstTemporarySlot)
     {
         var (pop, push) = instruction.OpCode switch
         {
@@ -306,6 +292,14 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableAppendCall => 2,
                 _ => pop
             };
+        }
+        if (instruction.ValueInputCount != 0)
+        {
+            var forwarded = instruction.InputStart < firstTemporarySlot ? 1 : 0;
+            if (instruction.ValueInputCount > 1 && instruction.SecondInput < firstTemporarySlot) forwarded++;
+            if (instruction.ValueInputCount == 3 && instruction.ThirdInput < firstTemporarySlot) forwarded++;
+            pop -= forwarded;
+            minimum -= forwarded;
         }
         return (pop, push, minimum);
     }

@@ -107,8 +107,8 @@ internal readonly record struct ExecutableInstruction
     private readonly int _liveExtent;
 
     private ExecutableInstruction(ExecutableOpCode opCode, LythonSourceSpan span,
-        int primaryOperand = 0, int secondaryOperand = 0,
-        int inputStart = -1, int resultSlot = -1, int liveExtent = 0)
+        int primaryOperand = 0, int secondaryOperand = int.MaxValue,
+        int inputStart = int.MaxValue, int resultSlot = -1, int liveExtent = 0)
     {
         OpCode = opCode;
         Span = span;
@@ -127,7 +127,19 @@ internal readonly record struct ExecutableInstruction
     // no input-plan table or runtime shape calculation is needed.
     public int InputStart => _inputStart;
     public int SecondInput => _secondaryOperand;
-    public int ResultSlot => _resultSlot;
+    public int ThirdInput => ValueInputCount == 3 ? _resultSlot : throw InvalidOperand(nameof(ThirdInput));
+    internal int ValueInputCount => OpCode switch
+    {
+        ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => 2,
+        ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
+        ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return => 1,
+        _ => 0,
+    };
+    // A subscript store pushes no result: its output position is its live
+    // extent. Reuse that otherwise redundant field for its third input, keeping
+    // every instruction at the existing size, including native helper code.
+    public int ResultSlot => OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+        ? LiveExtent : _resultSlot;
     // A complemented prepared extent marks the adjacent local-result store.
     // Decode the original extent; physical positions never name locals.
     public int LiveExtent => HasLocalResult ? ~_liveExtent : _liveExtent;
@@ -135,13 +147,14 @@ internal readonly record struct ExecutableInstruction
 
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
         => new(OpCode, Span, _primaryOperand,
-            OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? checked(inputStart + 1) : _secondaryOperand,
-            inputStart, resultSlot, liveExtent);
+            ValueInputCount > 1 ? checked(inputStart + 1) : _secondaryOperand,
+            inputStart, ValueInputCount == 3 ? checked(inputStart + 2) : resultSlot,
+            HasLocalResult ? ~liveExtent : liveExtent);
 
-    internal ExecutableInstruction WithValueInputs(int first, int second)
+    internal ExecutableInstruction WithValueInputs(int first, int second, int third = int.MaxValue)
         => new(OpCode, Span, _primaryOperand,
-            OpCode is ExecutableOpCode.Binary or ExecutableOpCode.Augmented ? second : _secondaryOperand,
-            first, _resultSlot, _liveExtent);
+            ValueInputCount > 1 ? second : _secondaryOperand,
+            first, ValueInputCount == 3 ? third : _resultSlot, _liveExtent);
 
     // The following store retains its own source span and is also the
     // continuation when input cleanup must finish asynchronously.
@@ -230,7 +243,7 @@ internal readonly record struct ExecutableInstruction
         => new(valueLast ? ExecutableOpCode.StoreMemberLast : ExecutableOpCode.StoreMember, span, nameIndex, targetSpanIndex);
 
     public static ExecutableInstruction StoreSubscript(int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
-        => new(valueLast ? ExecutableOpCode.StoreSubscriptLast : ExecutableOpCode.StoreSubscript, span, targetSpanIndex);
+        => new(valueLast ? ExecutableOpCode.StoreSubscriptLast : ExecutableOpCode.StoreSubscript, span, targetSpanIndex, resultSlot: int.MaxValue);
 
     public static ExecutableInstruction StoreSlice(int targetSpanIndex, LythonSourceSpan span, bool valueLast = false)
         => new(valueLast ? ExecutableOpCode.StoreSliceLast : ExecutableOpCode.StoreSlice, span, targetSpanIndex);
@@ -495,7 +508,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<LoweredStatement> statementFallbacks,
         bool requiresLocalVariableMirroring,
         bool isFunctionScope,
-        ExecutableStackLayout operandLayout)
+        int initialOperandDepth)
     {
         Name = name;
         Constants = constants;
@@ -515,14 +528,23 @@ internal sealed partial class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
+        NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
+        var reads = NativeBody is null ? ExecutableStackLayout.ForwardValues(this, blocks) : null;
+        // Assign physical positions once, after removing forwarded loads. The
+        // native proof retains its original instruction sequence and indices.
+        var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
+            exceptionRegions, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
         OperandCapacity = operandLayout.MaximumDepth;
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
-        NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
-        if (NativeBody is null) ExecutableStackLayout.ForwardValues(this, blocks);
         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
+        _operandReadSpans = reads is null ? [] : reads.Select(read => new ExecutableOperandSpan(
+            ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
-        ExceptionRegions = exceptionRegions.Select(region => region with
+        ExceptionRegions = exceptionRegions
+            .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
+            .Select(region => region with
         {
+            StackDepth = checked(FirstTemporarySlot + operandLayout.EntryDepths[region.ProtectedStartIndex]!.Value),
             ProtectedStartIndex = offsets[region.ProtectedStartIndex],
             ProtectedEndIndex = offsets[region.ProtectedEndIndex + 1] - 1,
             ExceptIndex = region.ExceptIndex is int handler ? offsets[handler] : null,

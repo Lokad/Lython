@@ -201,10 +201,16 @@ instructions and shared operand cleanup. Native fields, including evaluated dyna
 specifiers, need no lexical context solely for formatting. Actual protocol values
 promote at their original instruction and await their callbacks. Formatting helpers
 keep transient guest values outside the shared dispatch loop.
-The existing shape pass prepares input/result positions, live temporary extents,
-maximum workspace and exception-entry depths. Execution uses those positions
-directly. Fixed-arity arithmetic, local stores and returns can read immutable
-constants or proven initialized plain locals without an intermediate copy.
+Adjacent plain local and constant reads can feed fixed-arity arithmetic, unary
+operations, subscript reads/stores, local stores and returns directly. Captured or
+mirrored locals keep their ordinary lookup. Missing direct locals retain their
+original read spans in cold metadata. One shape pass after forwarding prepares
+physical positions, live temporary extents, maximum workspace and exception-entry
+depths. Calls can still determine the workspace capacity.
+Operation values are captured before protocols or admission; actual asynchronous
+work retains those values until completion. Type-subscription getters use the
+existing funded protocol slots to preserve the original receiver and key across
+rebinding. Context promotion adds no separate operand cache or ownership layer.
 Ordinary expression and iteration results can complete directly into an adjacent
 local binding. A marker in the existing extent metadata preserves the physical
 operand positions; the following store supplies its target and separate source
