@@ -1,0 +1,22 @@
+{
+  "retiredExpandedFiles": [
+    {
+      "path": "/home/lokad/lython-bench-checks/owned-split-payloads-b375-20261107/Lokad.Lython.dll",
+      "bytes": 5627392,
+      "sha256": "55805d044a6fc2408251162075d1ca0c01db1f9d5d16acefbdb44bf80808ee3f"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/owned-split-payloads-b376-mask-20261107/Lokad.Lython.dll",
+      "bytes": 5627392,
+      "sha256": "81630e92c2224f128c07c70ee32e65bf0e7b183e75651a71e4a938998e013925"
+    }
+  ],
+  "retiredStaticAliases": [
+    "/home/lokad/lython-bench-checks/owned-split-payloads-b375-20261107/candidate/Lokad.Lython.dll",
+    "/home/lokad/lython-bench-checks/owned-split-payloads-b376-mask-20261107/candidate/Lokad.Lython.dll"
+  ],
+  "independentCommittedArchive": "3b7512d8:benchmarks/results/2026-11-07-owned-split-storage/development-evidence.tgz",
+  "allUsersEnded": true,
+  "noRemainingDependencies": true,
+  "freeBytes": 12709888
+}

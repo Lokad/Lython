@@ -3379,3 +3379,12 @@ preserves two withdrawn result-window implementations. Text allocation falls6.94
 without a larger string object, but controlled text timings remain inconclusive
 and report rendering remains adverse. Both runtime variants are removed; independent
 Unicode regressions remain. Allocation reduction is not claimed as CPU improvement.
+
+## Canonical execution transport source gate (2026-11-07)
+
+[R29/B377](results/2026-11-07-execution-transport/README.md) maps233 current-process
+prefix samples out of1,095guest leaves, retaining all code/addresses/unknowns.
+The21%prefix includes required checks and useful work; it is not a removable
+dispatch fraction. Select relocation of existing completed native helper calls
+before pending-call construction, deleting the displaced branch. No speedup,
+new full qualification or broad representation rewrite follows from profiling.
