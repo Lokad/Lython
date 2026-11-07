@@ -3503,3 +3503,17 @@ parameter layout/canonical prefix, current-token native hashing and the correcte
 historical; no terminal run is polled again. Later R35 is outside this receipt.
 The performance objective and independent regex work remain active; publication
 and tagging postponed.
+
+## Canonical formatted-instruction prototype (2026-11-07)
+
+[R35/B386](results/2026-11-07-canonical-format-instructions/README.md) removes
+formatting's generic prepared-operation detour and four wrappers. Native dynamic
+specs avoid unnecessary contexts; focused203internal/1,141public per target and
+independent probes/complete goldens pass. Dynamic complete-report allocation
+−15.35%warm/−15.05%fresh; static/control warm flat. Quiet141.89s/five jobs/all gates:
+dynamic elapsed−12.17–15.13%, static warm mixed, fresh−1.28–4.39%, text+1.11–3.00%,
+CSV mixed. Preserve all adverse/failed conditions, checked source/images and raw
+controls. One source-justified refinement moves guest temporaries out of the
+shared prefix, following its existing lifetime fences. The cause of text's
+adverse timing remains a hypothesis. Final retention/delivery pending; no broad
+CPU/embedding claim or completion of the whole-script objective.
