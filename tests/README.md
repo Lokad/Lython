@@ -15,6 +15,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Regex scalar positions](Lokad.Lython.PublicApi.Tests/RegexScalarCursorTests.cs)
+check consecutive Unicode lookbehind/lookahead, callbacks and original windows
+against independent Python output. [Active projection cancellation](Lokad.Lython.Tests/RegexScalarCursorCancellationTests.cs)
+keeps its subject/captures funded until the scan actually ends, preserves the
+unpublished cursor on cancellation and verifies shared-budget reuse.
+
 [Builtin root identity](Lokad.Lython.PublicApi.Tests/BuiltinRootIdentityTests.cs)
 checks independently verified Python behavior for user classes named `object` and
 `type`, including descriptors and original builtin aliases. Both execution APIs

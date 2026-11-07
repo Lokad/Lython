@@ -151,7 +151,17 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < count; i++)
             {
                 context.CheckExecution(span);
-                if (bytes[i] >= 0 && bytes[i] < offset) { offset = 0; scalar = 0; }
+                // Lookbehind captures can precede the previous whole match.
+                // Seek from the nearer known byte boundary instead of rescanning
+                // the entire prefix for every nearby overlapping capture.
+                if (bytes[i] >= 0 && bytes[i] < offset - bytes[i]) { offset = 0; scalar = 0; }
+                while (bytes[i] >= 0 && offset > bytes[i])
+                {
+                    if ((scalar & 1023) == 0) context.CheckExecution(span);
+                    Rune.DecodeLastFromUtf8(input[..offset], out _, out var width);
+                    offset -= width;
+                    scalar--;
+                }
                 while (offset < bytes[i])
                 {
                     if ((scalar & 1023) == 0) context.CheckExecution(span);

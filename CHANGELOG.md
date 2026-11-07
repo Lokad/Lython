@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Avoid repeated Unicode prefix scans for nearby overlapping regex captures by
+  moving the existing scalar cursor backwards when nearer. Preserve original
+  capture coordinates, current cancellation and subject/result ownership.
+
 - Omit unused annotation binding analysis after the final relevant check in
   non-regex module/function/class scopes. Preserve conservative branch facts,
   nested checks and constant regex analysis in unreachable/deferred scopes.

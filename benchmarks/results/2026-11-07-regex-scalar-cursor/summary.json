@@ -1,0 +1,211 @@
+{
+  "rows": [
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.unicode-lookbehind-256",
+      "allocatedBytesPerJob": {
+        "before": 408280.0,
+        "candidate": 408280.0,
+        "before-control": 408280.0
+      },
+      "allocatedChangePercent": 0.0,
+      "desktopElapsedMilliseconds": {
+        "before": 3.6321,
+        "candidate": 3.3059,
+        "before-control": 3.4882
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 3.0507,
+        "candidate": 2.6775,
+        "before-control": 2.9301
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 60514,
+          "PeakRootBytes": 225698
+        },
+        "candidate": {
+          "PeakExecutionBytes": 60514,
+          "PeakRootBytes": 225698
+        },
+        "before": {
+          "PeakExecutionBytes": 60514,
+          "PeakRootBytes": 225698
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.unicode-lookbehind-1024",
+      "allocatedBytesPerJob": {
+        "before": 1310008.0,
+        "candidate": 1310008.0,
+        "before-control": 1310008.0
+      },
+      "allocatedChangePercent": 0.0,
+      "desktopElapsedMilliseconds": {
+        "before": 18.0936,
+        "candidate": 12.0715,
+        "before-control": 18.9045
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 17.3842,
+        "candidate": 11.4338,
+        "before-control": 18.1559
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 234082,
+          "PeakRootBytes": 497666
+        },
+        "candidate": {
+          "PeakExecutionBytes": 234082,
+          "PeakRootBytes": 497666
+        },
+        "before": {
+          "PeakExecutionBytes": 234082,
+          "PeakRootBytes": 497666
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.unicode-lookbehind-4096",
+      "allocatedBytesPerJob": {
+        "before": 4919384.0,
+        "candidate": 4917256.0,
+        "before-control": 4916960.0
+      },
+      "allocatedChangePercent": -0.043257448493549955,
+      "desktopElapsedMilliseconds": {
+        "before": 82.3526,
+        "candidate": 30.7217,
+        "before-control": 87.0583
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 81.4347,
+        "candidate": 29.6252,
+        "before-control": 86.1053
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 928354,
+          "PeakRootBytes": 1585154
+        },
+        "candidate": {
+          "PeakExecutionBytes": 928354,
+          "PeakRootBytes": 1585154
+        },
+        "before": {
+          "PeakExecutionBytes": 928354,
+          "PeakRootBytes": 1585154
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.unicode-lookbehind-8192",
+      "allocatedBytesPerJob": {
+        "before": 9728600.0,
+        "candidate": 9728600.0,
+        "before-control": 9728600.0
+      },
+      "allocatedChangePercent": 0.0,
+      "desktopElapsedMilliseconds": {
+        "before": 53.8527,
+        "candidate": 10.9957,
+        "before-control": 48.496
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 53.256,
+        "candidate": 10.3908,
+        "before-control": 47.8921
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1854050,
+          "PeakRootBytes": 3035138
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1854050,
+          "PeakRootBytes": 3035138
+        },
+        "before": {
+          "PeakExecutionBytes": 1854050,
+          "PeakRootBytes": 3035138
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.ascii-lookbehind-8192",
+      "allocatedBytesPerJob": {
+        "before": 8900312.0,
+        "candidate": 8900312.0,
+        "before-control": 8900312.0
+      },
+      "allocatedChangePercent": 0.0,
+      "desktopElapsedMilliseconds": {
+        "before": 9.2127,
+        "candidate": 9.102,
+        "before-control": 9.4282
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 8.2674,
+        "candidate": 7.9715,
+        "before-control": 8.2957
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1845858,
+          "PeakRootBytes": 2502658
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1845858,
+          "PeakRootBytes": 2502658
+        },
+        "before": {
+          "PeakExecutionBytes": 1845858,
+          "PeakRootBytes": 2502658
+        }
+      }
+    },
+    {
+      "phase": "warm",
+      "case": "diagnostic.regex.unicode-forward-4096",
+      "allocatedBytesPerJob": {
+        "before": 2564888.0,
+        "candidate": 2567088.0,
+        "before-control": 2564888.0
+      },
+      "allocatedChangePercent": 0.08577372579232634,
+      "desktopElapsedMilliseconds": {
+        "before": 23.9838,
+        "candidate": 22.6908,
+        "before-control": 22.9081
+      },
+      "desktopPhaseMilliseconds": {
+        "before": 23.3623,
+        "candidate": 21.4096,
+        "before-control": 21.9332
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 470050,
+          "PeakRootBytes": 1124130
+        },
+        "candidate": {
+          "PeakExecutionBytes": 470050,
+          "PeakRootBytes": 1124130
+        },
+        "before": {
+          "PeakExecutionBytes": 470050,
+          "PeakRootBytes": 1124130
+        }
+      }
+    }
+  ],
+  "allSemanticAndOwnershipGatesPassed": true,
+  "performanceQualified": false,
+  "limitations": "Precise complete-job process allocation includes reset/I/O/checks and prior-result disposal for warm; compile is separate. Shared-ALC process GC and desktop/tiering variation make clocks diagnostic only, not CPU or whole-script quiet-machine performance proof."
+}

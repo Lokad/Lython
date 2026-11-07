@@ -3592,3 +3592,19 @@ consumers. Receipt committed beside annotation-demand evidence, observed07:48:45
 never query the run again. This qualifies the root-identity and annotation-demand
 changes, excluding the later R40 cursor prototype. No repeated qualification,
 publication or performance-goal completion follows.
+
+
+## R40 Unicode capture scalar cursor — B392
+
+[R40](results/2026-11-07-regex-scalar-cursor/README.md) replaces unconditional
+origin restarts for nearby lookbehind with the existing bidirectional scalar
+cursor, preserving origin when nearer and all leases/owners/validation. B392
+completes143.75s/all5gates: Unicode1,024−31.28–34.50%,4,096−65.54–68.53%,
+8,192−78.99–79.47% elapsed versusb0889a46 with normal0.4 unchanged. These complete
+growing-input scripts include backend/guest work, not isolated projection CPU or
+the primary CPython table. ASCII−0.16 to+6.31%/4.78%current spread and forward
+−3.38 to+2.96% remain variable; possible ASCII debt accepted, no parity/cause claim.
+Allocation essentially flat/peaks identical; desktop non-monotonic clocks retained.
+853internal/1,224public per actual target plus one active cancellation/owner test
+each and six supervised .NET/CPython cases pass. Full R40 delivery is batched later;
+the green R36/R38 receipt excludes it. No retiming, publication or goal completion.

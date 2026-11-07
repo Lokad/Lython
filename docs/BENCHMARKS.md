@@ -20,7 +20,7 @@ larger Lython-role interquartile range/median. Several cases remain variable: ke
 their status/control columns. These timings describe the recorded source, not
 future HEAD. Frozen core `6ab7367f` has that exact production source, including
 R26–R35. Source42101cd5 passed Windows/Ubuntu, actual.NET11/10, original Stress
-and installed-package consumers. Later changes, including R36/R38, and private development
+and installed-package consumers. Later changes, including R36/R38/R40, and private development
 regex adapters are outside this comparison.
 [Identity, observations and qualification](../benchmarks/results/2026-11-07-formatted-cpython/README.md).
 
@@ -86,6 +86,7 @@ measure affected workloads; percentages are not additive or broad CPU claims:
 
 | Change / affected workload | Measured result | Limits / evidence |
 | --- | --- | --- |
+| Unicode lookbehind / scalar positions;8,192constructed characters | Warm elapsed −78.99–79.47% versusb0889a46, about50ms→10.4ms with the same optional0.4 backend | Growing-input diagnostic; allocation essentially flat. ASCII/forward controls variable, possible ASCII debt up to+6.31%. Focused/VM checks pass; full delivery pending. [R40](../benchmarks/results/2026-11-07-regex-scalar-cursor/README.md) |
 | Demand-bound annotation analysis / compilation | Report compile elapsed −6.51–8.02%; text compile −8.25–9.13%; config compile-to-result −0.54–2.42% versus79fddd4a | Separate compile allocation −4.38–8.94% across five scripts. Regex control +304B/+0.117%, elapsed up to+1.66%; warm text variable. Full platform/Stress/package delivery green; no warm CPU claim. [R38](../benchmarks/results/2026-11-07-annotation-demand/README.md) |
 | Direct formatted instructions / dynamic-width report | Warm elapsed −10.09–13.19% versus2f1f2715; about15.35% less allocation on both APIs | Labelled complete-script variant; static warm favorable, fresh/text variable. CSV+0.13–2.36% accepted possible debt. Full platform/Stress/package delivery green; no broad CPU claim. [R35](../benchmarks/results/2026-11-07-canonical-format-instructions/README.md) |
 | Completed native helper calls / text | Warm elapsed −4.25–7.61% sync / −7.63–8.64% async versus c4729a9f | Allocation/peaks flat. Report variable; CSV up to+3.04% against differing baseline processes. Coarse CPU is diagnostic. [R29](../benchmarks/results/2026-11-07-execution-transport/implementation.md) |

@@ -239,3 +239,6 @@ benchmarks/results/2026-11-07-annotation-demand/** -text whitespace=cr-at-eol
 
 # Preserve the ordinary-helper CSV capture and original failed setup.
 benchmarks/results/2026-11-07-ordinary-csv-cost/** -text whitespace=cr-at-eol
+
+# Preserve the Unicode scalar-cursor source pair, controls and validation.
+benchmarks/results/2026-11-07-regex-scalar-cursor/** -text whitespace=cr-at-eol

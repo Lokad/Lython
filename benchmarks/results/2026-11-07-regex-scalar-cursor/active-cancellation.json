@@ -1,0 +1,32 @@
+{
+  "recordedUtc": "2026-11-07T07:54:15.601134+00:00",
+  "scope": "Additional warmed active-backward-projection cancellation/ownership regression, on unchanged focused core images",
+  "checks": {
+    "net11.0": {
+      "passed": 1,
+      "durationMilliseconds": 183,
+      "buildWarnings": 0,
+      "buildErrors": 0
+    },
+    "net10.0": {
+      "passed": 1,
+      "durationMilliseconds": 188,
+      "buildWarnings": 0,
+      "buildErrors": 0
+    }
+  },
+  "buildMode": "white-box test project only, --no-dependencies; no core rebuild",
+  "coreSHA256": {
+    "net11.0": "eb6052d0992e1e7eb236b72d6d39cac59279a67ef2c8047604f047447a55692c",
+    "net10.0": "49f2de02c5e734931d31bc7a30a1eb22d22abe8221ea10699779748ff7e6afbf"
+  },
+  "assertions": [
+    "active user before cancellation",
+    "structured current-token cancellation and original span",
+    "cursor not published",
+    "subject/capture funding retained until actual joined completion",
+    "zero final root balance and budget reuse"
+  ],
+  "source": "tests/Lokad.Lython.Tests/RegexScalarCursorCancellationTests.cs",
+  "receipt": "Transcribed from successful exec tool output; no extra unchanged test run to collect a log."
+}

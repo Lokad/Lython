@@ -1450,6 +1450,11 @@ buffer contents after exhaustion or failure are unspecified. Providers finish
 all writes before returning and retain no buffer reference. Lython admits one
 working buffer per prepared operation and snapshots retained matches separately.
 
+Unicode scalar projection carries one cursor across matches and seeks from the
+nearer known byte boundary for lookbehind captures. Forward and backward scans
+observe current cancellation; no dense coordinate index is retained. Arbitrary
+far captures can still require long walks.
+
 Python matches retain immutable byte/scalar ranges and their original funded
 subject through cursor advances, disposal and cache purge. Position access,
 including `regs`, needs no group-text copy. Partial group strings are admitted
