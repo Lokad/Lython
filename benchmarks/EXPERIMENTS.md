@@ -3845,7 +3845,8 @@ No prototype, view-specific tests or dormant alternative remains. Objective open
 nesting scanner and diagnostic factory. Existing tokenizer depth enforces512;
 parser64/unary256/f-string/managed-stack protection remains. Both quote-reusing
 f-string literal cases fail baseline, then agree with isolatedCPython3.13.2 through
-compile/Run/RunAsync.802internal/1555public plus14fresh matching-probe subprocess
+compile/Run/RunAsync.802internal/1555public plus14parser-hardening checks with fresh
+matching probes
 checks per actual11/10 pass. Existing15job compile/fresh/warm diagnostic gates pass,
 allocation flat, elapsed mixed/adverse/unstable; warm text+8.27to+20.07% with9.82%
 baseline drift and fresh report+3.43to+14.86% remain. Retain coherent deletion and

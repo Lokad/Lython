@@ -15,7 +15,8 @@ managed stack admission, cooperative cancellation and shared-budget refusal rema
 Leading-indent or lexical errors may now take priority in already-invalid source.
 
 Focused Release **802 internal /1,555 public per actual .NET11/.NET10**, plus
-**14 pathological-input subprocess checks per target**, pass. Matching probes are
+**14 parser-hardening checks per target**, pass. These include six pathological
+inputs in the controlled subprocess batch. Matching probes are
 built explicitly and their loaded core hashes agree with the checked production
 cores. Original subprocess deadlines and safety assertions are unchanged. No
 architecture-only tests or exact cancellation-check counters are added.
