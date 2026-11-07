@@ -1,0 +1,339 @@
+diff --git a/src/Lokad.Lython/Runtime/PyList.cs b/src/Lokad.Lython/Runtime/PyList.cs
+index b2837d3b..55ee4d87 100644
+--- a/src/Lokad.Lython/Runtime/PyList.cs
++++ b/src/Lokad.Lython/Runtime/PyList.cs
+@@ -52,8 +52,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
+ 
+     public PyList(PyList other) : this(other, other._memoryGovernor, other._allocationSpan) { }
+ 
+-    // The caller relinquishes this exact array and its already committed
+-    // capacity charge. No storage is copied or refunded during adoption.
++    // The caller relinquishes this exact array and its admitted capacity;
++    // commit before publishing the result. Adoption copies/refunds no storage.
+     internal static PyList FromTransferredArray(object[] items, MemoryGovernor? governor, LythonSourceSpan? span)
+         => new()
+         {
+diff --git a/src/Lokad.Lython/Runtime/Text/PyString.cs b/src/Lokad.Lython/Runtime/Text/PyString.cs
+index 651260a9..f0c756d0 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyString.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyString.cs
+@@ -14,11 +14,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+ 
+     private readonly byte[] _utf8;
+     private readonly int _byteLength;
++    // Zero owns the full backing; the sign bit marks a word in a separately
++    // funded split-result payload. The other bits are its actual byte offset.
++    private readonly int _sharedOffset;
+     private readonly MemoryGovernor? _memoryGovernor;
+     private int _runeLength = -1;
+     private int[]? _runeByteOffsets;
+     private int _hashCode;
+-    private bool _hashCodeComputed;
+ 
+     private PyString(byte[] utf8) : this(utf8, utf8.Length) { }
+ 
+@@ -29,6 +31,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         _memoryGovernor = governor;
+     }
+ 
++    private PyString(byte[] utf8, int byteOffset, int byteLength, MemoryGovernor? governor)
++        : this(utf8, byteLength, governor) => _sharedOffset = byteOffset | int.MinValue;
++
+     public static PyString Empty { get; } = new([]);
+ 
+     public int Length
+@@ -86,9 +91,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         return units;
+     }
+ 
+-    private ReadOnlySpan<byte> Utf8Span => _utf8.AsSpan(0, _byteLength);
++    private int ByteOffset => _sharedOffset & int.MaxValue;
++
++    private ReadOnlySpan<byte> Utf8Span => _utf8.AsSpan(ByteOffset, _byteLength);
+ 
+-    public ReadOnlyMemory<byte> Utf8Bytes => _utf8.AsMemory(0, _byteLength);
++    public ReadOnlyMemory<byte> Utf8Bytes => _utf8.AsMemory(ByteOffset, _byteLength);
+ 
+     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+ 
+@@ -170,6 +177,17 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         return result;
+     }
+ 
++    // The caller reserves the entire private split result before allocation,
++    // then commits its backing and all word metadata together before publishing.
++    // Word refunds never refund the payload shared with the other words.
++    internal static PyString FromSharedResultUtf8(byte[] utf8, int byteOffset, int byteLength,
++        MemoryGovernor? governor)
++    {
++        if ((uint)byteOffset > (uint)utf8.Length || (uint)byteLength > (uint)(utf8.Length - byteOffset))
++            throw new ArgumentOutOfRangeException(nameof(byteLength));
++        return byteLength == 0 ? Empty : new PyString(utf8, byteOffset, byteLength, governor);
++    }
++
+     // The caller relinquishes this backing only after success. Its full capacity
+     // is already committed to the same owner; only new string metadata is admitted.
+     internal static PyString FromTransferredUtf8(byte[] utf8, int byteLength,
+@@ -248,8 +266,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         var result = governor is null
+             ? new byte[resultLength]
+             : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
+-        Buffer.BlockCopy(_utf8, 0, result, 0, _byteLength);
+-        Buffer.BlockCopy(other._utf8, 0, result, _byteLength, other._byteLength);
++        Buffer.BlockCopy(_utf8, ByteOffset, result, 0, _byteLength);
++        Buffer.BlockCopy(other._utf8, other.ByteOffset, result, _byteLength, other._byteLength);
+         return new PyString(result, result.Length, governor);
+     }
+ 
+@@ -276,7 +294,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+             : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
+         for (var i = 0; i < count; i++)
+         {
+-            Buffer.BlockCopy(_utf8, 0, result, i * _byteLength, _byteLength);
++            Buffer.BlockCopy(_utf8, ByteOffset, result, i * _byteLength, _byteLength);
+         }
+ 
+         return new PyString(result, result.Length, governor);
+@@ -303,7 +321,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         foreach (var runeIndex in runeIndices)
+         {
+             var (start, length) = GetRuneByteRange(runeIndex);
+-            Buffer.BlockCopy(_utf8, start, result, offset, length);
++            Buffer.BlockCopy(_utf8, ByteOffset + start, result, offset, length);
+             offset += length;
+         }
+ 
+@@ -339,7 +357,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
+         {
+             var (start, length) = GetRuneByteRange((int)runeIndex);
+-            Buffer.BlockCopy(_utf8, start, result, offset, length);
++            Buffer.BlockCopy(_utf8, ByteOffset + start, result, offset, length);
+             offset += length;
+         }
+ 
+@@ -349,15 +367,15 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+     public PyString Index(int runeIndex)
+     {
+         var (start, length) = GetRuneByteRange(runeIndex);
+-        if (length == 1 && _utf8[start] < 0x80)
++        if (length == 1 && _utf8[ByteOffset + start] < 0x80)
+         {
+-            return AsciiCharacters[_utf8[start]];
++            return AsciiCharacters[_utf8[ByteOffset + start]];
+         }
+ 
+         var bytes = _memoryGovernor is null
+             ? new byte[length]
+             : AllocateGovernedUtf8(length, _memoryGovernor, PyStructuralGuard.AmbientSpan);
+-        Buffer.BlockCopy(_utf8, start, bytes, 0, length);
++        Buffer.BlockCopy(_utf8, ByteOffset + start, bytes, 0, length);
+         return new PyString(bytes, bytes.Length, _memoryGovernor);
+     }
+ 
+@@ -368,7 +386,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+             var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+             if (runeLength == 1)
+             {
+-                yield return AsciiCharacters[_utf8[byteIndex]];
++                yield return AsciiCharacters[_utf8[ByteOffset + byteIndex]];
+                 byteIndex++;
+                 continue;
+             }
+@@ -376,7 +394,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+             var bytes = _memoryGovernor is null
+                 ? new byte[runeLength]
+                 : AllocateGovernedUtf8(runeLength, _memoryGovernor, PyStructuralGuard.AmbientSpan);
+-            Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
++            Buffer.BlockCopy(_utf8, ByteOffset + byteIndex, bytes, 0, runeLength);
+             yield return new PyString(bytes, bytes.Length, _memoryGovernor);
+             byteIndex += runeLength;
+         }
+@@ -395,13 +413,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+     // Borrowed bounded working storage uses the same strict decoder as AsString.
+     internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(Utf8Span, destination);
+ 
+-    internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length)
++    internal long CommittedOwnedBytes => EstimateApproximateBytes(_sharedOffset < 0 ? 0 : _utf8.Length)
+         + (_memoryGovernor is not null && _runeByteOffsets is { } offsets ? 32L + 4L * offsets.Length : 0);
+ 
+     public string AsString(int runeIndex)
+     {
+         var (start, length) = GetRuneByteRange(runeIndex);
+-        return Utf8.GetString(_utf8, start, length);
++        return Utf8.GetString(_utf8, ByteOffset + start, length);
+     }
+ 
+     public bool StartsWith(PyString prefix)
+@@ -483,7 +501,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+                 {
+                     context?.CheckExecution(span);
+                     var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+-                    builder.Append(_utf8.AsSpan(byteIndex, runeLength));
++                    builder.Append(Utf8Span.Slice(byteIndex, runeLength));
+                     builder.Append(newValue);
+                     byteIndex += runeLength;
+                 }
+@@ -504,7 +522,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+                 context?.CheckExecution(span);
+                 var found = IndexOfBytes(Utf8Span[offset..], oldValue.Utf8Span);
+                 if (found < 0) break;
+-                result.Append(_utf8.AsSpan(offset, found));
++                result.Append(Utf8Span.Slice(offset, found));
+                 result.Append(newValue);
+                 offset += found + oldValue._byteLength;
+                 remaining--;
+@@ -532,22 +550,22 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+ 
+     public override int GetHashCode()
+     {
+-        if (Volatile.Read(ref _hashCodeComputed))
+-        {
+-            return _hashCode;
+-        }
+-
+-        return ComputeHash(default, null);
++        var cached = Volatile.Read(ref _hashCode);
++        return cached != 0 ? cached : ComputeHash(default, null);
+     }
+ 
+     internal int GetHashCode(CancellationToken token, LythonSourceSpan? span)
+-        => Volatile.Read(ref _hashCodeComputed) ? _hashCode : ComputeHash(token, span);
++    {
++        var cached = Volatile.Read(ref _hashCode);
++        return cached != 0 ? cached : ComputeHash(token, span);
++    }
+ 
+     private int ComputeHash(CancellationToken token, LythonSourceSpan? span)
+     {
+         var computed = HashUtf8(Utf8Span, span: span, cancellationToken: token);
+-        _hashCode = computed;
+-        Volatile.Write(ref _hashCodeComputed, true);
++        // Zero is valid and can be recomputed. Publish the cache in one atomic
++        // field instead of a separate value/ready pair.
++        Volatile.Write(ref _hashCode, computed);
+         return computed;
+     }
+ 
+@@ -757,7 +775,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
+         return characters;
+     }
+ 
+-    private int GetRuneLengthAtByteIndex(int byteIndex) => GetRuneLength(_utf8[byteIndex]);
++    private int GetRuneLengthAtByteIndex(int byteIndex) => GetRuneLength(_utf8[ByteOffset + byteIndex]);
+ 
+     private static int GetRuneLength(byte firstByte)
+     {
+diff --git a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+index 44917f53..a9b8287b 100644
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -58,39 +58,55 @@ internal static partial class PyStringOps
+                 CollectWhitespaceForward(source, maxSplit, ref ranges, ref count, ref outputBytes,
+                     ref scratchBytes, ref scratch, governor, span, context, casing);
+ 
+-            // Admit final backing and all fragments together. Each value keeps
+-            // its own payload; adoption transfers the completed list capacity.
++            // A new immutable payload belongs to this result's execution owner,
++            // not the possibly temporary input window. Word metadata can retire
++            // independently without refunding another word's backing.
++            var payloadBytes = outputBytes - count * PyString.EstimateApproximateBytes(0);
++            var sharePayload = count > 1 && payloadBytes <= Array.MaxLength;
+             var listBytes = PyList.EstimateCapacityBytes(count);
+-            using var output = governor?.ReserveTemporary(checked(outputBytes + listBytes), span);
++            // Each word's existing estimate includes buffer-header headroom.
++            // Any retained word funds that metadata; charge payload capacity
++            // independently, without adding another header to the whole result.
++            var outputCharge = checked(outputBytes + listBytes);
++            using var output = governor?.ReserveTemporary(outputCharge, span);
+             context?.CheckExecution(span);
+             var parts = count == 0 ? Array.Empty<object>() : new object[count];
++            var payload = sharePayload ? new byte[(int)payloadBytes] : null;
++            var payloadOffset = 0;
+             for (var index = 0; index < count; index++)
+             {
+                 context?.CheckExecution(span);
+                 var range = ranges[reverse ? count - index - 1 : index];
+-                var bytes = new byte[range.Capacity];
+-                var written = bytes.Length;
++                var bytes = payload ?? new byte[range.Capacity];
++                var offset = payload is null ? 0 : payloadOffset;
++                var destination = bytes.AsSpan(offset, range.Capacity);
++                var written = destination.Length;
+                 if (casing is { } mapping)
+                 {
+                     // Whitespace is case-stable and breaks final-sigma context.
+                     // Write final words without materializing a cased source.
+-                    written = WriteCaseUtf8(source[range.Start..range.End], bytes, mapping, context, span);
++                    written = WriteCaseUtf8(source[range.Start..range.End], destination, mapping, context, span);
+                 }
+                 else
+-                    for (var copied = 0; copied < bytes.Length;)
++                    for (var copied = 0; copied < destination.Length;)
+                     {
+                         context?.CheckExecution(span);
+-                        var chunk = Math.Min(4096, bytes.Length - copied);
+-                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
++                        var chunk = Math.Min(4096, destination.Length - copied);
++                        source.Slice(range.Start + copied, chunk).CopyTo(destination.Slice(copied, chunk));
+                         copied += chunk;
+                     }
+-                var fragment = governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
++                var fragment = payload is not null ? PyString.FromSharedResultUtf8(payload, offset, written, governor)
++                    : governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
+                     : PyString.FromOwnedUtf8(bytes, governor, span, output!, written);
+                 parts[index] = fragment;
++                if (payload is not null) payloadOffset = checked(payloadOffset + range.Capacity);
+             }
+             context?.CheckExecution(span);
+-            output?.Commit(listBytes);
+-            return PyList.FromTransferredArray(parts, governor, span);
++            var result = PyList.FromTransferredArray(parts, governor, span);
++            // Shared output stays private and wholly reserved until complete;
++            // failure refunds it without traversing partially constructed words.
++            output?.Commit(payload is null ? listBytes : outputCharge);
++            return result;
+         }
+         finally { scratch?.Dispose(); }
+     }
+diff --git a/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs b/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
+index 873bfd5b..9d8f7a9c 100644
+--- a/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
++++ b/tests/Lokad.Lython.Tests/WhitespaceStorageOwnershipTests.cs
+@@ -1,3 +1,4 @@
++using System.Runtime.InteropServices;
+ using Lokad.Lython.Runtime;
+ using Lokad.Lython.Runtime.Text;
+ using Lokad.Lython.Tests.Harness;
+@@ -90,16 +91,27 @@ public sealed class WhitespaceStorageOwnershipTests
+                 Assert.Equal(100, result.Count);
+                 var fragments = result.Cast<PyString>().ToArray();
+                 Assert.All(fragments, value => Assert.Equal("α", value.AsString()));
+-                var retained = checked(baseline + result.CommittedStorageBytes + fragments.Sum(value => value.CommittedOwnedBytes));
+-                Assert.Equal(retained, governor.CurrentCommittedBytes);
++                var backings = new HashSet<byte[]>(ReferenceEqualityComparer.Instance);
++                foreach (var fragment in fragments)
++                {
++                    Assert.True(MemoryMarshal.TryGetArray(fragment.Utf8Bytes, out var storage));
++                    backings.Add(storage.Array!);
++                }
++                // Include actual shared capacity independently of how a word
++                // accounts for its own metadata; no private scratch may remain.
++                var retained = checked(baseline + fragments.Length * PyString.EstimateApproximateBytes(0)
++                    + backings.Sum(bytes => bytes.LongLength));
++                Assert.True(governor.CurrentCommittedBytes >= retained + result.CommittedStorageBytes);
+                 Assert.Equal(0, governor.CurrentReservedBytes);
++                Assert.Equal(governor.CurrentAccountedBytes, budget.ReservedBytes);
+                 var alias = fragments[0];
+                 result.Clear();
+                 Assert.Equal("α", alias.AsString());
+                 // Clearing may replace and refund the list backing. Its
+                 // independently retained strings must keep all their funding.
+-                Assert.Equal(baseline + result.CommittedStorageBytes + fragments.Sum(value => value.CommittedOwnedBytes),
+-                    governor.CurrentCommittedBytes);
++                Assert.True(governor.CurrentCommittedBytes >= retained + result.CommittedStorageBytes);
++                Assert.Equal(0, governor.CurrentReservedBytes);
++                Assert.Equal(governor.CurrentAccountedBytes, budget.ReservedBytes);
+             }
+             Assert.Equal(0, budget.ReservedBytes);
+         }

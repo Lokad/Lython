@@ -5,6 +5,25 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexMatchIndexTests
 {
     [Fact]
+    public async Task SplitResultSubjectsKeepTheirOwnUnicodeOffsetsAndText()
+    {
+        await AssertBothModes("""
+            import re
+            import fnmatch
+            def words(line):
+                return line.upper().split()
+            word = words('HEAD a😀bé TAIL')[1]
+            pattern = re.compile(r'😀(?P<letter>.)')
+            match = pattern.search(word)
+            print(word, match.group('letter'), match.span(), match.span('letter'))
+            print(pattern.sub(r'<\g<letter>>', word))
+            print(re.split('😀', word))
+            print(fnmatch.fnmatchcase(word, 'A😀*'))
+            print(repr(word), word[::-1], f'<{word:>6s}>')
+            """, "A😀BÉ B (1, 3) (2, 3)\nA<B>É\n['A', 'BÉ']\nTrue\n'A😀BÉ' ÉB😀A <  A😀BÉ>\n");
+    }
+
+    [Fact]
     public async Task DirectAndCallbackSubscriptsShareGroupSelection()
     {
         await AssertBothModes("""

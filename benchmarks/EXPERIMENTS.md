@@ -3371,3 +3371,11 @@ Focused526internal/1,508public per actual runtime and B348/all five gates pass.
 CSV flat, text/JSON favorable, report adverse/uncertain. Retain the deletion;
 batch full C delivery at the next meaningful runtime boundary. No compound debt
 repayment, broad CPU or exact-allocation claim. The whole-script objective stays open.
+
+## Owned split-result storage (2026-11-07)
+
+[R28 owned split-storage evidence](results/2026-11-07-owned-split-storage/README.md)
+preserves two withdrawn result-window implementations. Text allocation falls6.94%
+without a larger string object, but controlled text timings remain inconclusive
+and report rendering remains adverse. Both runtime variants are removed; independent
+Unicode regressions remain. Allocation reduction is not claimed as CPU improvement.

@@ -10,6 +10,55 @@ public sealed class StringWindowOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(2, 3, 4, 5);
 
+    [Theory]
+    [InlineData(-1, "a😀bé")]
+    [InlineData(0, "a😀bé")]
+    [InlineData(1, "A😀BÉ")]
+    public void SplitWordsKeepTheirOwnUtf8AndScalarBoundaries(int casing, string expected)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var governor = context.MemoryGovernor;
+            var source = PyString.FromString("HEAD a😀bé TAIL");
+            var words = casing < 0 ? PyStringOps.SplitWhitespace(source, governor, Span, context)
+                : PyStringOps.SplitCasedWhitespace(source, casing == 1, governor, Span, context);
+            var word = Assert.IsType<PyString>(words[1]);
+            var independent = PyString.FromString(expected);
+            Assert.Equal(Encoding.UTF8.GetBytes(expected), word.Utf8Bytes.ToArray());
+            Assert.Equal(expected, word.AsString());
+            Assert.Equal(4, word.Length);
+            Assert.Equal(5, word.GetUtf16CodeUnitCount());
+            Assert.Equal(expected[..1], word.Index(0).AsString());
+            Assert.Equal("😀", word.Index(1).AsString());
+            Assert.Equal(expected[^1..], word.AsString(3));
+            Assert.Equal(5, word.GetByteIndexForRuneBoundary(2));
+            Assert.Equal(2, word.ByteIndexToRuneIndex(5));
+            Assert.Equal(independent.GetHashCode(), word.GetHashCode());
+            Assert.True(word.Equals(independent));
+            Assert.Equal(0, PyString.CompareOrdinal(word, independent));
+            Assert.Equal(independent.EnumerateRunes().Select(s => s.AsString()), word.EnumerateRunes().Select(s => s.AsString()));
+            Assert.Equal("😀" + expected[^1..], word.Slice([1, 3]).AsString());
+            Assert.Equal(expected[^1..] + expected[^2..^1] + "😀" + expected[..1],
+                word.Slice(new PyIndexing.SliceBounds(3, -1, -1)).AsString());
+            Assert.Equal(expected + expected, word.Concat(word).AsString());
+            Assert.Equal(expected + expected, word.Repeat(2).AsString());
+            Assert.Equal("|" + string.Join('|', independent.EnumerateRunes().Select(s => s.AsString())) + "|",
+                word.Replace(PyString.Empty, PyString.FromString("|")).AsString());
+            Assert.Equal(expected[..1] + "+" + expected[^2..], word.Replace(PyString.FromString("😀"), PyString.FromString("+")).AsString());
+            var utf16 = new char[5];
+            Assert.Equal(5, word.CopyUtf16To(utf16));
+            Assert.Equal(expected, new string(utf16));
+            Assert.Equal(1, word.Find(PyString.FromString("😀")));
+            Assert.Equal(1, word.Count(PyString.FromString("😀")));
+            Assert.False(word.Contains(PyString.FromString("TAIL")));
+            Assert.True(governor.CurrentAccountedBytes > 0);
+            Assert.Equal(0, governor.CurrentReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void RefundingPrivateWordPreservesOtherWordsBackingAndCacheFunding()
     {

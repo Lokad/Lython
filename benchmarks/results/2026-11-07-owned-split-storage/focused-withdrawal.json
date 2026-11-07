@@ -1,0 +1,36 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "selection": "FullyQualifiedName~StringWindowOwnershipTests|FullyQualifiedName~WhitespaceStorageOwnershipTests",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    16, Skipped:     0, Total:    16, Duration: 141 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "selection": "FullyQualifiedName~SplitResultSubjectsKeepTheirOwnUnicodeOffsetsAndText",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 701 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "selection": "FullyQualifiedName~StringWindowOwnershipTests|FullyQualifiedName~WhitespaceStorageOwnershipTests",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    16, Skipped:     0, Total:    16, Duration: 144 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "selection": "FullyQualifiedName~SplitResultSubjectsKeepTheirOwnUnicodeOffsetsAndText",
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 856 ms - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "bba55b11b623063c29e1d91d29522320722eade892de4da6e04da3e4b8421eff",
+    "net10.0": "f4e070e045d1a73ba79ceb8e85d0cff0f013a04f0cfdfa314f6f1f90c2948892"
+  }
+}

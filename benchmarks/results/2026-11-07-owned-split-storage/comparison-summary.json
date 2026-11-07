@@ -1,0 +1,150 @@
+{
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 2.1697126857142854,
+        "control": 2.172890514705882,
+        "reference": 2.176653794117647
+      },
+      "processCpuMilliseconds": {
+        "candidate": 2.285714285714286,
+        "control": 2.2058823529411766,
+        "reference": 2.2058823529411766
+      },
+      "iqrPercent": {
+        "candidate": 0.49501221649570704,
+        "control": 0.4336660393848368,
+        "reference": 0.21030290571894725
+      },
+      "currentRoleDifferencePercent": 0.14646312447357973,
+      "candidateChangePercent": {
+        "candidate": -0.3188889488130786,
+        "control": -0.17289287905752904
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "candidate": 2.685437964912281,
+        "control": 2.5230904666666665,
+        "reference": 2.4960934262295082
+      },
+      "processCpuMilliseconds": {
+        "candidate": 2.8070175438596494,
+        "control": 2.6666666666666665,
+        "reference": 2.622950819672131
+      },
+      "iqrPercent": {
+        "candidate": 0.250784014034267,
+        "control": 0.6001574999675632,
+        "reference": 0.06122682238033346
+      },
+      "currentRoleDifferencePercent": 6.045475649291987,
+      "candidateChangePercent": {
+        "candidate": 7.585635084532405,
+        "control": 1.0815717133608738
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.665516512195122,
+        "control": 3.756183404761905,
+        "reference": 3.5233878139534887
+      },
+      "processCpuMilliseconds": {
+        "candidate": 3.902439024390244,
+        "control": 4.047619047619048,
+        "reference": 3.72093023255814
+      },
+      "iqrPercent": {
+        "candidate": 4.326443808601238,
+        "control": 2.0671577963099907,
+        "reference": 1.5305512382255666
+      },
+      "currentRoleDifferencePercent": 2.4735093203136653,
+      "candidateChangePercent": {
+        "candidate": 4.033864727543435,
+        "control": 6.607152067861732
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm-async",
+      "elapsedMilliseconds": {
+        "candidate": 3.8393603684210524,
+        "control": 3.7333433076923073,
+        "reference": 3.678876268292683
+      },
+      "processCpuMilliseconds": {
+        "candidate": 4.2105263157894735,
+        "control": 4.102564102564102,
+        "reference": 4.146341463414634
+      },
+      "iqrPercent": {
+        "candidate": 2.094875397761921,
+        "control": 3.8222761891110033,
+        "reference": 2.229537523079932
+      },
+      "currentRoleDifferencePercent": 2.7613209117003175,
+      "candidateChangePercent": {
+        "candidate": 4.3623130658549725,
+        "control": 1.4805346912333706
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 3.965532894736842,
+        "control": 3.930819974358975,
+        "reference": 3.9609168421052634
+      },
+      "processCpuMilliseconds": {
+        "candidate": 3.947368421052632,
+        "control": 4.102564102564102,
+        "reference": 3.947368421052632
+      },
+      "iqrPercent": {
+        "candidate": 0.4205992093051894,
+        "control": 0.8850864214870966,
+        "reference": 0.33763481394922756
+      },
+      "currentRoleDifferencePercent": 0.8753658410938616,
+      "candidateChangePercent": {
+        "candidate": 0.11654000363019446,
+        "control": -0.7598459888466524
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "elapsedMilliseconds": {
+        "candidate": 4.448185228571429,
+        "control": 4.573067212121212,
+        "reference": 4.3126370000000005
+      },
+      "processCpuMilliseconds": {
+        "candidate": 4.571428571428572,
+        "control": 4.848484848484849,
+        "reference": 4.444444444444445
+      },
+      "iqrPercent": {
+        "candidate": 0.4014308037262201,
+        "control": 1.1466990479130772,
+        "reference": 0.41651623666294196
+      },
+      "currentRoleDifferencePercent": 2.8074816387511468,
+      "candidateChangePercent": {
+        "candidate": 3.143047480495764,
+        "control": 6.038769600159055
+      }
+    }
+  ],
+  "complete": true,
+  "elapsedSeconds": 129.16864441195503
+}

@@ -45,5 +45,26 @@
     "symlinkDependencies": [],
     "freeBytes": 1990656
   },
-  "retirementStatus": "Pending committed/pushed backup and fresh hash/user/link validation"
+  "retirementStatus": "Completed after backup commit/push 52a16c83 and fresh hash/user/link validation; only expanded copies removed.",
+  "retirementReceipt": {
+    "retiredExpandedFiles": [
+      {
+        "member": "initial/Lokad.Lython.dll",
+        "remotePath": "/home/lokad/lython-bench-checks/compact-fragments-b205-20261104/candidate/Lokad.Lython.dll",
+        "bytes": 5590016,
+        "sha256": "be5dd48fddb9d7b6b60132e0912245b92a8dc05ec7767bb0aeb711efba9afe6b"
+      },
+      {
+        "member": "refined/Lokad.Lython.dll",
+        "remotePath": "/home/lokad/lython-bench-checks/compact-fragments-b205-20261104/refinement/candidate/Lokad.Lython.dll",
+        "bytes": 5590016,
+        "sha256": "801ab677274236e9d10e6a5b9265eedf87e00490b0495361c2aa53e7a8ea79e6"
+      }
+    ],
+    "independentCommittedArchive": "benchmarks/results/2026-11-04-string-storage-assessment/retired-images.tgz",
+    "archiveSHA256": "a9782d040935bb7399cafc6bc0c3b054c201fc964a7c565b39661347bb3bd577",
+    "allUsersEnded": true,
+    "noSymlinkDependencies": true,
+    "freeBytes": 13176832
+  }
 }
