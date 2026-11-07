@@ -1,0 +1,20 @@
+{
+  "sourceHashes": {
+    "ExecutionState.Guards.cs": "c75820251c40a51e29e409b5573d9941d6d37686f7797ab3f6317e30a9994123",
+    "LythonRuntime.Executable.Calls.Invoke.cs": "90298fe01844513f546a73f4b9ec15ae34cf1ab3f52936328e040721c742a63d",
+    "LythonRuntime.Executable.NativeReturn.cs": "02f073b971e70b985474253e3ea841c55062407f6e6295a09ab910460dc017c2",
+    "PyExecutableFunction.cs": "8bc1bab5a6d46dfda51fdaa9995a60130b8f110b609e8500dbdd7c2d1210f307"
+  },
+  "demonstrated": [
+    "Caller wrapper admits a managed interpreter frame before recursive native proof.",
+    "Function admission checks active execution, recursion bound and managed stack before incrementing recursion depth.",
+    "Native body independently admits interpreter depth and managed stack, then unwinds in finally.",
+    "Native eligibility and frame fallback remain necessary for namespace-sensitive or suspending functions.",
+    "An immediate scope.CheckExecution after checked caller-frame entry remains, but deleting one check alone is not a substantial redesign."
+  ],
+  "hypotheses": [
+    "The cost magnitude of these entries in protected file search requires CPU evidence.",
+    "A combined entry must preserve physical-stack placement, recursion versus interpreter failure ordering, exception annotation, current tokens and first refusal."
+  ],
+  "decision": "No runtime change selected before capture/source gate; never equate all inclusive entry samples with removable work."
+}

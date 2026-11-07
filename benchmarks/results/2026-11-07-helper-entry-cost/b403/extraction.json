@@ -1,0 +1,15 @@
+{
+  "originalArchivePreserved": true,
+  "skippedOnlyLinuxFifos": [
+    {
+      "name": "perf/search-warm/ack",
+      "type": "6",
+      "size": 0
+    },
+    {
+      "name": "perf/search-warm/control",
+      "type": "6",
+      "size": 0
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "originalWarmup": {
+    "maxRequests": 64,
+    "jobsPerRequest": 64,
+    "maxJobs": 4096,
+    "minimumGuestSeconds": 6
+  },
+  "correctedWarmup": {
+    "maxRequests": 64,
+    "jobsPerRequest": 1024,
+    "maxJobs": 65536,
+    "minimumGuestSeconds": 6
+  },
+  "sampledPhase": "Unchanged6s wall capture, single complete job per request,199Hz cpu-clock/fp; same images/source/diagnostic overrides.",
+  "captionCorrection": "Earlier failure caption mistakenly described4096 single-job requests and a proposed batch8. Exact inherited source has64batches*64jobs. Correction changes only warmup batch64\u21921024; count variable/sample request unchanged.",
+  "originalConditionsPreserved": true,
+  "noObservationTimeoutOrRestart": true
+}

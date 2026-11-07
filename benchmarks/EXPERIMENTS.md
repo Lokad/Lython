@@ -3755,3 +3755,11 @@ R47/B401 adds six compile/warm/compile-run jobs for protected search and the sma
 two-file copy/checksum/manifest on qualified8c9fd0d7. No runtime change, new
 framework or unchanged seven-case retiming. Full gates/archive verification pass.
 [Complete evidence and limits](results/2026-11-07-file-workflows/README.md).
+
+## Protected-search helper-entry cost gate (2026-11-07)
+
+R48/B403 observes645guest samples/3.28CPU seconds; entry-method leaves do not
+establish dominant removable admission work. B402 failed warmup and exact
+batch-size/caption correction are preserved. No runtime change; source/census
+instead identifies missing executable module declaration slots for a bounded
+compiler-layout investigation. [Evidence and limits](results/2026-11-07-helper-entry-cost/README.md).

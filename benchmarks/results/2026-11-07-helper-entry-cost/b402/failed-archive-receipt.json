@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "failure": "4096 single-job warmup requests finish before the declared6second window; no sampler started.",
+  "preservation": "Fresh maintenance lease after terminal collection failure; original raw RAM state archived/verified before removal. Original collection gates not complete.",
+  "workersEnded": true,
+  "fixtureDirectoriesRemoved": true,
+  "recordedWorkerExit": -9,
+  "archiveSHA256": "d04e53e3fe74a8af612e34f8586b00a1813f97e1d52235482071a85d997777cd"
+}

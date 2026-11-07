@@ -1,0 +1,793 @@
+{
+  "purpose": "Compile-only emitted instruction census; static counts are not CPU shares or speedup evidence",
+  "coreSHA256": "D3A6C77800093E69135A949D07B6F1FC765C689A566C8C904954908009D693E2",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "noGuestExecution": true,
+  "noProductionEdits": true,
+  "cases": [
+    {
+      "id": "scripts.file-search.large",
+      "sourceSha256": "3f2b8a960fea391d10bf21aa03eaad5a63f99f3bf16ec8f7de3494cbbf37a464",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [
+            "scanned",
+            "match",
+            "\u003Cwith_manager:0\u003E",
+            "\u003Cwith_value:1\u003E",
+            "source",
+            "line",
+            "\u003Cwith_manager:2\u003E",
+            "\u003Cwith_value:3\u003E",
+            "target"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 2,
+          "native": false,
+          "memberCaches": 1,
+          "constantTypes": [
+            "System.Numerics.BigInteger",
+            "Lokad.Lython.Runtime.Text.PyString",
+            "Lokad.Lython.Runtime.Text.PyString",
+            "System.Numerics.BigInteger",
+            "Lokad.Lython.Runtime.Text.PyString",
+            "Lokad.Lython.Runtime.Text.PyString"
+          ],
+          "instructionCount": 56,
+          "operandCapacity": 4,
+          "retainsBlockGraph": false,
+          "regionDepths": [
+            9,
+            9
+          ],
+          "counts": {
+            "DefineFunction": 1,
+            "StoreLocal": 11,
+            "LoadName": 4,
+            "LoadConst": 4,
+            "Call": 5,
+            "ResolveContextManager": 2,
+            "Dup": 2,
+            "EnterContextManager": 2,
+            "Jump": 5,
+            "LoadLocal": 7,
+            "GetIter": 1,
+            "ForNext": 1,
+            "Augmented": 1,
+            "JumpIfFalse": 1,
+            "AbruptJump": 1,
+            "ExitContextManager": 2,
+            "EndFinally": 2,
+            "LoadCallMember": 1,
+            "PopTop": 2,
+            "Complete": 1
+          },
+          "operations": [
+            {
+              "op": "DefineFunction",
+              "line": 1,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 4,
+              "inputStart": -1,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 5,
+              "inputStart": -2,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadName",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadConst",
+              "line": 6,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": 2,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 1,
+                "receiver": false,
+                "positional": true
+              }
+            },
+            {
+              "op": "ResolveContextManager",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Dup",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 6,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "EnterContextManager",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Jump",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 6,
+              "inputStart": 3,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 7,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": 4,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "GetIter",
+              "line": 7,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Jump",
+              "line": 7,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "ForNext",
+              "line": 7,
+              "inputStart": 9,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 7,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Augmented",
+              "line": 8,
+              "inputStart": 0,
+              "resultSlot": 10,
+              "secondInput": -4,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 8,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadName",
+              "line": 9,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 9,
+              "inputStart": 11,
+              "resultSlot": 11,
+              "secondInput": 2147483647,
+              "liveExtent": 12,
+              "localSlot": 5,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 9,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 1,
+                "receiver": false,
+                "positional": true
+              }
+            },
+            {
+              "op": "JumpIfFalse",
+              "line": 9,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 10,
+              "inputStart": 5,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "AbruptJump",
+              "line": 11,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 1,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Jump",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": 2,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "ExitContextManager",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "EndFinally",
+              "line": 6,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 5,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadName",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadConst",
+              "line": 12,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": 4,
+              "call": null
+            },
+            {
+              "op": "LoadConst",
+              "line": 12,
+              "inputStart": 11,
+              "resultSlot": 11,
+              "secondInput": 2147483647,
+              "liveExtent": 12,
+              "localSlot": null,
+              "constantIndex": 5,
+              "call": null
+            },
+            {
+              "op": "LoadConst",
+              "line": 12,
+              "inputStart": 12,
+              "resultSlot": 12,
+              "secondInput": 2147483647,
+              "liveExtent": 13,
+              "localSlot": null,
+              "constantIndex": 1,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 3,
+                "receiver": false,
+                "positional": false
+              }
+            },
+            {
+              "op": "ResolveContextManager",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Dup",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 12,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "EnterContextManager",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Jump",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "StoreLocal",
+              "line": 12,
+              "inputStart": 7,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 13,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": 8,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadCallMember",
+              "line": 13,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 0,
+              "liveExtent": 11,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 13,
+              "inputStart": 11,
+              "resultSlot": 11,
+              "secondInput": 2147483647,
+              "liveExtent": 12,
+              "localSlot": 1,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 13,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 1,
+                "receiver": true,
+                "positional": true
+              }
+            },
+            {
+              "op": "PopTop",
+              "line": 13,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Jump",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": 6,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "ExitContextManager",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "EndFinally",
+              "line": 12,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 8,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadName",
+              "line": 14,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadLocal",
+              "line": 14,
+              "inputStart": 10,
+              "resultSlot": 10,
+              "secondInput": 2147483647,
+              "liveExtent": 11,
+              "localSlot": 0,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 14,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 10,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 1,
+                "receiver": false,
+                "positional": true
+              }
+            },
+            {
+              "op": "PopTop",
+              "line": 14,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "Complete",
+              "line": 14,
+              "inputStart": 9,
+              "resultSlot": 9,
+              "secondInput": 2147483647,
+              "liveExtent": 9,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            }
+          ]
+        },
+        {
+          "name": "wanted",
+          "locals": [
+            "line"
+          ],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "native": true,
+          "memberCaches": 1,
+          "constantTypes": [
+            "Lokad.Lython.Runtime.Text.PyString"
+          ],
+          "instructionCount": 5,
+          "operandCapacity": 3,
+          "retainsBlockGraph": false,
+          "regionDepths": [],
+          "counts": {
+            "LoadLocal": 1,
+            "LoadCallMember": 1,
+            "LoadConst": 1,
+            "Call": 1,
+            "Return": 1
+          },
+          "operations": [
+            {
+              "op": "LoadLocal",
+              "line": 2,
+              "inputStart": 1,
+              "resultSlot": 1,
+              "secondInput": 2147483647,
+              "liveExtent": 2,
+              "localSlot": 0,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadCallMember",
+              "line": 2,
+              "inputStart": 1,
+              "resultSlot": 1,
+              "secondInput": 0,
+              "liveExtent": 3,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            },
+            {
+              "op": "LoadConst",
+              "line": 2,
+              "inputStart": 3,
+              "resultSlot": 3,
+              "secondInput": 2147483647,
+              "liveExtent": 4,
+              "localSlot": null,
+              "constantIndex": 0,
+              "call": null
+            },
+            {
+              "op": "Call",
+              "line": 2,
+              "inputStart": 1,
+              "resultSlot": 1,
+              "secondInput": 2147483647,
+              "liveExtent": 2,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": {
+                "count": 1,
+                "receiver": true,
+                "positional": true
+              }
+            },
+            {
+              "op": "Return",
+              "line": 2,
+              "inputStart": 1,
+              "resultSlot": 1,
+              "secondInput": 2147483647,
+              "liveExtent": 1,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

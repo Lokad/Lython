@@ -1,0 +1,17 @@
+{
+  "noRuntimeChange": true,
+  "entryRedesignSelected": false,
+  "reason": "Entry method leaves do not establish a dominant removable call-admission phase; inclusive helper totals include useful work, unknowns/inlining remain.",
+  "samples": 645,
+  "unknownLeaves": 34,
+  "guestCPUSeconds": 3.280000000000001,
+  "jobClockSeconds": 3.666548032,
+  "nextSourceFact": "Module wanted binding is absent from existing local slots; its call target uses LoadName in the loop. Compile actual declaration binding metadata into existing slots while preserving dynamic namespace bridges; do not eagerly allocate dead module bindings.",
+  "moduleLoadNameLines": [
+    6,
+    9,
+    12,
+    14
+  ],
+  "newProducerQualification": false
+}
