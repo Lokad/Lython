@@ -3748,3 +3748,10 @@ keeps its current path. No speculative runtime code survives.
 Combined retained R44/R45 delivery42371564043 is terminal GREEN on8c9fd0d7:
 both platforms, actual11/10, original Stress and installed consumers. No qualification
 is claimed for the withdrawn R46 code. [Receipt](results/2026-11-07-integer-parsing/delivery-ci.json).
+
+## Maintained file-workflow comparison (2026-11-07)
+
+R47/B401 adds six compile/warm/compile-run jobs for protected search and the small
+two-file copy/checksum/manifest on qualified8c9fd0d7. No runtime change, new
+framework or unchanged seven-case retiming. Full gates/archive verification pass.
+[Complete evidence and limits](results/2026-11-07-file-workflows/README.md).

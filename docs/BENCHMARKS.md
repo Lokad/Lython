@@ -9,6 +9,8 @@
 | Configuration read/edit/write | 16 paths / 181 B | 147.184–147.313 µs | 125.544 µs | 1.17–1.17× | Diagnostic; 0.09% / 2.76% |
 | CSV with padded numeric fields | 4,096 records / 191,505 B | 4.569–4.586 ms | 4.325 ms | 1.06–1.06× | Diagnostic; 0.37% / 1.15% |
 | JSON with numeric strings | 4,096 records / 278,528 B | 7.767–7.807 ms | 4.639 ms | 1.67–1.68× | Diagnostic; 0.52% / 1.62% |
+| Protected file search | 2,049 lines; exits after 1,025 / 42,010 B | 307.328–312.170 µs | 210.604 µs | 1.46–1.48× | Diagnostic; 1.55% / 1.11% |
+| Two-file copy/checksum/manifest | 2 files / 4,107 B | 377.855–380.426 µs | 255.370 µs | 1.48–1.49× | Diagnostic; 0.68% / 2.39% |
 
 **2026-11-07; 0.11 development source `8c9fd0d7`; CPython3.13.16; .NET11RC3.**
 These are **compilation plus one execution in an already-running host**, including
@@ -19,7 +21,7 @@ not confidence intervals. Control is their absolute difference/candidate; IQR is
 the larger Lython-role interquartile range/median. Diagnostic/Variable describe
 short observations; they are not design acceptance thresholds.
 
-The first five workloads retain the maintained ordinary inputs. The final two
+The first five workloads retain the maintained ordinary inputs. The next two
 explicitly exercise general integer conversion: padded CSV keeps the same source;
 numeric-string JSON calls int in its helper. They do not replace the ordinary
 baseline. Frozen core `d3a6c778` matches the recorded production inventory with
@@ -42,6 +44,8 @@ Same source/input and execution/I/O/validation/cleanup boundary, reusing compile
 | Configuration read/edit/write | 75.156–77.331 µs | 59.996 µs | 1.25–1.29× | Variable; 2.89% / 1.21% |
 | CSV with padded numeric fields | 4.407–4.470 ms | 4.160 ms | 1.06–1.07× | Diagnostic; 1.41% / 1.02% |
 | JSON with numeric strings | 7.601–7.671 ms | 4.507 ms | 1.69–1.70× | Diagnostic; 0.92% / 1.82% |
+| Protected file search | 237.296–245.317 µs | 136.559 µs | 1.74–1.80× | Variable; 3.27% / 3.69% |
+| Two-file copy/checksum/manifest | 222.824–224.537 µs | 150.289 µs | 1.48–1.49× | Diagnostic; 0.77% / 1.77% |
 
 Compilation/program disposal only; execution and I/O excluded. Do not subtract
 warm and compile-to-result medians to infer compilation; these are separate jobs.
@@ -55,12 +59,19 @@ warm and compile-to-result medians to infer compilation; these are separate jobs
 | Configuration read/edit/write | 42.327–42.742 µs | 34.603 µs | 1.22–1.24× | Diagnostic; 0.98% / 0.85% |
 | CSV with padded numeric fields | 68.578–69.275 µs | 59.421 µs | 1.15–1.17× | Diagnostic; 1.01% / 1.81% |
 | JSON with numeric strings | 61.658–61.716 µs | 52.021 µs | 1.19–1.19× | Diagnostic; 0.09% / 1.08% |
+| Protected file search | 33.273–33.524 µs | 30.798 µs | 1.08–1.09× | Diagnostic; 0.75% / 0.83% |
+| Two-file copy/checksum/manifest | 80.820–81.603 µs | 56.597 µs | 1.43–1.44× | Diagnostic; 0.96% / 2.97% |
 
 **Startup, genuinely suspended-I/O latency, heap/RSS and embedding latency remain
 unmeasured.** Variable controls and IQRs stay visible. This combined checkpoint
 does not repay historical CSV debt, explain earlier adverse controls or isolate
 each change's CPU benefit. It describes the recorded source, not future HEAD.
 [Previous primary comparison, sourcefba865ef](../benchmarks/results/2026-11-07-receiver-cpython/README.md).
+
+The two file workflows were collected in a separate six-job block on the same
+qualified source and machine. Search exits after1,025 of2,049 lines; the manifest
+copies only two files/4,107B. These do not measure large-file throughput.
+[File-workflow inputs and observations](../benchmarks/results/2026-11-07-file-workflows/README.md).
 
 ## Machine, included work and fairness
 
