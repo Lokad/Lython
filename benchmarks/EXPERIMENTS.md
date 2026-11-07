@@ -3973,3 +3973,18 @@ and 32 public CPython probes pass. Compile allocation −3.53–4.64%, fresh rou
 −0.13–1.46%; warm essentially unchanged. Adverse report elapsed and drifting desktop
 controls preserved; no CPU/warm gain claim or new VM campaign. Full delivery batches
 at the next coherent checkpoint; R62's complete green delivery excludes this change.
+
+## Buffered-line execution consolidated (2026-11-07)
+
+[R66/B420](results/2026-11-07-buffered-lines/README.md) replaces duplicated line
+algorithms with one scanner and buffered synchronous prefixes; a sole iterative
+continuation retains private storage only for pending refills. Native destinations
+remain caller-owned; forwarding async state machines disappear (14 net production
+lines deleted). 637 internal / 3,584 public per actual11/10 pass, including twelve
+two-byte-window pending-read/close cases also green on baseline. Controlled six-job,
+four-process pair completes in 197.560s with every semantic/ownership/archive gate.
+Async text elapsed −2.32–8.26%, JSON −1.46–3.96%; synchronous and worker CPU results
+remain mixed with between-process spreads. Preserve adverse report CPU +6.94%,
+sync CSV elapsed +0.99% and original noisy desktop CSV +7.45/+13.94%. Allocation
+unchanged; no general CPU/sync gain or objective completion claimed. Retain coherent
+deletion and bounded async elapsed evidence; combined delivery qualification pending.

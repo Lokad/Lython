@@ -309,27 +309,28 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
-            public async ValueTask<PyIterationResult> TryMoveNextAsync()
+            public ValueTask<PyIterationResult> TryMoveNextAsync()
             {
-                var line = await ReadLineAsync(-1).ConfigureAwait(false);
-                if (!line.IsTruthy())
-                {
-                    return PyIterationResult.End;
-                }
-
-                return PyIterationResult.Yield(line);
+                var line = ReadLineAsync(-1);
+                return line.IsCompletedSuccessfully ? new(LineResult(line.GetAwaiter().GetResult())) : AwaitNextLineAsync(line);
             }
 
-            public async ValueTask<PyString> ReadAsync(int size)
+            private static async ValueTask<PyIterationResult> AwaitNextLineAsync(ValueTask<PyString> line)
+                => LineResult(await line.ConfigureAwait(false));
+
+            private static PyIterationResult LineResult(PyString line)
+                => line.IsTruthy() ? PyIterationResult.Yield(line) : PyIterationResult.End;
+
+            public ValueTask<PyString> ReadAsync(int size)
             {
                 EnsureOpen();
-                return await RequireReader().ReadAsync(size).ConfigureAwait(false);
+                return RequireReader().ReadAsync(size);
             }
 
-            public async ValueTask<PyString> ReadLineAsync(int size)
+            public ValueTask<PyString> ReadLineAsync(int size)
             {
                 EnsureOpen();
-                return await RequireReader().ReadLineAsync(size).ConfigureAwait(false);
+                return RequireReader().ReadLineAsync(size);
             }
 
             public async ValueTask<PyList> ReadLinesAsync(long hint)

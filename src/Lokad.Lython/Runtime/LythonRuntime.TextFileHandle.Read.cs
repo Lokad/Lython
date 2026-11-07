@@ -145,143 +145,128 @@ internal sealed partial class LythonRuntime
             }
 
             public PyString ReadLine(int size)
-            {
-                if (size == 0)
-                {
-                    return PyString.Empty;
-                }
+                => ReadLineCore(size, asynchronous: false).GetAwaiter().GetResult();
 
-                GovernedByteBuilder? builder = null;
-                try
-                {
-                    var remaining = size;
-                    while (true)
-                    {
-                        Refill();
-                        if (Drained())
-                        {
-                            return EmitAccumulated(builder);
-                        }
+            public ValueTask<PyString> ReadLineAsync(int size)
+                => ReadLineCore(size, asynchronous: true);
 
-                        var bytes = _window.Span;
-                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
-                        if (remaining >= 0)
-                        {
-                            end = WindowEndAfterRunes(end, remaining, out var taken);
-                            remaining -= taken;
-                        }
-
-                        // A line ending exactly at the window edge may continue past it;
-                        // appending and pulling more stays correct, costing one extra
-                        // pull in a rare alignment.
-                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
-                        {
-                            if (builder is null)
-                            {
-                                var line = CopyWindowRange(_windowConsumed, end);
-                                Advance(end);
-                                _services.CheckExecution(null);
-                                return line;
-                            }
-
-                            AppendRange(builder, _windowConsumed, end);
-                            return EmitAccumulated(builder);
-                        }
-
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        AppendRange(builder, _windowConsumed, bytes.Length);
-                    }
-                }
-                finally { builder?.Release(); }
-            }
-
-            // Native consumers already own their destination. Finish copying a
-            // whole physical line before they inspect it; no window borrow escapes.
+            // Native consumers own their destination through the complete line.
+            // The same scanner appends directly; no intermediate string escapes.
             internal bool ReadLineInto(GovernedByteBuilder destination)
             {
                 var before = destination.Length;
-                while (true)
-                {
-                    Refill();
-                    if (Drained())
-                    {
-                        _services.CheckExecution(null);
-                        return destination.Length != before;
-                    }
-                    if (AppendLineWindow(destination)) return true;
-                }
+                _ = ReadLineCore(-1, asynchronous: false, destination).GetAwaiter().GetResult();
+                return destination.Length != before;
             }
 
-            internal async ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
+            internal ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
             {
                 var before = destination.Length;
-                while (true)
-                {
-                    await RefillAsync().ConfigureAwait(false);
-                    if (Drained())
-                    {
-                        _services.CheckExecution(null);
-                        return destination.Length != before;
-                    }
-                    if (AppendLineWindow(destination)) return true;
-                }
+                var line = ReadLineCore(-1, asynchronous: true, destination);
+                if (!line.IsCompletedSuccessfully) return AwaitLineIntoAsync(line, destination, before);
+                _ = line.GetAwaiter().GetResult();
+                return new(destination.Length != before);
             }
 
-            private bool AppendLineWindow(GovernedByteBuilder destination)
+            private static async ValueTask<bool> AwaitLineIntoAsync(ValueTask<PyString> pending,
+                GovernedByteBuilder destination, int before)
             {
-                var end = TextLineScanning.FindLineEndByte(_window.Span, _windowConsumed, _newline);
-                var complete = end < _window.Length || EndsWithTerminator();
-                AppendRange(destination, _windowConsumed, end);
-                _services.CheckExecution(null);
-                return complete;
+                _ = await pending.ConfigureAwait(false);
+                return destination.Length != before;
             }
 
-            public async ValueTask<PyString> ReadLineAsync(int size)
+            private ValueTask<PyString> ReadLineCore(int size, bool asynchronous,
+                GovernedByteBuilder? destination = null)
             {
-                if (size == 0)
-                {
-                    return PyString.Empty;
-                }
-
-                GovernedByteBuilder? builder = null;
+                if (size == 0) return new(PyString.Empty);
+                var ownsBuilder = destination is null;
+                var builder = destination;
+                var remaining = size;
+                var transferred = false;
                 try
                 {
-                    var remaining = size;
                     while (true)
                     {
-                        await RefillAsync().ConfigureAwait(false);
-                        if (Drained())
+                        _services.CheckExecution(null);
+                        if (_windowConsumed >= _window.Length)
                         {
-                            return EmitAccumulated(builder);
-                        }
-
-                        var bytes = _window.Span;
-                        var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
-                        if (remaining >= 0)
-                        {
-                            end = WindowEndAfterRunes(end, remaining, out var taken);
-                            remaining -= taken;
-                        }
-
-                        if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
-                        {
-                            if (builder is null)
+                            if (asynchronous)
                             {
-                                var line = CopyWindowRange(_windowConsumed, end);
-                                Advance(end);
-                                _services.CheckExecution(null);
-                                return line;
+                                var refill = RefillAsync();
+                                if (!refill.IsCompleted)
+                                {
+                                    var result = ReadLineAfterRefillAsync(refill, remaining, builder, ownsBuilder);
+                                    transferred = true;
+                                    return result;
+                                }
+                                refill.GetAwaiter().GetResult();
                             }
-
-                            AppendRange(builder, _windowConsumed, end);
-                            return EmitAccumulated(builder);
+                            else Refill();
                         }
-
-                        builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
-                        AppendRange(builder, _windowConsumed, bytes.Length);
+                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line))
+                            return new(line);
                     }
                 }
-                finally { builder?.Release(); }
+                finally { if (ownsBuilder && !transferred) builder?.Release(); }
+            }
+
+            // A pending refill transfers the private builder to this one iterative
+            // continuation. Caller-owned destinations remain with their caller.
+            private async ValueTask<PyString> ReadLineAfterRefillAsync(ValueTask refill, int remaining,
+                GovernedByteBuilder? builder, bool ownsBuilder)
+            {
+                try
+                {
+                    await refill.ConfigureAwait(false);
+                    while (true)
+                    {
+                        _services.CheckExecution(null);
+                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line)) return line;
+                        await RefillAsync().ConfigureAwait(false);
+                    }
+                }
+                finally { if (ownsBuilder) builder?.Release(); }
+            }
+
+            private bool TryReadLineWindow(ref int remaining, ref GovernedByteBuilder? builder,
+                bool ownsBuilder, out PyString line)
+            {
+                if (Drained())
+                {
+                    line = ownsBuilder ? EmitAccumulated(builder) : PyString.Empty;
+                    return true;
+                }
+
+                var bytes = _window.Span;
+                var end = TextLineScanning.FindLineEndByte(bytes, _windowConsumed, _newline);
+                if (remaining >= 0)
+                {
+                    end = WindowEndAfterRunes(end, remaining, out var taken);
+                    remaining -= taken;
+                }
+
+                // The decoder's CR holdback makes a terminator at the window
+                // edge complete. An unterminated edge needs another refill.
+                if (end < bytes.Length || EndsWithTerminator() || remaining == 0)
+                {
+                    if (builder is null)
+                    {
+                        line = CopyWindowRange(_windowConsumed, end);
+                        Advance(end);
+                    }
+                    else
+                    {
+                        AppendRange(builder, _windowConsumed, end);
+                        line = ownsBuilder ? EmitAccumulated(builder) : PyString.Empty;
+                    }
+                    _services.CheckExecution(null);
+                    return true;
+                }
+
+                builder ??= new GovernedByteBuilder(_services.MemoryGovernor, null);
+                AppendRange(builder, _windowConsumed, bytes.Length);
+                line = PyString.Empty;
+                return false;
             }
 
             public void Release()

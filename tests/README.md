@@ -98,6 +98,12 @@ keep original operands funded across protocol rebinding and real suspension.
 Native calls, compiled children and subscript callbacks leave targets unchanged
 while pending; cancellation or refused admission preserves them and awaits cleanup.
 
+[Partial line reads](Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs) use a
+two-byte window followed by a pending refill for readline, file iteration, CSV
+and JSON-lines. Completion, cancellation and refused admission retain funding
+through actual read/close completion; guest suppression and secondary close
+errors cannot replace the first refusal.
+
 [Hash queries](Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs) preserve
 Python callback effects and errors, while native copies and set pop use stored
 keys without rehashing. [Ownership checks](Lokad.Lython.Tests/HashQueryOwnershipTests.cs)

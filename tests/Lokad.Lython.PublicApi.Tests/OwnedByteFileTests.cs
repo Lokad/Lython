@@ -46,6 +46,100 @@ public sealed class OwnedByteFileTests
     }
 
     [Theory]
+    [InlineData("readline", "complete"), InlineData("readline", "cancel"), InlineData("readline", "refuse")]
+    [InlineData("iterate", "complete"), InlineData("iterate", "cancel"), InlineData("iterate", "refuse")]
+    [InlineData("csv", "complete"), InlineData("csv", "cancel"), InlineData("csv", "refuse")]
+    [InlineData("json", "complete"), InlineData("json", "cancel"), InlineData("json", "refuse")]
+    public async Task PartialLinesKeepStorageThroughPendingRefillAndClose(string mode, string outcome)
+    {
+        var entered = Signal(); var readRelease = Signal(); var closing = Signal(); var closeRelease = Signal();
+        using var cancellation = new CancellationTokenSource();
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        var host = new FileHost { CompletesSynchronously = false };
+        // Two bytes form a complete decoded window without a line terminator.
+        // The next short read suspends after partial line storage already exists.
+        var prefix = mode == "json" ? "\"a"u8.ToArray() : "ab"u8.ToArray();
+        var suffix = mode == "json" ? "\"\n"u8.ToArray() : "\n"u8.ToArray();
+        host.Inner.SeedBytes("/source", [.. prefix, .. suffix]);
+        var reads = 0;
+        host.Read = async (sourceFile, buffer, token) =>
+        {
+            Assert.Equal(cancellation.Token, token);
+            if (++reads == 1) { prefix.CopyTo(buffer); return prefix.Length; }
+            if (reads > 2) return 0;
+            entered.TrySetResult();
+            await readRelease.Task;
+            if (outcome == "refuse")
+            {
+                using var admission = budget.CreateScope();
+                Assert.False(admission.TryReserve(2 * 1024 * 1024, out _));
+                throw new LythonHostException(LythonHostFailureKind.MemoryAdmission,
+                    "line refill refused", requestedBytes: 2 * 1024 * 1024);
+            }
+            suffix.CopyTo(buffer); // Finish the original borrow even after cancellation.
+            return suffix.Length;
+        };
+        host.Dispose = async file =>
+        {
+            closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync();
+            if (outcome == "refuse") throw new LythonHostException(LythonHostFailureKind.Transport, "secondary close failure");
+        };
+        var expression = mode switch
+        {
+            "readline" => "len(source.readline())",
+            "iterate" => "len(next(source))",
+            "csv" => "len(next(csv.reader(source))[0])",
+            _ => "len(json.loads(next(source)))",
+        };
+        var imports = mode is "csv" or "json" ? $"import {mode}\n" : "";
+        using var script = new LythonEngine().Compile(imports +
+            $"try:\n with open('source') as source:\n  print({expression})\nexcept MemoryError:\n print('suppressed')\nfinally:\n return 7\n", budget);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var pendingBalance = budget.ReservedBytes;
+            Assert.True(pendingBalance > baseline + 256);
+            if (outcome == "cancel") cancellation.Cancel();
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes >= pendingBalance);
+            readRelease.TrySetResult();
+            await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline + 256);
+            Assert.Equal(0, host.Inner.ClosedFileCount);
+            closeRelease.TrySetResult();
+            using (var result = await run.WaitAsync(TimeSpan.FromSeconds(10)))
+            {
+                Assert.Equal(outcome == "complete", result.Success);
+                if (outcome == "complete")
+                    Assert.Equal(mode == "csv" ? "2\n" : mode == "json" ? "1\n" : "3\n", result.StandardOutput);
+                else
+                {
+                    Assert.Empty(result.StandardOutput);
+                    Assert.Equal(outcome == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                        result.FailureAttribution?.Reason);
+                    if (outcome == "refuse")
+                    {
+                        Assert.Equal(2 * 1024 * 1024, result.FailureAttribution?.Requested);
+                        Assert.Contains("line refill refused", result.Failure?.Message);
+                    }
+                }
+            }
+            Assert.Equal(2, reads);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally
+        {
+            readRelease.TrySetResult(); closeRelease.TrySetResult();
+            using var drained = await run.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+    }
+
+    [Theory]
     [InlineData(false, false), InlineData(true, false)]
     [InlineData(false, true), InlineData(true, true)]
     public async Task OpenedIdentitiesAndIndependentCursorsSurvivePathReplacement(bool asynchronous, bool text)

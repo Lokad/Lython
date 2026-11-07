@@ -72,6 +72,10 @@ UTF-8 error handling and newline translation. Text readers borrow unchanged vali
 UTF-8 from the admitted raw prefix; transformed windows retain codec output funding.
 Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
 CRLF/window holdback and scalar read limits stay with the caller.
+Readline, file iteration and native CSV input share the same window scanner.
+Buffered asynchronous reads finish directly; a pending refill retains the private
+builder in one iterative continuation until the read settles. Native destinations
+remain owned by their caller throughout.
 Carry compaction and refill wait until the current window is relinquished. Returned
 text always owns independent immutable storage before raw-buffer reuse. UTF-8 replacement, ignored
 bytes and backslash escapes preserve Python malformed-unit grouping; newline
