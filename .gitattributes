@@ -236,3 +236,6 @@ benchmarks/results/2026-11-07-builtin-root-identity/** -text whitespace=cr-at-eo
 
 # Preserve the annotation-demand source pair and diagnostic observations.
 benchmarks/results/2026-11-07-annotation-demand/** -text whitespace=cr-at-eol
+
+# Preserve the ordinary-helper CSV capture and original failed setup.
+benchmarks/results/2026-11-07-ordinary-csv-cost/** -text whitespace=cr-at-eol

@@ -3572,3 +3572,15 @@ baseline spread remains inconclusive; regex compile+0.014–1.66% is accepted po
 overhead. Retain compilation simplification/allocation gain, no warm CPU/parity/
 compound claim or unchanged retiming. Terminal capture archived/verified, all users
 joined. Full R36/R38 delivery42351006316 onb0889a46 remains independent/pending.
+
+
+## R39 ordinary-helper CSV cost gate
+
+[B391](results/2026-11-07-ordinary-csv-cost/README.md) records1,127guest samples/
+5.68CPU seconds on b0889a46 production;58unknown leaves retained. BeginPendingCall
+550inclusive/32self includes useful helper work; work-state26/18, binding22/18,
+resume11/11 do not establish a dominant removable frame phase. CSV parsing/record
+construction also competes. No general frame/call-arena prototype or repeat profile
+selected. B390 failed before worker creation on a tuple environment key; original
+condition archived/verified before one correction. B391 all gates pass, terminal/
+users joined/RAM evidence archived/removed. No source-pair performance claim.

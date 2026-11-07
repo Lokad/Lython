@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "noWorkerStarted": true,
+  "noPerformanceObservations": true,
+  "allUsersEnded": true,
+  "archiveSHA256": "5886895d51ae277c77b82ba35085ac6e30624d6f8bc37fcb9398c27d58079f69",
+  "archivedAndVerifiedUnderLease": true,
+  "condition": "Environment map has one tuple key after collector string adaptation; Popen rejects it before child creation."
+}
