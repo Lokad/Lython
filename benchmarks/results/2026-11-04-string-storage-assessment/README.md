@@ -119,3 +119,13 @@ historical. No unchanged qualification replay. Publication postponed.
 Raw archives preserve plans, exact source, every sample, machine gates and worker
 identities; focused-qualification.tgz preserves all original/corrected logs/TRX,
 actual-shape probes, independent CPython goldens and useful retained test source.
+
+## Archived rejected binary copies — 2026-11-07
+
+[retired-images.tgz](retired-images.tgz) preserves the exact be5dd48f/801ab677
+withdrawn core binaries from their original payloads, with remote size/hash and
+dependency inspection in [retired-images.json](retired-images.json). Original
+raw observations/source archives remain unchanged. This is benchmark evidence,
+not a release output. Only redundant expanded copies may be retired after this
+independent archive is committed/pushed and current users/links/hashes revalidated.
+The retained production binary454cd98c and all other images are outside this set.
