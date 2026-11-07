@@ -6,6 +6,8 @@
   executable, lowered, lambda and generator functions. Remove repeated parameter
   classification, layout arrays and name-map construction; keep defaults, closures
   and keyword-name storage private, with native generated admission/rollback.
+  Reuse the same parameter order for executable slots, removing the compiler's
+  separate classification pass.
 
 - Prepare class own-cell requirements with lexical facts, removing repeated syntax
   analysis during class creation while preserving fresh class/closure cells.

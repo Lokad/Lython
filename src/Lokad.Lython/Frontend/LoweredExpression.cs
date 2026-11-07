@@ -311,7 +311,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
         FunctionBody = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
         if (GeneratorSyntaxFacts.ContainsYield(lambda.Body))
-            GeneratorCode = ExecutableScript.CompileGenerator(Parameters, FunctionBody, ScopeFacts);
+            GeneratorCode = ExecutableScript.CompileGenerator(ParameterLayout, FunctionBody, ScopeFacts);
     }
 
     public LambdaExpressionSyntax Lambda { get; }

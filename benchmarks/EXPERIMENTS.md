@@ -3441,3 +3441,12 @@ warm allocation−10.65%, fresh−7.35%, compilation+1,728B. Quiet class warm el
 current roles differ4.4–5.0%, retaining adverse/inconclusive debt. Desktop adverse
 and B383 pre-worker collector-count failure are preserved. Retain the simplification;
 no broad CPU/CPython claim. Batch full qualification with compiler-prefix completion.
+
+## Canonical compiler parameter prefix (2026-11-07)
+
+[R32](results/2026-11-07-canonical-parameter-prefix/README.md) deletes the compiler's
+separate parameter-order algorithm and consumes R31 metadata directly. Focused
+406internal/1,962public per actual target plus independent generator Python probes
+pass. Compilation removes32B per ordinary definition; an empty generator layout
+adds152B. Warm allocation flat; no quiet timing or CPU claim for this exact image.
+Full platform/Stress/installed consumers batch the retained R30–R32 delivery.

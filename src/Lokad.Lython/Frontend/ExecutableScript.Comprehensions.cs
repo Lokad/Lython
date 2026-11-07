@@ -8,7 +8,7 @@ internal sealed partial class ExecutableScript
         {
             var locals = new HashSet<string>(expression.ScopeFacts.LocalNames, StringComparer.Ordinal) { ".0" };
             var facts = expression.ScopeFacts with { LocalNames = locals };
-            var builder = new Builder([], ChildClosureCandidates(), facts,
+            var builder = new Builder(new FunctionParameterLayout([]), ChildClosureCandidates(), facts,
                 completeLexicalParent: _completeLexicalParent) { _generator = true };
             var code = builder.CompileCodeObject("<genexpr>", [], expression);
             block = CompileExpression(expression.Clauses[0].Iterable, block);

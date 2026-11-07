@@ -140,7 +140,7 @@ internal sealed partial class ExecutableScript
                         currentBlock = CompileExpression(annotated.Expression, currentBlock);
                         CompileStoreBoundName(targetName.Name, annotated.Span, currentBlock);
                     }
-                    return _functionParameters is null ? CompileModuleAnnotation(annotated, currentBlock) : currentBlock;
+                    return _parameterLayout is null ? CompileModuleAnnotation(annotated, currentBlock) : currentBlock;
 
                 case LoweredAugmentedAssignmentStatement augmented:
                     if (augmented.Target is LoweredSliceAugmentedAssignmentTarget augmentedSlice)

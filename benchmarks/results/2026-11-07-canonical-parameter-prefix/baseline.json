@@ -1,0 +1,16 @@
+{
+  "revision": "bf2797685ed5be2038876f6791e172861b9bad90",
+  "sourceSHA256": {
+    "ExecutableScript.Builder.cs": "4a8792afe78fa3ebc4bf42b120cbbb188664fb69fe5c6e9a5ace7ef96b800a3f",
+    "ExecutableScript.Comprehensions.cs": "1399c796b103c4438b6162c29b5a3d0e9049986603e9ee361927629544934d9f",
+    "ExecutableScript.Infrastructure.cs": "44edfb0e45e116b54aba7c8298d8572b6131c946f1d24aaf35785e38738c5b0b",
+    "ExecutableScript.Statements.cs": "f1736b52960ec5642f6461f213df665dffac028795e5401acb41e4a3820c7ba4",
+    "ExecutableScript.SuspendingDefinitions.cs": "380ef7b6278acb899a5bb2f20e5aec650a955aad5d6aeed0bc7df4957f3888ae",
+    "LoweredExpression.cs": "f01b8dbebcac0c26d4ec770a0d3317c0f7ae5876d51fb1d6298a4b19d7e14d77",
+    "LoweredStatement.cs": "e27fa0fa189e1cc6c691744eb2d89220b17affcf65079353095fd31507952d19"
+  },
+  "coreSHA256": {
+    "net11.0": "333843763b9d7d57aab977c9b4637713fa1bc4652af9a668a612f2aadcf4e779",
+    "net10.0": "9a0430788ec712a93e3de4ec7a6bf11c23fb1955b31ef3bae5686996731bd0d5"
+  }
+}

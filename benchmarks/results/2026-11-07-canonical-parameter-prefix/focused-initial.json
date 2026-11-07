@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1962, Skipped:     0, Total:  1962, Duration: 26 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:  1962, Skipped:     0, Total:  1962, Duration: 28 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~PreparedFunctionDefaults|FullyQualifiedName~FunctionDefaultConstruction|FullyQualifiedName~FunctionClassCell|FullyQualifiedName~Lambda|FullyQualifiedName~Generator|FullyQualifiedName~Class|FullyQualifiedName~Scope|FullyQualifiedName~Super|FullyQualifiedName~Annotation|FullyQualifiedName~SharedMemory|FullyQualifiedName~GovernedMemory|FullyQualifiedName~Cancellation)",
+  "coreSHA256": {
+    "net11.0": "77bb12cc81b3b3cfba35de320fa432b6d7bf63920da4f2ee43eb08b68348ddda",
+    "net10.0": "0f9553f939ef84d33ab3c4fd67cc03e296bff10afaf054b12b7c43300cf8fd05"
+  }
+}

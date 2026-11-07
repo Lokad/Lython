@@ -24,12 +24,12 @@ internal sealed partial class ExecutableScript
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
 
-    internal static ExecutableCodeObject CompileGenerator(IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+    internal static ExecutableCodeObject CompileGenerator(FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
         ScopeDirectiveFacts scopeFacts)
-        => new Builder(parameters, true, scopeFacts).CompileCodeObject("<generator>", body);
+        => new Builder(parameterLayout, true, scopeFacts).CompileCodeObject("<generator>", body);
 
     internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
-        => new Builder(function.Parameters, parentClosureCandidates: null, function.ScopeFacts)
+        => new Builder(function.ParameterLayout, parentClosureCandidates: null, function.ScopeFacts)
             .CompileCodeObject(function.Syntax.DeclaredName, function.Body);
 
     private sealed partial class Builder
@@ -59,22 +59,22 @@ internal sealed partial class ExecutableScript
         private bool _generator;
         private int _syntheticLocalCounter;
 
-        private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
+        private readonly FunctionParameterLayout? _parameterLayout;
         private readonly HashSet<string> _parentClosureCandidates;
         private readonly bool _completeLexicalParent;
         private readonly ScopeDirectiveFacts _scopeFacts;
 
-        internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator, ScopeDirectiveFacts scopeFacts)
-            : this(functionParameters, null, scopeFacts) { _generator = generator; }
+        internal Builder(FunctionParameterLayout parameterLayout, bool generator, ScopeDirectiveFacts scopeFacts)
+            : this(parameterLayout, null, scopeFacts) { _generator = generator; }
 
         internal Builder(
-            IReadOnlyList<LoweredFunctionParameter>? functionParameters,
+            FunctionParameterLayout? parameterLayout,
             IEnumerable<string>? parentClosureCandidates,
             ScopeDirectiveFacts scopeFacts,
             bool completeLexicalParent = false)
         {
             _scopeFacts = scopeFacts;
-            _functionParameters = functionParameters;
+            _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
             // bindings. Independently compiled class/generator bodies still use
             // their live retained namespaces for unresolved names.
@@ -93,25 +93,17 @@ internal sealed partial class ExecutableScript
             // through their retained lexical chain. Generator expressions have
             // the defining builder's candidates and capture the existing cell.
             // Module facts are prepared too, but a module is not a closure.
-            if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && _functionParameters is not null)
+            if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && _parameterLayout is not null)
                 InternClosure("__class__");
-            // Match Python and FunctionBindingPlan: positional, keyword-only,
-            // then variadic parameters. Collect this prefix once, before body locals.
-            if (_functionParameters is not null)
-            {
-                foreach (var parameter in _functionParameters)
-                    if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly or FunctionParameterKind.KeywordOnly
-                        && IsLocalBindingName(parameter.Name))
-                        InternLocal(parameter.Name);
-                foreach (var parameter in _functionParameters)
-                    if (parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary
-                        && IsLocalBindingName(parameter.Name))
-                        InternLocal(parameter.Name);
-            }
+            // Binding and executable locals use one prepared parameter order.
+            // Body locals are appended below, without reclassifying the signature.
+            if (_parameterLayout is not null)
+                foreach (var parameterName in _parameterLayout.LayoutParameterNames)
+                    if (IsLocalBindingName(parameterName)) InternLocal(parameterName);
             // Function locals include bindings in dead control-flow bodies.
             // Keep the argument prefix above; no second binding walk. Modules
             // retain their dynamic namespace; actual stores intern needed slots.
-            if (_functionParameters is not null)
+            if (_parameterLayout is not null)
                 foreach (var localName in _scopeFacts.LocalBindingOrder)
                     InternLocal(localName);
 
@@ -122,7 +114,7 @@ internal sealed partial class ExecutableScript
             // Module completion is distinct from an executed top-level return:
             // imports reject the latter. The interpreter already ends naturally
             // at an unterminated final block. Functions still return Python None.
-            if (_functionParameters is not null && exitBlock is int finalBlock && !IsTerminated(finalBlock))
+            if (_parameterLayout is not null && exitBlock is int finalBlock && !IsTerminated(finalBlock))
             {
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
@@ -140,7 +132,7 @@ internal sealed partial class ExecutableScript
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
-            var moduleAnnotationNamespace = _functionParameters is null &&
+            var moduleAnnotationNamespace = _parameterLayout is null &&
                 _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
                 (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
             var requiresLocalVariableMirroring =
@@ -183,7 +175,7 @@ internal sealed partial class ExecutableScript
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),
                 requiresLocalVariableMirroring,
-                isFunctionScope: _functionParameters is not null,
+                isFunctionScope: _parameterLayout is not null,
                 operandLayout: operandLayout);
 
             int[] CollectCapturedLocalSlots()

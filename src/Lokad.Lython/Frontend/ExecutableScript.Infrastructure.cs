@@ -278,7 +278,7 @@ internal sealed partial class ExecutableScript
             {
                 AddInstruction(currentBlock, ExecutableInstruction.LoadClosure(InternClosure(name), span));
             }
-            else if (_functionParameters is not null && _completeLexicalParent && !_scopeFacts.IsNonlocal(name))
+            else if (_parameterLayout is not null && _completeLexicalParent && !_scopeFacts.IsNonlocal(name))
             {
                 // Locals and all lexical captures were considered above. The
                 // remaining name belongs to the live module/builtin namespace;
@@ -388,7 +388,7 @@ internal sealed partial class ExecutableScript
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
-                functionDefinition.Parameters, functionDefinition.Body,
+                functionDefinition.ParameterLayout, functionDefinition.Body,
                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
 
             _functions.Add(new ExecutableFunctionBinding(
@@ -400,7 +400,7 @@ internal sealed partial class ExecutableScript
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,
-            IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+            FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
             ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
         {
             // Forward transitive free names as before. Comprehension names
@@ -411,14 +411,14 @@ internal sealed partial class ExecutableScript
             // still evaluate in the defining context before TypeScope exists.
             if (candidates is not null && typeParameters is not null)
                 candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
-            return new Builder(parameters, candidates, scopeFacts,
+            return new Builder(parameterLayout, candidates, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 })
                 .CompileCodeObject(name, body);
         }
 
         private IEnumerable<string>? ChildClosureCandidates()
         {
-            IEnumerable<string>? candidates = _functionParameters is null ? null
+            IEnumerable<string>? candidates = _parameterLayout is null ? null
                 : _locals.Concat(_closures).Concat(_parentClosureCandidates)
                     .Except(_scopeFacts.GlobalNames, StringComparer.Ordinal);
             return _comprehensionNames.Count == 0 ? candidates
