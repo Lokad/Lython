@@ -1,0 +1,23 @@
+[
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "inputBytes": 110592,
+    "stringTokens": 12288,
+    "escapedTokens": 0,
+    "maximumEscapedTokenBytes": 0
+  },
+  {
+    "case": "scripts.report-render.large",
+    "inputBytes": 189441,
+    "stringTokens": 15360,
+    "escapedTokens": 0,
+    "maximumEscapedTokenBytes": 0
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "inputBytes": 181,
+    "stringTokens": 25,
+    "escapedTokens": 0,
+    "maximumEscapedTokenBytes": 0
+  }
+]

@@ -1,0 +1,87 @@
+{
+  "qualifiedGitSource": "e66b8f72",
+  "comparedSources": 561,
+  "normalizedSourceDifferences": [],
+  "checkoutLineEndingDifferences": [
+    "src/Lokad.Lython/Runtime/Text/PyString.cs"
+  ],
+  "nonincrementalCoreBuildsCompleted": true,
+  "checks": {
+    "restored-internal-net11": {
+      "total": "456",
+      "executed": "456",
+      "passed": "456",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "restored-public-net11": {
+      "total": "2496",
+      "executed": "2496",
+      "passed": "2496",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "restored-internal-net10": {
+      "total": "456",
+      "executed": "456",
+      "passed": "456",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "restored-public-net10": {
+      "total": "2496",
+      "executed": "2496",
+      "passed": "2496",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  "cores": {
+    "net11.0": "463f6230cf679e03bc1c25f9db16e7be6f4d5c63718cf5a9acad7107b342dab4",
+    "net10.0": "3c8c2584d2a445ade20f9fe43a5d11b2a44a2838b13562479e10047c68ec9821"
+  }
+}

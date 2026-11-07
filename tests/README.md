@@ -15,6 +15,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Decoded JSON text](Lokad.Lython.PublicApi.Tests/JsonDecodedTextInteropTests.cs)
+checks Python Unicode/string operations, hash lookups and regex pattern/subject
+offsets together, with independent CPython output and shared-budget reuse under
+both execution APIs.
+
 [Executable graph normalization](Lokad.Lython.Tests/ExecutableJumpTargetTests.cs)
 compares every partial successor graph through five nodes with an independent
 walk, preserves cycle/tail entries and resolves a long chain without recursion.

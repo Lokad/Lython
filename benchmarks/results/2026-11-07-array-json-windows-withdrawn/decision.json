@@ -1,0 +1,6 @@
+{
+  "decision": "withdraw all R60 production/architecture-specific tests",
+  "reason": "No substantial CPU benefit: modest report elapsed improvement, JSON adverse/variable and text modest stable regressions persist after owned-accessor refinement. 5\u20137% allocation saving alone does not justify general access/ownership state. Not a permanent rejection or fixed percentage veto.",
+  "preserveIndependentPublicInterop": true,
+  "publicationPostponed": true
+}

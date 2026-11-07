@@ -3904,3 +3904,27 @@ Combined R57/R58 delivery **CI42404834827 on e66b8f72 GREEN**: Windows/Ubuntu
 Release actual11/10, original Stress and installed core consumers.
 [Cached receipt](results/2026-11-07-executable-graph/delivery-ci.json); no further query
 or unchanged qualification. R59 development compatibility is independently scoped.
+
+## Array-backed JSON windows withdrawn (2026-11-07)
+
+[R60](results/2026-11-07-array-json-windows-withdrawn/README.md) avoids R54's8B
+wrapper tax; first JSON/report allocation−5%/−7%, controls flat. Both variants
+pass460internal/2496public per actual11/10, full backing/shell funding and tokens.
+B416114.231s/allgates shows stable CSV+2.65to+3.07%; explicit owned zero-offset
+refinement B417114.322s/allgates removes most CSV debt. Report−3.40to−0.87%,
+JSON+1.56to+7.31%/5.18%current spread and text+0.57to+1.98% remain, workerCPU
+mixed/adverse. Withdraw whole representation/architecture-only tests; retain
+independent decoded-text interoperability. Exact qualified Git production restored,
+forced core builds and456internal/2496public per actual11/10 pass. No prototype,
+hash flag change, owner state or view helper remains. Preserve initial8failures,
+all first/refined raw/source/cores and adverse points; no permanent ban/CPU claim
+or objective completion. Terminal archivesa5b030a1/f47c89fa locally verified.
+
+## Native JSON construction source gate (2026-11-07)
+
+[R61](results/2026-11-07-native-json-construction-gate/README.md) finds zero
+escaped tokens in current JSON-lines/report/config fixtures. Escaped-buffer
+copy elimination is not a candidate for those measured gaps. Completed native
+loops/shared record keys/direct ordered-slot publication already exist. No new
+parser/funding machinery, timing or qualification; gate records no justified
+complete removable stage and continues the broader roadmap.

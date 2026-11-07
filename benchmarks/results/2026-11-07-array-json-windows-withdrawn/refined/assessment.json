@@ -1,0 +1,193 @@
+{
+  "complete": true,
+  "ownedSeconds": 114.32216027798131,
+  "jobs": [
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.0033593776222222223,
+          "iqrPercent": 4.167718751978104,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0036507936507936506,
+          "minimumBatchSeconds": 0.149147653
+        },
+        "reference-control": {
+          "seconds": 0.0034192731136363634,
+          "iqrPercent": 1.7941918104510375,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0036688311688311687,
+          "minimumBatchSeconds": 0.14334649
+        },
+        "candidate": {
+          "seconds": 0.0033028867173913045,
+          "iqrPercent": 2.366291716003454,
+          "aggregateExternalCpuSecondsPerInvocation": 0.003726708074534162,
+          "minimumBatchSeconds": 0.150773858
+        },
+        "control": {
+          "seconds": 0.003330095804347826,
+          "iqrPercent": 1.8882806394256597,
+          "aggregateExternalCpuSecondsPerInvocation": 0.003633540372670807,
+          "minimumBatchSeconds": 0.150813817
+        }
+      },
+      "elapsedPercentAllPairings": [
+        -1.6815884126045066,
+        -3.4038344518576125,
+        -0.871644130766891,
+        -2.60807798396947
+      ],
+      "externalCpuPercentAllPairings": [
+        2.0793950850661824,
+        1.5775298191612386,
+        -0.472589792060496,
+        -0.9619084263178146
+      ],
+      "oldSpreadPercent": 1.7829341666722343,
+      "newSpreadPercent": 0.8237971594136972
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.00401097547368421,
+          "iqrPercent": 0.5908796907181099,
+          "aggregateExternalCpuSecondsPerInvocation": 0.004172932330827067,
+          "minimumBatchSeconds": 0.151993374
+        },
+        "reference-control": {
+          "seconds": 0.0039925399473684205,
+          "iqrPercent": 0.1438643615588566,
+          "aggregateExternalCpuSecondsPerInvocation": 0.004172932330827068,
+          "minimumBatchSeconds": 0.151194793
+        },
+        "candidate": {
+          "seconds": 0.004284561166666667,
+          "iqrPercent": 0.34291207911985044,
+          "aggregateExternalCpuSecondsPerInvocation": 0.004563492063492063,
+          "minimumBatchSeconds": 0.153164118
+        },
+        "control": {
+          "seconds": 0.004073406157894737,
+          "iqrPercent": 0.4088308766604713,
+          "aggregateExternalCpuSecondsPerInvocation": 0.004248120300751879,
+          "minimumBatchSeconds": 0.15418509
+        }
+      },
+      "elapsedPercentAllPairings": [
+        6.820926599462829,
+        7.314171508558709,
+        1.5564962842613106,
+        2.0254327218345747
+      ],
+      "externalCpuPercentAllPairings": [
+        9.359359359359365,
+        9.359359359359342,
+        1.8018018018018056,
+        1.8018018018017834
+      ],
+      "oldSpreadPercent": 0.4617493264642336,
+      "newSpreadPercent": 5.183745508968873
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.0038299247250000003,
+          "iqrPercent": 0.2509677262651697,
+          "aggregateExternalCpuSecondsPerInvocation": 0.004,
+          "minimumBatchSeconds": 0.152358725
+        },
+        "reference-control": {
+          "seconds": 0.0038126233000000003,
+          "iqrPercent": 0.5649571385665134,
+          "aggregateExternalCpuSecondsPerInvocation": 0.003964285714285714,
+          "minimumBatchSeconds": 0.151579635
+        },
+        "candidate": {
+          "seconds": 0.003824702975,
+          "iqrPercent": 0.5191010943797495,
+          "aggregateExternalCpuSecondsPerInvocation": 0.003928571428571429,
+          "minimumBatchSeconds": 0.152503918
+        },
+        "control": {
+          "seconds": 0.003788838375,
+          "iqrPercent": 0.9104621017253249,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0039642857142857145,
+          "minimumBatchSeconds": 0.151150588
+        }
+      },
+      "elapsedPercentAllPairings": [
+        -0.136340799752932,
+        0.31683368771311393,
+        -1.072771737047662,
+        -0.6238467094297095
+      ],
+      "externalCpuPercentAllPairings": [
+        -1.7857142857142794,
+        -0.9009009009008806,
+        -0.8928571428571397,
+        2.220446049250313e-14
+      ],
+      "oldSpreadPercent": 0.453793192734242,
+      "newSpreadPercent": 0.946585640513109
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.0019308069220779222,
+          "iqrPercent": 0.5287160977235752,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0020222634508348792,
+          "minimumBatchSeconds": 0.148157153
+        },
+        "reference-control": {
+          "seconds": 0.0019122973506493506,
+          "iqrPercent": 0.6116274940016396,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0020222634508348792,
+          "minimumBatchSeconds": 0.146171266
+        },
+        "candidate": {
+          "seconds": 0.001950119157894737,
+          "iqrPercent": 0.16612041574570766,
+          "aggregateExternalCpuSecondsPerInvocation": 0.0020488721804511278,
+          "minimumBatchSeconds": 0.147389017
+        },
+        "control": {
+          "seconds": 0.001941764753246753,
+          "iqrPercent": 0.39030735503249786,
+          "aggregateExternalCpuSecondsPerInvocation": 0.002059369202226345,
+          "minimumBatchSeconds": 0.149340845
+        }
+      },
+      "elapsedPercentAllPairings": [
+        1.0002157955820268,
+        1.977820407090114,
+        0.5675259935901789,
+        1.5409424997318677
+      ],
+      "externalCpuPercentAllPairings": [
+        1.3157894736842257,
+        1.3157894736842257,
+        1.8348623853211121,
+        1.8348623853211121
+      ],
+      "oldSpreadPercent": 0.9679232898736512,
+      "newSpreadPercent": 0.4302480325701019
+    }
+  ],
+  "limits": "Whole-worker externalCPU additionally includes reset/protocol and background runtime work, not a pure guest CPU measurement. No percent acceptance gate; all process pairings and adverse evidence retained.",
+  "receipt": {
+    "complete": true,
+    "jobs": 4,
+    "elapsedSeconds": 114.32216027798131,
+    "allWorkersJoined": true,
+    "guestFixtureDirectories": [],
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "f47c89fae0a84736f9b8915dbbc858b315c5c4c6f66d0046ba91bb2d69f6d6ad"
+  }
+}
