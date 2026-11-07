@@ -32,3 +32,9 @@ consumers are batched once for the retained R30–R32 delivery. That qualificati
 pending; prior R29 green receipts do not qualify this source. Text/CSV uncertainty
 from R31 remains open at the next coherent execution milestone. This completes the
 parameter-layout consolidation, not the broader complete-script performance goal.
+
+Local explicit Release package consumers pass on actual.NET11/.NET10 for committed
+42643b1b, checking compatibility, mediated files, package metadata and zero core
+backend dependency edges. Logs/source retained in installed-consumer-evidence.tgz.
+Full delivery42339537256 matches42643b1b and remains in progress on both platforms
+at04:48Z; no green conclusion is claimed. R33 is a later source gate only.

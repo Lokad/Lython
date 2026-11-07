@@ -1,0 +1,12 @@
+{
+  "sourceRevision": "42643b1b4a888771addea5eb23b6bfca497a00e6",
+  "observation": {
+    "syncReturned": true,
+    "asyncReturned": false,
+    "explicitTokenRefused": true,
+    "tokenCancelled": true,
+    "finalBudgetBytes": 0,
+    "coreSHA256": "E4BC047323DA76A7F523E8CC5FA2B5E97830237F16F1ED529A651D2358A7F0AB"
+  },
+  "stage": "source/forwarding probe only; no runtime correction or public in-flight qualification"
+}

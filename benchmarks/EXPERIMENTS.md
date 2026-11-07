@@ -3450,3 +3450,12 @@ separate parameter-order algorithm and consumes R31 metadata directly. Focused
 pass. Compilation removes32B per ordinary definition; an empty generator layout
 adds152B. Warm allocation flat; no quiet timing or CPU claim for this exact image.
 Full platform/Stress/installed consumers batch the retained R30–R32 delivery.
+
+## Native hash cancellation source gate (2026-11-07)
+
+[R33 forwarding probe](results/2026-11-07-native-hash-cancellation-gate/README.md)
+confirms the synchronous cold native-string hash route ignores its context token;
+async entry rejects, while actual scan forwarding remains missing by source.
+Explicit-token overload works and final funding is zero. This is not public
+in-flight qualification or a CPU claim. A bounded native-hash correction is next,
+independent of the active R30–R32 platform delivery.
