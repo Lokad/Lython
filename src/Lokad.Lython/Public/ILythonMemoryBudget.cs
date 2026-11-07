@@ -26,6 +26,11 @@ public interface ILythonMemoryBudget
 public interface ILythonMemoryScope : ILythonMemoryBudget, IDisposable { }
 
 /// <summary>An owned conservative storage estimate against a shared allowance.</summary>
+/// <remarks>
+/// Publish a successful resize in Bytes before invoking callbacks that allocate
+/// in the affected execution. Reentry before that publication fails the command;
+/// separate executions can use independent reservations against the same root.
+/// </remarks>
 public interface ILythonMemoryReservation : IDisposable
 {
     /// <summary>Gets its estimate, or zero after this reservation or an ancestor is disposed.</summary>

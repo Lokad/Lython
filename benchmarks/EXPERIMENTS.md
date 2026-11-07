@@ -3811,3 +3811,14 @@ workspace rent3self and frame advance3self do not establish dominant repackaging
 Inclusive stacks overlap. No runtime prototype or saved-CPU forecast. Same-governor
 admission reentry is a source hypothesis requiring a regression, not a measured
 finding. [Full profile and limits](results/2026-11-07-report-execution-cost/README.md).
+
+## Pending admission publication (2026-11-07)
+
+R53 confirms two baseline funding regressions under native admission reentry:
+retained allocation or scratch refund can erase the outer pending charge and let
+a shared root overcommit. Pending publication, scoped resize guarding and own-charge
+rollback correct it; unchanged refunds no longer invoke another host callback.
+Final1401internal/1652public per actual11/10 pass, including10small ownership cases.
+Normal five-script allocation is flat; desktop elapsed includes adverse CSV/search
+and remains diagnostic. No performance gain claim or new memory framework.
+[Source, failures, contract tradeoff and pending delivery](results/2026-11-07-admission-publication/README.md).

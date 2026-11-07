@@ -1,0 +1,8 @@
+{
+  "head": "d7df3147570e7191a6ce2ce8d967d0a508c96c93",
+  "hypothesisConfirmed": true,
+  "testsFailed": 2,
+  "observation": "A second root reservation can exceed shared physical live string payload+allowance because native after-admission callback allocation/refund shrinks aggregate ownership from stale totals. Both retained nested string and completed temporary scratch demonstrate it.",
+  "coreSHA256": "1d0a515aac3af552da8054fe22da91ea82c6e3c14b2590846c41426b8ed30900",
+  "sourceSHA256": "88067e9fcaa0410d4369cd54e8e3ffa5fe8a5fe3bfb1cde732871742ff80b323"
+}

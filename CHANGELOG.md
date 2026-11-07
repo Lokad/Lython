@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep pending allocations funded across reentrant host memory-budget callbacks.
+  Roll back unallocated storage on failure, retain callback results and first
+  refusal, and explicitly reject same-execution allocation before a host resize
+  is published. Independent executions continue sharing the same allowance.
+
 - Emit `fnmatch.translate` and `glob.translate` patterns directly from UTF-8,
   sharing scalar-aware class translation. Remove decoded inputs, copied path
   segments and intermediate regex builders; retain cancellation and admitted

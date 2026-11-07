@@ -796,6 +796,15 @@ before allocation or observable mutation. Failed construction returns unused
 admission. Independent execution/projection/string/collection/read/output caps
 do not exist; checked representation constraints and bounded chunks still apply.
 
+Pending allocation estimates are included before invoking a host resize, so
+same-execution callbacks cannot refund an outer allocation still being constructed.
+Callbacks that allocate in that execution must run after the changed estimate is
+visible through `ILythonMemoryReservation.Bytes`; earlier re-entry fails the command
+with terminal memory refusal. Independent executions can use separate reservations
+against the shared root. Failed admission or callback failure returns only the
+unallocated pending charge; retained callback results keep their funding. Native
+refund/cleanup remains available, and callback suppression cannot erase first refusal.
+
 Dynamic `**kwargs` names admit their CLR representation before decoding. Native
 callees can retain these labels, so their allowance conservatively remains with
 the execution after argument scratch is released.

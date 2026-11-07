@@ -15,6 +15,13 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Reentrant admission](Lokad.Lython.Tests/ReentrantAdmissionOwnershipTests.cs)
+keeps pending outer storage and retained callback results funded, rejects shared
+allowance overcommit, preserves first refusal and returns unused charges after
+exceptions. Before-publication callbacks cannot allocate in the same governor;
+independent reservations can still share the allowance. Refund callbacks and
+subsequent reuse retain their ownership assertions.
+
 [Wildcard translation](Lokad.Lython.Tests/WildcardTranslationOwnershipTests.cs)
 checks construction cancellation/refusal, retained UTF-8 output and reusable
 funding. Public fnmatch/glob scenarios cover scalar classes, recursive/hidden

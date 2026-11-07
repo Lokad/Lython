@@ -1,0 +1,12 @@
+{
+  "baseline": "55e510ff fully qualified production/core83af401e, information revision4c739dcb",
+  "candidate": "d7df3147 plus final R53 pending-admission correction; exact sources/cores in refined/focused.json",
+  "coreSHA256": {
+    "before": "83af401ebccff4f1fcec8ab48786d1c1f6cd17f5e6b30e653bc14e2e77a9f502",
+    "candidate": "0c126b2ee973aa2d936f656a18163bbf99ec0c9d1ef8e608545bb691194fd53b"
+  },
+  "driverSHA256": "1a9c998a7ad0ba1ed651f3736af499e99c6c29807b9db62b3871317cbe2d2f13",
+  "protocol": "Existing unchanged five-case driver, normal GC/tiering, shared ALCs/CoreLib/hash seed/process GC.32warmups/image,5rotated rounds*4complete jobs. Warm sync/async only; no frontend or CPU gain claim. Native driver purpose caption remains historical; these images/catalog govern the R53 comparison.",
+  "controls": "Protected search/text/CSV/JSON/report unchanged original sources/fixtures/goldens; complete public execution/reset/mediated I/O/full validation/result cleanup. Compilation/startup/final cached teardown excluded.",
+  "fullDeliveryPending": true
+}

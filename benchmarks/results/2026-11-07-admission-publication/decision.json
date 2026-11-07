@@ -1,0 +1,13 @@
+{
+  "retained": true,
+  "purpose": "Correct aggregate ownership publication under host callback reentry, not a performance redesign.",
+  "confirmedBaseline": "Two native regressions overcommit shared allowance with retained strings: after-growth allocation and completed scratch refund erase the pending outer charge. Exact original source/core/log preserved.",
+  "replacement": "Publish pending counters before external resize; unify resize publication; roll back own pending bytes and preserve first refusal; skip unchanged rollback/no-op refunds. Permit same-governor allocation after a resize is visible, reject earlier reentry; independent governors can share root.",
+  "cleanup": "Removed blind post-callback ownership publication and redundant callback during unchanged refund. No collector, identity ledger, new owner/pool, retries, fuel/quota or new capacity policy.",
+  "validation": "Initial1400internal/1652public per actual11/10 pass. Final1401internal/1652public per actual11/10 pass, including10 focused native callback/funding cases. New rollback side-effect regression red on first prototype; exact source/log kept.",
+  "compatibility": "Admission callbacks now see pending estimates. Same-execution allocation before changed host estimate is published fails terminally; this does not block independent executions. Exceptions release only unallocated pending storage, preserving retained callback aliases and cleanup. No public signature change.",
+  "performance": "Complete search/text/CSV/JSON/report outputs, funding baselines/isolation/cleanup all pass in one short existing warm sync/async diagnostic. Allocation essentially flat (within0.08%); desktop clocks mixed, including sync CSV+3.31to+3.60% and search+6.69to+12.64% with5.58% unchanged-baseline drift. No CPU improvement, ordinary thresholds or quiet-runtime elapsed guarantee. Adverse observations retained.",
+  "fullDelivery": "Pending coherent Windows/Ubuntu Release actual11/10, original Stress and installed consumer qualification.",
+  "archiveSHA256": "a84251f6859864a02f4af51ea4c14fe6778f42297cc4e5dfc7e7613ffdd59ec0",
+  "publication": "postponed"
+}
