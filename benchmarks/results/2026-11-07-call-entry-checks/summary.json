@@ -1,0 +1,117 @@
+{
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "allocatedBytes": {
+        "before": 1652816.0,
+        "candidate": 1652704.0,
+        "before-control": 1652648.0
+      },
+      "elapsedMilliseconds": {
+        "before": 10.570175,
+        "candidate": 10.312225,
+        "before-control": 12.435
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        },
+        "before": {
+          "PeakExecutionBytes": 1956823,
+          "PeakRootBytes": 2038615
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "allocatedBytes": {
+        "before": 2909496.0,
+        "candidate": 2909390.0,
+        "before-control": 2909656.0
+      },
+      "elapsedMilliseconds": {
+        "before": 15.892875,
+        "candidate": 14.570825,
+        "before-control": 14.592175
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        },
+        "before": {
+          "PeakExecutionBytes": 3671623,
+          "PeakRootBytes": 3773863
+        }
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocatedBytes": {
+        "before": 2598414.0,
+        "candidate": 2598358.0,
+        "before-control": 2598184.0
+      },
+      "elapsedMilliseconds": {
+        "before": 19.96405,
+        "candidate": 19.988475,
+        "before-control": 19.73365
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        },
+        "candidate": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        },
+        "before": {
+          "PeakExecutionBytes": 4054055,
+          "PeakRootBytes": 4153543
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocatedBytes": {
+        "before": 3300696.0,
+        "candidate": 3299954.0,
+        "before-control": 3300696.0
+      },
+      "elapsedMilliseconds": {
+        "before": 29.187075,
+        "candidate": 30.279625,
+        "before-control": 30.7424
+      },
+      "admittedPeaks": {
+        "before-control": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        },
+        "before": {
+          "PeakExecutionBytes": 3845447,
+          "PeakRootBytes": 3930119
+        }
+      }
+    }
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "imageIsolationVerified": true,
+  "limitation": "One short existing complete-job diagnostic; desktop clocks/process GC/ALCs; no VM or CPU improvement claim."
+}

@@ -3684,3 +3684,17 @@ internal/2,665public per target, cache deletion128/676, final checked-arithmetic
 cleanup/nonincremental delivery70/47 per target pass. Full delivery pending.
 Continue the whole-script objective; next assess duplicate completed-instruction
 checks without replacement counters, fuel or weaker containment.
+
+## R44 checked call-entry consolidation
+
+[R44](results/2026-11-07-call-entry-checks/README.md) deletes twelve immediate
+CheckExecution duplicates after already-checked managed frame entry. No guest,
+admission or await intervenes. Frame/stack bounds, exception translation/finally,
+per-instruction/long-operation/resume checks and the constructor's post-allocation
+check remain. No new policy/counter/abstraction or exact-checkpoint tests.
+103 internal/862 public Release checks pass on actual11; full10/platform/Stress/
+package checks are batched at the next runtime boundary. One short existing
+text/CSV/JSON/report diagnostic passes goldens/balances/isolation/fixture cleanup;
+allocations essentially flat/all admitted peaks identical, desktop clocks variable
+including adverse report. This is source simplification, not a CPU gain or full
+performance-objective completion. No quiet-VM campaign or unchanged retiming.

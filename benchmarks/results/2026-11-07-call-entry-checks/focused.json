@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~CompletedHelperCallOwnership|FullyQualifiedName~DirectOperandOwnership|FullyQualifiedName~LocalAugmentedLifetime|FullyQualifiedName~NativeReturn|FullyQualifiedName~CallArgumentEvaluation|FullyQualifiedName~NativeCall|FullyQualifiedName~Constructor)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   103, Skipped:     0, Total:   103, Duration: 252 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~NativeCallback|FullyQualifiedName~ReceiverMethodSemantics|FullyQualifiedName~Constructor|FullyQualifiedName~MethodExposure|FullyQualifiedName~FileWriteCall|FullyQualifiedName~CsvWriterowCall|FullyQualifiedName~Cancellation|FullyQualifiedName~IntegerText|FullyQualifiedName~IntCall)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   862, Skipped:     0, Total:   862, Duration: 31 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+    }
+  },
+  "coreSHA256": "0e06224a850b5abffd30784c9b00b38258d5f0071a841fb9745c76c8976726f3",
+  "target": "net11.0",
+  "fullDeliveryPending": true
+}

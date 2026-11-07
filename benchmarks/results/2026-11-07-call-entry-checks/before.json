@@ -1,0 +1,24 @@
+{
+  "baselineSource": "5fb2535459f67c8b71d2fad19b96fea2c73fd85c",
+  "baselineCoreSHA256": {
+    "net11.0": "9eb7a6b58eb4cca8a5b797289b0cd0189a8564efb8132c2385ab3fcb59e286ad",
+    "net10.0": "7fe742dcdd4ef39d924cabbb5f05858ae20753aec361b0e4bb7f4b3c4099933e"
+  },
+  "sourceBeforeSHA256": "8adb142c4fbc9440883ce61cea3c75ccf5e23fa8aaaba9fecb259650d13a0cfe",
+  "removedDuplicateCallLines": [
+    67,
+    115,
+    136,
+    150,
+    166,
+    180,
+    197,
+    210,
+    222,
+    234,
+    246,
+    258
+  ],
+  "sourceProof": "EnterInterpreterFrame first checks refusal/token, then managed nesting/stack; immediate body duplicate has no intervening guest/admission/await. Constructor check after PyInstance allocation stays. Per-instruction/loop/long-operation/resume/publication checks stay.",
+  "qualification": "R43 focused checks pass; full42365045704 still in progress. No performance claim."
+}

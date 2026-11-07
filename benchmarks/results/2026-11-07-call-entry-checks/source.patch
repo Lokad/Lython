@@ -1,0 +1,100 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+index 2ade035d..c635a985 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs
+@@ -67,7 +67,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(callSpan);
+         try
+         {
+-            context.CheckExecution(callSpan);
+             return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
+@@ -115,7 +114,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(callSpan);
+         try
+         {
+-            context.CheckExecution(callSpan);
+             var expanded = await arguments.ExpandAsync().ConfigureAwait(false);
+             return RuntimeValue(await callable.InvokeAsync(expanded, callSpan, context).ConfigureAwait(false));
+         }
+@@ -136,7 +134,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return RuntimeValue(function.InvokeFromOperands(arguments.Span, span, context, receiver, callSite));
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -150,7 +147,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             // Native bodies finish synchronously; other bodies bind owned values.
+             // The caller keeps its operand array alive until this call finishes.
+             var pending = function.InvokeFromOperandsAsync(arguments.Span, span, context, receiver, callSite);
+@@ -166,7 +162,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return await instance.Type.InitializeInstanceAsync(instance, arguments, span, context, asynchronous).ConfigureAwait(false);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -180,7 +175,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             if (receiver is ExecutionContext.TextFileHandle text)
+                 return TextFileHandleMembers.Write(text, value, span);
+             return ((ExecutionContext.BinaryFileHandle)receiver).Write(value, span);
+@@ -197,7 +191,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return receiver.WriteUtf8(utf8);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -210,7 +203,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return operation(value, span, context);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -222,7 +214,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Utf8Bytes.Length, true, isStart, span);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -234,7 +225,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return StringMembers.Split(receiver, separator, count, span, context);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -246,7 +236,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return StringMembers.Replace(receiver, oldValue, newValue, countValue, span, context);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+@@ -258,7 +247,6 @@ internal sealed partial class LythonRuntime
+         context.EnterInterpreterFrame(span);
+         try
+         {
+-            context.CheckExecution(span);
+             return DictMembers.Get(receiver, key, fallback, span, context);
+         }
+         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
