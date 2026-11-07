@@ -3564,3 +3564,11 @@ pass; compile allocation−4.38–8.94%, regex+304B/+0.117%, warm essentially fl
 Initial3semantic failures, source/images and diagnostic desktop adverse conditions
 remain explicit. Quiet elapsed and full delivery are separate/pending. R37 static
 census finds native call slices already borrowed; no further transport selected.
+
+
+R38/B389 completes140.29s/all5gates: report compile−6.51–8.02%, text compile
+−8.25–9.13%, config fresh−0.54–2.42%. Warm text−5.46 to+1.74% with4.94%
+baseline spread remains inconclusive; regex compile+0.014–1.66% is accepted possible
+overhead. Retain compilation simplification/allocation gain, no warm CPU/parity/
+compound claim or unchanged retiming. Terminal capture archived/verified, all users
+joined. Full R36/R38 delivery42351006316 onb0889a46 remains independent/pending.

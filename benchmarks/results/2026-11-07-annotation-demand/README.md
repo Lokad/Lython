@@ -39,9 +39,40 @@ dropping adjacent loads alone retains storage and needs snapshot/span metadata.
 No additional call transport or general value/frame representation is selected.
 Static instruction counts are not dynamic frequencies or CPU savings.
 
-Quiet B389/source-pair elapsed qualification is pending at this source commit;
-full Windows/Ubuntu/Stress/installed consumers remain separate. R35's receipt
+Quiet B389 completes140.29s/all5jobs/gates on the same frozen source now committed
+asb0889a46. SourceLink remains79fddd4a from the precommit build; production source
+matches. Report compile elapsed−6.51–8.02%, text compile−8.25–9.13%, config
+compile-to-result−0.54–2.42%. Warm text−5.46 to+1.74% has4.94%baseline role spread;
+it establishes neither a warm gain nor parity. Full-flow regex compile+0.014–1.66%,
+current1.23%spread, is accepted possible overhead alongside304B allocation growth.
+No CPU attribution or compound source-pair debt repayment. Retain the bounded
+frontend change; no unchanged retiming selected. Full delivery42351006316 on
+exactb0889a46 batches R36/R38 Windows/Ubuntu/actual11/10/original Stress/installed
+consumers; pending at this evidence commit. R35's receipt
 does not qualify this source. Publication postponed; whole-script objective active.
 
 [Focused checks](focused-initial.json), [diagnostics](diagnostics-final.json),
 [allocation/diagnostic clocks](summary.json), [source/images/all conditions](development.tgz).
+
+
+## Quiet comparison provenance
+
+Unchanged b94fa98c worker/host and normal optional0.4; dedicated AzureF4as_v7/
+Ubuntu24.04.4/.NET11RC3, normal GC/tiering. Two baseline/two current processes,
+5s warmup per role/job and seven rotated150ms rounds. Compile includes program
+disposal; config fresh/text warm include mediated RAM I/O, complete output/file
+goldens and prior-result cleanup. Fresh adds compile/program disposal; startup,
+staging/reset and final cached teardown excluded. CPU tick observations stay
+separate. No CPython refresh, startup/RSS/pending-I/O or embedding-tail claim.
+
+All Ready hashes/auxiliaries, goldens, terminal funding, quiet endpoints, Closed/
+exit/joins, fixture removal and archive verification under lease pass. Independent
+retrieval verifiesa347ac58. Observation07:24:24UTC follows07:24:01.727783bound
+(210s owner+30s stop+40s margin). Terminal inactive/exit0/no users or fixtures;
+never query the service again. A local retrieval-template assertion failed after
+valid payload/launcher generation; the shell then ran that launcher. Independent
+remote setup verifies all inputs before work. Correct only retrieval path selection;
+do not restart the collection. Original source/condition retained.
+
+[Controlled summary](comparison-summary.json), [all raw gates](observations.tgz),
+[commands and original plan](collection-commands.tgz), [receipt](archive-receipt.json).
