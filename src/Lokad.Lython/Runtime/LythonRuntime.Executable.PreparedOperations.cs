@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
@@ -14,6 +15,52 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // Formatting shares the ordinary operand slots and cleanup. A dynamic
+        // field asks the existing driver for its function context at that exact
+        // instruction, without repeating earlier fields or their allocations.
+        private static bool TryExecuteImmediateFormatting(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction)
+        {
+            var operation = (ExecutableOperation)execution.Code.Constants[instruction.ConstantIndex]!;
+            var context = invocation ?? scope;
+            var span = instruction.Span;
+            switch (operation)
+            {
+                case ExecutableStartFormattedString formatted:
+                    var output = new GovernedByteBuilder(context.MemoryGovernor, span, formatted.InitialCapacity,
+                        context.State.CancellationToken);
+                    try { PublishInstructionResult(ref execution, invocation, instruction, output); }
+                    catch { output.Release(); throw; }
+                    return true;
+                case ExecutableAppendFormattedText text:
+                    ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).Append(text.Text);
+                    return true;
+                case ExecutableFinishFormattedString:
+                    var formattedResult = ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).ToPyStringAndRelease();
+                    execution.Stack.RetireTo(instruction.ResultSlot);
+                    PublishInstructionResult(ref execution, invocation, instruction, formattedResult);
+                    return true;
+                case ExecutableConvertFormattedValue conversion when IsImmediateFormattedValue(execution.Stack[instruction.InputStart]):
+                    var converted = FormatInterpolatedStringPart(execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot),
+                        conversion.Conversion, null, context, span);
+                    PublishInstructionResult(ref execution, invocation, instruction, converted);
+                    return true;
+                case ExecutableFormatField { DynamicSpecifier: false } field when IsImmediateFormattedValue(execution.Stack[instruction.ResultSlot]):
+                    var value = execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
+                    if (field.Append)
+                        AppendInterpolatedStringPart((GovernedByteBuilder)execution.Stack[instruction.InputStart], value,
+                            null, field.FormatSpecifier, context, span, field.PreparedFormat);
+                    else PublishInstructionResult(ref execution, invocation, instruction,
+                        FormatInterpolatedStringPart(value, null, field.FormatSpecifier, context, span, field.PreparedFormat));
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsImmediateFormattedValue(object value)
+            => value is PyNone or BigInteger or double or bool or PyString or PyBytes;
+
         private ValueTask ExecutePreparedOperationAsync(ExecutableInstruction instruction, bool asynchronous)
         {
             var operation = (ExecutableOperation)_execution.Code.Constants[instruction.ConstantIndex]!;
@@ -64,21 +111,6 @@ internal sealed partial class LythonRuntime
                     var targetSlot = instruction.InputStart;
                     try { _execution.Stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, this, _execution.Stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
                     catch { _execution.Stack.RetireTo(targetSlot); throw; }
-                    break;
-                case ExecutableStartFormattedString formatted:
-                    var output = new GovernedByteBuilder(MemoryGovernor, span, formatted.InitialCapacity,
-                        State.CancellationToken);
-                    try { PublishInstructionResult(instruction, output); }
-                    catch { output.Release(); throw; }
-                    break;
-                case ExecutableAppendFormattedText text:
-                    ((GovernedByteBuilder)_execution.Stack[instruction.InputStart]).Append(text.Text);
-                    break;
-                case ExecutableFinishFormattedString:
-                    var outputSlot = instruction.InputStart;
-                    var formattedResult = ((GovernedByteBuilder)_execution.Stack[outputSlot]).ToPyStringAndRelease();
-                    _execution.Stack.RetireTo(instruction.ResultSlot);
-                    PublishInstructionResult(instruction, formattedResult);
                     break;
                 // Display/call and definition operations retain their own
                 // suspension paths. Targets use ordinary opcodes instead.

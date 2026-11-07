@@ -20,7 +20,7 @@ internal sealed partial class ExecutableCodeObject
         var values = new List<NativeReturnValue>();
         var stack = new List<(int Value, int Member, int Depth)>();
         HashSet<int>? forwardedLocals = null;
-        var hasFormattedBuilder = false;
+        var hasEffects = false;
         for (var index = 0; index < instructions.Length - 1; index++)
         {
             var instruction = instructions[index];
@@ -35,8 +35,12 @@ internal sealed partial class ExecutableCodeObject
                     if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
                     goto case ExecutableOpCode.LoadConst;
                 case ExecutableOpCode.LoadConst:
+                    break;
                 case ExecutableOpCode.LoadName:
                 case ExecutableOpCode.LoadGlobal:
+                    // Earlier native work can invoke host admission. A later
+                    // mutable lookup cannot rely on the entry type proof.
+                    if (hasEffects) return null;
                     break;
                 case ExecutableOpCode.StoreLocal:
                     // Forward the operand only inside this closed native proof.
@@ -58,6 +62,7 @@ internal sealed partial class ExecutableCodeObject
                     continue;
                 case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
                 case ExecutableOpCode.Subscript:
+                    if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
                     if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
                     operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Add : NativeReturnOperation.Subscript;
                     first = stack[^2].Value;
@@ -68,41 +73,14 @@ internal sealed partial class ExecutableCodeObject
                 case ExecutableOpCode.ApplyOperation:
                     operation = Constants[instruction.ConstantIndex] switch
                     {
-                        ExecutableStartFormattedString => NativeReturnOperation.StartFormat,
-                        ExecutableAppendFormattedText => NativeReturnOperation.AppendFormatText,
-                        ExecutableFinishFormattedString => NativeReturnOperation.FinishFormat,
                         ExecutableConvertFormattedValue => NativeReturnOperation.ConvertFormat,
                         ExecutableFormatField { DynamicSpecifier: false, Append: false } => NativeReturnOperation.FormatValue,
-                        ExecutableFormatField { DynamicSpecifier: false, Append: true } => NativeReturnOperation.AppendFormatField,
                         _ => NativeReturnOperation.Read
                     };
-                    switch (Constants[instruction.ConstantIndex])
-                    {
-                        case ExecutableStartFormattedString:
-                            // One root builder has one deterministic native lifetime.
-                            // Nested multi-part strings keep their ordinary frames.
-                            if (hasFormattedBuilder || index != 0) return null;
-                            hasFormattedBuilder = true;
-                            break;
-                        case ExecutableAppendFormattedText:
-                        case ExecutableFinishFormattedString:
-                        case ExecutableConvertFormattedValue:
-                        case ExecutableFormatField { DynamicSpecifier: false, Append: false }:
-                            if (stack.Count == 0 || stack[^1].Member >= 0) return null;
-                            first = stack[^1].Value;
-                            depth = 1 + stack[^1].Depth;
-                            stack.RemoveAt(stack.Count - 1);
-                            break;
-                        case ExecutableFormatField { DynamicSpecifier: false, Append: true }:
-                            if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                            first = stack[^2].Value;
-                            second = stack[^1].Value;
-                            depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
-                            stack.RemoveRange(stack.Count - 2, 2);
-                            break;
-                        default:
-                            return null;
-                    }
+                    if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member >= 0) return null;
+                    first = stack[^1].Value;
+                    depth = 1 + stack[^1].Depth;
+                    stack.RemoveAt(stack.Count - 1);
                     break;
                 case ExecutableOpCode.Call:
                     var site = CallSites[instruction.CallSiteIndex];
@@ -158,12 +136,11 @@ internal sealed partial class ExecutableCodeObject
             // Eligibility bound for CLR-recursive evaluation, never a guest limit.
             // Deeper expressions still execute through the ordinary engine.
             if (depth > 16) return null;
+            if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
             values.Add(new(operation, index, first, second));
             stack.Add((values.Count - 1, -1, depth));
         }
         if (stack.Count != 1 || stack[0].Member >= 0) return null;
-        if (hasFormattedBuilder && values[stack[0].Value].Operation != NativeReturnOperation.FinishFormat)
-            return null;
         return new(values.ToArray(), stack[0].Value);
     }
 }

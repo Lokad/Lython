@@ -1,5 +1,14 @@
 # Benchmark experimental history
 
+The [canonical formatting milestone](results/2026-11-07-canonical-formatting/README.md)
+fixes a demonstrated stale type proof after admission and deletes the separate
+formatted-body evaluator. Canonical instructions keep primitive fields context-free
+and dynamic operations resumable. Eight-case sync/async allocation is flat.
+B37487.91s/all gates: report sync−0.64% to+0.29%, async+2.80–3.17%, text+0.71–2.07%;
+variable report samples/moving controls and adverse coarse CPU remain explicit.
+Retain correctness/deletion with possible performance debt; no speedup claim.
+Focused actual11/10 and installed consumers pass; full delivery remains separate.
+
 The [R25 CPython checkpoint](results/2026-11-07-current-cpython/README.md)
 records exact01aedc3b/current frozen0933d540, all15jobs/312s/all gates. Warm CSV
 1.20–1.22x,text1.81–1.83x,JSON1.08x CPython; fresh JSON/report/config remain

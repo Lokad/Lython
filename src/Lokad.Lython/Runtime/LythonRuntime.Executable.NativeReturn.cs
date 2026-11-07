@@ -52,9 +52,7 @@ internal sealed partial class LythonRuntime
             if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
             else
             {
-                result = body.Values[body.Root].Operation == NativeReturnOperation.FinishFormat
-                    ? EvaluateNativeFormattedReturn(code, body.Values, arguments, context, entryException)
-                    : EvaluateNativeReturn(body.Root, code, body.Values, arguments, context, entryException);
+                result = EvaluateNativeReturn(body.Root, code, body.Values, arguments, context, entryException);
                 context.State.CheckExecution(code.Instructions[^1].Span);
             }
             context.State.SetCurrentException(entryException);
@@ -85,9 +83,6 @@ internal sealed partial class LythonRuntime
         shape = NativeReturnShape.Other;
         switch (value.Operation)
         {
-            case NativeReturnOperation.FinishFormat:
-                shape = NativeReturnShape.String;
-                return GuardNativeFormattedBody(code, values, arguments, context);
             case NativeReturnOperation.Read:
                 if (!TryReadNativeOperand(code, code.Instructions[value.SourceInstruction], arguments, context, out var input)) return false;
                 shape = ReturnShape(input);
@@ -156,6 +151,37 @@ internal sealed partial class LythonRuntime
                 return second == NativeReturnShape.String;
             default: throw new InvalidOperationException("Unknown prepared native proof.");
         }
+    }
+
+    private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
+        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
+    {
+        ref readonly var value = ref values[index];
+        if (value.Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+            return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+        // Only this guard needs the actual field type. Do not reuse its value
+        // after later admission/effects; execution performs the original read.
+        var shape = TryReadNativeFormattedValue(index, code, values, arguments, context, out var field)
+            ? ReturnShape(field)
+            : GuardNativeReturn(index, code, values, arguments, context, out var computed) ? computed : NativeReturnShape.Other;
+        return shape is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Float
+            or NativeReturnShape.Boolean or NativeReturnShape.String or NativeReturnShape.Bytes;
+    }
+
+    private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
+        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? result)
+    {
+        ref readonly var value = ref values[index];
+        if (value.Operation == NativeReturnOperation.Read)
+            return TryReadNativeOperand(code, code.Instructions[value.SourceInstruction], arguments, context, out result);
+        if (value.Operation == NativeReturnOperation.Subscript
+            && TryReadNativeFormattedValue(value.First, code, values, arguments, context, out var target)
+            && target is PyDict dictionary
+            && TryReadNativeFormattedValue(value.Second, code, values, arguments, context, out var key)
+            && key is PyString text)
+            return dictionary.TryReadNativeStringValue(text, out result);
+        result = null;
+        return false;
     }
 
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,

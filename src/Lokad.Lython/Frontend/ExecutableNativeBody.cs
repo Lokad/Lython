@@ -12,7 +12,7 @@ internal enum NativeReturnOperation
     IsAscii, IsDecimal, IsIdentifier, IsNumeric, IsPrintable, IsSpace,
     Split, Replace, StartsWith, EndsWith,
     SplitLowerWhitespace, SplitUpperWhitespace,
-    StartFormat, AppendFormatText, AppendFormatField, FinishFormat, ConvertFormat, FormatValue,
+    ConvertFormat, FormatValue,
 }
 
 internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, int SourceInstruction, int First, int Second);

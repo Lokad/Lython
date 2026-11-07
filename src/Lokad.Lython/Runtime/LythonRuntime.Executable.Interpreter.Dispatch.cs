@@ -61,6 +61,7 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.ApplyOperation:
+                            if (TryExecuteImmediateFormatting(ref execution, scope, invocation, instruction)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous)
                                 invocation!.ExecutePreparedOperationAsync(instruction, false).GetAwaiter().GetResult();

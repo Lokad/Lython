@@ -101,6 +101,10 @@ measure affected workloads; percentages are not additive or broad CPU claims:
 Native helper returns reduced process allocation19.92%/19.31%; elapsed remains
 diagnostic. Direct UTF-8 formatting reduced allocation8.67%; controlled elapsed/CPU
 supports retention, while the original adverse result remains unexplained.
+[Subsequent canonical formatting](../benchmarks/results/2026-11-07-canonical-formatting/README.md)
+fixes a stale type proof and removes duplicate execution with allocation flat;
+its async report and text elapsed results are adverse/variable, with no CPU gain
+claimed. It is outside the primary CPython tables above.
 [Full experimental evidence](../benchmarks/EXPERIMENTS.md) preserves earlier
 source pairs, rejected designs and uncertainty. Substantial whole-script gaps
 remain; possible earlier warm-text regression remains explicit debt.

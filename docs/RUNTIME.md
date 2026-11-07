@@ -368,14 +368,16 @@ arity and supported casing/formatting combinations; invocation still checks actu
 types, callable identities and namespaces. Prepared values refer to original
 instructions and call inputs; evaluation requires no operand or argument arrays.
 They retain no caller values or tokens. Deeper or unsupported
-expressions keep the full engine. Static builtin-only formatted returns use the
-same native proof and shared formatter. Plain native dictionary fields can qualify
-through side-effect-free reads; protocol keys and unknown formatting callbacks keep
-ordinary execution. One working UTF-8 builder releases on failure or cancellation
-and transfers retained output with its funding. Preparation establishes one root
-builder; native formatting checks fields and consumes append operations in source
-order without a recursive builder-chain proof or execution walk. Actual field
-values are never cached across admission or later effects.
+expressions keep the full engine. Single-value primitive formatting can share
+that proof. Multipart formatted strings use ordinary executable instructions and
+operand storage, including in context-free helpers. Closed primitive fields run
+synchronously through the shared formatter; dynamic fields create their function
+context at the current instruction and retain the genuine asynchronous protocol
+path. Earlier fields, allocations and bindings are not replayed. One working
+UTF-8 builder releases on failure or cancellation and transfers retained output
+with its funding. The native preparation declines mutable name/global/subscript
+reads after potentially allocating operations: admission can change their values,
+so an earlier type proof cannot authorize a later cast.
 Adjacent local stores/loads can forward their
 value inside the native proof when no later read needs that binding. Original
 instructions and local metadata remain intact for dynamic behavior and inspection.

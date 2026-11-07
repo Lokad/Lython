@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute multipart formatted helpers through the ordinary operand slots and
+  formatter, removing their separate native-body proof/evaluator. Primitive
+  fields can run without constructing a function context; dynamic fields resume
+  at their actual instruction. Prevent stale native type proofs when admission
+  changes a later global receiver; preserve asynchronous callbacks and cleanup.
+
 - Transfer completed CSV row arrays directly into dictionaries when native header
   identities match shared record keys. Remove the second values allocation and
   per-field publication on that path. Revalidate headers after admission, preserve

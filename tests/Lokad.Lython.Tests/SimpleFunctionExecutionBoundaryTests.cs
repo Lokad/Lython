@@ -11,6 +11,159 @@ public sealed class SimpleFunctionExecutionBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(100, 6, 20, 3);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HelperReadsAnUpdatedMethodReceiverAfterAdmission(bool formatted)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var hook = new AdmissionHookMemoryBudget(owner);
+                var prefix = new string('x', 8192);
+                var source = formatted ? "def f(value):\n    return f'" + prefix + "{value}{target.lower()}'\n"
+                    : "def f(value):\n    return value.lower()+target.lower()\n";
+                var (function, context, _) = Function(source,
+                    new() { MemoryBudget = hook });
+                var input = PyString.FromString(formatted ? "kept" : new string('A', prefix.Length), context.MemoryGovernor, CallSpan);
+                var replacement = new Lowerable();
+                function.DefinitionContext.Variables["target"] = PyString.FromString("old");
+                var changed = false;
+                hook.AfterGrowth = bytes =>
+                {
+                    // Mutate during substantial output admission, after the
+                    // earlier type proof and before this receiver is evaluated.
+                    if (bytes < prefix.Length) return;
+                    hook.AfterGrowth = null;
+                    changed = true;
+                    function.DefinitionContext.Variables["target"] = replacement;
+                };
+                var result = Invoke(function, [CallArgumentValue.Positional(input)], context, driver);
+                Assert.True(changed);
+                Assert.Equal((formatted ? prefix + "kept" : new string('a', prefix.Length)) + "changed",
+                    Assert.IsType<PyString>(result).AsString());
+                Assert.Equal(1, replacement.Calls);
+                Assert.Equal(formatted ? "kept" : new string('A', prefix.Length), input.AsString());
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                context.State.CloseResources();
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    private sealed class Lowerable : IPyDynamicAttributes
+    {
+        internal int Calls;
+        public bool TryGetMember(string name, out object value)
+        {
+            value = name == "lower" ? new LowerOperation(this) : PyNone.Instance;
+            return name == "lower";
+        }
+        private sealed class LowerOperation(Lowerable owner) : LythonRuntime.ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            {
+                owner.Calls++;
+                Assert.Equal("f", context.FunctionName);
+                return PyString.FromString("changed", context.MemoryGovernor, span);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ChangedReceiverAwaitsCallbackCleanupAndKeepsWorkingFunding(bool cancel)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var prefix = new string('x', 8192);
+            var (function, context, _) = Function("def f(value):\n    return f'" + prefix + "{value}{target.lower()}'\n",
+                new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var input = PyString.FromString("kept", context.MemoryGovernor, CallSpan);
+            var replacement = new SuspendedLowerable();
+            function.DefinitionContext.Variables["target"] = PyString.FromString("old");
+            var baseline = budget.ReservedBytes;
+            hook.AfterGrowth = bytes =>
+            {
+                if (bytes < prefix.Length) return;
+                hook.AfterGrowth = null;
+                function.DefinitionContext.Variables["target"] = replacement;
+            };
+            var pending = function.InvokeAsync([CallArgumentValue.Positional(input)], CallSpan, context).AsTask();
+            try
+            {
+                await replacement.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                if (cancel) cancellation.Cancel();
+                else replacement.Release.SetResult();
+                await replacement.CleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                Assert.Equal("kept", input.AsString());
+                replacement.CleanupRelease.SetResult();
+                if (cancel)
+                {
+                    var error = await Assert.ThrowsAnyAsync<Exception>(() => pending.WaitAsync(TimeSpan.FromSeconds(10)));
+                    if (error is LythonRuntimeException runtime)
+                        Assert.Equal(LythonFailureReason.Cancelled, runtime.Attribution?.Reason);
+                    else Assert.IsAssignableFrom<OperationCanceledException>(error);
+                }
+                else Assert.Equal(prefix + "keptchanged", Assert.IsType<PyString>(await pending).AsString());
+                Assert.Equal(1, replacement.Calls);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                context.State.CloseResources();
+            }
+            finally
+            {
+                replacement.Release.TrySetResult();
+                replacement.CleanupRelease.TrySetResult();
+                try { await pending.WaitAsync(TimeSpan.FromSeconds(10)); }
+                catch (Exception) { } // Drain the owned operation before ending its owner.
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class SuspendedLowerable : IPyDynamicAttributes, LythonRuntime.ICallable
+    {
+        internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource Release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource CleanupEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal readonly TaskCompletionSource CleanupRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal int Calls;
+        public bool TryGetMember(string name, out object value) { value = this; return name == "lower"; }
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => throw new InvalidOperationException("A genuinely asynchronous callback was invoked synchronously.");
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
+            LythonRuntime.ExecutionContext context)
+        {
+            Calls++;
+            Assert.Equal("f", context.FunctionName);
+            Entered.SetResult();
+            try
+            {
+                await Release.Task.WaitAsync(context.State.CancellationToken);
+                return PyString.FromString("changed", context.MemoryGovernor, span);
+            }
+            finally
+            {
+                CleanupEntered.SetResult();
+                await CleanupRelease.Task;
+            }
+        }
+    }
+
     [Fact]
     public void FormattedHelperErrorsReleaseWorkingStorageAndPreserveTheCallerException()
     {
