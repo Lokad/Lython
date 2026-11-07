@@ -1,5 +1,16 @@
 # Benchmark experimental history
 
+The [R27 execution source gate](results/2026-11-07-execution-source-gate/README.md)
+records existing operand/call/storage mechanisms and a bounded3,000-job Windows
+JIT inspection of R26. All text goldens/cleanup pass; mixed inlined semantics keep
+the earlier21% prefix sample share from establishing removable dispatch cost.
+No runtime prototype, CPU improvement or Linux attribution is claimed. Original
+staging conditions remain explicit. Reused allocation sampling adds1024 checked
+text/report jobs each, zero lost events. Text PyString/bytes~58.5%, integer boxes
+~23.7%; these are sampled allocation shares, not CPU costs. The next bounded
+source design uses newly owned split-result payloads, with no larger string
+footprint; explicitly refunded input windows cannot be shared indiscriminately.
+
 The [canonical formatting milestone](results/2026-11-07-canonical-formatting/README.md)
 fixes a demonstrated stale type proof after admission and deletes the separate
 formatted-body evaluator. Canonical instructions keep primitive fields context-free
@@ -7,7 +18,8 @@ and dynamic operations resumable. Eight-case sync/async allocation is flat.
 B37487.91s/all gates: report sync−0.64% to+0.29%, async+2.80–3.17%, text+0.71–2.07%;
 variable report samples/moving controls and adverse coarse CPU remain explicit.
 Retain correctness/deletion with possible performance debt; no speedup claim.
-Focused actual11/10 and installed consumers pass; full delivery remains separate.
+Full delivery42324522730 on c4729a9f is GREEN/all eight platform/runtime/original
+Stress/package gates; terminal receipt cached.
 
 The [R25 CPython checkpoint](results/2026-11-07-current-cpython/README.md)
 records exact01aedc3b/current frozen0933d540, all15jobs/312s/all gates. Warm CSV

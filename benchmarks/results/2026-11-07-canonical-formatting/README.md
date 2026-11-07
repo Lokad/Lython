@@ -77,8 +77,10 @@ reads through general/direct sync/async calls, actual async callback suspension,
 token cancellation and a deliberately held cleanup while working storage stays
 funded. Complete once, restore depth/exception state, cleanup before owner ends.
 Initial deletion and subsequent canonical-prefix refinement have separate logs.
-Explicit installed Release consumers pass both actual runtimes. Full Windows/
-Ubuntu/original Stress/package delivery is pending the coherent commit boundary.
+Explicit installed Release consumers pass both actual runtimes. Full delivery
+42324522730 on c4729a9f is GREEN/all eight Windows/Ubuntu ordinary actual11/10,
+original Stress and installed-package gates. Terminal [receipt](delivery-ci.json)
+is cached; never query again. Later source/profiling gates do not repeat it.
 
 Initial B374 disk preflight refuses before creating the capture root or starting
 workers. Refine setup to share the unchanged persistent catalog with its hash

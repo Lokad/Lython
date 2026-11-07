@@ -1,0 +1,1963 @@
+{
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "eventsLost": 0,
+      "allEvents": 15873,
+      "eventsInPhase": 15872,
+      "allocationTicksByThread": [
+        [
+          81840,
+          15872
+        ]
+      ],
+      "dominantAllocationThread": 81840,
+      "typesAllThreads": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 5043,
+          "sampledBytes": 537530968,
+          "sampledPercent": 31.744945195447663,
+          "sizes": [
+            [
+              56,
+              5043
+            ]
+          ]
+        },
+        {
+          "type": "System.Byte[]",
+          "ticks": 4237,
+          "sampledBytes": 453109776,
+          "sampledPercent": 26.759286186171078,
+          "sizes": [
+            [
+              32,
+              2259
+            ],
+            [
+              48,
+              1506
+            ],
+            [
+              16416,
+              472
+            ]
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 3767,
+          "sampledBytes": 401528608,
+          "sampledPercent": 23.713059180181762,
+          "sizes": [
+            [
+              32,
+              3767
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyList",
+          "ticks": 1432,
+          "sampledBytes": 152644624,
+          "sampledPercent": 9.014727544515566,
+          "sizes": [
+            [
+              56,
+              1432
+            ]
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 811,
+          "sampledBytes": 86433568,
+          "sampledPercent": 5.104503819409711,
+          "sizes": [
+            [
+              32,
+              811
+            ]
+          ]
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 569,
+          "sampledBytes": 60648904,
+          "sampledPercent": 3.5817399336217717,
+          "sizes": [
+            [
+              48,
+              569
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 8,
+          "sampledBytes": 851008,
+          "sampledPercent": 0.05025794592152229,
+          "sizes": [
+            [
+              56,
+              8
+            ]
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass10_0",
+          "ticks": 3,
+          "sampledBytes": 319848,
+          "sampledPercent": 0.01888925073219883,
+          "sizes": [
+            [
+              40,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "System.String",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.012590943998726864,
+          "sizes": [
+            [
+              312,
+              1
+            ],
+            [
+              40,
+              1
+            ]
+          ]
+        }
+      ],
+      "typesDominantThread": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 5043,
+          "sampledBytes": 537530968,
+          "sampledPercent": 31.744945195447663,
+          "sizes": [
+            [
+              56,
+              5043
+            ]
+          ]
+        },
+        {
+          "type": "System.Byte[]",
+          "ticks": 4237,
+          "sampledBytes": 453109776,
+          "sampledPercent": 26.759286186171078,
+          "sizes": [
+            [
+              32,
+              2259
+            ],
+            [
+              48,
+              1506
+            ],
+            [
+              16416,
+              472
+            ]
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 3767,
+          "sampledBytes": 401528608,
+          "sampledPercent": 23.713059180181762,
+          "sizes": [
+            [
+              32,
+              3767
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyList",
+          "ticks": 1432,
+          "sampledBytes": 152644624,
+          "sampledPercent": 9.014727544515566,
+          "sizes": [
+            [
+              56,
+              1432
+            ]
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 811,
+          "sampledBytes": 86433568,
+          "sampledPercent": 5.104503819409711,
+          "sizes": [
+            [
+              32,
+              811
+            ]
+          ]
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 569,
+          "sampledBytes": 60648904,
+          "sampledPercent": 3.5817399336217717,
+          "sizes": [
+            [
+              48,
+              569
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 8,
+          "sampledBytes": 851008,
+          "sampledPercent": 0.05025794592152229,
+          "sizes": [
+            [
+              56,
+              8
+            ]
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass10_0",
+          "ticks": 3,
+          "sampledBytes": 319848,
+          "sampledPercent": 0.01888925073219883,
+          "sizes": [
+            [
+              40,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "System.String",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.012590943998726864,
+          "sizes": [
+            [
+              312,
+              1
+            ],
+            [
+              40,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "eventsLost": 0,
+      "allEvents": 26720,
+      "eventsInPhase": 26719,
+      "allocationTicksByThread": [
+        [
+          91484,
+          25125
+        ],
+        [
+          5040,
+          1579
+        ],
+        [
+          39268,
+          15
+        ]
+      ],
+      "dominantAllocationThread": 91484,
+      "typesAllThreads": [
+        {
+          "type": "System.Byte[]",
+          "ticks": 12392,
+          "sampledBytes": 1855012864,
+          "sampledPercent": 54.80006246939283,
+          "sizes": [
+            [
+              88,
+              2908
+            ],
+            [
+              67608,
+              1019
+            ],
+            [
+              270392,
+              983
+            ],
+            [
+              65560,
+              935
+            ],
+            [
+              148608,
+              934
+            ],
+            [
+              33816,
+              930
+            ],
+            [
+              135224,
+              924
+            ],
+            [
+              131128,
+              921
+            ],
+            [
+              262200,
+              917
+            ],
+            [
+              32,
+              730
+            ],
+            [
+              40,
+              434
+            ],
+            [
+              8472,
+              134
+            ],
+            [
+              32792,
+              88
+            ],
+            [
+              16920,
+              85
+            ],
+            [
+              135192,
+              81
+            ],
+            [
+              262168,
+              78
+            ],
+            [
+              131096,
+              76
+            ],
+            [
+              148576,
+              71
+            ],
+            [
+              270368,
+              31
+            ],
+            [
+              262176,
+              29
+            ],
+            [
+              131104,
+              27
+            ],
+            [
+              135200,
+              19
+            ],
+            [
+              148584,
+              19
+            ],
+            [
+              270360,
+              10
+            ],
+            [
+              4248,
+              5
+            ],
+            [
+              16408,
+              2
+            ],
+            [
+              16416,
+              1
+            ],
+            [
+              454216,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 3900,
+          "sampledBytes": 418427648,
+          "sampledPercent": 12.361025464738294,
+          "sizes": [
+            [
+              56,
+              1241
+            ],
+            [
+              16408,
+              858
+            ],
+            [
+              32792,
+              851
+            ],
+            [
+              8216,
+              690
+            ],
+            [
+              4120,
+              255
+            ],
+            [
+              32,
+              2
+            ],
+            [
+              40,
+              2
+            ],
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 3047,
+          "sampledBytes": 324825424,
+          "sampledPercent": 9.595865275275532,
+          "sizes": [
+            [
+              56,
+              3047
+            ]
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 2224,
+          "sampledBytes": 237064856,
+          "sampledPercent": 7.003276996195329,
+          "sizes": [
+            [
+              32,
+              2224
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "ticks": 2111,
+          "sampledBytes": 225071728,
+          "sampledPercent": 6.648980712671861,
+          "sizes": [
+            [
+              96,
+              2111
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 1282,
+          "sampledBytes": 136685744,
+          "sampledPercent": 4.037916639415518,
+          "sizes": [
+            [
+              56,
+              1282
+            ]
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 796,
+          "sampledBytes": 84855424,
+          "sampledPercent": 2.506765654465464,
+          "sizes": [
+            [
+              32,
+              796
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Byte[]]",
+          "ticks": 139,
+          "sampledBytes": 14829808,
+          "sampledPercent": 0.4380963715026299,
+          "sizes": [
+            [
+              80,
+              139
+            ]
+          ]
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "ticks": 101,
+          "sampledBytes": 10773112,
+          "sampledPercent": 0.3182550493567712,
+          "sizes": [
+            [
+              3168,
+              64
+            ],
+            [
+              432,
+              32
+            ],
+            [
+              96,
+              5
+            ]
+          ]
+        },
+        {
+          "type": "System.String",
+          "ticks": 100,
+          "sampledBytes": 10654984,
+          "sampledPercent": 0.3147653583120279,
+          "sizes": [
+            [
+              320,
+              57
+            ],
+            [
+              304,
+              11
+            ],
+            [
+              288,
+              8
+            ],
+            [
+              312,
+              7
+            ],
+            [
+              32,
+              7
+            ],
+            [
+              40,
+              5
+            ],
+            [
+              328,
+              3
+            ],
+            [
+              48,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "System.Int32[]",
+          "ticks": 73,
+          "sampledBytes": 7782184,
+          "sampledPercent": 0.22989822745957483,
+          "sizes": [
+            [
+              40,
+              37
+            ],
+            [
+              552,
+              24
+            ],
+            [
+              96,
+              9
+            ],
+            [
+              32,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "System.Threading.Lock",
+          "ticks": 58,
+          "sampledBytes": 6181768,
+          "sampledPercent": 0.18261936569044385,
+          "sizes": [
+            [
+              40,
+              58
+            ]
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass2_0",
+          "ticks": 49,
+          "sampledBytes": 5223400,
+          "sampledPercent": 0.15430763411817855,
+          "sizes": [
+            [
+              32,
+              49
+            ]
+          ]
+        },
+        {
+          "type": "SynchronousWorkItem",
+          "ticks": 46,
+          "sampledBytes": 4895208,
+          "sampledPercent": 0.1446123147751236,
+          "sizes": [
+            [
+              64,
+              46
+            ]
+          ]
+        },
+        {
+          "type": "ExceptionTypeValue",
+          "ticks": 45,
+          "sampledBytes": 4800712,
+          "sampledPercent": 0.14182075100561878,
+          "sizes": [
+            [
+              48,
+              45
+            ]
+          ]
+        },
+        {
+          "type": "DelegateEnumerator[System.String]",
+          "ticks": 40,
+          "sampledBytes": 4265584,
+          "sampledPercent": 0.12601220951341205,
+          "sizes": [
+            [
+              128,
+              40
+            ]
+          ]
+        },
+        {
+          "type": "ExecutionContext",
+          "ticks": 38,
+          "sampledBytes": 4052888,
+          "sampledPercent": 0.11972882770340322,
+          "sizes": [
+            [
+              424,
+              38
+            ]
+          ]
+        },
+        {
+          "type": "System.Threading.Condition",
+          "ticks": 35,
+          "sampledBytes": 3733816,
+          "sampledPercent": 0.11030292782337192,
+          "sizes": [
+            [
+              48,
+              35
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.LythonRuntime",
+          "ticks": 31,
+          "sampledBytes": 3311056,
+          "sampledPercent": 0.09781391771505145,
+          "sizes": [
+            [
+              32,
+              31
+            ]
+          ]
+        },
+        {
+          "type": "BuiltinCallable",
+          "ticks": 29,
+          "sampledBytes": 3091760,
+          "sampledPercent": 0.09133556129364392,
+          "sizes": [
+            [
+              96,
+              29
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyClassMethod",
+          "ticks": 21,
+          "sampledBytes": 2238600,
+          "sampledPercent": 0.06613184319350508,
+          "sizes": [
+            [
+              24,
+              21
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyTuple",
+          "ticks": 19,
+          "sampledBytes": 2027176,
+          "sampledPercent": 0.059886038308602195,
+          "sizes": [
+            [
+              48,
+              19
+            ]
+          ]
+        },
+        {
+          "type": "System.GCMemoryInfoData",
+          "ticks": 15,
+          "sampledBytes": 1599080,
+          "sampledPercent": 0.04723939418112665,
+          "sizes": [
+            [
+              288,
+              15
+            ]
+          ]
+        },
+        {
+          "type": "System.IO.Enumeration.FileSystemEnumerable`1[System.String]",
+          "ticks": 14,
+          "sampledBytes": 1492400,
+          "sampledPercent": 0.044087895462336726,
+          "sizes": [
+            [
+              72,
+              14
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType",
+          "ticks": 13,
+          "sampledBytes": 1387384,
+          "sampledPercent": 0.040985553978905506,
+          "sizes": [
+            [
+              128,
+              13
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Object]",
+          "ticks": 12,
+          "sampledBytes": 1283088,
+          "sampledPercent": 0.037904482453081416,
+          "sizes": [
+            [
+              80,
+              12
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.HashSet`1[System.Object]",
+          "ticks": 8,
+          "sampledBytes": 852800,
+          "sampledPercent": 0.025193083121335273,
+          "sizes": [
+            [
+              64,
+              8
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Runtime.PyType,System.Int32]",
+          "ticks": 7,
+          "sampledBytes": 746200,
+          "sampledPercent": 0.022043947731168363,
+          "sizes": [
+            [
+              80,
+              7
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ExecutionState",
+          "ticks": 7,
+          "sampledBytes": 746200,
+          "sampledPercent": 0.022043947731168363,
+          "sizes": [
+            [
+              400,
+              7
+            ]
+          ]
+        },
+        {
+          "type": "FindPredicate[System.String]",
+          "ticks": 6,
+          "sampledBytes": 639600,
+          "sampledPercent": 0.018894812341001453,
+          "sizes": [
+            [
+              56,
+              6
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.PyType]",
+          "ticks": 4,
+          "sampledBytes": 426608,
+          "sampledPercent": 0.012602686215087474,
+          "sizes": [
+            [
+              32,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.MemoryGovernor",
+          "ticks": 4,
+          "sampledBytes": 426400,
+          "sampledPercent": 0.012596541560667637,
+          "sizes": [
+            [
+              88,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "ticks": 4,
+          "sampledBytes": 426400,
+          "sampledPercent": 0.012596541560667637,
+          "sizes": [
+            [
+              152,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "System.Func`2[System.String,Lokad.Lython.Runtime.Text.PyString]",
+          "ticks": 3,
+          "sampledBytes": 322232,
+          "sampledPercent": 0.00951925136064037,
+          "sizes": [
+            [
+              56,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "TypeNewMethod",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.009447406170500727,
+          "sizes": [
+            [
+              48,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "Entry[System.String,System.Byte[]][]",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.009447406170500727,
+          "sizes": [
+            [
+              96,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "System.IO.DirectoryInfo",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.009447406170500727,
+          "sizes": [
+            [
+              96,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.009447406170500727,
+          "sizes": [
+            [
+              56,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.LythonRunOptions",
+          "ticks": 3,
+          "sampledBytes": 319504,
+          "sampledPercent": 0.009438661854595572,
+          "sizes": [
+            [
+              120,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "ObjectHashMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006298270780333818,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectStrMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006298270780333818,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectGeMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006298270780333818,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType[]",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006298270780333818,
+          "sizes": [
+            [
+              56,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[System.String]",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006298270780333818,
+          "sizes": [
+            [
+              32,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectLeMethod",
+          "ticks": 2,
+          "sampledBytes": 211856,
+          "sampledPercent": 0.006258566859467173,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass10_0",
+          "ticks": 1,
+          "sampledBytes": 106616,
+          "sampledPercent": 0.003149608055891512,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Container[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              56,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              128,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.HostTextOutputHandle",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.IExecutionFile]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              32,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.LinkedListNode`1[Lokad.Lython.Runtime.ExecutionThreads+Worker]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              48,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Boolean",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectFormatMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectInitSubclassMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Func`1[Lokad.Lython.LythonExecutionResult]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              56,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "DictCallable",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.PyType][]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Scope",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              72,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "StrCallable",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              96,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectNewMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.String]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              80,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectGetAttrMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectNeMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.003149135390166909,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        }
+      ],
+      "typesDominantThread": [
+        {
+          "type": "System.Byte[]",
+          "ticks": 11366,
+          "sampledBytes": 1702303752,
+          "sampledPercent": 53.67019768686277,
+          "sizes": [
+            [
+              88,
+              2908
+            ],
+            [
+              67608,
+              1019
+            ],
+            [
+              270392,
+              983
+            ],
+            [
+              65560,
+              935
+            ],
+            [
+              33816,
+              930
+            ],
+            [
+              135224,
+              924
+            ],
+            [
+              131128,
+              921
+            ],
+            [
+              262200,
+              917
+            ],
+            [
+              32,
+              730
+            ],
+            [
+              40,
+              434
+            ],
+            [
+              8472,
+              134
+            ],
+            [
+              32792,
+              88
+            ],
+            [
+              16920,
+              85
+            ],
+            [
+              135192,
+              81
+            ],
+            [
+              262168,
+              78
+            ],
+            [
+              131096,
+              76
+            ],
+            [
+              270368,
+              31
+            ],
+            [
+              262176,
+              29
+            ],
+            [
+              131104,
+              27
+            ],
+            [
+              135200,
+              19
+            ],
+            [
+              270360,
+              10
+            ],
+            [
+              4248,
+              5
+            ],
+            [
+              16408,
+              1
+            ],
+            [
+              16416,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 3900,
+          "sampledBytes": 418427648,
+          "sampledPercent": 13.192178281593208,
+          "sizes": [
+            [
+              56,
+              1241
+            ],
+            [
+              16408,
+              858
+            ],
+            [
+              32792,
+              851
+            ],
+            [
+              8216,
+              690
+            ],
+            [
+              4120,
+              255
+            ],
+            [
+              32,
+              2
+            ],
+            [
+              40,
+              2
+            ],
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 3047,
+          "sampledBytes": 324825424,
+          "sampledPercent": 10.24108928815838,
+          "sizes": [
+            [
+              56,
+              3047
+            ]
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 2224,
+          "sampledBytes": 237064856,
+          "sampledPercent": 7.474175904963673,
+          "sizes": [
+            [
+              32,
+              2224
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "ticks": 2111,
+          "sampledBytes": 225071728,
+          "sampledPercent": 7.09605681200649,
+          "sizes": [
+            [
+              96,
+              2111
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 1282,
+          "sampledBytes": 136685744,
+          "sampledPercent": 4.309425326024845,
+          "sizes": [
+            [
+              56,
+              1282
+            ]
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 796,
+          "sampledBytes": 84855424,
+          "sampledPercent": 2.6753200629041203,
+          "sizes": [
+            [
+              32,
+              796
+            ]
+          ]
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "ticks": 101,
+          "sampledBytes": 10773112,
+          "sampledPercent": 0.3396544535976054,
+          "sizes": [
+            [
+              3168,
+              64
+            ],
+            [
+              432,
+              32
+            ],
+            [
+              96,
+              5
+            ]
+          ]
+        },
+        {
+          "type": "ExceptionTypeValue",
+          "ticks": 45,
+          "sampledBytes": 4800712,
+          "sampledPercent": 0.15135674921410522,
+          "sizes": [
+            [
+              48,
+              45
+            ]
+          ]
+        },
+        {
+          "type": "System.Int32[]",
+          "ticks": 40,
+          "sampledBytes": 4264384,
+          "sampledPercent": 0.13444741105916014,
+          "sizes": [
+            [
+              552,
+              24
+            ],
+            [
+              96,
+              9
+            ],
+            [
+              40,
+              4
+            ],
+            [
+              32,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "ExecutionContext",
+          "ticks": 38,
+          "sampledBytes": 4052888,
+          "sampledPercent": 0.12777936952036623,
+          "sizes": [
+            [
+              424,
+              38
+            ]
+          ]
+        },
+        {
+          "type": "BuiltinCallable",
+          "ticks": 29,
+          "sampledBytes": 3091760,
+          "sampledPercent": 0.09747694570101309,
+          "sizes": [
+            [
+              96,
+              29
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyClassMethod",
+          "ticks": 21,
+          "sampledBytes": 2238600,
+          "sampledPercent": 0.07057853476540478,
+          "sizes": [
+            [
+              24,
+              21
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyTuple",
+          "ticks": 19,
+          "sampledBytes": 2027176,
+          "sampledPercent": 0.06391276324113027,
+          "sizes": [
+            [
+              48,
+              19
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType",
+          "ticks": 13,
+          "sampledBytes": 1387384,
+          "sampledPercent": 0.04374141422182004,
+          "sizes": [
+            [
+              128,
+              13
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Object]",
+          "ticks": 12,
+          "sampledBytes": 1283088,
+          "sampledPercent": 0.040453172078564144,
+          "sizes": [
+            [
+              80,
+              12
+            ]
+          ]
+        },
+        {
+          "type": "System.String",
+          "ticks": 11,
+          "sampledBytes": 1168888,
+          "sampledPercent": 0.03685267682697421,
+          "sizes": [
+            [
+              32,
+              7
+            ],
+            [
+              48,
+              2
+            ],
+            [
+              40,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.HashSet`1[System.Object]",
+          "ticks": 8,
+          "sampledBytes": 852800,
+          "sampledPercent": 0.026887060863011347,
+          "sizes": [
+            [
+              64,
+              8
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Runtime.PyType,System.Int32]",
+          "ticks": 7,
+          "sampledBytes": 746200,
+          "sampledPercent": 0.02352617825513493,
+          "sizes": [
+            [
+              80,
+              7
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ExecutionState",
+          "ticks": 7,
+          "sampledBytes": 746200,
+          "sampledPercent": 0.02352617825513493,
+          "sizes": [
+            [
+              400,
+              7
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.PyType]",
+          "ticks": 4,
+          "sampledBytes": 426608,
+          "sampledPercent": 0.013450088251228358,
+          "sizes": [
+            [
+              32,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.MemoryGovernor",
+          "ticks": 4,
+          "sampledBytes": 426400,
+          "sampledPercent": 0.013443530431505674,
+          "sizes": [
+            [
+              88,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "ticks": 4,
+          "sampledBytes": 426400,
+          "sampledPercent": 0.013443530431505674,
+          "sizes": [
+            [
+              152,
+              4
+            ]
+          ]
+        },
+        {
+          "type": "System.Func`2[System.String,Lokad.Lython.Runtime.Text.PyString]",
+          "ticks": 3,
+          "sampledBytes": 322232,
+          "sampledPercent": 0.010159323869617579,
+          "sizes": [
+            [
+              56,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "TypeNewMethod",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.010082647823629255,
+          "sizes": [
+            [
+              48,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+          "ticks": 3,
+          "sampledBytes": 319800,
+          "sampledPercent": 0.010082647823629255,
+          "sizes": [
+            [
+              56,
+              3
+            ]
+          ]
+        },
+        {
+          "type": "ObjectHashMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006721765215752837,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectStrMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006721765215752837,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectGeMethod",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006721765215752837,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType[]",
+          "ticks": 2,
+          "sampledBytes": 213200,
+          "sampledPercent": 0.006721765215752837,
+          "sizes": [
+            [
+              56,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "ObjectLeMethod",
+          "ticks": 2,
+          "sampledBytes": 211856,
+          "sampledPercent": 0.006679391611390867,
+          "sizes": [
+            [
+              24,
+              2
+            ]
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass10_0",
+          "ticks": 1,
+          "sampledBytes": 106616,
+          "sampledPercent": 0.003361387055547394,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Container[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              56,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyExecutableFunction",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              128,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.HostTextOutputHandle",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.IExecutionFile]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              32,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.LinkedListNode`1[Lokad.Lython.Runtime.ExecutionThreads+Worker]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              48,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Boolean",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectFormatMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectInitSubclassMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "DictCallable",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.PyType][]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              40,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "StrCallable",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              96,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectNewMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.String]",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              80,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectGetAttrMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        },
+        {
+          "type": "ObjectNeMethod",
+          "ticks": 1,
+          "sampledBytes": 106600,
+          "sampledPercent": 0.0033608826078764184,
+          "sizes": [
+            [
+              24,
+              1
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "limitation": "Allocation ticks sample bytes since prior event and attribute them to the threshold-crossing object. Type shares are statistical diagnostics, not exact counts or CPU costs. Includes worker reset/transport/validation/cleanup within marked complete requests. Dominant allocation thread is not proven CPU-dominant."
+}
