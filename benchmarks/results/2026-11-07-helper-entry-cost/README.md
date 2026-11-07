@@ -29,8 +29,11 @@ caller check is recorded, not promoted as a substantial redesign.
 
 Source/census show a different actual duplication: module compiled locals contain
 nine bindings but omit wanted; the loop reads its target through LoadName.
-Function declarations publish with StoreName, which already updates any existing
-executable local/closure slot. Ordinary assignment declarations use those slots.
+Function declarations publish through AssignExecutableBoundName, which selects
+slots or the backing namespace. Ordinary assignments already use slots. A new
+declaration slot must also preserve module namespace publication beyond frame
+cleanup; treating this as an unconditional StoreName call was an earlier source
+assessment error, corrected by R49's cross-frame regressions.
 Imports/classes similarly publish through prepared binding paths. Assess actual
 declaration bindings using existing metadata; keep dynamic global/namespace bridges
 and before-binding builtin fallback. Do not eagerly intern every dead module name

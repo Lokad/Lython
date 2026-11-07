@@ -1,0 +1,46 @@
+{
+  "purpose": "Compile-only emitted instruction census; static counts are not CPU shares or speedup evidence",
+  "coreSHA256": "D0FF1FE5EA097770419DF35978BE4E57B2A53D7771BA9C7DC48CD109ADE4503F",
+  "runtime": ".NET 11.0.0-rc.3.26522.148",
+  "noGuestExecution": true,
+  "noProductionEdits": true,
+  "cases": [
+    {
+      "id": "unemitted-declarations",
+      "sourceSha256": "3701a7b90767b5c5a352f932c628caedd9abe21169ee5e711b6744fefaf3d197",
+      "codes": [
+        {
+          "name": "\u003Cmodule\u003E",
+          "locals": [],
+          "requiresMirroring": false,
+          "exceptionRegions": 0,
+          "native": false,
+          "memberCaches": 0,
+          "constantTypes": [
+            "System.Numerics.BigInteger"
+          ],
+          "instructionCount": 1,
+          "operandCapacity": 0,
+          "retainsBlockGraph": false,
+          "regionDepths": [],
+          "counts": {
+            "Return": 1
+          },
+          "operations": [
+            {
+              "op": "Return",
+              "line": 1,
+              "inputStart": -1,
+              "resultSlot": 0,
+              "secondInput": 2147483647,
+              "liveExtent": 0,
+              "localSlot": null,
+              "constantIndex": null,
+              "call": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

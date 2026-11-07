@@ -3763,3 +3763,12 @@ establish dominant removable admission work. B402 failed warmup and exact
 batch-size/caption correction are preserved. No runtime change; source/census
 instead identifies missing executable module declaration slots for a bounded
 compiler-layout investigation. [Evidence and limits](results/2026-11-07-helper-entry-cost/README.md).
+
+## Actual executable declaration bindings (2026-11-07)
+
+R49 reuses module slots and shared import facts, retaining namespace publication
+after frame cleanup. Initial29cross-frame failures and their correction remain;
+1008internal/2819public per actual11/10 pass. Allocation effectively flat, root
+capacity+48–96B; B404 observes search−4.28–5.10%, text−2.10–5.66% with3.26%
+current spread, JSON−5.49–7.67%. Desktop30–50%text gains are diagnostic and not
+transferred. [Evidence and qualification status](results/2026-11-07-declaration-bindings/README.md).

@@ -634,7 +634,10 @@ internal sealed partial class LythonRuntime
             return;
         }
         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
-        if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
+        // Module declarations must survive this executable frame: retained
+        // functions/imports and later code in the same namespace still read them.
+        // Their slots accelerate live execution without replacing that ownership.
+        if (!codeObject.IsFunctionScope || codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
         {
             context.Variables[name] = value;
         }

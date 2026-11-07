@@ -96,6 +96,13 @@ preserves its distinct sources and adverse controls.
 
 ## Improvements within Lython
 
+The later [declaration binding layout](../benchmarks/results/2026-11-07-declaration-bindings/README.md)
+uses existing module slots while retaining live namespaces. A bounded source-pair
+comparison observes warm search4.3–5.1%, text2.1–5.7% and ordinary JSON5.5–7.7%
+lower elapsed time. Text/current-role spread3.26% limits its magnitude; allocation
+is essentially flat. These later-source measurements are separate from the
+external CPython tables above and do not establish isolated CPU or async gains.
+
 The [general integer parser](../benchmarks/results/2026-11-07-integer-parsing/README.md)
 improves explicitly affected whole scripts: padded-field CSV warm time falls
 12.5–13.4%, and numeric-string JSON 41.4–42.0%, versus source77703a42. Initial

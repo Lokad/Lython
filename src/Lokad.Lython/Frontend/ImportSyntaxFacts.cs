@@ -9,6 +9,7 @@ internal static class ImportSyntaxFacts
     {
         if (statement.ImportedMembers is null)
         {
+            yield return statement.BindingName;
             yield break;
         }
 

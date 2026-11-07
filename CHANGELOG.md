@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Use existing executable slots for module declaration bindings, preserving live
+  globals, imports and declarations beyond frame cleanup. Share import binding
+  facts across compilation phases without predeclaring unemitted module names.
+
 - Parse general integer text directly from UTF-8 with native accumulation and
   exact large-magnitude promotion. Support Unicode decimal string digits, retain
   ASCII bytes grammar, and observe cancellation during long conversion. Admit

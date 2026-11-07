@@ -15,6 +15,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Declaration namespaces](Lokad.Lython.PublicApi.Tests/DeclarationNamespaceTests.cs)
+retain CPython-checked failed definitions, live rebinding/deletion, lazy aliases,
+key iteration and argument-target snapshots under both APIs, with budget reuse.
+Existing function-workspace tests also exercise declarations across separate
+executable frames and retain their cancellation, refusal and ownership assertions.
+
 [Integer conversion](Lokad.Lython.PublicApi.Tests/GeneralIntegerTextTests.cs)
 uses CPython-frozen radix, promotion, separator and whitespace cases; Unicode and
 bytes controls retain their distinct grammars. [Ownership/cancellation checks](Lokad.Lython.Tests/IntegerTextCancellationTests.cs)

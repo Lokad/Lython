@@ -138,16 +138,9 @@ internal static class ScopeDirectiveFactsCollector
                     (directive.Kind == ScopeDirectiveKind.Global ? globalNames : nonlocalNames).UnionWith(directive.Names);
                     break;
                 case ImportStatementSyntax importStatement:
-                    if (importStatement.ImportedMembers is null)
+                    foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     {
-                        names.Add(importStatement.BindingName);
-                    }
-                    else
-                    {
-                        foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
-                        {
-                            names.Add(memberName);
-                        }
+                        names.Add(memberName);
                     }
                     break;
 

@@ -366,8 +366,20 @@ internal sealed partial class ExecutableScript
             return index;
         }
 
+        private void InternModuleBinding(string name)
+        {
+            // Function layouts already contain their complete lexical bindings.
+            // Modules register declarations only while compiling actual stores;
+            // unreachable declarations need no slots. Existing namespace bridges
+            // keep these slots live through StoreName and dictionary mutations.
+            if (_parameterLayout is null && IsLocalBindingName(name)) InternLocal(name);
+        }
+
         private int InternImport(LoweredImportStatement importStatement)
         {
+            if (_parameterLayout is null)
+                foreach (var name in ImportSyntaxFacts.EnumerateBindingNames(importStatement.Syntax))
+                    InternModuleBinding(name);
             _imports.Add(importStatement.Syntax);
             return _imports.Count - 1;
         }
@@ -387,6 +399,7 @@ internal sealed partial class ExecutableScript
 
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
+            InternModuleBinding(functionDefinition.Syntax.Name);
             var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
                 functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
@@ -435,6 +448,8 @@ internal sealed partial class ExecutableScript
 
         private int InternStatementFallback(LoweredStatement statement)
         {
+            if (statement is LoweredClassDefinitionStatement definition) InternModuleBinding(definition.Syntax.Name);
+            else if (statement is LoweredTypeAliasStatement alias) InternModuleBinding(alias.Syntax.Name);
             StatementSyntax? syntax = statement switch
             {
                 LoweredClassDefinitionStatement item => item.Syntax,

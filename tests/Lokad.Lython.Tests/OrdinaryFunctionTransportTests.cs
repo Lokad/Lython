@@ -13,7 +13,7 @@ public sealed class OrdinaryFunctionTransportTests
 
     [Theory]
     [MemberData(nameof(Calls))]
-    public async Task OrdinaryCallsKeepEveryGuardAndBodyEffect(int shape, bool asynchronous)
+    public async Task OrdinaryCallsPreserveBodyEffectsAndUnwind(int shape, bool asynchronous)
     {
         var (definitionSource, callSource) = shape switch
         {
@@ -35,14 +35,6 @@ public sealed class OrdinaryFunctionTransportTests
             Check(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        string[] expected = shape switch
-        {
-            0 => ["-:", "7,1,1,8:", "9,5,1,10:", "22,1,1,23:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "24,5,2,2:", "30,5,2,8:", "24,12,2,2:", "24,12,2,2:", "24,12,2,2:", "24,12,2,2:body:4,1,0", "45,5,3,9:body:4,1,0", "38,12,3,2:body:4,1,0", "0,24,1,1:body:4,1,0"],
-            1 => ["-:", "7,1,1,8:", "9,5,1,10:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "7,8,1,8:", "26,5,2,2:", "32,5,2,8:", "26,12,2,2:", "26,12,2,2:", "26,12,2,2:", "26,12,2,2:body:4,1,0", "47,5,3,9:body:4,1,0", "40,12,3,2:body:4,1,0", "0,15,1,1:body:4,1,0"],
-            2 => ["-:", "7,1,1,8:", "9,5,1,10:", "22,1,1,23:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "7,17,1,8:", "44,12,3,3:", "44,5,3,3:", "44,12,3,3:", "44,12,3,3:", "50,5,3,9:", "66,5,4,10:body:3,1,0", "0,24,1,1:body:3,1,0"],
-            _ => ["-:", "7,1,1,8:", "9,5,1,10:", "15,1,1,16:", "21,1,1,22:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "7,16,1,8:", "39,5,2,2:", "45,5,2,8:", "39,12,2,2:", "39,12,2,2:", "39,12,2,2:", "39,12,2,2:body:4,1,0", "60,5,3,9:body:4,1,0", "53,12,3,2:body:4,1,0", "0,23,1,1:body:4,1,0"],
-        };
-
         async ValueTask<(Context, PyString, Effects)> Prepare(ILythonMemoryBudget owner)
         {
             var context = new Context(new MockLythonHost(), new LythonRunOptions

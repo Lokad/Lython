@@ -1,0 +1,10 @@
+{
+  "retained": true,
+  "checkedProduction": {
+    "net11.0": "d0ff1fe5ea097770419df35978be4e57b2a53d7771ba9c7dc48cd109ade4503f",
+    "net10.0": "2495c6860b1f9fc941081d668cff34ef3e22abd4d61200f9213ba7a37983606a"
+  },
+  "developmentSHA256": "bca5505fb268e416847adb014d0bb94dca51a74656cbe566315dd85055be2bc8",
+  "fullDelivery": "Pending a single coherent Windows/Ubuntu actual11/10 Stress and installed consumer dispatch; baseline full qualification does not cover this source.",
+  "performanceLimits": "Controlled warm elapsed improvements only; role spreads retained, allocation effectively flat, no isolated CPU/async/startup/RSS/tail or primary CPython-source relabelling."
+}

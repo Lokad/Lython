@@ -1,0 +1,50 @@
+[
+  {
+    "name": "failed_function_builtin",
+    "source": "def reject(value): raise ValueError('stop')\ntry:\n @reject\n def len(value): return 99\nexcept ValueError: pass\nprint(len([1,2]),'len' in globals())\n",
+    "stdout": "2 False\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "namespace_declarations",
+    "source": "scope=globals()\ndef chosen(): return 1\nclass Box: pass\ntype Alias = int\nscope['chosen']=lambda:2\nscope['Box']=int\nscope['Alias']=list\nprint(chosen(),Box('3'),Alias([4])[0])\ndel scope['chosen']\ntry: chosen()\nexcept NameError: print('missing')\n",
+    "stdout": "2 3 4\nmissing\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "global_function_replacement",
+    "source": "def chosen(): return 1\ndef replace():\n global chosen\n def chosen(): return 2\nreplace()\nprint(chosen())\n",
+    "stdout": "2\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "import_alias_namespace",
+    "source": "import math as numbers\nfrom math import sqrt as root\nscope=globals()\nscope['numbers']=None\nprint(numbers is None,root(9))\nscope['root']=lambda value:7\nprint(root(9))\ndel scope['root']\ntry: root(9)\nexcept NameError: print('missing')\n",
+    "stdout": "True 3.0\n7\nmissing\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "failed_class_builtin",
+    "source": "class Base:\n def __init_subclass__(cls): raise ValueError('stop')\ntry:\n class list(Base): pass\nexcept ValueError: pass\nprint(list((1,2)),'list' in globals())\n",
+    "stdout": "[1, 2] False\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "lazy_alias_namespace",
+    "source": "type Alias = Later\nclass Later: pass\nglobals()['Later']=int\nprint(Alias.__value__ is int)\nglobals()['Alias']=str\nprint(Alias(4))\n",
+    "stdout": "True\n4\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "replacement_preserves_key_iterator",
+    "source": "def chosen(): return 1\nview=globals()\nit=None\nit=iter(view)\ndef chosen(): return 2\nprint(chosen(),len(list(it))>0)\n",
+    "stdout": "2 True\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "name": "argument_rebind_preserves_target",
+    "source": "def chosen(value): return 'old'\ndef newer(value): return 'new'\ndef mutate():\n global chosen\n chosen=newer\n return 7\nprint(chosen(mutate()),chosen(8))\n",
+    "stdout": "old new\n",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  }
+]

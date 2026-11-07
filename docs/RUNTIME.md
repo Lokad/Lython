@@ -168,7 +168,11 @@ remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.
 One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
-facts after the parameter prefix; module stores retain their dynamic namespace.
+facts after the parameter prefix. Module function, import, class and type-alias
+declarations register slots when their statements are compiled; declarations after
+an unconditional exit create no slots. Live namespace writes and deletion update
+the same bindings. Module declarations also keep their backing namespace values
+after the executable frame ends, independently of its relinquished slot capacity.
 Module facts also pass through lowering into instruction construction. The lexical
 preparation walk decides implicit `super` preloads after seeing later declarations;
 module bindings never supply lexical class cells to child functions.
