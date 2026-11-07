@@ -3,10 +3,10 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// Retained default containers and their parameter layouts remain funded.
+// Retained default containers and shared compiled parameter layouts stay funded.
 // Ordinary fixtures use one small execution batch; original 5000-definition
-// scales remain explicit stress coverage. Capacity estimates now include the
-// layout maps/arrays, so 20 MiB is no longer a roomy 5000-definition allowance.
+// scales remain explicit stress coverage. Layout metadata belongs to compilation,
+// while private defaults remain charged through their execution batch.
 public sealed class FunctionDefaultsAccountingScenarioTests
 {
     private static string DefaultParams()
@@ -17,29 +17,38 @@ public sealed class FunctionDefaultsAccountingScenarioTests
         var definition = lambda
             ? "    fs.append(lambda " + DefaultParams() + ": a01)\n"
             : "    def f(" + DefaultParams() + "):\n        return a01\n    fs.append(f)\n";
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("fs=[]\ni=0\nwhile i < " + count + ":\n" + definition + "    i=i+1\nreturn len(fs)\n");
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) };
-        using var sync = script.Run(new MockLythonHost(), options);
-        Assert.False(sync.Success);
-        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        using var asynchronous = await script.RunAsync(new MockLythonHost(), options);
-        Assert.False(asynchronous.Success);
-        Assert.Equal("MemoryError", asynchronous.Failure?.ExceptionType);
+        await RunBatch("fs=[]\ni=0\nwhile i < " + count + ":\n" + definition + "    i=i+1\nreturn len(fs)\n", limit, false);
     }
 
     private static async Task DroppedDefaults(int count, long limit, bool success)
     {
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("i=0\ntotal=0\nwhile i < " + count + ":\n    def f(" + DefaultParams() + "):\n        return a01\n    total=total+f()\n    i=i+1\nreturn total\n");
-        Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) };
-        foreach (var asynchronous in new[] { false, true })
+        await RunBatch("i=0\ntotal=0\nwhile i < " + count + ":\n    def f(" + DefaultParams() + "):\n        return a01\n    total=total+f()\n    i=i+1\nreturn total\n", limit, success);
+    }
+
+    private static async Task RunBatch(string source, long limit, bool success)
+    {
+        var budget = new LythonMemoryBudget(limit);
+        using (var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget))
         {
-            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
-            Assert.Equal(success, result.Success);
-            if (success) Assert.Equal(new BigInteger(0), result.ReturnValue);
-            else Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.Equal(success, result.Success);
+                    if (success) Assert.Equal(new BigInteger(0), result.ReturnValue);
+                    else
+                    {
+                        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+                        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                        Assert.True(result.FailureAttribution?.Requested > 0);
+                    }
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
         }
+        Assert.Equal(0, budget.ReservedBytes);
     }
 
     [Fact]
@@ -58,26 +67,26 @@ public sealed class FunctionDefaultsAccountingScenarioTests
     public Task OriginalRetainedLambdaDefaultsStayCharged() => RetainedDefaults(true, 5000, 6291456);
 
     [Fact, Trait("Category", "Stress")]
-    public Task OriginalDiscardedDefaultBatchRefusesAtItsOldAllowance() => DroppedDefaults(5000, 20971520, false);
+    public Task OriginalDiscardedDefaultsRemainChargedToTheirBatch() => DroppedDefaults(5000, 6 * 1024 * 1024, false);
 
     [Fact, Trait("Category", "Stress")]
-    public Task OriginalDiscardedDefaultBatchFitsItsConservativeCapacity() => DroppedDefaults(5000, 64 * 1024 * 1024, true);
+    public Task OriginalDiscardedDefaultBatchFitsWithSharedLayout() => DroppedDefaults(5000, 20 * 1024 * 1024, true);
 
     [Fact]
     public async Task DefaultValuesStillApply()
     {
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
             "def f(a=1, b=2):\n" +
             "    return a + b\n" +
             "g = lambda x=5: x * 2\n" +
             "return [f(), f(10), f(10, 20), g(), g(21)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(3), new BigInteger(12), new BigInteger(30), new BigInteger(10), new BigInteger(42) };
-        var sync = script.Run(new MockLythonHost());
+        using var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
-        var asyncResult = await script.RunAsync(new MockLythonHost());
+        using var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }

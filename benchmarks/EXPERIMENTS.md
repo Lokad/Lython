@@ -3469,3 +3469,12 @@ native-call interruption/cache/budget tests pass on both runtimes. Broad676inter
 and images retained. One short native primitive comparison preserves allocations,
 hashes and cleanup; desktop clocks establish no CPU gain. Full qualification batches
 with the canonical-parameter stress-fixture correction; broader roadmap stays open.
+
+## Shared-layout stress contract correction (2026-11-07)
+
+[Delivery correction](results/2026-11-07-canonical-parameter-prefix/delivery-correction.md)
+retains terminal failed42339537256 and its obsolete per-function layout denial
+threshold. Preserve5000-definition scales:6MiB refusal/20MiB success, replacing
+old20MiB refusal/64MiB success. Compile/result cleanup now share one root;8cases
+pass per actual target, including real refusal/reuse. Full corrected delivery with
+R33 remains pending; no partial green gates are called complete qualification.

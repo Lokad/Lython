@@ -38,3 +38,9 @@ Local explicit Release package consumers pass on actual.NET11/.NET10 for committ
 backend dependency edges. Logs/source retained in installed-consumer-evidence.tgz.
 Full delivery42339537256 matches42643b1b and remains in progress on both platforms
 at04:48Z; no green conclusion is claimed. R33 is a later source gate only.
+
+Delivery42339537256 subsequently failed one obsolete20MiB denial assertion on both
+platforms after all ordinary/package gates passed. Corrected original5000-definition
+stress coverage and stronger shared-root cleanup checks pass locally on both
+runtimes. See [delivery correction](delivery-correction.md); .NET10 Stress remained
+unqualified in that failed run. Batch corrected full delivery with R33.
