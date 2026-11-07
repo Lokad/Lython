@@ -3850,4 +3850,6 @@ matching probes
 checks per actual11/10 pass. Existing15job compile/fresh/warm diagnostic gates pass,
 allocation flat, elapsed mixed/adverse/unstable; warm text+8.27to+20.07% with9.82%
 baseline drift and fresh report+3.43to+14.86% remain. Retain coherent deletion and
-correctness, no CPU claim or broad-objective completion. Full delivery pending.
+correctness, no CPU claim or broad-objective completion.
+Full CI42397553014 on7df9b465 is terminal GREEN: Windows/Ubuntu Release actual11/10,
+original Stress and installed core consumers. Receipt cached; no repeated polling.

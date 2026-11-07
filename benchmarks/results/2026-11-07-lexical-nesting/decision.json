@@ -5,7 +5,7 @@
   "validation": "802internal/1555public per actual.NET11/.NET10 plus14parser-hardening checks per target pass, including six pathological inputs through freshly built matching subprocess probes. Original deadlines/assertions unchanged. Supplemental14 is a test count, not14 subprocess launches.",
   "measurement": "One existing five-script compile/fresh/warm diagnostic, two baseline/one current isolated image, normalGC/tiering. All15golden/ownership/isolation/cleanup gates pass. Allocation effectively flat; elapsed mixed/adverse and unstable, including warm text+8.27to+20.07%/9.82%identical-baseline drift. No CPU benefit established or debt repayment. Full original samples retained.",
   "reason": "Retain coherent source/safety-invariant simplification and demonstrated valid-Python correction; not a performance-speedup claim or closure of whole-script objective. No unchanged favorable retiming or another small-change VM campaign.",
-  "fullDelivery": "Pending Windows/Ubuntu Release actual11/10, original Stress and installed core consumers at this coherent retained boundary.",
+  "fullDelivery": "Complete CI42397553014 on7df9b465: Windows/Ubuntu Release actual.NET11/.NET10, original Stress both and installed core-package consumers; cached receipt delivery-ci.json. Publication postponed.",
   "publication": "postponed",
   "archiveSHA256": "53c461a5f05ebb6e4378a951fbaf6c32559f53da3aae306a807dd1db8db68c72"
 }

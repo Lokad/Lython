@@ -43,7 +43,10 @@ Retain for the deleted pass/safety invariant and valid-Python correction. This
 does not complete the whole-script performance objective or repay earlier debt.
 No additional quiet-VM campaign is selected for this small frontend cleanup;
 later coherent checkpoints can resolve the elapsed uncertainty. Publication and
-tagging remain postponed. Full platform/Stress/installed-consumer delivery pending.
+tagging remain postponed. Committed/pushed **7df9b465**, fully qualified by
+[CI42397553014](https://github.com/Lokad/Lython/actions/runs/42397553014): Windows
+and Ubuntu Release actual .NET11/.NET10, original Stress on both and installed
+core-package consumers. [Cached receipt](delivery-ci.json); no unchanged repeat.
 
 [Baseline source identity](baseline.json), [red regression run](baseline-red.log),
 [focused sources/cores](focused.json), [fresh matching subprocesses](subprocess-stacks.json),
