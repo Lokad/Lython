@@ -88,6 +88,12 @@ triggers real output admission through a helper and its deferred caller. Both
 execution APIs preserve input funding, stop following effects on cancellation or
 first refusal, restore managed depths and return the shared budget after cleanup.
 
+[Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
+exercise real suspending keyword-default equality, live replacement of subsequent
+defaults, retained supplied arguments and cancellation. A callback's refused
+admission cannot resume the function or caller through exception handling/finally
+returns; cleanup returns the shared allowance for the next execution.
+
 [Dynamic formatted ownership](Lokad.Lython.Tests/DynamicFormattedOwnershipTests.cs)
 keeps aliases funded through native dynamic padding and real format-callback
 suspension. Cancellation or first refusal prevents publication; callback cleanup

@@ -353,8 +353,14 @@ metadata. Every execution still constructs its own mutable builtin types,
 exception objects and namespace. A function's `__self__` resolves through the
 current caller; shared definitions retain no execution, host or caller token.
 
-Ordinary positional calls to executable functions with slot-local storage advance
-an explicit caller/callee chain in the same engine. Type subscription uses
+Ordinary calls to executable functions with slot-local storage advance one explicit
+caller/callee chain, including keyword and variadic signatures. The shared binder
+writes final invocation storage and observes live defaults. Completed binding
+enters the body directly; genuinely pending default lookup retains call admission,
+caller operands and bound storage until completion or failure. It then enters the
+same body transition, without recursively starting another instruction driver.
+Eligible module functions defer lexical contexts independently of signature shape.
+Mirrored/lowered calls and callbacks retain their general entry. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
 value array until its body and awaited cleanup finish. Local bindings occupy its

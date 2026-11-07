@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "binding-probe-net11": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net11": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "binding-public-net11": {
+      "exitCode": 0,
+      "passed": 239
+    },
+    "net11-coreSHA256": "40a4959e0dc842bc5e41de2a23e6d1959370b6edb3f7b52dda851ee3c0cca2e0",
+    "binding-probe-net10": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net10": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "binding-public-net10": {
+      "exitCode": 0,
+      "passed": 239
+    },
+    "net10-coreSHA256": "a00c2ce716c5588f3483aa961884cedb78d917f1de365543776496ba4fb5ce1b"
+  },
+  "matchingProbes": true,
+  "baselinePublicDefaultChecks": 20,
+  "sourceVariant": "R71 refinement: direct completed contexts and direct synchronous binding; prior context-only source has separate3118public per target"
+}

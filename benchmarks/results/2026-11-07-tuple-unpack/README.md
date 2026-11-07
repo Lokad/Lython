@@ -71,9 +71,10 @@ and independently locally.150sowner+30stop+30margin; staging315,863,040B passes,
 no reclaim or restart. Initial early local observation guard refused before any
 service query; the same completed collection was subsequently retrieved once.
 
-Full Windows/Ubuntu, original Stress and installed-package delivery is pending
-for this new source; baseline's green receipt does not qualify it. Publication
-postponed. B423 terminal/archived/verified; never query it again.
+Full delivery CI42422556519 is GREEN: Windows/Ubuntu Release actual .NET 11/10,
+original Stress both targets and installed core consumers. The cached
+[terminal receipt](delivery-ci.json) qualifies source 7a81a629; never query again.
+Publication postponed. B423 terminal/archived/verified; never query it again.
 
 [Controlled assessment](assessment.json), [allocation/adverse desktop observations](local-assessment.json),
 [focused checks](focused.json), [source/image identities](identity.json),

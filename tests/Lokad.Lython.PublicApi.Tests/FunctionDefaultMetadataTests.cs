@@ -123,6 +123,61 @@ public sealed class FunctionDefaultMetadataTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuspendingDefaultRefusalKeepsArgumentsAndCannotResumeTheCaller(bool asynchronous)
+    {
+        const string source = """
+class Key:
+ def __hash__(self): return hash('x')
+ def __eq__(self,other):
+  global payload
+  payload=None
+  f.__kwdefaults__={'x':99,'y':100}
+  with open('events.txt','a') as target: target.write('eq\n')
+  if fail:
+   try: unused='z'*2000000
+   except MemoryError: print('caught-default')
+   finally: return True
+  return other=='x'
+def f(value,*,x,y): return len(value[0]),x,y
+f.__kwdefaults__={Key():7,'y':8}
+payload=['é'*8192]
+try:
+ print(f(value=payload))
+except BaseException:
+ print('caught-caller')
+finally:
+ if fail: return 0
+""";
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        foreach (var fail in new[] { true, false })
+        {
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            if (delayed is not null) delayed.SeedFile("/events.txt", "");
+            else mock!.SeedFile("/events.txt", "");
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["fail"] = fail } };
+            using (var result = asynchronous ? await script.RunAsync(delayed!, options) : script.Run(mock!, options))
+            {
+                Assert.Equal(!fail, result.Success);
+                if (fail)
+                {
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Empty(result.StandardOutput);
+                }
+                else Assert.Equal("(8192, 7, 100)\n", result.StandardOutput);
+                Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
+                if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+    }
+
     [Fact]
     public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared()
     {

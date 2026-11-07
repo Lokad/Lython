@@ -4037,3 +4037,26 @@ text−0.15–0.96%, coarseCPU mixed/controlCSV+4.07%. Retain complete-phase rem
 allocation and controlled affected elapsed; no universalCPU/CPython/debt claim.
 New source full delivery pending; publication postponed. B423 terminal archived/
 verified; no restart or additional collection. Larger activation roadmap stays open.
+
+## Linear keyword/variadic executable activation
+
+R70 full delivery CI42422556519 is GREEN: Windows/Ubuntu Release actual .NET 11/10,
+original Stress both and installed core consumers. Its cached receipt is final.
+
+[R71/B424–B425](results/2026-11-08-linear-keyword-calls/README.md) removes the
+generic recursive driver route for ordinary nonmirrored keyword/variadic helpers,
+sharing final argument storage, binder and linear frame runner. Generic mirrored/
+lowered callbacks retain real callers. Final measured source: 1,366 internal /
+239 targeted public per actual 11/10; earlier initial/context-only source has
+1,366/3,118 per target, not claimed for the final binding cleanup. New actual
+default suspension/terminal refusal/retained input/reuse coverage and existing
+cancellation/deep keyword recursion pass. All evidence gates pass.
+
+Initial B424 adverse sync/desktop/control results remain. Refined B425 takes
+114.478s: allocation −13.5% sync/−12.6% async, controlled sync affected flat and
+async elapsed −1.57–4.37%. Ordinary CSV is adverse +0.07–5.09% elapsed and
++6.25–11.70% coarse CPU. Retain the complete route deletion/allocation benefit
+with explicit ordinary-CSV regression debt, not a general CPU claim. Prioritize
+its bounded source/generated-code assessment before another runtime optimization.
+No repeated unchanged retiming, performance-objective completion or publication.
+New-source full delivery pending; B424/B425 terminal, archived and verified.

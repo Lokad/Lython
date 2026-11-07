@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "final-probe-net11": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "final-internal-net11": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "final-public-net11": {
+      "exitCode": 0,
+      "passed": 3118
+    },
+    "net11-coreSHA256": "6d66cd183279041ed19eb11daa216974c1478eaab994b546fd5e19d510f6993f",
+    "final-probe-net10": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "final-internal-net10": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "final-public-net10": {
+      "exitCode": 0,
+      "passed": 3118
+    },
+    "net10-coreSHA256": "c5641092228e9228d69ec40683e5bb1c666a8ed93f06cd4b4587947a951f6ea4"
+  },
+  "matchingProbes": true,
+  "baselinePublicDefaultChecks": 20,
+  "sourceVariant": "Refined R71 direct completed contexts and actual pending-binding out value"
+}

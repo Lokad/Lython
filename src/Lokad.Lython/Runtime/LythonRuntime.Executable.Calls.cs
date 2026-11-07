@@ -33,7 +33,8 @@ internal sealed partial class LythonRuntime
                 Exception? failure = null;
                 try { current.ExecuteUntilCall(); }
                 catch (Exception error) { failure = error; }
-                current = AdvanceCallFrames(current, failure);
+                current = AdvanceCallFrames(current, failure, false, out var pending);
+                if (current is null) current = pending.GetAwaiter().GetResult();
             }
         }
 
@@ -45,14 +46,15 @@ internal sealed partial class LythonRuntime
                 Exception? failure = null;
                 try { await current.ExecuteUntilCallAsync().ConfigureAwait(false); }
                 catch (Exception error) { failure = error; }
-                current = AdvanceCallFrames(current, failure);
+                current = AdvanceCallFrames(current, failure, true, out var pending);
+                if (current is null)
+                    current = pending.IsCompletedSuccessfully ? pending.Result : await pending.ConfigureAwait(false);
             }
         }
 
         private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
         {
-            if (!site.IsPositionalOnly) return false;
-            if (target is PyType type) return TrySuspendForExecutableConstructor(type, site, start);
+            if (target is PyType type) return site.IsPositionalOnly && TrySuspendForExecutableConstructor(type, site, start);
             var function = target as PyExecutableFunction;
             object? receiver = site.HasReceiver && _execution.Stack[start] is not PyNone ? _execution.Stack[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
@@ -60,7 +62,7 @@ internal sealed partial class LythonRuntime
                 function = method;
                 receiver = bound.Receiver;
             }
-            if (function is not { SupportsDirectPositional: true }) return false;
+            if (function is not { ArgumentsAreLocals: true }) return false;
             _pendingCallSite = site;
             _pendingFunction = function;
             _pendingReceiver = receiver;
@@ -156,11 +158,13 @@ internal sealed partial class LythonRuntime
             return InvokeTypeSubscriptionMemberAsync(member, index, this, span, asynchronous);
         }
 
-        private static ExecutionContext? AdvanceCallFrames(ExecutionContext current, Exception? failure)
+        private static ExecutionContext? AdvanceCallFrames(ExecutionContext current, Exception? failure,
+            bool asynchronous, out ValueTask<ExecutionContext?> pending)
         {
+            pending = default;
             if (failure is null && current._pendingFunction is not null)
             {
-                try { return current.BeginPendingCall(); }
+                try { return current.BeginPendingCall(asynchronous, out pending); }
                 catch (Exception error) { current.CompletePendingCall(null, error); return current; }
             }
             var caller = current._caller;
@@ -179,8 +183,9 @@ internal sealed partial class LythonRuntime
             return caller;
         }
 
-        private ExecutionContext BeginPendingCall()
+        private ExecutionContext? BeginPendingCall(bool asynchronous, out ValueTask<ExecutionContext?> pending)
         {
+            pending = default;
             var function = _pendingFunction!;
             var span = PendingCallSpan;
             var ordinaryCall = _pendingCallSite is not null;
@@ -188,13 +193,8 @@ internal sealed partial class LythonRuntime
                 : _pendingCallStart + (_callCompletion == CallCompletion.TypeGetter ? 2 : 1);
             var argumentCount = ordinaryCall ? _pendingCallSite!.ArgumentCount
                 : _callCompletion == CallCompletion.TypeGetter ? 2 : 1;
-            BoundCallArguments bound = default;
-            ExecutionContext? frame = null;
-            ExecutableWorkState work = default;
-            var ownsWork = false;
-            var functionEntered = false;
             var callEntered = _callCompletion == CallCompletion.Constructor;
-            var transferred = false;
+            var prepared = false;
             try
             {
                 // Ordinary calls own one admission through child completion.
@@ -209,9 +209,70 @@ internal sealed partial class LythonRuntime
                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
                 // Exact ordinary borrows already received their read-only native
                 // attempt in the call opcode. Binding must not repeat that proof.
-                var nativeAttempted = ordinaryCall && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
-                bound = function.BindPositionalOperands(
-                    operands, span, this, _pendingReceiver);
+                var positional = !ordinaryCall || _pendingCallSite!.IsPositionalOnly && function.SupportsDirectPositional;
+                var nativeAttempted = ordinaryCall && positional && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
+                if (positional)
+                {
+                    var bound = function.BindPositionalOperands(operands, span, this, _pendingReceiver);
+                    prepared = true; // The bound-body entry now owns storage/admission.
+                    return BeginBoundCall(bound, callEntered, nativeAttempted);
+                }
+                if (!asynchronous)
+                {
+                    var bound = function.BindCallOperands(operands, span, this, _pendingReceiver, _pendingCallSite!);
+                    prepared = true;
+                    return BeginBoundCall(bound, callEntered, nativeAttempted: false);
+                }
+                var binding = function.BindCallOperandsAsync(operands, span, this, _pendingReceiver, _pendingCallSite!);
+                if (!binding.IsCompleted)
+                {
+                    prepared = true; // Only actual suspension retains a continuation.
+                    pending = AwaitPendingBinding(binding, callEntered);
+                    return null;
+                }
+                var supplied = binding.GetAwaiter().GetResult();
+                prepared = true;
+                return BeginBoundCall(supplied, callEntered, nativeAttempted: false);
+            }
+            catch (Exception error)
+            {
+                if (TryTranslateCallableException(error, span, out var translated)) error = translated;
+                CompletePendingCall(null, error);
+                return this;
+            }
+            finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+        }
+
+        private async ValueTask<ExecutionContext?> AwaitPendingBinding(ValueTask<BoundCallArguments> binding, bool callEntered)
+        {
+            var prepared = false;
+            try
+            {
+                var bound = await binding.ConfigureAwait(false);
+                prepared = true;
+                return BeginBoundCall(bound, callEntered, nativeAttempted: false);
+            }
+            catch (Exception error)
+            {
+                if (TryTranslateCallableException(error, PendingCallSpan, out var translated)) error = translated;
+                CompletePendingCall(null, error);
+                return this;
+            }
+            finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+        }
+
+        private ExecutionContext BeginBoundCall(BoundCallArguments bound, bool callEntered, bool nativeAttempted)
+        {
+            var function = _pendingFunction!;
+            var span = PendingCallSpan;
+            ExecutionContext? frame = null;
+            ExecutableWorkState work = default;
+            var ownsWork = false;
+            var functionEntered = false;
+            var transferred = false;
+            try
+            {
+                CheckExecution(span);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
                 if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, out var nativeValue))
                 {
