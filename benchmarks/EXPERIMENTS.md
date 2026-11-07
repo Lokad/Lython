@@ -3941,7 +3941,9 @@ controlled compile elapsed−2.94–5.88%, fresh config−1.32–1.45%. Warm tex
 unstable desktop observations remain separate. Initial staging headroom failure
 was corrected with identical owned hard links before any measurement; original
 conditions/logs retained.125.261s, all archive/ownership/quiet/cleanup gates pass.
-Full delivery is pending. This does not complete the whole-script objective.
+Full delivery CI 42412531882 on 70267889 is GREEN (Windows/Ubuntu, actual11/10,
+original Stress and installed consumers); cached receipt, no further query.
+This does not complete the whole-script objective.
 
 ## Current text execution attribution (2026-11-07)
 
@@ -3960,3 +3962,14 @@ finds common local-result publication already skips adjacent-store dispatch and
 the temporary write. Relocating its remaining target/span/async-continuation state
 does not establish a useful deletion. No prototype or timing selected; proceed
 with prepared binding/class-cell consolidation assessment and the broader roadmap.
+
+## Unused module class-cell analysis removed (2026-11-07)
+
+[R65](results/2026-11-07-module-class-facts/README.md) deletes the trailing module
+class-cell demand walk and its standalone fallback calculation. Module execution
+never consumes this demand; real capture queries and scope semantics remain.
+591 internal / 1,793 public checks per actual11/10, 716 exact diagnostic comparisons
+and 32 public CPython probes pass. Compile allocation −3.53–4.64%, fresh roughly
+−0.13–1.46%; warm essentially unchanged. Adverse report elapsed and drifting desktop
+controls preserved; no CPU/warm gain claim or new VM campaign. Full delivery batches
+at the next coherent checkpoint; R62's complete green delivery excludes this change.

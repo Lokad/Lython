@@ -30,7 +30,7 @@ internal sealed record ScopeDirectiveFacts(
 internal static class ScopeDirectiveFactsCollector
 {
     public static ScopeDirectiveFacts ForModule(ScriptSyntax script)
-        => script.PreparedScopeFacts ??= ForFunction([], script.Statements);
+        => script.PreparedScopeFacts ??= ForFunction([], script.Statements, includeClassCellRequirement: false);
 
     public static bool ContainsScopeDirective(IReadOnlyList<StatementSyntax> statements)
     {

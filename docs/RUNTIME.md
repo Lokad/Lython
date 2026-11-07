@@ -181,6 +181,8 @@ after the executable frame ends, independently of its relinquished slot capacity
 Module facts also pass through lowering into instruction construction. The lexical
 preparation walk decides implicit `super` preloads after seeing later declarations;
 module bindings never supply lexical class cells to child functions.
+Module preparation keeps binding facts without computing a class-cell capture;
+function and class scopes retain their own capture requirements.
 Class creation reads its prepared own-cell requirement; it does not repeat lexical
 syntax analysis at execution. Each created class still owns its fresh cell.
 Optimized local snapshots use current frame/cell values before extra mirrored names.

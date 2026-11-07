@@ -63,8 +63,10 @@ do not use those timings as demonstrated CPU gains. Goldens, image isolation,
 funding and fixture cleanup pass. This is a complete removable-work milestone,
 not completion of the substantial whole-script performance objective.
 
-Full Windows/Ubuntu, actual11/10, original Stress and installed-package delivery
-is pending on the retained source. Publication remains postponed.
+Full delivery CI **42412531882** on `70267889` is GREEN: Windows/Ubuntu,
+actual .NET 11/10, original Stress and installed-package consumers.
+[Cached terminal receipt](delivery-ci.json); never query again. Later R65 source
+changes are qualified separately. Publication remains postponed.
 [Focused counts](final-focused.json), [controlled assessment](assessment.json),
 [desktop assessment](local-assessment.json), [VM receipt](archive-receipt.json),
 [VM raw/source/cores](observations.tgz),

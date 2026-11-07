@@ -65,8 +65,7 @@ internal static class LexicalScopePreparation
     {
         var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(import =>
             import.ModuleName == "__future__" && import.ImportedMembers?.Any(member => member.Name == "annotations") == true);
-        // Bind once, but finish the module's class-read facts only after child
-        // scopes are prepared. Their binding facts can then be reused too.
+        // A module owns bindings, not an enclosing class-cell capture.
         var moduleFacts = ScopeDirectiveFactsCollector.ForFunction([], script.Statements, includeClassCellRequirement: false);
         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
@@ -145,9 +144,6 @@ internal static class LexicalScopePreparation
         if (!moduleUsesSuper && preloads is not null)
             foreach (var call in preloads) call.PreloadImplicitSuperArguments = true;
 
-        if (!moduleFacts.IsGlobal("__class__") && !moduleFacts.LocalNames.Contains("__class__") &&
-            ClassCellSyntaxFacts.ReferencesFromFunction(script.Statements))
-            moduleFacts = moduleFacts with { RequiresClassCell = true };
         script.PreparedScopeFacts = moduleFacts;
 
         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
