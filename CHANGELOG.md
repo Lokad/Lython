@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Hold `math.prod` working admission through computation and transfer retained
+  result funding from it, removing premature refunds and duplicate admission.
+  Observe cancellation after admission; preserve empty integer/bool starts.
+
 - Consolidate delimiter nesting checks into tokenization, removing the duplicate
   whole-source scanner. Valid same-quote nested f-string literals no longer trigger
   false nesting errors; parser and managed stack protections remain.

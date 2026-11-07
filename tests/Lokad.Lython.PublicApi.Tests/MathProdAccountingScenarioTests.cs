@@ -10,6 +10,44 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class MathProdAccountingScenarioTests
 {
+    [Theory, InlineData(false), InlineData(true)]
+    public async Task StartsAndNumericTransitionsFollowPython(bool asynchronous)
+    {
+        const string source = """
+            import math
+            for start in [True, False, 1234567890123456789, 1.5, -0.0]:
+                result = math.prod([], start=start)
+                print(result is start, type(result).__name__, repr(result))
+            print(math.prod([True, False, 2]), math.prod([2, 3.5], start=2), math.prod([-2, -3], start=-1))
+            print(math.prod([1 << 63, 2]), math.prod([1 << 63, -2]))
+            """;
+        const string expected = """
+            True bool True
+            True bool False
+            True int 1234567890123456789
+            False float 1.5
+            False float -0.0
+            0 14.0 -6
+            18446744073709551616 -18446744073709551616
+
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var held = budget.ReservedBytes;
+            var options = new LythonRunOptions { MemoryBudget = budget, ResultMemoryBudget = budget };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected.ReplaceLineEndings("\n"), result.StandardOutput);
+            }
+            Assert.Equal(held, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public async Task ManyRetainedProductsStayCharged()
     {

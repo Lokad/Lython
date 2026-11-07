@@ -3863,3 +3863,15 @@ speedup or repeated delivery. Preserve the timed host-validation asymmetry and
 CPU-versus-wall/inlining limits. B413's root-closure setup failure and corrected
 B414 identities, full goldens, joined users, removed fixtures and verified archives
 remain; both are terminal. Whole-script performance objective remains open.
+
+## Product working-admission lifetime (2026-11-07)
+
+[R57](results/2026-11-07-product-admission/README.md) confirms4native baseline
+failures and2public CPython-golden failures. One held computation/result grant
+replaces a prematurely disposed guard and second admission; empty integer/bool
+starts keep identity. Opaque CLR cancellation limitation remains.91internal/
+638public per actual11/10 pass; full delivery batches at the next boundary.
+One existing10job desktop diagnostic passes goldens/funding/cleanup; affected
+matrix-product allocation−7.808/−7.216%, controls within0.045%. Elapsed is unstable,
+including+102.49%async and99.52%old drift; no CPU claim. Original wrong float-
+identity fixture, corrected independent Python result and failures remain.

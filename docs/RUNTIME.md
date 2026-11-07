@@ -665,6 +665,12 @@ count narrowing. Growing results retain allocation preflights and checked native
 count/storage bounds. Floating power overflow raises OverflowError; nonfinite
 inputs retain their Python behavior.
 
+`math.prod` keeps admitted multiplication workspace until its result takes
+ownership, then returns only unused scratch. Integer results of at most 64 bits
+use the existing minor-scalar headroom. Cancellation after substantial admission
+stops computation before the CLR operation starts. Empty integer products retain
+their supplied start, including bool; float accumulation returns a fresh float.
+
 Integer text conversion scans its original UTF-8 with an unsigned 128-bit native
 accumulator before arbitrary BigInteger growth. Values above 64 bits still admit
 their retained magnitude before conversion, including values that fit the native

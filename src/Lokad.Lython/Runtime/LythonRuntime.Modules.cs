@@ -353,20 +353,10 @@ internal sealed partial class LythonRuntime
 
         private static object Prod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 1 or > 2)
-            {
-                throw new LythonRuntimeException("TypeError", "math.prod(iterable[, start]) expects one iterable and an optional numeric start.", span);
-            }
-
-            object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
-            var pairs = 0;
+            var total = ReadProdStart(arguments, span);
             foreach (var item in ToSequence(arguments[0], span, context))
             {
-                // Deny before growth for large magnitudes: an integer product needs
-                // at most bits(total) + bits(item), with scratch coexisting.
-                GuardProdGrowth(total, item, span, context);
-                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
-                pairs++;
+                total = MultiplyNumeric(total, item, span, context);
                 context.CheckExecution(span);
             }
 
@@ -375,38 +365,16 @@ internal sealed partial class LythonRuntime
 
         private static async ValueTask<object> ProdAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            if (arguments.Length is < 1 or > 2)
-            {
-                throw new LythonRuntimeException("TypeError", "math.prod(iterable[, start]) expects one iterable and an optional numeric start.", span);
-            }
-
             // Async twin of the guarded body above: awaits delayed host reads
             // through the async boundary with the same per-pair enforcement.
-            object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
-            var pairs = 0;
+            var total = ReadProdStart(arguments, span);
             await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
-                GuardProdGrowth(total, item, span, context);
-                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
-                pairs++;
+                total = MultiplyNumeric(total, item, span, context);
                 context.CheckExecution(span);
             }
 
             return RuntimeValue(total);
-        }
-
-        private static void GuardProdGrowth(object total, object item, LythonSourceSpan span, ExecutionContext context)
-        {
-            if (total is BigInteger totalInteger && PyNumberOps.TryAsInteger(item, out var itemInteger))
-            {
-                using var integerAdmission = GuardIntegerResultBytes(
-                    RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
-                        RuntimeMemoryEstimates.SaturatingAdd(
-                            RuntimeMemoryEstimates.GetMagnitudeBitLength(totalInteger),
-                            RuntimeMemoryEstimates.GetMagnitudeBitLength(itemInteger)))),
-                    context.MemoryGovernor,
-                    span);
-            }
         }
 
         private static object Fsum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -688,17 +656,23 @@ internal sealed partial class LythonRuntime
             return number.ToDouble();
         }
 
-        private static object ExpectNumericObject(object value, string owner, LythonSourceSpan span)
+        private static object ReadProdStart(object[] arguments, LythonSourceSpan span)
         {
+            if (arguments.Length is < 1 or > 2)
+                throw new LythonRuntimeException("TypeError", "math.prod(iterable[, start]) expects one iterable and an optional numeric start.", span);
+            if (arguments.Length == 1) return BigInteger.One;
+            var value = arguments[1];
             if (!PyNumberOps.TryAsNumber(value, out var number))
             {
-                throw new LythonRuntimeException("TypeError", $"{owner} expects real numbers.", span);
+                throw new LythonRuntimeException("TypeError", "math.prod expects real numbers.", span);
             }
 
-            return number.IsFloat ? number.Floating : number.Integer;
+            // An empty integer product returns its original start (including
+            // bool). Python's float accumulator still returns a fresh float.
+            return number.IsFloat ? number.Floating : value;
         }
 
-        private static object MultiplyNumeric(object lhs, object rhs, LythonSourceSpan span)
+        private static object MultiplyNumeric(object lhs, object rhs, LythonSourceSpan span, ExecutionContext context)
         {
             if (!PyNumberOps.TryAsNumber(lhs, out var left) || !PyNumberOps.TryAsNumber(rhs, out var right))
             {
@@ -707,7 +681,18 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                return PyNumberOps.Multiply(left, right);
+                // Keep the granted capacity alive through computation and transfer
+                // the retained magnitude from it. Inline scalars use the existing
+                // minor-storage headroom, without per-item allowance traffic.
+                var bits = left.IsFloat || right.IsFloat ? 0 : RuntimeMemoryEstimates.SaturatingAdd(
+                    RuntimeMemoryEstimates.GetMagnitudeBitLength(left.Integer),
+                    RuntimeMemoryEstimates.GetMagnitudeBitLength(right.Integer));
+                using var admission = bits <= 64 ? null : GuardIntegerResultBytes(
+                    RuntimeMemoryEstimates.SaturatingMultiply(3,
+                        RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)),
+                    context.MemoryGovernor, span);
+                if (admission is not null) context.CheckExecution(span);
+                return OwnFreshInteger(PyNumberOps.Multiply(left, right), context.MemoryGovernor, span, admission);
             }
             catch (OverflowException ex)
             {

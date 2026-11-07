@@ -1,0 +1,7 @@
+True bool True
+True bool False
+True int 1234567890123456789
+False float 1.5
+False float -0.0
+0 14.0 -6
+18446744073709551616 -18446744073709551616
