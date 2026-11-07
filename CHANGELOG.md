@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Parse general integer text directly from UTF-8 with native accumulation and
+  exact large-magnitude promotion. Support Unicode decimal string digits, retain
+  ASCII bytes grammar, and observe cancellation during long conversion. Admit
+  magnitude construction before allocation and preserve first refusal and cleanup.
+
+- Forward adjacent plain local/constant operands before assigning executable
+  storage. Preserve original error spans and protocol snapshots while removing
+  initialized-local tracking and duplicate call-entry checks.
+
 - Share builtin method implementations independently of their receivers. Common
   immediate calls borrow evaluated operands; exposed methods keep Python binding
   and metadata. Remove duplicated method markers, factories and dispatch helpers.

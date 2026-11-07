@@ -1,0 +1,29 @@
+{
+  "checks": {
+    "final-Lokad.Lython.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerTextAdmission|FullyQualifiedName~IntegerTextCancellation|FullyQualifiedName~SimpleFunctionExecutionBoundary)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    41, Skipped:     0, Total:    41, Duration: 195 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+    },
+    "final-Lokad.Lython.PublicApi.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~Utf8IntegerParseTests|FullyQualifiedName~UnicodeIntegerTextTests|FullyQualifiedName~GeneralIntegerTextTests)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   280, Skipped:     0, Total:   280, Duration: 278 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+    },
+    "final-Lokad.Lython.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerTextAdmission|FullyQualifiedName~IntegerTextCancellation|FullyQualifiedName~SimpleFunctionExecutionBoundary)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    41, Skipped:     0, Total:    41, Duration: 198 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)\n"
+    },
+    "final-Lokad.Lython.PublicApi.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~Utf8IntegerParseTests|FullyQualifiedName~UnicodeIntegerTextTests|FullyQualifiedName~GeneralIntegerTextTests)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   280, Skipped:     0, Total:   280, Duration: 302 ms - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "d3a6c77800093e69135a949d07b6f1fc765c689a566c8c904954908009d693e2",
+    "net10.0": "0e1674bb7567012fd24aa0642ad9c54a58204272dd8eae99331d26d862d2d983"
+  },
+  "fullDeliveryPending": true
+}

@@ -660,6 +660,15 @@ Constant integer power/shift results are resolved before magnitude admission or
 count narrowing. Growing results retain allocation preflights and checked native
 count/storage bounds. Floating power overflow raises OverflowError; nonfinite
 inputs retain their Python behavior.
+
+Integer text conversion scans its original UTF-8, keeping small magnitudes in
+native storage and reserving overlapping working magnitudes before promotion to
+BigInteger. Only the retained result is committed; scratch is refunded after
+completion or failure. Scans and arithmetic chunks observe the current token.
+String digits use the existing Unicode decimal classification; byte digits use
+ASCII syntax. No decoded CLR text copy is needed, so admission thresholds can
+change while retained storage remains funded.
+
 Dictionary updates
 drain unknown-length pairs without storing their contents, preserving iterator
 effects and exact length errors; infinite pairs require cancellation. `defaultdict`

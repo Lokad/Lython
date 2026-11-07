@@ -84,6 +84,12 @@ retain their distinct source pairs and adverse results.
 
 ## Improvements within Lython
 
+The later [general integer parser](../benchmarks/results/2026-11-07-integer-parsing/README.md)
+improves explicitly affected whole scripts: padded-field CSV warm time falls
+12.5–13.4%, and numeric-string JSON 41.4–42.0%, versus source77703a42. Initial
+allocation falls13–15%/63%; ordinary controls remain variable. These inputs and
+later source are separate from the primary CPython table above.
+
 The later [ordinary-operation transport consolidation](../benchmarks/results/2026-11-07-operand-transport/README.md)
 emits fewer instructions and reduces instruction/read-span payload. Its controlled
 complete-script elapsed results are mostly variable, including inconclusive JSON;

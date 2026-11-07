@@ -46,7 +46,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
 
     [Theory]
     [MemberData(nameof(RefusalCases))]
-    public async Task RefusedConversionAdmitsBeforeDecodingFundedInput(bool bytes, bool asynchronous, bool shared)
+    public async Task RefusedConversionAdmitsBeforeConstructingMagnitude(bool bytes, bool asynchronous, bool shared)
     {
         foreach (var measured in new[] { false, true })
         {
@@ -80,8 +80,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
                 { bytes, asynchronous, shared, allocated, committed, after = governor.CurrentCommittedBytes }));
             Assert.NotNull(failure);
             Assert.Equal("MemoryError", failure.ExceptionType);
-            Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
-                failure.Attribution?.Reason);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
             Assert.Same(governor.AdmissionFailure, failure);
             Assert.Same(Span, failure.Span);
             Assert.Same(input, context.Variables["source"]);
@@ -90,7 +89,7 @@ public sealed class IntegerTextAdmissionTests(ITestOutputHelper output)
             hostPadding?.Dispose();
             owner.Dispose();
             Assert.Equal(0, budget.ReservedBytes);
-            if (measured) Assert.True(allocated < 16384, $"Refused integer decode allocated {allocated} bytes.");
+            if (measured) Assert.True(allocated < 16384, $"Refused integer construction allocated {allocated} bytes.");
         }
     }
 

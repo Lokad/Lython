@@ -64,6 +64,11 @@ binding rules. Custom subscription takes precedence over generic aliases, and
 explicit None blocks it. Slice keys retain their original bounds without integer
 coercion. `RunAsync` awaits supported descriptor and handler callbacks.
 
+`int()` accepts Python signs, base prefixes, numeric separators and surrounding
+whitespace. String inputs accept Unicode decimal digits, including astral digits;
+bytes use ASCII integer syntax. Large conversions remain subject to cooperative
+cancellation and the supplied memory allowance.
+
 Equal supported numbers share hashes across integers, floats, finite Decimal and
 zero-imaginary complex values. Hash values and collision probe repetition are
 implementation-specific. Hashes use 32-bit values; custom integer results use

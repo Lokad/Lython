@@ -1,0 +1,20 @@
+[
+  {
+    "case": "scripts.csv-summary-functions.large-padded-integers",
+    "records": 4096,
+    "inputBytes": 191505,
+    "sourceChanged": false,
+    "output": "3072\n",
+    "expectedFilesSha256": "84ec50fc7f2391efd944abe727e896ca51095ef45ef7018b7aa53636102aa014",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "case": "scripts.json-summary-helpers.large-integer-strings",
+    "records": 4096,
+    "inputBytes": 278528,
+    "sourceChanged": true,
+    "output": "3072\n",
+    "expectedFilesSha256": "7e3e55ca8f21c81ad000fe0cbb622e758984d0203ff3d5b9e5d9376de591a973",
+    "cpython": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  }
+]

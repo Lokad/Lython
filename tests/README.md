@@ -15,6 +15,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Integer conversion](Lokad.Lython.PublicApi.Tests/GeneralIntegerTextTests.cs)
+uses CPython-frozen radix, promotion, separator and whitespace cases; Unicode and
+bytes controls retain their distinct grammars. [Ownership/cancellation checks](Lokad.Lython.Tests/IntegerTextCancellationTests.cs)
+preserve first refusal, input funding and scratch cleanup. Separate Stress coverage
+cancels actual magnitude work and joins its worker before returning the allowance.
+
 [Direct operand ownership](Lokad.Lython.Tests/DirectOperandOwnershipTests.cs)
 checks three-input subscript stores through protocol rebinding and real suspension.
 Cancellation or first refusal stops mutation and later effects, preserves aliases

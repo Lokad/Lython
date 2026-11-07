@@ -420,24 +420,36 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     {
         foreach (var driver in Enum.GetValues<Driver>())
         {
-            const long capacity = 2 * 1024 * 1024;
-            var budget = new LythonMemoryBudget(capacity);
+            const int digits = 4096;
+            var budget = new LythonMemoryBudget(64 * 1024);
             using (var inputOwner = budget.CreateScope())
             {
-                var input = Lokad.Lython.Runtime.Text.PyString.FromString(" " + new string('9', 50000) + " ",
+                var input = PyString.FromString(" " + new string('9', digits) + " ",
                     new MemoryGovernor(inputOwner), CallSpan);
                 var inputCharge = budget.ReservedBytes;
                 using (var executionOwner = budget.CreateScope())
                 {
+                    var hook = new AdmissionHookMemoryBudget(executionOwner);
                     var (function, context, code) = Function("def f(value):\n    return int(value.strip()) + 1\n",
-                        new LythonRunOptions { MemoryBudget = executionOwner });
-                    using (var pressure = budget.CreateScope())
+                        new LythonRunOptions { MemoryBudget = hook });
+                    var refused = false;
+                    // Allow argument/frame metadata, then refuse substantial
+                    // magnitude construction. No decoded text is required.
+                    hook.RefuseGrowth = bytes =>
                     {
-                        Assert.True(pressure.TryReserve(capacity - budget.ReservedBytes - 128 * 1024, out _));
-                        var active = new PyException("RuntimeError", "outer", PyNone.Instance);
-                        context.State.SetCurrentException(active);
+                        if (bytes < digits) return false;
+                        refused = true;
+                        return true;
+                    };
+                    var active = new PyException("RuntimeError", "outer", PyNone.Instance);
+                    context.State.SetCurrentException(active);
+                    try
+                    {
                         var error = Assert.Throws<LythonRuntimeException>(() =>
                             Invoke(function, [CallArgumentValue.Positional(input)], context, driver));
+                        Assert.True(refused);
+                        Assert.True(budget.ReservedBytes >= inputCharge + digits,
+                            "The preceding stripped value must remain funded by the source owner.");
                         Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
                         Assert.Same(code.CallSites.MaxBy(site => site.CallSpan.Length)!.CallSpan, error.Span);
                         Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
@@ -446,14 +458,13 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                         Assert.Equal(0, context.State.CurrentInterpreterDepth);
                         Assert.Equal(0, context.State.CurrentRecursionDepth);
                         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-                        Assert.Equal(50002, input.Length);
+                        Assert.Equal(digits + 2, input.Length);
                     }
-                    context.State.CloseResources();
+                    finally { context.State.CloseResources(); }
                 }
-                // A governed source's fresh slices conservatively share its
-                // owner; ending the execution cannot refund that source owner.
+                // Fresh slices conservatively share the source owner.
                 Assert.True(budget.ReservedBytes >= inputCharge);
-                Assert.Equal(50002, input.Length);
+                Assert.Equal(digits + 2, input.Length);
             }
             Assert.Equal(0, budget.ReservedBytes);
         }

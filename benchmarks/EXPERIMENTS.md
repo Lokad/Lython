@@ -3704,3 +3704,28 @@ ordinary actual11/10, original Stress both and installed core-package consumers.
 [Cached receipt](results/2026-11-07-operand-transport/delivery-ci.json) excludes
 later R44; never query the terminal run again. This qualification does not turn
 the variable B398 elapsed observations into a substantial CPU improvement.
+
+## R45 native general integer parsing — B399
+
+[R45](results/2026-11-07-integer-parsing/README.md) deletes general conversion's
+decoded CLR copy/estimate and old UTF-16 per-character BigInteger loop. Native
+unsigned accumulation and exact chunked promotion use existing ownership and
+three-magnitude preflight; small results need no major reservation. Unicode
+decimal strings now work, bytes retain ASCII syntax, and long conversion polls
+the active token. Two baseline cancellation regressions and five CPython Unicode
+mismatches are corrected.189independent grammar/boundary cases supplement existing
+coverage. No new representation/framework/policy/ledger/unsafe path.
+
+Initial160internal/776public per actual target pass after replacing one stale
+decoded-copy refusal fixture with actual-magnitude denial (input50000→4096,
+origin/alias/cleanup assertions preserved). Final entry-check deletion41/280 per
+target and in-flight Stress both pass. Padded CSV allocation−14.70/−13.35%,
+numeric-string JSON−62.99/−62.98%sync/async; ordinary controls/compile flat.
+Desktop favorable/adverse/moving controls stay separate. B399196.49s/all seven
+gates: padded CSV warm−12.49–13.41%, fresh−13.14–20.72% with6.75%baseline spread;
+numeric-string JSON warm−41.43–41.98%, fresh−40.99–42.47%. Ordinary CSV−0.46to+0.89%,
+JSON−0.31to+1.29%, text−5.65to+1.61%/4.83%identical-current spread remain uncertain.
+Retain coherent redesign/correctness/affected gains, without general CPU/parity,
+retained-memory or embedding-tail claims. Terminal/archive3f988c52 verified;
+no workers/fixtures or repeated service queries. Full R44/R45 delivery and primary
+CPython refresh pending; publication/producer qualification stay independent.

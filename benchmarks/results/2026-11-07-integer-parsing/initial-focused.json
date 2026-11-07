@@ -1,0 +1,29 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerText|FullyQualifiedName~IntegerConversion|FullyQualifiedName~IntegerProtocol|FullyQualifiedName~IntegerFromBytes|FullyQualifiedName~IntegerAdditionAdmission|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~CompletedHelperCallOwnership|FullyQualifiedName~NativeReturn)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   160, Skipped:     0, Total:   160, Duration: 182 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerText|FullyQualifiedName~Utf8IntegerParse|FullyQualifiedName~IntegerConversion|FullyQualifiedName~IntegerPayload|FullyQualifiedName~IntegerParse|FullyQualifiedName~IntegerHeap|FullyQualifiedName~IntegerFromBytes|FullyQualifiedName~NumericProtocol|FullyQualifiedName~NumericIngress|FullyQualifiedName~BoundedNumeric|FullyQualifiedName~ExactInteger|FullyQualifiedName~ReceiverMethodSemantics|FullyQualifiedName~NativeCallback)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   776, Skipped:     0, Total:   776, Duration: 30 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+    },
+    "Lokad.Lython.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerText|FullyQualifiedName~IntegerConversion|FullyQualifiedName~IntegerProtocol|FullyQualifiedName~IntegerFromBytes|FullyQualifiedName~IntegerAdditionAdmission|FullyQualifiedName~SimpleFunctionExecutionBoundary|FullyQualifiedName~InstructionFailureRouting|FullyQualifiedName~CompletedHelperCallOwnership|FullyQualifiedName~NativeReturn)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   160, Skipped:     0, Total:   160, Duration: 270 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)\n"
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0.log": {
+      "exitCode": 0,
+      "selection": "Category!=Stress&(FullyQualifiedName~IntegerText|FullyQualifiedName~Utf8IntegerParse|FullyQualifiedName~IntegerConversion|FullyQualifiedName~IntegerPayload|FullyQualifiedName~IntegerParse|FullyQualifiedName~IntegerHeap|FullyQualifiedName~IntegerFromBytes|FullyQualifiedName~NumericProtocol|FullyQualifiedName~NumericIngress|FullyQualifiedName~BoundedNumeric|FullyQualifiedName~ExactInteger|FullyQualifiedName~ReceiverMethodSemantics|FullyQualifiedName~NativeCallback)",
+      "summary": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:   776, Skipped:     0, Total:   776, Duration: 31 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+    }
+  },
+  "coreSHA256": {
+    "net11.0": "791b1759627378830301b2cac42171159e7bc5bb1b7ddc3dfb61820aed204caf",
+    "net10.0": "1a73221d8176e83245d4e60385dcfe2d32e301733c6f6757dff2a52191a2a142"
+  },
+  "fullDeliveryPending": true
+}

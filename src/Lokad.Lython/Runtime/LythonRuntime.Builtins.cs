@@ -784,94 +784,17 @@ internal sealed partial class LythonRuntime
             System.Buffers.Text.Utf8Parser.TryParse(utf8, out long integer, out var consumed) && consumed == utf8.Length)
             return new BigInteger(integer);
 
-        // UTF-8 bytes upper-bound decoded UTF-16 units. Admit that copy and
-        // three overlapping magnitudes before decoding or arithmetic; raw
-        // whitespace/prefix capacity is deliberately conservative.
-        var length = utf8.Length;
-        var resultBits = RuntimeMemoryEstimates.SaturatingMultiply(length,
-            numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase));
-        var resultBytes = RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
-            RuntimeMemoryEstimates.SaturatingAdd(resultBits, 1));
-        var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
-            RuntimeMemoryEstimates.SaturatingMultiply(2, length));
-        using var admission = context.MemoryGovernor.ReserveTemporary(RuntimeMemoryEstimates.SaturatingAdd(
-            decodeBytes, RuntimeMemoryEstimates.SaturatingMultiply(3, resultBytes)), span);
-        var decoded = source is PyString value ? value.AsString() : System.Text.Encoding.ASCII.GetString(((PyBytes)source).Bytes);
-        var result = ParsePythonIntegerText(decoded, numberBase, span, source, context);
-        object box = result;
-        if (RuntimeMemoryEstimates.GetMagnitudeBitLength(result) > 64)
-            admission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
-        return box;
-    }
-
-    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, object displaySource, ExecutionContext context)
-    {
-        var value = text.AsSpan().Trim();
-        var negative = false;
-        if (!value.IsEmpty && value[0] is '+' or '-')
+        MemoryGovernor.TemporaryMemoryReservation? admission = null;
+        try
         {
-            negative = value[0] == '-';
-            value = value[1..];
+            var result = ParseIntegerUtf8(utf8, source is PyString, numberBase, span, source, context, ref admission);
+            context.CheckExecution(span);
+            object box = result;
+            if (admission is not null)
+                admission.Commit(RuntimeMemoryEstimates.EstimateBigIntegerBytes(result));
+            return box;
         }
-
-        var detectedBase = numberBase;
-        if (value.Length >= 2 && value[0] == '0')
-        {
-            var prefixBase = char.ToLowerInvariant(value[1]) switch
-            {
-                'b' => 2,
-                'o' => 8,
-                'x' => 16,
-                _ => 0,
-            };
-            if (prefixBase != 0 && (numberBase == 0 || numberBase == prefixBase))
-            {
-                detectedBase = prefixBase;
-                value = value[2..];
-                if (!value.IsEmpty && value[0] == '_')
-                {
-                    value = value[1..];
-                }
-            }
-        }
-
-        detectedBase = detectedBase == 0 ? 10 : detectedBase;
-        if (value.IsEmpty || value[0] == '_' || value[^1] == '_' || value.IndexOf("__".AsSpan()) >= 0)
-        {
-            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(displaySource, context)}", span);
-        }
-
-        var result = BigInteger.Zero;
-        var sawNonZero = false;
-        foreach (var character in value)
-        {
-            if (character == '_')
-            {
-                continue;
-            }
-
-            var digit = character switch
-            {
-                >= '0' and <= '9' => character - '0',
-                >= 'a' and <= 'z' => character - 'a' + 10,
-                >= 'A' and <= 'Z' => character - 'A' + 10,
-                _ => -1,
-            };
-            if (digit < 0 || digit >= detectedBase)
-            {
-                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(displaySource, context)}", span);
-            }
-
-            sawNonZero |= digit != 0;
-            result = result * detectedBase + digit;
-        }
-
-        if (numberBase == 0 && detectedBase == 10 && value.Length > 1 && value[0] == '0' && sawNonZero)
-        {
-            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base 0: {IntFailureDisplay(displaySource, context)}", span);
-        }
-
-        return negative ? -result : result;
+        finally { admission?.Dispose(); }
     }
 
     // CPython resolves int(instance) through __int__, then __index__, then

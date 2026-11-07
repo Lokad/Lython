@@ -1,0 +1,947 @@
+[
+  {
+    "name": "base2-uint64",
+    "source": "try:\n print(int('1111111111111111111111111111111111111111111111111111111111111111',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base2-promoted",
+    "source": "try:\n print(int('10000000000000000000000000000000000000000000000000000000000000000',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base2-chunks",
+    "source": "try:\n print(int('-1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000111001',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base3-uint64",
+    "source": "try:\n print(int('11112220022122120101211020120210210211220',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base3-promoted",
+    "source": "try:\n print(int('11112220022122120101211020120210210211221',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base3-chunks",
+    "source": "try:\n print(int('-1112102212012011112101001122101022120212122201112222002121221122110020112201021102',3))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base4-uint64",
+    "source": "try:\n print(int('33333333333333333333333333333333',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base4-promoted",
+    "source": "try:\n print(int('100000000000000000000000000000000',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base4-chunks",
+    "source": "try:\n print(int('-20000000000000000000000000000000000000000000000000000000000000321',4))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base5-uint64",
+    "source": "try:\n print(int('2214220303114400424121122430',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base5-promoted",
+    "source": "try:\n print(int('2214220303114400424121122431',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base5-chunks",
+    "source": "try:\n print(int('-22112221432403111323421314022331120441042311010311013334',5))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base6-uint64",
+    "source": "try:\n print(int('3520522010102100444244423',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base6-promoted",
+    "source": "try:\n print(int('3520522010102100444244424',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base6-chunks",
+    "source": "try:\n print(int('-50151151500355541523152131531524531055551333221145',6))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base7-uint64",
+    "source": "try:\n print(int('45012021522523134134601',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base7-promoted",
+    "source": "try:\n print(int('45012021522523134134602',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base7-chunks",
+    "source": "try:\n print(int('-6234324354252556016002015660333541045055634022',7))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base8-uint64",
+    "source": "try:\n print(int('1777777777777777777777',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base8-promoted",
+    "source": "try:\n print(int('2000000000000000000000',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base8-chunks",
+    "source": "try:\n print(int('-10000000000000000000000000000000000000000071',8))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base9-uint64",
+    "source": "try:\n print(int('145808576354216723756',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base9-promoted",
+    "source": "try:\n print(int('145808576354216723757',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base9-chunks",
+    "source": "try:\n print(int('-45385164471048338525581488077848406481242',9))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base10-uint64",
+    "source": "try:\n print(int('18446744073709551615',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base10-promoted",
+    "source": "try:\n print(int('18446744073709551616',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base10-chunks",
+    "source": "try:\n print(int('-680564733841876926926749214863536422969',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base11-uint64",
+    "source": "try:\n print(int('335500516a429071284',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base11-promoted",
+    "source": "try:\n print(int('335500516a429071285',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base11-chunks",
+    "source": "try:\n print(int('-20019a0836267451a8642a5a954a4757721748',11))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base12-uint64",
+    "source": "try:\n print(int('839365134a2a240713',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base12-promoted",
+    "source": "try:\n print(int('839365134a2a240714',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base12-chunks",
+    "source": "try:\n print(int('-b631b09a82286a51933352748350791917b5',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base13-uint64",
+    "source": "try:\n print(int('219505a9511a867b72',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base13-promoted",
+    "source": "try:\n print(int('219505a9511a867b73',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base13-chunks",
+    "source": "try:\n print(int('-91304c6b922c59a81b75ac16b5abc2872ba',13))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base14-uint64",
+    "source": "try:\n print(int('8681049adb03db171',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base14-promoted",
+    "source": "try:\n print(int('8681049adb03db172',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base14-chunks",
+    "source": "try:\n print(int('-a368bb94a0d4c5663527d7a4a81502bc49',14))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base15-uint64",
+    "source": "try:\n print(int('2c1d56b648c6cd110',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base15-promoted",
+    "source": "try:\n print(int('2c1d56b648c6cd111',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base15-chunks",
+    "source": "try:\n print(int('-10b9322ed1149521925ac231db91b0b67e',15))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base16-uint64",
+    "source": "try:\n print(int('ffffffffffffffff',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base16-promoted",
+    "source": "try:\n print(int('10000000000000000',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base16-chunks",
+    "source": "try:\n print(int('-200000000000000000000000000000039',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base17-uint64",
+    "source": "try:\n print(int('67979g60f5428010',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base17-promoted",
+    "source": "try:\n print(int('67979g60f5428011',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base17-chunks",
+    "source": "try:\n print(int('-4f10f0g5g8gb9f5e5b54f7710c97f278',17))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base18-uint64",
+    "source": "try:\n print(int('2d3fgb0b9cg4bd2f',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base18-promoted",
+    "source": "try:\n print(int('2d3fgb0b9cg4bd2g',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base18-chunks",
+    "source": "try:\n print(int('-eh2711779b4b58dh262g961dgc992fb',18))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base19-uint64",
+    "source": "try:\n print(int('141c8786h1ccaagg',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base19-promoted",
+    "source": "try:\n print(int('141c8786h1ccaagh',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base19-chunks",
+    "source": "try:\n print(int('-2i20a21c7302id4bg5ddbea4a3ihg08',19))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base20-uint64",
+    "source": "try:\n print(int('b53bjh07be4dj0f',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base20-promoted",
+    "source": "try:\n print(int('b53bjh07be4dj0g',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base20-chunks",
+    "source": "try:\n print(int('-cdac0j42i8adg5e28fhd05c2f2ch89',20))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base21-uint64",
+    "source": "try:\n print(int('5e8g4ggg7g56dif',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base21-promoted",
+    "source": "try:\n print(int('5e8g4ggg7g56dig',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base21-chunks",
+    "source": "try:\n print(int('-31e343f3e07gi59b7jg5a9dk817332',21))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base22-uint64",
+    "source": "try:\n print(int('2l4lf104353j8kf',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base22-promoted",
+    "source": "try:\n print(int('2l4lf104353j8kg',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base22-chunks",
+    "source": "try:\n print(int('-hch0bbd7cfl7b8e7901cl4f1d477j',22))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base23-uint64",
+    "source": "try:\n print(int('1ddh88h2782i515',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base23-promoted",
+    "source": "try:\n print(int('1ddh88h2782i516',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base23-chunks",
+    "source": "try:\n print(int('-51aj3jkk36hg6bd8abbl85fg5k86e',23))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base24-uint64",
+    "source": "try:\n print(int('l12ee5fn0ji1if',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base24-promoted",
+    "source": "try:\n print(int('l12ee5fn0ji1ig',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base24-chunks",
+    "source": "try:\n print(int('-1cll5cjj723cbg21mf7n7m4am7gnh',24))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base25-uint64",
+    "source": "try:\n print(int('c9c336o0mlb7ef',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base25-promoted",
+    "source": "try:\n print(int('c9c336o0mlb7eg',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base25-chunks",
+    "source": "try:\n print(int('-c6cbne368dm892dg74l4d61361ij',25))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base26-uint64",
+    "source": "try:\n print(int('7b7n2pcniokcgf',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base26-promoted",
+    "source": "try:\n print(int('7b7n2pcniokcgg',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base26-chunks",
+    "source": "try:\n print(int('-46e8b2p9b9k9cpbgfd2o5f0cik5n',26))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base27-uint64",
+    "source": "try:\n print(int('4eo8hfam6fllmo',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base27-promoted",
+    "source": "try:\n print(int('4eo8hfam6fllmp',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base27-chunks",
+    "source": "try:\n print(int('-1ebn54ea1ha8fnhjeq2gphc6ej7b',27))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base28-uint64",
+    "source": "try:\n print(int('2nc6j26l66rhof',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base28-promoted",
+    "source": "try:\n print(int('2nc6j26l66rhog',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base28-chunks",
+    "source": "try:\n print(int('-g2ke2p5b0mcpbkfkqmcaqf8prg9',28))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base29-uint64",
+    "source": "try:\n print(int('1n3rsh11f098rn',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base29-promoted",
+    "source": "try:\n print(int('1n3rsh11f098ro',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base29-chunks",
+    "source": "try:\n print(int('-6dddne103k73qhril3hpos29pnk',29))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base30-uint64",
+    "source": "try:\n print(int('14l9lkmo30o40f',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base30-promoted",
+    "source": "try:\n print(int('14l9lkmo30o40g',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base30-chunks",
+    "source": "try:\n print(int('-2k9kbn4hbjim4s53bgng78negit',30))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base31-uint64",
+    "source": "try:\n print(int('nd075ib45k86f',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base31-promoted",
+    "source": "try:\n print(int('nd075ib45k86g',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base31-chunks",
+    "source": "try:\n print(int('-14btilju56c7212dcejhqof37ub',31))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base32-uint64",
+    "source": "try:\n print(int('fvvvvvvvvvvvv',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base32-promoted",
+    "source": "try:\n print(int('g000000000000',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base32-chunks",
+    "source": "try:\n print(int('-g000000000000000000000001p',32))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base33-uint64",
+    "source": "try:\n print(int('b1w8p7j5q9r6f',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base33-promoted",
+    "source": "try:\n print(int('b1w8p7j5q9r6g',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base33-chunks",
+    "source": "try:\n print(int('-7dl8gqa032em20vn2g4b5aou58',33))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base34-uint64",
+    "source": "try:\n print(int('7orp63sh4dphh',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base34-promoted",
+    "source": "try:\n print(int('7orp63sh4dphi',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base34-chunks",
+    "source": "try:\n print(int('-3hh2ddh0s0p6mppcfjvgdjl0kp',34))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base35-uint64",
+    "source": "try:\n print(int('5g24a25twkwff',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base35-promoted",
+    "source": "try:\n print(int('5g24a25twkwfg',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base35-chunks",
+    "source": "try:\n print(int('-1okxbtmn2gjvffje4f91eyh5v9',35))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "base36-uint64",
+    "source": "try:\n print(int('3w5e11264sgsf',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551615\n"
+  },
+  {
+    "name": "base36-promoted",
+    "source": "try:\n print(int('3w5e11264sgsg',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18446744073709551616\n"
+  },
+  {
+    "name": "base36-chunks",
+    "source": "try:\n print(int('-ub7vu3zybfbdjxbgx6zz9le7t',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-680564733841876926926749214863536422969\n"
+  },
+  {
+    "name": "space0-text",
+    "source": "try:\n print(int('\\t+1_234\\t',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space0-bytes",
+    "source": "try:\n print(int(b'\\t+1_234\\t',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space1-text",
+    "source": "try:\n print(int('\\n+1_234\\n',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space1-bytes",
+    "source": "try:\n print(int(b'\\n+1_234\\n',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space2-text",
+    "source": "try:\n print(int('\\x0b+1_234\\x0b',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space2-bytes",
+    "source": "try:\n print(int(b'\\x0b+1_234\\x0b',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space3-text",
+    "source": "try:\n print(int('\\x0c+1_234\\x0c',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space3-bytes",
+    "source": "try:\n print(int(b'\\x0c+1_234\\x0c',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space4-text",
+    "source": "try:\n print(int('\\r+1_234\\r',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space4-bytes",
+    "source": "try:\n print(int(b'\\r+1_234\\r',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space5-text",
+    "source": "try:\n print(int(' +1_234 ',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space5-bytes",
+    "source": "try:\n print(int(b' +1_234 ',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space6-text",
+    "source": "try:\n print(int('\\x1c+1_234\\x1c',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '\\x1c+1_234\\x1c'\n"
+  },
+  {
+    "name": "space6-bytes",
+    "source": "try:\n print(int(b'\\x1c+1_234\\x1c',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\x1c+1_234\\x1c'\n"
+  },
+  {
+    "name": "space7-text",
+    "source": "try:\n print(int('\\x1d+1_234\\x1d',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '\\x1d+1_234\\x1d'\n"
+  },
+  {
+    "name": "space7-bytes",
+    "source": "try:\n print(int(b'\\x1d+1_234\\x1d',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\x1d+1_234\\x1d'\n"
+  },
+  {
+    "name": "space8-text",
+    "source": "try:\n print(int('\\x1e+1_234\\x1e',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '\\x1e+1_234\\x1e'\n"
+  },
+  {
+    "name": "space8-bytes",
+    "source": "try:\n print(int(b'\\x1e+1_234\\x1e',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\x1e+1_234\\x1e'\n"
+  },
+  {
+    "name": "space9-text",
+    "source": "try:\n print(int('\\x1f+1_234\\x1f',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '\\x1f+1_234\\x1f'\n"
+  },
+  {
+    "name": "space9-bytes",
+    "source": "try:\n print(int(b'\\x1f+1_234\\x1f',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\x1f+1_234\\x1f'\n"
+  },
+  {
+    "name": "space10-text",
+    "source": "try:\n print(int('\\x85+1_234\\x85',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space10-bytes",
+    "source": "try:\n print(int(b'\\xc2\\x85+1_234\\xc2\\x85',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xc2\\x85+1_234\\xc2\\x85'\n"
+  },
+  {
+    "name": "space11-text",
+    "source": "try:\n print(int('\\xa0+1_234\\xa0',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space11-bytes",
+    "source": "try:\n print(int(b'\\xc2\\xa0+1_234\\xc2\\xa0',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xc2\\xa0+1_234\\xc2\\xa0'\n"
+  },
+  {
+    "name": "space12-text",
+    "source": "try:\n print(int('\\u1680+1_234\\u1680',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space12-bytes",
+    "source": "try:\n print(int(b'\\xe1\\x9a\\x80+1_234\\xe1\\x9a\\x80',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe1\\x9a\\x80+1_234\\xe1\\x9a\\x80'\n"
+  },
+  {
+    "name": "space13-text",
+    "source": "try:\n print(int('\\u2000+1_234\\u2000',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space13-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x80+1_234\\xe2\\x80\\x80',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x80+1_234\\xe2\\x80\\x80'\n"
+  },
+  {
+    "name": "space14-text",
+    "source": "try:\n print(int('\\u2001+1_234\\u2001',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space14-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x81+1_234\\xe2\\x80\\x81',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x81+1_234\\xe2\\x80\\x81'\n"
+  },
+  {
+    "name": "space15-text",
+    "source": "try:\n print(int('\\u2002+1_234\\u2002',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space15-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x82+1_234\\xe2\\x80\\x82',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x82+1_234\\xe2\\x80\\x82'\n"
+  },
+  {
+    "name": "space16-text",
+    "source": "try:\n print(int('\\u2003+1_234\\u2003',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space16-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x83+1_234\\xe2\\x80\\x83',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x83+1_234\\xe2\\x80\\x83'\n"
+  },
+  {
+    "name": "space17-text",
+    "source": "try:\n print(int('\\u2004+1_234\\u2004',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space17-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x84+1_234\\xe2\\x80\\x84',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x84+1_234\\xe2\\x80\\x84'\n"
+  },
+  {
+    "name": "space18-text",
+    "source": "try:\n print(int('\\u2005+1_234\\u2005',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space18-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x85+1_234\\xe2\\x80\\x85',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x85+1_234\\xe2\\x80\\x85'\n"
+  },
+  {
+    "name": "space19-text",
+    "source": "try:\n print(int('\\u2006+1_234\\u2006',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space19-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x86+1_234\\xe2\\x80\\x86',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x86+1_234\\xe2\\x80\\x86'\n"
+  },
+  {
+    "name": "space20-text",
+    "source": "try:\n print(int('\\u2007+1_234\\u2007',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space20-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x87+1_234\\xe2\\x80\\x87',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x87+1_234\\xe2\\x80\\x87'\n"
+  },
+  {
+    "name": "space21-text",
+    "source": "try:\n print(int('\\u2008+1_234\\u2008',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space21-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x88+1_234\\xe2\\x80\\x88',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x88+1_234\\xe2\\x80\\x88'\n"
+  },
+  {
+    "name": "space22-text",
+    "source": "try:\n print(int('\\u2009+1_234\\u2009',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space22-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x89+1_234\\xe2\\x80\\x89',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x89+1_234\\xe2\\x80\\x89'\n"
+  },
+  {
+    "name": "space23-text",
+    "source": "try:\n print(int('\\u200a+1_234\\u200a',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space23-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\x8a+1_234\\xe2\\x80\\x8a',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\x8a+1_234\\xe2\\x80\\x8a'\n"
+  },
+  {
+    "name": "space24-text",
+    "source": "try:\n print(int('\\u2028+1_234\\u2028',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space24-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\xa8+1_234\\xe2\\x80\\xa8',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\xa8+1_234\\xe2\\x80\\xa8'\n"
+  },
+  {
+    "name": "space25-text",
+    "source": "try:\n print(int('\\u2029+1_234\\u2029',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space25-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\xa9+1_234\\xe2\\x80\\xa9',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\xa9+1_234\\xe2\\x80\\xa9'\n"
+  },
+  {
+    "name": "space26-text",
+    "source": "try:\n print(int('\\u202f+1_234\\u202f',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space26-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x80\\xaf+1_234\\xe2\\x80\\xaf',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x80\\xaf+1_234\\xe2\\x80\\xaf'\n"
+  },
+  {
+    "name": "space27-text",
+    "source": "try:\n print(int('\\u205f+1_234\\u205f',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space27-bytes",
+    "source": "try:\n print(int(b'\\xe2\\x81\\x9f+1_234\\xe2\\x81\\x9f',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe2\\x81\\x9f+1_234\\xe2\\x81\\x9f'\n"
+  },
+  {
+    "name": "space28-text",
+    "source": "try:\n print(int('\\u3000+1_234\\u3000',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1234\n"
+  },
+  {
+    "name": "space28-bytes",
+    "source": "try:\n print(int(b'\\xe3\\x80\\x80+1_234\\xe3\\x80\\x80',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: b'\\xe3\\x80\\x80+1_234\\xe3\\x80\\x80'\n"
+  },
+  {
+    "name": "grammar0",
+    "source": "try:\n print(int('٠b_١٠١',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "5\n"
+  },
+  {
+    "name": "grammar1",
+    "source": "try:\n print(int('٠b1',16))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "177\n"
+  },
+  {
+    "name": "grammar2",
+    "source": "try:\n print(int('０x_١_٢',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "18\n"
+  },
+  {
+    "name": "grammar3",
+    "source": "try:\n print(int('٠_01',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: '٠_01'\n"
+  },
+  {
+    "name": "grammar4",
+    "source": "try:\n print(int('０_０',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "0\n"
+  },
+  {
+    "name": "grammar5",
+    "source": "try:\n print(int('١٢',2))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 2: '١٢'\n"
+  },
+  {
+    "name": "grammar6",
+    "source": "try:\n print(int('＋１２',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '＋１２'\n"
+  },
+  {
+    "name": "grammar7",
+    "source": "try:\n print(int('²',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '²'\n"
+  },
+  {
+    "name": "grammar8",
+    "source": "try:\n print(int('Ⅻ',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: 'Ⅻ'\n"
+  },
+  {
+    "name": "grammar9",
+    "source": "try:\n print(int('⑫',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '⑫'\n"
+  },
+  {
+    "name": "grammar10",
+    "source": "try:\n print(int('፩',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '፩'\n"
+  },
+  {
+    "name": "grammar11",
+    "source": "try:\n print(int('0ｘ1',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: '0ｘ1'\n"
+  },
+  {
+    "name": "grammar12",
+    "source": "try:\n print(int('𝑥',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 36: '𝑥'\n"
+  },
+  {
+    "name": "grammar13",
+    "source": "try:\n print(int('0b1',12))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "133\n"
+  },
+  {
+    "name": "grammar14",
+    "source": "try:\n print(int('0x1',36))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "1189\n"
+  },
+  {
+    "name": "grammar15",
+    "source": "try:\n print(int('0_00',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "0\n"
+  },
+  {
+    "name": "grammar16",
+    "source": "try:\n print(int('0_1',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: '0_1'\n"
+  },
+  {
+    "name": "grammar17",
+    "source": "try:\n print(int('0x_',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: '0x_'\n"
+  },
+  {
+    "name": "grammar18",
+    "source": "try:\n print(int('0x__1',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: '0x__1'\n"
+  },
+  {
+    "name": "grammar19",
+    "source": "try:\n print(int('_1',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '_1'\n"
+  },
+  {
+    "name": "grammar20",
+    "source": "try:\n print(int('1__0',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '1__0'\n"
+  },
+  {
+    "name": "grammar21",
+    "source": "try:\n print(int('1_0_',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '1_0_'\n"
+  },
+  {
+    "name": "grammar22",
+    "source": "try:\n print(int('+',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '+'\n"
+  },
+  {
+    "name": "grammar23",
+    "source": "try:\n print(int('',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 0: ''\n"
+  },
+  {
+    "name": "grammar24",
+    "source": "try:\n print(int('7\\x00',10))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "ValueError invalid literal for int() with base 10: '7\\x00'\n"
+  },
+  {
+    "name": "grammar25",
+    "source": "try:\n print(int(' \\t-0x_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff_ffff\\r\\n',0))\nexcept ValueError as error:\n print(type(error).__name__,str(error))\n",
+    "output": "-13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095\n"
+  }
+]
