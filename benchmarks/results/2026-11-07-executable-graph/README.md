@@ -71,8 +71,9 @@ spread41.76%; raw clocks remain. It does not establish CPU benefit. Retain for
 eliminated repeated work, lower allocation and modest controlled compilation
 elapsed improvement. This does not close the substantial whole-script objective.
 
-Full Windows/Ubuntu actual11/10, original Stress and installed-core consumers
-are batched with R57 at this delivery boundary; qualification remains pending.
+Full combined R57/R58 delivery CI42404834827 on e66b8f72 is GREEN: Windows/Ubuntu,
+actual11/10, original Stress and installed consumers. [Cached terminal receipt](delivery-ci.json);
+never query again or repeat unchanged qualification.
 Publication is postponed. [Controlled assessment](assessment.json),
 [local assessment](local-assessment.json), [focused counts](final-focused.json),
 [VM sources/cores/raw samples](observations.tgz), [receipt](archive-receipt.json),

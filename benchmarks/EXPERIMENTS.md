@@ -3899,3 +3899,8 @@ usable; DetailedData owner, native name enumeration and creation/current-token
 separation still need bridges. Normal0.4pin/core unchanged; no final released
 qualification, backend performance or safety certification inferred. Producer
 publication does not block core work. No sibling source edits/builds.
+
+Combined R57/R58 delivery **CI42404834827 on e66b8f72 GREEN**: Windows/Ubuntu
+Release actual11/10, original Stress and installed core consumers.
+[Cached receipt](results/2026-11-07-executable-graph/delivery-ci.json); no further query
+or unchanged qualification. R59 development compatibility is independently scoped.

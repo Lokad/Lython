@@ -29,9 +29,9 @@ awaited async cleanup remain, without abandoned work.
 **Focused Release:91 internal and638 public per actual .NET11/.NET10 PASS.**
 This includes retained products, delayed host-backed input, validation/error shapes,
 sum/aggregate state, awaited cursor cleanup, integer aliases and admission reentry.
-Source/core checks match the frozen diagnostic. Full Windows/Ubuntu, original
-Stress and installed consumers are batched at the next coherent delivery boundary;
-R55's completed delivery is not repeated for evidence-only work.
+Source/core checks match the frozen diagnostic. Full combined R57/R58 delivery CI42404834827 on e66b8f72 is GREEN: Windows/Ubuntu,
+actual11/10, original Stress and installed consumers. The [cached receipt](../2026-11-07-executable-graph/delivery-ci.json)
+is final; no repeated query or unchanged qualification.
 
 One short existing-tool complete-job diagnostic: a1024-row CSV matrix-size report
 with four-factor products and original ordinary CSV/text/JSON/report controls,
