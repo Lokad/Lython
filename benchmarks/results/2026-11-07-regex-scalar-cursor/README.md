@@ -72,10 +72,11 @@ consistent with unresolved tiering/process effects, not a scaling proof. Preserv
 all raw medians, non-monotonic/adverse conditions and original source/images; no
 desktop CPU claim or subtraction/combination of unrelated phase medians.
 
-R36/R38 full delivery42351006316 is green and excludes R40. Batch R40 full platform/
-original Stress/installed-package qualification at the next coherent delivery
-boundary; focused/VM checks do not replace it. Publication remains postponed and
-the larger complete-script performance objective continues.
+R36/R38 receipt42351006316 excludes R40. Subsequent terminal GREEN42357660230
+on exactfba865ef qualifies retained R40/R41 production:Windows/Ubuntu ordinary
+actual11/10, original Stress and installed core-package consumers.
+[Delivery receipt](../2026-11-07-receiver-methods/delivery-ci.json). Publication
+remains postponed; the larger complete-script performance objective continues.
 
 [Controlled summary](comparison-summary.json), [raw capture/gates](observations.tgz),
 [allocation/desktop observations](summary.json), [focused checks](focused-initial.json),

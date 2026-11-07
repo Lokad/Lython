@@ -3628,3 +3628,33 @@ Both four-job collections finish114s/all gates, are terminal/archived/verified w
 no workers/fixtures. Original setups, source pairs and all adverse data survive.
 Refined121internal/506public per actual11/10 pass; full platform/Stress/package
 delivery is pending. This does not complete the whole-script performance objective.
+
+R40/R41 full delivery is now terminal GREEN42357660230 on exactfba865ef:
+Windows/Ubuntu ordinary actual.NET11/10, original Stress both targets and installed
+core-package consumers. [Receipt](results/2026-11-07-receiver-methods/delivery-ci.json)
+is cached; no repeated queries/qualification. Publication remains postponed.
+
+## Representative CPython refresh — B395
+
+[B395](results/2026-11-07-receiver-cpython/README.md) qualifies the current primary
+five-script comparison on fba865ef/frozen5d2ca8e1 with matching production source
+and precommit metadata recorded separately.15jobs311.66s/all gates. Warm CSV
+1.19–1.23×,text1.75–1.79×,JSON1.04×,report1.36–1.38×,config1.25× CPython3.13.16;
+compile42–68µs and fresh boundaries separate. Preserve report warm IQR8.69%, text
+warm control2.22%, CSV warm3.22%, fresh JSON6.07% and all other variable results.
+RAM I/O/full validation/prior-result cleanup included; startup/reset/final teardown
+excluded. No per-change causal CPU attribution or repayment of earlier adverse debt.
+docs/BENCHMARKS.md now leads with this qualified source; B388 stays historical.
+
+## R42 complete text cost gate — B396
+
+[R42](results/2026-11-07-text-cost/README.md) records1089guest samples/5.49CPU seconds,
+44unknown retained. ExecuteInstructionPrefix229self/1056inclusive supports a coherent
+operation-input/retirement boundary; self includes inlined checks/slot work, not all
+removable routing. ScalarAdd41self alone does not justify universal tags. Source
+census shows85module instructions,22local/constant loads,9operand capacity; the
+helper is already native. Preserve R37 snapshot/span/capacity lessons. No second
+capture, new arena, stack-policy change, prototype or speedup claim follows yet.
+All raw profiles/maps/JIT/code/gates are archived under lease before RAM removal.
+Local Windows extraction skips only zero-byte Linux FIFO metadata; original archive
+and failed condition stay intact, without a service query or collection restart.

@@ -1,0 +1,18 @@
+{
+  "archiveSHA256": "5a609f1c3b1acfef81f0e1a13459b3125316a2e158ed4b2e9682459530e31667",
+  "originalFailure": "tarfile data_filter rejects Linux FIFO perf/text-warm/ack on Windows; terminal collection and archive already successful. No service query/restart/runtime change.",
+  "skippedMetadataOnlyPipes": [
+    {
+      "name": "perf/text-warm/ack",
+      "type": "fifo",
+      "bytes": 0
+    },
+    {
+      "name": "perf/text-warm/control",
+      "type": "fifo",
+      "bytes": 0
+    }
+  ],
+  "allRegularEvidenceExtracted": true,
+  "originalArchiveUnchanged": true
+}

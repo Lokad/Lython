@@ -245,3 +245,7 @@ benchmarks/results/2026-11-07-regex-scalar-cursor/** -text whitespace=cr-at-eol
 
 # Preserve the receiver-method source pairs, adverse controls and allocation evidence.
 benchmarks/results/2026-11-07-receiver-methods/** -text whitespace=cr-at-eol
+
+# Preserve the qualified representative checkpoint and text cost-gate evidence.
+benchmarks/results/2026-11-07-receiver-cpython/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-07-text-cost/** -text whitespace=cr-at-eol

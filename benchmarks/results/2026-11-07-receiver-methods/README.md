@@ -74,8 +74,9 @@ Immediate and exposed group materialization preserve the first terminal refusal.
 Four tests asserting only the old opcode's absence are removed; read/call separation
 uses existing LoadCallMember and independent observable coverage remains.
 
-Full Windows/Ubuntu, original Stress, actual11/10 and installed consumers are
-pending at this evidence checkpoint; focused results do not replace delivery.
+Full Windows/Ubuntu, original Stress, actual11/10 and installed consumers pass
+on exactfba865ef in terminal GREEN42357660230. [Receipt](delivery-ci.json) records
+that coherent R40/R41 delivery separately from the focused/measurement checkpoint.
 No API break, publication or performance-objective completion is claimed.
 
 Original failed setups are preserved:wrong CSV catalog id; provider-free R35 driver
