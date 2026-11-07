@@ -22,6 +22,22 @@ public sealed class GlobTranslationScenarioTests
     [InlineData("a/b", "a\\b", false, false, "/\\", true)]
     [InlineData("[😀-🙏]", "🙏", false, false, "/", true)]
     [InlineData("x", "x\n", false, false, "/", false)]
+    [InlineData("", "", false, false, "/", true)]
+    [InlineData("/", "/", false, false, "/", true)]
+    [InlineData("a//b/", "a//b/", false, false, "/", true)]
+    [InlineData("**/**", "", true, false, "/", true)]
+    [InlineData("**/**/x", "a/b/x", true, false, "/", true)]
+    [InlineData("**/x", ".a/x", true, false, "/", false)]
+    [InlineData("**/x", ".a/x", true, true, "/", true)]
+    [InlineData("a😀?", "a😀é", false, false, "😀", true)]
+    [InlineData("a😀?", "a/é", false, false, "😀/", true)]
+    [InlineData("a😀*", "a😀.x", false, false, "😀", false)]
+    [InlineData("[!z-a]", "😀", false, false, "/", true)]
+    [InlineData("[a--c]", "c", false, false, "/", true)]
+    [InlineData("[a--c]", "b", false, false, "/", false)]
+    [InlineData("[]]", "]", false, false, "/", true)]
+    [InlineData("[[]", "[", false, false, "/", true)]
+    [InlineData("a?b", "a-b", false, true, "/-]", false)]
     public async Task TranslationPreservesPathSegments(string pattern, string name, bool recursive,
         bool hidden, string separators, bool expected)
     {

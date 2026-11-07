@@ -15,6 +15,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Wildcard translation](Lokad.Lython.Tests/WildcardTranslationOwnershipTests.cs)
+checks construction cancellation/refusal, retained UTF-8 output and reusable
+funding. Public fnmatch/glob scenarios cover scalar classes, recursive/hidden
+segments, separator escaping and provider-independent translation under both APIs.
+
 [Declaration namespaces](Lokad.Lython.PublicApi.Tests/DeclarationNamespaceTests.cs)
 retain CPython-checked failed definitions, live rebinding/deletion, lazy aliases,
 key iteration and argument-target snapshots under both APIs, with budget reuse.

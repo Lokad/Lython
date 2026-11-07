@@ -1,0 +1,18 @@
+{
+  "baselineRevision": "4c739dcb / production80833f6e; R50 frozen refined core, precommit informational revision9990d591",
+  "candidateRevision": "4c739dcb plus R51, exact source inventory/frozen cores in focused.json",
+  "driver": {
+    "path": "integer-utf8-r45/tool/out/complete-jobs.dll",
+    "sha256": "1a9c998a7ad0ba1ed651f3736af499e99c6c29807b9db62b3871317cbe2d2f13",
+    "historicalInternalCaption": "Driver retains its R45 label; supplied scripts/images define this R51 comparison."
+  },
+  "beforeCore": "54aa79b910a5a60652a8d85e1bf0e6f4f0a5465e3eaf5d1daf69d60bb8d0068f",
+  "candidateCore": {
+    "net11.0": "83af401ebccff4f1fcec8ab48786d1c1f6cd17f5e6b30e653bc14e2e77a9f502",
+    "net10.0": "1f80149884897d1f9995a743432bd8f1a32cb245f855930b1eb046eb9e4217aa"
+  },
+  "worker": "7cf37ca597d07517548e10af1c61bfb5a20afe070af89506189b015a0c8e86cf",
+  "sourceAndBinaryFrozen": true,
+  "fullDeliveryPending": true,
+  "elapsedQualification": false
+}

@@ -1,0 +1,17 @@
+{
+  "correction": "Initial Windows CPython stdout/file CRLF goldens failed on unchanged baseline before any samples. Original catalog/scripts/error preserved. Use explicit file newline and canonical stdout LF; no runtime/measurement protocol change.",
+  "cases": [
+    {
+      "id": "scripts.fnmatch-translation.512",
+      "sourceSha256": "e4835d9841992c0752457de8206f95e9559847d4abf9038b4f70f3831864ed88",
+      "expectedOutput": "512\n",
+      "expectedFilesSha256": "5da50f9c59334a98c8658b712850aecb4a633910d961c6542a6d51c255614a22"
+    },
+    {
+      "id": "scripts.glob-translation.512",
+      "sourceSha256": "2c650d2d349c80676dea70381837b612397a8434ee966b7ad6af09bb1cfee8e5",
+      "expectedOutput": "512\n",
+      "expectedFilesSha256": "a2d87142fb143c1163af2796d522a89f6984534082e9a1c4d6eac6cd4e42e878"
+    }
+  ]
+}

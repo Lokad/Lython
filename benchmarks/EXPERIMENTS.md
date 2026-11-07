@@ -3781,3 +3781,13 @@ real cancellation pass. Allocation numeric strings−12.492/12.487%; B405warm
 −10.68–12.50%, padded CSV+0.99–1.16% accepted explicitly. Initial/refined adverse
 desktop/control data remain. No universal CPU/async/scaling claim or JSON-parser
 change. [Evidence and qualification status](results/2026-11-07-native-integer-width/README.md).
+
+## Native UTF-8 wildcard translation (2026-11-07)
+
+R51 removes the shared UTF-16 translation pipeline, glob segment copies and
+per-class builders. Two complete report scripts allocate 25.0%/31.8% less; controls
+are essentially flat. Initial async glob+8% and refined unstable clocks remain
+inconclusive, not a CPU gain. Both targets pass semantics, refusal, retained
+funding and real in-flight cancellation. One initial-capacity refinement and the
+original Windows newline fixture failure are preserved. [Evidence and pending
+qualification](results/2026-11-07-wildcard-translation/README.md).

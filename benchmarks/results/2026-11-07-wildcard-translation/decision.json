@@ -1,0 +1,16 @@
+{
+  "retained": true,
+  "sourceOutcome": "One native UTF-8 path, no decoded input/segment strings/UTF-16 output or bracket builders. Existing governed storage admission/overlap/transfer; matching and provider contract unchanged.",
+  "allocationPercent": {
+    "fnmatchSync": -25.029,
+    "fnmatchAsync": -25.017,
+    "globSync": -31.797,
+    "globAsync": -31.809
+  },
+  "elapsed": "Desktop diagnostic/inconclusive: initial async glob+8%; refined sync fnmatch+0.59to+23.83 with23.1% identical-before drift; glob async-0.96to+7.09 with-7.51% drift. No CPU improvement claim. Bounded quiet source-pair confirmation remains planned.",
+  "checks": "29internal/133public per actual.NET11/10, plus2 actual in-flight separator scans per target; all goldens, funded retained output, refusal/current cancellation/cleanup/reusable allowance pass.",
+  "failedConditions": "Initial Windows CPython CRLF golden failed unchanged baseline before sampling; original catalog/error preserved. Explicit file newline and canonical stdout correct fixture, not runtime.",
+  "archiveSHA256": "1356aed0a674afccf346cb1301a28bd23c9a5e6e0a27102e0e85f3f7df74b6c8",
+  "fullDelivery": "Pending; R50 CI separately active, does not qualify R51.",
+  "publication": "postponed"
+}

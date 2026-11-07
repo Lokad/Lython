@@ -11,6 +11,30 @@ public sealed class FnMatchStreamingScenarioTests
     private const long MatchBudgetBytes = 1048576;
 
     [Fact]
+    public async Task TranslationNeedsNoProviderAndRetainedResultsStayFunded()
+    {
+        var budget = new LythonMemoryBudget(MatchBudgetBytes);
+        using (var script = new LythonEngine().Compile("""
+            import fnmatch,glob
+            return [fnmatch.translate('é[α-ω]?.txt'),glob.translate('src/**/é?.txt',recursive=True,seps='/')]
+            """, budget))
+        {
+            Assert.True(script.IsValid, string.Join(";", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            using (var sync = script.Run(new MockLythonHost()))
+            {
+                Assert.True(sync.Success, sync.Failure?.Message);
+                Assert.True(budget.ReservedBytes > baseline);
+                using var asynchronous = await script.RunAsync(new MockLythonHost());
+                Assert.True(asynchronous.Success, asynchronous.Failure?.Message);
+                Assert.Equal(Assert.IsType<List<object?>>(sync.ReturnValue), Assert.IsType<List<object?>>(asynchronous.ReturnValue));
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public async Task TranslatedPatternsKeepPythonSearchAndEndSemantics()
     {
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""

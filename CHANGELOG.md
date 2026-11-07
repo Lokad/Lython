@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Emit `fnmatch.translate` and `glob.translate` patterns directly from UTF-8,
+  sharing scalar-aware class translation. Remove decoded inputs, copied path
+  segments and intermediate regex builders; retain cancellation and admitted
+  output ownership without requiring a regex provider for translation.
+
 - Use existing executable slots for module declaration bindings, preserving live
   globals, imports and declarations beyond frame cleanup. Share import binding
   facts across compilation phases without predeclaring unemitted module names.

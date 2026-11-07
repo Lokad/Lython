@@ -1402,6 +1402,10 @@ Input storage and selected-result lists keep their ordinary owners and admission
 end anchors (`\Z`). Use `match` or `fullmatch` for whole-name matching; `search`
 can find a suffix, as with Python's translated patterns. Glob translation respects
 recursive segments, hidden names and scalar separator characters.
+Both translators emit UTF-8 directly into admitted byte storage, without decoded
+input copies, segment strings or UTF-16 regex builders. Completed output takes
+over that storage; capacity and growth overlap remain charged until their owner
+ends. Translation itself requires no provider, while executing its regex does.
 
 Frontend regex diagnostics use the ordinary typed bindings, including imported
 aliases and known flag masks; an unrelated object named `re` has no regex policy.

@@ -1,8 +1,3 @@
-using System.Globalization;
-using System.Numerics;
-using System.Text.Encodings.Web;
-using System.Text;
-using System.Text.Json;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -87,8 +82,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "fnmatch.translate(pattern) expects a string pattern.", span);
             }
 
-            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(128L + 24L * pattern.Utf8Bytes.Length), span);
-            return CreateString(TranslatePattern(pattern.AsString(), context.State.CancellationToken), context, span);
+            return TranslateWildcardPattern(pattern, context, span);
         }
 
         internal static bool MatchSimple(PyString name, PyString pattern, CancellationToken cancellationToken = default)
@@ -121,7 +115,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var nextNameIndex = nameIndex;
-                var value = ReadScalar(name, ref nextNameIndex);
+                var value = ReadWildcardScalar(name, ref nextNameIndex);
                 if (patternIndex < pattern.Length &&
                     TryMatchSingleToken(value, pattern, patternIndex, cancellationToken, out var nextPatternIndex))
                 {
@@ -133,7 +127,7 @@ internal sealed partial class LythonRuntime
                 if (fallbackPatternIndex < 0 || fallbackNameIndex >= name.Length) return false;
                 // Retry after the most recent star, assigning one more scalar
                 // to it. All positions stay in the original UTF-8 storage.
-                _ = ReadScalar(name, ref fallbackNameIndex);
+                _ = ReadWildcardScalar(name, ref fallbackNameIndex);
                 nameIndex = fallbackNameIndex;
                 patternIndex = fallbackPatternIndex;
             }
@@ -150,7 +144,7 @@ internal sealed partial class LythonRuntime
             CancellationToken cancellationToken, out int nextPatternIndex)
         {
             nextPatternIndex = patternIndex;
-            var token = ReadScalar(pattern, ref nextPatternIndex);
+            var token = ReadWildcardScalar(pattern, ref nextPatternIndex);
             if (token == '?') return true;
             if (token == '[' && TryMatchCharacterClass(value, pattern, patternIndex, cancellationToken,
                 out var closeIndex, out var matches))
@@ -194,62 +188,16 @@ internal sealed partial class LythonRuntime
             for (var index = start; index < closeIndex;)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var first = ReadScalar(pattern, ref index);
+                var first = ReadWildcardScalar(pattern, ref index);
                 if (index + 1 < closeIndex && pattern[index] == (byte)'-')
                 {
                     index++;
-                    var last = ReadScalar(pattern, ref index);
+                    var last = ReadWildcardScalar(pattern, ref index);
                     if (first <= last && value >= first && value <= last) return true;
                 }
                 else if (first == value) return true;
             }
             return false;
-        }
-
-        private static int ReadScalar(ReadOnlySpan<byte> text, ref int index)
-        {
-            if (text[index] < 128) return text[index++];
-            if (Rune.DecodeFromUtf8(text[index..], out var rune, out var width) != System.Buffers.OperationStatus.Done)
-                throw new InvalidOperationException("Malformed internal UTF-8 string.");
-            index += width;
-            return rune.Value;
-        }
-
-        private static string TranslatePattern(string pattern, CancellationToken cancellationToken)
-        {
-            var builder = new StringBuilder(pattern.Length + 7);
-            builder.Append("(?s:");
-            var noClosingBracketRemaining = false;
-            for (var index = 0; index < pattern.Length; index++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var ch = pattern[index];
-                switch (ch)
-                {
-                    case '*':
-                        builder.Append(".*");
-                        break;
-                    case '?':
-                        builder.Append('.');
-                        break;
-                    case '[':
-                        if (noClosingBracketRemaining)
-                        {
-                            AppendEscapedRegexLiteral(builder, ch);
-                            break;
-                        }
-
-                        index = AppendWildcardCharacterClass(builder, pattern, index, cancellationToken, out var foundClosingBracket);
-                        noClosingBracketRemaining = !foundClosingBracket;
-                        break;
-                    default:
-                        AppendEscapedRegexLiteral(builder, ch);
-                        break;
-                }
-            }
-
-            builder.Append(@")\Z");
-            return builder.ToString();
         }
 
     }
