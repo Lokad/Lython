@@ -1,0 +1,69 @@
+{
+  "observedUtc": "2026-11-07T06:55:24Z",
+  "databaseId": 42347124351,
+  "headSha": "42101cd5883927a6466f989bdc81fef84a3fd2c2",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/Lokad/Lython/actions/runs/42347124351",
+  "capture": "Required-step fields transcribed from the terminal gh run view JSON; no subsequent query.",
+  "jobs": [
+    {
+      "name": "tests (ubuntu-latest)",
+      "databaseId": 128327183227,
+      "status": "completed",
+      "conclusion": "success",
+      "completedAt": "2026-11-07T06:49:05Z",
+      "steps": [
+        {
+          "name": "Build Release solution",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "tests (windows-latest)",
+      "databaseId": 128327183276,
+      "status": "completed",
+      "conclusion": "success",
+      "completedAt": "2026-11-07T06:53:21Z",
+      "steps": [
+        {
+          "name": "Build Release solution",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

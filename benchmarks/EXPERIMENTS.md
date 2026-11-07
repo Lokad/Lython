@@ -3532,3 +3532,14 @@ algebraically repaid; all original adverse results/source/images remain. No thir
 unchanged retiming or broad CPU claim; full delivery and the wider objective remain
 active. Frozen raw archives are unchanged; sidecar hashes are corrected for Git
 newline conversion, with producer hashes preserved and future byte policy explicit.
+
+
+## R35 delivery and representative CPython refresh — B388
+
+Exact42101cd5 is terminal GREEN42347124351: Windows/Ubuntu ordinary actual11/10,
+original Stress and installed-package consumers. No later source is qualified.
+The [B388 checkpoint](results/2026-11-07-formatted-cpython/README.md) completes
+all15jobs in311.96s/all gates. Warm text1.67–1.75x/report1.40–1.42x CPython;
+most cases remain variable, startup/RSS/embedding tails unmeasured. This refresh
+replaces the primary guide snapshot, not prior source-pair evidence or debt.
+No repeated terminal queries, publication, compounded CPU claim or goal completion.

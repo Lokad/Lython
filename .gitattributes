@@ -227,3 +227,6 @@ benchmarks/results/2026-11-01-python-tokenization/*.patch -text -whitespace
 
 # Preserve the canonical-formatting measurements, receipts and recorded hashes.
 benchmarks/results/2026-11-07-canonical-format-instructions/** -text whitespace=cr-at-eol
+
+# Preserve the exact B388 comparison and parsed delivery receipt.
+benchmarks/results/2026-11-07-formatted-cpython/** -text whitespace=cr-at-eol
