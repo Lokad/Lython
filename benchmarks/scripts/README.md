@@ -19,6 +19,13 @@ fixtures contain 0, 64 or 4,096 values per array. `NumericReportTests` checks th
 complete independent files through both APIs, two sequential runs sharing a
 4 MiB allowance and cleanup returning that allowance to baseline.
 
+`csv-validated-records.py` uses an ordinary keyword call to validate each CSV
+record, rejecting negative amounts and explicit skips before returning a tuple.
+The caller unpacks accepted records, aggregates them and writes a full CSV report.
+The comparison catalog supplies empty, small and large fixtures with independent
+goldens; file-worker checks cover replay and both execution APIs. This case adds
+call/frame coverage without changing historical performance measurements.
+
 Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 

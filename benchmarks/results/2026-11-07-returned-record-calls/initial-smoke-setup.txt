@@ -1,0 +1,5 @@
+Initial local correctness command selected benchmarks/scripts/cpython-worker.py,
+which does not exist. It failed before launching either worker, with
+FileNotFoundException. rg --files located benchmarks/cpython-worker.py; changing
+only that path produced the successful cpython-correctness.json. No timed
+collection was retried or measurement discarded.

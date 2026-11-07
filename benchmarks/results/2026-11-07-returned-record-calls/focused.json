@@ -1,0 +1,8 @@
+{
+  "net11PublicPassed": 75,
+  "net10PublicPassed": 75,
+  "filter": "ComparisonFileWorkerTests",
+  "coverage": "All representative script/file goldens and replay; new empty/small/large warm, async lanes, fresh small. Independent CPython verification stored separately.",
+  "runtimeSourceUnchanged": true,
+  "fullSourceQualification": "824fc6bb/CI42418518578 green; no unchanged full rerun."
+}

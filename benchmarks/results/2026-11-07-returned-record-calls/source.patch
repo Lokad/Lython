@@ -1,0 +1,59 @@
+diff --git a/benchmarks/COMPARISON.md b/benchmarks/COMPARISON.md
+index dad3b07b..26f5075b 100644
+--- a/benchmarks/COMPARISON.md
++++ b/benchmarks/COMPARISON.md
+@@ -132,7 +132,13 @@ The BenchmarkDotNet toolchain is pinned to 0.16.0-preview.2 for .NET 11 support.
+ 
+ The `representative` catalog includes the existing CSV, text, JSON-lines, file,
+ search, uppercase and configuration jobs, plus four single-expression `-helpers`
+-variants and CSV aggregation with a branching, mutating `-functions` helper. Each
++variants and CSV aggregation with a branching, mutating `-functions` helper.
++`csv-validated-records` validates five records per input block through a keyword
++call with a keyword-only default, two early exits and a tuple result/unpack. It
++rejects both negative amounts and explicitly skipped positive records, aggregates
++the three accepted rows and writes a complete CSV report. Its ordinary call/frame
++coverage complements the closed-return helpers; adding it does not refresh older
++timing tables or certify a performance gain. Each
+ variant adds one ordinary annotated helper to the corresponding CSV, text,
+ JSON-lines or file-manifest job, preserving its independent output/file goldens.
+ Integer/finite-float numeric reports add planned/actual JSON arrays and two
+diff --git a/benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs b/benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs
+index 8ad4d724..4e4cdfbc 100644
+--- a/benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs
++++ b/benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs
+@@ -59,7 +59,7 @@ internal static class WorkloadCatalog
+         var cases = new List<ComparisonWorkload>();
+         foreach (var n in new[] { 0, 16, 1024 })
+         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
+-            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions",
++            "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
+             "numeric-report.integer", "numeric-report.float", "report-render" })
+         {
+             var inputs = new Dictionary<string, byte[]>();
+@@ -99,8 +99,9 @@ internal static class WorkloadCatalog
+                     inputs["config.json"] = Utf8("{\"name\":\"café\",\"retries\":2,\"enabled\":false,\"paths\":" + JsonSerializer.Serialize(paths) + ",\"untouched\":{\"version\":1,\"note\":\"😀\"}}\n");
+                     outputs["config.json"] = Utf8("{\"enabled\":true,\"name\":\"café\",\"paths\":" + JsonSerializer.Serialize(paths.Append("generated")) + ",\"retries\":3,\"untouched\":{\"note\":\"😀\",\"version\":1}}\n");
+                     stdout = $"{n + 1}\n"; break;
+-                case "csv-summary":
+-                    inputs["input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n", n));
++                case "csv-summary" or "csv-validated-records":
++                    inputs["input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n"
++                        + (kind == "csv-validated-records" ? "red,9,skip\n" : ""), n));
+                     outputs["report.csv"] = Utf8("kind,total\n" + (n == 0 ? "" : $"blue,{7 * n}\nred,{3 * n}\n"));
+                     stdout = $"{3 * n}\n"; break;
+                 case "text-summary":
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ComparisonFileWorkerTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ComparisonFileWorkerTests.cs
+index ad732508..f68b9d08 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/ComparisonFileWorkerTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/ComparisonFileWorkerTests.cs
+@@ -54,6 +54,10 @@ public sealed class ComparisonFileWorkerTests
+     [InlineData("warm-async", "scripts.csv-summary.small")]
+     [InlineData("compile-run", "scripts.csv-summary-functions.small")]
+     [InlineData("warm-async", "scripts.csv-summary-functions.small")]
++    [InlineData("compile-run", "scripts.csv-validated-records.small")]
++    [InlineData("warm-async", "scripts.csv-validated-records.empty")]
++    [InlineData("warm-async", "scripts.csv-validated-records.small")]
++    [InlineData("warm-async", "scripts.csv-validated-records.large")]
+     public async Task SelectedLaneKeepsCompilationAndFileExecutionBoundaries(string lane, string id)
+     {
+         using var catalog = new Catalog(WorkloadCatalog.CreateRepresentative().Single(c => c.Id == id));

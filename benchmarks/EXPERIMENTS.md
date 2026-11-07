@@ -4010,3 +4010,16 @@ Combined R65/R66 source824fc6bb full delivery CI42418518578 is GREEN:
 Windows/Ubuntu Release actual11/10, original Stress both targets and installed
 core consumers. [Terminal receipt](results/2026-11-07-buffered-lines/delivery-ci.json)
 is cached; no further service query or unchanged qualification.
+
+## Complete returned-record workload / unpack transport attribution
+
+[R69/B422](results/2026-11-07-returned-record-calls/README.md): new maintained CSV
+validation/aggregation/report with ordinary keyword calls, two early exits and
+tuple results.75public file-worker checks per actual11/10 and3independent CPython
+cases pass. Current qualified production unchanged;1,121samples/5.64CPU seconds,
+108unknown, all source/golden/quiet/cleanup/archive gates pass. Inclusive calls
+include useful guest work, not removable CPU.21Monitor leaves identify actual
+unpack materialization; exact tuples currently copy into leased lists/iterators.
+Select complete immutable tuple unpack transport removal first; larger activation
+consolidation stays separate. No speedup, primary CPython refresh or qualification
+replay. Initial smoke path error retained; no measured collection restart.

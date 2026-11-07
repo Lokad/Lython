@@ -54,6 +54,10 @@ public sealed class ComparisonFileWorkerTests
     [InlineData("warm-async", "scripts.csv-summary.small")]
     [InlineData("compile-run", "scripts.csv-summary-functions.small")]
     [InlineData("warm-async", "scripts.csv-summary-functions.small")]
+    [InlineData("compile-run", "scripts.csv-validated-records.small")]
+    [InlineData("warm-async", "scripts.csv-validated-records.empty")]
+    [InlineData("warm-async", "scripts.csv-validated-records.small")]
+    [InlineData("warm-async", "scripts.csv-validated-records.large")]
     public async Task SelectedLaneKeepsCompilationAndFileExecutionBoundaries(string lane, string id)
     {
         using var catalog = new Catalog(WorkloadCatalog.CreateRepresentative().Single(c => c.Id == id));

@@ -132,7 +132,13 @@ The BenchmarkDotNet toolchain is pinned to 0.16.0-preview.2 for .NET 11 support.
 
 The `representative` catalog includes the existing CSV, text, JSON-lines, file,
 search, uppercase and configuration jobs, plus four single-expression `-helpers`
-variants and CSV aggregation with a branching, mutating `-functions` helper. Each
+variants and CSV aggregation with a branching, mutating `-functions` helper.
+`csv-validated-records` validates five records per input block through a keyword
+call with a keyword-only default, two early exits and a tuple result/unpack. It
+rejects both negative amounts and explicitly skipped positive records, aggregates
+the three accepted rows and writes a complete CSV report. Its ordinary call/frame
+coverage complements the closed-return helpers; adding it does not refresh older
+timing tables or certify a performance gain. Each
 variant adds one ordinary annotated helper to the corresponding CSV, text,
 JSON-lines or file-manifest job, preserving its independent output/file goldens.
 Integer/finite-float numeric reports add planned/actual JSON arrays and two
