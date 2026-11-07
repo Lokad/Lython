@@ -3399,3 +3399,14 @@ Report varies, CSV retains up to3.04%adverse versus differing baseline roles;
 JSON improves. All168s/six-job gates pass. Focused439internal/1,958public per actual
 target and installed consumers pass; full delivery remains pending. Preserve
 R26's possible debt and all controls; no broad CPU or compounded gain claim.
+
+## Completed-call delivery / CPython checkpoint (2026-11-07)
+
+[B380](results/2026-11-07-completed-call-cpython/README.md) records exact81036f25/
+frozen32dcf141, all15jobs/312s/all gates. Warm text1.71–1.75xCPython/fresh
+1.62–1.66x remain variable; CSV warm1.22x/JSON1.05–1.06x, report1.38–1.42x
+and variable. Compilation is separate; no source-pair compounding/debt-parity claim.
+R29 delivery42333421800 is terminal GREEN/all eight gates, cached; excludes R30.
+B379 fails before workers due stale generated roots, preserving journal/source
+and unchanged original B373 archive. Its overwritten expanded lifecycle markers
+are explicitly disqualified; immutable archived observations remain authoritative.

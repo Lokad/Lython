@@ -1,17 +1,6 @@
 {
-  "allocation-summary.json": "de972eb4896603c83fc1057b8c49ecb198db761a71721ce81d971d73efaeeee0",
-  "build-withdrawal.log": "40dfb44ca31aa24cf20a9761d9c30f2e0899178f5c93c735c5bcdda962a5681f",
-  "check-withdrawal.py": "b1c0baa7c109e81374010880296192ce8c2163fdff3a997fd38585070c233db5",
-  "comparison-mask-summary.json": "e8cdd62956f6bf01e1d19708982311fdbfd4951543be16ccf0c82e6b18b993e3",
-  "comparison-summary.json": "a5041d5f2ef96f1a764ed1b8d9eaf695f323d302d29546545e297bbf6ce56c68",
   "development-evidence.tgz": "95b1652a74fa88b0d05cc755becbef7961d4f37cc3974f2b7cd5873d05436faa",
-  "expanded-image-retirement.json": "0f07098fe15ff3eae52d4ad12d7c131624b74f1456f21431f837b175379e2f73",
-  "focused-withdrawal.json": "82d4807369c56966e446525047b76cb32fa0eafa640549cd04ae4192b0768c2e",
-  "README.md": "ed4bf3525a5ddc118416106beae3d56256ba45ee5fd76a95d190b857a5bb6c63",
   "withdrawal-checks.tgz": "46253da49d9518166f85915852dbc1a80440c48014d355e9deb8ca3790bd14f8",
-  "withdrawn-mask.patch": "698b6178966fd166602cffb4970a19a0ba6b7ac27ab85797bccf910fdcedebc5",
-  "b375\\archive-receipt.json": "e6158267b1f1a1e5c617f6f06185cde986a2478acb4c82063167c1caab35d5ea",
   "b375\\observations.tgz": "6c78f5aa446d163c67c04fa6824885fc0cd8791f7e317b2ea9de88f261e5b101",
-  "b376\\archive-receipt.json": "78baad41472855fb112a57b68afbc31453844d5e002ad8e9b78dead9aa65753c",
   "b376\\observations.tgz": "1d1a17b4e91849a2f051b160f00502158bd44e689b29eb63307af859019b0c4b"
 }

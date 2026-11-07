@@ -1,6 +1,6 @@
 # Completed helper dispatch — R29
 
-Retained 2026-11-07; full delivery qualification pending. Native closed helpers
+Retained and fully qualified 2026-11-07, source81036f25. Native closed helpers
 with fully supplied ordinary positional arguments and no bound receiver now finish
 in the existing native-call selection. Delete the displaced borrowed attempt from
 BeginPendingCall. The same native evaluator and managed call/function/recursion
@@ -59,13 +59,17 @@ structured origin, restore interpreter/recursion depths and release the shared
 allowance after cleanup. Existing function/diagnostic/source, alias, managed stack,
 dynamic native fallback, actual async callback/cleanup and terminal refusal checks
 remain. No timeout/assertion relaxed. Both installed Release consumers pass;
-the final cross-platform/original Stress checkpoint remains pending.
+delivery42333421800 on81036f25 is GREEN/all eight Windows/Ubuntu ordinary
+actual11/10/original Stress/installed-package gates. The terminal
+[receipt](delivery-ci.json) is cached; never query again. Later class-fact work
+is outside this qualification.
 
 Retain the coherent relocation and measured text improvement. Explicitly accept
 remaining uncertain report/CSV debt for this milestone; do not label it parity.
 R26's earlier possible~3% text/async debt remains uncertain and is not algebraically
-repaid by percentages from different runs. Preserve its correctness fix; refresh
-the representative CPython checkpoint with combined changes at delivery. Larger
+repaid by percentages from different runs. Preserve its correctness fix; the refreshed
+[representative CPython checkpoint](../2026-11-07-completed-call-cpython/README.md)
+records the combined source separately. Larger
 whole-script gaps, startup/pending-I/O/embedding tails and subsequent redesigns
 remain active. This milestone does not finish the performance objective.
 

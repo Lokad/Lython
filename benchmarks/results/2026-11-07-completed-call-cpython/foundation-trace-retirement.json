@@ -1,0 +1,13 @@
+{
+  "retiredExpandedFiles": [
+    {
+      "path": "/home/lokad/lython-bench-checks/foundation-cpu-pair-v2-20261029/foundation-net11/perf.data",
+      "bytes": 8566176,
+      "sha256": "4a737b938dbd80147f8e636ac1cac3e5e7758550b56ea7e59220f3077ef44160"
+    }
+  ],
+  "independentCommittedArchive": "81036f25:benchmarks/results/2026-10-29-foundation/foundation-profiles-20261029.tar.gz",
+  "allUsersEnded": true,
+  "noSymlinkDependencies": true,
+  "freeBytes": 12857344
+}

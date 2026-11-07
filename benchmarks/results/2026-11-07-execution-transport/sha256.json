@@ -1,16 +1,5 @@
 {
-  "allocation-summary.json": "b7e04e7bd19946df15ac7f1fffae5f030ebd0a12ea5a551cdf76b523558eb73a",
-  "archive-receipt.json": "96e1de91a5bfc2756eb5c1b77c84d823d0b0c285ebc225f12301ae8b2f9cb446",
-  "comparison-b378-summary.json": "308d704f146c05ce2bea2e8ede64de095f0d9aa674aad43d905cc5b40aacec58",
-  "expanded-profile-retirement.json": "722de984ffaeed9d0c588391cbe0dd2389c8530210fb038124679e2fb804338a",
-  "focused-initial.json": "c1a181aaf1894785523272913aa2f0a8846e65c02ebffa65c325ece520aee067",
   "implementation-evidence.tgz": "6cf0ded97e8f20e6fb4a7d3f6891ac38d1137870e56e7ac7800b5cf6cb0fbe5b",
-  "implementation.md": "8eb9733d082878729fd75970b9dc71a620ca238c0269a548d736f9ed54b9cb5e",
-  "map-prefix.py": "bcfd7c48d9eb66532c7002f9bd1b805049d983614e15d1362aa936d1585f65be",
   "observations.tgz": "35f666111039c4ee08dcd6b53967fa29c5c08468f3f3b28e423a133fb96474f7",
-  "prefix-blocks.json": "95edfff98dfc05c5697184ce41c697b37ed519bb1ad966d1cb088f965f1ca4ff",
-  "README.md": "ed2ef7c9538d7d597467e63ec6c3399a4bf4d17d4ce2be8e6febfd190627d2ec",
-  "source-contract.md": "43398a218840e2883ed1345f75110ee3ccda18ddc1cd982e4d8139353fe89bb0",
-  "b378\\archive-receipt.json": "6a7b7ee8d234ee94b6630d87e2ec04be16f92f36dc557e70b78a9d667b61a75c",
   "b378\\observations.tgz": "3598956fe1d42c67ec8777e1ab718553c7cd07afad788f32d3b371afc8680b00"
 }
