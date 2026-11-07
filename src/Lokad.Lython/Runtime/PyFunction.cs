@@ -8,13 +8,13 @@ internal sealed class PyFunction : PyFunctionBase
 
     public PyFunction(
         string name,
-        IReadOnlyList<LoweredFunctionParameter> parameters,
+        FunctionParameterLayout parameterLayout,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext closure,
         IReadOnlyDictionary<string, object> defaultValues,
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameters, closure, defaultValues, scopeFacts, callableKind)
+        : base(name, parameterLayout, closure, defaultValues, scopeFacts, callableKind)
     {
         _body = body;
     }

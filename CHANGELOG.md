@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare immutable function parameter layouts once and share them across created
+  executable, lowered, lambda and generator functions. Remove repeated parameter
+  classification, layout arrays and name-map construction; keep defaults, closures
+  and keyword-name storage private, with native generated admission/rollback.
+
 - Prepare class own-cell requirements with lexical facts, removing repeated syntax
   analysis during class creation while preserving fresh class/closure cells.
 

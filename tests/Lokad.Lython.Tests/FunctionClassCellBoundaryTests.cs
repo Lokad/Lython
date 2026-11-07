@@ -147,7 +147,7 @@ public sealed class FunctionClassCellBoundaryTests
     private static Context Enter(Context closure, IReadOnlyList<LoweredFunctionParameter> parameters,
         object[] values, bool mirror, PyType? owner = null, ScopeDirectiveFacts? facts = null)
         => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty with { RequiresClassCell = true },
-            new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
+            FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
             new BoundCallArguments(values, default), mirror, owner, Span);
 
     private static LoweredFunctionParameter Parameter(string name, FunctionParameterKind kind) => new(name, kind, null, null);

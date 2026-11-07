@@ -13,9 +13,9 @@ public sealed class FunctionDefaultConstructionTests
             .Select(i => new LoweredFunctionParameter("a" + i, FunctionParameterKind.Positional, null, null)).ToArray();
         var requiredContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var defaultContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        _ = new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>(), requiredContext);
+        _ = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>(), requiredContext);
         var defaults = parameters.ToDictionary(p => p.Name, _ => (object)0);
-        var plan = new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, defaults, defaultContext);
+        var plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function, parameters, defaults, defaultContext);
         Assert.True(plan.TryGetDefaultMetadata("__defaults__", out var tuple));
         Assert.Equal(parameters.Length, Assert.IsType<PyTuple>(tuple).Count);
         Assert.True(defaultContext.MemoryGovernor.CurrentCommittedBytes > requiredContext.MemoryGovernor.CurrentCommittedBytes);
@@ -39,7 +39,7 @@ public sealed class FunctionDefaultConstructionTests
             FunctionBindingPlan? plan = null;
             try
             {
-                plan = new FunctionBindingPlan("f", PythonCallableKind.Function,
+                plan = FunctionBindingPlan.CreateDynamic("f", PythonCallableKind.Function,
                     [new("a", FunctionParameterKind.Positional, null, null), new("b", FunctionParameterKind.KeywordOnly, null, null)],
                     new Dictionary<string, object> { ["a"] = supplied, ["b"] = supplied }, context);
                 Assert.True(plan.TryGetPositionalDefault(0, out var positional));

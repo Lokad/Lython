@@ -85,7 +85,7 @@ internal static partial class PyDataclass
                 }
             }
 
-            _bindingPlan = new FunctionBindingPlan($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults, context);
+            _bindingPlan = FunctionBindingPlan.CreateDynamic($"{typeName}.__init__", PythonCallableKind.Function, parameters, defaults, context);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -281,7 +281,7 @@ internal static partial class PyDataclass
         }
 
         private readonly FunctionBindingPlan _bindingPlan =
-            new($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
+            FunctionBindingPlan.CreateDynamic($"{typeName}.__eq__", PythonCallableKind.Function, BinaryProtocolParameters, EmptyDefaultValues);
 
         public object Bind(object self) => new PyBoundMethod(self, this);
 
@@ -395,7 +395,7 @@ internal static partial class PyDataclass
                 DataclassOrderOperation.GreaterEqual => "ge",
                 _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
             };
-            _bindingPlan = new FunctionBindingPlan(
+            _bindingPlan = FunctionBindingPlan.CreateDynamic(
                 $"{typeName}.__{operationName}__",
                 PythonCallableKind.Function,
                 BinaryProtocolParameters,

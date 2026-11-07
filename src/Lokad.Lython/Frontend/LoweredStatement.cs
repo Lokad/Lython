@@ -51,6 +51,7 @@ internal sealed record LoweredFunctionDefinitionStatement(
     ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
+    public FunctionParameterLayout ParameterLayout { get; } = new(Parameters);
     // Class suites still execute lowered; their ordinary method bodies are
     // prepared once, without retaining an unused second lowered body.
     public ExecutableCodeObject? PreparedCode { get; init; }

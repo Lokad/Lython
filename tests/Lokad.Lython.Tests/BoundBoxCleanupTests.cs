@@ -15,7 +15,7 @@ public sealed class BoundBoxCleanupTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
-    private static FunctionBindingPlan TwoParameterPlan() => new(
+    private static FunctionBindingPlan TwoParameterPlan() => FunctionBindingPlan.CreateDynamic(
         "f",
         PythonCallableKind.Function,
         [
@@ -61,7 +61,7 @@ public sealed class BoundBoxCleanupTests
         };
         var fun = new PyFunction(
             "f",
-            parameters,
+            new FunctionParameterLayout(parameters),
             [],
             closure,
             new Dictionary<string, object>(),
@@ -97,7 +97,7 @@ public sealed class BoundBoxCleanupTests
         };
         var type = new PyType("P", [], new Dictionary<string, object>());
         var init = new PyDataclass.DataclassInitMethod(type, fields, null, context);
-        var plan = new FunctionBindingPlan(
+        var plan = FunctionBindingPlan.CreateDynamic(
             "P.__init__",
             PythonCallableKind.Function,
             [

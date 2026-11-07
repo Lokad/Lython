@@ -3430,3 +3430,14 @@ actual target and independent Python probes pass. Class-factory allocation falls
 is not reproduced in the unchanged quiet control. B381 metadata failure and all
 original conditions remain archived. Retain; batch full delivery at the next
 coherent boundary. No broad CPU gain or performance-objective completion claim.
+
+## Prepared function-call layout (2026-11-07)
+
+[R31/B384](results/2026-11-07-prepared-call-layout/README.md) removes repeated
+immutable parameter-table construction from function objects. Focused1,080internal/
+4,616public per actual target and independent Python probes pass. Class-factory
+warm allocation−10.65%, fresh−7.35%, compilation+1,728B. Quiet class warm elapsed
+−4.33–7.01%, fresh−3.52–4.38%, compile+0.26–1.40%; config flat. Text/CSV identical
+current roles differ4.4–5.0%, retaining adverse/inconclusive debt. Desktop adverse
+and B383 pre-worker collector-count failure are preserved. Retain the simplification;
+no broad CPU/CPython claim. Batch full qualification with compiler-prefix completion.

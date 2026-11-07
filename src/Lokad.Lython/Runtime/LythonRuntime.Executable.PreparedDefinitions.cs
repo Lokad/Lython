@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
                                 }
                                 defaults = values;
                             }
-                            function = CreateLambdaFunction(lambda.Expression, parameters, defaults, this, lambda.CodeObject);
+                            function = CreateLambdaFunction(lambda.Expression, defaults, this, lambda.CodeObject);
                         }
                         finally { _execution.Stack.RetireTo(instruction.ResultSlot); }
                         PublishInstructionResult(instruction, function);

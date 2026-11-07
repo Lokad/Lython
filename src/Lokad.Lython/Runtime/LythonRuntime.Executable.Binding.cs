@@ -310,11 +310,11 @@ internal sealed partial class LythonRuntime
             var typeScope = CreateTypeScope(functionBinding.TypeParameters, context, functionBinding.Span);
             var closure = typeScope.Closure.FunctionClosureContext;
             var function = functionBinding.IsGenerator
-                ? (object)new PyGeneratorFunction(functionBinding.DeclaredName, functionBinding.Parameters,
+                ? (object)new PyGeneratorFunction(functionBinding.DeclaredName, functionBinding.ParameterLayout,
                     functionBinding.CodeObject, closure, defaults, functionBinding.CodeObject.ScopeFacts, closureCells)
                 : new PyExecutableFunction(
                     functionBinding.DeclaredName,
-                    functionBinding.Parameters,
+                    functionBinding.ParameterLayout,
                     functionBinding.CodeObject,
                     closure,
                     closureCells,

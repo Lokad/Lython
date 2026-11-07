@@ -307,6 +307,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
             parameter.Name, parameter.Kind,
             parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
             parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
+        ParameterLayout = new(Parameters);
         FunctionBody = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
         if (GeneratorSyntaxFacts.ContainsYield(lambda.Body))
@@ -316,6 +317,7 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public LambdaExpressionSyntax Lambda { get; }
     public LoweredExpression Body { get; }
     public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
+    public FunctionParameterLayout ParameterLayout { get; }
     public IReadOnlyList<LoweredStatement> FunctionBody { get; }
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;

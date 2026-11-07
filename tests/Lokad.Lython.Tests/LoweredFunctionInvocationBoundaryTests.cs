@@ -102,7 +102,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             context.State.SetCurrentException(active);
             var tap = new RecordingTap(context, active, receiver, width);
             context.Variables["tap"] = tap;
-            var function = new PyFunction("f", definition.Parameters, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
+            var function = new PyFunction("f", definition.ParameterLayout, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
             var result = asynchronous
                 ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
@@ -143,7 +143,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
         var parameters = string.Join(",", new[] { "self" }.Concat(Enumerable.Range(0, width).Select(i => $"arg{i}")));
         var definition = Definition($"def f({parameters}):\n return self\n");
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", definition.Parameters, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
+        var function = new PyFunction("f", definition.ParameterLayout, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
         return (function, context, Assert.IsType<LoweredReturnStatement>(Assert.Single(definition.Body)).Expression!);
     }
 

@@ -155,7 +155,12 @@ Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. One scope walk collects directives, local bindings
+without a cross-script cache. Parameter classifications, argument layout arrays
+and name-to-slot maps also belong to the prepared definition and are shared by its
+created functions. Mutable defaults, keyword-name values, attributes and closures
+remain function-owned. Native generated definitions admit their layout before
+allocation and keep its construction overlap funded through default creation.
+One scope walk collects directives, local bindings
 and annotations, retaining explicit first-binding order. Function slots reuse these
 facts after the parameter prefix; module stores retain their dynamic namespace.
 Module facts also pass through lowering into instruction construction. The lexical

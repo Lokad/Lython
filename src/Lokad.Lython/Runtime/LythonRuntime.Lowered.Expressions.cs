@@ -473,7 +473,7 @@ internal sealed partial class LythonRuntime
         var loweredParameters = lambda.Parameters;
         var defaultCount = loweredParameters.Count(static p => p.DefaultValue is not null);
         using var defaultStorage = ReserveDefaultArgumentsWorkingStorage(defaultCount, context.MemoryGovernor, lambda.Span);
-        return CreateLambdaFunction(lambda, loweredParameters,
+        return CreateLambdaFunction(lambda,
             EvaluateFunctionDefaults(loweredParameters, defaultCount, context, false).GetAwaiter().GetResult(), context);
     }
 

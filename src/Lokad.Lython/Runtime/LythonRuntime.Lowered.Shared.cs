@@ -401,11 +401,11 @@ internal sealed partial class LythonRuntime
         PyFunctionBase function = functionDefinition.GeneratorCode is not null
             ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, cells)
             : functionDefinition.PreparedCode is { } prepared
-                ? new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.Parameters,
+                ? new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
                     prepared, context.FunctionClosureContext, cells, defaults, prepared.ScopeFacts)
             : new PyFunction(
             functionDefinition.Syntax.DeclaredName,
-            functionDefinition.Parameters,
+            functionDefinition.ParameterLayout,
             functionDefinition.Body,
             context.FunctionClosureContext,
             defaults,
@@ -763,18 +763,18 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
-        IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyDictionary<string, object> defaults, ExecutionContext context,
+        IReadOnlyDictionary<string, object> defaults, ExecutionContext context,
         ExecutableCodeObject? code = null)
     {
         var cells = code is null ? [] : CaptureExecutableClosures(code, context, lambda.Span);
         ChargeFunctionValue(context, lambda.Span);
         PyFunctionBase function = lambda.GeneratorCode is { } generator
-            ? new PyGeneratorFunction("<lambda>", parameters, generator, context.FunctionClosureContext,
+            ? new PyGeneratorFunction("<lambda>", lambda.ParameterLayout, generator, context.FunctionClosureContext,
                 defaults, lambda.ScopeFacts, cells, PythonCallableKind.Lambda)
             : code is not null
-            ? new PyExecutableFunction("<lambda>", parameters, code, context.FunctionClosureContext,
+            ? new PyExecutableFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
                 cells, defaults, lambda.ScopeFacts, PythonCallableKind.Lambda)
-            : new PyFunction("<lambda>", parameters, lambda.FunctionBody, context.FunctionClosureContext,
+            : new PyFunction("<lambda>", lambda.ParameterLayout, lambda.FunctionBody, context.FunctionClosureContext,
                 defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         // Module lambdas expose their globals after the executable slots leave.

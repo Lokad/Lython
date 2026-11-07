@@ -438,6 +438,8 @@ internal sealed record ExecutableFunctionBinding(
     bool IsGenerator,
     string? Docstring)
 {
+    public required FunctionParameterLayout ParameterLayout { get; init; }
+
     public int DefaultCount { get; } = Parameters.Count(static parameter => parameter.DefaultValue is not null);
     public bool HasAnnotations { get; } = ReturnAnnotation is not null || Parameters.Any(static parameter => parameter.Annotation is not null);
 }

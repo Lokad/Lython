@@ -18,7 +18,7 @@ public sealed class KwargsKeyAccountingTests
         string name,
         object value)
     {
-        var plan = new FunctionBindingPlan(
+        var plan = FunctionBindingPlan.CreateDynamic(
             "f",
             PythonCallableKind.Function,
             [new LoweredFunctionParameter("kw", FunctionParameterKind.VariadicDictionary, null, null)],

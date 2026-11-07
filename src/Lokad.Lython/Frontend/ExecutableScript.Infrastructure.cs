@@ -395,7 +395,7 @@ internal sealed partial class ExecutableScript
                 functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
                 functionDefinition.Decorators, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
                 functionDefinition.TypeParameters, codeObject, functionDefinition.GeneratorCode is not null,
-                functionDefinition.Docstring));
+                functionDefinition.Docstring) { ParameterLayout = functionDefinition.ParameterLayout });
             return _functions.Count - 1;
         }
 

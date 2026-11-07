@@ -1,0 +1,38 @@
+{
+  "retiredExpandedFiles": [
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/class-record/perf.map",
+      "bytes": 1572864,
+      "sha256": "188c22b1fc3ce31e1e753de1eb72f7ceedc3be20d3f6d79a0f15e8089b9075c5"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/class-record/perf-initial.map",
+      "bytes": 1572864,
+      "sha256": "188c22b1fc3ce31e1e753de1eb72f7ceedc3be20d3f6d79a0f15e8089b9075c5"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/class-record/perf-final.map",
+      "bytes": 1580037,
+      "sha256": "4276a6c212e0f518aae85da0024c2da520865970a4eba40d8eca94b0f5430346"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/text/perf.map",
+      "bytes": 1331200,
+      "sha256": "e4bdd11de50117f5b0fc9025d966434c14aa57872d33a57509a85606b3898ce9"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/text/perf-initial.map",
+      "bytes": 1331200,
+      "sha256": "e4bdd11de50117f5b0fc9025d966434c14aa57872d33a57509a85606b3898ce9"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/remaining-cost-b340-20261106/perf/text/perf-final.map",
+      "bytes": 1339694,
+      "sha256": "72ae3927830d20ce35d1756db86c0b6e7153d478dc74f4f3d7e86e7570f6716c"
+    }
+  ],
+  "independentCommittedArchive": "49d40b00:benchmarks/results/2026-11-06-remaining-runtime-cost/observations.tgz",
+  "allUsersEnded": true,
+  "noSymlinkDependencies": true,
+  "freeBytes": 12062720
+}

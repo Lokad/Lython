@@ -10,15 +10,15 @@ internal sealed class PyGeneratorFunction : PyFunctionBase
     public PyGeneratorFunction(LoweredFunctionDefinitionStatement definition,
         LythonRuntime.ExecutionContext closure, IReadOnlyDictionary<string, object> defaults,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
-        : this(definition.Syntax.DeclaredName, definition.Parameters, definition.GeneratorCode!,
+        : this(definition.Syntax.DeclaredName, definition.ParameterLayout, definition.GeneratorCode!,
             closure, defaults, definition.GeneratorCode!.ScopeFacts, closureCells) { }
 
-    public PyGeneratorFunction(string name, IReadOnlyList<LoweredFunctionParameter> parameters,
+    public PyGeneratorFunction(string name, FunctionParameterLayout parameterLayout,
         ExecutableCodeObject code, LythonRuntime.ExecutionContext closure,
         IReadOnlyDictionary<string, object> defaults, ScopeDirectiveFacts scopeFacts,
         IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null,
         PythonCallableKind callableKind = PythonCallableKind.Function)
-        : base(name, parameters, closure, defaults, scopeFacts, callableKind)
+        : base(name, parameterLayout, closure, defaults, scopeFacts, callableKind)
     {
         _code = code;
         _closureCells = closureCells;
