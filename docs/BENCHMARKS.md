@@ -79,7 +79,12 @@ fixtures include guest reads/writes; staging/reset are outside elapsed clocks.
 Warm includes invocation and prior-result cleanup; compile includes construction/
 disposal. Protocol transport and final cached teardown are excluded. CPython
 retains imported modules; Lython isolates execution imports. This is an embedding
-comparison. Tables use synchronous Run; historical async observations use completed
+comparison. Lython's timed file opens include host capability/path-component
+validation; CPython uses ordinary builtin open. A later source-7df9b465
+[configuration CPU profile](../benchmarks/results/2026-11-07-invocation-setup/README.md)
+finds substantial opening/path work. It does not isolate wall I/O latency or
+attribute the whole gap; these tables still describe source55e510ff.
+Tables use synchronous Run; historical async observations use completed
 mediated I/O and do not establish pending-I/O latency.
 
 ## Improvements within Lython

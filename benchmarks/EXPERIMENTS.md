@@ -3846,10 +3846,20 @@ nesting scanner and diagnostic factory. Existing tokenizer depth enforces512;
 parser64/unary256/f-string/managed-stack protection remains. Both quote-reusing
 f-string literal cases fail baseline, then agree with isolatedCPython3.13.2 through
 compile/Run/RunAsync.802internal/1555public plus14parser-hardening checks with fresh
-matching probes
-checks per actual11/10 pass. Existing15job compile/fresh/warm diagnostic gates pass,
+matching probes per actual11/10 pass. Existing15job compile/fresh/warm diagnostic gates pass,
 allocation flat, elapsed mixed/adverse/unstable; warm text+8.27to+20.07% with9.82%
 baseline drift and fresh report+3.43to+14.86% remain. Retain coherent deletion and
 correctness, no CPU claim or broad-objective completion.
 Full CI42397553014 on7df9b465 is terminal GREEN: Windows/Ubuntu Release actual11/10,
 original Stress and installed core consumers. Receipt cached; no repeated polling.
+
+## Complete configuration phase attribution (2026-11-07)
+
+[R56/B414](results/2026-11-07-invocation-setup/README.md): source7df9b465,
+551 guest samples/2.91 CPU seconds, 33 unknown leaves. Builtin creation17 and
+context29 inclusive do not justify lazy namespace machinery; host open269 and
+resolution152 overlap. Current shared functions/workers remain. No prototype,
+speedup or repeated delivery. Preserve the timed host-validation asymmetry and
+CPU-versus-wall/inlining limits. B413's root-closure setup failure and corrected
+B414 identities, full goldens, joined users, removed fixtures and verified archives
+remain; both are terminal. Whole-script performance objective remains open.

@@ -1,0 +1,107 @@
+{
+  "activeTids": [
+    "3363238"
+  ],
+  "samples": 551,
+  "cpuSeconds": 2.9099999999999993,
+  "malformedMapLines": [],
+  "topLeafCpuSamples": [
+    [
+      "[unknown]",
+      33
+    ],
+    [
+      "_raw_spin_unlock_irqrestore",
+      26
+    ],
+    [
+      "link_path_walk",
+      17
+    ],
+    [
+      "finish_task_switch.isra.0",
+      14
+    ],
+    [
+      "do_syscall_64",
+      12
+    ],
+    [
+      "srso_safe_ret",
+      10
+    ],
+    [
+      "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+      8
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+      8
+    ],
+    [
+      "hash_name",
+      8
+    ],
+    [
+      "inode_permission",
+      7
+    ],
+    [
+      "string [System.Private.CoreLib] System.IO.PathInternal::RemoveRelativeSegments(string,int32)[OptimizedTier1]",
+      7
+    ],
+    [
+      "__tls_get_addr",
+      7
+    ],
+    [
+      "apparmor_inode_getattr",
+      7
+    ],
+    [
+      "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+      7
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonEncoderClass+<ConstructAsync>d__8::MoveNext()[OptimizedTier1]",
+      6
+    ],
+    [
+      "cp_new_stat",
+      6
+    ],
+    [
+      "__cond_resched",
+      5
+    ],
+    [
+      "walk_component",
+      5
+    ],
+    [
+      "__d_lookup_rcu",
+      5
+    ],
+    [
+      "step_into",
+      5
+    ],
+    [
+      "path_lookupat",
+      5
+    ],
+    [
+      "vfs_statx",
+      5
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Reserve(int64,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+      5
+    ],
+    [
+      "filemap_remove_folio",
+      5
+    ]
+  ],
+  "unknown": 33
+}

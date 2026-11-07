@@ -1,0 +1,10 @@
+{
+  "terminalSetupFailure": true,
+  "noGuestOrProfilerStarted": true,
+  "allUsersEnded": true,
+  "ownedFixtureUnmounted": true,
+  "archivedAndVerifiedUnderMaintenanceLease": true,
+  "archiveSHA256": "4eb7b2a5ccb97f27da25e76f066f2861fb334c0a73c741342f3b86b673467b36",
+  "freeBytes": 344322048,
+  "cause": "Local prepare helper adapt() captured global name overwritten by filename loops. Staged root became retrieve.py; run.sh used nonexistent run.sh root. Failure before collector, not a runtime result."
+}
