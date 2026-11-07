@@ -1,0 +1,7 @@
+{
+  "jobs": 23,
+  "ownerSeconds": 600,
+  "stopSeconds": 30,
+  "marginSeconds": 30,
+  "observeAfterSeconds": 660
+}

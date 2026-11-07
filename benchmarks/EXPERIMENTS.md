@@ -3797,3 +3797,17 @@ passes both platforms/actual11/10/Stress/installed consumers. B408 ENOSPC leaves
 truncated raw JSON; no primary-table promotion. Verified offload of old test build
 outputs restores headroom; corrected collection uses atomic snapshots and owned
 tmpfs fixtures. [Evidence and measurement status](results/2026-11-07-wildcard-translation/README.md).
+
+## Qualified retained-source comparison and report phase (2026-11-07)
+
+B409 closes the coherent55e510ff CPython refresh after preserved B406/B408
+failures and explicit storage/fixture corrections.23jobs/477.00s/all gates,
+separate compile/warm/compile-to-result; text/report/file gaps and variable cases
+remain. [Current comparison](results/2026-11-07-retained-checkpoint/README.md).
+
+R52/B410 attributes complete report execution:927guest samples/4.67CPU seconds,
+59unknown leaves. JSON/formatting and admitted storage are material; binding13self,
+workspace rent3self and frame advance3self do not establish dominant repackaging.
+Inclusive stacks overlap. No runtime prototype or saved-CPU forecast. Same-governor
+admission reentry is a source hypothesis requiring a regression, not a measured
+finding. [Full profile and limits](results/2026-11-07-report-execution-cost/README.md).
