@@ -48,7 +48,9 @@ current1.23%spread, is accepted possible overhead alongside304B allocation growt
 No CPU attribution or compound source-pair debt repayment. Retain the bounded
 frontend change; no unchanged retiming selected. Full delivery42351006316 on
 exactb0889a46 batches R36/R38 Windows/Ubuntu/actual11/10/original Stress/installed
-consumers; pending at this evidence commit. R35's receipt
+consumers; terminal GREEN, observed07:48:45UTC. Both platforms pass every required gate.
+This receipt qualifies R36/R38, excluding the later R40 prototype. Never query
+42351006316 again; no repeated qualification is selected. R35's receipt
 does not qualify this source. Publication postponed; whole-script objective active.
 
 [Focused checks](focused-initial.json), [diagnostics](diagnostics-final.json),
@@ -76,3 +78,6 @@ do not restart the collection. Original source/condition retained.
 
 [Controlled summary](comparison-summary.json), [all raw gates](observations.tgz),
 [commands and original plan](collection-commands.tgz), [receipt](archive-receipt.json).
+
+[Full delivery](delivery-ci.json) qualifies exactb0889a46. Later documentation-only
+commits preserve that production source; R40 remains separate.

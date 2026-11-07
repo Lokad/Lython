@@ -3584,3 +3584,11 @@ construction also competes. No general frame/call-arena prototype or repeat prof
 selected. B390 failed before worker creation on a tuple environment key; original
 condition archived/verified before one correction. B391 all gates pass, terminal/
 users joined/RAM evidence archived/removed. No source-pair performance claim.
+
+
+R36/R38 full delivery42351006316 on exactb0889a46 is terminal GREEN: Windows/
+Ubuntu ordinary actual.NET11/10, original Stress both targets and installed-package
+consumers. Receipt committed beside annotation-demand evidence, observed07:48:45UTC;
+never query the run again. This qualifies the root-identity and annotation-demand
+changes, excluding the later R40 cursor prototype. No repeated qualification,
+publication or performance-goal completion follows.
