@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "binding-probe-net11": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net11": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "binding-public-net11": {
+      "exitCode": 0,
+      "passed": 244
+    },
+    "net11-coreSHA256": "bc30d42431748799d8d792c995406eee163dbee423fc5caa4c37da7e906591d1",
+    "binding-probe-net10": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net10": {
+      "exitCode": 0,
+      "passed": 1366
+    },
+    "binding-public-net10": {
+      "exitCode": 0,
+      "passed": 244
+    },
+    "net10-coreSHA256": "051865c7e2bdfb4d077533f7307edc8c42125fcb10809e574d453ce990c42b32"
+  },
+  "matchingProbes": true,
+  "baselinePublicDefaultChecks": 20,
+  "sourceVariant": "R71 managed readonly binding-descriptor transport correction; includes five new construction semantic/lifetime cases, production construction unchanged"
+}

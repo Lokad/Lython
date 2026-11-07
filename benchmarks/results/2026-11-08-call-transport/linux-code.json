@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "coreSHA256": "bc30d42431748799d8d792c995406eee163dbee423fc5caa4c37da7e906591d1",
+  "sourceSHA256": "8e960bd5b5de41a846e2edee4993c0f7bf76fa1acc83382e6db33237928d1445",
+  "golden": "450000\n",
+  "exitCode": 0,
+  "managedReadonlyReferenceAtAllThreeTier1Entries": true,
+  "callSites": [
+    "       mov      rcx, r13\n       mov      r9, r10\n       call     [Lokad.Lython.Runtime.LythonRuntime:BindPositionalFunctionArguments(System.ReadOnlySpan`1[System.Object],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.FunctionBindingPlan,System.Object,Lokad.Lython.Runtime.MemoryGovernor,System.Nullable`1[int]):Lokad.Lython.Runtime.BoundCallArguments]\n       mov      dword ptr [rbp-0x30], 1\n       lea      rsi, [rbp-0xD8]\n       mov      rdi, gword ptr [rbp-0x178]\n       mov      edx, dword ptr [rbp-0x2C]\n       mov      ecx, r12d\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BeginBoundCall(byref,bool,bool):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+    "       mov      r9, gword ptr [rbp-0x178]\n       cmp      dword ptr [rdi], edi\n       call     [Lokad.Lython.Runtime.PyFunctionBase:BindCallOperands(System.ReadOnlySpan`1[System.Object],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,System.Object,Lokad.Lython.Frontend.ExecutableCallSite):Lokad.Lython.Runtime.BoundCallArguments:this]\n       mov      dword ptr [rbp-0x30], 1\n       lea      rsi, [rbp-0x108]\n       mov      rdi, gword ptr [rbp-0x178]\n       mov      edx, dword ptr [rbp-0x2C]\n       xor      ecx, ecx\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BeginBoundCall(byref,bool,bool):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+    "       vmovdqu  xmmword ptr [rbp-0x88], xmm0\n \nG_M000_IG44:                ;; offset=0x064B\n       mov      dword ptr [rbp-0x30], 1\n       lea      rsi, [rbp-0xA8]\n       mov      rdi, gword ptr [rbp-0x178]\n       mov      edx, dword ptr [rbp-0x2C]\n       xor      ecx, ecx\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BeginBoundCall(byref,bool,bool):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]"
+  ],
+  "jitSHA256": "9656c19e19178cb748aea779919091e59a7baca7249b0de9801c0098af2e2394",
+  "performanceQualified": false,
+  "purpose": "Generated-code acceptance only, Linux x64; no causal/elapsed/CPU claim."
+}

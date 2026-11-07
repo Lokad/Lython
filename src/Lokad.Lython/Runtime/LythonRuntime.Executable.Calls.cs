@@ -261,7 +261,10 @@ internal sealed partial class LythonRuntime
             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
         }
 
-        private ExecutionContext BeginBoundCall(BoundCallArguments bound, bool callEntered, bool nativeAttempted)
+        // Binding locals own this descriptor through the synchronous transition.
+        // Borrow it rather than copying its references onto the outgoing stack;
+        // surviving values and ownership transfer into the work/frame below.
+        private ExecutionContext BeginBoundCall(in BoundCallArguments bound, bool callEntered, bool nativeAttempted)
         {
             var function = _pendingFunction!;
             var span = PendingCallSpan;

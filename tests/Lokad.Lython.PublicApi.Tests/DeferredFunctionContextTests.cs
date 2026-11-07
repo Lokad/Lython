@@ -14,6 +14,7 @@ public sealed class DeferredFunctionContextTests
         { "def work(text):\n value=int(text)\n if value<0:return None\n return value+missing\ntry:\n raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:work('bad')\n except ValueError as error:print(type(error).__name__,error.__context__ is outer)\n try:work('3')\n except NameError as error:print(type(error).__name__,error.__context__ is outer)\nprint(work('-1'))", "ValueError True\nNameError True\nNone\n" },
         { "def work(value,seen):\n value+=2\n seen['count']=seen['count']+1\n if value<0:return None\n return [value,seen]\nseen={'count':0}\nresult=work(3,seen)\nprint(result[0],result[1] is seen,seen)", "5 True {'count': 1}\n" },
         { "value=100\nview=globals()\ndef read():return view['value']\ndef work(value,callback=read):\n value+=3\n if value<0:return None\n return value,callback()\nprint(work(4))\nwork.__defaults__=(lambda:99,)\nprint(work(5),value)", "(7, 100)\n(8, 99) 100\n" },
+        { "def bundle(value,*,extra):\n if extra is None:return None\n return [value,extra],(value,extra)\nitems=[]\nresult=bundle(items,extra=items)\nitems.append(5)\nprint(result[0][0] is items,result[0][1] is items,result[1][0] is items,result[1][1] is items,result)\nprint(bundle(items,extra=None))", "True True True True ([[5], [5]], ([5], [5]))\nNone\n" },
     };
 
     [Theory]
@@ -120,6 +121,72 @@ public sealed class DeferredFunctionContextTests
                     var values = Assert.IsType<List<object?>>(result.ReturnValue);
                     Assert.Equal("kept", values[0]);
                     Assert.Equal(65537, Assert.IsType<BigInteger>(values[1]).GetBitLength());
+                    Assert.True(budget.ReservedBytes > baseline + 8192);
+                    Assert.True(host.CompletedAsynchronously > 0);
+                }
+            }
+            finally
+            {
+                cancellation.Cancel();
+                using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, false)] [InlineData(false, true)]
+    [InlineData(true, false)] [InlineData(true, true)]
+    public async Task ConstructedSequenceKeepsWithdrawnAliasesThroughPendingIo(bool tuple, bool cancel)
+    {
+        var source = """
+payload=['kept',1<<65536]
+def bundle(value,*,selector):
+ if selector<0:return None
+ return [value,value]
+def consume(value):
+ with open('/pause') as source: source.read()
+ assert value[0] is value[1]
+ return value
+result=bundle(payload,selector=0)
+payload=None
+return consume(result)
+""";
+        if (tuple) source = source.Replace("return [value,value]", "return (value,value)", StringComparison.Ordinal);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var host = new DelayedLythonHost(); host.SeedFile("/pause", "ready");
+            var entered = cancel ? host.PauseReadUntilCancellation("/pause") : null;
+            using var cancellation = new CancellationTokenSource();
+            var pending = script.RunAsync(host, cancellationToken: cancellation.Token);
+            try
+            {
+                if (entered is not null)
+                {
+                    Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.False(pending.IsCompleted);
+                    Assert.True(budget.ReservedBytes > baseline + 8192);
+                    cancellation.Cancel();
+                }
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                else
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    IReadOnlyList<object?> values = tuple
+                        ? Assert.IsType<object?[]>(result.ReturnValue)
+                        : Assert.IsType<List<object?>>(result.ReturnValue);
+                    Assert.Equal(2, values.Count);
+                    foreach (var item in values)
+                    {
+                        var value = Assert.IsType<List<object?>>(item);
+                        Assert.Equal("kept", value[0]);
+                        Assert.Equal(65537, Assert.IsType<BigInteger>(value[1]).GetBitLength());
+                    }
                     Assert.True(budget.ReservedBytes > baseline + 8192);
                     Assert.True(host.CompletedAsynchronously > 0);
                 }

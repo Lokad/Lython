@@ -4060,3 +4060,19 @@ with explicit ordinary-CSV regression debt, not a general CPU claim. Prioritize
 its bounded source/generated-code assessment before another runtime optimization.
 No repeated unchanged retiming, performance-objective completion or publication.
 New-source full delivery pending; B424/B425 terminal, archived and verified.
+
+## R71 ordinary-CSV transport correction
+
+[B426/B427](results/2026-11-08-call-transport/README.md): bounded paired CPU
+attribution does not establish a dominant new call cost. Actual Linux Tier1 proves
+the split entry adds a 48-byte outgoing descriptor copy, elided in Windows Tier1.
+Managed readonly borrowing removes that transport at all three optimized entries;
+no new storage/policy/unsafe mechanism or cancellation deletion. 1,366 internal /
+244 public per actual11/10 pass; five new sequence identity/pending-I/O/ownership
+cases first pass with production construction unchanged. Allocation remains
+−13.5% sync/−12.6% async. Controlled four-job pair114.398s: affected sync flat,
+async−1.21–6.31%; ordinary CSV−1.74to+0.43% elapsed/coarseCPUflat. Retain concrete
+correction; large B425 CSV concern not reproduced, no full causal explanation.
+Text+2.10%, affected sync+1.17%, original B424/B425 and adverse desktop retained.
+All source/golden/quiet/join/fixture/archive gates pass. Full corrected delivery
+pending; publication postponed. Resume complete construction/frame milestone.
