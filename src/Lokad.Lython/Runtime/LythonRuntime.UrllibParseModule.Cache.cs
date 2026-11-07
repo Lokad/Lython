@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
                 return FinishUrlHash(hash, items.Count);
             }
             using (PyStructuralGuard.PushAmbient(context, span))
-                return unchecked((ulong)(long)(BigInteger)ComputeBuiltinHash(value, span));
+                return unchecked((ulong)(long)(BigInteger)ComputeBuiltinHash(value, span, context));
         }
 
         private static void MixUrlHash(ref ulong hash, ulong value)

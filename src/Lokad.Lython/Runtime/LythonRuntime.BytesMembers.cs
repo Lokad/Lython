@@ -259,14 +259,14 @@ internal sealed partial class LythonRuntime
 
                     return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) >= 0;
                 }, BytesGeSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "bytes.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(bytes, span);
+                    return ComputeBuiltinHash(bytes, span, context);
                 }, BytesHashSignature),
                 _ => MissingMemberValue.Instance
             };

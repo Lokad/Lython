@@ -21,7 +21,7 @@ internal static partial class PyHashProtocols
         if (key is PySlice slice) return PrepareSliceHashAsync(slice, context, span);
         if (PyTupleLike.TryGetItems(key, out var items)) return PrepareTupleHashAsync(items, context, span);
         using var ambient = PyStructuralGuard.PushAmbient(context, span);
-        return new((LythonRuntime.ComputeStructuralHashCode(key, span), false));
+        return new((LythonRuntime.ComputeStructuralHashCode(key, span, context), false));
     }
 
     private static async ValueTask<(int Hash, bool Protocol)> GetInstanceHashAsync(PyInstance instance,
@@ -30,7 +30,7 @@ internal static partial class PyHashProtocols
         context.CheckExecution(span);
         if (HasDisabledHash(instance)) throw RuntimeErrors.UnhashableType(instance, span);
         if (!HasCustomSlot(instance, "__hash__"))
-            return (LythonRuntime.ComputeStructuralHashCode(instance, span), true);
+            return (LythonRuntime.ComputeStructuralHashCode(instance, span, context), true);
 
         instance.Type.TryLookupInMro("__hash__", 0, out var rawSlot, out _);
         var member = await PyAttributeLookup.BindForInstanceAsync(instance, rawSlot!, context, span).ConfigureAwait(false);

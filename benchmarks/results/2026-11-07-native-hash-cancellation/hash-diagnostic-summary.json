@@ -1,0 +1,46 @@
+{
+  "identity": {
+    "before": "e4bc047323da76a7f523e8cc5fa2b5e97830237f16f1ed529a651d2358a7f0ab",
+    "candidate": "07a6530e13a7a681c2de48d756c7490765ebce7195b59a734f6de1ac84745b92"
+  },
+  "rows": [
+    {
+      "kind": "str",
+      "before": {
+        "allocatedBytesPerHash": 75.25,
+        "desktopMillisecondsPerHash": 0.4022625,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      },
+      "candidate": {
+        "allocatedBytesPerHash": 75.25,
+        "desktopMillisecondsPerHash": 0.38723125,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      },
+      "before-control": {
+        "allocatedBytesPerHash": 75.25,
+        "desktopMillisecondsPerHash": 0.402465625,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      }
+    },
+    {
+      "kind": "bytes",
+      "before": {
+        "allocatedBytesPerHash": 67.25,
+        "desktopMillisecondsPerHash": 0.3882875,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      },
+      "candidate": {
+        "allocatedBytesPerHash": 67.25,
+        "desktopMillisecondsPerHash": 0.3889,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      },
+      "before-control": {
+        "allocatedBytesPerHash": 67.25,
+        "desktopMillisecondsPerHash": 0.389009375,
+        "desktopCpuMillisecondsPerHash": 0.48828125
+      }
+    }
+  ],
+  "performanceQualified": false,
+  "limitations": "Sequential Windows processes with normal GC/tiering and one-second native warmup per type. Allocations include minor process instrumentation; clocks are diagnostic, not quiet-machine CPU or complete-script proof."
+}

@@ -3459,3 +3459,13 @@ async entry rejects, while actual scan forwarding remains missing by source.
 Explicit-token overload works and final funding is zero. This is not public
 in-flight qualification or a CPU claim. A bounded native-hash correction is next,
 independent of the active R30–R32 platform delivery.
+
+## Current-token native hashing (2026-11-07)
+
+[R33 correction](results/2026-11-07-native-hash-cancellation/README.md) removes
+context-dropping native hash routing and reuses4096-byte scans for bytes. Actual
+native-call interruption/cache/budget tests pass on both runtimes. Broad676internal/
+2,680public precedes final shortcut refinement127internal/660public; exact sources
+and images retained. One short native primitive comparison preserves allocations,
+hashes and cleanup; desktop clocks establish no CPU gain. Full qualification batches
+with the canonical-parameter stress-fixture correction; broader roadmap stays open.

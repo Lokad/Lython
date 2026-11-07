@@ -34,6 +34,9 @@ Python callback effects and errors, while native copies and set pop use stored
 keys without rehashing. [Ownership checks](Lokad.Lython.Tests/HashQueryOwnershipTests.cs)
 exercise actual refusal/cancellation inside those callbacks, unchanged containers,
 first-origin propagation and reusable shared funding after cleanup.
+[Native hash cancellation](Lokad.Lython.Tests/NativeHashCancellationTests.cs) interrupts
+actual string/bytes scans before cache publication, keeps current caller tokens
+independent, preserves refusal priority and awaits users before returning funding.
 The same checks refuse set-entry metadata before publication. Reentrant set cases
 distinguish positive insertion equality from a current lookup/removal match and
 keep the stored-hash relation controls, including mutated dataclass fields.

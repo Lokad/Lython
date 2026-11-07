@@ -77,8 +77,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
         var governor = context.MemoryGovernor;
         if (key is not PyString || _nativeItems is null || HasProtocolKeys ||
             !ReferenceEquals(_memoryGovernor, governor)) return false;
-        governor.ThrowIfAdmissionFailed();
-        var hash = NativeHash(key);
+        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
         var index = FindNativeIndex(key, hash, context, span);
         if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
         var before = _nativeCount;

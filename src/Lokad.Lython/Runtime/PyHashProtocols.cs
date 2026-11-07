@@ -79,7 +79,7 @@ internal static partial class PyHashProtocols
                 start.Protocol || stop.Protocol || step.Protocol);
         }
         if (PyTupleLike.TryGetItems(key, out var items)) return PrepareTupleHash(items, context, span);
-        return (LythonRuntime.ComputeStructuralHashCode(key, span), false);
+        return (LythonRuntime.ComputeStructuralHashCode(key, span, context), false);
     }
 
     private static int GetInstanceHash(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -106,7 +106,7 @@ internal static partial class PyHashProtocols
             return NormalizeProtocolHash(hashValue, span);
         }
 
-        return LythonRuntime.ComputeStructuralHashCode(instance, span);
+        return LythonRuntime.ComputeStructuralHashCode(instance, span, context);
     }
 
     private static int NormalizeProtocolHash(object value, LythonSourceSpan span)

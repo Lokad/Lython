@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   127, Skipped:     0, Total:   127, Duration: 824 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   660, Skipped:     0, Total:   660, Duration: 11 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   127, Skipped:     0, Total:   127, Duration: 861 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   660, Skipped:     0, Total:   660, Duration: 11 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~NativeHashCancellation|FullyQualifiedName~HashQuery|FullyQualifiedName~NativeReturn|FullyQualifiedName~NativeHelper|FullyQualifiedName~CompletedHelper|FullyQualifiedName~CanonicalFormatted|FullyQualifiedName~NestedHash|FullyQualifiedName~NumericHash|FullyQualifiedName~BuiltinByteHash|FullyQualifiedName~ManagedHash|FullyQualifiedName~Dictionary|FullyQualifiedName~ContextualHash|FullyQualifiedName~Deferred)",
+  "coreSHA256": {
+    "net11.0": "07a6530e13a7a681c2de48d756c7490765ebce7195b59a734f6de1ac84745b92",
+    "net10.0": "6c5dcc32e7cfc63080462578f5c1aa4e6dc0bd97275e35cfd032ad16deca4f1f"
+  }
+}

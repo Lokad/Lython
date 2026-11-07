@@ -942,14 +942,14 @@ internal sealed partial class LythonRuntime
 
                     return false;
                 }, NoneBoolSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "None.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(none, span);
+                    return ComputeBuiltinHash(none, span, context);
                 }, NoneHashSignature),
                 _ => MissingMemberValue.Instance,
             };
@@ -1151,14 +1151,14 @@ internal sealed partial class LythonRuntime
 
                     return integer.Value != BigInteger.Zero;
                 }, IntBoolSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "int.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(integer.Value, span);
+                    return ComputeBuiltinHash(integer.Value, span, context);
                 }, IntHashSignature),
                 "__int__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1399,14 +1399,14 @@ internal sealed partial class LythonRuntime
 
                     return number != 0.0;
                 }, FloatBoolSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "float.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(number, span);
+                    return ComputeBuiltinHash(number, span, context);
                 }, FloatHashSignature),
                 "__int__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1920,14 +1920,14 @@ internal sealed partial class LythonRuntime
 
                     return range.IsTruthy();
                 }, RangeBoolSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "range.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(range, span);
+                    return ComputeBuiltinHash(range, span, context);
                 }, RangeHashSignature),
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {

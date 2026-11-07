@@ -1,0 +1,18 @@
+{
+  "revision": "8c4059b6bff56b722fce79e9ef46bd43d843656f",
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "53f1b2fb82695e734157b5cc2416685ef93aaa8cf28795ccbfbcb8d00cd98492",
+    "src/Lokad.Lython/Runtime/PyBytes.cs": "69cd52d8a117411a2bcc9bff9bc4cc0bafd6aa7fe386d7ce0d7450a54fd09844",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.cs": "13f55fdcda1bed4764577b5b8f03f9b33bb667a6a24ea042bc7dfb81fadcaae5",
+    "src/Lokad.Lython/Runtime/PyHashProtocols.Async.cs": "13223221f0b8be003c4a085052e09ca86cf1fb76c98efe0e7bd17905d6364f5e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.cs": "26d59c222c85fae0d9ac0898aff26d6139e0f9576dca4033452124f6a420f2ce",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BytesMembers.cs": "31b7634c7ce28bb3ed0f198c14632ffa896a875d203f016563201e7e60c24768",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Members.cs": "45f350f601d91d6cc54d32445c308b50936c22e95e21c9347aa93cd89fc8fc33",
+    "src/Lokad.Lython/Runtime/LythonRuntime.PathMembers.cs": "3fd35e86525f6a08571c3121f0601233944413bb5037822acbbafb1afd96ead8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Cache.cs": "df9ca1e9890fdcd579bb0776f40ccde25f78e3f07978d31384c009ecfd20ac8d"
+  },
+  "coreSHA256": {
+    "net11.0": "e4bc047323da76a7f523e8cc5fa2b5e97830237f16f1ed529a651d2358a7f0ab",
+    "net10.0": "42113cf62be9fe746a377bacd414e133da5eda0590fd3d5eb00f252f98886c27"
+  }
+}

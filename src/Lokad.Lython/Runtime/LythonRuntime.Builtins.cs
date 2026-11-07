@@ -686,12 +686,22 @@ internal sealed partial class LythonRuntime
 
     // Native builtin hash members share structural values. Python callbacks and
     // compound public hashes use PyHashProtocols with the active context.
-    internal static object ComputeBuiltinHash(object value, LythonSourceSpan span)
-        => new BigInteger(ComputeStructuralHashCode(value, span));
+    internal static object ComputeBuiltinHash(object value, LythonSourceSpan span, ExecutionContext context)
+        => new BigInteger(ComputeStructuralHashCode(value, span, context));
 
-    internal static int ComputeStructuralHashCode(object value, LythonSourceSpan? span)
+    internal static int ComputeStructuralHashCode(object value, LythonSourceSpan? span, ExecutionContext context)
     {
-        try { return PyValueComparer.Instance.GetHashCode(value); }
+        context.CheckExecution(span);
+        try
+        {
+            // Native buffers need the current caller through the actual scan.
+            // The CLR comparer stays context-free and never dispatches guests.
+            if (value is PyString text)
+                return PyValueComparer.NormalizeHash(text.GetHashCode(context.State.CancellationToken, span));
+            if (value is PyBytes bytes)
+                return PyValueComparer.NormalizeHash(bytes.GetHashCode(context.State.CancellationToken, span));
+            return PyValueComparer.Instance.GetHashCode(value);
+        }
         catch (PyUnhashableException error)
         {
             throw RuntimeErrors.UnhashableType(error.Value, span);

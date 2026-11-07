@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Carry current cancellation through native string/bytes hashing, explicit hash
+  methods and dictionary shortcuts. Reuse bounded byte-hash chunks, publish caches
+  only after completion and preserve caller independence and first memory refusal.
+
 - Prepare immutable function parameter layouts once and share them across created
   executable, lowered, lambda and generator functions. Remove repeated parameter
   classification, layout arrays and name-map construction; keep defaults, closures

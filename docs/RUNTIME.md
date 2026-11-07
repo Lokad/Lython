@@ -456,6 +456,10 @@ in one walk. Tuple elements and slice bounds are visited in Python order: an
 earlier hash callback runs before a later unhashable value is rejected. Native
 dictionary copies retain stored hashes without replaying callbacks.
 Explicit dictionary queries carry their execution context into hashing and probing.
+Native string/bytes hashing carries the current token through4096-byte scan chunks,
+including public hash calls, native hash methods and dictionary fast paths. Only a
+completed scan publishes its cached value; caches retain no caller token. Raw CLR
+comparers remain context-free and do not dispatch guest callbacks.
 Native string reads and already-funded string-key writes avoid ambient state;
 structural and protocol queries establish it at the query boundary and restore
 the caller's provenance when they finish or fail.

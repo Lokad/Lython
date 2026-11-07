@@ -119,17 +119,14 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     public override int GetHashCode() => GetPyHashCode();
 
-    public int GetPyHashCode()
+    public int GetPyHashCode() => GetHashCode(default, null);
+
+    internal int GetHashCode(CancellationToken token, LythonSourceSpan? span)
     {
-        if (Volatile.Read(ref _hashCodeComputed))
-        {
-            return _hashCode;
-        }
-
-        var hash = new HashCode();
-        hash.AddBytes(_bytes);
-
-        var computed = hash.ToHashCode();
+        if (Volatile.Read(ref _hashCodeComputed)) return _hashCode;
+        // HashCode's streaming state preserves the whole-buffer result. Only
+        // completed scans publish a cache; caller cancellation is never retained.
+        var computed = PyString.HashUtf8(_bytes, span: span, cancellationToken: token);
         _hashCode = computed;
         Volatile.Write(ref _hashCodeComputed, true);
         return computed;

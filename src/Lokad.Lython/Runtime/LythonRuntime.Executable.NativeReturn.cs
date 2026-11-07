@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
             && target is PyDict dictionary
             && TryReadNativeFormattedValue(value.Second, code, values, arguments, context, out var key)
             && key is PyString text)
-            return dictionary.TryReadNativeStringValue(text, out result);
+            return dictionary.TryReadNativeStringValue(text, context, code.Instructions[value.SourceInstruction].Span, out result);
         result = null;
         return false;
     }

@@ -91,14 +91,14 @@ internal sealed partial class LythonRuntime
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Code,
                 "value" when string.Equals(exception.TypeName, "StopIteration", StringComparison.Ordinal)
                     => exception.GetArgs() is { Count: > 0 } stopped ? stopped[0] : PyNone.Instance,
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "BaseException.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(exception, span);
+                    return ComputeBuiltinHash(exception, span, context);
                 }, "BaseException.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -497,14 +497,14 @@ internal sealed partial class LythonRuntime
 
                     return decimalValue.IsTruthy();
                 }, DecimalBoolSignature),
-                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
                         throw new LythonRuntimeException("TypeError", "Decimal.__hash__() expects no arguments.", span);
                     }
 
-                    return ComputeBuiltinHash(decimalValue, span);
+                    return ComputeBuiltinHash(decimalValue, span, context);
                 }, DecimalHashSignature),
                 "__int__" => BoundCallable.Create((arguments, span, context) =>
                 {
