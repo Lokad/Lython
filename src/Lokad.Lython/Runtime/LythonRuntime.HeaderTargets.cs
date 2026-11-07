@@ -91,9 +91,16 @@ internal sealed partial class LythonRuntime
         return materialized.Items[0];
     }
 
-    private static async ValueTask<PyIteration.DrainLease> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
+    private static ValueTask<UnpackingValues> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
     {
-        try { return await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems).ConfigureAwait(false); }
+        context.CheckExecution(span);
+        if (value is PyTuple tuple) return new(new UnpackingValues(tuple));
+        return MaterializeHeaderIteratorAsync(value, span, context, maximumItems);
+    }
+
+    private static async ValueTask<UnpackingValues> MaterializeHeaderIteratorAsync(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems)
+    {
+        try { return new(await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems).ConfigureAwait(false)); }
         catch (PyNotIterableException)
         {
             throw CannotUnpack(value, span, context);

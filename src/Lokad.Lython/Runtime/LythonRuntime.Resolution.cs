@@ -747,11 +747,22 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static PyIteration.DrainLease MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
+    // Exact tuples already own immutable item storage. Keep that owner through
+    // all target users; other sources still need the existing private snapshot.
+    private readonly struct UnpackingValues(IReadOnlyList<object> items, PyIteration.DrainLease? storage = null) : IDisposable
     {
+        public IReadOnlyList<object> Items => items;
+        public UnpackingValues(PyIteration.DrainLease storage) : this(storage.Items, storage) { }
+        public void Dispose() => storage?.Dispose();
+    }
+
+    private static UnpackingValues MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context, int? maximumItems = null)
+    {
+        context.CheckExecution(span);
+        if (value is PyTuple tuple) return new(tuple);
         try
         {
-            return PyIteration.MaterializeLeased(value, span, context, maximumItems);
+            return new(PyIteration.MaterializeLeased(value, span, context, maximumItems));
         }
         catch (PyNotIterableException)
         {

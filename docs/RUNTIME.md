@@ -215,6 +215,11 @@ raises use ordinary instructions. Store metadata keeps its target span separate
 from the instruction's guard/routing span. A shared synchronous prefix completes
 ordinary work; incomplete protocols retain their operands until awaited completion
 and retirement. Deletion keeps only its executable shape and name/bounds metadata.
+Unpacking borrows exact builtin tuples' immutable storage, retaining the tuple
+through its users. Mutable inputs and user iterators still take an owned snapshot
+before assignment; starred remainder lists admit their own storage before target
+effects. The same rule serves synchronous and asynchronous assignments, loops and
+annotation unpacking. Cancellation and refused admission still stop publication.
 Formatted construction, literal appends, conversions and fields use ordinary
 instructions and shared operand cleanup. Native fields, including evaluated dynamic
 specifiers, need no lexical context solely for formatting. Actual protocol values

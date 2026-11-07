@@ -1,0 +1,29 @@
+{
+  "checks": {
+    "baseline-final-ordinary-net11": {
+      "passed": 24
+    },
+    "internal-net11": {
+      "passed": 824
+    },
+    "internal-net10": {
+      "passed": 824
+    },
+    "public-net11": {
+      "passed": 1104
+    },
+    "final-ordinary-net11": {
+      "passed": 24
+    },
+    "public-net10": {
+      "passed": 1106
+    }
+  },
+  "matchingProbes": true,
+  "net11UnionPublic": 1106,
+  "note": "Initial1104public plus24final ordinary checks include2new refusal/reuse cases; net10full focused filter includes all1106. All24final ordinary regressions also pass on the baseline runtime.",
+  "finalLoadedCores": {
+    "net11.0": "d6445fc569d00a001b488b3205d4273c874136ae8a99ee524e558a5ac1234f6a",
+    "net10.0": "4b3fda59e50cca0eb78edbffa142145573e41242928ae8755ac7871f0ec8fde0"
+  }
+}

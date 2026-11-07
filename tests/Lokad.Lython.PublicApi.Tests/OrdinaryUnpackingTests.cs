@@ -56,11 +56,15 @@ public sealed class OrdinaryUnpackingTests
         }
     }
 
-    [Fact]
-    public async Task EscapingStarredValuesStayFundedAcrossExecutions()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EscapingStarredValuesStayFundedAcrossExecutions(bool tuple)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("head,*tail,last=[0,['x'*4096],['y'*4096],1]\nreturn tail", budget);
+        var source = tuple ? "head,*tail,last=(0,['x'*4096],['y'*4096],1)\nreturn tail"
+            : "head,*tail,last=[0,['x'*4096],['y'*4096],1]\nreturn tail";
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -85,17 +89,22 @@ public sealed class OrdinaryUnpackingTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("/rhs.txt")]
-    [InlineData("/receiver.txt")]
-    [InlineData("/set.txt")]
-    public async Task UnpackedValuesSurviveSuspensionAndCancelWithoutReplay(string? pausedPath)
+    [InlineData(null, false)]
+    [InlineData("/rhs.txt", false)]
+    [InlineData("/receiver.txt", false)]
+    [InlineData("/set.txt", false)]
+    [InlineData(null, true)]
+    [InlineData("/rhs.txt", true)]
+    [InlineData("/receiver.txt", true)]
+    [InlineData("/set.txt", true)]
+    public async Task UnpackedValuesSurviveSuspensionAndCancelWithoutReplay(string? pausedPath, bool tuple)
     {
         const string source = "def mark(path,label):\n with open(path,'a') as output: output.write(label)\nclass Box:\n @property\n def value(self): return self.saved\n @value.setter\n def value(self,value):\n  mark('set.txt','S')\n  self.saved=value\nbox=Box()\npayload=['value']\ndef rhs():\n mark('rhs.txt','R')\n return [payload,2,3]\ndef receiver():\n mark('receiver.txt','C')\n return box\nreceiver().value,*rest=rhs()\nprint(box.saved is payload,rest)";
         var paths = new[] { "/rhs.txt", "/receiver.txt", "/set.txt" };
         var labels = new[] { "R", "C", "S" };
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            tuple ? source.Replace("return [payload,2,3]", "return (payload,2,3)", StringComparison.Ordinal) : source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
@@ -133,5 +142,53 @@ public sealed class OrdinaryUnpackingTests
             using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
         }
         Assert.Equal(baseline, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RefusedStarredStoragePrecedesTargetEffectsAndAllowsBudgetReuse(bool asynchronous)
+    {
+        const string source = """
+import time
+class Sink:
+ @property
+ def value(self): return self.saved
+ @value.setter
+ def value(self,value):
+  print('stored')
+  self.saved=value
+sink=Sink()
+original=([],[],[])
+time.time()
+try:
+ sink.value,*tail=original
+except MemoryError:
+ print('caught')
+finally:
+ return 0
+""";
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var budget = new AdmissionGateBudget();
+        foreach (var headroom in new[] { 0L, 2L * 1024 * 1024 })
+        {
+            budget.Gate(64L * 1024 * 1024);
+            var host = new AdmissionGateHost(budget, headroom);
+            using (var result = asynchronous
+                ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(budget.AtGate > 0);
+                Assert.Equal(headroom != 0, result.Success);
+                if (headroom == 0)
+                {
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Empty(result.StandardOutput);
+                }
+                else Assert.Equal("stored\n", result.StandardOutput);
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
     }
 }

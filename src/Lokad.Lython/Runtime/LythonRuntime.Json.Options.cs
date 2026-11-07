@@ -348,8 +348,9 @@ internal sealed partial class LythonRuntime
 
         internal static async ValueTask<JsonSeparators> ParseJsonSeparatorsAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            using var values = asynchronous
-                ? await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems: 3).ConfigureAwait(false)
+            using var values = value is PyTuple ? MaterializeUnpackingSequence(value, span, context, maximumItems: 3)
+                : asynchronous
+                ? new UnpackingValues(await PyIteration.MaterializeLeasedAsync(value, span, context, maximumItems: 3).ConfigureAwait(false))
                 : MaterializeUnpackingSequence(value, span, context, maximumItems: 3);
             if (values.Items.Count != 2) throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(2, values.Items.Count), span);
             return new(values.Items[0], values.Items[1]);

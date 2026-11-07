@@ -4023,3 +4023,17 @@ unpack materialization; exact tuples currently copy into leased lists/iterators.
 Select complete immutable tuple unpack transport removal first; larger activation
 consolidation stays separate. No speedup, primary CPython refresh or qualification
 replay. Initial smoke path error retained; no measured collection restart.
+
+## Immutable tuple unpack transport
+
+[R70/B423](results/2026-11-07-tuple-unpack/README.md) removes exact tuple
+unpacking's iterator/list/backing/reservation phase, retaining mutable/protocol
+snapshots and funded starred storage.824internal/1,106public union per actual11/10,
+matching probes and24public baseline regressions pass. Existing five-script
+diagnostic: returned-record allocation−13.57%sync/−14.40%async, controls flat;
+desktop text+9–10%sync/+5–8%async retained. Four-process VM pair114.59s/allgates:
+affected elapsed−6.45–7.45%sync/−7.01–9.34%async; ordinary CSV+0.06–0.28%,
+text−0.15–0.96%, coarseCPU mixed/controlCSV+4.07%. Retain complete-phase removal,
+allocation and controlled affected elapsed; no universalCPU/CPython/debt claim.
+New source full delivery pending; publication postponed. B423 terminal archived/
+verified; no restart or additional collection. Larger activation roadmap stays open.

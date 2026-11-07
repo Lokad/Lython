@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", span);
         }
 
-        private ValueTask CompleteTargetUnpack(ValueTask<PyIteration.DrainLease> pending, ExecutableInstruction instruction)
+        private ValueTask CompleteTargetUnpack(ValueTask<UnpackingValues> pending, ExecutableInstruction instruction)
         {
             if (!pending.IsCompleted) return AwaitTargetUnpackAsync(pending, instruction);
             using var materialized = pending.GetAwaiter().GetResult();
@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
             return default;
         }
 
-        private async ValueTask AwaitTargetUnpackAsync(ValueTask<PyIteration.DrainLease> pending, ExecutableInstruction instruction)
+        private async ValueTask AwaitTargetUnpackAsync(ValueTask<UnpackingValues> pending, ExecutableInstruction instruction)
         {
             using var materialized = await pending.ConfigureAwait(false);
             PublishUnpackedTarget(materialized.Items, instruction);
@@ -208,6 +208,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), instruction.Span);
             for (var i = layout.TargetCount - 1; i >= 0; i--)
             {
+                CheckExecution(instruction.Span);
                 if (i == layout.StarredTargetIndex)
                 {
                     var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), MemoryGovernor, instruction.Span);

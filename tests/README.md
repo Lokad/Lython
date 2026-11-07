@@ -104,6 +104,13 @@ and JSON-lines. Completion, cancellation and refused admission retain funding
 through actual read/close completion; guest suppression and secondary close
 errors cannot replace the first refusal.
 
+[Ordinary unpacking](Lokad.Lython.PublicApi.Tests/OrdinaryUnpackingTests.cs) checks
+list snapshots and immutable tuple borrows through real target suspension,
+cancellation, retained starred aliases and shared-budget reuse. Refused remainder
+storage stops before target effects even through a finally return. Iterator
+consumption and native admission checks retain their independent side-effect,
+arity and cleanup coverage.
+
 [Hash queries](Lokad.Lython.PublicApi.Tests/HashQueryCompatibilityTests.cs) preserve
 Python callback effects and errors, while native copies and set pop use stored
 keys without rehashing. [Ownership checks](Lokad.Lython.Tests/HashQueryOwnershipTests.cs)
