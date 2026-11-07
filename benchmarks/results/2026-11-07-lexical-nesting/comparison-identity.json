@@ -1,0 +1,10 @@
+{
+  "baseline": "d04024ee production, documentation parentb7aad281; R53 fully qualifiedCI42393422539",
+  "candidate": "R55 one lexical nesting pass, exact focused source/core inventory",
+  "cores": {
+    "before": "4d7a8a90394fcfbedd78f72c75aa9e42381c9b13f37e1d837983d10f3255b835",
+    "candidate": "11220cf7b773a38bea09ae19666bb99b1d0df721ba9a8396eaf76ccc35275c7a"
+  },
+  "driverSHA256": "1a9c998a7ad0ba1ed651f3736af499e99c6c29807b9db62b3871317cbe2d2f13",
+  "boundary": "Unchanged R45 five-script driver/catalog,32warmups/image,5rotated rounds*4jobs, isolatedALCs/sharedCoreLib/hashseed/processGC, normalGC/tiering. Compile/fresh/warm separately, sync only; publicRun/reset/mediatedIO/fullgoldens/resultcleanup in warm/fresh. Compile includes disposable public compilation, fresh adds one command; no startup/finalcachedteardown. Desktop clocks diagnostic; no speed prediction or substantial-warm-CPU claim."
+}

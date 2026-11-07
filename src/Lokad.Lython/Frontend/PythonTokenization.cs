@@ -80,7 +80,18 @@ internal static class PythonTokenization
                 { ReadNumber(); continue; }
                 var token = Symbol(c, start + 1 < limit ? source[start + 1] : '\0',
                     start + 2 < limit ? source[start + 2] : '\0', out var length);
-                if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace) _depth++;
+                if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace)
+                {
+                    // Reuse lexical depth before any recursive parsing. Strings
+                    // and f-string fields are handled by the shared scanner.
+                    if (++_depth > LythonEngine.MaxSyntaxNesting)
+                    {
+                        _lexicalDiagnostic = new("LA0003",
+                            $"Syntax nesting exceeds the maximum of {LythonEngine.MaxSyntaxNesting} levels.",
+                            LythonDiagnosticSeverity.Error, null);
+                        break;
+                    }
+                }
                 else if (token is Token.CloseParen or Token.CloseBracket or Token.CloseBrace && _depth > 0) _depth--;
                 Add(token, start, length);
                 _position += length;

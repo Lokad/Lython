@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate delimiter nesting checks into tokenization, removing the duplicate
+  whole-source scanner. Valid same-quote nested f-string literals no longer trigger
+  false nesting errors; parser and managed stack protections remain.
+
 - Keep pending allocations funded across reentrant host memory-budget callbacks.
   Roll back unallocated storage on failure, retain callback results and first
   refusal, and explicitly reject same-execution allocation before a host resize

@@ -565,11 +565,14 @@ open("/repo/input.txt", "r" "+")
         Assert.True(diagnostic.Span.Column > 0);
     }
 
-    [Fact]
-    public void Compile_RejectsExcessiveNestingBeforeParsing()
+    [Theory]
+    [InlineData('(', ')')]
+    [InlineData('[', ']')]
+    [InlineData('{', '}')]
+    public void Compile_RejectsExcessiveNestingBeforeParsing(char open, char close)
     {
         var nesting = LythonEngine.MaxSyntaxNesting + 1;
-        var source = "value = " + new string('(', nesting) + "0" + new string(')', nesting);
+        var source = "value = " + new string(open, nesting) + "0" + new string(close, nesting);
 
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
@@ -588,6 +591,23 @@ open("/repo/input.txt", "r" "+")
         var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
 
         Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+    }
+
+    [Theory]
+    [InlineData("\"")]
+    [InlineData("'")]
+    public async Task Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(string quote)
+    {
+        var delimiters = new string('(', LythonEngine.MaxSyntaxNesting + 1);
+        var source = "value = f" + quote + "{" + quote + delimiters + quote + "}" + quote + "\nreturn value\n";
+        using var compiled = new LythonEngine(Utf8RegexProvider.Instance).Compile(source);
+        Assert.True(compiled.IsValid, string.Join(" | ", compiled.Diagnostics.Select(FormatDiagnostic)));
+        using var sync = compiled.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(delimiters, sync.ReturnValue);
+        using var asynchronous = await compiled.RunAsync(new MockLythonHost());
+        Assert.True(asynchronous.Success, asynchronous.Failure?.Message);
+        Assert.Equal(delimiters, asynchronous.ReturnValue);
     }
 
     [Fact]

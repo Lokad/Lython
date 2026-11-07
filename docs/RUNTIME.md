@@ -15,7 +15,7 @@ budget or token. Compilation returns a disposable
 against `ILythonHost`; engine convenience methods combine compilation/execution.
 Reuse compiled programs for repeated inputs when useful.
 
-Compilation observes its token during initial nesting/indentation scans, tokenization, ordinary
+Compilation observes its token during indentation checks, tokenization, ordinary
 parsing, literal decoding, container/callback fact inspection and provider work,
 and between later compiler phases.
 Later diagnostics, annotation formatting, lexical-fact preparation, lowering and
@@ -1632,6 +1632,7 @@ and suppression. Cleanup is awaited and funded; refusal retains its first
 structured attribution. Completed effects are not transactionally rolled back.
 
 Managed stack admission, Python recursion limits and conservative frontend
-nesting bounds are independent protections. Delimiter nesting is at most 512;
-unary nesting at most 256. Larger call-depth settings do not bypass stack safety.
+nesting bounds are independent protections. Tokenization limits delimiter nesting
+to 512 before recursive parsing, using its existing string/f-string scanner;
+unary nesting is at most 256. Larger call-depth settings do not bypass stack safety.
 There is no native stack probing, unsafe C# or P/Invoke.

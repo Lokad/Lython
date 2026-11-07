@@ -1,0 +1,14 @@
+{
+  "net11.0": {
+    "exitCode": 0,
+    "elapsedSeconds": 3.81587400007993,
+    "probeCore": "11220cf7b773a38bea09ae19666bb99b1d0df721ba9a8396eaf76ccc35275c7a",
+    "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 482 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+  },
+  "net10.0": {
+    "exitCode": 0,
+    "elapsedSeconds": 3.6489335000514984,
+    "probeCore": "657e0596cb8e6f28da3b344dcbbe0b4dc51bc19308cbbff5d227b04e23a39313",
+    "tail": "\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 457 ms - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+  }
+}

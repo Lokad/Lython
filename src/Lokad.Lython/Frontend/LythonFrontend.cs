@@ -8,13 +8,6 @@ internal static class LythonFrontend
     {
         governor?.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
-        if (ExceedsSyntaxNestingLimit(source, cancellationToken))
-        {
-            return CompilationLimitExceeded(
-                "LA0003",
-                $"Syntax nesting exceeds the maximum of {LythonEngine.MaxSyntaxNesting} levels.");
-        }
-
         source = NormalizeSourceText(source);
         PythonTokenization.CheckCancellation(cancellationToken, 0);
 
@@ -83,95 +76,6 @@ internal static class LythonFrontend
             return new FrontendResult(null, [new LythonDiagnostic("LA2010", error.Message,
                 LythonDiagnosticSeverity.Error, error.Span)]);
         }
-    }
-
-    private static FrontendResult CompilationLimitExceeded(string code, string message)
-        => new(
-            null,
-            [new LythonDiagnostic(code, message, LythonDiagnosticSeverity.Error, Span: null)]);
-
-    private static bool ExceedsSyntaxNestingLimit(string source, CancellationToken cancellationToken)
-    {
-        var depth = 0;
-        var quote = '\0';
-        var tripleQuoted = false;
-        var inComment = false;
-
-        for (var i = 0; i < source.Length; i++)
-        {
-            PythonTokenization.CheckCancellation(cancellationToken, i);
-            var current = source[i];
-            if (inComment)
-            {
-                if (current is '\r' or '\n')
-                {
-                    inComment = false;
-                }
-
-                continue;
-            }
-
-            if (quote != '\0')
-            {
-                if (current == '\\')
-                {
-                    i++;
-                    continue;
-                }
-
-                if (current != quote)
-                {
-                    continue;
-                }
-
-                if (tripleQuoted)
-                {
-                    if (i + 2 >= source.Length || source[i + 1] != quote || source[i + 2] != quote)
-                    {
-                        continue;
-                    }
-
-                    i += 2;
-                }
-
-                quote = '\0';
-                tripleQuoted = false;
-                continue;
-            }
-
-            if (current == '#')
-            {
-                inComment = true;
-                continue;
-            }
-
-            if (current is '\'' or '"')
-            {
-                quote = current;
-                tripleQuoted = i + 2 < source.Length && source[i + 1] == current && source[i + 2] == current;
-                if (tripleQuoted)
-                {
-                    i += 2;
-                }
-
-                continue;
-            }
-
-            if (current is '(' or '[' or '{')
-            {
-                depth++;
-                if (depth > LythonEngine.MaxSyntaxNesting)
-                {
-                    return true;
-                }
-            }
-            else if (current is ')' or ']' or '}')
-            {
-                depth = Math.Max(0, depth - 1);
-            }
-        }
-
-        return false;
     }
 
     private static string NormalizeSourceText(string source)

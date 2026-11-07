@@ -1,0 +1,32 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:05.36]     Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(quote: "'") [FAIL]
+[xUnit.net 00:00:05.37]     Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(quote: "\"") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(quote: "'") [221 ms]
+  Error Message:
+   LA0003: Syntax nesting exceeds the maximum of 512 levels.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(String quote) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ParserCompatibilityTests.cs:line 601
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(quote: "\"") [< 1 ms]
+  Error Message:
+   LA0003: Syntax nesting exceeds the maximum of 512 levels.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(String quote) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ParserCompatibilityTests.cs:line 601
+   at InvokeStub_ParserCompatibilityTests.Compile_NestingLimitIgnoresSameQuoteNestedFStringLiteral(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 239 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)
