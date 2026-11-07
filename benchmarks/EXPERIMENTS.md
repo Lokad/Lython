@@ -3889,3 +3889,13 @@ Separate compilation allocation−3.89to−5.89%; desktop clocks/control drift r
 Retain coherent phase replacement and modest compile benefit; no CPU/warm gain,
 whole-objective completion or immediate unchanged retiming. Combined delivery
 with R57 is pending; no producer or publication dependency.
+
+## Immutable development regex snapshot (2026-11-07)
+
+[R59](results/2026-11-07-regex-dev54/README.md): exact0.5.0-dev.54/553acbdf,
+unchanged existing development cursor bridge, isolated outputs/feed/locks;
+86internal/514public per actual11/10 pass. Native working-owner cursor remains
+usable; DetailedData owner, native name enumeration and creation/current-token
+separation still need bridges. Normal0.4pin/core unchanged; no final released
+qualification, backend performance or safety certification inferred. Producer
+publication does not block core work. No sibling source edits/builds.

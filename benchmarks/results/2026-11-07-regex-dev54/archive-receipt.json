@@ -1,0 +1,29 @@
+{
+  "archiveSHA256": "f6e8f123c7fd544c70bec955ec7252aedc2bdb7b6ccfc52295624ec9f0cd12a2",
+  "normalCoreUnchanged": true,
+  "productionPinUnchanged": "0.4.0",
+  "developmentOnly": true,
+  "finalReleasedAdapterQualified": false,
+  "performanceMeasured": false,
+  "producerPackages": {
+    "Lokad.Utf8Regex.0.5.0-dev.54.nupkg": {
+      "sha256": "5f6a4838ed4a289ddffad9440a5164f44093024e562a4b502aa0aad6b5759da3",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.54.nupkg": {
+      "sha256": "10ed7f7a5f8d7c9be7bb06bb509208434611831daebce87d25af491a9a395422",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.54]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.54]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "consumerRevision": "e66b8f72",
+  "producerVersion": "0.5.0-dev.54",
+  "producerRevision": "553acbdfc895d993416e3bad3af47c468a181148",
+  "producerReceipt": "cd338e24, accepted immutable unpublished snapshot; sibling dirty source is neither built nor consumed",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.54.nupkg": {
+      "sha256": "5f6a4838ed4a289ddffad9440a5164f44093024e562a4b502aa0aad6b5759da3",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.54.nupkg": {
+      "sha256": "10ed7f7a5f8d7c9be7bb06bb509208434611831daebce87d25af491a9a395422",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.54]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.54]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Existing qualified dev.48 cursor-working-allowance bridge reused byte-for-byte, outside core and normal adapter. No production pin/lockfile change.",
+  "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+  "limitations": "DetailedData still lacks a distinct working-owner overload, native group-name lookup lacks name enumeration, cursor creation retains its invocation token. Current-token adapter bridge/conservative single-match funding remain. No final released-adapter, managed-safety or performance certification inferred from producer version."
+}
