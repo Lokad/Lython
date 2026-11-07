@@ -30,6 +30,10 @@ Stress and installed core-package consumers in CI42371564043.
 [Delivery receipt](../benchmarks/results/2026-11-07-integer-parsing/delivery-ci.json).
 The normal optional0.4 adapter is unchanged. No new producer certification.
 [Inputs, observations and delivery status](../benchmarks/results/2026-11-07-integer-cpython/README.md).
+Later source `55e510ff` is qualified, but its CPython refresh remains incomplete:
+one collection lost fixtures, another filled the snapshot disk. Original failures
+are [preserved with the measurement status](../benchmarks/results/2026-11-07-wildcard-translation/README.md).
+The table above retains its valid historical revision.
 
 ## Warm execution, compilation and startup
 
@@ -120,7 +124,8 @@ The [ordinary-operation transport consolidation](../benchmarks/results/2026-11-0
 emits fewer instructions and reduces instruction/read-span payload. Its controlled
 complete-script elapsed results are mostly variable, including inconclusive JSON;
 no substantial CPU gain is established. Separate compile allocation rises 0.20–0.87%.
-It is not included in the CPython revision measured above.
+It is included in the recorded CPython revision; the source pair does not isolate
+its contribution to that combined checkpoint.
 
 CPython is the primary external baseline above. These separate source pairs
 measure affected workloads; percentages are not additive or broad CPU claims:

@@ -1,0 +1,31 @@
+{
+  "leaseHeld": true,
+  "allUsersEnded": true,
+  "oldTestBuildsOnly": true,
+  "allOriginalBytesVerifiedAgainstLocalArchive": true,
+  "targets": [
+    "delivery-da0ff811/tests/Lokad.Lython.PublicApi.Tests/bin",
+    "delivery-da0ff811/tests/Lokad.Lython.PublicApi.Tests/obj",
+    "delivery-da0ff811/tests/Lokad.Lython.Tests/bin",
+    "delivery-da0ff811/tests/Lokad.Lython.WorkerFixture/bin",
+    "delivery-da0ff811/tests/Lokad.Lython.WorkerFixture/obj",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.PublicApi.Tests/bin",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.PublicApi.Tests/obj",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.Tests/bin",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.Tests/obj",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.WorkerFixture/bin",
+    "annotation-comprehensions-1c5cff2a/tests/Lokad.Lython.WorkerFixture/obj",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.PublicApi.Tests/bin",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.PublicApi.Tests/obj",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.Tests/bin",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.Tests/obj",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.WorkerFixture/bin",
+    "regex-adapter04-d005e85c/tests/Lokad.Lython.WorkerFixture/obj"
+  ],
+  "files": 1912,
+  "freeBefore": 77824,
+  "freeAfter": 444592128,
+  "localArchive": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\wildcard-utf8-r51\\maintenance\\old-test-builds.tgz",
+  "archiveSHA256": "0f5c835f33693e68bd351d9f51da979fab180b017a3c5f1c4aa8c428af2841cd",
+  "archiveBytes": 133204413
+}

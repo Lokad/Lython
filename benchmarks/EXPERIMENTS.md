@@ -3787,7 +3787,13 @@ change. [Evidence and qualification status](results/2026-11-07-native-integer-wi
 R51 removes the shared UTF-16 translation pipeline, glob segment copies and
 per-class builders. Two complete report scripts allocate 25.0%/31.8% less; controls
 are essentially flat. Initial async glob+8% and refined unstable clocks remain
-inconclusive, not a CPU gain. Both targets pass semantics, refusal, retained
+inconclusive. B407 supports fnmatch−12.33–13.34% and glob−15.55–16.92%
+warm elapsed, while ordinary JSON+4.16–7.43% remains accepted unresolved debt.
+B406's23completed CPython jobs lack a final gate after fixture loss; failure and
+partial evidence remain, with no primary-table promotion. Both targets pass semantics, refusal, retained
 funding and real in-flight cancellation. One initial-capacity refinement and the
-original Windows newline fixture failure are preserved. [Evidence and pending
-qualification](results/2026-11-07-wildcard-translation/README.md).
+original Windows newline fixture failure are preserved. Full delivery42383291690
+passes both platforms/actual11/10/Stress/installed consumers. B408 ENOSPC leaves
+truncated raw JSON; no primary-table promotion. Verified offload of old test build
+outputs restores headroom; corrected collection uses atomic snapshots and owned
+tmpfs fixtures. [Evidence and measurement status](results/2026-11-07-wildcard-translation/README.md).

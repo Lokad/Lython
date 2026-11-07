@@ -7,10 +7,43 @@
     "globSync": -31.797,
     "globAsync": -31.809
   },
-  "elapsed": "Desktop diagnostic/inconclusive: initial async glob+8%; refined sync fnmatch+0.59to+23.83 with23.1% identical-before drift; glob async-0.96to+7.09 with-7.51% drift. No CPU improvement claim. Bounded quiet source-pair confirmation remains planned.",
+  "elapsed": "Initial/refined desktop remains diagnostic and unstable. B407 quiet source pair supports bounded affected elapsed improvements; coarse process CPU direction agrees but is not isolated-method CPU. Adverse ordinary JSON control remains explicit.",
   "checks": "29internal/133public per actual.NET11/10, plus2 actual in-flight separator scans per target; all goldens, funded retained output, refusal/current cancellation/cleanup/reusable allowance pass.",
   "failedConditions": "Initial Windows CPython CRLF golden failed unchanged baseline before sampling; original catalog/error preserved. Explicit file newline and canonical stdout correct fixture, not runtime.",
   "archiveSHA256": "1356aed0a674afccf346cb1301a28bd23c9a5e6e0a27102e0e85f3f7df74b6c8",
-  "fullDelivery": "Pending; R50 CI separately active, does not qualify R51.",
-  "publication": "postponed"
+  "fullDelivery": "CI42383291690 terminal GREEN on55e510ff: Windows/Ubuntu Release actual.NET11/10, original Stress both and installed core consumers. Publication postponed. Earlier source-pair/focused archives retain their initial pending status.",
+  "publication": "postponed",
+  "quietSourcePair": {
+    "run": "B407",
+    "complete": true,
+    "elapsedSeconds": 86.6182900769636,
+    "archiveSHA256": "39f9425538402ca14b8ff58e5c51b385db40f851618ee4fc2e43e976f0adc893",
+    "fnmatchPercent": [
+      -13.341343945411166,
+      -12.330238526288628
+    ],
+    "globPercent": [
+      -16.922689385107347,
+      -15.552180156683493
+    ],
+    "ordinaryJsonPercent": [
+      4.159694375883505,
+      7.43047381973545
+    ],
+    "decision": "Retain coherent UTF-8 pipeline/allocation/affected elapsed gains, explicitly accepting unresolved ordinary-JSON4-7% adverse control debt; no broad CPU, async elapsed or embedding-latency claim. Do not retime unchanged until favorable. Coherent primary CPython checkpoint remains independent."
+  },
+  "failedQuietCheckpoint": {
+    "run": "B406",
+    "completedJobs": 23,
+    "archiveSHA256": "075b9044387fe2c599b42e4603776744bf13ac28d0240f391b19197088cfd3fa",
+    "limitation": "Four wildcard fixture directories disappeared during warmup, no timed source pair/final quiet gate. Cause unestablished. Partial CPython data preserved, not promoted. B407 uses collection-owned nested RAM parent, same source/cores/protocol/inputs/RAM filesystem."
+  },
+  "failedStorageCheckpoint": {
+    "run": "B408",
+    "journalCompletedJobs": 5,
+    "snapshotParseable": false,
+    "snapshotBytes": 524288,
+    "archiveSHA256": "271177b89bc9d0cc36cb02c2dc46b4b6d0445214151ca5a1105bb4ee3b4fa9d7",
+    "reason": "ENOSPC during snapshot publication; no source/CPU conclusion. Original truncated JSON/journal retained. Exact inactive old test bin/obj offloaded/verified before retirement; future collection requires256MiB persistent headroom and atomic snapshots."
+  }
 }

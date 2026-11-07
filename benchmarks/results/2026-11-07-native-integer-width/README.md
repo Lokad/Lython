@@ -70,8 +70,10 @@ ratio. Keep the primary source8c9fd0d7 CPython tables historically labelled.
 improvement. Explicitly accept the measured~1.1%padded-CSV cost; do not add another
 native tier merely to rescue it. Ordinary control variation, older regression
 debt and larger-input uncertainty remain; no universal or async elapsed claim.
-Full platform/Stress/installed-package qualification is pending for the retained
-source. Publication remains postponed; the broader objective is active.
+Full Windows/Ubuntu Release, actual .NET 11/10, original Stress and installed
+core-package qualification passed for the retained source in
+[CI42382037879](delivery-ci.json). This receipt does not qualify later R51 changes.
+Publication remains postponed; the broader objective is active.
 
 [Raw controlled observations](b405/observations.tgz), [four-role summary](b405/comparison-summary.json),
 [receipt](b405/archive-receipt.json), [refined allocation/adverse desktop clocks](refined-local-summary.json),

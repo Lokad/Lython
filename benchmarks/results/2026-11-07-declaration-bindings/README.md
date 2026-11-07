@@ -70,7 +70,8 @@ cleanup. Compilation/startup/fixture staging/reset/transport/final cached teardo
 are excluded. Compilation and async allocation diagnostics are separate. Primary
 CPython tables still identify fully qualified source8c9fd0d7; no cross-run ratio
 is constructed from those medians. Full platform/Stress/installed-package delivery
-for this later source is pending, to be batched at this retained checkpoint.
+on both platforms and actual .NET targets passed for this source in
+[CI42379372181](delivery-ci.json). This receipt does not qualify later changes.
 Publication remains postponed.
 
 [Controlled raw observations](b404/observations.tgz), [four-role summary](b404/comparison-summary.json),
