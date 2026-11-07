@@ -1,0 +1,18 @@
+{
+  "revision": "8c9fd0d7e9fdbe57d42cf0a3c100b369a7079beb",
+  "utc": "2026-11-07T12:26:40.138544+00:00",
+  "sources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "360d2afb32166f7072d44033480992f6c8b7cfa3d23fb9f86fcedb9d3f0fc71e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.IntegerParsing.cs": "383267dfeff3f8feb24341fa919e64b1a8b76b8f0d29ac89a5d120a77b2139ce",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "7f33cc0016eb00a7005022362d2f082d441c03723ba05567268c77ea67601ca8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "016bcd5912a5135b409250f5e0f3ba28bdc59f1a68a9db231c809db12647bfe3"
+  },
+  "observations": [
+    "Default JSON Int64 tokens already parse bounded UTF-8. Hooks already own their raw token text and must remain unchanged.",
+    "Large defaults reserve two magnitudes, reserve4bytes/token-byte scratch, decode UTF-8 to CLR text, invoke BigInteger.Parse and separately fund the retained integer.",
+    "GuardIntegerParseBytes has one remaining production caller: JSON. One internal infrastructure test also calls it.",
+    "R45 general parser is cancellable and admitted but its repeated radix-chunk multiply/add is not assumed faster than BCL decimal parsing at large lengths.",
+    "Native list/tuple iteration and fused cased whitespace splitting already exist; neither is selected as a missing optimization."
+  ],
+  "qualification": "Source gate only; no prototype, timing or producer qualification."
+}

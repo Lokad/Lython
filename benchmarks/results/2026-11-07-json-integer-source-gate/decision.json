@@ -1,0 +1,18 @@
+{
+  "retained": false,
+  "reason": "The BCL decimal parser materially reduces intermediate arithmetic and allocation. Sharing the R45 radix-chunk kernel regresses complete JSON allocation even after removing its decoded string. No new universal parser, threshold route or hidden generic UTF8 conversion bridge is retained.",
+  "allocation": {
+    "decimal40Percent": [
+      10.51515844174309,
+      10.511
+    ],
+    "decimal4096Percent": [
+      2753.905,
+      2748.787
+    ]
+  },
+  "checks": "208internal/986public per actual.NET11/10, all goldens/funding/isolation/cleanup in both five-case short diagnostics; desktop elapsed variable, adverse outcomes retained.",
+  "sourceRestoration": "Exact four production/two test files restored to HEADad74fa41; frozen precommit images and full patch retained. Nonincremental rebuild required before any future local no-build tests or image freeze.",
+  "developmentSHA256": "9893de669106ce8cffe9122520a9a5515570afaa5505556482fe1c14f0e2d677",
+  "sourceStatus": "No delivered runtime change. No VM collection or new platform qualification requested for withdrawn code."
+}

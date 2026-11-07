@@ -1,0 +1,7 @@
+{
+  "Lokad.Lython.Tests-net11.0.log": {
+    "exitCode": 1,
+    "selection": "Category!=Stress&(FullyQualifiedName~Json|FullyQualifiedName~IntegerText|FullyQualifiedName~GeneralIntegerText|FullyQualifiedName~UnicodeIntegerText)",
+    "tail": "Test run for D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net11.0\\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n[xUnit.net 00:00:00.82]     Lokad.Lython.Tests.JsonNumberTokenStorageTests.LargeIntegerConstructionRefundsScratchAndFundsItsResult(asynchronous: True) [FAIL]\n[xUnit.net 00:00:00.82]     Lokad.Lython.Tests.JsonNumberTokenStorageTests.LargeIntegerConstructionRefundsScratchAndFundsItsResult(asynchronous: False) [FAIL]\n\nFailed!  - Failed:     2, Passed:   206, Skipped:     0, Total:   208, Duration: 219 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)\n"
+  }
+}

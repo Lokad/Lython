@@ -103,3 +103,8 @@ B399 is terminal/archived and locally hash-verified (`3f988c52`); no workers or
 guest fixtures remain. Never service-query again. Development images are evidence,
 not release packages. Full platform/Stress/installed-package qualification is the
 next coherent delivery boundary, followed by the representative CPython refresh.
+
+Independent delivery CI42371564043 subsequently completed GREEN on exact8c9fd0d7:
+Windows/Ubuntu Release actual.NET11/10, original Stress both targets and installed
+core consumers. This qualifies retained R44/R45, not the later withdrawn R46
+prototype. [Terminal receipt](delivery-ci.json). No further terminal-run query or repeated qualification.

@@ -73,3 +73,8 @@ remain visible; labels are measurement descriptions, not design veto thresholds.
 also preserves catalog, source patch, machine gates, setup plan and complete
 warmups/samples. Historical B395 and all adverse source-pair results remain.
 Publication is postponed; this checkpoint does not complete the performance goal.
+
+Independent delivery CI42371564043 subsequently completed GREEN on exact8c9fd0d7:
+Windows/Ubuntu Release actual.NET11/10, original Stress both targets and installed
+core consumers. This qualifies retained R44/R45, not the later withdrawn R46
+prototype. [Terminal receipt](../2026-11-07-integer-parsing/delivery-ci.json). No further terminal-run query or repeated qualification.

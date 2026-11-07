@@ -1,0 +1,9 @@
+{
+  "source": "8c9fd0d7 production / ad74fa41 documentation, restored after withdrawn R46",
+  "nonincrementalReleaseSolutionBuild": "Build succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:25.44",
+  "cores": {
+    "net11.0": "4f9000a604917d7d15cabad795832bc05e2ed074ec7066c4d7dbe0e3824c45c0",
+    "net10.0": "4a25d785afe2a467b07196f2a0b5513266ac7429338b157c9ad3703b0e85cb51"
+  },
+  "qualification": "Existing full CI42371564043 qualifies exact retained production; no unchanged tests repeated. Rebuilt local binaries replace prototype outputs."
+}

@@ -3736,3 +3736,15 @@ B400 records21 compile/warm/compile-run jobs on8c9fd0d7, five ordinary scripts a
 two explicit affected integer inputs. All gates/archive verification pass; variable
 controls remain visible. Full combined delivery is independent and pending.
 [Evidence and boundaries](results/2026-11-07-integer-cpython/README.md).
+
+## JSON integer construction source gate (2026-11-07)
+
+R46 is withdrawn: shared radix chunks raise whole-job allocation10.5% for40-digit
+JSON values and about28.5times the total allocation for4096-digit values. Focused
+semantics/ownership pass, clocks remain diagnostic/adverse; CLR decimal parsing
+keeps its current path. No speculative runtime code survives.
+[Evidence, failed fixture and source restoration](results/2026-11-07-json-integer-source-gate/README.md).
+
+Combined retained R44/R45 delivery42371564043 is terminal GREEN on8c9fd0d7:
+both platforms, actual11/10, original Stress and installed consumers. No qualification
+is claimed for the withdrawn R46 code. [Receipt](results/2026-11-07-integer-parsing/delivery-ci.json).

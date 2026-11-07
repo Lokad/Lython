@@ -23,8 +23,9 @@ The first five workloads retain the maintained ordinary inputs. The final two
 explicitly exercise general integer conversion: padded CSV keeps the same source;
 numeric-string JSON calls int in its helper. They do not replace the ordinary
 baseline. Frozen core `d3a6c778` matches the recorded production inventory with
-precommit SourceLink3480aa55. Combined Windows/Ubuntu, actual.NET11/10, original
-Stress and installed-consumer CI42371564043 is pending; focused checks pass.
+precommit SourceLink3480aa55. Exact production passed Windows/Ubuntu Release, actual.NET11/10, original
+Stress and installed core-package consumers in CI42371564043.
+[Delivery receipt](../benchmarks/results/2026-11-07-integer-parsing/delivery-ci.json).
 The normal optional0.4 adapter is unchanged. No new producer certification.
 [Inputs, observations and delivery status](../benchmarks/results/2026-11-07-integer-cpython/README.md).
 
