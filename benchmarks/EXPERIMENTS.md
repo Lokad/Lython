@@ -3729,3 +3729,10 @@ Retain coherent redesign/correctness/affected gains, without general CPU/parity,
 retained-memory or embedding-tail claims. Terminal/archive3f988c52 verified;
 no workers/fixtures or repeated service queries. Full R44/R45 delivery and primary
 CPython refresh pending; publication/producer qualification stay independent.
+
+## Representative CPython checkpoint after R45 (2026-11-07)
+
+B400 records21 compile/warm/compile-run jobs on8c9fd0d7, five ordinary scripts and
+two explicit affected integer inputs. All gates/archive verification pass; variable
+controls remain visible. Full combined delivery is independent and pending.
+[Evidence and boundaries](results/2026-11-07-integer-cpython/README.md).

@@ -1,96 +1,96 @@
 # Performance against CPython
 
-| Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
+| Workload | Input | Lython | CPython | Lython / CPython | Status; control / Lython IQR |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 4,096 records /57,361 B | 4.109–4.110 ms | 3.400 ms | 1.21–1.21× | Diagnostic; 0.04% / 1.06% |
-| Text summary/helpers | 3,072 lines /35,840 B | 2.153–2.196 ms | 1.263 ms | 1.71–1.74× | Diagnostic; 1.99% / 1.29% |
-| JSON-lines/helpers | 4,096 records /110,592 B | 4.365–4.630 ms | 4.242 ms | 1.03–1.09× | Variable; 6.07% / 0.79% |
-| JSON-to-Markdown report | 3,072 records /189,441 B | 3.593–3.762 ms | 2.789 ms | 1.29–1.35× | Variable; 4.48% / 5.30% |
-| Configuration read/edit/write | 16 paths /181 B | 144.745–145.047 µs | 124.272 µs | 1.16–1.17× | Variable; 0.21% / 3.67% |
+| CSV summary/ordinary helper | 4,096 records / 57,361 B | 4.065–4.190 ms | 3.368 ms | 1.21–1.24× | Variable; 2.99% / 0.69% |
+| Text summary/helpers | 3,072 lines / 35,840 B | 2.105–2.129 ms | 1.263 ms | 1.67–1.69× | Diagnostic; 1.13% / 0.58% |
+| JSON-lines/helpers | 4,096 records / 110,592 B | 4.305–4.329 ms | 4.186 ms | 1.03–1.03× | Diagnostic; 0.55% / 0.91% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.608–3.665 ms | 2.509 ms | 1.44–1.46× | Variable; 1.56% / 3.30% |
+| Configuration read/edit/write | 16 paths / 181 B | 147.184–147.313 µs | 125.544 µs | 1.17–1.17× | Diagnostic; 0.09% / 2.76% |
+| CSV with padded numeric fields | 4,096 records / 191,505 B | 4.569–4.586 ms | 4.325 ms | 1.06–1.06× | Diagnostic; 0.37% / 1.15% |
+| JSON with numeric strings | 4,096 records / 278,528 B | 7.767–7.807 ms | 4.639 ms | 1.67–1.68× | Diagnostic; 0.52% / 1.62% |
 
-**2026-11-07; 0.11 development source `fba865ef`; CPython3.13.16; .NET11RC3.**
+**2026-11-07; 0.11 development source `8c9fd0d7`; CPython3.13.16; .NET11RC3.**
 These are **compilation plus one execution in an already-running host**, including
 mediated RAM-file I/O, complete validation and prior-result cleanup. Startup and
 fixture staging/reset are excluded. **Ratio=Lython elapsed/CPython elapsed; above
-one means slower.**
+one means slower.** Ranges span two independent identical-build process medians,
+not confidence intervals. Control is their absolute difference/candidate; IQR is
+the larger Lython-role interquartile range/median. Diagnostic/Variable describe
+short observations; they are not design acceptance thresholds.
 
-Ranges are medians from two independent identical-build processes, not confidence
-intervals. Control is their absolute difference relative to candidate; IQR is the
-larger Lython-role interquartile range/median. Diagnostic/Variable labels describe
-short observations; they are not design acceptance thresholds. Variable cases stay
-visible. These timings describe the recorded source, not future HEAD. Frozen core
-`5d2ca8e1` matches that production source, including R36/R38/R40/R41, with precommit
-SourceLink1971487a. Exact sourcefba865ef passed Windows/Ubuntu, actual.NET11/10,
-original Stress and installed-package consumers. The optional normal0.4 adapter
-is identical across Lython roles; private development producers are outside this
-comparison. [Inputs, observations and qualification](../benchmarks/results/2026-11-07-receiver-cpython/README.md).
+The first five workloads retain the maintained ordinary inputs. The final two
+explicitly exercise general integer conversion: padded CSV keeps the same source;
+numeric-string JSON calls int in its helper. They do not replace the ordinary
+baseline. Frozen core `d3a6c778` matches the recorded production inventory with
+precommit SourceLink3480aa55. Combined Windows/Ubuntu, actual.NET11/10, original
+Stress and installed-consumer CI42371564043 is pending; focused checks pass.
+The normal optional0.4 adapter is unchanged. No new producer certification.
+[Inputs, observations and delivery status](../benchmarks/results/2026-11-07-integer-cpython/README.md).
 
 ## Warm execution, compilation and startup
 
 Same source/input and execution/I/O/validation/cleanup boundary, reusing compiled code:
 
-| Warm workload | Lython | CPython | Ratio | Status; control / Lython IQR |
+| Workload | Lython | CPython | Lython / CPython | Status; control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 3.868–3.997 ms | 3.238 ms | 1.19–1.23× | Variable; 3.22% / 0.47% |
-| Text summary/helpers | 2.040–2.086 ms | 1.163 ms | 1.75–1.79× | Variable; 2.22% / 0.61% |
-| JSON-lines/helpers | 4.221–4.227 ms | 4.072 ms | 1.04–1.04× | Diagnostic; 0.14% / 0.75% |
-| JSON-to-Markdown report | 3.549–3.594 ms | 2.603 ms | 1.36–1.38× | Variable; 1.24% / 8.69% |
-| Configuration read/edit/write | 75.062–75.250 µs | 60.212 µs | 1.25–1.25× | Diagnostic; 0.25% / 0.93% |
+| CSV summary/ordinary helper | 3.907–3.936 ms | 3.211 ms | 1.22–1.23× | Diagnostic; 0.72% / 1.29% |
+| Text summary/helpers | 2.002–2.050 ms | 1.158 ms | 1.73–1.77× | Variable; 2.33% / 0.85% |
+| JSON-lines/helpers | 4.191–4.214 ms | 4.075 ms | 1.03–1.03× | Diagnostic; 0.54% / 1.17% |
+| JSON-to-Markdown report | 3.499–3.509 ms | 2.337 ms | 1.50–1.50× | Variable; 0.28% / 4.13% |
+| Configuration read/edit/write | 75.156–77.331 µs | 59.996 µs | 1.25–1.29× | Variable; 2.89% / 1.21% |
+| CSV with padded numeric fields | 4.407–4.470 ms | 4.160 ms | 1.06–1.07× | Diagnostic; 1.41% / 1.02% |
+| JSON with numeric strings | 7.601–7.671 ms | 4.507 ms | 1.69–1.70× | Diagnostic; 0.92% / 1.82% |
 
 Compilation/program disposal only; execution and I/O excluded. Do not subtract
-warm and fresh medians to infer compilation: these are independent job blocks.
+warm and compile-to-result medians to infer compilation; these are separate jobs.
 
-| Compile-only script | Lython | CPython | Ratio | Status; control / Lython IQR |
+| Workload | Lython | CPython | Lython / CPython | Status; control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 67.955–68.465 µs | 59.471 µs | 1.14–1.15× | Diagnostic; 0.75% / 2.73% |
-| Text summary/helpers | 49.876–50.284 µs | 41.640 µs | 1.20–1.21× | Diagnostic; 0.82% / 2.09% |
-| JSON-lines/helpers | 58.505–58.685 µs | 50.710 µs | 1.15–1.16× | Diagnostic; 0.31% / 2.30% |
-| JSON-to-Markdown report | 46.770–46.959 µs | 38.039 µs | 1.23–1.23× | Variable; 0.40% / 5.82% |
-| Configuration read/edit/write | 41.959–42.187 µs | 34.605 µs | 1.21–1.22× | Diagnostic; 0.54% / 1.65% |
+| CSV summary/ordinary helper | 68.093–69.668 µs | 59.441 µs | 1.15–1.17× | Variable; 2.26% / 1.41% |
+| Text summary/helpers | 49.968–50.839 µs | 41.556 µs | 1.20–1.22× | Diagnostic; 1.71% / 0.82% |
+| JSON-lines/helpers | 60.878–61.180 µs | 50.915 µs | 1.20–1.20× | Variable; 0.49% / 6.51% |
+| JSON-to-Markdown report | 47.135–47.427 µs | 37.822 µs | 1.25–1.25× | Diagnostic; 0.62% / 1.00% |
+| Configuration read/edit/write | 42.327–42.742 µs | 34.603 µs | 1.22–1.24× | Diagnostic; 0.98% / 0.85% |
+| CSV with padded numeric fields | 68.578–69.275 µs | 59.421 µs | 1.15–1.17× | Diagnostic; 1.01% / 1.81% |
+| JSON with numeric strings | 61.658–61.716 µs | 52.021 µs | 1.19–1.19× | Diagnostic; 0.09% / 1.08% |
 
 **Startup, genuinely suspended-I/O latency, heap/RSS and embedding latency remain
-unmeasured.** Text remains the largest maintained warm gap,1.75–1.79×. Report warm
-IQR8.69%, text warm control2.22%, CSV warm3.22% and fresh JSON control6.07% limit
-interpretation. This combined checkpoint does not isolate each change's CPU benefit,
-repay earlier CSV debt or explain historical adverse/unstable source-pair results.
-[Previous primary comparison, source42101cd5](../benchmarks/results/2026-11-07-formatted-cpython/README.md).
+unmeasured.** Variable controls and IQRs stay visible. This combined checkpoint
+does not repay historical CSV debt, explain earlier adverse controls or isolate
+each change's CPU benefit. It describes the recorded source, not future HEAD.
+[Previous primary comparison, sourcefba865ef](../benchmarks/results/2026-11-07-receiver-cpython/README.md).
 
 ## Machine, included work and fairness
 
-Dedicated Azure Standard_F4as_v7, Ubuntu24.04.4 x86-64, four AMD EPYC9V45 vCPUs,
-one thread/core,16GiB RAM/no swap. CPython GCC13.3 PGO/LTO, ordinary GIL/GC,
-no JIT/debug, `-I -S -X utf8`. SDK/runtime11.0.100-rc.3.26522.148 /
-11.0.0-rc.3.26522.148. Independent sequential processes, normal worker GC/tiering,
-quiet endpoints; five-second warmup per role/job and seven rotated150ms rounds.
-Fifteen jobs completed311.66s; all workers joined and fixtures were removed.
+Dedicated AzureStandard_F4as_v7, Ubuntu24.04.4 x86-64, four AMD EPYC9V45 vCPUs,
+one thread/core,16GiB/no swap. CPython GCC13.3 PGO/LTO, ordinary GIL/GC,
+no JIT/debug, -I -S -X utf8. SDK/runtime11.0.100-rc.3.26522.148 /
+11.0.0-rc.3.26522.148. Independent sequential processes, normal GC/tiering,
+quiet endpoints;5s warmup per role/job, seven rotated150ms rounds.21jobs completed
+434.37s; all workers joined and fixtures removed. Source/images/conditions are
+preserved with the raw observations.
 
-Both engines run identical scripts/fixtures, checking complete output/file digests
+Both engines run identical scripts/fixtures and check complete output/file digests
 on every invocation. Efficient host overrides mediate Lython file access. RAM
-fixtures include reads/writes; staging/reset is outside elapsed clocks. Warm
-includes invocation and prior-result cleanup. Compile includes construction/
-disposal; compile-to-result also executes a fresh script. Transport and final
-program/result/process/fixture teardown are outside clocks. CPython retains imported
-modules between invocations; Lython isolates execution imports. This is an embedding
-comparison, not a claim of identical implementations or import caching.
-
-These primary tables use `Run`. Historical `4ace68ff` `RunAsync` jobs use completed
-mediated I/O: text2.630–2.636ms versus CPython1.203ms (2.19×), CSV5.586–5.670ms
-versus3.220ms (1.74–1.76×). Async text elapsed is6.91–7.14% below Q02;
-CSV is inconclusive. These do not measure genuinely pending-I/O latency.
-[Historical async evidence](../benchmarks/results/2026-11-06-native-read-cpython/README.md),
-[earlier async hash/read debt](../benchmarks/results/2026-11-06-async-key-reads/README.md)
-and [original native-read comparison](../benchmarks/results/2026-11-06-native-read-prefix/README.md)
-retain their distinct source pairs and adverse results.
+fixtures include reads/writes; staging/reset are outside elapsed clocks. Warm
+includes invocation and prior-result cleanup; compile includes construction/disposal.
+Protocol transport and final cached teardown are excluded. CPython retains imported
+modules; Lython isolates execution imports. This is an embedding comparison, not
+a claim of identical implementations. These tables use synchronous Run; historical
+async comparisons use completed mediated I/O, not pending-I/O latency.
+[Historical async evidence](../benchmarks/results/2026-11-06-native-read-cpython/README.md)
+preserves its distinct sources and adverse controls.
 
 ## Improvements within Lython
 
-The later [general integer parser](../benchmarks/results/2026-11-07-integer-parsing/README.md)
+The [general integer parser](../benchmarks/results/2026-11-07-integer-parsing/README.md)
 improves explicitly affected whole scripts: padded-field CSV warm time falls
 12.5–13.4%, and numeric-string JSON 41.4–42.0%, versus source77703a42. Initial
 allocation falls13–15%/63%; ordinary controls remain variable. These inputs and
-later source are separate from the primary CPython table above.
+source-pair results are separate from the external CPython table above.
 
-The later [ordinary-operation transport consolidation](../benchmarks/results/2026-11-07-operand-transport/README.md)
+The [ordinary-operation transport consolidation](../benchmarks/results/2026-11-07-operand-transport/README.md)
 emits fewer instructions and reduces instruction/read-span payload. Its controlled
 complete-script elapsed results are mostly variable, including inconclusive JSON;
 no substantial CPU gain is established. Separate compile allocation rises 0.20–0.87%.
