@@ -64,7 +64,9 @@ cancellation/refusal before transfer, input funding and final shared-budget reus
 Existing CSV protocol, mutable headers, short/rest fields, real suspension/cleanup,
 refused admission and retained results remain. Explicit Release installed consumers
 pass both actual runtimes, including bounded batches and real asynchronous I/O.
-Full platform/Stress/package delivery remains a separate upcoming checkpoint.
+Delivery42319704404 on01aedc3b is terminal GREEN, all eight Windows/Ubuntu
+actual11/10/original Stress/installed-package gates verified in
+[delivery-ci.json](delivery-ci.json). Later native-body prototypes are separate.
 
 Initial123pass/2fail are the new Clear tests' incorrect expectation of a refund.
 Source review confirms ordinary dictionary Clear retains its arrays; the nearby

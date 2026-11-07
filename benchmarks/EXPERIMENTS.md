@@ -1,5 +1,12 @@
 # Benchmark experimental history
 
+The [R25 CPython checkpoint](results/2026-11-07-current-cpython/README.md)
+records exact01aedc3b/current frozen0933d540, all15jobs/312s/all gates. Warm CSV
+1.20–1.22x,text1.81–1.83x,JSON1.08x CPython; fresh JSON/report/config remain
+variable. Full R25 delivery42319704404 is GREEN/all eight gates, cached. This
+refresh does not qualify or time later native-body corrections, explain prior
+adverse source pairs or establish startup/RSS/suspended-I/O latency.
+
 The [completed CSV values milestone](results/2026-11-07-csv-record-values/README.md)
 transfers funded row arrays into canonical shared-key dictionaries after admission/
 header revalidation. Native CSV allocation−7.31/−6.55%sync/async; B372109s/all gates

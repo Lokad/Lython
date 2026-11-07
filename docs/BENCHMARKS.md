@@ -2,13 +2,13 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 4,096 records / 57,361 B | 4.284–4.305 ms | 3.423 ms | 1.25–1.26× | Diagnostic; 0.49% / 0.84% |
-| Text summary/helpers | 3,072 lines / 35,840 B | 2.286–2.301 ms | 1.288 ms | 1.77–1.79× | Diagnostic; 0.65% / 0.77% |
-| JSON-lines/helpers | 4,096 records / 110,592 B | 4.547–4.646 ms | 4.197 ms | 1.08–1.11× | Variable; 2.13% / 2.43% |
-| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.710–3.782 ms | 2.479 ms | 1.50–1.53× | Diagnostic; 1.89% / 2.76% |
-| Configuration read/edit/write | 16 paths / 181 B | 149.920–151.384 µs | 123.593 µs | 1.21–1.22× | Diagnostic; 0.97% / 2.96% |
+| CSV summary/ordinary helper | 4,096 records /57,361B | 4.375–4.455 ms | 3.582 ms | 1.22–1.24× | Diagnostic; 1.80% / 1.53% |
+| Text summary/helpers | 3,072 lines /35,840B | 2.259–2.264 ms | 1.282 ms | 1.76–1.77× | Diagnostic; 0.21% / 0.96% |
+| JSON-lines/helpers | 4,096 records /110,592B | 4.493–4.644 ms | 4.196 ms | 1.07–1.11× | Variable; 3.35% / 0.57% |
+| JSON-to-Markdown report | 3,072 records /189,441B | 3.693–3.920 ms | 2.765 ms | 1.34–1.42× | Variable; 5.79% / 8.45% |
+| Configuration read/edit/write | 16 paths /181B | 147.401–147.940 µs | 122.734 µs | 1.20–1.21× | Variable; 0.37% / 3.39% |
 
-**2026-11-06; 0.11 development runtime source `4fad63c5`; CPython 3.13.16; .NET 11 RC3.**
+**2026-11-07; 0.11 development source `01aedc3b`; CPython3.13.16; .NET11RC3.**
 These are **compilation plus one execution in an already-running host**, including
 mediated RAM-file I/O, complete validation and prior-result cleanup. Startup and
 fixture staging/reset are excluded. **Ratio=Lython elapsed/CPython elapsed; above
@@ -16,45 +16,41 @@ one means slower.**
 
 Ranges are medians from two independent identical-build processes, not confidence
 intervals. Control is their absolute difference relative to candidate; IQR is the
-larger Lython-role interquartile range/median. JSON fresh and warm report remain variable.
-These measurements describe the recorded source, not future HEAD. Frozen core
-`c3e65ad3` has the recorded runtime source. That source passed Windows/Ubuntu,
-actual .NET11/10, original Stress and installed-package consumers at a4a1c306.
-The original allocation-test measurement failure and corrected endpoint remain
-in the evidence. Later initializer work and private development regex adapters
+larger Lython-role interquartile range/median. Fresh JSON, report and configuration
+remain variable. These timings describe the recorded source, not future HEAD.
+Frozen core `0933d540` has that exact recorded production source. Source01aedc3b
+passed Windows/Ubuntu, actual.NET11/10, original Stress and installed-package
+consumers. Subsequent native-body changes and private development regex adapters
 are outside this comparison.
-[Identity, observations and qualification](../benchmarks/results/2026-11-06-current-cpython/README.md).
+[Identity, observations and qualification](../benchmarks/results/2026-11-07-current-cpython/README.md).
 
 ## Warm execution, compilation and startup
 
 Same source/input and execution/I/O/validation/cleanup boundary, reusing compiled code:
 
-| Warm workload | Lython | CPython | Ratio | Status; current control / Lython IQR |
+| Warm workload | Lython | CPython | Ratio | Status; control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 4.207–4.235 ms | 3.216 ms | 1.31–1.32× | Diagnostic; 0.68% / 0.79% |
-| Text summary/helpers | 2.184–2.208 ms | 1.160 ms | 1.88–1.90× | Diagnostic; 1.13% / 0.61% |
-| JSON-lines/helpers | 4.394–4.449 ms | 4.068 ms | 1.08–1.09× | Diagnostic; 1.25% / 0.64% |
-| JSON-to-Markdown report | 3.423–3.546 ms | 2.586 ms | 1.32–1.37× | Variable; 3.47% / 3.95% |
-| Configuration read/edit/write | 77.573–77.790 µs | 60.527 µs | 1.28–1.29× | Diagnostic; 0.28% / 2.37% |
+| CSV summary/ordinary helper | 3.874–3.928 ms | 3.216 ms | 1.20–1.22× | Diagnostic; 1.41% / 0.77% |
+| Text summary/helpers | 2.141–2.163 ms | 1.184 ms | 1.81–1.83× | Diagnostic; 1.01% / 0.47% |
+| JSON-lines/helpers | 4.386–4.392 ms | 4.072 ms | 1.08–1.08× | Diagnostic; 0.14% / 0.77% |
+| JSON-to-Markdown report | 3.404–3.456 ms | 2.563 ms | 1.33–1.35× | Diagnostic; 1.54% / 1.51% |
+| Configuration read/edit/write | 74.996–75.368 µs | 60.070 µs | 1.25–1.25× | Diagnostic; 0.50% / 2.68% |
 
 Compilation/program disposal alone; execution and I/O excluded. Do not subtract
-warm and fresh medians to infer compilation: these are independent job blocks,
-and CPython report fresh is below warm in this collection.
+warm and fresh medians to infer compilation: these are independent job blocks.
 
-| Compile-only script | Lython | CPython | Ratio | Status; current control / Lython IQR |
+| Compile-only script | Lython | CPython | Ratio | Status; control / Lython IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 72.241–72.915 µs | 60.434 µs | 1.20–1.21× | Variable; 0.92% / 4.11% |
-| Text summary/helpers | 53.436–54.614 µs | 41.325 µs | 1.29–1.32× | Variable; 2.16% / 3.07% |
-| JSON-lines/helpers | 64.372–64.882 µs | 50.867 µs | 1.27–1.28× | Diagnostic; 0.79% / 2.63% |
-| JSON-to-Markdown report | 51.046–52.075 µs | 37.684 µs | 1.35–1.38× | Variable; 2.02% / 3.44% |
-| Configuration read/edit/write | 44.586–44.672 µs | 34.603 µs | 1.29× | Diagnostic; 0.19% / 2.99% |
+| CSV summary/ordinary helper | 71.364–72.446 µs | 59.682 µs | 1.20–1.21× | Diagnostic; 1.52% / 2.33% |
+| Text summary/helpers | 53.339–53.664 µs | 41.028 µs | 1.30–1.31× | Diagnostic; 0.61% / 2.24% |
+| JSON-lines/helpers | 64.658–65.171 µs | 50.940 µs | 1.27–1.28× | Diagnostic; 0.79% / 2.36% |
+| JSON-to-Markdown report | 50.614–51.456 µs | 37.811 µs | 1.34–1.36× | Diagnostic; 1.64% / 2.76% |
+| Configuration read/edit/write | 44.303–44.425 µs | 34.590 µs | 1.28–1.28× | Diagnostic; 0.27% / 1.98% |
 
 **Startup, genuinely suspended-I/O latency, heap/RSS and embedding latency remain
-unmeasured.** This refresh measures the combined delivery and does not isolate each
-change's CPU benefit. Earlier source-pair regressions and unstable controls remain
-in their evidence; later absolute timings do not explain them.
-[Previous primary comparison, source `b6650f09`](../benchmarks/results/2026-11-06-delivery-cpython/README.md),
-[text-provenance source pair and accepted debt](../benchmarks/results/2026-11-06-text-operation-provenance/README.md).
+unmeasured.** This refresh measures combined changes; it does not isolate each
+change's CPU benefit or explain earlier adverse/unstable source-pair results.
+[Previous primary comparison, source4fad63c5](../benchmarks/results/2026-11-06-current-cpython/README.md).
 
 ## Machine, included work and fairness
 
@@ -63,7 +59,7 @@ one thread/core,16GiB RAM/no swap. CPython GCC13.3 PGO/LTO, ordinary GIL/GC,
 no JIT/debug, `-I -S -X utf8`. SDK/runtime11.0.100-rc.3.26522.148 /
 11.0.0-rc.3.26522.148. Independent sequential processes, normal worker GC/tiering,
 quiet endpoints; five-second warmup per role/job and seven rotated150ms rounds.
-Fifteen jobs completed312.23s; all workers joined and fixtures were removed.
+Fifteen jobs completed312.40s; all workers joined and fixtures were removed.
 
 Both engines run identical scripts/fixtures, checking complete output/file digests
 on every invocation. Efficient host overrides mediate Lython file access. RAM
@@ -94,7 +90,7 @@ measure affected workloads; percentages are not additive or broad CPU claims:
 | Validated regex programs / extraction | Warm elapsed −8.34–9.64%; compile-to-result −6.47–6.53% versus41c25958 | Programs remain charged until script disposal; larger compilation footprint. Text control spread2.78%, unchanged compilation also moves. [R23](../benchmarks/results/2026-11-06-regex-program-reuse/README.md) |
 | Fixed builtin initialization / configuration | Warm elapsed −1.13–2.44%; fresh −1.43% to +0.13% versus4fad63c5 | Removes2,688B of reflected factory allocation per invocation. Compilation control −1.20–1.63%; text role spread4.10%. No broad CPU gain. [R22](../benchmarks/results/2026-11-06-builtin-initialization/README.md) |
 | Frame resumption / text helpers | Warm elapsed −3.00–5.59%; fresh −0.79% to +0.02% versus f2ce53db | Allocation flat. Unchanged compilation control −1.47–2.23% limits precision; no general CPU or CPython-baseline claim. [R21](../benchmarks/results/2026-11-06-frame-resume-boundaries/README.md) |
-| Shared record keys / JSON and report | JSON warm elapsed −10.89–12.53%; report warm −5.36–8.80%, fresh −8.53–10.52% versus b542b601 | Separate complete-job allocation −14.98–14.99% JSON, −9.43% report. Text confirmation −1.21% to +5.53%; possible regression accepted as debt. CSV coarse CPU adverse. Source pair core67f84196; primary five-script baseline above measures4fad63c5. [R20](../benchmarks/results/2026-11-06-record-layout/README.md) |
+| Shared record keys / JSON and report | JSON warm elapsed −10.89–12.53%; report warm −5.36–8.80%, fresh −8.53–10.52% versus b542b601 | Separate complete-job allocation −14.98–14.99% JSON, −9.43% report. Text confirmation −1.21% to +5.53%; possible regression accepted as debt. CSV coarse CPU adverse. Source pair core67f84196; later primary comparison above includes subsequent changes. [R20](../benchmarks/results/2026-11-06-record-layout/README.md) |
 | Caller-owned regex captures / extraction | Warm elapsed −3.62–5.17%; fresh −4.58–6.40% versus b6650f09 | Same optional 0.4 producer; control −2.13% to +0.10%. Direct cursor allocation −20.34% is a separate measurement. Regex remains about 7× CPython. [U04](../benchmarks/results/2026-11-06-regex-capture-ownership/README.md) |
 | Deferred helper contexts / CSV | Warm elapsed −5.85–6.24%; fresh −5.53–5.83% versus R10 | Warm CPU flat; warm text adverse, JSON/report mixed; exact allocation unmeasured. [R13](../benchmarks/results/2026-11-06-deferred-contexts/README.md) |
 | Contextual key preparation / compound-key aggregation | Elapsed −15.5%/−20.5% versus F05 | CSV roughly flat; text uncertainty. [Q01](../benchmarks/results/2026-11-06-key-preparation/README.md) |
@@ -107,11 +103,11 @@ diagnostic. Direct UTF-8 formatting reduced allocation8.67%; controlled elapsed/
 supports retention, while the original adverse result remains unexplained.
 [Full experimental evidence](../benchmarks/EXPERIMENTS.md) preserves earlier
 source pairs, rejected designs and uncertainty. Substantial whole-script gaps
-remain; the primary warm-text regression above is explicit debt.
+remain; possible earlier warm-text regression remains explicit debt.
 
 ## Historical measurements and unresolved workloads
 
-The following were not refreshed to `4fad63c5` and do not describe its performance:
+The following were not refreshed to `01aedc3b` and do not describe its performance:
 
 | Workload | Earlier revision/boundary | Lython / CPython | Status |
 | --- | --- | ---: | --- |
