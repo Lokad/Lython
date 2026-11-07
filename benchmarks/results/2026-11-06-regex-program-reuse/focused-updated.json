@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    95, Skipped:     0, Total:    95, Duration: 348 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   497, Skipped:     0, Total:   497, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    95, Skipped:     0, Total:    95, Duration: 592 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:   497, Skipped:     0, Total:   497, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Regex|FullyQualifiedName~Fnmatch|FullyQualifiedName~Glob|FullyQualifiedName~GovernedMemory|FullyQualifiedName~StringPrimitive|FullyQualifiedName~PyStringPrimitive|FullyQualifiedName~StringCacheOwnership|FullyQualifiedName~SharedMemory)",
+  "coreSHA256": {
+    "net11.0": "23a0a25758a5cbe441a9a71ea70fd3e0a6dea7321cad6bb635c730e92f32a2b8",
+    "net10.0": "8cb978daf5b74f78302e0771c94f55ef0763a683540c9260d8807be3684d8e5b"
+  }
+}

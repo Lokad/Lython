@@ -15,7 +15,9 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private readonly ILythonRegexProvider? _regexProvider;
-    internal LythonRuntime(ILythonRegexProvider? regexProvider = null) => _regexProvider = regexProvider;
+    private readonly CompiledRegexPrograms? _regexPrograms;
+    internal LythonRuntime(ILythonRegexProvider? regexProvider = null, CompiledRegexPrograms? regexPrograms = null)
+    { _regexProvider = regexProvider; _regexPrograms = regexPrograms; }
 
     /// <summary>Normalizes Python's null result and rejects text that bypassed the governed host boundary.</summary>
     internal static object RuntimeValue(object? value)
@@ -450,7 +452,7 @@ internal sealed partial class LythonRuntime
         {
             // Compiled definitions share the synchronous slot/cell contract.
             // Code-object fallback facts still request mirroring when needed.
-            context = new ExecutionContext(host, options, _regexProvider);
+            context = new ExecutionContext(host, options, _regexProvider, _regexPrograms);
             InitializeModuleAnnotations(script.AnnotationInitializationSpan, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the

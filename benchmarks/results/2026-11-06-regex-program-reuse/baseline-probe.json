@@ -1,0 +1,28 @@
+{
+  "source": "41c25958",
+  "afterCompilation": {
+    "Compilations": 1,
+    "Disposals": 1,
+    "ReservedBytes": 39397
+  },
+  "runs": [
+    {
+      "run": 0,
+      "Compilations": 2,
+      "Disposals": 2,
+      "ReservedBytes": 39397
+    },
+    {
+      "run": 1,
+      "Compilations": 3,
+      "Disposals": 3,
+      "ReservedBytes": 39397
+    }
+  ],
+  "afterDisposal": {
+    "Compilations": 3,
+    "Disposals": 3,
+    "ReservedBytes": 0
+  },
+  "coreSHA256": "9E500940E686B4513AAEB12FEB96EFB1358D4A15769F6D0497164B81D3B71AAB"
+}

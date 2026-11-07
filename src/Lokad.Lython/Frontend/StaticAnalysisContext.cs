@@ -3,15 +3,18 @@ namespace Lokad.Lython.Frontend;
 internal sealed class StaticAnalysisContext : IDisposable
 {
     private readonly List<LythonDiagnostic> _diagnostics = new();
-    private ILythonMemoryScope? _regexOwner;
-    private List<ILythonRegexPattern>? _regexHandles;
+    private readonly CompiledRegexPrograms _regexPrograms;
+    private readonly bool _ownsRegexPrograms;
 
-    public StaticAnalysisContext(ScriptSyntax script, ILythonRegexProvider? regexProvider = null, Runtime.MemoryGovernor? governor = null, CancellationToken cancellationToken = default)
+    public StaticAnalysisContext(ScriptSyntax script, ILythonRegexProvider? regexProvider = null, Runtime.MemoryGovernor? governor = null,
+        CancellationToken cancellationToken = default, CompiledRegexPrograms? regexPrograms = null)
     {
         Script = script;
         RegexProvider = regexProvider;
         MemoryGovernor = governor;
         CancellationToken = cancellationToken;
+        _regexPrograms = regexPrograms ?? new(governor);
+        _ownsRegexPrograms = regexPrograms is null;
     }
 
     public ScriptSyntax Script { get; }
@@ -21,34 +24,22 @@ internal sealed class StaticAnalysisContext : IDisposable
     internal Dictionary<(string Pattern, int Flags), AnalyzedRegexPattern> RegexPatterns { get; } = new();
     internal Runtime.MemoryGovernor? MemoryGovernor { get; }
     internal CancellationToken CancellationToken { get; }
-    internal ILythonMemoryBudget RegexMemoryOwner => _regexOwner ??=
-        (MemoryGovernor?.Budget ?? new LythonMemoryBudget()).CreateScope();
+    internal ILythonMemoryBudget RegexMemoryOwner => _regexPrograms.StorageOwner;
 
     internal void ReserveRegexStorage(long bytes, LythonSourceSpan span)
-    {
-        if (!RegexMemoryOwner.TryReserve(bytes, out _))
-            throw MemoryGovernor?.RefuseAdmission("shared memory budget refused regex analysis storage", bytes, span)
-                ?? Runtime.RuntimeErrors.Attributed("MemoryError", "shared memory budget refused regex analysis storage", span,
-                    LythonFailureReason.SharedMemoryAllowance, requested: bytes);
-    }
+        => _regexPrograms.Reserve(bytes, span);
 
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics;
 
     internal List<LythonDiagnostic> DiagnosticList => _diagnostics;
-    internal void OwnRegexPattern(ILythonRegexPattern pattern) => (_regexHandles ??= new()).Add(pattern);
+    internal void OwnRegexPattern(ILythonRegexPattern pattern) => _regexPrograms.Own(pattern);
+    internal void RetainRegexProgram(byte[] encoded, LythonRegexOptions options, ILythonRegexPattern program, LythonSourceSpan span)
+        => _regexPrograms.Add(encoded, options, program, CancellationToken, span);
 
     public void Dispose()
     {
-        // Cache aliases can overwrite one another; every acquired handle still
-        // gets closed once. These are disposable resources, not guest roots.
-        try
-        {
-            if (_regexHandles is { } handles)
-                foreach (var pattern in handles) pattern.Dispose();
-            _regexHandles = null;
-            RegexPatterns.Clear();
-        }
-        finally { _regexOwner?.Dispose(); _regexOwner = null; }
+        RegexPatterns.Clear();
+        if (_ownsRegexPrograms) _regexPrograms.Dispose();
     }
 
     public void AddError(LythonDiagnosticCode code, string message, LythonSourceSpan span)

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
@@ -76,10 +77,12 @@ internal sealed partial class ExecutionState
         ILythonHost host,
         LythonRunOptions? options,
         Dictionary<string, object> builtinVariables,
-        ILythonRegexProvider? regexProvider = null)
+        ILythonRegexProvider? regexProvider = null,
+        CompiledRegexPrograms? regexPrograms = null)
     {
         Host = host;
         RegexProvider = regexProvider;
+        RegexPrograms = regexPrograms;
         AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
         CancellationToken = options?.CancellationToken ?? CancellationToken.None;
         if (options?.MaxRecursionDepth is < 0)
@@ -138,6 +141,7 @@ internal sealed partial class ExecutionState
     public ILythonHost Host { get; }
 
     internal ILythonRegexProvider? RegexProvider { get; }
+    internal CompiledRegexPrograms? RegexPrograms { get; }
 
     public MemoryGovernor MemoryGovernor { get; }
 

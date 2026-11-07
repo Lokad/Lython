@@ -207,18 +207,20 @@ using (var regex = new LythonEngine(windowProvider).Compile("""
     print(p.split('éx!',pos=1,endpos=2),p.sub('Y','éx!',pos=1,endpos=2),m.expand(r'<\g<0>>'))
     """, regexBudget))
 {
-    if (!regex.IsValid || windowProvider.Opened == 0 || windowProvider.Opened != windowProvider.Closed)
-        throw new Exception("Installed frontend did not close its provider handles.");
+    if (!regex.IsValid || windowProvider.Opened == 0 || windowProvider.Closed != 0)
+        throw new Exception("Installed frontend did not retain its validated programs.");
+    var compiledPrograms = windowProvider.Opened;
     var baseline = regexBudget.ReservedBytes;
     foreach (var asynchronous in new[] { false, true })
     {
         using (var result = asynchronous ? await regex.RunAsync(new PureHost()) : regex.Run(new PureHost()))
             RequireOutput(result, "x (1, 2) éx! 1 2\n['', ''] éY! <x>\n");
-        if (windowProvider.Opened != windowProvider.Closed || regexBudget.ReservedBytes != baseline)
-            throw new Exception("Installed execution did not close its provider handles.");
+        if (windowProvider.Opened != compiledPrograms || windowProvider.Closed != 0 || regexBudget.ReservedBytes != baseline)
+            throw new Exception("Installed execution did not borrow the validated programs or leaked working ownership.");
     }
 }
-if (regexBudget.ReservedBytes != 0) throw new Exception("Installed provider ownership leaked.");
+if (windowProvider.Opened != windowProvider.Closed || regexBudget.ReservedBytes != 0)
+    throw new Exception("Installed provider ownership leaked.");
 
 using (var missing = engine.Run("import re\nreturn re.search(pattern,'x')", new PureHost(),
     new LythonRunOptions { Globals = new Dictionary<string, object?> { ["pattern"] = "x" } }))

@@ -68,8 +68,11 @@ Release solution builds both targets with0warnings/errors. Focused486internal/
 plain functions: attributes/type identity, module rebinding, sequential/suspended
 executions, cancellation, retained results and shared-budget reuse. Existing
 function/builtin/exception/refusal/ownership/cancellation checks remain intact.
-Full platform/original Stress/installed-package delivery belongs to the next
-combined boundary; these focused checks do not establish full qualification.
+Delivery CI42310347889 on41c25958 is terminal GREEN: Windows/Ubuntu ordinary
+actual.NET11/10, original Stress and installed-package gates all pass. The cached
+[delivery receipt](delivery-ci.json) records that revision; local explicit Release
+installed consumers also pass both runtimes. This qualification does not transfer
+to later prototypes.
 
 VM initially had7MB free. Retire only the exact8,954,180B expanded old JSON perf
 copy after verifying it against the independently committed/pushed original raw

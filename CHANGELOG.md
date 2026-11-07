@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse immutable provider programs from successful constant regex analysis
+  during execution, removing duplicate compilation of the same UTF-8 request.
+  Keep per-run pattern identity, purge behavior, group-name storage and current
+  cancellation tokens. Programs remain funded until compiled-script disposal
+  after all runs; retained compilation reservations can grow and reject earlier.
+
 - Prepare fixed builtin function definitions and constructor signatures once,
   removing their repeated construction and signature-interning lookups from
   invocation setup. Preserve private mutable type/exception graphs, builtin

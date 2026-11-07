@@ -1,0 +1,29 @@
+{
+  "source": "candidate-pinned-image",
+  "afterCompilation": {
+    "Compilations": 1,
+    "Disposals": 0,
+    "ReservedBytes": 105481
+  },
+  "runs": [
+    {
+      "run": 0,
+      "Compilations": 1,
+      "Disposals": 0,
+      "ReservedBytes": 105481
+    },
+    {
+      "run": 1,
+      "Compilations": 1,
+      "Disposals": 0,
+      "ReservedBytes": 105481
+    }
+  ],
+  "independentCompilationToken": true,
+  "afterDisposal": {
+    "Compilations": 1,
+    "Disposals": 1,
+    "ReservedBytes": 0
+  },
+  "coreSHA256": "23A0A25758A5CBE441A9A71EA70FD3E0A6DEA7321CAD6BB635C730E92F32A2B8"
+}

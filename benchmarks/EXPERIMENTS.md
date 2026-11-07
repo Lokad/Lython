@@ -1,12 +1,20 @@
 # Benchmark experimental history
 
+The [validated-program reuse milestone](results/2026-11-06-regex-program-reuse/README.md)
+removes duplicate frontend/runtime compilation under the existing compiled owner.
+B36988.55s/all gates: extraction warm−8.34–9.64%, fresh−6.47–6.53%, with moving
+text/compilation controls explicit. Programs remain resident longer; the simple
+compiled baseline grows39,397→105,481B. Guest-visible names remain run-owned
+after a concurrency/ownership review. No general CPU or refreshed CPython claim.
+Core remains backend-independent; normal optional0.4 and current tokens retained.
+
 The [R22 builtin initializer](results/2026-11-06-builtin-initialization/README.md)
 prepares fixed functions/signatures once while preserving run-private mutable
 types/namespaces. It removes2,688B of factory allocation per invocation. B368
 completes88s/all gates: config warm−1.13–2.44%, fresh−1.43% to+0.13%; unchanged
 compilation also improves and text has4.10% identical-role spread. No broad CPU
-gain or closure of text debt is established. Focused actual11/10 passes; complete
-delivery qualification remains separate.
+gain or closure of text debt is established. Actual11/10 focused checks pass; R22 delivery42310347889 is GREEN/all eight
+platform/runtime/Stress/installed-package gates on41c25958, cached beside evidence.
 
 The [R20/R21 CPython refresh](results/2026-11-06-current-cpython/README.md)
 records all fifteen compile/warm/fresh jobs in312s. Warm text remains1.88–1.90×

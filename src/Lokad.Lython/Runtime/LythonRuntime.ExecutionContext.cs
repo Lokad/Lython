@@ -28,10 +28,11 @@ internal sealed partial class LythonRuntime
             get => _postponedAnnotations ?? ParentContext?.PostponedAnnotations ?? false;
             set => _postponedAnnotations = value;
         }
-        public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null)
+        public ExecutionContext(ILythonHost host, LythonRunOptions? options, ILythonRegexProvider? regexProvider = null,
+            CompiledRegexPrograms? regexPrograms = null)
         {
             var builtinVariables = CreateBuiltinVariables();
-            State = new ExecutionState(host, options, builtinVariables, regexProvider);
+            State = new ExecutionState(host, options, builtinVariables, regexProvider, regexPrograms);
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
             InitializeFrameVariables(CreateModuleVariables(sourcePath, "__main__"));

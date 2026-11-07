@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Lokad.Lython.Runtime;
+using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython;
 
@@ -9,7 +10,7 @@ public sealed class LythonCompiledScript : IDisposable
 {
     private Func<ILythonHost, LythonRunOptions?, LythonExecutionResult>? _runner;
     private Func<ILythonHost, LythonRunOptions?, Task<LythonExecutionResult>>? _asyncRunner;
-    private ILythonMemoryScope? _memoryScope;
+    private IDisposable? _memoryScope;
     private ILythonMemoryBudget? _defaultMemoryBudget;
     private string? _source;
     private IReadOnlyList<LythonDiagnostic>? _diagnostics;
@@ -34,11 +35,23 @@ public sealed class LythonCompiledScript : IDisposable
     /// <summary>Gets diagnostics produced while compiling the source.</summary>
     public IReadOnlyList<LythonDiagnostic> Diagnostics => _diagnostics ?? throw new ObjectDisposedException(nameof(LythonCompiledScript));
 
-    internal LythonCompiledScript OwnMemoryScope(ILythonMemoryScope owner, ILythonMemoryBudget? defaultBudget)
+    internal LythonCompiledScript OwnMemoryScope(ILythonMemoryScope owner, ILythonMemoryBudget? defaultBudget,
+        CompiledRegexPrograms? regexPrograms = null)
     {
-        _memoryScope = owner;
+        _memoryScope = regexPrograms is null ? owner : new CompilationStorage(owner, regexPrograms);
         _defaultMemoryBudget = defaultBudget;
         return this;
+    }
+
+    // One atomic disposal owns both resources, preserving handle-before-funding
+    // cleanup even when more than one caller disposes the completed script.
+    private sealed class CompilationStorage(ILythonMemoryScope owner, CompiledRegexPrograms regexPrograms) : IDisposable
+    {
+        public void Dispose()
+        {
+            try { regexPrograms.Dispose(); }
+            finally { owner.Dispose(); }
+        }
     }
 
     /// <summary>

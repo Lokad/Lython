@@ -23,8 +23,9 @@ The subprocess consumer checks fresh owned captures through sync and genuinely
 asynchronous runners, disposal of host output after consumption, retained public
 bytes and complete shared-budget reuse without an adapter dependency.
 An intentionally limited host provider also implements the installed pattern
-disposal/window contract. It checks frontend and execution cleanup, original UTF-8
-subjects, absolute scalar/byte captures and budget reuse without loading a backend.
+disposal/window contract. It checks funded frontend programs reused by both APIs,
+per-run working cleanup, final handle closure at script disposal, original UTF-8
+subjects and absolute scalar/byte captures without loading a backend.
 
 The gzip gate exercises sequential supplied-stream ownership and lazy reading,
 then pauses host reads inside compression-level conversion and host writes

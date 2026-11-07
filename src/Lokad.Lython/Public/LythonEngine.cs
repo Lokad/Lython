@@ -40,6 +40,7 @@ public sealed class LythonEngine
     {
         ArgumentNullException.ThrowIfNull(source);
         var owner = (memoryBudget ?? new LythonMemoryBudget()).CreateScope();
+        CompiledRegexPrograms? regexPrograms = null;
         // Rough AST/lowered-code capacity plus the four-entry diagnostic cache.
         // Borrowed source is not copied; this deliberately overestimates.
         var estimate = RuntimeMemoryEstimates.EstimateCompilationBytes(source.Length);
@@ -48,17 +49,27 @@ public sealed class LythonEngine
             if (cancellationToken.IsCancellationRequested) return Cancelled();
             if (!owner.TryReserve(estimate, out _))
                 return Denied(new(LythonFailureReason.SharedMemoryAllowance, Requested: estimate));
-            return CompileCore(source, new MemoryGovernor(owner), _regexProvider, cancellationToken).OwnMemoryScope(owner, memoryBudget);
+            var governor = new MemoryGovernor(owner);
+            regexPrograms = new(governor);
+            var compiled = CompileCore(source, governor, _regexProvider, cancellationToken, regexPrograms);
+            if (!compiled.IsValid || !regexPrograms.HasPrograms)
+            {
+                regexPrograms.Dispose();
+                regexPrograms = null;
+            }
+            return compiled.OwnMemoryScope(owner, memoryBudget, regexPrograms);
         }
         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.SharedMemoryAllowance)
         {
+            regexPrograms?.Dispose();
             return Denied(error.Attribution, error.Span, error.Message);
         }
         catch (LythonRuntimeException error) when (error.Attribution?.Reason == LythonFailureReason.Cancelled)
         {
+            regexPrograms?.Dispose();
             return Cancelled();
         }
-        catch { owner.Dispose(); throw; }
+        catch { regexPrograms?.Dispose(); owner.Dispose(); throw; }
 
         LythonCompiledScript Cancelled()
         {
@@ -82,9 +93,10 @@ public sealed class LythonEngine
 
     }
 
-    private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor, ILythonRegexProvider? regexProvider, CancellationToken cancellationToken)
+    private static LythonCompiledScript CompileCore(string source, MemoryGovernor governor, ILythonRegexProvider? regexProvider,
+        CancellationToken cancellationToken, CompiledRegexPrograms regexPrograms)
     {
-        var frontend = LythonFrontend.Compile(source, governor, regexProvider, cancellationToken);
+        var frontend = LythonFrontend.Compile(source, governor, regexProvider, cancellationToken, regexPrograms);
         governor.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         var diagnostics = frontend.Diagnostics;
@@ -108,6 +120,7 @@ public sealed class LythonEngine
         governor.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
         // Only the code object's real lowered consumers survive compilation.
+        var retainedRegexPrograms = isValid && regexPrograms.HasPrograms ? regexPrograms : null;
 
         LythonExecutionResult? CreatePreExecutionFailure()
         {
@@ -137,7 +150,7 @@ public sealed class LythonEngine
                     return preExecutionFailure;
                 }
 
-                var runtime = new LythonRuntime(regexProvider);
+                var runtime = new LythonRuntime(regexProvider, retainedRegexPrograms);
                 return runtime.Run(executableScript.RequireNotNull(), host, options);
             },
             async (host, options) =>
@@ -148,7 +161,7 @@ public sealed class LythonEngine
                     return preExecutionFailure;
                 }
 
-                var runtime = new LythonRuntime(regexProvider);
+                var runtime = new LythonRuntime(regexProvider, retainedRegexPrograms);
                 return await runtime.RunAsync(executableScript.RequireNotNull(), host, options).ConfigureAwait(false);
             });
     }

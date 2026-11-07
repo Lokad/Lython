@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 0,
+      "summaries": [
+        "Passed!  - Failed:     0, Passed:    95, Skipped:     0, Total:    95, Duration: 371 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "exitCode": 1,
+      "summaries": [
+        "Failed!  - Failed:     6, Passed:   487, Skipped:     0, Total:   493, Duration: 4 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Regex|FullyQualifiedName~Fnmatch|FullyQualifiedName~Glob|FullyQualifiedName~GovernedMemory|FullyQualifiedName~StringPrimitive|FullyQualifiedName~PyStringPrimitive|FullyQualifiedName~StringCacheOwnership|FullyQualifiedName~SharedMemory)"
+}

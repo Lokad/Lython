@@ -8,6 +8,177 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class RegexProviderContractTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ValidatedProgramsStayFundedAcrossRunsPurgeAndIndependentTokens(bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compilation = new CancellationTokenSource();
+        using var execution = new CancellationTokenSource();
+        using var provider = new CooperatingProvider { ExpectedToken = compilation.Token };
+        using (var script = new LythonEngine(provider).Compile("""
+            import re
+            first = re.compile('x')
+            assert re.compile('x') is first
+            re.purge()
+            second = re.compile('x')
+            assert second is not first
+            return second.match(subject).group()
+            """, budget, compilation.Token))
+        {
+            Assert.True(script.IsValid, string.Join(';', script.Diagnostics.Select(d => d.Message)));
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(0, provider.ClosedPatterns);
+            var baseline = budget.ReservedBytes;
+            compilation.Cancel();
+            provider.ExpectedToken = execution.Token;
+            for (var run = 0; run < 2; run++)
+            {
+                var options = new LythonRunOptions { CancellationToken = execution.Token,
+                    Globals = new Dictionary<string, object?> { ["subject"] = "x" } };
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                    : script.Run(new MockLythonHost(), options))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("x", result.ReturnValue);
+                }
+                Assert.Equal(1, provider.Compilations);
+                Assert.Equal(0, provider.ClosedPatterns);
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void RefusedPatternWrapperDoesNotCloseTheCompiledProgramsOwner()
+    {
+        var budget = new AdmissionGateBudget();
+        using var provider = new CooperatingProvider();
+        using (var script = new LythonEngine(provider).Compile(
+            "import re,time\ncompile=re.compile\ntime.time()\nreturn compile('x').pattern", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.Root.ReservedBytes;
+            using (var denied = script.Run(new AdmissionGateHost(budget, 0)))
+            {
+                Assert.False(denied.Success);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, denied.FailureAttribution?.Reason);
+                Assert.True(denied.DeniedReservationBytes > 0);
+            }
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(0, provider.ClosedPatterns);
+            budget.Gate(1024 * 1024);
+            using (var result = script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("x", result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.Root.ReservedBytes);
+            Assert.Equal(1, provider.Compilations);
+            Assert.Equal(0, provider.ClosedPatterns);
+        }
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(0, budget.Root.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task CachedProgramCancellationAwaitsWorkingCleanupAndLeavesTheProgramReusable()
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using var provider = new CooperatingProvider();
+        using var script = new LythonEngine(provider).Compile("import re\nreturn re.search('x', subject).group()", budget);
+        Assert.True(script.IsValid);
+        var baseline = budget.ReservedBytes;
+        provider.BlockStage = "match";
+        provider.HoldCleanup = true;
+        provider.ExpectedToken = cancellation.Token;
+        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["subject"] = "x" } };
+        var pending = script.RunAsync(new MockLythonHost(), options, cancellation.Token);
+        try
+        {
+            await provider.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.True(budget.ReservedBytes > baseline);
+            cancellation.Cancel();
+            await provider.CleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+            Assert.Equal(0, provider.ClosedPatterns);
+            provider.ReleaseCleanup.Set();
+            using var cancelled = await pending.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(cancelled.Success);
+            Assert.Equal(LythonFailureReason.Cancelled, cancelled.FailureAttribution?.Reason);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            provider.ReleaseCleanup.Set();
+            using var drained = await pending;
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        provider.BlockStage = null;
+        provider.HoldCleanup = false;
+        provider.ExpectedToken = default(CancellationToken);
+        using (var next = script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(next.Success, next.Failure?.Message);
+            Assert.Equal("x", next.ReturnValue);
+        }
+        Assert.Equal(baseline, budget.ReservedBytes);
+        Assert.Equal(1, provider.Compilations);
+        Assert.Equal(0, provider.ClosedPatterns);
+        script.Dispose();
+        Assert.Equal(1, provider.ClosedPatterns);
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task ActualAdapterSharesValidatedProgramsAcrossConcurrentRunsAndRetainedResults()
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var compilation = new CancellationTokenSource();
+        using var execution = new CancellationTokenSource();
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
+            "import re\nreturn re.fullmatch('(?P<é>.)', text).groupdict()", budget, compilation.Token);
+        Assert.True(script.IsValid, string.Join(';', script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        compilation.Cancel();
+        var runs = Enumerable.Range(0, 8).Select(_ => script.RunAsync(new MockLythonHost(), new LythonRunOptions
+        {
+            Globals = new Dictionary<string, object?> { ["text"] = "😀" },
+            CancellationToken = execution.Token
+        })).ToArray();
+        try
+        {
+            var results = await Task.WhenAll(runs);
+            Assert.All(results, result => Assert.True(result.Success, result.Failure?.Message));
+            Assert.True(budget.ReservedBytes > baseline);
+            script.Dispose();
+            foreach (var result in results)
+            {
+                var groups = Assert.IsAssignableFrom<IDictionary<object, object?>>(result.ReturnValue);
+                Assert.Equal("😀", groups["é"]);
+            }
+            Assert.True(budget.ReservedBytes > 0);
+        }
+        finally
+        {
+            execution.Cancel();
+            try { await Task.WhenAll(runs); }
+            finally
+            {
+                foreach (var run in runs)
+                    if (run.IsCompletedSuccessfully) (await run).Dispose();
+                script.Dispose();
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("compile", "Regex pattern compilation")]
     [InlineData("prepare", "Regex constant-subject preparation")]
     [InlineData("match", "Regex constant matching")]
@@ -114,7 +285,8 @@ public sealed class RegexProviderContractTests
         {
             Assert.True(script.IsValid, string.Join(';', script.Diagnostics.Select(d => d.Message)));
             Assert.True(provider.Compilations > 0);
-            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            var compilations = provider.Compilations;
+            Assert.Equal(0, provider.ClosedPatterns);
             var baseline = budget.ReservedBytes;
             using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
             {
@@ -122,10 +294,12 @@ public sealed class RegexProviderContractTests
                 Assert.Equal("{'é': 1, 'tail': 2} {'é': '😀', 'tail': ''} é (0, 1)\n", result.StandardOutput);
                 Assert.Equal("<😀:>", result.ReturnValue);
                 Assert.True(budget.ReservedBytes > baseline);
-                Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+                Assert.Equal(compilations, provider.Compilations);
+                Assert.Equal(0, provider.ClosedPatterns);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
     }
 
@@ -241,8 +415,9 @@ public sealed class RegexProviderContractTests
                 Assert.Equal(baseline, budget.ReservedBytes);
             }
             Assert.True(preparations > frontendPreparations);
-            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            Assert.Equal(0, provider.ClosedPatterns);
         }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
     }
 
@@ -285,7 +460,7 @@ public sealed class RegexProviderContractTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void FrontendClosesPatternsAfterSuccessOrDiagnostic(bool diagnostic)
+    public void FrontendProgramsCloseOnDiagnosticOrScriptDisposal(bool diagnostic)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var provider = new CooperatingProvider();
@@ -294,8 +469,9 @@ public sealed class RegexProviderContractTests
         {
             Assert.Equal(!diagnostic, script.IsValid);
             Assert.True(provider.Compilations > 0);
-            Assert.Equal(provider.Compilations, provider.ClosedPatterns);
+            Assert.Equal(diagnostic ? provider.Compilations : 0, provider.ClosedPatterns);
         }
+        Assert.Equal(provider.Compilations, provider.ClosedPatterns);
         Assert.Equal(0, budget.ReservedBytes);
     }
 

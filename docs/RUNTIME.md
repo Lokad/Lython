@@ -1381,8 +1381,14 @@ Lookup does not decode pattern text. Equal text reuses pattern identity; evictio
 and `re.purge()` release cache slots without invalidating retained patterns or
 their existing storage ownership.
 Purge relinquishes the cache's table capacity before refunding its funding.
-Compiled programs themselves are retained conservatively until execution cleanup,
-including programs evicted from the cache; many distinct patterns can reject early.
+Successful public compilation retains the immutable provider programs used for
+constant validation under the compiled script's owner. Runs borrow exact UTF-8
+pattern/option matches; they retain their own Python wrappers and group-name
+strings. This avoids recompiling the same request when a freshly compiled script
+runs once. Dispose the script only after all runs finish. Its retained reservation
+can be larger and admission can fail earlier than with analysis-only programs.
+Dynamic programs remain execution-owned until cleanup, including programs
+evicted from the cache; many distinct patterns can reject early.
 Runtime group names are copied once under the pattern owner and shared by named
 lookup, `groupdict`, `groupindex` and `lastgroup`; capture order stays unchanged.
 One UTF-8 parser handles `match.expand` and template substitution, including Python
@@ -1425,9 +1431,12 @@ patterns save no prior token.
 Entry/exit checks do not prove in-flight interruption: providers must cooperate
 or report the limitation, without private timeout/work quotas or abandoned work.
 Retained patterns/caches and working/replacement peaks use supplied owners.
-Each successful `Compile` transfers a fresh disposable pattern handle. Frontend
-analysis closes its handles when analysis finishes; execution closes its handles
-after active cursors, subjects and callbacks finish, including failure/cancellation.
+Each successful provider `Compile` transfers a fresh disposable pattern handle.
+Public compilation retains successful constant programs until script disposal;
+invalid compilation, standalone frontend and import analysis close theirs after
+analysis. Execution closes its own dynamic handles after active cursors, subjects
+and callbacks finish, including failure/cancellation. A failed runtime wrapper
+must not close a program borrowed from the compiled script.
 Dispose cursors before subjects and subjects before patterns. A provider may share
 underlying programs through a separately funded longer-lived cache; closing a
 handle must not refund storage that cache still retains. Metadata borrows also end

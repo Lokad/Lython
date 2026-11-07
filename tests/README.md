@@ -142,6 +142,12 @@ dotnet test tests/Lokad.Lython.PublicApi.Tests -c Release -f net11.0 --no-build 
 ```
 
 The worker fixture builds with the public suite.
+Validated regex programs stay funded across sequential/concurrent executions and
+cache purge, independently of the compilation token. Cooperating-provider tests
+hold matching cleanup after cancellation, refuse wrapper admission and replay
+under the same allowance. Real-adapter controls retain Unicode group dictionaries
+after script disposal; their result owners remain funded until release.
+
 Regex adapter cancellation runs in an owned fixture process so a broken backend
 cannot leave matching work running in the test host. Its semantic goldens use
 frozen CPython output; cooperating-provider forwarding controls remain separate.

@@ -180,6 +180,8 @@ internal sealed partial class LythonRuntime
             var options = arguments.Length == 2
                 ? ParseFlags(arguments[1], span, context)
                 : new LythonRegexOptions(PythonUnicodeFlag, false);
+            context.CheckExecution(span);
+            _ = pattern.GetHashCode(context.State.CancellationToken, span);
             var cache = context.State.RegexCache ??= new RegexPatternCache();
             if (cache.TryGet(pattern, options, out var cached) && cached is not null)
             {
@@ -188,22 +190,27 @@ internal sealed partial class LythonRuntime
 
             var provider = context.State.RegexProvider
                 ?? throw RuntimeErrors.Capability("Python regex functionality requires a host-supplied Lython regex provider.", span);
-            var compiled = ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
+            ILythonRegexPattern? artifact = null;
+            _ = context.State.RegexPrograms?.TryGet(pattern, options, out artifact);
+            var compiled = artifact ?? ProviderCall(() => provider.Compile(pattern.Utf8Bytes, options,
                 context.MemoryGovernor.Budget, context.State.CancellationToken), context.MemoryGovernor,
                 context.State.CancellationToken, span, pattern);
             try
             {
                 var wrapperBytes = checked(256L + 64L * compiled.CaptureSlotCount);
                 using var storage = context.MemoryGovernor.ReserveTemporary(wrapperBytes, span);
+                // Guest-visible name strings can acquire caches and produce new
+                // strings. Give those values the current run's governor rather
+                // than sharing an analysis governor across concurrent runs.
                 var names = CopyNamedGroups(compiled, context.MemoryGovernor, context.State.CancellationToken, span, pattern);
                 var result = new RePatternObject(pattern, compiled.Flags, compiled,
                     compiled.CaptureSlotCount, names);
                 storage.Commit(wrapperBytes);
                 cache.Add(pattern, options, result, context.MemoryGovernor, span);
-                context.State.TrackRegexPattern(compiled);
+                if (artifact is null) context.State.TrackRegexPattern(compiled);
                 return result;
             }
-            catch { compiled.Dispose(); throw; }
+            catch { if (artifact is null) compiled.Dispose(); throw; }
         }
 
         // The cache lookup hashes flags first, so unhashable flags fail before

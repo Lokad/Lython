@@ -460,7 +460,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext? context = null;
             try
             {
-                context = new ExecutionContext(host, options, _regexProvider);
+                context = new ExecutionContext(host, options, _regexProvider, _regexPrograms);
                 InitializeModuleAnnotations(script.AnnotationInitializationSpan, context);
                 ExecuteExecutableCodeObject(script.EntryPoint, context);
 

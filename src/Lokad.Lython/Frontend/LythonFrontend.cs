@@ -3,7 +3,8 @@ namespace Lokad.Lython.Frontend;
 
 internal static class LythonFrontend
 {
-    public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null, ILythonRegexProvider? regexProvider = null, CancellationToken cancellationToken = default)
+    public static FrontendResult Compile(string source, Runtime.MemoryGovernor? governor = null, ILythonRegexProvider? regexProvider = null,
+        CancellationToken cancellationToken = default, CompiledRegexPrograms? regexPrograms = null)
     {
         governor?.ThrowIfAdmissionFailed();
         PythonTokenization.CheckCancellation(cancellationToken, 0);
@@ -66,7 +67,7 @@ internal static class LythonFrontend
         LexicalScopePreparation.Prepare(parsed.Script);
         PythonTokenization.CheckCancellation(cancellationToken, 0);
 
-        using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken);
+        using var analysis = new StaticAnalysisContext(parsed.Script, regexProvider, governor, cancellationToken, regexPrograms);
         try
         {
             var diagnostics = parsed.Diagnostics

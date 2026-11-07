@@ -537,19 +537,29 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return _hashCode;
         }
 
-        var computed = HashUtf8(Utf8Span);
+        return ComputeHash(default, null);
+    }
+
+    internal int GetHashCode(CancellationToken token, LythonSourceSpan? span)
+        => Volatile.Read(ref _hashCodeComputed) ? _hashCode : ComputeHash(token, span);
+
+    private int ComputeHash(CancellationToken token, LythonSourceSpan? span)
+    {
+        var computed = HashUtf8(Utf8Span, span: span, cancellationToken: token);
         _hashCode = computed;
         Volatile.Write(ref _hashCodeComputed, true);
         return computed;
     }
 
     internal static int HashUtf8(ReadOnlySpan<byte> bytes, LythonRuntime.ExecutionContext? context = null,
-        LythonSourceSpan? span = null)
+        LythonSourceSpan? span = null, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
         var hash = new HashCode();
         for (var offset = 0; offset < bytes.Length;)
         {
             context?.CheckExecution(span);
+            if (cancellationToken.IsCancellationRequested) throw RuntimeErrors.Cancelled(span);
             var count = Math.Min(4096, bytes.Length - offset);
             hash.AddBytes(bytes.Slice(offset, count));
             offset += count;

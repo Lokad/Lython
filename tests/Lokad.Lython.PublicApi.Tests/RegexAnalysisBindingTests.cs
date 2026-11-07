@@ -61,7 +61,7 @@ public sealed class RegexAnalysisBindingTests
     }
 
     [Fact]
-    public async Task ProviderOwnsNamedEscapeSemanticsAndReceivesEachCurrentCompileToken()
+    public async Task ProviderOwnsNamedEscapeSemanticsAndReceivesCurrentOperationTokens()
     {
         using var compilation = new CancellationTokenSource();
         using var execution = new CancellationTokenSource();
@@ -140,11 +140,26 @@ public sealed class RegexAnalysisBindingTests
             if (pattern.Span.SequenceEqual(Named))
             {
                 SawCompilation |= cancellationToken == compilation;
-                SawExecution |= cancellationToken == execution;
                 if (Reject) throw new LythonRegexException(LythonRegexFailure.Pattern, "named escape unavailable", 0);
                 pattern = Literal;
             }
-            return Utf8RegexProvider.Instance.Compile(pattern, options, memoryOwner, cancellationToken);
+            return new ObservedPattern(Utf8RegexProvider.Instance.Compile(pattern, options, memoryOwner, cancellationToken), this);
+        }
+
+        private void ObserveExecution(CancellationToken token) => SawExecution |= token == execution;
+
+        private sealed class ObservedPattern(ILythonRegexPattern inner, NamedEscapeProvider observer) : ILythonRegexPattern
+        {
+            public int Flags => inner.Flags;
+            public int CaptureSlotCount => inner.CaptureSlotCount;
+            public IReadOnlyList<LythonRegexNamedGroup> NamedGroups => inner.NamedGroups;
+            public ILythonRegexSubject Prepare(ReadOnlyMemory<byte> subject, LythonRegexWindow window,
+                ILythonMemoryBudget owner, CancellationToken token)
+            {
+                observer.ObserveExecution(token);
+                return inner.Prepare(subject, window, owner, token);
+            }
+            public void Dispose() => inner.Dispose();
         }
     }
 }

@@ -328,7 +328,7 @@ internal static class StaticRegexReturnResolver
         try
         {
             // Encoded input plus cache/owned-handle capacity and growth overlap.
-            var bytes = 256L + 3L * pattern.Length;
+            var bytes = 512L + 3L * pattern.Length;
             analysis.ReserveRegexStorage(bytes, span);
             var encoded = Encoding.UTF8.GetBytes(pattern);
             var program = LythonRuntime.RegexCompiler.ProviderCall(() => provider.Compile(encoded, new LythonRegexOptions(options, (options & 64) != 0),
@@ -337,6 +337,7 @@ internal static class StaticRegexReturnResolver
             {
                 analysis.OwnRegexPattern(program);
                 regex = new(program, LythonRuntime.RegexCompiler.CopyNamedGroups(program, governor, token, span));
+                analysis.RetainRegexProgram(encoded, new(options, (options & 64) != 0), program, span);
                 // Inputs remain funded until every analysis pattern handle ends.
                 analysis.RegexPatterns[(pattern, options)] = regex;
                 analysis.RegexPatterns[(pattern, program.Flags)] = regex;
