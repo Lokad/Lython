@@ -19,7 +19,7 @@ call binding/order, native helpers, real callbacks, cancellation, first refusal,
 unchanged targets, awaited cleanup, retained aliases and shared-budget reuse.
 No new tests duplicate the implementation. Actual .NET 10/full platform/Stress/
 installed consumers will be batched with the next coherent runtime checkpoint;
-the separate in-flight R43 delivery covers source 5fb25354 only.
+the separate terminal-green R43 delivery42365045704 covers source5fb25354 only.
 
 One short reused complete-job diagnostic covers text/CSV/JSON/report against two
 baseline roles with ordinary GC/tiering, identical auxiliary images and shared

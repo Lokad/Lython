@@ -95,9 +95,11 @@ After freezing, remove dangling prototype comments and restore the original chec
 workspace multiplication; that file exactly matches the qualified baseline again.
 Delivery images `9eb7a6b5`/`7fe742dc` pass nonincremental builds and 70 internal /
 47 public affected checks per actual target. This source cleanup is explicit;
-there is no binary-equivalence claim with the timed images. Full Windows/Ubuntu,
-Stress and installed-package delivery is pending. No public API break, adapter
-promotion or publication.
+there is no binary-equivalence claim with the timed images. Exact source
+`5fb25354` passes full Windows/Ubuntu, actual .NET 11/10, original Stress and
+installed-package delivery in terminal GREEN **42365045704**.
+[Receipt](delivery-ci.json) is cached; never query that run again. Later R44 is
+excluded. No public API break, adapter promotion or publication.
 
 [Summary](comparison-summary.json), [identity](identity.json),
 [initial allocation/adverse clocks](initial-local-summary.json),

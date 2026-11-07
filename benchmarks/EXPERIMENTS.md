@@ -3698,3 +3698,9 @@ text/CSV/JSON/report diagnostic passes goldens/balances/isolation/fixture cleanu
 allocations essentially flat/all admitted peaks identical, desktop clocks variable
 including adverse report. This is source simplification, not a CPU gain or full
 performance-objective completion. No quiet-VM campaign or unchanged retiming.
+
+R43 full delivery is terminal GREEN42365045704 on exact5fb25354: Windows/Ubuntu
+ordinary actual11/10, original Stress both and installed core-package consumers.
+[Cached receipt](results/2026-11-07-operand-transport/delivery-ci.json) excludes
+later R44; never query the terminal run again. This qualification does not turn
+the variable B398 elapsed observations into a substantial CPU improvement.
