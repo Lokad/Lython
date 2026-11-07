@@ -1,0 +1,83 @@
+{
+  "ready": {
+    "protocolVersion": 2,
+    "status": "Ready",
+    "engine": "Lython",
+    "catalogSha256": "d23001e515e0a24ba5be32e3a80abf047790f182a60685fae197b1086ea09864",
+    "catalogVersion": 1,
+    "processId": 3361524,
+    "runtime": ".NET 11.0.0-rc.3.26522.148",
+    "fileFixtureDirectory": "/tmp/lython-ready-diagnosis-2lp0_a_x",
+    "runtimeVersion": "11.0.0",
+    "architecture": "X64",
+    "platform": "Ubuntu 24.04.4 LTS",
+    "processorCount": 4,
+    "serverGc": false,
+    "gcLatencyMode": "Interactive",
+    "runtimeOverrides": {
+      "DOTNET_gcServer": null,
+      "COMPlus_gcServer": null,
+      "DOTNET_GCHeapCount": null,
+      "COMPlus_GCHeapCount": null,
+      "DOTNET_GCHeapHardLimit": null,
+      "COMPlus_GCHeapHardLimit": null,
+      "DOTNET_GCHeapHardLimitPercent": null,
+      "COMPlus_GCHeapHardLimitPercent": null,
+      "DOTNET_TieredCompilation": null,
+      "COMPlus_TieredCompilation": null,
+      "DOTNET_TieredPGO": null,
+      "COMPlus_TieredPGO": null,
+      "DOTNET_TC_QuickJit": null,
+      "COMPlus_TC_QuickJit": null,
+      "DOTNET_TC_QuickJitForLoops": null,
+      "COMPlus_TC_QuickJitForLoops": null,
+      "DOTNET_ReadyToRun": null,
+      "COMPlus_ReadyToRun": null,
+      "DOTNET_PROCESSOR_COUNT": null
+    },
+    "clockFrequency": 1000000000,
+    "clockHighResolution": true,
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "publicLimits": "ordinary defaults; cooperative cancellation; no forced GC",
+    "timingBoundary": "command-v2: per-invocation fixture reset/staging excluded; guest I/O, full output checks and prior-result cleanup included",
+    "ownershipBoundary": "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
+    "benchmarkDotNetLoaded": false,
+    "libraries": [
+      {
+        "path": "/home/lokad/lython-bench-checks/delivery-comparison-b406-20261107/candidate/Lokad.Lython.dll",
+        "sha256": "83af401ebccff4f1fcec8ab48786d1c1f6cd17f5e6b30e653bc14e2e77a9f502",
+        "version": "0.11.0+4c739dcba12916db733ec57f4980aa420ed80750",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "7b24a17e-1cdf-42e2-8cd7-1629fa3812e9"
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/delivery-comparison-b406-20261107/candidate/Lokad.Lython.Benchmarks.dll",
+        "sha256": "7cf37ca597d07517548e10af1c61bfb5a20afe070af89506189b015a0c8e86cf",
+        "version": "1.0.0+3604f93589d1063adadf5b218b864f56eeecffe5",
+        "configuration": "Release",
+        "buildSdk": "11.0.100-rc.3.26522.148",
+        "moduleId": "8a9cf028-dea7-45b7-a6af-05cc79967438"
+      },
+      {
+        "path": "/home/lokad/lython-bench-toolchains/dotnet/11.0.100-rc.3.26522.148/shared/Microsoft.NETCore.App/11.0.0-rc.3.26522.148/System.Private.CoreLib.dll",
+        "sha256": "d67d98f3b2178cb3768fea37c791577500e9cee904c859afd3871138bbc58653",
+        "version": "11.0.0-rc.3.26522.148+5254d8bcf59917edc1e1abc33bdf2442b77b1c70",
+        "configuration": "Release",
+        "buildSdk": null,
+        "moduleId": "0b5ab096-b8cc-400c-a38f-44432c492c25"
+      }
+    ]
+  },
+  "closed": {
+    "protocolVersion": 2,
+    "requestId": 1,
+    "status": "Closed"
+  },
+  "exitCode": 0,
+  "fixtureRemoved": true,
+  "expected": "0c126b2ee973aa2d936f656a18163bbf99ec0c9d1ef8e608545bb691194fd53b",
+  "scope": "Ready/Closed only, no guest invocation or measurement. Diagnose frozen failed staging."
+}

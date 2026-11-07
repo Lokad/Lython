@@ -47,3 +47,7 @@ are report-render.large. No original record is relabeled.
 [Raw archive](observations.tgz), [receipt](archive-receipt.json), [leaves](guest-cpu-leaves.json),
 [all call chains](guest-call-chains.json), [classifier](analyze-chains.py),
 [identity](identity.json) and [contract](contract.md) preserve evidence and limits.
+
+Follow-up: [R53](../2026-11-07-admission-publication/README.md) demonstrates and
+corrects the pending-ownership bug; its focused and full delivery are separate
+from this earlier profile. No performance gain is inferred from that correction.

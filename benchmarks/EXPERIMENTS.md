@@ -3821,4 +3821,20 @@ rollback correct it; unchanged refunds no longer invoke another host callback.
 Final1401internal/1652public per actual11/10 pass, including10small ownership cases.
 Normal five-script allocation is flat; desktop elapsed includes adverse CSV/search
 and remains diagnostic. No performance gain claim or new memory framework.
-[Source, failures, contract tradeoff and pending delivery](results/2026-11-07-admission-publication/README.md).
+[Source, failures, contract tradeoff and qualified delivery](results/2026-11-07-admission-publication/README.md).
+Full CI42393422539 on d04024ee is terminal GREEN: Windows/Ubuntu actual11/10,
+original Stress and installed core consumers. Cached receipt; no repeat polling.
+
+## Immutable JSON input windows withdrawn (2026-11-07)
+
+[R54](results/2026-11-07-json-input-windows/README.md) removes per-token array copies
+inside the same execution owner, with complete backing/header funding preserved.
+Prototype979internal/4778public per actual target pass. Report allocation about5%
+lower, JSON under1%, but ordinary controls+3–4.5% from eight extra wrapper bytes.
+B41286.75s/all gates: report−5.00to+2.14% with5.05%old control spread, text−0.49to
++7.80%/6.23%current spread. No substantial CPU/elapsed improvement established.
+Withdraw representation/ownership state; exact source/tests restored, forced
+rebuild and975internal/4778public per actual11/10 pass. Original8test failures,
+desktop72%drift and B411 pre-sampling symlink/core mismatch remain archived.
+B412 fixes staging only; no permanent rejection of sharing or fixed percent veto.
+No prototype, view-specific tests or dormant alternative remains. Objective open.

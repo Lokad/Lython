@@ -1,0 +1,11 @@
+{
+  "head": "d04024eed6ff06b1733c5ef519390e5c104a2896",
+  "sources": {
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "e0361c23b5ab192fcf6cb5e0cf4cfab3b8245c057b52b725c3a91cca9607dfc1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "360d2afb32166f7072d44033480992f6c8b7cfa3d23fb9f86fcedb9d3f0fc71e"
+  },
+  "cores": {
+    "net11.0": "0c126b2ee973aa2d936f656a18163bbf99ec0c9d1ef8e608545bb691194fd53b",
+    "net10.0": "742a4a2bb1f83ecf0dff033dc86bba4f5684fbf12c0c353bed74ada0c78f0f09"
+  }
+}

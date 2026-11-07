@@ -1,0 +1,14 @@
+{
+  "retained": false,
+  "reason": "No established substantial report elapsed/CPU improvement in a controlled warm source pair, with larger wrappers raising all non-JSON control allocations and adding ownership state. This is a coherent cost decision, not a fixed percentage veto or permanent prohibition on shared immutable storage.",
+  "sourceSimplification": "Prototype replaces zero-based array operations with memory windows but adds storage-charge transfer and a second constructor/factory; it does not remove parsing/scanning. None retained.",
+  "allocations": "Report -4.978/-5.031% sync/async; JSON-lines -0.952/-0.943%; unchanged search/text/CSV about+3to4.5%. Private precise allocation probe confirms eight extra bytes per wrapper (empty factory80to88 inclarray; abc88to96).",
+  "elapsed": "B412 report -5.00to+2.14%, baseline spread5.05%/current2.34%, candidateIQR3.96%; CPU roles adverse/coarse. CSV -2.32to+1.01% variable. Text -0.49to+7.80%, current spread6.23%; retain all adverse/uncertain evidence. No CPU gain claim.",
+  "originalFailure": "B411 fails before sampling because symlinked worker loads83af401e from original directory rather than intended0c126b2e. Ready-only diagnosis proves loaded path/hash, Closed/exit0/no guest request. Original failure archive separately preserved; B412 corrects only auxiliary staging to hardlinks.",
+  "validation": "Prototype979internal/4778public per actual11/10 pass. Initial8failures preserved; external/unowned buffer independence remains exercised, governing plain output admission matches real wrapper storage. All modified tests and four prototype-specific storage tests are restored/removed along with the discarded design; original governed-input copy/independence assertions remain.",
+  "vm": "B412 all three jobs/goldens/actual core identities/normal runtime/quiet/Closed/exit/join/emptyfixtures/unmount/persistent archive-under-lease/localverification pass in86.7502s. B411/B412 terminal; never service-query again. No active collection or fixture mount.",
+  "restoration": "Exact original R53 production/tests restored. Nonincremental rebuild and975internal/4778public focused checks per actual.NET11/.NET10 pass. Full retained-runtime CI42393422539 cachedGREEN separately, excluding withdrawn R54.",
+  "wholeScriptObjective": "Remains active; no dormant string-view machinery retained.",
+  "publication": "postponed",
+  "archiveSHA256": "a3c895845107ec2f6b242119579122c22bc8ed1927e052f5ac74400d19254899"
+}

@@ -42,7 +42,11 @@ these adverse observations as possible cost/uncertainty; do not claim CPU benefi
 or retime unchanged until favorable. This fix preserves containment independently
 of its timing. Primary CPython tables still identify source55e510ff, not R53.
 
-Full platform/Stress/installed-consumer delivery is pending. Publication postponed.
+Committed/pushed **d04024ee**, fully qualified by
+[CI42393422539](https://github.com/Lokad/Lython/actions/runs/42393422539): Windows
+and Ubuntu Release on actual .NET11/.NET10, original Stress on both targets and
+installed core-package consumers. [Cached receipt](delivery-ci.json); no unchanged
+qualification is repeated. Publication postponed.
 [Original failing baseline](baseline.json), [initial focused checks](initial-focused.json),
 [final checks and source hashes](focused.json), [diagnostic observations](local-summary.json),
 [image/driver identity](comparison-identity.json), [decision/archive hash](decision.json)
