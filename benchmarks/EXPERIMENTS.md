@@ -3478,3 +3478,17 @@ threshold. Preserve5000-definition scales:6MiB refusal/20MiB success, replacing
 old20MiB refusal/64MiB success. Compile/result cleanup now share one root;8cases
 pass per actual target, including real refusal/reuse. Full corrected delivery with
 R33 remains pending; no partial green gates are called complete qualification.
+
+## Current complete-report cost gate (2026-11-07)
+
+[R34/B385](results/2026-11-07-current-report-cost/README.md) records916actual guest
+samples/4.62sCPU from committed2f1f2715/frozen07a6530e. Full identity/golden/quiet/
+funding/Closed/join/fixture/archive gates pass;63unknown leaves remain. Formatting
+routing241inclusive/37self and JSON220inclusive/25self compete; large helper-call
+totals include actual work rather than proving binding dominance. No timing,
+allocation or CPU gain, new runtime prototype or unchanged qualification follows.
+Select direct formatted instructions in the existing engine, deleting their
+generic prepared-operation detour and obsolete wrappers; preserve actual dynamic
+promotion, ordering, awaited cleanup, cancellation and admission. Initial launcher
+self-match refusal and corrected same-payload transport remain archived. The
+whole-script objective stays active; no automatic second profile is selected.
