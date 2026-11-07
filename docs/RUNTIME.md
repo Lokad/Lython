@@ -151,6 +151,11 @@ runtime failure; preceding guest effects can already have occurred.
 
 ## Execution internals
 
+Annotation diagnostics retain conservative branch facts, including unreachable
+checks, independently of the main analyzer's refined flow. Non-regex lexical
+scopes omit binding analysis after their final relevant annotation check. Constant
+regex analysis retains its full conservative bindings across dead/deferred scopes.
+
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
 lowers constructs, and builds executable instructions. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those

@@ -233,3 +233,6 @@ benchmarks/results/2026-11-07-formatted-cpython/** -text whitespace=cr-at-eol
 
 # Preserve root-identity probe conditions and focused qualification bytes.
 benchmarks/results/2026-11-07-builtin-root-identity/** -text whitespace=cr-at-eol
+
+# Preserve the annotation-demand source pair and diagnostic observations.
+benchmarks/results/2026-11-07-annotation-demand/** -text whitespace=cr-at-eol

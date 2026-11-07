@@ -16,6 +16,7 @@ public sealed class AnnotationFlowBoundaryTests
         { "def outer():\n    def inner() -> int:\n        value = 'bad'\n        return value\n    return inner", "LA1082" },
         { "def value() -> str:\n    if True: result = 1\n    else: result = 2\n    return result", "LA1082" },
         { "def value() -> str:\n    try: result = 1\n    finally: result = 2\n    return result", "LA1082" },
+        { "value = 0\nif True:\n    marker: int = 1\n    value = 'bad'\nelse:\n    value = 'bad'\nresult: int = value", "LA1080" },
     };
 
     [Theory]

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Omit unused annotation binding analysis after the final relevant check in
+  non-regex module/function/class scopes. Preserve conservative branch facts,
+  nested checks and constant regex analysis in unreachable/deferred scopes.
+
 - Identify builtin object/type by their runtime relationship, so user classes with
   those names retain normal attribute and instance behavior. Preserve immutable
   builtin aliases, descriptors and per-execution type isolation.

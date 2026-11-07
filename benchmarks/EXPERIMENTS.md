@@ -3553,3 +3553,14 @@ sharing. It corrects a demonstrated display-name identity bug without that redes
 Focused986internal/2,765public per actual target and eight independent Python
 goldens pass. Original masked probe/unsupported fixture failures are preserved.
 No timing or performance claim; R35's full receipt excludes this later source.
+
+
+## R37 call-operand gate / R38 annotation demand
+
+[R38](results/2026-11-07-annotation-demand/README.md) removes irrelevant annotation
+binding suffix work while preserving full regex conservative analysis and control
+exit facts.919internal/2,015public per actual target and524exact differential cases
+pass; compile allocation−4.38–8.94%, regex+304B/+0.117%, warm essentially flat.
+Initial3semantic failures, source/images and diagnostic desktop adverse conditions
+remain explicit. Quiet elapsed and full delivery are separate/pending. R37 static
+census finds native call slices already borrowed; no further transport selected.

@@ -20,21 +20,72 @@ internal static class AnnotationDiagnostics
 
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script, StaticAnalysisContext? context = null)
     {
+        // Annotation flow deliberately visits dead branches. It cannot share
+        // the ordinary analyzer's refined bindings, but no later check can use
+        // facts produced after an isolated scope's final annotation-dependent
+        // statement. Control-flow bodies still export their complete exit facts.
+        var lastChecks = new Dictionary<IReadOnlyList<StatementSyntax>, int>(ReferenceEqualityComparer.Instance);
+        var requiresRegexBindings = false;
+        var last = Prepare(script.Statements, annotatedReturn: false);
+        if (last < 0 && !requiresRegexBindings) return [];
         var diagnostics = new List<LythonDiagnostic>();
-        AnalyzeStatements(script.Statements, diagnostics, new AbstractState(context), returnAnnotation: null);
+        // Constant regex analysis also consumes this conservative flow, even
+        // in dead/deferred scopes. Retain it in full when regex bindings can
+        // enter the script; aliases and rebinding need the original analysis.
+        AnalyzeStatements(script.Statements, diagnostics, new AbstractState(context), returnAnnotation: null,
+            requiresRegexBindings ? null : lastChecks);
         return diagnostics;
+
+        int Prepare(IReadOnlyList<StatementSyntax> statements, bool annotatedReturn)
+        {
+            var last = -1;
+            for (var i = 0; i < statements.Count; i++)
+            {
+                var statement = statements[i];
+                if (statement is ImportStatementSyntax import &&
+                    (import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal)))
+                    requiresRegexBindings = true;
+                context?.MemoryGovernor?.ThrowIfAdmissionFailed();
+                PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, statement.Span.Start);
+                bool needed;
+                if (statement is FunctionDefinitionStatementSyntax function)
+                {
+                    needed = Prepare(function.Body, function.ReturnAnnotation is not null) >= 0;
+                    needed |= function.Parameters.Any(parameter => parameter.Annotation is not null && parameter.DefaultValue is not null);
+                }
+                else if (statement is ClassDefinitionStatementSyntax definition)
+                    needed = Prepare(definition.Body, annotatedReturn: false) >= 0;
+                else
+                {
+                    needed = statement is AnnotatedAssignmentStatementSyntax { Expression: not null }
+                        || annotatedReturn && statement is ReturnStatementSyntax;
+                    foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+                        needed |= Prepare(body, annotatedReturn) >= 0;
+                }
+                if (needed) last = i;
+            }
+            lastChecks[statements] = lastChecks.TryGetValue(statements, out var previous)
+                ? Math.Max(previous, last) : last;
+            return last;
+        }
     }
 
     private static void AnalyzeStatements(
         IReadOnlyList<StatementSyntax> statements,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        ExpressionSyntax? returnAnnotation)
+        ExpressionSyntax? returnAnnotation,
+        IReadOnlyDictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks,
+        bool exportBindings = false)
     {
-        foreach (var statement in statements)
+        exportBindings |= lastChecks is null;
+        var last = exportBindings ? statements.Count - 1 : lastChecks![statements];
+        for (var i = 0; i <= last; i++)
         {
-            AnalyzeStatement(statement, diagnostics, bindings, returnAnnotation);
-            StaticAbstractValueResolver.UpdateBindings(statement, bindings);
+            var statement = statements[i];
+            AnalyzeStatement(statement, diagnostics, bindings, returnAnnotation, lastChecks);
+            // The check observes incoming facts. No consumer remains after it.
+            if (exportBindings || i < last) StaticAbstractValueResolver.UpdateBindings(statement, bindings);
         }
     }
 
@@ -42,7 +93,8 @@ internal static class AnnotationDiagnostics
         StatementSyntax statement,
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings,
-        ExpressionSyntax? returnAnnotation)
+        ExpressionSyntax? returnAnnotation,
+        IReadOnlyDictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks)
     {
         void AnalyzeLoop(
             IReadOnlyList<StatementSyntax> body,
@@ -50,12 +102,12 @@ internal static class AnnotationDiagnostics
         {
             // A loop may execute zero times, so facts from its body must be joined with entry facts.
             var bodyBindings = bindings.Clone();
-            AnalyzeStatements(body, diagnostics, bodyBindings, returnAnnotation);
+            AnalyzeStatements(body, diagnostics, bodyBindings, returnAnnotation, lastChecks, exportBindings: true);
             var merged = AbstractState.Merge(bindings, bodyBindings);
             if (elseStatements is not null)
             {
                 var elseBindings = bindings.Clone();
-                AnalyzeStatements(elseStatements, diagnostics, elseBindings, returnAnnotation);
+                AnalyzeStatements(elseStatements, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
                 merged = AbstractState.Merge(merged, elseBindings);
             }
 
@@ -79,7 +131,7 @@ internal static class AnnotationDiagnostics
                 break;
 
             case FunctionDefinitionStatementSyntax functionDefinition:
-                AnalyzeFunctionDefinition(functionDefinition, diagnostics, bindings);
+                AnalyzeFunctionDefinition(functionDefinition, diagnostics, bindings, lastChecks);
                 break;
 
             case ReturnStatementSyntax returnStatement when returnAnnotation is not null:
@@ -96,12 +148,12 @@ internal static class AnnotationDiagnostics
             case IfStatementSyntax ifStatement:
                 {
                     var thenBindings = bindings.Clone();
-                    AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings, returnAnnotation);
+                    AnalyzeStatements(ifStatement.ThenStatements, diagnostics, thenBindings, returnAnnotation, lastChecks, exportBindings: true);
                     AbstractState elseBindings;
                     if (ifStatement.ElseStatements is not null)
                     {
                         elseBindings = bindings.Clone();
-                        AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation);
+                        AnalyzeStatements(ifStatement.ElseStatements, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
                     }
                     else
                     {
@@ -131,7 +183,7 @@ internal static class AnnotationDiagnostics
                         withBindings.Set(withStatement.VariableName, contextValue);
                     }
 
-                    AnalyzeStatements(withStatement.Body, diagnostics, withBindings, returnAnnotation);
+                    AnalyzeStatements(withStatement.Body, diagnostics, withBindings, returnAnnotation, lastChecks, exportBindings: true);
                     bindings.ReplaceWith(withBindings);
                     foreach (var name in withStatement.BoundNames) bindings.Remove(name);
                     break;
@@ -144,7 +196,7 @@ internal static class AnnotationDiagnostics
                     foreach (var matchCase in matchStatement.Cases)
                     {
                         var caseBindings = bindings.Clone();
-                        AnalyzeStatements(matchCase.Body, diagnostics, caseBindings, returnAnnotation);
+                        AnalyzeStatements(matchCase.Body, diagnostics, caseBindings, returnAnnotation, lastChecks, exportBindings: true);
                         merged = hasCase ? AbstractState.Merge(merged, caseBindings) : caseBindings;
                         hasCase = true;
                     }
@@ -161,26 +213,26 @@ internal static class AnnotationDiagnostics
                     // Join every reachable continuation; finally then observes and updates that joined state.
                     var merged = bindings.Clone();
                     var tryBindings = bindings.Clone();
-                    AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation);
+                    AnalyzeStatements(tryStatement.TryBody, diagnostics, tryBindings, returnAnnotation, lastChecks, exportBindings: true);
                     merged = AbstractState.Merge(merged, tryBindings);
 
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptBindings = bindings.Clone();
-                        AnalyzeStatements(exceptClause.Body, diagnostics, exceptBindings, returnAnnotation);
+                        AnalyzeStatements(exceptClause.Body, diagnostics, exceptBindings, returnAnnotation, lastChecks, exportBindings: true);
                         merged = AbstractState.Merge(merged, exceptBindings);
                     }
 
                     if (tryStatement.ElseBody is not null)
                     {
                         var elseBindings = tryBindings.Clone();
-                        AnalyzeStatements(tryStatement.ElseBody, diagnostics, elseBindings, returnAnnotation);
+                        AnalyzeStatements(tryStatement.ElseBody, diagnostics, elseBindings, returnAnnotation, lastChecks, exportBindings: true);
                         merged = AbstractState.Merge(merged, elseBindings);
                     }
 
                     if (tryStatement.FinallyBody is not null)
                     {
-                        AnalyzeStatements(tryStatement.FinallyBody, diagnostics, merged, returnAnnotation);
+                        AnalyzeStatements(tryStatement.FinallyBody, diagnostics, merged, returnAnnotation, lastChecks, exportBindings: true);
                     }
 
                     bindings.ReplaceWith(merged);
@@ -188,7 +240,7 @@ internal static class AnnotationDiagnostics
                 }
 
             case ClassDefinitionStatementSyntax classDefinition:
-                AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone(), returnAnnotation: null);
+                AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone(), returnAnnotation: null, lastChecks);
                 break;
         }
     }
@@ -196,7 +248,8 @@ internal static class AnnotationDiagnostics
     private static void AnalyzeFunctionDefinition(
         FunctionDefinitionStatementSyntax functionDefinition,
         List<LythonDiagnostic> diagnostics,
-        AbstractState bindings)
+        AbstractState bindings,
+        IReadOnlyDictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks)
     {
         foreach (var parameter in functionDefinition.Parameters)
         {
@@ -219,7 +272,7 @@ internal static class AnnotationDiagnostics
             functionBindings.Remove(parameter.Name);
         }
 
-        AnalyzeStatements(functionDefinition.Body, diagnostics, functionBindings, functionDefinition.ReturnAnnotation);
+        AnalyzeStatements(functionDefinition.Body, diagnostics, functionBindings, functionDefinition.ReturnAnnotation, lastChecks);
     }
 
     private static void AddMismatchDiagnostic(
