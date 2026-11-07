@@ -138,6 +138,14 @@ internal sealed partial class LythonRuntime
                     if (row is null) return PyIterationResult.End;
                 }
                 var fields = await GetFieldNamesAsync(asynchronous).ConfigureAwait(false);
+                var recordKeys = _recordKeys;
+                if (fields is PyList unchanged &&
+                    recordKeys?.TryAdoptRecord(unchanged, row, _context, _span) is { } adopted)
+                {
+                    _recordKeys = recordKeys;
+                    row = null; // The dictionary now owns this funded capacity.
+                    return PyIterationResult.Yield(adopted);
+                }
                 if (fields is PyList names && HasStringFieldNames(names))
                 {
                     // Native string headers cannot run guest callbacks. Construct

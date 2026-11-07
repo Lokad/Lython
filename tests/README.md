@@ -50,6 +50,10 @@ entries after suspended equality clears the table. Pending snapshots and aliases
 stay funded through cancellation/refusal, finally-return cannot hide the first
 failure, and cleanup permits shared-budget reuse. Managed depth/cycle checks also
 run after a real thread-pool continuation and recover for the next hash.
+Completed CSV record controls cover independently mutable values at exact row
+capacity, copy/new-key growth and clear retaining its backing charge. Admission
+callbacks change header identities/width or cancel/refuse before transfer; private
+row funding remains intact and the shared allowance returns after owner cleanup.
 Dictionary read-prefix controls insert a custom key and rebind the source during
 key/default evaluation. Direct/exposed get and subscript must retain the selected
 receiver, await equality and propagate cancellation with shared-budget cleanup.

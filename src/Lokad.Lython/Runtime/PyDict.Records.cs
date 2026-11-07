@@ -39,6 +39,43 @@ internal sealed partial class PyDict
             return record;
         }
 
+        // The caller transfers an exclusively owned, already-funded CSV row.
+        // Preserve actual key identities, not only equivalent header text.
+        internal PyDict? TryAdoptRecord(PyList fields, object[] values,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            context.CheckExecution(span);
+            if (!ReferenceEquals(_owner, context.MemoryGovernor))
+                throw new InvalidOperationException("Record keys must retain their execution owner.");
+            if (!MatchesFields()) return null;
+            using var shell = _owner.ReserveTemporary(NativeShellBytes, span);
+            context.CheckExecution(span);
+            // Admission can mutate headers or reenter the reader. No callback
+            // or further admission occurs between this proof and publication.
+            if (!MatchesFields()) return null;
+            var record = new PyDict(_keys, this, _sequence, 0, _owner, span)
+            {
+                _nativeValues = values,
+                _nativeCount = values.Length,
+                // Retain the row's original conservative headroom. Its storage
+                // is transferred, never refunded and then reserved again.
+                _nativeCommittedBytes = checked(NativeShellBytes + PyList.EstimateCapacityBytes(values.Length)),
+            };
+            shell.Commit(NativeShellBytes);
+            return record;
+
+            bool MatchesFields()
+            {
+                if (fields.Count != Count || values.Length != Count) return false;
+                for (var i = 0; i < Count; i++)
+                {
+                    context.CheckExecution(span);
+                    if (!ReferenceEquals(_keys[i].Key, fields[i])) return false;
+                }
+                return true;
+            }
+        }
+
         internal PyString? FindName(ReadOnlySpan<byte> bytes, int position,
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {

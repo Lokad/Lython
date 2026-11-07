@@ -1,5 +1,13 @@
 # Benchmark experimental history
 
+The [completed CSV values milestone](results/2026-11-07-csv-record-values/README.md)
+transfers funded row arrays into canonical shared-key dictionaries after admission/
+header revalidation. Native CSV allocation−7.31/−6.55%sync/async; B372109s/all gates
+shows native warm−7.72–8.04%, ordinary warm−4.13–4.78%. Reader/text/compile controls,
+coarse adverse ordinary CPU and the original incorrect Clear-refund test remain
+explicit. No broad CPU gain, fresh/async elapsed or refreshed CPython ratio.
+Focused actual11/10 and installed consumers pass; full delivery is separate.
+
 The [current R24 CPU gate](results/2026-11-07-current-script-cpu/README.md)
 profiles exactec134e8c text/report for about5guestCPU seconds: ordinary calls~2%,
 text prefix21%including inlined work, report JSON~10%. Unknowns, original export

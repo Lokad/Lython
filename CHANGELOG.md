@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Transfer completed CSV row arrays directly into dictionaries when native header
+  identities match shared record keys. Remove the second values allocation and
+  per-field publication on that path. Revalidate headers after admission, preserve
+  dynamic headers and retain original conservative row-capacity funding.
+
 - Reuse immutable provider programs from successful constant regex analysis
   during execution, removing duplicate compilation of the same UTF-8 request.
   Keep per-run pattern identity, purge behavior, group-name storage and current

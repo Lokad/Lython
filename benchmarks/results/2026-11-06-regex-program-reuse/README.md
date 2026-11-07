@@ -69,8 +69,9 @@ token cancellation, terminal wrapper refusal, suspended cleanup/funding, replay,
 cache purge and final0. Real0.4 adapter checks eight concurrent runs with Unicode
 names/astral captures and retained group dictionaries after script disposal.
 Complete local ordinary4274internal/16205public pass per actual.NET11/10;
-explicit Release installed-package consumers pass both. Full Windows/Ubuntu/
-original Stress delivery remains separate and pending.
+explicit Release installed-package consumers pass both. Full delivery42316074240 on ec134e8c is terminal GREEN: all eight Windows/Ubuntu
+actual11/10/original Stress/installed-package gates verified in
+[delivery-ci.json](delivery-ci.json). Later CSV prototypes are separately qualified.
 
 Initial six public failures enforce the former successful-analysis disposal/token
 observation assumptions; preserve their semantic/funding assertions and observe

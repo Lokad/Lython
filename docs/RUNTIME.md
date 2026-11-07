@@ -517,8 +517,9 @@ strings. Raw line bytes and an unfinished multiline prefix can require more
 working capacity than the decoded fields; replacement peaks remain admitted.
 Each source item completes at most one record, with trailing CR/LF allowed.
 One independently funded final field array awaits consumption. DictReader
-relinquishes private array capacity after header/key protocols and awaited
-cleanup; values and escaping dictionaries/rest lists retain independent funding.
+transfers it to matching native-key records; otherwise it relinquishes private
+array capacity after header/key protocols and awaited cleanup. Escaping
+dictionaries/rest lists retain their storage funding.
 csv.reader and exposed fieldnames adopt the funded array without copying.
 Source and parse errors consume the failed item and discard its unfinished
 record; already returned rows remain valid and funded.
@@ -1206,8 +1207,13 @@ alias; iterator fieldnames are materialized once. Dictionary writers share the
 ordinary rendering path and admit writeheader storage before allocation. Header
 mutations remain visible; no duplicate string-only header arrays are maintained.
 Native string-list headers construct each dictionary directly at its admitted
-capacity and reuse immutable key metadata between matching rows. Each row owns
-independent values; header edits remain visible. Short and extra-width records,
+capacity and reuse immutable key metadata between matching rows. When header key
+identities and row width match, the dictionary adopts the funded final row array
+after admitting its shell and rechecking headers after admission callbacks. This
+avoids a second values allocation and per-field publication. Original conservative
+row-capacity funding stays with the dictionary, including capacity retained by
+clear; thresholds can change. Each row owns independent values; header edits
+remain visible. Short and extra-width records,
 duplicate headers or a colliding
 restkey can leave unused capacity; it remains charged until ownership ends and
 can cause earlier conservative refusal. Dynamic headers retain Python protocols.

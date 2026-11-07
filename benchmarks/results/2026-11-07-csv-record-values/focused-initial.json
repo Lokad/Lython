@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "Lokad.Lython.Tests-net11.0": {
+      "exitCode": 1,
+      "summaries": [
+        "Failed!  - Failed:     2, Passed:   123, Skipped:     0, Total:   125, Duration: 593 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+      ]
+    }
+  },
+  "selection": "Category!=Stress&(FullyQualifiedName~Csv|FullyQualifiedName~RecordKey|FullyQualifiedName~GovernedMemory|FullyQualifiedName~SharedMemory)"
+}
