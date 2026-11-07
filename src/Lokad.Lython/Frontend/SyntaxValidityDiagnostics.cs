@@ -7,6 +7,9 @@ internal static class SyntaxValidityDiagnostics
     public static IReadOnlyList<LythonDiagnostic> Analyze(ScriptSyntax script)
     {
         var diagnostics = new List<LythonDiagnostic>();
+        var hasYield = false;
+        var hasModernTypes = false;
+        var hasFutureImport = false;
         var statements = new Stack<(StatementSyntax Statement, int LoopDepth)>();
         foreach (var statement in script.Statements) statements.Push((statement, 0));
         while (statements.TryPop(out var work))
@@ -15,11 +18,19 @@ internal static class SyntaxValidityDiagnostics
             if (statement is BreakStatementSyntax or ContinueStatementSyntax && loopDepth == 0)
                 Error("Loop control requires an enclosing loop in the same scope.", statement.Span);
             if (statement is FunctionDefinitionStatementSyntax function)
+            {
                 Parameters(function.Parameters, function.Span);
+                hasModernTypes |= function.TypeParameters is not null;
+            }
             if (statement is MatchStatementSyntax match)
                 foreach (var matchCase in match.Cases) PatternNames(matchCase.Pattern);
             if (statement is ClassDefinitionStatementSyntax type)
+            {
                 Unique(type.KeywordArguments.Select(a => a.Name), type.Span, "Repeated class keyword argument.");
+                hasModernTypes |= type.TypeParameters is not null;
+            }
+            hasModernTypes |= statement is TypeAliasStatementSyntax;
+            hasFutureImport |= statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null };
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement)) Expressions(expression);
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {
@@ -33,9 +44,12 @@ internal static class SyntaxValidityDiagnostics
                 foreach (var child in body) statements.Push((child, depth));
             }
         }
-        diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
-        diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
-        diagnostics.AddRange(PostponedAnnotationText.Validate(script));
+        // These validators can report only on the syntax discovered above/below.
+        // Keep their independent scope rules and diagnostic ordering when needed,
+        // without repeating complete walks over ordinary scripts.
+        if (hasYield) diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
+        if (hasModernTypes) diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
+        if (hasFutureImport) diagnostics.AddRange(PostponedAnnotationText.Validate(script));
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)
@@ -52,15 +66,16 @@ internal static class SyntaxValidityDiagnostics
 
         void Expressions(ExpressionSyntax root)
         {
-            var pending = new Stack<(ExpressionSyntax Expression, HashSet<string> Targets, bool Iterable)>();
-            pending.Push((root, new HashSet<string>(StringComparer.Ordinal), false));
+            var pending = new Stack<(ExpressionSyntax Expression, HashSet<string>? Targets, bool Iterable)>();
+            pending.Push((root, null, false));
             while (pending.TryPop(out var item))
             {
                 var (expression, targets, iterable) = item;
+                hasYield |= expression is YieldExpressionSyntax;
                 if (expression is AssignmentExpressionSyntax assignment)
                 {
                     if (iterable) Error("Assignment expressions are forbidden in comprehension iterables.", assignment.Span);
-                    else if (targets.Contains(assignment.Name)) Error("Assignment expression rebinds a comprehension iteration target.", assignment.Span);
+                    else if (targets?.Contains(assignment.Name) == true) Error("Assignment expression rebinds a comprehension iteration target.", assignment.Span);
                 }
                 if (expression is CallExpressionSyntax call)
                     Unique(call.Arguments.Where(a => a.Kind == CallArgumentKind.Keyword).Select(a => a.KeywordName), call.Span, "Repeated keyword argument.");
@@ -69,7 +84,7 @@ internal static class SyntaxValidityDiagnostics
                     Parameters(lambda.Parameters, lambda.Span);
                     foreach (var parameter in lambda.Parameters)
                         if (parameter.DefaultValue is not null) pending.Push((parameter.DefaultValue, targets, iterable));
-                    pending.Push((lambda.Body, new HashSet<string>(StringComparer.Ordinal), iterable));
+                    pending.Push((lambda.Body, null, iterable));
                     continue;
                 }
                 var clauses = expression switch
@@ -82,7 +97,8 @@ internal static class SyntaxValidityDiagnostics
                 };
                 if (clauses is not null)
                 {
-                    var nestedTargets = new HashSet<string>(targets, StringComparer.Ordinal);
+                    var nestedTargets = targets is null ? new HashSet<string>(StringComparer.Ordinal)
+                        : new HashSet<string>(targets, StringComparer.Ordinal);
                     foreach (var clause in clauses) AddTargetNames(clause.Target, nestedTargets);
                     foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
                         pending.Push((child, nestedTargets, iterable || clauses.Any(c => ReferenceEquals(c.Iterable, child))));

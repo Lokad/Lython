@@ -3928,3 +3928,17 @@ copy elimination is not a candidate for those measured gaps. Completed native
 loops/shared record keys/direct ordered-slot publication already exist. No new
 parser/funding machinery, timing or qualification; gate records no justified
 complete removable stage and continues the broader roadmap.
+
+## Demand-driven syntax validation (2026-11-07)
+
+[R62/B418](results/2026-11-07-syntax-validation/README.md) uses the existing
+validity walk to select generator/type/future validators, and removes empty scope
+sets and unchanged type-name clones. Distinct scope rules and diagnostic ordering
+remain; no combined visitor/cache.559internal/1492public per actual11/10 and716
+exact diagnostic differentials pass. Five-script compile allocation−3.15–4.07%;
+controlled compile elapsed−2.94–5.88%, fresh config−1.32–1.45%. Warm text control
+−0.51/−0.42% does not establish a runtime gain. Quantized external CPU and adverse,
+unstable desktop observations remain separate. Initial staging headroom failure
+was corrected with identical owned hard links before any measurement; original
+conditions/logs retained.125.261s, all archive/ownership/quiet/cleanup gates pass.
+Full delivery is pending. This does not complete the whole-script objective.

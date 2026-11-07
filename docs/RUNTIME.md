@@ -157,7 +157,12 @@ scopes omit binding analysis after their final relevant annotation check. Consta
 regex analysis retains its full conservative bindings across dead/deferred scopes.
 
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
-lowers constructs, and builds executable instructions. Lexical scope preparation
+lowers constructs, and builds executable instructions. The complete validity walk
+selects generator, modern-type and future-import validation only when the relevant
+syntax occurs, including in dead bodies. Those validators retain their own scope
+rules and diagnostic order. Comprehension and type-parameter validation allocate
+name sets only when introducing bindings; unchanged scopes share their read-only
+inherited set. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
 without a cross-script cache. Parameter classifications, argument layout arrays

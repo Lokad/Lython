@@ -44,8 +44,12 @@ internal static class ModernTypeSyntaxFacts
                 }
                 if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Nonlocal } directive && directive.Names.Any(typeNames.Contains))
                     Error("Type parameters cannot be rebound with nonlocal.", directive.Span);
-                var nestedNames = new HashSet<string>(typeNames, StringComparer.Ordinal);
-                if (parameters is not null) nestedNames.UnionWith(parameters.Select(parameter => parameter.Name));
+                var nestedNames = typeNames;
+                if (parameters is { Count: > 0 })
+                {
+                    nestedNames = new HashSet<string>(typeNames, StringComparer.Ordinal);
+                    nestedNames.UnionWith(parameters.Select(parameter => parameter.Name));
+                }
                 foreach (var nested in StatementSyntaxTraversal.EnumerateChildBodies(statement)) Statements(nested, nestedNames);
             }
         }
