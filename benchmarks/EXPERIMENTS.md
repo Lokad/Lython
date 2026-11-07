@@ -3942,3 +3942,21 @@ unstable desktop observations remain separate. Initial staging headroom failure
 was corrected with identical owned hard links before any measurement; original
 conditions/logs retained.125.261s, all archive/ownership/quiet/cleanup gates pass.
 Full delivery is pending. This does not complete the whole-script objective.
+
+## Current text execution attribution (2026-11-07)
+
+[R63/B419](results/2026-11-07-text-cpu-current/README.md) refreshes text CPU
+attribution after operand/call changes: 1,086 guest samples / 5.47 CPU seconds,
+65 unknown leaves, all identity/golden/quiet/cleanup/archive gates. Diagnostic
+PerfMap/JIT overrides are not normal-settings timing. Dispatch/input/value
+publication remain material; inclusive helper/split shares overlap. Binding/frame
+construction is not established as dominant. Native lower/split, cheap counter
+admission and deferred contexts already exist. Assess the complete value/store/
+cleanup-continuation boundary next, preserving observable assignment and funded
+async users; no tiny carrier rewrite, new arena, prototype or speedup claim.
+
+R64 [source follow-up](results/2026-11-07-text-cpu-current/publication-source-gate.md)
+finds common local-result publication already skips adjacent-store dispatch and
+the temporary write. Relocating its remaining target/span/async-continuation state
+does not establish a useful deletion. No prototype or timing selected; proceed
+with prepared binding/class-cell consolidation assessment and the broader roadmap.
