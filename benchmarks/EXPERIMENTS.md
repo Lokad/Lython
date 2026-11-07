@@ -3492,3 +3492,14 @@ generic prepared-operation detour and obsolete wrappers; preserve actual dynamic
 promotion, ordering, awaited cleanup, cancellation and admission. Initial launcher
 self-match refusal and corrected same-payload transport remain archived. The
 whole-script objective stays active; no automatic second profile is selected.
+
+## R30–R33 delivery checkpoint (2026-11-07)
+
+[Terminal GREEN42342955936](results/2026-11-07-native-hash-cancellation/delivery-ci.json)
+qualifies exact2f1f2715 on Windows/Ubuntu, ordinary actual.NET11/10, original Stress
+on both runtimes and installed-package consumers. Includes class facts, shared
+parameter layout/canonical prefix, current-token native hashing and the corrected
+5000-definition default-storage fixtures. Earlier failed42339537256/logs remain
+historical; no terminal run is polled again. Later R35 is outside this receipt.
+The performance objective and independent regex work remain active; publication
+and tagging postponed.
