@@ -1,0 +1,220 @@
+# Lokad.Lython 0.11.0
+
+Updated 2026-11-07. Git-ignored; never force-add. Publication/tagging postponed.
+Objective: coherent simplification and substantial complete-script performance.
+Completing one experiment or qualification does not complete this objective.
+
+## Actual delivery status
+
+| Source | State |
+| --- | --- |
+| 8c9fd0d7 and earlier retained work | Fully qualified: Windows/Ubuntu Release, actual .NET 11/10, original Stress and installed core consumers. Cached CI42371564043 and earlier receipts; never query again. |
+| R49 / 9990d591 | Committed/pushed and fully qualified CI42379372181. Declaration slots retain namespace publication across frames; shared import binding facts. Receipt committed4c739dcb. Initial29failures/correctness fix preserved. |
+| R50 / 80833f6e | Committed/pushed and fully qualified CI42382037879 on4c739dcb. Native UInt128 accumulation replaces UInt64; exact promotion, >64bit output admission and cancellation retained. B405 gains/debt recorded below. Never query this terminal run again. |
+| R51 / 55e510ff | Committed/pushed and fully qualified CI42383291690: Windows/Ubuntu actual11/10, original Stress and installed consumers. Shared UTF-8 wildcard translation replaces decoded inputs, segment copies, UTF-16/per-class builders and final encoding. B407 gains and adverse JSON debt remain below. Never query this terminal run again. |
+| R46 JSON integer sharing | Withdrawn after10.5%/about28.5x allocation regressions; exact source restored/rebuilt. No runtime prototype survives. |
+| Current checkpoint | B409 comparison/R52 profile d7df3147 and R53 d04024ee fully qualified, receipt b7aad281. R54 withdrawn/restored, evidence b7aad281. R55 production7df9b465 committed/pushed; coverage wording clarified a138c769. Focused/diagnostic complete. CI42397553014 on7df9b465 terminal GREEN/all platform/framework/Stress/consumer gates, cached; never query again. Receipt d74d25aa. R56/B414 terminal, archived/verified, receipt525172bc. R57 committed4885d9c0/focused; full delivery pending, R58 source assessment next. |
+
+Completed qualification is evidence, not work to repeat. Historical source-pair
+measurements must not be labeled as today's HEAD. Full receipts are beside their
+immutable benchmark artifacts under benchmarks/results/.
+
+## Established results and retained uncertainty
+
+- Shared compiler-fact correction removes exponential inferred-value traversal;
+  callback correctness is preserved. Fully qualified; no warm CPU claim.
+- Native helper returns: allocation−19.92/19.31%, fully qualified. Earlier elapsed
+  gains remain diagnostic; no remaining unchanged qualification campaign.
+- Direct UTF-8 formatting/storage: allocation−8.67%; controlled B102 elapsed/CPU
+  −5–8% supports retention. Original adverse15.125ms remains unexplained/preserved.
+- R20/R25 CSV: shared keys/independent values and completed-storage transfer replace
+  the old rigidly rejected bulk construction. Allocation−7.31/6.55%, native warm
+  −7.72–8.04%; mixed controls remain. No automatic promotion of the old prototype.
+- R35/R38 report/frontend and R40/R41 cursor/method work are qualified. Preserve
+  report/Unicode/regex gains and original adverse controls; do not requalify them.
+- R43 operand transport: smaller executable payload/fewer instructions; CPU gain
+  unproved, mixed/adverse controls retained. R44 deletes twelve immediate duplicate
+  checks. Wider guard hoisting has no complete cancellation/refusal/error proof.
+- R49 B404: search−4.28–5.10%, text−2.10–5.66% (3.26%current spread), JSON
+  −5.49–7.67%; extra48–96B admitted root capacity. Desktop30–50%text gains do not
+  transfer to the quiet VM. Namespace publication correctness remains essential.
+- R50 B405: numeric-string JSON warm−10.68–12.50%, allocation−12.492/12.487%.
+  Padded CSV+0.99–1.16% (~0.047ms/job) is accepted debt. No second native rescue
+  tier, JSON-parser change, universal CPU claim or arbitrary-large scaling claim.
+- R51: complete-script allocation fnmatch−25.029/25.017%, glob−31.797/31.809%
+  sync/async, controls within0.01%. Initial async glob+8% and refined unstable
+  clocks remain inconclusive. Initial/refined source, cores and CRLF-golden failure
+  are preserved. Useful initial capacity replaces repeated tiny growth admissions.
+  B407 three-job quiet source pair supports fnmatch−12.33–13.34% and glob
+  −15.55–16.92% warm elapsed. Ordinary JSON+4.16–7.43% is accepted unresolved
+  control debt, not dismissed because its source is unchanged. No universal CPU
+  or async elapsed claim. Archive39f94255 verified under lease and locally.
+
+Narratives, failed conditions, source decisions and raw evidence belong in
+benchmarks/EXPERIMENTS.md and benchmarks/results/, not docs/. This plan's preceding
+detail is also frozen in the B406 pre-measurement snapshot and private agent notes.
+
+## Delivered checkpoint
+
+R53 fixes demonstrated callback overcommit and preserves first refusal, aliases
+and cleanup. Fully qualified/cached CI42393422539 on d04024ee; receipt b7aad281.
+[Contract/source/failures](benchmarks/results/2026-11-07-admission-publication/README.md).
+The [CPython guide](docs/BENCHMARKS.md) refresh is complete on frozen55e510ff:
+seven ordinary compile/warm/fresh scripts and two labeled integer warm cases,
+explicit I/O/cleanup/status. Do not relabel it as later HEAD. Startup, pending-I/O,
+RSS and embedding tail latency are unmeasured. No unchanged primary campaign.
+[Checkpoint/history](benchmarks/results/2026-11-07-retained-checkpoint/README.md).
+
+## Immediate delivery R55 — one lexical nesting pass
+
+Deleted96lines including the complete preliminary scanner/factory;
+13lines in the existing token loop enforce the same512 bound. Demonstrated
+baseline false rejection of both same-quote nested f-string literals; CPython3.13.2
+agrees with corrected compile/Run/RunAsync results. Existing three delimiter
+families, parser/unary bounds and original pathological subprocesses pass.
+802internal/1,555public plus14parser-hardening checks with fresh matching probes per actual11/10 pass.
+All15complete-job compile/fresh/warm diagnostic gates pass, allocation essentially
+flat. Elapsed mixed/unstable: warm text+8.27to+20.07% with9.82%baseline drift,
+fresh report+3.43to+14.86%; no CPU gain/debt repayment. Retain for coherent deletion
+and correctness, keep timing uncertainty/debt explicit; no small-change VM campaign.
+Archive53c461a5 and full observations in
+[R55 evidence](benchmarks/results/2026-11-07-lexical-nesting/README.md).
+Full Windows/Ubuntu actual11/10, original Stress and installed-consumer delivery
+CI42397553014 is GREEN/cached on7df9b465. Continue independent roadmap work;
+do not repeat completed focused checks or query cached terminal deliveries.
+
+## Completed R56 — configuration phase attribution
+
+B414: 48,992 complete config invocations, 551 guest samples/2.91 CPU seconds,
+33 unknown leaves. Builtin construction17 inclusive, context29, result1; host
+open269/path resolution152 overlap. Not proof of dominant removable setup.
+Do not add lazy builtin/materialization machinery on this evidence. Preserve
+run-local type/descriptor identity and funding; existing shared functions/workers
+and scalar sum accumulation are already delivered. Guest integers project as
+BigInteger while ingress preserves CLR numeric types: no casual boxed-long switch.
+Both original B413 setup failure and corrected B414 gates/archive are preserved in
+[R56 evidence](benchmarks/results/2026-11-07-invocation-setup/README.md).
+Terminal, all users joined/fixtures removed, no further query or delivery rerun.
+
+## R57 — product lifetime correction implemented
+
+Four native baseline failures confirm premature refund/re-admission and computation
+after cancellation-at-admission; two refusal controls already pass. Two public
+baseline cases expose integer/bool start identity loss. One shared held grant and
+start reader replace15net lines; no public representation change.91internal/
+638public per actual11/10 pass. Matrix-product allocation−7.808/−7.216%; extreme
+elapsed/control instability retained, no CPU claim. Full delivery pending at the
+next coherent boundary; docs/contracts updated. [Evidence](benchmarks/results/2026-11-07-product-admission/README.md).
+
+## Next R58 — one compiler graph normalization
+
+Selective reassessment of the earlier compiler graph normalization: its original
+2.83–3.77%CSV/0.81–2.11%text compile gains were inconclusive with69–133%IQR and
+fresh control drift10.99%; rigid thresholds were not proof of a failed design.
+Current source still creates a HashSet for every jump-target walk, then a reachable
+HashSet, sorting and dictionary remap over dense block IDs. Replace the complete
+phase with one iterative all-target table plus dense reachability/remapping.
+Remove the per-query walk/sets/sort/map and displaced target plumbing, not add a
+second optimizer or graph framework. Existing region binary searches remain.
+Preserve each cycle entry/incoming tail, original AbruptJump protected target,
+block/handler order, exception cleanup, Python diagnostics, closures/generators,
+managed depth, stage cancellation, first refusal and coarse compiler admission.
+
+First compare current source with the historical patch and independent graph
+reference; no automatic promotion. Focused property/semantic/control-flow,
+cancellation and ownership checks precede timing. Compare compile CSV/text/report,
+fresh config and warm text control on current R57 source, unchanged auxiliaries,
+three independent normal-runtime roles on the quiet VM with usable batches.
+Separate allocation/deletion from elapsed. Bounded confirmation/refinement is justified when unchanged controls or setup
+are inconclusive; retain originals and an explicit collection/time scope.
+Stop at a retained/restored source decision and explicit remaining regression debt,
+then resume whole-script roadmap. Do not predict a warm-execution speedup from
+frontend work. Full platform/stress/installed consumers at the combined boundary.
+
+## Following redesign roadmap
+
+Use the coherent checkpoint's phase costs and existing profiles to choose a
+substantial removable stage. Do not accumulate another list of narrow cases.
+Each selected milestone must name its hypothesis, affected complete scripts,
+eliminated work/storage, displaced code to delete, semantic gates, comparison and
+regression-debt decision. A justified redesign can temporarily regress until its
+explicit completion milestone.
+
+| Boundary | Concrete next decision / acceptance / stopping condition |
+| --- | --- |
+| Complete calls and frames | Text/CSV/report helpers are affected. Native module helpers, direct operands/final slots, lazy namespaces, deferred contexts and the linear frame runner already exist; do not claim to remove them again. Current census: text/search/JSON helpers are native; CSV/report bodies are executable and can defer context. Inspect whole argument/binding/frame lifetime for a remaining material packaging phase before implementing. Preserve defaults/keywords/variadics, closures, recursion, evaluation order, exceptions, actual async callbacks and retained borrows. R48 entry leaves25/645samples do not show dominant removable admission; inclusive samples overlap. |
+| Frontend consolidation | Use compile and compile-to-result for fresh config/report scripts. Shared lexical/class/parameter facts and R38 demand pruning already exist. Earlier current-compiler profile records LoweredScript20/774 and22/728 inclusive samples (2.6–3.0%); removing the whole intermediate tree is not established as dominant. Select only actual repeated analysis or a redundant retained representation; preserve invalid/dead-scope diagnostics, regex validation/effective flags, imports, annotations/classes/generators. Profile the selected phase before a compiler-wide rewrite. |
+| Per-record construction | Shared keys and CSV value transfer exist; synchronous JSON remains separate after R46's CLR-versus-radix lesson. Select only a remaining extra copy/capacity phase, preserving hooks/order/reentry/alias/replacement funding and cancellation. No automatic replay of the old rejected bulk-record implementation. |
+| Scalars / remaining text | R42 scalar-add self41samples alone does not justify universal tagged slots. Identify a real dominant conversion/dispatch stage in affected text/report work. Preserve exact promotion, identity, Unicode, hashes, callbacks and owners. R28 packed split storage was slower/variable after refinement and is withdrawn; input sharing cannot refund retained aliases. |
+| Operand transport | R43 already removes ordinary transport work. Further changes need materially new evidence; CPU benefit remains unproved. Preserve physical storage/closure/generator ownership. |
+
+The next gate is a bounded source/profile decision on a whole phase, followed by
+one coherent prototype and controlled complete-script comparison with unchanged
+controls. Do not redesign several boundaries at once. A negative or inconclusive
+gate leaves explicit uncertainty; it is not permanent prohibition or completion
+of the performance objective. Slower call-arena/call-control designs retain their
+lessons and require materially different evidence before reconsideration.
+
+### Completed R52 phase attribution
+
+B410:927guest samples/4.67CPU seconds,59unknown leaves, all archived/verified.
+JSON strings66self, formatting handling/append42each, Monitor54combined; binding13,
+workspace rent3, frame advance3. Inclusive stacks overlap; no dominant removable
+packing phase established. Existing native JSON/final-buffer formatting remain.
+Source follow-up yielded R53's demonstrated ownership correction, then R54's
+withdrawn input-storage prototype. No repeated profile or saved-CPU forecast.
+[Full limits/history](benchmarks/results/2026-11-07-report-execution-cost/README.md).
+
+### R54 complete — input-window representation withdrawn
+
+No runtime/test prototype survives. Exact R53 production restored and force-built;
+975internal/4,778public per actual11/10 pass. Report allocation about−5%, JSON
+under−1%, controls+3–4.5% from eight extra wrapper bytes. B412 all3jobs/86.75s:
+report elapsed−5.00to+2.14%/5.05%baseline spread, text−0.49to+7.80%/6.23%current
+spread; no substantial CPU benefit established. Added ownership state/general
+allocation cost does not justify retention. Not a permanent rejection of sharing.
+All initial failures, adverse/unstable results, B411 Ready/core staging failure and
+hardlink-only measurement correction remain in
+[R54 evidence](benchmarks/results/2026-11-07-json-input-windows/README.md).
+B411/B412 terminal/archived/locally verified; no users/mounts or future query.
+
+## Independent regex track
+
+The core already owns Python/native UTF-8 semantics, byte ranges/scalar positions,
+original-subject windows, captures/replacements/errors/cache ownership and current
+tokens through actual work. R51 removes remaining wildcard translation conversions.
+No Utf8Regex runtime dependency is restored. Optional nonpackable normal adapter0.4.0;
+earlier dev48/f6b2175e qualification is historical, not current final certification.
+
+Precise producer gaps: DetailedData lacks a separate Prepare working owner, native
+names lack enumeration, cursors combine creation/current token authority. Supplied
+producer6032b928/dev51 still requires adapter-local bridges/conservative funding.
+Development producers/bridges support contract and semantic tests. Missing released
+APIs defer only affected final adapter qualification, never core development or
+independent performance work. Qualify immutable released inputs and managed safety
+separately. No sibling edits, new memory infrastructure, dialect fallback, quotas
+or abandoned background matching. Publication remains postponed.
+
+## Iteration and constraints
+
+Timeouts, unstable controls and inconclusive clocks establish uncertainty. Permit
+bounded confirmation, refinement or measurement correction when evidence warrants;
+preserve all original failed/adverse conditions. No blanket one-attempt/no-retiming/
+permanently-closed rules. Percentages inform decisions, not automatic vetoes.
+Distinguish architectural simplification, allocation reduction and demonstrated CPU.
+Use existing tools, focused Release semantics/cancellation/ownership checks, then
+batch actual11/10 Windows/Ubuntu, original Stress and installed-package checks.
+No overlapping local builds/tests/measurements or repeated unchanged qualification.
+
+AGENTS.md governs: fully managed/memory-safe; managed stack/nesting; host-mediated
+capabilities; current cooperative cancellation; borrowed allowance, conservative
+preflight/replacement overlap, retained aliases, deterministic awaited cleanup.
+First refusal terminates the command. No unsafe/Unsafe/PInvoke, tracing/weak
+reclamation/forced GC, fuel/quotas/caps or hidden allowance. Initial bounded streams
+use host-driven batches; XML depth remains. All text read/write explicitly UTF-8.
+
+VM lokad@20.166.121.73, key ~/.ssh/id_lython-bench.pem. B385–B414 terminal, archived,
+locally verified; never service-query again. Archive/verify RAM evidence under its
+lease before removal; persistent evidence lives outside RAM. Record owner/stop/
+margin before every new collection. Git-ignored PLAN stays out of commits; docs
+describe the current implementation, with immutable historical evidence linked.

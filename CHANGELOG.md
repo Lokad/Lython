@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Resolve executable jump chains once and normalize dense block IDs directly,
+  removing repeated hash-set walks, reachability sorting and dictionary remapping.
+  Preserve cycle entry identity and protected cleanup targets.
+
 - Hold `math.prod` working admission through computation and transfer retained
   result funding from it, removing premature refunds and duplicate admission.
   Observe cancellation after admission; preserve empty integer/bool starts.

@@ -9,6 +9,51 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableScript
 {
+    // A successor of -1 denotes a block that is not a single ordinary jump.
+    // Completed targets are nonnegative; negative markers index the current path.
+    internal static int[] ResolveJumpTargets(ReadOnlySpan<int> successors)
+    {
+        var targets = new int[successors.Length];
+        Array.Fill(targets, -1);
+        var path = new int[successors.Length];
+        for (var start = 0; start < successors.Length; start++)
+        {
+            if (targets[start] >= 0)
+                continue;
+
+            var length = 0;
+            var current = start;
+            while (targets[current] == -1)
+            {
+                targets[current] = -2 - length;
+                path[length++] = current;
+                var next = successors[current];
+                if (next == -1)
+                {
+                    targets[current] = current;
+                    break;
+                }
+                current = next;
+            }
+
+            if (targets[current] < 0)
+            {
+                // The old walk returned its first repeated node. Preserve every
+                // cycle node's own identity, and each incoming tail's entry node.
+                var cycleStart = -2 - targets[current];
+                for (var i = cycleStart; i < length; i++)
+                    targets[path[i]] = path[i];
+            }
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var block = path[i];
+                if (targets[block] < 0)
+                    targets[block] = targets[successors[block]];
+            }
+        }
+        return targets;
+    }
+
     private sealed partial class Builder
     {
         private int CreateBlock()
@@ -34,15 +79,16 @@ internal sealed partial class ExecutableScript
             return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
-        private List<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, IReadOnlyDictionary<int, int> indexMap)
+        private List<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, int[] indexMap, int[] jumpTargets)
         {
             var normalized = new List<ExecutableBasicBlock>(ordered.Count);
             foreach (var originalIndex in ordered)
             {
-                var rewritten = _blocks[originalIndex].Instructions
-                    .Select(instruction => RewriteInstructionTargets(instruction, indexMap))
-                    .ToArray();
-                normalized.Add(new ExecutableBasicBlock(indexMap[originalIndex], rewritten));
+                var instructions = _blocks[originalIndex].Instructions;
+                var rewritten = new ExecutableInstruction[instructions.Count];
+                for (var i = 0; i < rewritten.Length; i++)
+                    rewritten[i] = RewriteInstructionTargets(instructions[i], indexMap, jumpTargets);
+                normalized.Add(new ExecutableBasicBlock(NormalizedBlock(indexMap, originalIndex), rewritten));
             }
 
             return normalized;
@@ -50,7 +96,7 @@ internal sealed partial class ExecutableScript
 
         private IReadOnlyList<ExecutableExceptionRegion> NormalizeRegions(
             IReadOnlyList<int> orderedBlocks,
-            IReadOnlyDictionary<int, int> indexMap)
+            int[] indexMap, int[] jumpTargets)
         {
             var normalized = new List<ExecutableExceptionRegion>(_regions.Count);
             foreach (var region in _regions)
@@ -81,8 +127,8 @@ internal sealed partial class ExecutableScript
                 normalized.Add(new ExecutableExceptionRegion(
                     firstProtected,
                     afterLastProtected - 1,
-                    region.ExceptIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
-                    region.FinallyIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
+                    region.ExceptIndex is int exceptBlock ? NormalizedBlock(indexMap, jumpTargets[exceptBlock]) : null,
+                    region.FinallyIndex is int finallyBlock ? NormalizedBlock(indexMap, jumpTargets[finallyBlock]) : null,
                     suiteStart,
                     suiteEnd, region.CleanupId));
             }
@@ -134,19 +180,22 @@ internal sealed partial class ExecutableScript
             }
         }
 
-        private HashSet<int> CollectReachableBlocks(int entryBlockIndex)
+        private int[] CollectReachableBlocks(int entryBlockIndex, int[] jumpTargets)
         {
-            var reachable = new HashSet<int>();
+            var reachable = new bool[_blocks.Count];
+            var count = 0;
             var pending = new Stack<int>();
             pending.Push(entryBlockIndex);
 
             while (pending.Count > 0)
             {
                 var blockIndex = pending.Pop();
-                if (!reachable.Add(blockIndex))
+                if (reachable[blockIndex])
                 {
                     continue;
                 }
+                reachable[blockIndex] = true;
+                count++;
 
                 var block = _blocks[blockIndex];
                 if (block.Instructions.Count == 0)
@@ -172,10 +221,10 @@ internal sealed partial class ExecutableScript
                         case ExecutableOpCode.JumpIfFalse:
                         case ExecutableOpCode.ForNext:
                         case ExecutableOpCode.EndFinally:
-                            pending.Push(FinalJumpTarget(instruction.TargetIndex));
+                            pending.Push(jumpTargets[instruction.TargetIndex]);
                             break;
                         case ExecutableOpCode.MatchCase:
-                            pending.Push(FinalJumpTarget(instruction.FailureIndex));
+                            pending.Push(jumpTargets[instruction.FailureIndex]);
                             break;
                     }
                 }
@@ -209,39 +258,43 @@ internal sealed partial class ExecutableScript
                 }
             }
 
-            return reachable;
+            var ordered = new int[count];
+            var next = 0;
+            for (var i = 0; i < reachable.Length; i++)
+                if (reachable[i])
+                    ordered[next++] = i;
+            return ordered;
         }
 
-        private ExecutableInstruction RewriteInstructionTargets(ExecutableInstruction instruction, IReadOnlyDictionary<int, int> indexMap)
+        private static ExecutableInstruction RewriteInstructionTargets(ExecutableInstruction instruction, int[] indexMap, int[] jumpTargets)
         {
             return instruction.OpCode switch
             {
-                ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(indexMap[instruction.TargetIndex]),
+                ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(NormalizedBlock(indexMap, instruction.TargetIndex)),
                 ExecutableOpCode.Jump or
                 ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.ForNext or
-                ExecutableOpCode.EndFinally => instruction.WithTargetIndex(indexMap[FinalJumpTarget(instruction.TargetIndex)]),
-                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(indexMap[FinalJumpTarget(instruction.FailureIndex)]),
+                ExecutableOpCode.EndFinally => instruction.WithTargetIndex(NormalizedBlock(indexMap, jumpTargets[instruction.TargetIndex])),
+                ExecutableOpCode.MatchCase => instruction.WithFailureIndex(NormalizedBlock(indexMap, jumpTargets[instruction.FailureIndex])),
                 _ => instruction
             };
         }
 
-        private int FinalJumpTarget(int blockIndex)
+        private static int NormalizedBlock(int[] indexMap, int originalIndex)
+            => indexMap[originalIndex] is var normalized && normalized >= 0
+                ? normalized
+                : throw new InvalidOperationException("Executable target is unreachable.");
+
+        private int[] ResolveJumpTargets()
         {
-            var seen = new HashSet<int>();
-            var current = blockIndex;
-            while (seen.Add(current))
+            var successors = new int[_blocks.Count];
+            for (var i = 0; i < successors.Length; i++)
             {
-                var instructions = _blocks[current].Instructions;
-                if (instructions.Count != 1 || instructions[0].OpCode != ExecutableOpCode.Jump)
-                {
-                    break;
-                }
-
-                current = instructions[0].TargetIndex;
+                var instructions = _blocks[i].Instructions;
+                successors[i] = instructions.Count == 1 && instructions[0].OpCode == ExecutableOpCode.Jump
+                    ? instructions[0].TargetIndex : -1;
             }
-
-            return current;
+            return ExecutableScript.ResolveJumpTargets(successors);
         }
 
         private int InternLocal(string name)

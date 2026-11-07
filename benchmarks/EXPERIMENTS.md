@@ -3875,3 +3875,17 @@ One existing10job desktop diagnostic passes goldens/funding/cleanup; affected
 matrix-product allocation−7.808/−7.216%, controls within0.045%. Elapsed is unstable,
 including+102.49%async and99.52%old drift; no CPU claim. Original wrong float-
 identity fixture, corrected independent Python result and failures remain.
+
+## Dense executable graph normalization (2026-11-07)
+
+[R58/B415](results/2026-11-07-executable-graph/README.md) reassesses the original
+inconclusive graph replacement. One target table/dense blocks replace repeated
+walks/HashSets/sort/map; cycle and protected targets stay exact.429internal/
+5143public per actual11/10 pass, with explicit non-Stress filters after preserving
+an accidentally broad stopped selection. B415fivejobs124.997s/allgates/archive
+907f8751 verified: compile CSV/text/report−1.66to−2.97%, fresh config−0.62to−1.61%.
+Warm text−2.84to+1.49%/4.26%old spread remains uncertain/adverse; externalCPU mixed.
+Separate compilation allocation−3.89to−5.89%; desktop clocks/control drift retained.
+Retain coherent phase replacement and modest compile benefit; no CPU/warm gain,
+whole-objective completion or immediate unchanged retiming. Combined delivery
+with R57 is pending; no producer or publication dependency.

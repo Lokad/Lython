@@ -15,6 +15,16 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Executable graph normalization](Lokad.Lython.Tests/ExecutableJumpTargetTests.cs)
+compares every partial successor graph through five nodes with an independent
+walk, preserves cycle/tail entries and resolves a long chain without recursion.
+Public loop, match, generator and exception scenarios retain cleanup semantics.
+
+[Product admission](Lokad.Lython.Tests/ProductAdmissionTests.cs) keeps a granted
+working allowance through result ownership, stops after cancellation at admission,
+preserves input aliases/first refusal and returns funding for reuse. Public prod
+checks retain large products, delayed inputs and Python start-value semantics.
+
 [Reentrant admission](Lokad.Lython.Tests/ReentrantAdmissionOwnershipTests.cs)
 keeps pending outer storage and retained callback results funded, rejects shared
 allowance overcommit, preserves first refusal and returns unused charges after

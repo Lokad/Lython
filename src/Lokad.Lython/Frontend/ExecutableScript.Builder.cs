@@ -119,16 +119,17 @@ internal sealed partial class ExecutableScript
                 AddInstruction(finalBlock, ExecutableInstruction.ReturnNone(EmptySpan));
             }
 
-            var reachable = CollectReachableBlocks(entryBlock);
-            var ordered = reachable.Order().ToArray();
-            var indexMap = new Dictionary<int, int>();
+            var jumpTargets = ResolveJumpTargets();
+            var ordered = CollectReachableBlocks(entryBlock, jumpTargets);
+            var indexMap = new int[_blocks.Count];
+            Array.Fill(indexMap, -1);
             for (var i = 0; i < ordered.Length; i++)
             {
                 indexMap[ordered[i]] = i;
             }
 
-            var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
-            var normalizedRegions = NormalizeRegions(ordered, indexMap);
+            var normalizedBlocks = NormalizeBlocks(ordered, indexMap, jumpTargets);
+            var normalizedRegions = NormalizeRegions(ordered, indexMap, jumpTargets);
             // Annotation values can retain functions or deferred generators after
             // module slots leave. Keep their existing global namespace lifetime
             // conservatively; scalar-only declarations need no such mirror.
