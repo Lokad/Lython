@@ -4254,3 +4254,18 @@ Initial six-case rejection, stale copied control metadata/per-case snapshots,
 wrong immutable launcher name and all adverse desktop controls are preserved.
 All source/Ready/golden/quiet/join/fixture/archive gates pass. Full retained delivery
 follows; no further per-opcode refinement series or performance-objective closure.
+
+## Combined CPython checkpoint after receiver/workstate changes (2026-11-08)
+
+[R83/B446](results/2026-11-08-runtime-checkpoint/README.md) refreshes production
+91f15a3e/core4c072fed:26jobs539.117s, eight complete scripts with compilation,
+warm and compile-to-result separated, plus ordinary rsplit/guarded text warm rows.
+Compile-to-result ratios span about1.01×CPython(JSON) to1.63×(text). Ordinary
+helper warm rows are2.12–2.23×; source/call/frame and text conversion contributions
+remain unresolved. Variable native-text/report/CSV controls remain visible; earlier
+numeric-string warm evidence and named-source guide are preserved. All source/
+Ready/golden/quiet/join/fixture/archive gates pass and local archive is verified.
+Full retained-source qualification is independent CI42451722109, not established
+by this benchmark. No single-change CPU attribution, debt repayment or objective
+closure. Next attribution must use the ordinary helper path, not the fused-helper
+profile; binding/workspace reuse and inline presence bits already exist.
