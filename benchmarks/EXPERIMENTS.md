@@ -4624,3 +4624,16 @@ Windows compiler uncertainty and initial compiler allocation+0.08–0.53% remain
 Six jobs168.190s/all gates/archive/local verification pass; no users/fixtures.
 Exact retained-source full delivery is independent/pending; no publication or
 completion of the broader performance objective.
+
+## Current report attribution / bounded source gate (2026-11-08)
+
+[R108/B466](results/2026-11-08-current-report-attribution/README.md) at7265538c:
+1110guest samples/5.58CPU seconds,64unknown leaves. Formatting/JSON/dictionary work
+material; call/frame inclusive84% contains useful callee work, leaf3.96%, context
+constructors0.72%. No packaging-dominance claim or speculative runtime prototype.
+Current direct record filling/token windows/completed parser/final-buffer formatting
+already exist. Preserve R26's admission-reentry correctness deletion of the native
+formatted evaluator; do not reintroduce upfront mutable proofs. Offline classifier
+corrected actual call names/per-method deduplication; original/raw retained, no retime.
+All gates/archive/local verification pass, no users/RAM. Full delivery independent;
+next combined retained-source external checkpoint, no new framework/publication.
