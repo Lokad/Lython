@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Share final storage construction for explicit-separator and whitespace splitting.
+  Remove reverse-split temporary lists, conversion arrays and final copies; admit
+  the complete result before creating fragments. Preserve direction, aliases and
+  cooperative cancellation through the existing bounded byte search. Carry the
+  active context after an asynchronously suspended split-count protocol.
+
 - Read prepared operands directly, removing the shared operand bundle and runtime
   arity reader. Preserve descriptor snapshots, original read errors, suspension
   and ownership; borrow synchronous instruction metadata.

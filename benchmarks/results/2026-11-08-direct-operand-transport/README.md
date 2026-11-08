@@ -10,7 +10,7 @@ transport removal; JIT optimization limits attribution to a particular copy.
 Baseline: committedcb2b015e/core9d30623c, fully qualified CI42472284713 separately
 after collection. Candidate:cb2b015e plus archived R96 patch/core d6254b2e.
 Full hashes/source inventories are in identity.json. Retained production94cb8963.
-Full delivery remains pending independently at CI42475420182. The
+Full Windows/Ubuntu actual11/10, originalStress and installed-core delivery is independently green at [CI42475420182](delivery-ci.json). The
 [combined checkpoint](../2026-11-08-direct-operand-checkpoint/README.md) updates
 the primary CPython guide; it does not alter this source-pair attribution.
 

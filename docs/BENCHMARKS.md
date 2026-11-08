@@ -21,9 +21,8 @@ relative to the candidate. Max IQR includes CPython. Diagnostic/Variable describ
 short observations, not design acceptance thresholds; inconclusive cases remain.
 
 Frozen core `d6254b2e` matches the measured source's production inventory.
-Focused Release checks pass on actual .NET11/.NET10. Full Windows/Ubuntu,
-original Stress and installed-consumer qualification is pending independently
-at [CI42475420182](https://github.com/Lokad/Lython/actions/runs/42475420182).
+Windows/Ubuntu Release actual .NET11/.NET10, original Stress and installed core
+consumers pass [cached CI42475420182](../benchmarks/results/2026-11-08-direct-operand-transport/delivery-ci.json).
 Source qualification and measurement are separate evidence.
 The [26-job checkpoint](../benchmarks/results/2026-11-08-direct-operand-checkpoint/README.md)
 records exact identities and verified raw observations. Optional0.4 adapter/worker
@@ -106,7 +105,8 @@ measure affected workloads; percentages are not additive or universal CPU gains.
 | Shared closed-method preparation / text helpers | Allocation neutral; controlled rsplit elapsed −13.94–17.85% sync/−16.06–19.25% async, casefold sync −11.14–14.17% | Duplicate method inventory/dead fusion work removed. Fused/report controls inconclusive; CSV +0.42–1.03% possible debt. Full delivery qualified. [R89](../benchmarks/results/2026-11-08-native-method-facts/README.md) |
 | Shared casing/split preparation / guarded text | Allocation −12.74%; controlled elapsed −3.48–4.84% sync/−6.78–8.01% async; coarse CPU agrees | Native-only fused variants removed. Other text/CSV controls inconclusive; frontend elapsed diagnostic. Full delivery qualified at05d81b83. [R92](../benchmarks/results/2026-11-08-shared-cased-split/README.md) |
 | Direct comparison conditions / CSV and JSON | CSV allocation −3.72% sync/−15.25% async; controlled CSV elapsed −5–9% sync/−10–16% async, JSON −6–8% | Ordered predicate/name transport and primitive fallback removed. Text +1.28–3.50% elapsed debt retained; async CSV controls variable. Full delivery qualified atcb2b015e. [R95](../benchmarks/results/2026-11-08-direct-comparison-branches/README.md) |
-| Direct operand references / complete scripts | Allocation neutral; controlled CSV elapsed −1.4–4.3%, JSON −1.7–4.3%; text favorable with variable baseline | Operand bundle/reader removed. Report possible elapsed debt; R95 text debt remains separately recorded. Full delivery pending. [R96](../benchmarks/results/2026-11-08-direct-operand-transport/README.md) |
+| Direct operand references / complete scripts | Allocation neutral; controlled CSV elapsed −1.4–4.3%, JSON −1.7–4.3%; text favorable with variable baseline | Operand bundle/reader removed. Report possible elapsed debt; R95 text debt remains separately recorded. Full delivery qualified at94cb8963. [R96](../benchmarks/results/2026-11-08-direct-operand-transport/README.md) |
+| Shared split construction / delimiter reports | Complete forward report allocation −5.47%, reverse −8.91–8.92% across both APIs | Temporary lists/conversion/copies removed; whole output admitted before fragments. Desktop elapsed inconclusive/adverse; full retained-boundary delivery pending. [R98](../benchmarks/results/2026-11-08-shared-split-construction/README.md) |
 | Native workstate dispatch | Ordinary/guarded helper reports allocate about 42% less; controlled elapsed 11.8–14.4% lower sync/14.5–16.1% async; guarded 10.5–12.2% lower | Native calls/iteration avoid full contexts. CSV elapsed +0.25–1.92% accepted debt; native control inconclusive. [R79](../benchmarks/results/2026-11-08-native-workstate/README.md) |
 | Shared string receiver declarations | Complete rsplit-helper report allocation −21.26%; controlled migration elapsed −14.5–16.8% sync/−14.3–14.7% async | Two providers/per-access closures/packing removed; callbacks genuinely suspend. Final duplicate-arm cleanup allocation-checked, not VM-retimed; report control inconclusive. [R78](../benchmarks/results/2026-11-08-string-receivers/README.md) |
 | Direct token storage / text, CSV | Allocation about−9.4% text/−8–9% CSV; controlled async text elapsed−2.3–3.3% | Sync text inconclusive; float async+0.9–2.7% accepted debt, full delivery qualified. [R76](../benchmarks/results/2026-11-08-inline-utf8/README.md) |

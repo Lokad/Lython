@@ -626,8 +626,10 @@ internal sealed partial class LythonRuntime
 
     // Ranges partition candidate starts, not input bytes: a needle crossing a
     // range boundary is searched once. The managed BCL performs each bulk search.
-    private static int FindBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle,
-        ExecutionContext? context, LythonSourceSpan span, bool reverse = false)
+    // Also used by string segmentation: UTF-8 separators use the same byte
+    // search and current cancellation policy, without converting the subject.
+    internal static int FindBytes(ReadOnlySpan<byte> source, ReadOnlySpan<byte> needle,
+        ExecutionContext? context, LythonSourceSpan? span, bool reverse = false)
     {
         context?.CheckExecution(span);
         if (needle.IsEmpty) return reverse ? source.Length : 0;

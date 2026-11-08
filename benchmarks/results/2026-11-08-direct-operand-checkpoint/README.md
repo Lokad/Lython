@@ -15,7 +15,7 @@ B457 core/archive reused, persistent raw observations, prior measured raw+archiv
 footprint with25% headroom above240MiB OSfloor. The payload is included in that
 total, not counted a second time. No evidence/core/path deletion or deduplication.
 Independent full Windows/Ubuntu actual11/10/originalStress/installed consumers
-remain pending at94cb8963, CI42475420182.
+pass at94cb8963, cached [CI42475420182](../2026-11-08-direct-operand-transport/delivery-ci.json).
 
 Command-v2 boundaries unchanged. Compile includes construction/disposal; warm
 reuses code and includes execution, full stdout/file checks, mediated RAM-file

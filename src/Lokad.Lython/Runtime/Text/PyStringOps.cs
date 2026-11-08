@@ -109,7 +109,7 @@ internal static partial class PyStringOps
 
     public static PyList SplitWhitespace(PyString value, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-        => SplitWhitespaceCore(value, -1, false, governor, span, context);
+        => SplitCore(value, -1, false, governor, span, context);
 
     public static PyList SplitWhitespace(PyString value, int maxSplit)
         => SplitWhitespace(value, maxSplit, null, null);
@@ -119,7 +119,7 @@ internal static partial class PyStringOps
 
     public static PyList SplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-        => SplitWhitespaceCore(value, maxSplit, false, governor, span, context);
+        => SplitCore(value, maxSplit, false, governor, span, context);
 
     public static PyList Split(PyString value, PyString separator)
         => Split(value, separator, null, null);
@@ -127,27 +127,9 @@ internal static partial class PyStringOps
     public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor)
         => Split(value, separator, governor, null);
 
-    public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= PyStructuralGuard.AmbientSpan;
-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Span;
-        var needle = separator.Utf8Span;
-        var offset = 0;
-        while (true)
-        {
-            var found = PyString.IndexOfBytes(source[offset..], needle);
-            if (found < 0)
-            {
-                parts.Add(SliceUtf8(value, offset, source.Length, governor, span));
-                return parts;
-            }
-
-            parts.Add(SliceUtf8(value, offset, offset + found, governor, span));
-            offset += found + needle.Length;
-        }
-    }
+    public static PyList Split(PyString value, PyString separator, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
+        => SplitCore(value, -1, false, governor, span, context, separator: separator);
 
     public static PyList Split(PyString value, PyString separator, int maxSplit)
         => Split(value, separator, maxSplit, null, null);
@@ -155,41 +137,9 @@ internal static partial class PyStringOps
     public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor)
         => Split(value, separator, maxSplit, governor, null);
 
-    public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= PyStructuralGuard.AmbientSpan;
-        if (separator.Length == 0)
-        {
-            throw new InvalidOperationException("empty separator");
-        }
-
-        if (maxSplit < 0)
-        {
-            return Split(value, separator, governor, span);
-        }
-
-        var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Span;
-        var needle = separator.Utf8Span;
-        var offset = 0;
-        var splits = 0;
-        while (splits < maxSplit)
-        {
-            var found = PyString.IndexOfBytes(source[offset..], needle);
-            if (found < 0)
-            {
-                break;
-            }
-
-            parts.Add(SliceUtf8(value, offset, offset + found, governor, span));
-            offset += found + needle.Length;
-            splits++;
-        }
-
-        parts.Add(SliceUtf8(value, offset, source.Length, governor, span));
-        return parts;
-    }
+    public static PyList Split(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
+        => SplitCore(value, maxSplit, false, governor, span, context, separator: separator);
 
     public static PyList RSplitWhitespace(PyString value, int maxSplit)
         => RSplitWhitespace(value, maxSplit, null, null);
@@ -199,7 +149,7 @@ internal static partial class PyStringOps
 
     public static PyList RSplitWhitespace(PyString value, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
         LythonRuntime.ExecutionContext? context = null)
-        => SplitWhitespaceCore(value, maxSplit, maxSplit >= 0, governor, span, context);
+        => SplitCore(value, maxSplit, maxSplit >= 0, governor, span, context);
 
     public static PyList RSplit(PyString value, PyString separator, int maxSplit)
         => RSplit(value, separator, maxSplit, null, null);
@@ -207,43 +157,9 @@ internal static partial class PyStringOps
     public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor)
         => RSplit(value, separator, maxSplit, governor, null);
 
-    public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        governor ??= value.OwnerMemoryGovernor;
-        span ??= PyStructuralGuard.AmbientSpan;
-        if (separator.Length == 0)
-        {
-            throw new InvalidOperationException("empty separator");
-        }
-
-        var source = value.Utf8Span;
-        var needle = separator.Utf8Span;
-        var parts = new List<PyString>();
-        var end = source.Length;
-        var splits = 0;
-        while (maxSplit < 0 || splits < maxSplit)
-        {
-            var found = LastIndexOfBytes(source[..end], needle);
-            if (found < 0)
-            {
-                break;
-            }
-
-            parts.Add(SliceUtf8(value, found + needle.Length, end, governor, span));
-            end = found;
-            splits++;
-        }
-
-        parts.Add(SliceUtf8(value, 0, end, governor, span));
-        parts.Reverse();
-        var items = new object[parts.Count];
-        for (var i = 0; i < parts.Count; i++)
-        {
-            items[i] = parts[i];
-        }
-
-        return governor is null ? new PyList(items) : new PyList(items, governor, span);
-    }
+    public static PyList RSplit(PyString value, PyString separator, int maxSplit, MemoryGovernor? governor, LythonSourceSpan? span,
+        LythonRuntime.ExecutionContext? context = null)
+        => SplitCore(value, maxSplit, true, governor, span, context, separator: separator);
 
     public static PyString Strip(PyString value) => SliceTrimmed(value, trimStart: true, trimEnd: true);
 

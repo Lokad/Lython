@@ -1,5 +1,5 @@
 {
-  "status": "Committed94cb8963; focused actual11/10 green, full delivery pending independently",
+  "status": "Committed94cb8963; fully qualified Windows/Ubuntu actual11/10, originalStress and installed core consumers",
   "baselineSource": "cb2b015e fully qualified CI42472284713",
   "candidateSource": "cb2b015e plus R96 direct operand references, no carrier/runtime arity reader",
   "coreSHA256": {

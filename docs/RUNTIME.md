@@ -712,10 +712,12 @@ funding. This avoids a final copy but can retain more capacity than an exact-siz
 copy. Builders detach before reuse. Nonconsuming snapshots remain independent
 copies and admit their real working/output overlap; byte-array results stay exact-sized.
 
-Whitespace splitting scans UTF-8 ranges once, then admits the complete string
+Whitespace and explicit-separator splitting collect UTF-8 ranges, then admit the complete string
 output and final list capacity together. It fills and adopts the final element
 array, as do fixed-count executable list displays, without an intermediate list
-copy or per-element growth. Larger range scratch is admitted separately and
+copy or per-element growth. Reverse splitting fills that same array in final order.
+An unchanged whole string may retain its existing owner; a different output owner
+receives independent storage. Larger range scratch is admitted separately and
 refunded after materialization; result strings and aliases keep their batch owner.
 This can reject earlier than incremental fragment admission. Scans and bounded
 copies observe cancellation; an individual CLR allocation cannot be interrupted.
@@ -900,8 +902,9 @@ Casing checks cancellation after funding its final UTF-8 output. A cancelled,
 unpublished result is refunded; retained inputs and aliases keep their funding.
 Byte searches use managed bulk operations over bounded candidate ranges; owned
 predicate and splitting loops also check cancellation while scanning. Individual
-BCL calls remain atomic, so cancellation provides no hard deadline. Whitespace
-`str.split` and `str.rsplit` check during forward/reverse rune scans, including long words
+BCL calls remain atomic, so cancellation provides no hard deadline. Explicit-separator
+`str.split` and `str.rsplit` use the same bounded candidate searches as bytes.
+Whitespace splitting checks during forward/reverse rune scans, including long words
 and whitespace-only input. Its active context follows a suspended split-count
 protocol; checks do not depend on thread-local state surviving an await.
 Admission failures identify the allocating operation rather than the receiver's

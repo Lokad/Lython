@@ -4473,6 +4473,24 @@ unchanged26-job CPython checkpoint at committed94cb8963/cored6254b2e after
 R92/R95/R96. Separate compile/warm/compile-to-result, identical sources/fixtures/
 goldens/worker/protocol, normalGC/tiering, two same-source Lython controls and
 CPython3.13.16. All gates/local archive verification pass; no remaining users.
-Full source qualification is independently pending CI42475420182.
+Full source qualification is independently green/cached CI42475420182.
 Updated primary guide and historical guide preserve every old
 ratio/adverse case; external ratios do not establish causal gains or repay debt.
+
+[R98](results/2026-11-08-shared-split-construction/README.md) shares explicit and
+whitespace split final construction, removing temporary reverse lists/conversion/
+copied arrays and duplicate forward growth. Original red tests demonstrate67KB
+allocated before whole-result refusal; complete admission now precedes fragments.
+Two complete delimiter reports allocate5.47%/8.91–8.92%less across both APIs;
+unchanged whitespace/CSV/report allocation neutral. Desktop elapsed/control drift
+and adverse originals remain diagnostic; no controlled CPU claim/new VM campaign.
+Corrected150public/35internal peractual11/10 pass; full retained-boundary qualification pending.
+Native UTF-8/owners/aliases/current cancellation use existing mechanisms. Initial
+build failure and invalid immutable-identity oracle/source are preserved separately.
+The initial R98 prototype2e232a4d then failed two real suspended __index__ cases:
+both explicit directions returned despite admission-triggered cancellation after
+awaited host I/O. Current context now passes explicitly into shared construction.
+Corrected57e1ef6c reconfirms allocation; oldcore/source/results and red tests remain
+separate. Corrected desktop report+24.6–28.7% and asyncCSV+15.7–26.6%, unstable
+unchanged controls and all initial adverse results remain inconclusive/unexplained.
+No controlled elapsed/CPU gain asserted; no new VM collection.

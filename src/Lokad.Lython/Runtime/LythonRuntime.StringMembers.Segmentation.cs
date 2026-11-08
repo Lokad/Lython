@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span);
+                return PyStringOps.Split(text, separator, count, context.MemoryGovernor, span, context);
             }
             catch (InvalidOperationException ex)
             {
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span, ExecutionContext context)
         {
             if (separator is null) return PyStringOps.RSplitWhitespace(text, count, context.MemoryGovernor, span, context);
-            try { return PyStringOps.RSplit(text, separator, count, context.MemoryGovernor, span); }
+            try { return PyStringOps.RSplit(text, separator, count, context.MemoryGovernor, span, context); }
             catch (InvalidOperationException error) { throw new LythonRuntimeException("ValueError", error.Message, span); }
         }
 

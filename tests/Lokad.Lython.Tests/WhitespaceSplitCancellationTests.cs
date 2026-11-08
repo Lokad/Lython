@@ -16,6 +16,32 @@ public sealed class WhitespaceSplitCancellationTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void SeparatedOutputAdmissionCancellationUnwindsBeforeConstruction(bool reverse)
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHook(owner);
+            var context = new Context(new MockLythonHost(), new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var input = PyString.FromString(Word + "::" + Word, context.MemoryGovernor, Span);
+            var separator = PyString.FromString("::");
+            var committed = context.MemoryGovernor.CurrentCommittedBytes;
+            hook.CancelOnPayload(cancellation, Encoding.UTF8.GetByteCount(Word));
+            using var ambient = PyStructuralGuard.PushAmbient(context, Span);
+            var error = Assert.Throws<LythonRuntimeException>(() => reverse
+                ? PyStringOps.RSplit(input, separator, -1, context.MemoryGovernor, Span)
+                : PyStringOps.Split(input, separator, -1, context.MemoryGovernor, Span));
+            AssertCancelled(error, context, cancellation, hook);
+            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(Word + "::" + Word, input.AsString());
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void CasedOutputAdmissionCancellationUnwindsBeforeConstruction(bool upper)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
@@ -93,8 +119,11 @@ public sealed class WhitespaceSplitCancellationTests
         Assert.Equal(0, root.ReservedBytes);
     }
 
-    [Fact]
-    public async Task SuspendedIndexProtocolKeepsCancellationContextThroughTheScan()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task SuspendedIndexProtocolKeepsCancellationContextThroughTheScan(int mode)
     {
         var root = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -119,8 +148,15 @@ public sealed class WhitespaceSplitCancellationTests
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
             await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, context);
             var input = PyString.FromString(Word + " " + Word, context.MemoryGovernor, Span);
+            var separator = PyString.FromString(" ");
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                await LythonRuntime.StringMembers.SplitAsync(input, PyNone.Instance, context.Variables["count"], Span, context));
+            {
+                if (mode == 2)
+                    await LythonRuntime.StringMembers.GetMethod("rsplit")!.InvokeAsync(input,
+                        new object?[] { separator, context.Variables["count"] }, Span, context);
+                else await LythonRuntime.StringMembers.SplitAsync(input, mode == 0 ? PyNone.Instance : separator,
+                    context.Variables["count"], Span, context);
+            });
             Assert.True(host.CompletedAsynchronously > 0);
             Assert.True(host.ClosedFileCount > 0);
             AssertCancelled(error, context, cancellation, hook);
