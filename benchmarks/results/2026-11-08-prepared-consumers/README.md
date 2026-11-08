@@ -38,8 +38,9 @@ and wrong immutable launcher-name failure also remain; no runtime golden was rel
 332internal/155public focused Release checks pass per actual .NET11/.NET10.
 Public tests exercise genuinely suspended truth/member/iterator protocols, in-flight
 cancellation, awaited cleanup, budget reuse and original unbound-read spans, alongside
-existing closure, terminal-refusal and native-iteration tests. Full platform,
-originalStress and installed consumers follow the retained commit; not yet qualified.
+existing closure, terminal-refusal and native-iteration tests. Committed91f15a3e is fully qualified: [cached CI42451722109](delivery-ci.json),
+Windows/Ubuntu actual .NET11/.NET10, originalStress and installed core consumers.
+This qualifies that runtime source, not subsequent changes.
 
 Warm timing includes public invocation, mediated RAM I/O, full stdout/files validation
 and prior-result cleanup. Compilation/startup/staging/reset/protocol/final cache

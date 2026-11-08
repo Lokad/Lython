@@ -18,8 +18,9 @@ All source/core/auxiliary/actualReady/runtime/golden/quiet/Closed/exit/join/fixt
 archive gates pass. Persistent evidence stays outside owned128MiB RAM fixtures;
 workers and cleanup join, then fixtures are removed/unmounted, then archival is
 verified under lease and independently locally.570s owner+30stop+30margin, no VM
-data deletion. Focused332internal/155public per actual11/10 pass; final source
-qualification CI42451722109 remains an independent delivery record.
+data deletion. Focused332internal/155public per actual11/10 pass; source91f15a3e
+qualification is fully green in [cached CI42451722109](../2026-11-08-prepared-consumers/delivery-ci.json): Windows/Ubuntu actual .NET11/.NET10, originalStress
+and installed core consumers. Qualification and timing remain separate evidence.
 
 Ratios are Lython elapsed/CPython elapsed; ranges span two Lython process medians,
 not confidence intervals. Variable cases remain visible; labels are diagnostics,

@@ -21,11 +21,10 @@ relative to the candidate. Max IQR includes CPython. Diagnostic/Variable describ
 short observations, not design acceptance thresholds; inconclusive cases remain.
 
 Frozen core `4c072fed` matches the measured source's production inventory;
-informational SourceLink is precommit `71445454`. Focused Release332internal/
-155public checks pass per actual .NET11/.NET10. Full Windows/Ubuntu, original
-Stress and installed consumers are tracked separately in
-[CI42451722109](https://github.com/Lokad/Lython/actions/runs/42451722109);
-the benchmark is not that qualification.
+informational SourceLink is precommit `71445454`. Windows/Ubuntu Release actual
+.NET11/.NET10, original Stress and installed core consumers pass
+[cached CI42451722109](../benchmarks/results/2026-11-08-prepared-consumers/delivery-ci.json).
+The benchmark and source qualification are separate evidence.
 The [26-job checkpoint](../benchmarks/results/2026-11-08-runtime-checkpoint/README.md)
 records exact identities and verified raw evidence. Optional0.4 adapter/worker
 unchanged; no newer producer is certified. The [earlier measured-source38f53c33

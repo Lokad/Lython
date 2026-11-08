@@ -4269,3 +4269,8 @@ Full retained-source qualification is independent CI42451722109, not established
 by this benchmark. No single-change CPU attribution, debt repayment or objective
 closure. Next attribution must use the ordinary helper path, not the fused-helper
 profile; binding/workspace reuse and inline presence bits already exist.
+
+R82 source91f15a3e final delivery is fully green and cached as CI42451722109:
+Windows/Ubuntu Release actual .NET11/.NET10, original Stress and installed core
+consumers. This also qualifies the production inventory measured by R83; it does
+not qualify subsequent runtime work. Publication remains postponed.

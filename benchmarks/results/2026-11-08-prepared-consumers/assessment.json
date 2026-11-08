@@ -890,5 +890,11 @@
     "Earlier R76float/R79CSV debt remains separate. No CPython/startup/RSS/embedding-tail/universal CPU claim.",
     "Timing uses completed I/O; genuine protocol suspension/cancellation/awaited cleanup is independently tested.",
     "Full Windows/Ubuntu actual11/10, originalStress and installed consumers pending retained delivery."
-  ]
+  ],
+  "delivery": {
+    "sourceRevision": "91f15a3ea1a00c2a775df83605e19b20cbffa0ef",
+    "qualified": true,
+    "receipt": "delivery-ci.json",
+    "scope": "Windows/Ubuntu Release actual.NET11/10, originalStress and installed core consumers. Earlier focused/pending snapshots record status at measurement."
+  }
 }
