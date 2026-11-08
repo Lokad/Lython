@@ -4803,3 +4803,5 @@ APIs (~192KiB/4096rows), other allocation nearbaseline; no CPU claim. Adverse de
 text/custom and drifting controls preserved. Frontend unchanged, no repeated compile
 campaign. Retain; full new-source delivery at next coherent boundary, R119CI remains
 independent. No new owner/cache framework/options or publication.
+
+R119 exact-source d05b3359 passes/cached CI42519822299: Windows/Ubuntu actual11/10 full Release, original Stress both and installed core consumers. [Receipt](results/2026-11-08-record-field-resolution/delivery-ci.json). Later ca835/R121 source has separate status; no new timing, replay or publication.

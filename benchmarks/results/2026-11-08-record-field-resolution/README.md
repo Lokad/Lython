@@ -51,8 +51,10 @@ admission callback mutation/deletion/clear/cancellation/refusal, independent row
 changing keys, actual suspended item protocols and reusable shared allowance.
 The earlier broader455internal/3034public per target accidentally included Stress;
 those results remain, without claiming that they qualify the refined source.
-Independent isolated CPython semantic assertions pass. Full coherent platform,
-original Stress and installed-core package delivery is pending, not yet claimed.
+Independent isolated CPython semantic assertions pass. Exact source d05b3359 is now fully qualified: Windows/Ubuntu actual11/10 full
+Release, original Stress both and installed core consumers pass
+[cached CI42519822299](delivery-ci.json). This does not qualify later ca835/R121
+changes or alter these measurements.
 
 All VM users joined, temporary fixtures removed, owned RAM unmounted and persistent
 raw/archive verified under the lease and independently locally. Live finite270s
