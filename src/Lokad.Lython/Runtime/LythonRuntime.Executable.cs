@@ -380,9 +380,9 @@ internal sealed partial class LythonRuntime
             LiveExtent = resultSlot;
         }
 
-        internal bool TryPrepareNativeIteration(int slot, LythonSourceSpan span)
+        internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
         {
-            if (_items[slot] is not (PyList or PyTuple)) return false;
+            if (source is not (PyList or PyTuple)) return false;
             if (_nativeIterationPositions is null)
             {
                 // The existing private operand keeps the source alive. One
@@ -397,6 +397,7 @@ internal sealed partial class LythonRuntime
                 _ownedStorageBytes = frameBytes;
             }
             _nativeIterationPositions[slot - _firstTemporarySlot] = 0;
+            PublishValue(slot, liveExtent, source);
             return true;
         }
 

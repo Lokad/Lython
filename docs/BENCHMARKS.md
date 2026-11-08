@@ -118,6 +118,12 @@ measure affected workloads; percentages are not additive or universal CPU gains.
 | Frontend validity/module-fact pruning | Compile allocation −3.15–4.07% then −3.53–4.64% on separate source pairs | R62 controlled compile elapsed −2.94–5.88%; R65 elapsed inconclusive. [R62](../benchmarks/results/2026-11-07-syntax-validation/README.md), [R65](../benchmarks/results/2026-11-07-module-class-facts/README.md) |
 | Executable graph construction | Compile allocation −3.9–5.9%; controlled compilation elapsed −1.7–3.0% | Warm control inconclusive; process CPU mixed. [R58](../benchmarks/results/2026-11-07-executable-graph/README.md) |
 
+[Prepared member/iterator/branch operands](../benchmarks/results/2026-11-08-prepared-consumers/README.md)
+also remove emitted load dispatch with neutral allocation. Controlled text elapsed
+is modestly lower; coarse CPU is mixed, report timing inconclusive, and possible
+CSV elapsed regression up to1.50% remains explicit. This is implementation
+consolidation, not demonstrated substantial CPU improvement.
+
 Shared compiler-fact correction, annotation demand pruning and smaller executable
 transport are also retained; their compilation/source benefits do not prove broad
 warm CPU gains. [Earlier source pairs](../benchmarks/results/2026-11-07-retained-checkpoint/earlier-source-pairs.md)

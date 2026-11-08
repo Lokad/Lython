@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Forward adjacent plain local/constant operands directly into member lookups,
+  iteration and truth branches, preserving receiver snapshots and suspended protocols.
+
 - Execute existing native receiver operations and exact list/tuple iteration
   before allocating a function context. Keep context promotion before guest
   protocols or suspension, and transfer admitted working storage with it.

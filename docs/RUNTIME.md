@@ -236,7 +236,8 @@ specifiers, need no lexical context solely for formatting. Actual protocol value
 promote at their original instruction and await their callbacks. Formatting helpers
 keep transient guest values outside the shared dispatch loop.
 Adjacent plain local and constant reads can feed fixed-arity arithmetic, unary
-operations, subscript reads/stores, local stores and returns directly. Captured or
+operations, subscript reads/stores, member/receiver loads, iterator acquisition,
+truth branches, local stores and returns directly. Captured or
 mirrored locals keep their ordinary lookup. Missing direct locals retain their
 original read spans in cold metadata. One shape pass after forwarding prepares
 physical positions, live temporary extents, maximum workspace and exception-entry

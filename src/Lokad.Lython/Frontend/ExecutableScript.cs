@@ -132,7 +132,9 @@ internal readonly record struct ExecutableInstruction
     {
         ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => 2,
         ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
-        ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return => 1,
+        ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return or
+            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver or
+            ExecutableOpCode.GetIter or ExecutableOpCode.JumpIfFalse => 1,
         _ => 0,
     };
     // A subscript store pushes no result: its output position is its live

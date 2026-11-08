@@ -4236,3 +4236,21 @@ elapsed and deliberately different namespace semantics. No speculative namespace
 numeric, call-arena or reservation redesign is selected from these observations.
 All golden/ownership/cleanup and profile source/Ready/quiet/join/archive gates pass.
 No runtime change, CPU improvement or performance-objective closure is claimed.
+
+## Prepared member, iterator and branch consumers (2026-11-08)
+
+[R82/B445](results/2026-11-08-prepared-consumers/README.md) completes existing
+single-input forwarding for these consumers, removing adjacent pure leaf dispatch
+and temporary publication. No argument view/arena/cache/owner/backend/option.
+Allocation neutral; text module77→74, CSV83→79/helper17→16, report62→58 static
+instructions.332internal/155public focused pass per actual11/10, including genuine
+suspending bool/member/iterator callbacks and awaited cancellation/budget reuse.
+Six controlled jobs167.554s: textsync elapsed−1.85to−0.13% with mixed coarseCPU;
+textasync−4.74to−0.98% but old spread3.60%. Guarded−0.77to+1.76%, CSV−0.24to
++1.50%, report−4.02to+2.15%(candidate spread5.32%), arithmetic near baseline.
+Retain consistent operand representation/removed execution work; no broad CPU
+gain established. Possible CSV regression and earlier debt remain explicit.
+Initial six-case rejection, stale copied control metadata/per-case snapshots,
+wrong immutable launcher name and all adverse desktop controls are preserved.
+All source/Ready/golden/quiet/join/fixture/archive gates pass. Full retained delivery
+follows; no further per-opcode refinement series or performance-objective closure.

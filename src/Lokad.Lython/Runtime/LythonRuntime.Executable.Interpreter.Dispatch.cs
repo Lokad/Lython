@@ -115,11 +115,11 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver:
                             if (invocation is null)
                             {
-                                if (!TryLoadDirectCallReceiver(ref execution, null, instruction)) return InstructionPause.ContextRequired;
+                                if (!TryLoadDirectCallReceiver(ref execution, scope, null, instruction)) return InstructionPause.ContextRequired;
                                 break;
                             }
                             if (!asynchronous) ExecuteStackTransfer(ref execution, scope, invocation, instruction);
-                            else if (!TryLoadDirectCallReceiver(ref execution, invocation, instruction))
+                            else if (!TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction))
                             {
                                 pending = invocation!.ExecuteMemberLoadAsync(instruction);
                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
@@ -198,7 +198,9 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.GetIter:
-                            if (execution.Stack.TryPrepareNativeIteration(instruction.InputStart, instruction.Span)) break;
+                            if (execution.Stack.TryPrepareNativeIteration(
+                                ReadOperand(ref execution, instruction.InputStart, scope, 0),
+                                instruction.ResultSlot, instruction.LiveExtent, instruction.Span)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
                             else
@@ -223,9 +225,10 @@ internal sealed partial class LythonRuntime
                             invocation!.ExecuteValueOperation(instruction);
                             break;
                         case ExecutableOpCode.JumpIfFalse:
-                            if (invocation is null && execution.Stack[instruction.InputStart] is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
+                            var condition = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+                            if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
                                 return InstructionPause.ContextRequired;
-                            if (!asynchronous || execution.Stack[instruction.InputStart] is not PyInstance)
+                            if (!asynchronous || condition is not PyInstance)
                                 jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
                             else
                             {

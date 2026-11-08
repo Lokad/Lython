@@ -15,6 +15,10 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Prepared consumer protocols](Lokad.Lython.PublicApi.Tests/PreparedConsumerProtocolTests.cs)
+checks genuinely suspended truth, member and iterator callbacks, in-flight
+cancellation, awaited cleanup and return of the shared memory allowance.
+
 [Decoded JSON text](Lokad.Lython.PublicApi.Tests/JsonDecodedTextInteropTests.cs)
 checks Python Unicode/string operations, hash lookups and regex pattern/subject
 offsets together, with independent CPython output and shared-budget reuse under

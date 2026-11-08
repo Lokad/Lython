@@ -8,7 +8,8 @@ internal sealed partial class LythonRuntime
     {
         private ValueTask<bool> ExecuteMemberLoadAsync(ExecutableInstruction instruction)
         {
-            var target = _execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+            var target = ReadOperand(ref _execution, instruction.InputStart, this, 0);
+            _execution.Stack.RetireTo(instruction.ResultSlot);
             if (TryReadMemberCache(instruction, target, out var cached))
             {
                 if (instruction.OpCode is ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember)
@@ -82,7 +83,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<bool> ExecuteConditionalJumpAsync(ExecutableInstruction instruction)
         {
-            if (await IsTruthyAsync(_execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent), this, instruction.Span).ConfigureAwait(false))
+            if (await IsTruthyAsync(TakeOperand(ref _execution, instruction, this), this, instruction.Span).ConfigureAwait(false))
                 return false;
             _execution.InstructionIndex = instruction.TargetIndex;
             return true;
@@ -173,20 +174,21 @@ internal sealed partial class LythonRuntime
 
         private ValueTask ExecuteGetIteratorAsync(ExecutableInstruction instruction)
         {
-            var slot = instruction.InputStart;
+            var slot = instruction.ResultSlot;
             try
             {
-                var pending = PyIteration.Cursor.CreateAsync(_execution.Stack[slot], instruction.Span, this);
-                if (!pending.IsCompleted) return AwaitIteratorCreationAsync(pending, slot);
-                _execution.Stack[slot] = pending.GetAwaiter().GetResult();
+                var source = ReadOperand(ref _execution, instruction.InputStart, this, 0);
+                var pending = PyIteration.Cursor.CreateAsync(source, instruction.Span, this);
+                if (!pending.IsCompleted) return AwaitIteratorCreationAsync(pending, slot, instruction.LiveExtent);
+                _execution.Stack.PublishValue(slot, instruction.LiveExtent, pending.GetAwaiter().GetResult());
                 return default;
             }
             catch { _execution.Stack.RetireTo(slot); throw; }
         }
 
-        private async ValueTask AwaitIteratorCreationAsync(ValueTask<PyIteration.Cursor> pending, int slot)
+        private async ValueTask AwaitIteratorCreationAsync(ValueTask<PyIteration.Cursor> pending, int slot, int liveExtent)
         {
-            try { _execution.Stack[slot] = await pending.ConfigureAwait(false); }
+            try { _execution.Stack.PublishValue(slot, liveExtent, await pending.ConfigureAwait(false)); }
             catch { _execution.Stack.RetireTo(slot); throw; }
         }
 

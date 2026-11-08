@@ -13,17 +13,20 @@ internal sealed partial class LythonRuntime
     /// </summary>
     internal sealed partial class ExecutionContext : ExecutionFrame
     {
-        private static bool TryLoadDirectCallReceiver(ref ExecutableWorkState execution, ExecutionContext? invocation, ExecutableInstruction instruction)
+        private static bool TryLoadDirectCallReceiver(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
             if (instruction.OpCode is not (ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)) return false;
             var name = execution.Code.Names[instruction.NameIndex];
-            if (invocation is not null && execution.Stack[instruction.InputStart] is PyInstance instance &&
+            var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            if (invocation is not null && receiver is PyInstance instance &&
                 PyAttributeLookup.TryResolveInstanceFunctionForCall(instance, name, out var function))
             {
+                if (instruction.InputStart != instruction.ResultSlot)
+                    execution.Stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, receiver);
                 execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, function);
                 return true;
             }
-            var receiver = execution.Stack[instruction.InputStart];
             object? operation = instruction.OpCode == ExecutableOpCode.LoadCallReceiver
                 ? receiver switch
                 {
@@ -46,6 +49,8 @@ internal sealed partial class LythonRuntime
             if (operation is null) return false;
             // Keep the evaluated receiver, then append the immutable operation.
             // Arguments are evaluated afterwards and can rebind the source name.
+            if (instruction.InputStart != instruction.ResultSlot)
+                execution.Stack.PublishValue(instruction.ResultSlot, instruction.ResultSlot + 1, receiver);
             execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, operation);
             return true;
         }
@@ -363,10 +368,11 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.LoadCallReceiver:
                 case ExecutableOpCode.LoadCallMember:
-                    if (TryLoadDirectCallReceiver(ref execution, invocation, instruction)) break;
+                    if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;
                     goto case ExecutableOpCode.LoadMember;
                 case ExecutableOpCode.LoadMember:
-                    var target = execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+                    var target = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+                    execution.Stack.RetireTo(instruction.ResultSlot);
                     var memberName = execution.Code.Names[instruction.NameIndex];
                     if (!invocation!.TryReadMemberCache(instruction, target, out var memberValue))
                     {
@@ -513,8 +519,12 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.GetIter:
-                    var iterableSlot = instruction.InputStart;
-                    try { _execution.Stack[iterableSlot] = PyIteration.Cursor.Create(_execution.Stack[iterableSlot], instruction.Span, this); }
+                    var iterableSlot = instruction.ResultSlot;
+                    try
+                    {
+                        var source = ReadOperand(ref _execution, instruction.InputStart, this, 0);
+                        _execution.Stack.PublishValue(iterableSlot, instruction.LiveExtent, PyIteration.Cursor.Create(source, instruction.Span, this));
+                    }
                     catch { _execution.Stack.RetireTo(iterableSlot); throw; }
                     break;
 
@@ -583,7 +593,7 @@ internal sealed partial class LythonRuntime
                     return invocation!.DeliverJump(new PendingJump(instruction.TargetIndex, instruction.DiscardIterator), instruction.Span);
 
                 case ExecutableOpCode.JumpIfFalse:
-                    if (!IsTruthy(execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent), scope, instruction.Span))
+                    if (!IsTruthy(TakeOperand(ref execution, instruction, scope), scope, instruction.Span))
                     {
                         execution.InstructionIndex = instruction.TargetIndex;
                         return true;
