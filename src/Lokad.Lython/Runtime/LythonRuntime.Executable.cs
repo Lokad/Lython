@@ -337,6 +337,11 @@ internal sealed partial class LythonRuntime
             catch { governor.ReleaseReserved(bytes); throw; }
         }
 
+        internal void ClearLookupCache(int index)
+        {
+            if (_lookupCaches is { } caches) caches[index] = default;
+        }
+
         internal PyIteration.Cursor? TakePendingDisposal()
         {
             var cursor = _pendingDisposalHead;

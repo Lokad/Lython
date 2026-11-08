@@ -4791,3 +4791,15 @@ census corrects earlier false native-report inference. Retain flat existing
 lookup storage/shared layouts, no new opcode/owner/framework; full delivery pending.
 All initial/adverse source/core/raw retained. R118 guarded get/add/store source gate
 selected no prototype, complexity/evidence decision, not a permanent closure.
+
+
+## Remove cache acquisition for already-excluded receivers (2026-11-08)
+
+[R120](results/2026-11-08-cache-eligibility/README.md) consolidates the existing
+mutable/protocol receiver exclusion and removes unused per-call cache table
+allocation/admission.24internal/214public peractual11/10 pass, same5complete-case
+normal diagnostic/full goldens/ownership gates. CustomCSV allocation−1.71% across
+APIs (~192KiB/4096rows), other allocation nearbaseline; no CPU claim. Adverse desktop
+text/custom and drifting controls preserved. Frontend unchanged, no repeated compile
+campaign. Retain; full new-source delivery at next coherent boundary, R119CI remains
+independent. No new owner/cache framework/options or publication.

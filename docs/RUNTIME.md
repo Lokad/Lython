@@ -403,9 +403,11 @@ value array until its body and awaited cleanup finish. Local bindings occupy its
 prefix and temporary operands its suffix; binding writes directly into that
 storage where locals need no mirroring. Suspended callers retain their operands.
 Ownership admits the fixed whole-frame capacity and fresh cell/control storage
-before construction and retains them through suspension. A generic member lookup
-admits its frame's cache table before descriptor or protocol effects; direct
-builtin receiver paths need no table. Refusal remains terminal, including this
+before construction and retains them through suspension. A cache-eligible member
+lookup admits its frame's table before descriptor or protocol effects. Instances,
+types, super objects, functions and contextual dynamic receivers keep uncached
+lookup and acquire no unused table; direct builtin receiver paths also need none.
+Refusal remains terminal, including this
 later admission after earlier body effects. Lookup facts occupy one flat admitted
 array, without individual member-cache objects. Repeated string field reads in
 loop and comprehension bodies can reuse a position in an immutable shared CSV/JSON

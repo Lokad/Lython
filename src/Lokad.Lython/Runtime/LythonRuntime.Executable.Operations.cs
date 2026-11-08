@@ -67,9 +67,15 @@ internal sealed partial class LythonRuntime
         return (start, end, step);
     }
 
-    private static bool CanCacheRuntimeMemberTarget(object target)
-        => target is not IPyContextualDynamicAttributes &&
-           target is (PyString
+    private static bool CanCacheRuntimeMemberReceiver(object target)
+        => target is not (PyInstance or PyType or PySuper or PyFunctionBase or IPyContextualDynamicAttributes);
+
+    // Only immediate calls may reuse a bound callable: ordinary attribute reads
+    // preserve fresh method identity. Mutable/protocol receivers never enter the
+    // cache, so they need neither a lookup nor otherwise-unused table capacity.
+    private static bool CanCacheRuntimeMemberValue(object target, object value, bool isCallTarget = false)
+        => CanCacheRuntimeMemberReceiver(target) && (isCallTarget || value is not ICallable) &&
+           (value is ICallable || target is (PyString
                or PyBytes
                or PyList
                or PyTuple
@@ -89,21 +95,7 @@ internal sealed partial class LythonRuntime
                or StatisticsModule.PyNormalDist
                or PyDeque
                or PkgutilLoaderObject
-               or PyDirEntryObject);
-
-    // Only immediate calls may reuse a bound callable: an ordinary attribute
-    // read must preserve the identity of the freshly resolved method object.
-    // Instances, types, super objects and functions keep mutable lookup rules:
-    // user-level rebinding, deletion and descriptors resolve anew on every access.
-    private static bool CanCacheRuntimeMemberValue(object target, object value, bool isCallTarget = false)
-        => (isCallTarget || value is not ICallable) &&
-           (CanCacheRuntimeMemberTarget(target) ||
-           (value is ICallable &&
-            target is not PyInstance &&
-            target is not PyType &&
-            target is not PySuper &&
-            target is not PyFunctionBase &&
-            target is not IPyContextualDynamicAttributes));
+               or PyDirEntryObject));
 
     private static PyList CreateListFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
     {
