@@ -9,8 +9,9 @@ remain aliases in the same funded owner; different owners receive copied storage
 
 Baseline committed94cb8963/core d6254b2e; candidatefa995d65 plus archived production
 patch and explicit-context correction/core57e1ef6c. Complete production inventory/core hashes are in identity.json.
-The earlier CPython checkpoint still describes94cb8963. Full retained-source
-Windows/Ubuntu/Stress/installed-core qualification is pending independently.
+The earlier CPython checkpoint still describes94cb8963. Committedcbe88fef passes
+independent Windows/Ubuntu actual11/10, originalStress and installed-core consumers
+at [cached CI42477957586](delivery-ci.json). This does not qualify later sources.
 
 | Complete delimiter report | Sync allocation | Async API allocation |
 | --- | ---: | ---: |

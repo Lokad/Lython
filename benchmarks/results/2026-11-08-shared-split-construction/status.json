@@ -1,5 +1,5 @@
 {
-  "status": "Retained coherent construction/admission correction; focused actual11/10 pass. Full retained-boundary qualification pending.",
+  "status": "Committedcbe88fef; fully qualified Windows/Ubuntu actual11/10, originalStress and installed core consumers.",
   "coreSHA256": {
     "before": "d6254b2e546ae346d3e0a843fe849bd875056100a719eb04c98ce857caa8078d",
     "candidate": "57e1ef6c0ed852efc88eb2accb26a8b6fdbd2d68e811dc9a5a8ec6ea11a67492"
@@ -13,5 +13,6 @@
   },
   "measurement": "Allocation reduction established for two affected complete scripts; desktop elapsed inconclusive/adverse preserved; no controlled CPU claim.",
   "noNewVMCollection": true,
-  "prototypeCoreSHA256": "2e232a4d8496dc932ba4d18d1d9bacbc81f534719d5b02930b85248ac682d153"
+  "prototypeCoreSHA256": "2e232a4d8496dc932ba4d18d1d9bacbc81f534719d5b02930b85248ac682d153",
+  "deliveryCI": 42477957586
 }

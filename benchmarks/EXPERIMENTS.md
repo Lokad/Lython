@@ -4507,3 +4507,18 @@ including all29 whitespace scalars, real suspended custom methods/exact closes,
 aliases/first refusal/cleanup and supplied-option/visible-local Python oracle.
 B459167.959s all gates/archive/local verification pass; no users/fixtures. Full
 retained-source delivery pending independently; old source debts remain distinct.
+
+R98 sourcecbe88fef independently passes Windows/Ubuntu actual11/10,
+originalStress and installed-core consumers, cached CI42477957586. This later
+receipt does not change its allocation/diagnostic elapsed claims or qualify R99.
+
+R100 source gate atc74c5802 finds common opportunities already delivered:
+sum has an unboxed64-bit/float/general SumState; local imports compile/lower to
+the executable engine; immutable builtin functions/signatures are shared.
+Builtin exception values still own lazy name/NewSlot metadata and per-run bases
+use the active State. Naive global sharing is not selected from source alone.
+Public projection preserves CLR ingress types and returns guest BigInteger boxes;
+a new scalar representation would need an explicit boundary contract and broad
+numeric-consumer validation. Sampled boxing alone does not justify that redesign.
+The next bounded investigation is one complete small configuration-script CPU
+capture using the existing profiler/worker, to assess actual invocation setup.
