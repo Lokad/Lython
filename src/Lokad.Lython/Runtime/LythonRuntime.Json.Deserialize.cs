@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Text;
 using System.Globalization;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -702,7 +703,11 @@ internal sealed partial class LythonRuntime
                 return new(OwnFreshInteger(BigInteger.Parse(Encoding.UTF8.GetString(raw.Span), CultureInfo.InvariantCulture), context.MemoryGovernor, span));
             }
 
-            return new(double.Parse(raw.Span, NumberStyles.Float, CultureInfo.InvariantCulture));
+            // The prefix lexer has validated the complete native token. A
+            // partial parse is an invariant defect, never a parser fallback.
+            if (!Utf8Parser.TryParse(raw.Span, out double floating, out var consumed) || consumed != raw.Length)
+                throw new InvalidOperationException("A validated JSON floating-point token did not parse completely.");
+            return new(floating);
         }
 
         private enum JsonIncompleteExpectation

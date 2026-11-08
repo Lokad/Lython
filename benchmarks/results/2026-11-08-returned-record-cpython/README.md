@@ -2,9 +2,10 @@
 
 2026-11-08. Source **68d5bffe**, core **a0aef9ef** matches the recorded production
 inventory; informational SourceLink is precommit a34f56b5. Focused 1,729 internal /
-597 public checks per actual .NET 11/10 passed. Combined full Windows/Ubuntu,
-original Stress and installed-core delivery CI42428096630 remains pending. This
-measurement does not replace that qualification. Publication postponed.
+597 public checks per actual .NET 11/10 passed. Combined full Windows/Ubuntu Release actual11/10,
+original Stress and installed-core delivery CI42428096630 is GREEN. Its
+[cached terminal receipt](../2026-11-08-sequence-construction/delivery-ci.json)
+qualifies this source separately from the measurements. Publication postponed.
 
 Only five jobs fill a material gap: maintained CSV validation/helper keyword calls/
 early exits/tuple results/aggregation/report, separately compiled, warm and compiled

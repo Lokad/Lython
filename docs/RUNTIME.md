@@ -954,6 +954,9 @@ before reserving large-magnitude working storage. Small results use the existing
 scalar/container headroom. Larger integers retain magnitude and text-workspace
 preflights, exact parsing and retained-payload funding; there is no digit ceiling.
 Parse hooks still receive independently funded text before invocation.
+Default floating tokens use native UTF-8 conversion after the prefix lexer has
+validated their grammar, preserving binary64 rounding and signed zero. Conversion
+is atomic; token scanning and surrounding operations check cooperative cancellation.
 
 Arrays, dictionaries and pairs-hook output share one recursive container grammar.
 Completed parsing runs in an ordinary loop for both APIs. An incomplete child or

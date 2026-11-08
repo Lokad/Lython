@@ -4105,3 +4105,27 @@ Guide marks these revisions separately, retaining older valid824fc6bb rows and
 all adverse source pairs. Pending full source68d5bffe delivery; f88191f7 alone
 is now fully green CI42426106105, cached. No producer/backend/publication or general
 CPU-gain claim. Whole-script performance objective and independent redesign remain.
+
+Combined corrected R71/R72 source68d5bffe full delivery is GREEN, CI42428096630:
+Windows/Ubuntu Release actual11/10, original Stress both and installed core
+consumers; cached terminal receipt is final. This qualifies the R73 measured
+source, not any subsequent float-entry prototype. No unchanged qualification replay.
+
+## Validated floating-entry reassessment
+
+[R74/B430](results/2026-11-08-json-float-entry/README.md) revisits the old candidate
+withdrawn under36.7%unchanged-control drift/no-retiming policy. Current source uses
+the same original entry, so a bounded current confirmation is justified. Preserve
+the complete older evidence; no component retiming. Replace invariant double.Parse
+for lexer-validated default JSON floats with public Utf8Parser/complete consumption;
+no fallback/new framework/cache/owner/dependency/unsafe mechanism.2,191semantic
+goldens and257internal/1,160public per actual11/10 pass, including cancellation,
+actual hooks/suspension/refusal/retained aliases/cleanup. Allocation neutral.
+Four-job controlled pair115.362s/all gates: float elapsed−11.40–12.03%sync and
+−10.05–14.08%async; integer−1.02to+0.61%, text−0.49to−1.05%. CoarseCPU favourable
+but quantized; adverse desktop integer+7.75–12.57% and variable text stay visible.
+Retain current simpler entry/whole-script benefit without claiming old causality,
+universalCPU/CPython gain or objective completion. Fully green source68d5bffe is
+the baseline only; new full delivery pending. Verified B424 redundant prototype
+core links reclaimed with all immutable/local archives retained. B430 terminal/
+archived/verified; publication postponed, broader roadmap remains active.

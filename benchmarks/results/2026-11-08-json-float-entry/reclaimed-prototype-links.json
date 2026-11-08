@@ -1,0 +1,13 @@
+[
+  {
+    "paths": [
+      "/home/lokad/lython-bench-checks/linear-keyword-b424-20261107/candidate/Lokad.Lython.dll",
+      "/home/lokad/lython-bench-checks/linear-keyword-b424-20261107/current-core.dll"
+    ],
+    "archiveSHA256": "42020660bf64eeb63e32ee1cccea565444f16a22c7fa99104315ea44dbdf28a4",
+    "coreSHA256": "81fba80ccb0dff2c594246bcd801d3b331d5f4cbb745ab2a2055dfb19753a921",
+    "beforeFreeBytes": 272621568,
+    "afterFreeBytes": 278257664,
+    "reason": "Redundant retired-prototype core links; verified immutable VM archive and independent local archives retained."
+  }
+]

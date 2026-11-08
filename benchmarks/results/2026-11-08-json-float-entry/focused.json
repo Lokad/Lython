@@ -1,0 +1,49 @@
+{
+  "checks": {
+    "semantic-build": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "semantic-net11": {
+      "purpose": "B21 semantic-only qualification, no repeated component timing",
+      "runtime": "11.0.0",
+      "tokenCount": 2191,
+      "failures": []
+    },
+    "probe-net11": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "internal-net11": {
+      "exitCode": 0,
+      "passed": 257
+    },
+    "public-net11": {
+      "exitCode": 0,
+      "passed": 1160
+    },
+    "net11-coreSHA256": "bb6e72b54a358d915c6ea85a9a3ed28001baa1ae4db0b92797808bb741dc0220",
+    "semantic-net10": {
+      "purpose": "B21 semantic-only qualification, no repeated component timing",
+      "runtime": "10.0.8",
+      "tokenCount": 2191,
+      "failures": []
+    },
+    "probe-net10": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "internal-net10": {
+      "exitCode": 0,
+      "passed": 257
+    },
+    "public-net10": {
+      "exitCode": 0,
+      "passed": 1160
+    },
+    "net10-coreSHA256": "b1b48fd0d7cdaf431a2c97c66d458c05adc0b1503a24398d013830436cbf6838"
+  },
+  "matchingProbes": true,
+  "semanticOnlyNoComponentTiming": true,
+  "corpusSHA256": "85355d14122819844288c9957de2d17f95b5ac74a682a60d25f25513205d5019"
+}

@@ -1,8 +1,9 @@
 # Intrinsic sequence construction — R72/B428
 
 2026-11-08. Retained change on a34f56b5; measured cores a0aef9ef (.NET 11) /
-a31eaa94 (.NET 10), exact source inventories/patch/binaries preserved. Full combined
-R71 correction + R72 delivery remains pending; publication postponed.
+a31eaa94 (.NET 10), exact source inventories/patch/binaries preserved. Full combined R71 correction + R72 delivery is GREEN, CI42428096630:
+Windows/Ubuntu Release actual11/10, original Stress and installed core consumers.
+[Cached terminal receipt](delivery-ci.json); never query again. Publication postponed.
 
 ## Removed phase and focused acceptance
 
