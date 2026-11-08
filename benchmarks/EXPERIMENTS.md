@@ -4313,6 +4313,10 @@ and affected allocations remain45–52%lower. Desktop timing/control instability
 is preserved; no new controlled elapsed confirmation is claimed. Corrected-source
 full delivery is independent of the original failed run and B448 timings.
 
+Corrected production7796a24f is fully qualified and cached as CI42459221409:
+Windows/Ubuntu Release actual.NET11/10, original Stress and installed core-package
+consumers. No subsequent prototype or newer measurement is qualified by it.
+
 ## Complete CSV-helper attribution (2026-11-08)
 
 [R86/B449](results/2026-11-08-csv-helper-attribution/README.md) uses committed02c76e52,

@@ -19,8 +19,10 @@ allocation reduction:44.96–50.38%sync/46.59–52.00%async, controls neutral. D
 elapsed is unstable: unchanged spreads reach16.43%, with adverse report/CSV
 observations retained. This is no new elapsed/CPU confirmation; controlled B448
 timings remain measurements of the earlier aa4acebe binary. Full corrected-source
-Windows/Ubuntu actual11/10, original Stress and installed consumers follow commit.
-Publication postponed.
+Windows/Ubuntu actual11/10, original Stress and installed consumers are fully
+green for committed7796a24f in [CI42459221409](delivery-ci.json). This qualifies
+the corrected production inventory, not later prototypes. The frozen focused
+snapshot predates that receipt. Publication postponed.
 
 [Complete evidence](observations.tar.xz) preserves corrected source/core, terminal
 failed CI and logs, focused regressions and all short original observations.
