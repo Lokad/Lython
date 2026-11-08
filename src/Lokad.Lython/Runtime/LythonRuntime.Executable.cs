@@ -275,11 +275,16 @@ internal sealed partial class LythonRuntime
     // or member receiver/value pairs; record entries never retain a row's values.
     internal readonly record struct ExecutableLookupCache(object? Target, object? Value, int Position = 0);
 
+    internal static long LookupCacheBytes(int count) => checked(32L + 64L * count);
+
     internal struct ExecutableValueStorage
     {
         private object[] _items;
         private int[]? _nativeIterationPositions;
-        private ExecutableLookupCache[]? _lookupCaches;
+        // One reference holds private invocation storage or the existing
+        // function definition that owns shared facts. Do not widen every frame
+        // with a second owner slot, including frames that never use a cache.
+        private object? _lookupStorage;
         private readonly ExecutionState _state;
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
@@ -289,13 +294,14 @@ internal sealed partial class LythonRuntime
         internal bool HasPendingDisposals => _pendingDisposalHead is not null;
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
-            LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues)
+            LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues,
+            PyExecutableFunction? lookupOwner)
         {
             _state = context.State;
             _firstTemporarySlot = firstTemporarySlot;
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
-            _lookupCaches = null;
+            _lookupStorage = lookupOwner;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, allocationSpan);
@@ -313,7 +319,7 @@ internal sealed partial class LythonRuntime
         {
             _items = [];
             _nativeIterationPositions = null;
-            _lookupCaches = null;
+            _lookupStorage = null;
             var bytes = _ownedStorageBytes;
             _ownedStorageBytes = 0;
             _state.MemoryGovernor.Release(bytes);
@@ -321,8 +327,9 @@ internal sealed partial class LythonRuntime
 
         internal ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
         {
-            if (_lookupCaches is { } existing) return existing;
-            var bytes = checked(32L + 64L * count);
+            if (_lookupStorage is PyExecutableFunction owner) return owner.GetLookupCaches(span);
+            if (_lookupStorage is ExecutableLookupCache[] existing) return existing;
+            var bytes = LookupCacheBytes(count);
             var ownedBytes = checked(_ownedStorageBytes + bytes);
             var governor = _state.MemoryGovernor;
             governor.Reserve(bytes, span);
@@ -332,14 +339,16 @@ internal sealed partial class LythonRuntime
                 var caches = new ExecutableLookupCache[count];
                 governor.Commit(bytes);
                 _ownedStorageBytes = ownedBytes;
-                return _lookupCaches = caches;
+                _lookupStorage = caches;
+                return caches;
             }
             catch { governor.ReleaseReserved(bytes); throw; }
         }
 
         internal void ClearLookupCache(int index)
         {
-            if (_lookupCaches is { } caches) caches[index] = default;
+            if (_lookupStorage is PyExecutableFunction owner) owner.ClearLookupCache(index);
+            else if (_lookupStorage is ExecutableLookupCache[] caches) caches[index] = default;
         }
 
         internal PyIteration.Cursor? TakePendingDisposal()
@@ -524,7 +533,8 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
-        LythonSourceSpan? entrySpan = null)
+        LythonSourceSpan? entrySpan = null,
+        PyExecutableFunction? lookupOwner = null)
     {
         context.EnsureExecutableStateAvailable();
         // Bound function invocations already own their call admission. Raw
@@ -535,7 +545,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
             // Even a zero-local module has live operands during calls. Publish
             // the same existing frame that the async entry publishes; local
             // slot counts do not determine whether an invocation is active.
@@ -560,7 +570,8 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals = false,
-        LythonSourceSpan? entrySpan = null)
+        LythonSourceSpan? entrySpan = null,
+        PyExecutableFunction? lookupOwner = null)
     {
         context.EnsureExecutableStateAvailable();
         var ownsAdmission = boundArguments.Values is null;
@@ -568,7 +579,7 @@ internal sealed partial class LythonRuntime
         else ExecutionState.EnsureInterpreterStack(entrySpan);
         try
         {
-            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+            InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
             context.EnterExecutableSlots();
             await context.ExecuteAsync().ConfigureAwait(false);
             return context.HasFrameReturn ? context.FrameReturnValue : null;
@@ -586,9 +597,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals)
+        bool argumentsAreLocals,
+        PyExecutableFunction? lookupOwner = null)
     {
-        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals);
+        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
         context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
     }
 
@@ -597,7 +609,8 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
-        bool argumentsAreLocals)
+        bool argumentsAreLocals,
+        PyExecutableFunction? lookupOwner = null)
     {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
@@ -611,7 +624,7 @@ internal sealed partial class LythonRuntime
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
-            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null);
+            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner);
         try
         {
             var locals = stack.Values;

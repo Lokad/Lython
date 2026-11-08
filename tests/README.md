@@ -15,6 +15,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Function lookup lifetimes](Lokad.Lython.Tests/FunctionLookupLifetimeTests.cs)
+check reentrant first allocation, cancellation/refusal, pending-storage refunds
+and later fields changing into genuinely asynchronous formatting protocols.
+Earlier returned text remains independent and execution cleanup returns allowance.
+
 [JSON record shapes](Lokad.Lython.PublicApi.Tests/JsonRecordShapeTests.cs) checks
 wide, reordered, duplicate and nested records against independent CPython values
 and key order, with genuinely asynchronous hooks and retained shared-budget results.

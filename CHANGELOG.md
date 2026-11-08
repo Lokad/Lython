@@ -8,6 +8,11 @@
   allocation for one-shot helpers and unused member tables for mutable or
   contextual dynamic receivers.
 
+- Reuse ordinary function lookup facts across calls under the existing execution
+  owner. Keep frame size unchanged, read current field values after admission,
+  and preserve reentrant allocation and genuinely asynchronous formatting hooks.
+  Function-cache capacity remains charged until execution cleanup.
+
 - Use retained JSON record layouts to admit their final value capacity on growth,
   avoiding repeated replacement arrays for wide records. Keep changing shapes,
   callbacks and result ownership; spare hinted capacity remains charged.

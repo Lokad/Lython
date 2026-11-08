@@ -290,7 +290,8 @@ internal sealed partial class LythonRuntime
                     var entryException = State.CurrentException;
                     try
                     {
-                        work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells, argumentsAreLocals: true);
+                        work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
+                            argumentsAreLocals: true, lookupOwner: function);
                         ownsWork = true;
                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
                         if (pause == InstructionPause.Boundary)
@@ -316,7 +317,7 @@ internal sealed partial class LythonRuntime
                         return this;
                     }
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
-                        function.ClosureCells, argumentsAreLocals: true);
+                        function.ClosureCells, argumentsAreLocals: true, lookupOwner: function);
                 }
                 frame.EnterExecutableSlots();
                 frame._caller = this;

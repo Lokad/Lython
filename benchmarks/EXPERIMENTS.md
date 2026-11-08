@@ -4805,3 +4805,19 @@ campaign. Retain; full new-source delivery at next coherent boundary, R119CI rem
 independent. No new owner/cache framework/options or publication.
 
 R119 exact-source d05b3359 passes/cached CI42519822299: Windows/Ubuntu actual11/10 full Release, original Stress both and installed core consumers. [Receipt](results/2026-11-08-record-field-resolution/delivery-ci.json). Later ca835/R121 source has separate status; no new timing, replay or publication.
+
+
+## Execution-owned function lookup facts across calls (2026-11-08)
+
+[R121](results/2026-11-08-function-lookup-lifetimes/README.md), retainedc617.
+B4798jobs224.145s combined19b8 reference: report8.35%candidate spread and possible
+asyncfloat+1–2%debt preserved. B480four-job194.529s confirmation isolates9ae->c617:
+report−6.09–6.66%, primary validatedCSV−3.30–5.45%/supportingCPU, independently
+CPython-checked inline±0.60%, asyncfloat variable−1.36..+1.08%. No netting pairs or
+universal gain. Initialc54 frame inflation+8B/custom+0.871%allocation corrected by
+one existing storage slot, widths72/120B restored; all initial/adverse/source/core
+logs preserved. Warm/compile allocation neutral.83internal/2133public+15provider
+callback checks peractual11/10 pass; full retained delivery pending. Existing
+function execution lifetime owns facts, conservative retention/earlier denial
+explicit; no new owner/ledger/framework/options, native guards/canonical behavior
+preserved. B480offline assertion corrected, actual four-job evidence unchanged.

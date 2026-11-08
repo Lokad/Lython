@@ -408,14 +408,21 @@ lookup admits its frame's table before descriptor or protocol effects. Instances
 types, super objects, functions and contextual dynamic receivers keep uncached
 lookup and acquire no unused table; direct builtin receiver paths also need none.
 Refusal remains terminal, including this
-later admission after earlier body effects. Lookup facts occupy one flat admitted
-array, without individual member-cache objects. Repeated string field reads in
-loop and comprehension bodies can reuse a position in an immutable shared CSV/JSON
-key layout across rows. Entries retain the layout and key, never a previous row
-or its value; every hit reads the current live slot. Deleted or detached fields
-and general Python mappings keep ordinary lookup. Backing admission precedes the
-layout check because a host callback can mutate the row. One-shot helper reads
-create no field-cache slots; these facts are private to the invocation.
+later admission after earlier body effects. Lookup facts occupy a flat admitted
+array, without individual member-cache objects. Modules and generators own their
+invocation's table; ordinary functions borrow their definition's table across
+calls. Function tables stay charged to the execution owner until cleanup,
+including when guest names no longer reference the function. This conservative
+retention can reject tighter allowances earlier. Reentrant first admission reuses
+already-established backing and refunds only the unallocated pending reservation.
+Repeated string field reads reuse positions in immutable shared CSV/JSON key
+layouts across rows and helper calls. Those entries retain layout and key, never
+a previous row or its value; every hit reads the current live slot. Deleted or
+detached fields and general Python mappings keep ordinary lookup. Backing
+admission precedes the layout check because a host callback can mutate the row.
+Formatting still reads each actual field in order and supports protocols that
+suspend after earlier formatting changes later fields. Native helper guards keep
+their existing admission ordering.
 Read-only lexical misses leave unused
 namespace dictionaries unmaterialized; explicit namespace consumers retain the
 same stable dictionary. Arrays do not

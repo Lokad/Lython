@@ -150,11 +150,11 @@ internal sealed partial class ExecutableScript
                 case LoweredSubscriptExpression subscript:
                     currentBlock = CompileExpression(subscript.Target, currentBlock);
                     currentBlock = CompileExpression(subscript.Index, currentBlock);
-                    // A frame-local lookup can be reused only when this read
-                    // repeats within the invocation. Do not allocate a table
-                    // for each call of a one-shot field/formatting helper.
+                    // Function facts survive calls; modules retain invocation
+                    // facts only where a body can repeat within that invocation.
                     AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span,
-                        _loops.Count != 0 || _comprehensionNames.Count != 0 ? AllocateLookupCache() : -1));
+                        _parameterLayout is not null && !_generator || _loops.Count != 0 || _comprehensionNames.Count != 0
+                            ? AllocateLookupCache() : -1));
                     return currentBlock;
 
                 case LoweredSliceExpression slice:

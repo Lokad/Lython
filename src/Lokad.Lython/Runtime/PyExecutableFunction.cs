@@ -6,6 +6,26 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     private readonly ExecutableCodeObject _codeObject;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
+    private LythonRuntime.ExecutableLookupCache[]? _lookupCaches;
+
+    // Facts belong to this execution-owned definition, not each invocation.
+    // Reentrant admission can establish the same backing before we return.
+    internal LythonRuntime.ExecutableLookupCache[] GetLookupCaches(LythonSourceSpan span)
+    {
+        if (_lookupCaches is { } cached) return cached;
+        var bytes = LythonRuntime.LookupCacheBytes(_codeObject.LookupCacheCount);
+        using var storage = Closure.MemoryGovernor.ReserveTemporary(bytes, span);
+        Closure.CheckExecution(span);
+        if (_lookupCaches is { } established) return established;
+        var caches = new LythonRuntime.ExecutableLookupCache[_codeObject.LookupCacheCount];
+        storage.Commit(bytes);
+        return _lookupCaches = caches;
+    }
+
+    internal void ClearLookupCache(int index)
+    {
+        if (_lookupCaches is { } caches) caches[index] = default;
+    }
 
     public PyExecutableFunction(
         string name,
@@ -64,7 +84,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span)
+        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this)
             ?? PyNone.Instance;
     }
 
@@ -77,7 +97,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            _codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span).ConfigureAwait(false)
+            _codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }
