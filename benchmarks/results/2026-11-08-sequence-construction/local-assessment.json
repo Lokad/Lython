@@ -1,0 +1,272 @@
+[
+  {
+    "phase": "warm-sync",
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 11.375075,
+        "allocatedBytes": 5547806.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 11.152175,
+        "allocatedBytes": 5547862.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 10.3584,
+        "allocatedBytes": 4245278.0
+      }
+    },
+    "allocationPercent": [
+      -23.47825428646928,
+      -23.479026695328763
+    ],
+    "elapsedPercent": [
+      -8.937743267626818,
+      -7.117669871572141
+    ],
+    "oldSpreadPercent": -1.9595475194669087
+  },
+  {
+    "phase": "warm-sync",
+    "case": "scripts.csv-summary-functions.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 11.10965,
+        "allocatedBytes": 2909680.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 11.53835,
+        "allocatedBytes": 2909462.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 11.369025,
+        "allocatedBytes": 2909462.0
+      }
+    },
+    "allocationPercent": [
+      -0.007492232822858824,
+      0.0
+    ],
+    "elapsedPercent": [
+      2.334682010684408,
+      -1.4674975191426798
+    ],
+    "oldSpreadPercent": 3.858807433177458
+  },
+  {
+    "phase": "warm-sync",
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 9.766325,
+        "allocatedBytes": 1652382.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 8.22265,
+        "allocatedBytes": 1652152.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 8.310225,
+        "allocatedBytes": 1652382.0
+      }
+    },
+    "allocationPercent": [
+      0.0,
+      0.013921237271152798
+    ],
+    "elapsedPercent": [
+      -14.90939529454528,
+      1.0650459401774448
+    ],
+    "oldSpreadPercent": -15.806099018822339
+  },
+  {
+    "phase": "warm-sync",
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 18.363975,
+        "allocatedBytes": 2597872.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 18.607425,
+        "allocatedBytes": 2598102.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 18.236125,
+        "allocatedBytes": 2598102.0
+      }
+    },
+    "allocationPercent": [
+      0.00885340001355317,
+      0.0
+    ],
+    "elapsedPercent": [
+      -0.6962000329449269,
+      -1.9954399923686306
+    ],
+    "oldSpreadPercent": 1.325693375208803
+  },
+  {
+    "phase": "warm-sync",
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 25.7286,
+        "allocatedBytes": 3300162.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 26.000625,
+        "allocatedBytes": 3299914.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 26.341325,
+        "allocatedBytes": 3300062.0
+      }
+    },
+    "allocationPercent": [
+      -0.003030154277272601,
+      0.0044849653657585975
+    ],
+    "elapsedPercent": [
+      2.3814937462590224,
+      1.31035311651162
+    ],
+    "oldSpreadPercent": 1.0572864438795682
+  },
+  {
+    "phase": "warm-async",
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 13.114825,
+        "allocatedBytes": 5999188.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 13.26595,
+        "allocatedBytes": 5999070.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 12.89675,
+        "allocatedBytes": 4698188.0
+      }
+    },
+    "allocationPercent": [
+      -21.68626820829752,
+      -21.68472779947559
+    ],
+    "elapsedPercent": [
+      -1.6628128854178303,
+      -2.7830649143106956
+    ],
+    "oldSpreadPercent": 1.1523218952597558
+  },
+  {
+    "phase": "warm-async",
+    "case": "scripts.csv-summary-functions.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 11.23445,
+        "allocatedBytes": 3271062.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 11.060275,
+        "allocatedBytes": 3271056.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 11.600625,
+        "allocatedBytes": 3270944.0
+      }
+    },
+    "allocationPercent": [
+      -0.0036073911164002936,
+      -0.003423970729943271
+    ],
+    "elapsedPercent": [
+      3.25939409583913,
+      4.885502394831964
+    ],
+    "oldSpreadPercent": -1.5503651714147137
+  },
+  {
+    "phase": "warm-async",
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 8.8778,
+        "allocatedBytes": 1653104.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 9.571375,
+        "allocatedBytes": 1653104.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 7.4028,
+        "allocatedBytes": 1653166.0
+      }
+    },
+    "allocationPercent": [
+      0.003750520233447574,
+      0.003750520233447574
+    ],
+    "elapsedPercent": [
+      -16.614476559507995,
+      -22.656880542241844
+    ],
+    "oldSpreadPercent": 7.812464799837793
+  },
+  {
+    "phase": "warm-async",
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 17.070225,
+        "allocatedBytes": 2599022.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 17.153175,
+        "allocatedBytes": 2598792.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 13.74895,
+        "allocatedBytes": 2598966.0
+      }
+    },
+    "allocationPercent": [
+      -0.00215465663622183,
+      0.006695418486746263
+    ],
+    "elapsedPercent": [
+      -19.456539090726686,
+      -19.84603433475144
+    ],
+    "oldSpreadPercent": 0.48593384094235414
+  },
+  {
+    "phase": "warm-async",
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "elapsedMilliseconds": 29.77875,
+        "allocatedBytes": 3301374.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 29.7441,
+        "allocatedBytes": 3301212.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 28.053175,
+        "allocatedBytes": 3301324.0
+      }
+    },
+    "allocationPercent": [
+      -0.0015145209237177326,
+      0.0033926933501904344
+    ],
+    "elapsedPercent": [
+      -5.794652226839602,
+      -5.684908939924216
+    ],
+    "oldSpreadPercent": -0.11635814129202782
+  }
+]

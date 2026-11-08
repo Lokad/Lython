@@ -200,4 +200,49 @@ return consume(result)
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false, false)] [InlineData(false, true)]
+    [InlineData(true, false)] [InlineData(true, true)]
+    public async Task RefusedSequenceStorageKeepsItsOriginAndStopsPublication(bool tuple, bool asynchronous)
+    {
+        var items = string.Join(',', Enumerable.Repeat("value", 256));
+        var literal = tuple ? "(" + items + ")" : "[" + items + "]";
+        var source = "import time\ndef bundle(value):\n if value is None:return None\n time.time()\n return " + literal + "\n" + """
+try:
+ result=bundle('kept')
+ print('created')
+except MemoryError:
+ print('caught')
+finally:
+ return 0
+""";
+        using var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var budget = new AdmissionGateBudget();
+        foreach (var headroom in new[] { 1024L, 2L * 1024 * 1024 })
+        {
+            budget.Gate(64L * 1024 * 1024);
+            var host = new AdmissionGateHost(budget, headroom);
+            using (var result = asynchronous
+                ? await script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget })
+                : script.Run(host, new LythonRunOptions { MemoryBudget = budget }))
+            {
+                Assert.True(budget.AtGate > 0);
+                if (headroom == 1024)
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                    Assert.Equal(5, Assert.IsType<LythonRuntimeFailure>(result.Failure).Span?.Line);
+                    Assert.Empty(result.StandardOutput);
+                }
+                else
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("created\n", result.StandardOutput);
+                }
+            }
+            Assert.Equal(0, budget.Root.ReservedBytes);
+        }
+    }
 }

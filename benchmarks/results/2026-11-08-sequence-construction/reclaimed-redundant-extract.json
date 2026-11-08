@@ -1,0 +1,7 @@
+{
+  "path": "/home/lokad/lython-bench-checks/csv-call-debt-b426-20261108/profiles",
+  "reason": "Verified redundant B426 extract; immutable archive and independently verified local evidence retained.",
+  "archiveSHA256": "6071077a00d06bc869703d2ad81dc7805d1f10a27143868a5f988805ecce190e",
+  "beforeFreeBytes": 270200832,
+  "afterFreeBytes": 277721088
+}

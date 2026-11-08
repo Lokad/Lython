@@ -134,8 +134,15 @@ internal sealed partial class LythonRuntime
                                 return InstructionPause.ContextRequired;
                             ExecuteStackTransfer(ref execution, scope, invocation, instruction);
                             break;
-                        case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet or
-                             ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase:
+                        case ExecutableOpCode.MakeList:
+                            PublishInstructionResult(ref execution, invocation, instruction,
+                                CreateListFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
+                            break;
+                        case ExecutableOpCode.MakeTuple:
+                            PublishInstructionResult(ref execution, invocation, instruction,
+                                CreateTupleFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
+                            break;
+                        case ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase:
                             if (invocation is null) return InstructionPause.ContextRequired;
                             jumped = invocation!.ExecuteStructure(instruction);
                             break;

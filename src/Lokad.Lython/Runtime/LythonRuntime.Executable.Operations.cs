@@ -126,6 +126,7 @@ internal sealed partial class LythonRuntime
         if (count == 0) return PyTuple.Empty;
 
         using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
+        context.CheckExecution(span);
         var items = new object[count];
         for (var i = 0; i < count; i++)
         {

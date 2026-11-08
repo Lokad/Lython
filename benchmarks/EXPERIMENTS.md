@@ -4076,3 +4076,20 @@ correction; large B425 CSV concern not reproduced, no full causal explanation.
 Text+2.10%, affected sync+1.17%, original B424/B425 and adverse desktop retained.
 All source/golden/quiet/join/fixture/archive gates pass. Full corrected delivery
 pending; publication postponed. Resume complete construction/frame milestone.
+
+## Intrinsic sequence construction without lexical promotion
+
+[R72/B428](results/2026-11-08-sequence-construction/README.md) moves plain list/
+tuple construction into the shared prefix using existing admitted builders,
+deleting the old cases/context promotion; tuple backing gains post-admission
+cancellation. Two net production lines deleted; no new shape/builder/cache/policy.
+Twenty public cases first pass on corrected R71;1,729internal/597public per actual
+11/10 then pass with matching probes. Real suspension/cancellation/retained aliases,
+first refusal origin/stopped publication/finally return and budget reuse remain.
+Allocation −23.48% sync/−21.69% async; complete four-job pair114.025s, all gates:
+affected elapsed−1.92–4.79% sync/−2.76–6.49% async; CSV−0.27to+0.86%, text mixed.
+Adverse desktop CSV/report and coarse process CPU text+6.67% preserved, no general
+CPU gain or objective-completion claim. Retain complete-phase deletion and bounded
+affected benefit. Combined correction+construction full delivery pending. Verified
+B426 redundant profiles reclaimed with immutable/local archives retained; receipt
+records exact path/free bytes. B428 terminal/archived/verified; publication postponed.

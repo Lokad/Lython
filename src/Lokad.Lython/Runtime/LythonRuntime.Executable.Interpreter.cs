@@ -441,16 +441,6 @@ internal sealed partial class LythonRuntime
         {
             switch (instruction.OpCode)
             {
-                case ExecutableOpCode.MakeList:
-                    PublishInstructionResult(instruction,
-                        CreateListFromStack(ref _execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, this));
-                    break;
-
-                case ExecutableOpCode.MakeTuple:
-                    PublishInstructionResult(instruction,
-                        CreateTupleFromStack(ref _execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, this));
-                    break;
-
                 case ExecutableOpCode.MakeSet:
                     PublishInstructionResult(instruction,
                         ExecuteExecutableMakeSet(ref _execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, this));
