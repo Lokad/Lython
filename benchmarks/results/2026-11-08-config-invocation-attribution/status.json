@@ -1,0 +1,9 @@
+{
+  "status": "Source/CPU selection gate completed. No runtime prototype or normal-settings performance claim.",
+  "archiveSHA256": "49f790ad662a19b86f0c4bf74285dad584cea2958da55738a0c32d96adcf079d",
+  "profileArchiveSHA256": "d249f9cddaa4c5f56fbd8e9cb7823a55d0760aa848a0c55621790c0260da59be",
+  "sourceRevision": "c74c5802994826cc9c26414587dd3c73aa97a635",
+  "coreSHA256": "3fb37cc35d354f53148fcb9a9e9a0056874ea3d41841402ef4ca297bd322a647",
+  "allGatesPassed": true,
+  "noRemainingVMUsersOrFixtures": true
+}

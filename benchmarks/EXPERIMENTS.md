@@ -4522,3 +4522,19 @@ a new scalar representation would need an explicit boundary contract and broad
 numeric-consumer validation. Sampled boxing alone does not justify that redesign.
 The next bounded investigation is one complete small configuration-script CPU
 capture using the existing profiler/worker, to assess actual invocation setup.
+
+[R101/B460](results/2026-11-08-config-invocation-attribution/README.md) closes one
+bounded config-setup profile atc74c5802/core3fb37cc3:6.010wall/2.93guestCPU-s,
+552samples/31unknown(5.62%). Inclusive factory3.44%, fullcontextctor6.34%,
+JSON16.67%, comparisonfilehost49.64%; kernel leaves60.33%. Groups overlap; no
+causal/normal-settings elapsed claim. No builtin-lazy/global-root/scalar redesign
+selected. Decoder already has a completed-value loop; encoder still uses actual
+async per-step helpers. Next bounded source design targets completed encoding,
+preserving hooks/owners/chunks/current tokens. B460 all gates/archive/local
+verification pass; no remaining users/fixtures/maps. Exact B459 core reused.
+
+R99 sourcec74c5802 independently passes Windows/Ubuntu actual11/10, originalStress
+and installed core consumers, cached CI42479543467. R101 attribution reused that
+same production source/core; source qualification is separate from diagnostics.
+The next selected milestone is bounded completed JSON encoding on its existing
+frame stack, with exact chunks/hooks/token/ownership and measured source-pair gates.

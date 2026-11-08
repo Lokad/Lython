@@ -1,0 +1,33 @@
+{
+  "sourceRevision": "c74c5802",
+  "guestSamples": 552,
+  "guestCpuSeconds": 2.9299999999999997,
+  "unknownLeaf": 31,
+  "samplesWithCoreManagedFrames": 552,
+  "kernelLeafSamples": 333,
+  "inclusiveSamplePresence": {
+    "builtinFactory": 19,
+    "moduleNamespace": 0,
+    "contextConstructor": 35,
+    "stateConstructor": 2,
+    "jsonWork": 92,
+    "comparisonFileHost": 274,
+    "memoryGovernor": 17,
+    "instructionPrefix": 461
+  },
+  "matchingSetupFrames": [
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::.ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms)[OptimizedTier1]",
+      35
+    ],
+    [
+      "class [System.Collections]System.Collections.Generic.Dictionary`2<string,object> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CreateBuiltinVariables()[OptimizedTier1]",
+      19
+    ],
+    [
+      "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::.ctor(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions,class [System.Collections]System.Collections.Generic.Dictionary`2<string,object>,class Lokad.Lython.ILythonRegexProvider,class Lokad.Lython.Frontend.CompiledRegexPrograms)[OptimizedTier1]",
+      2
+    ]
+  ],
+  "caveats": "Inclusive groups overlap; never add them as independent costs. Inlining/unwind loss and profiler overrides limit causality. Guest sampling excludes host-worker fixture reset/validation/protocol and other threads; no normal-settings elapsed claim."
+}

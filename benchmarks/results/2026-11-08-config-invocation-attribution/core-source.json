@@ -1,0 +1,7 @@
+{
+  "vmArchive": "default-rsplit-b459-20261108/observations.tgz",
+  "archiveSHA256": "e29426df82c56de14f7f35214a96a466440aed9ecb1d1cb346fe8725b530007e",
+  "member": "current-core.dll",
+  "coreSHA256": "3fb37cc35d354f53148fcb9a9e9a0056874ea3d41841402ef4ca297bd322a647",
+  "immutableLocalArtifact": "benchmarks/results/2026-11-08-default-rsplit-preparation/observations.tar.xz (nested B459 archive)"
+}
