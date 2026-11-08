@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "binding-probe-net11": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net11": {
+      "exitCode": 0,
+      "passed": 1729
+    },
+    "binding-public-net11": {
+      "exitCode": 0,
+      "passed": 597
+    },
+    "net11-coreSHA256": "a0aef9ef7d8fefc8113fff5a2e4dd462b691f87e453e48b571e1390517f1f189",
+    "binding-probe-net10": {
+      "exitCode": 0,
+      "passed": null
+    },
+    "binding-internal-net10": {
+      "exitCode": 0,
+      "passed": 1729
+    },
+    "binding-public-net10": {
+      "exitCode": 0,
+      "passed": 597
+    },
+    "net10-coreSHA256": "a31eaa9491afdce01793c7570533306b89380954e4f7740fb23a5e13344faa5e"
+  },
+  "matchingProbes": true,
+  "baselinePublicDefaultChecks": 20,
+  "sourceVariant": "R72 shared native sequence construction and post-admission tuple cancellation; baseline twenty deferred-context cases pass"
+}

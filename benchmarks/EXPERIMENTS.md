@@ -4093,3 +4093,15 @@ CPU gain or objective-completion claim. Retain complete-phase deletion and bound
 affected benefit. Combined correction+construction full delivery pending. Verified
 B426 redundant profiles reclaimed with immutable/local archives retained; receipt
 records exact path/free bytes. B428 terminal/archived/verified; publication postponed.
+
+## Returned-record external baseline at retained checkpoint
+
+[R73/B429](results/2026-11-08-returned-record-cpython/README.md), source68d5bffe/
+corea0aef9ef, fivejobs/107.441s: returned-record CSV compile1.07–1.10×, warm
+1.32–1.35×, compile-to-result1.31–1.34× CPython3.13.16. Variable control/compile
+IQR visible; current ordinary CSV warm1.16–1.19× variable, text1.67–1.68× diagnostic.
+All source/Ready/runtime/reference/golden/quiet/join/fixture/archive gates pass.
+Guide marks these revisions separately, retaining older valid824fc6bb rows and
+all adverse source pairs. Pending full source68d5bffe delivery; f88191f7 alone
+is now fully green CI42426106105, cached. No producer/backend/publication or general
+CPU-gain claim. Whole-script performance objective and independent redesign remain.

@@ -2,6 +2,7 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | --- | ---: | ---: | ---: | --- |
+| CSV validation/returned records† | 5,120 records / 68,625 B | 5.913–6.073 ms | 4.527 ms | 1.31–1.34× | Variable; 2.70% / 1.08% |
 | CSV summary/ordinary helper | 4,096 records / 57,361 B | 3.947–3.954 ms | 3.397 ms | 1.16–1.16× | Diagnostic; 0.16% / 1.65% |
 | Text summary/helpers | 3,072 lines / 35,840 B | 2.020–2.080 ms | 1.269 ms | 1.59–1.64× | Variable; 2.97% / 0.58% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 4.033–4.146 ms | 4.217 ms | 0.96–0.98× | Variable; 2.82% / 0.78% |
@@ -10,7 +11,8 @@
 | Protected file search | 2,049 lines; exits after 1,025 / 42,010 B | 297.894–299.911 µs | 211.699 µs | 1.41–1.42× | Diagnostic; 0.67% / 0.92% |
 | Two-file copy/checksum/manifest | 2 files / 4,107 B | 389.574–390.282 µs | 264.878 µs | 1.47–1.47× | Diagnostic; 0.18% / 1.79% |
 
-**2026-11-07; 0.11 development source `824fc6bb`; CPython 3.13.16; .NET 11 RC3.**
+**† rows: 2026-11-08, source `68d5bffe`; other rows: 2026-11-07, source
+`824fc6bb`. CPython 3.13.16; .NET 11 RC3.**
 These are **compilation plus one execution in an already-running host**, including
 mediated RAM-file I/O, complete validation and prior-result cleanup. Startup and
 fixture staging/reset are excluded. **Ratio = Lython elapsed / CPython elapsed;
@@ -18,6 +20,13 @@ above one means slower.** Ranges span two independent identical-build process
 medians, not confidence intervals. Control is their absolute difference/candidate;
 IQR is the largest role interquartile range/median, including CPython. Diagnostic/Variable label
 short observations, not design acceptance thresholds. Inconclusive cases stay visible.
+
+New † rows use frozen core `a0aef9ef`, matching source `68d5bffe` (informational
+SourceLink `a34f56b5`). Focused actual .NET 11/10 checks pass; combined full
+platform/Stress/installed-package CI42428096630 is pending. The
+[five-job targeted collection](../benchmarks/results/2026-11-08-returned-record-cpython/README.md)
+fills the returned-record baseline and refreshes two warm controls; it does not
+remeasure every older workload or explain previous adverse source pairs.
 
 Frozen core `15c04e2a` matches the recorded 561-file production inventory for
 source `824fc6bb`; informational SourceLink is precommit `5dd131bf`.
@@ -37,8 +46,9 @@ and compile-to-result times were not refreshed in this checkpoint.
 
 | Workload | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV summary/ordinary helper | 3.767–3.814 ms | 3.197 ms | 1.18–1.19× | Diagnostic; 1.25% / 1.60% |
-| Text summary/helpers | 1.920–1.940 ms | 1.192 ms | 1.61–1.63× | Diagnostic; 1.07% / 1.14% |
+| CSV validation/returned records† | 5.681–5.817 ms | 4.320 ms | 1.32–1.35× | Variable; 2.32% / 1.07% |
+| CSV summary/ordinary helper† | 3.737–3.817 ms | 3.209 ms | 1.16–1.19× | Variable; 2.14% / 1.21% |
+| Text summary/helpers† | 1.939–1.950 ms | 1.163 ms | 1.67–1.68× | Diagnostic; 0.60% / 1.49% |
 | JSON-lines/helpers | 3.979–4.059 ms | 4.168 ms | 0.95–0.97× | Variable; 2.02% / 0.70% |
 | JSON-to-Markdown report | 3.368–3.406 ms | 2.348 ms | 1.43–1.45× | Variable; 1.10% / 4.73% |
 | Configuration read/edit/write | 79.588–79.947 µs | 62.105 µs | 1.28–1.29× | Diagnostic; 0.45% / 1.97% |
@@ -51,6 +61,7 @@ Compilation alone includes construction and disposal under the shared allowance:
 
 | Workload | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- |
+| CSV validation/returned records† | 70.400–72.059 µs | 65.559 µs | 1.07–1.10× | Variable; 2.36% / 4.59% |
 | CSV summary/ordinary helper | 60.394–60.707 µs | 59.285 µs | 1.02–1.02× | Diagnostic; 0.52% / 1.35% |
 | Text summary/helpers | 44.547–44.735 µs | 41.418 µs | 1.08–1.08× | Diagnostic; 0.42% / 1.18% |
 | JSON-lines/helpers | 51.581–52.488 µs | 50.796 µs | 1.02–1.03× | Diagnostic; 1.73% / 1.12% |
@@ -72,7 +83,9 @@ one thread/core, 16 GiB/no swap. CPython GCC 13.3 PGO/LTO, ordinary GIL/GC,
 no JIT/debug, `-I -S -X utf8`. SDK/runtime 11.0.100-rc.3.26522.148 /
 11.0.0-rc.3.26522.148. Independent sequential processes, normal GC/tiering,
 quiet endpoints; five-second warmup per role/job, seven rotated 150 ms rounds.
-The 23-job CPython checkpoint completed in 478.32 seconds.
+The source `824fc6bb` 23-job checkpoint completed in 478.32 seconds; the five-job
+source `68d5bffe` update took 107.44 seconds. Returned-record input includes skip
+and negative rows; all 5,120 are parsed and 3,072 accepted.
 Buffered-line source-pair jobs are reported separately. Every worker joined and fixture
 was removed; persistent archives were verified under the collection lease.
 
@@ -86,7 +99,7 @@ comparison. Lython's timed file opens include host capability/path-component
 validation; CPython uses ordinary builtin open. A source-7df9b465
 [configuration CPU profile](../benchmarks/results/2026-11-07-invocation-setup/README.md)
 finds substantial opening/path work. It does not isolate wall I/O latency or
-attribute the whole gap; these tables describe source824fc6bb.
+attribute the whole gap; table revisions are marked above; they do not all describe HEAD.
 Tables use synchronous Run; historical async observations use completed
 mediated I/O and do not establish pending-I/O latency.
 

@@ -113,3 +113,9 @@ terminal/archived/verified and must not be queried again. Publication postponed.
 [identities](identity.json), [VM identities](vm-identity.json), [contract](contract.md),
 [refined VM archive](observations.tgz), [initial VM archive](initial-observations.tgz),
 [local source/cores/tests/raw evidence](local-observations.tar.xz).
+
+Delivery update: sourcef88191f7 passes full CI42426106105 (Windows/Ubuntu Release
+actual11/10, original Stress both and installed core consumers). The cached
+[terminal receipt](delivery-ci.json) is final. Subsequent readonly transport and
+construction changes have their own combined source68d5bffe delivery run; this
+old-source green does not qualify those changes.

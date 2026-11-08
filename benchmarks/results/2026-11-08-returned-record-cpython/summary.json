@@ -1,0 +1,163 @@
+{
+  "complete": true,
+  "jobs": 5,
+  "elapsedSeconds": 107.44080449920148,
+  "sourceRevision": "68d5bffe/R72 retained; focused1729internal/597public per actual11/10; full combined CI dispatched, pending",
+  "coreSHA256": {
+    "candidate": "a0aef9ef7d8fefc8113fff5a2e4dd462b691f87e453e48b571e1390517f1f189",
+    "control": "a0aef9ef7d8fefc8113fff5a2e4dd462b691f87e453e48b571e1390517f1f189",
+    "reference": "a0aef9ef7d8fefc8113fff5a2e4dd462b691f87e453e48b571e1390517f1f189"
+  },
+  "timing": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "CPython": 0.06555906132282084,
+        "candidate": 0.0704000669495521,
+        "control": 0.07205926593720267
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython": 0.0657030223390276,
+        "candidate": 0.07072135785007072,
+        "control": 0.071360608943863
+      },
+      "iqrPercent": {
+        "CPython": 0.18850369459851002,
+        "candidate": 4.590458698692649,
+        "control": 1.1406953403939126
+      },
+      "inputBytes": 68625,
+      "controlPercent": 2.356814502519633,
+      "ratioRange": [
+        1.0738418996405936,
+        1.0991503612654554
+      ],
+      "timeRangeMilliseconds": [
+        0.0704000669495521,
+        0.07205926593720267
+      ],
+      "status": "Variable"
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython": 4.319940228571429,
+        "candidate": 5.816544192307693,
+        "control": 5.6813445555555555
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython": 4.285714285714286,
+        "candidate": 6.153846153846154,
+        "control": 5.925925925925926
+      },
+      "iqrPercent": {
+        "CPython": 1.0688388625059577,
+        "candidate": 0.2517348574456432,
+        "control": 0.8965150874594437
+      },
+      "inputBytes": 68625,
+      "controlPercent": 2.3243979978857077,
+      "ratioRange": [
+        1.3151442508347695,
+        1.3464408960656336
+      ],
+      "timeRangeMilliseconds": [
+        5.6813445555555555,
+        5.816544192307693
+      ],
+      "status": "Variable"
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "control": 6.07312372,
+        "candidate": 5.913292423076923,
+        "CPython": 4.527022176470588
+      },
+      "processCpuMedianMilliseconds": {
+        "control": 6.4,
+        "candidate": 6.153846153846154,
+        "CPython": 4.705882352941177
+      },
+      "iqrPercent": {
+        "control": 0.6485894543903604,
+        "candidate": 0.7890846803599475,
+        "CPython": 1.082244337814725
+      },
+      "inputBytes": 68625,
+      "controlPercent": 2.702915490857971,
+      "ratioRange": [
+        1.3062212184008155,
+        1.3415272740578448
+      ],
+      "timeRangeMilliseconds": [
+        5.913292423076923,
+        6.07312372
+      ],
+      "status": "Variable"
+    },
+    {
+      "case": "scripts.csv-summary-functions.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "control": 3.8168520999999997,
+        "candidate": 3.73677,
+        "CPython": 3.2085972765957447
+      },
+      "processCpuMedianMilliseconds": {
+        "control": 4.0,
+        "candidate": 3.902439024390244,
+        "CPython": 3.1914893617021276
+      },
+      "iqrPercent": {
+        "control": 0.7359231970240689,
+        "candidate": 0.8484606863746952,
+        "CPython": 1.2129672466669226
+      },
+      "inputBytes": 57361,
+      "controlPercent": 2.1430834651316566,
+      "ratioRange": [
+        1.1646117221556191,
+        1.1895703234061212
+      ],
+      "timeRangeMilliseconds": [
+        3.73677,
+        3.8168520999999997
+      ],
+      "status": "Variable"
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "control": 1.9387930384615384,
+        "candidate": 1.950474128205128,
+        "CPython": 1.1634726511627909
+      },
+      "processCpuMedianMilliseconds": {
+        "control": 2.051282051282051,
+        "candidate": 2.051282051282051,
+        "CPython": 1.2403100775193798
+      },
+      "iqrPercent": {
+        "control": 1.4425086048611397,
+        "candidate": 1.4850997898722647,
+        "CPython": 0.4276618515439551
+      },
+      "inputBytes": 35840,
+      "controlPercent": 0.5988846288537464,
+      "ratioRange": [
+        1.6663847117711632,
+        1.6764245607800037
+      ],
+      "timeRangeMilliseconds": [
+        1.9387930384615384,
+        1.950474128205128
+      ],
+      "status": "Diagnostic"
+    }
+  ]
+}
