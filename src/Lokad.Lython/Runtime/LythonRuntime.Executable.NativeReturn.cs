@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
             if (value.Operation is >= NativeReturnOperation.Strip and <= NativeReturnOperation.IsSpace)
-                return InvokeSingleInput(receiver, StringMembers.GetNoArgumentsOperation(value.Operation), site.CallSpan, context);
+                return InvokeReceiverMethod(StringMembers.GetNoArgumentsMethod(value.Operation), receiver, site.CallSpan, context);
             return value.Operation switch
             {
                 NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),

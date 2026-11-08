@@ -54,7 +54,6 @@ internal sealed partial class ExecutableCodeObject
                     if (!forwardedLocals.Add(instruction.LocalSlot)) return null;
                     index++;
                     continue;
-                case ExecutableOpCode.LoadCallReceiver:
                 case ExecutableOpCode.LoadCallMember:
                     if (stack.Count == 0 || stack[^1].Member >= 0) return null;
                     // Fold receiver+method into the call; no exposed bound value.

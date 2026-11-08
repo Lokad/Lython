@@ -12,6 +12,15 @@ internal sealed partial class LythonRuntime
         Func<object, ReadOnlyMemory<object?>, LythonSourceSpan, ExecutionContext, object> implementation,
         Func<object, ReadOnlyMemory<object?>, LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null)
     {
+        private readonly Func<object, LythonSourceSpan, ExecutionContext, object>? _noArgumentsImplementation;
+
+        public ReceiverMethod(LythonCallableSignature signature,
+            Func<object, LythonSourceSpan, ExecutionContext, object> implementation)
+            : this(signature, (receiver, _, span, context) => implementation(receiver, span, context))
+        {
+            _noArgumentsImplementation = implementation;
+        }
+
         public LythonCallableSignature Signature { get; } = signature;
 
         public bool AcceptsPositional(int count)
@@ -25,11 +34,28 @@ internal sealed partial class LythonRuntime
         public object Invoke(object receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
             => implementation(receiver, arguments, span, context);
 
+        public object Invoke(object receiver, LythonSourceSpan span, ExecutionContext context)
+            => _noArgumentsImplementation is { } operation ? operation(receiver, span, context)
+                : implementation(receiver, ReadOnlyMemory<object?>.Empty, span, context);
+
         public ValueTask<object> InvokeAsync(object receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
             => asyncImplementation is null ? new(Invoke(receiver, arguments, span, context))
                 : asyncImplementation(receiver, arguments, span, context);
 
         public bool CanSuspend => asyncImplementation is not null;
+    }
+
+    private static object InvokeReceiverMethod(ReceiverMethod method, object receiver,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        context.EnterInterpreterFrame(span);
+        try
+        {
+            context.CheckExecution(span);
+            return method.Invoke(receiver, span, context);
+        }
+        catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
     private static object InvokeReceiverMethod(ReceiverMethod method, object receiver, ReadOnlyMemory<object?> arguments,

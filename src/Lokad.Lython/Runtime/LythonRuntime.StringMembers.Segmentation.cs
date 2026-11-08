@@ -7,12 +7,6 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
-        internal static PyString StripWhitespace(PyString text, LythonSourceSpan span, ExecutionContext context)
-        {
-            using var ambient = PyStructuralGuard.PushAmbient(context, span);
-            return OwnMethodResult(PyStringOps.Strip(text), text, context.MemoryGovernor, span);
-        }
-
         internal static PyList Split(PyString text, object? separatorArgument, object? maxSplitArgument,
             LythonSourceSpan span, ExecutionContext context)
         {
@@ -97,18 +91,6 @@ internal sealed partial class LythonRuntime
             LythonCallableSignature.Create("str.lstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
         private static readonly ReceiverMethod RStripMethod = CreateStripMethod("rstrip", PyStringOps.RStrip,
             LythonCallableSignature.Create("str.rstrip", ["chars"], 0, 1, LythonVariadicParameters.None, 1));
-
-        private static ReceiverMethod? GetSegmentationMethod(string name) => name switch
-        {
-            "split" => ReceiverMethods.StringSplit,
-            "rsplit" => RSplitMethod,
-            "splitlines" => SplitLinesMethod,
-            "expandtabs" => ExpandTabsMethod,
-            "strip" => StripMethod,
-            "lstrip" => LStripMethod,
-            "rstrip" => RStripMethod,
-            _ => null,
-        };
 
         private static ValueTask<object> RSplit(PyString text, ReadOnlyMemory<object?> arguments,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)

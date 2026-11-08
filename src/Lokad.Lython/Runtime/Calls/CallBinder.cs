@@ -121,6 +121,10 @@ internal static class CallBinder
         CallableParameterLayout parameters,
         bool preservePresence = false)
     {
+        if (arguments.Length != 0 && parameters is NamedCallableParameterLayout
+            { ParameterNames.Length: 0, AllowsExtraPositional: false, AllowsExtraKeywords: false })
+            throw new LythonRuntimeException("TypeError", $"{callableName}() expects no arguments.", span);
+
         if (parameters is PositionalCallableParameterLayout)
         {
             for (var i = 0; i < arguments.Length; i++)

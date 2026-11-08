@@ -56,12 +56,8 @@ internal sealed partial class LythonRuntime
                     object result;
                     var context = invocation ?? scope;
                     var receiver = execution.Stack[start];
-                    if (receiver is PyString text && target is Func<PyString, LythonSourceSpan, ExecutionContext, object> textOperation)
-                        result = InvokeSingleInput(text, textOperation, call.CallSpan, context);
-                    else if (receiver is PyString && target is ReceiverMethod method && method.AcceptsPositional(0))
-                        result = InvokeReceiverMethod(method, receiver, ReadOnlyMemory<object?>.Empty, call.CallSpan, context);
-                    else if (receiver is PyDict dictionaryReceiver && target is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
-                        result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, context);
+                    if (receiver is PyString or PyDict && target is ReceiverMethod method && method.AcceptsPositional(0))
+                        result = InvokeReceiverMethod(method, receiver, call.CallSpan, context);
                     else return false;
                     PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
                     return true;

@@ -240,7 +240,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
             ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or
                 ExecutableOpCode.StoreName or ExecutableOpCode.PopTop or ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.MatchCase or ExecutableOpCode.Return or ExecutableOpCode.ExitContextManager => (1, 0),
-            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember => (1, 2),
+            ExecutableOpCode.Dup or ExecutableOpCode.LoadCallMember => (1, 2),
             ExecutableOpCode.LoadMember or ExecutableOpCode.GetIter or
                 ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or
                 ExecutableOpCode.Unary or ExecutableOpCode.MatchException or

@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
         private static bool TryLoadDirectCallReceiver(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction)
         {
-            if (instruction.OpCode is not (ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)) return false;
+            if (instruction.OpCode != ExecutableOpCode.LoadCallMember) return false;
             var name = execution.Code.Names[instruction.NameIndex];
             var receiver = ReadOperand(ref execution, instruction.InputStart, scope, 0);
             if (invocation is not null && receiver is PyInstance instance &&
@@ -27,25 +27,17 @@ internal sealed partial class LythonRuntime
                 execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, function);
                 return true;
             }
-            object? operation = instruction.OpCode == ExecutableOpCode.LoadCallReceiver
-                ? receiver switch
-                {
-                    PyDict => DictMembers.GetNoArgumentsOperation(name),
-                    PyString => (object?)StringMembers.GetNoArgumentsOperation(name) ?? StringMembers.GetMethod(name),
-                    _ => null,
-                }
-                : receiver switch
-                {
-                    PyList when name == "append" => ReceiverMethods.ListAppend,
-                    PyDict when name == "get" => ReceiverMethods.DictionaryGet,
-                    PyDict when name == "setdefault" => ReceiverMethods.DictionarySetDefault,
-                    ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
-                    ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
-                    CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
-                    PyString => StringMembers.GetMethod(name),
-                    ReMatchObject => ReMatchMembers.GetMethod(name),
-                    _ => null,
-                };
+            object? operation = receiver switch
+            {
+                PyList when name == "append" => ReceiverMethods.ListAppend,
+                PyDict => DictMembers.GetMethod(name),
+                ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
+                ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
+                CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
+                PyString => StringMembers.GetMethod(name),
+                ReMatchObject => ReMatchMembers.GetMethod(name),
+                _ => null,
+            };
             if (operation is null) return false;
             // Keep the evaluated receiver, then append the immutable operation.
             // Arguments are evaluated afterwards and can rebind the source name.
@@ -341,7 +333,7 @@ internal sealed partial class LythonRuntime
 
         private void PublishMemberCache(ExecutableInstruction instruction, object target, object value)
             => _execution.Stack.GetMemberCaches(_execution.Code.MemberCacheCount, instruction.Span)[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, value,
-                instruction.OpCode is ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver)
+                instruction.OpCode == ExecutableOpCode.LoadCallMember)
                 ? new ExecutableMemberCache(target, value) : null;
 
         private static void ExecuteStackTransfer(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
@@ -366,7 +358,6 @@ internal sealed partial class LythonRuntime
                     break;
 
 
-                case ExecutableOpCode.LoadCallReceiver:
                 case ExecutableOpCode.LoadCallMember:
                     if (TryLoadDirectCallReceiver(ref execution, scope, invocation, instruction)) break;
                     goto case ExecutableOpCode.LoadMember;
@@ -384,7 +375,7 @@ internal sealed partial class LythonRuntime
                         memberValue = resolvedMember;
                         invocation!.PublishMemberCache(instruction, target, memberValue);
                     }
-                    if (instruction.OpCode is ExecutableOpCode.LoadCallReceiver or ExecutableOpCode.LoadCallMember)
+                    if (instruction.OpCode == ExecutableOpCode.LoadCallMember)
                     {
                         execution.Stack[instruction.ResultSlot] = PyNone.Instance;
                         execution.Stack.PublishValue(instruction.ResultSlot + 1, instruction.LiveExtent, memberValue);

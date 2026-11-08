@@ -316,22 +316,13 @@ internal sealed partial class ExecutableScript
             var callTarget = call.Target;
             while (callTarget is LoweredParenthesizedExpression parenthesized)
                 callTarget = parenthesized.Inner;
-            var nativeReceiver = call.Arguments.All(argument => argument.Kind == CallArgumentKind.Positional)
-                && callTarget is LoweredMemberExpression receiverMember
-                && receiverMember.Member.MemberName switch
-                {
-                    "keys" or "values" or "items" => call.Arguments.Count == 0,
-                    _ => call.Arguments.Count == 0 && LythonRuntime.StringMembers.GetNoArgumentsKind(receiverMember.Member.MemberName) is not null
-                };
             var hasReceiver = callTarget is LoweredMemberExpression;
             if (callTarget is LoweredMemberExpression member)
             {
                 exitBlock = CompileExpression(member.Target, exitBlock);
                 var nameIndex = InternName(member.Member.MemberName);
                 var cacheIndex = AllocateMemberCache();
-                AddInstruction(exitBlock, nativeReceiver
-                    ? ExecutableInstruction.LoadCallReceiver(nameIndex, cacheIndex, member.Span)
-                    : ExecutableInstruction.LoadCallMember(nameIndex, cacheIndex, member.Span));
+                AddInstruction(exitBlock, ExecutableInstruction.LoadCallMember(nameIndex, cacheIndex, member.Span));
             }
             else exitBlock = CompileExpression(call.Target, exitBlock);
             if (call.Call.PreloadImplicitSuperArguments)

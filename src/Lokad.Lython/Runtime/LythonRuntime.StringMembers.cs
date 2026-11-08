@@ -29,7 +29,6 @@ internal sealed partial class LythonRuntime
 
         private static readonly IStringMemberProvider[] Providers =
         [
-            TextSemanticsMemberProvider.Instance,
             StringAffixFormatMemberProvider.Instance,
             StringTranslateMemberProvider.Instance,
         ];

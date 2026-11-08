@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate string operations and dictionary views onto shared receiver methods.
+  Remove their separate delegate targets and special member-load opcode, preserving
+  native fusion, Python binding and deterministic view-admission rollback.
+
 - Forward adjacent plain local/constant operands directly into member lookups,
   iteration and truth branches, preserving receiver snapshots and suspended protocols.
 

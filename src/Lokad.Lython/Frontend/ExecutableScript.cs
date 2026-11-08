@@ -34,7 +34,6 @@ internal enum ExecutableOpCode
     DeleteSlice,
     LoadMember,
     LoadCallMember,
-    LoadCallReceiver,
     PreloadImplicitSuperArguments,
     StoreLocal,
     StoreClosure,
@@ -133,7 +132,7 @@ internal readonly record struct ExecutableInstruction
         ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => 2,
         ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
         ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return or
-            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver or
+            ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or
             ExecutableOpCode.GetIter or ExecutableOpCode.JumpIfFalse => 1,
         _ => 0,
     };
@@ -175,12 +174,12 @@ internal readonly record struct ExecutableInstruction
     public int ClosureSlot => OpCode is ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreClosure
         ? _primaryOperand : throw InvalidOperand(nameof(ClosureSlot));
     public int NameIndex => OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName
-        or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
+        or ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
         or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or ExecutableOpCode.BindException
         or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
         or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
-    public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or ExecutableOpCode.LoadCallReceiver
+    public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
         ? _secondaryOperand : throw InvalidOperand(nameof(MemberCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
@@ -284,9 +283,6 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction LoadCallMember(int nameIndex, int cacheIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.LoadCallMember, span, nameIndex, cacheIndex);
-
-    public static ExecutableInstruction LoadCallReceiver(int nameIndex, int cacheIndex, LythonSourceSpan span)
-        => new(ExecutableOpCode.LoadCallReceiver, span, nameIndex, cacheIndex);
 
     public static ExecutableInstruction PreloadImplicitSuperArguments(LythonSourceSpan span)
         => new(ExecutableOpCode.PreloadImplicitSuperArguments, span);

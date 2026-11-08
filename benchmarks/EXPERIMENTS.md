@@ -4274,3 +4274,33 @@ R82 source91f15a3e final delivery is fully green and cached as CI42451722109:
 Windows/Ubuntu Release actual .NET11/.NET10, original Stress and installed core
 consumers. This also qualifies the production inventory measured by R83; it does
 not qualify subsequent runtime work. Publication remains postponed.
+
+## Ordinary-helper CPU attribution (2026-11-08)
+
+[R84/B447](results/2026-11-08-ordinary-helper-attribution/README.md) profiles the
+complete rsplit report at qualified91f15a3e:1,107guest samples/5.58CPU-s,46unknown.
+Prefix19.06% includes inlined work; no dominant binder allocation supports an arena,
+value or memory redesign. Every raw sample/map/log and unknown remains. All source/
+Ready/golden/quiet/join/fixture/archive gates pass; diagnostic overrides preclude
+timing claims. One-case catalog/existing core archival preserve the OS floor without
+evidence deletion. The concrete callable-representation inconsistency selects R85;
+a separate source pair must establish useful magnitude.
+
+## Canonical native receiver declarations (2026-11-08)
+
+[R85/B448](results/2026-11-08-receiver-contract/README.md) removes typed no-argument
+string/dictionary targets, the special LoadCallReceiver/name heuristic, redundant
+member routing and text-semantics provider closures. One shared declaration serves
+immediate/exposed/native-return calls; native-body proof/fusion stays unchanged.
+Casefold/title complete helpers allocate45–52%less, with controlled elapsed22–24%
+lower and agreeing coarseCPU direction.373internal/2046public per actual11/10 pass.
+Existing public tests caught17 invalid-arity prototype failures; fixed signatures
+and common no-argument diagnostics restore them unchanged. Original6fdf rsplit
+desktop+6–7%motivated fixed-arity invocation within ReceiverMethod; originals remain.
+Final aa4acebe controlled rsplit−0.90to+4.45%(candidate spread3.85%) is inconclusive;
+CSV−0.38to+2.70%possible regression stays explicit, reportasync−4.14to−2.78%.
+Earlier debt remains separate. All source/Ready/golden/quiet/join/fixture/archive
+gates pass; six jobs168.102s. One identical worker companion library atomically
+hardlinked, with all paths/bytes/evidence preserved. Retain this complete callable
+consolidation; no universal CPU claim or whole-script objective closure. Full
+platform/originalStress/installed source qualification follows the retained commit.

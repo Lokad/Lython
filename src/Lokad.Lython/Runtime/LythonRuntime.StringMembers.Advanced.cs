@@ -48,20 +48,6 @@ internal sealed partial class LythonRuntime
         private static readonly ReceiverMethod RIndexMethod = CreateSearchMethod("rindex", PyStringOps.RFind, true);
         private static readonly ReceiverMethod CountMethod = CreateSearchMethod("count", PyStringOps.Count, false);
 
-        private static ReceiverMethod? GetLayoutSearchMethod(string name) => name switch
-        {
-            "center" => CenterMethod,
-            "ljust" => LJustMethod,
-            "rjust" => RJustMethod,
-            "zfill" => ZFillMethod,
-            "find" => FindMethod,
-            "index" => IndexMethod,
-            "rfind" => RFindMethod,
-            "rindex" => RIndexMethod,
-            "count" => CountMethod,
-            _ => null,
-        };
-
         private static ReceiverMethod CreatePaddingMethod(string name,
             Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation)
             => new(LythonCallableSignature.Create("str." + name, ["width", "fillchar"], 1, 2, LythonVariadicParameters.None, 2),

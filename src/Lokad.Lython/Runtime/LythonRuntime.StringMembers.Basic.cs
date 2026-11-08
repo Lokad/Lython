@@ -7,25 +7,6 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
-        private static readonly Func<PyString, LythonSourceSpan, ExecutionContext, object>[] NoArgumentsOperations =
-        [
-            StripWhitespace,
-            Lower,
-            Upper,
-            static (receiver, span, context) => PyStringOps.IsLower(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsUpper(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsTitle(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsAlpha(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsDigit(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsAlnum(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsAscii(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsDecimal(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsIdentifier(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsNumeric(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsPrintable(receiver, context, span),
-            static (receiver, span, context) => PyStringOps.IsSpace(receiver, context, span),
-        ];
-
         internal static NativeReturnOperation? GetNoArgumentsKind(string name)
             => name switch
             {
@@ -47,27 +28,50 @@ internal sealed partial class LythonRuntime
                 _ => null
             };
 
-        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object>? GetNoArgumentsOperation(string name)
-            => GetNoArgumentsKind(name) is { } kind ? GetNoArgumentsOperation(kind) : null;
-
-        internal static Func<PyString, LythonSourceSpan, ExecutionContext, object> GetNoArgumentsOperation(NativeReturnOperation kind)
-            => NoArgumentsOperations[(int)kind - (int)NativeReturnOperation.Strip];
-
         internal static ReceiverMethod? GetMethod(string name)
-            => GetSegmentationMethod(name) ?? GetLayoutSearchMethod(name) ?? (name switch
+            => name switch
             {
+                "split" => ReceiverMethods.StringSplit,
+                "rsplit" => RSplitMethod,
+                "splitlines" => SplitLinesMethod,
+                "expandtabs" => ExpandTabsMethod,
+                "lstrip" => LStripMethod,
+                "rstrip" => RStripMethod,
+                "center" => CenterMethod,
+                "ljust" => LJustMethod,
+                "rjust" => RJustMethod,
+                "zfill" => ZFillMethod,
+                "find" => FindMethod,
+                "index" => IndexMethod,
+                "rfind" => RFindMethod,
+                "rindex" => RIndexMethod,
+                "count" => CountMethod,
                 "join" => ReceiverMethods.StringJoin,
                 "replace" => ReceiverMethods.StringReplace,
                 "startswith" => ReceiverMethods.StringStartsWith,
                 "endswith" => ReceiverMethods.StringEndsWith,
+                "strip" => GetNoArgumentsMethod(NativeReturnOperation.Strip),
+                "lower" => GetNoArgumentsMethod(NativeReturnOperation.Lower),
+                "upper" => GetNoArgumentsMethod(NativeReturnOperation.Upper),
+                "islower" => GetNoArgumentsMethod(NativeReturnOperation.IsLower),
+                "isupper" => GetNoArgumentsMethod(NativeReturnOperation.IsUpper),
+                "istitle" => GetNoArgumentsMethod(NativeReturnOperation.IsTitle),
+                "isalpha" => GetNoArgumentsMethod(NativeReturnOperation.IsAlpha),
+                "isdigit" => GetNoArgumentsMethod(NativeReturnOperation.IsDigit),
+                "isalnum" => GetNoArgumentsMethod(NativeReturnOperation.IsAlnum),
+                "isascii" => GetNoArgumentsMethod(NativeReturnOperation.IsAscii),
+                "isdecimal" => GetNoArgumentsMethod(NativeReturnOperation.IsDecimal),
+                "isidentifier" => GetNoArgumentsMethod(NativeReturnOperation.IsIdentifier),
+                "isnumeric" => GetNoArgumentsMethod(NativeReturnOperation.IsNumeric),
+                "isprintable" => GetNoArgumentsMethod(NativeReturnOperation.IsPrintable),
+                "isspace" => GetNoArgumentsMethod(NativeReturnOperation.IsSpace),
+                "capitalize" => CasingMethods.Capitalize,
+                "swapcase" => CasingMethods.SwapCase,
+                "title" => CasingMethods.Title,
+                "casefold" => CasingMethods.CaseFold,
+                "encode" => EncodeMethod,
                 _ => null,
-            });
-
-        internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
-            => PyStringOps.Lower(receiver, context, span);
-
-        internal static PyString Upper(PyString receiver, LythonSourceSpan span, ExecutionContext context)
-            => PyStringOps.Upper(receiver, context, span);
+            };
 
         internal static PyString Replace(PyString receiver, object oldArgument, object newArgument, object? countArgument,
             LythonSourceSpan span, ExecutionContext context)
@@ -91,58 +95,17 @@ internal sealed partial class LythonRuntime
             return receiver.Replace(oldValue, newValue, count, context, span);
         }
 
-        private sealed class TextSemanticsMemberProvider : IStringMemberProvider
+        private static readonly ReceiverMethod EncodeMethod = new(
+            LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0),
+            static (receiver, arguments, span, context) => Encode((PyString)receiver, arguments, span, context));
+
+        private static object Encode(PyString text, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            // N17: hot fixed signatures hoisted per family.
-            private static readonly LythonCallableSignature StrEncodeSignature = LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0);
-            public static readonly TextSemanticsMemberProvider Instance = new();
-
-            public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
-            {
-                value = name switch
-                {
-                    "encode" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length > 2)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.encode([encoding][, errors]) expects zero to two arguments.", span);
-                        }
-
-                        if (arguments.Length >= 1) RequireCodecNameType(arguments[0], "str.encode()", "encoding", span);
-                        if (arguments.Length == 2) RequireCodecNameType(arguments[1], "str.encode()", "errors", span);
-
-                        var encoding = arguments.Length >= 1
-                            ? ParseTextEncoding(arguments[0], "str.encode()", span)
-                            : TextEncodingMode.Utf8;
-                        var errors = arguments.Length == 2
-                            ? ParseTextErrors(arguments[1], "str.encode()", span)
-                            : TextErrorMode.Strict;
-                        return EncodeGuestBytes(text, encoding, errors, context, span);
-                    }, StrEncodeSignature),
-                    "lower" => BoundCallable.CreateNoArguments(text, "str.lower", Lower),
-                    "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => PyStringOps.Capitalize(receiver, context, span)),
-                    "islower" => BoundCallable.CreateNoArguments(text, "str.islower", GetNoArgumentsOperation(name)!),
-                    "upper" => BoundCallable.CreateNoArguments(text, "str.upper", Upper),
-                    "swapcase" => BoundCallable.CreateNoArguments(text, "str.swapcase", static (receiver, span, context) => PyStringOps.SwapCase(receiver, context, span)),
-                    "title" => BoundCallable.CreateNoArguments(text, "str.title", static (receiver, span, context) => PyStringOps.Title(receiver, context, span)),
-                    "casefold" => BoundCallable.CreateNoArguments(text, "str.casefold", static (receiver, span, context) => PyStringOps.CaseFold(receiver, context, span)),
-                    "isupper" => BoundCallable.CreateNoArguments(text, "str.isupper", GetNoArgumentsOperation(name)!),
-                    "isalpha" => BoundCallable.CreateNoArguments(text, "str.isalpha", GetNoArgumentsOperation(name)!),
-                    "isdigit" => BoundCallable.CreateNoArguments(text, "str.isdigit", GetNoArgumentsOperation(name)!),
-                    "isalnum" => BoundCallable.CreateNoArguments(text, "str.isalnum", GetNoArgumentsOperation(name)!),
-                    "isascii" => BoundCallable.CreateNoArguments(text, "str.isascii", GetNoArgumentsOperation(name)!),
-                    "isdecimal" => BoundCallable.CreateNoArguments(text, "str.isdecimal", GetNoArgumentsOperation(name)!),
-                    "isidentifier" => BoundCallable.CreateNoArguments(text, "str.isidentifier", GetNoArgumentsOperation(name)!),
-                    "isnumeric" => BoundCallable.CreateNoArguments(text, "str.isnumeric", GetNoArgumentsOperation(name)!),
-                    "isprintable" => BoundCallable.CreateNoArguments(text, "str.isprintable", GetNoArgumentsOperation(name)!),
-                    "istitle" => BoundCallable.CreateNoArguments(text, "str.istitle", GetNoArgumentsOperation(name)!),
-                    "isspace" => BoundCallable.CreateNoArguments(text, "str.isspace", GetNoArgumentsOperation(name)!),
-                    _ => MissingMemberValue.Instance,
-                };
-
-                return !ReferenceEquals(value, MissingMemberValue.Instance);
-
-            }
+            if (arguments.Length >= 1) RequireCodecNameType(arguments.Span[0]!, "str.encode()", "encoding", span);
+            if (arguments.Length == 2) RequireCodecNameType(arguments.Span[1]!, "str.encode()", "errors", span);
+            var encoding = arguments.Length >= 1 ? ParseTextEncoding(arguments.Span[0]!, "str.encode()", span) : TextEncodingMode.Utf8;
+            var errors = arguments.Length == 2 ? ParseTextErrors(arguments.Span[1]!, "str.encode()", span) : TextErrorMode.Strict;
+            return EncodeGuestBytes(text, encoding, errors, context, span);
         }
     }
 }

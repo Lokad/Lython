@@ -129,6 +129,12 @@ is modestly lower; coarse CPU is mixed, report timing inconclusive, and possible
 CSV elapsed regression up to1.50% remains explicit. This is implementation
 consolidation, not demonstrated substantial CPU improvement.
 
+[Canonical receiver declarations](../benchmarks/results/2026-11-08-receiver-contract/README.md)
+remove separate callable forms and a special opcode. Complete casefold/title helper
+reports allocate45–52%less, with controlled elapsed22–24%lower. Rsplit control is
+inconclusive; possible CSV regression up to2.70%remains explicit. This source pair
+does not update the named-source CPython tables above.
+
 Shared compiler-fact correction, annotation demand pruning and smaller executable
 transport are also retained; their compilation/source benefits do not prove broad
 warm CPU gains. [Earlier source pairs](../benchmarks/results/2026-11-07-retained-checkpoint/earlier-source-pairs.md)
