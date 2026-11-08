@@ -4219,4 +4219,20 @@ debt; reportasync near baseline, coarseCPU not universal attribution. Original
 desktop adverse controls remain; no debt repayment or performance-objective
 closure. All source/Ready/golden/quiet/join/fixture/archive gates pass. New tests
 preserve native-loop adoption before true I/O, alias/result funding, nonallocating
-cancellation and terminal refusal. Final full delivery follows the retained commit.
+cancellation and terminal refusal. Committed913ea550 is fully qualified by cached
+CI42447193207: Windows/Ubuntu actual .NET11/10, original Stress and installed core
+package consumers. This does not qualify subsequent runtime changes.
+
+## Current execution attribution (2026-11-08)
+
+[R80/B444 and R81](results/2026-11-08-execution-attribution/README.md) preserve
+current-source CPU attribution and a same-core module/function workload contrast.
+The profile has1,083guest samples/5.45CPU-s,49unknown. Prefix20.96% includes
+inlined useful work;112samples map to loop/acquisition/check/dispatch blocks.
+Diagnostic overrides preclude normal-settings timing claims. Split already
+batches admission and string hashes already have the exact-native route.
+Function-wrapped text/CSV allocate slightly more(<0.07%), with unstable desktop
+elapsed and deliberately different namespace semantics. No speculative namespace,
+numeric, call-arena or reservation redesign is selected from these observations.
+All golden/ownership/cleanup and profile source/Ready/quiet/join/archive gates pass.
+No runtime change, CPU improvement or performance-objective closure is claimed.

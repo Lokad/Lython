@@ -69,3 +69,7 @@ not another name-specific shortcut or repetition of completed qualification.
 [Assessment](assessment.json) and [complete evidence](observations.tar.xz) retain
 the selection gate, both actual-target logs, sources/cores, all adverse controls,
 independent goldens, exact unchanged driver and verified six-job VM archive.
+
+Final committed913ea550 delivery is fully green: [cached CI42447193207](delivery-ci.json),
+Windows/Ubuntu Release actual .NET11/.NET10, original Stress and installed core
+package consumers. This qualifies that source, not later runtime work.
