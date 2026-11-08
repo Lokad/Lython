@@ -18,7 +18,7 @@ public sealed class CasedSplitOwnershipTests
             "effects.append(input.lower().split())",
             "def words(value):\n if value:\n  result=value.upper().split()\n  return result\n return []\neffects.append(words(input))",
             "def words(value):\n try:\n  return value.lower().split()\n except MemoryError:\n  return ['suppressed']\n finally:\n  pass\neffects.append(words(input))",
-        })
+        }.SelectMany(source => new[] { source, source.Replace(".split()", ".rsplit()") }))
         {
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);

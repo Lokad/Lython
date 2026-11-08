@@ -118,7 +118,7 @@ internal sealed partial class ExecutableCodeObject
                                 StaticReturnShape.Boolean => NativeReturnOperation.BooleanMethod,
                                 _ => NativeReturnOperation.ListMethod,
                             };
-                            if (ReferenceEquals(method, LythonRuntime.StringMembers.GetMethod("split"))
+                            if (member is "split" or "rsplit"
                                 && first == values.Count - 1 && target.Member == index - 1
                                 && values[first].Operation == NativeReturnOperation.StringMethod)
                             {

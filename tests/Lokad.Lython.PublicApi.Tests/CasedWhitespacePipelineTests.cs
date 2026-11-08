@@ -35,7 +35,7 @@ public sealed class CasedWhitespacePipelineTests
             $"def words(value):return value.{operation}().split()\nreturn words(text)",
             $"def words(value):\n if value:return value.{operation}().split()\n return []\nreturn words(text)",
             $"try:\n result=text.{operation}().split()\nfinally:\n marker=True\nreturn result",
-        })
+        }.SelectMany(source => new[] { source, source.Replace(".split()", ".rsplit()") }))
         using (var script = new LythonEngine().Compile(source, budget))
         {
             Assert.True(script.IsValid);
@@ -62,7 +62,7 @@ public sealed class CasedWhitespacePipelineTests
         {
             "def words(value):return value.upper().split()\nreturn words(text)",
             "def words(value):\n if value:return value.upper().split()\n return []\nreturn words(text)",
-        })
+        }.SelectMany(source => new[] { source, source.Replace(".split()", ".rsplit()") }))
         using (var script = new LythonEngine().Compile(source, budget))
         {
             Assert.True(script.IsValid);
@@ -87,12 +87,12 @@ public sealed class CasedWhitespacePipelineTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("/lower")]
-    [InlineData("/split")]
-    public async Task CustomMethodsKeepRealSuspensionOrderAndAwaitedCleanup(string? cancelAt)
+    [InlineData(null, false), InlineData(null, true)]
+    [InlineData("/lower", false), InlineData("/lower", true)]
+    [InlineData("/split", false), InlineData("/split", true)]
+    public async Task CustomMethodsKeepRealSuspensionOrderAndAwaitedCleanup(string? cancelAt, bool reverse)
     {
-        const string source = """
+        var source = """
             events = []
             class Lowered:
                 def split(self):
@@ -108,6 +108,7 @@ public sealed class CasedWhitespacePipelineTests
             print(words(Text()), events)
             print('done')
             """;
+        if (reverse) source = source.Replace("def split(", "def rsplit(").Replace(".split()", ".rsplit()");
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {
@@ -140,9 +141,32 @@ public sealed class CasedWhitespacePipelineTests
                     Assert.DoesNotContain("done", result.StandardOutput);
                 }
                 Assert.True(host.CompletedAsynchronously > 0);
-                Assert.True(host.ClosedFileCount > 0);
+                Assert.Equal(cancelAt == "/lower" ? 1 : 2, host.ClosedFileCount);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public async Task SuppliedOptionsAndVisibleCasedLocalsKeepPythonSemantics()
+    {
+        const string source = "text=' A  B  C '\nprint(text.lower().rsplit(None,1))\nprint(text.upper().rsplit(' ',1))\ndef visible(value):\n cased=value.lower()\n parts=cased.rsplit()\n return parts,locals()['cased']\nprint(visible(text))\n";
+        const string expected = "[' a  b', 'c']\n[' A  B  C', '']\n(['a', 'b', 'c'], ' a  b  c ')\n";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(expected, result.StandardOutput);
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

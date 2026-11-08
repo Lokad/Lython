@@ -4494,3 +4494,16 @@ Corrected57e1ef6c reconfirms allocation; oldcore/source/results and red tests re
 separate. Corrected desktop report+24.6–28.7% and asyncCSV+15.7–26.6%, unstable
 unchanged controls and all initial adverse results remain inconclusive/unexplained.
 No controlled elapsed/CPU gain asserted; no new VM collection.
+
+[R99/B459](results/2026-11-08-default-rsplit-preparation/README.md) lets default
+zero-argument rsplit share the existing cased-word preparation, removing two compiler
+restrictions and intermediate cased-line storage; no new runtime machinery.
+Complete lower report allocation−16.46%, upper−11.88% across both APIs. Controlled
+lower elapsed−14.19to−16.70%sync/−12.88to−13.44%async, upper−7.85to−11.77%sync;
+coarseCPU agrees. Ordinary-split control variable/mixedCPU, CSV nearbaseline,
+report−3.94to+2.69%/baseline5.77%spread inconclusive. Original desktop adverse and
+49%async-baseline drift remain preserved.120public/35internal peractual11/10 pass,
+including all29 whitespace scalars, real suspended custom methods/exact closes,
+aliases/first refusal/cleanup and supplied-option/visible-local Python oracle.
+B459167.959s all gates/archive/local verification pass; no users/fixtures. Full
+retained-source delivery pending independently; old source debts remain distinct.

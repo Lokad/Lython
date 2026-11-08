@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Let default whitespace `rsplit()` share the existing casing/word preparation,
+  eliminating its intermediate cased line in ordinary chains and closed helpers.
+  Preserve supplied options, visible locals, custom methods and awaited cleanup.
+
 - Share final storage construction for explicit-separator and whitespace splitting.
   Remove reverse-split temporary lists, conversion arrays and final copies; admit
   the complete result before creating fragments. Preserve direction, aliases and

@@ -303,7 +303,8 @@ wrapper and raw argument validation; other shapes use the ordinary binder.
 Suspended protocols keep the receiver and operands funded until completion
 and cleanup. Custom string index, width and line-ending truth callbacks can suspend
 under RunAsync. Native no-argument operations and helper-return proofs remain shared.
-Immediate native `lower().split()` and `upper().split()` chains share one prepared
+Zero-argument whitespace `split()` and `rsplit()` after native `lower()` or
+`upper()` share one prepared
 recipe with closed helpers, including inside branches and protected bodies. They
 write final words without allocating a cased intermediate string. Custom receivers
 keep ordinary method dispatch and suspension; intervening local bindings remain
@@ -1306,7 +1307,7 @@ storage stays borrowed and funded until completion. Cancelled admission or
 construction returns only private output funding and preserves input aliases.
 
 Eligible native helper returns combining `lower()` or `upper()` with a default
-whitespace `split()` write independently owned words directly. One forward
+whitespace `split()` or `rsplit()` write independently owned words directly. One forward
 word-range planner handles ordinary splitting and conservative case-output
 capacity. Forward/reverse discovery share bounded ASCII category runs, decoding
 Unicode scalars at non-ASCII boundaries. The shared casing writer preserves Unicode expansions

@@ -34,7 +34,7 @@ internal sealed partial class ExecutableCodeObject
         var last = sites[lastIndex];
         if (!first.HasReceiver || !last.HasReceiver || first.ArgumentCount != 0 || last.ArgumentCount != 0
             || !first.IsPositionalOnly || !last.IsPositionalOnly
-            || Names[instructions[consumer - 1].NameIndex] != "split") return null;
+            || Names[instructions[consumer - 1].NameIndex] is not ("split" or "rsplit")) return null;
         var name = Names[instructions[producer - 1].NameIndex];
         if (name is not ("lower" or "upper")) return null;
         var recipe = last.CasedSplit ?? new ExecutableCasedSplit(LythonRuntime.StringMembers.GetMethod(name)!,

@@ -1,0 +1,17 @@
+{
+  "status": "Retained source/focused checks and controlled comparison pass. Full retained-boundary qualification pending independently.",
+  "coreSHA256": {
+    "before": "57e1ef6c0ed852efc88eb2accb26a8b6fdbd2d68e811dc9a5a8ec6ea11a67492",
+    "candidate": "3fb37cc35d354f53148fcb9a9e9a0056874ea3d41841402ef4ca297bd322a647"
+  },
+  "focusedChecks": {
+    "public-final11": 120,
+    "public-final10": 120,
+    "internal-final11": 35,
+    "internal-final10": 35
+  },
+  "archiveSHA256": "92fb087a9182afba5a9d1a186b735a5da16f973d7ecc92bd9ae166138f429ab8",
+  "controlledArchiveSHA256": "e29426df82c56de14f7f35214a96a466440aed9ecb1d1cb346fe8725b530007e",
+  "noRemainingVMUsersOrFixtures": true,
+  "referenceGuideSource": "94cb8963"
+}
