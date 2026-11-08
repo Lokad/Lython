@@ -30,8 +30,6 @@ internal sealed partial class LythonRuntime
         private static readonly IStringMemberProvider[] Providers =
         [
             TextSemanticsMemberProvider.Instance,
-            StringSegmentationMemberProvider.Instance,
-            StringLayoutSearchMemberProvider.Instance,
             StringAffixFormatMemberProvider.Instance,
             StringTranslateMemberProvider.Instance,
         ];
@@ -278,6 +276,12 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (GetMethod(name) is { } method)
+            {
+                value = method.Bind(text);
+                return true;
+            }
+
             foreach (var provider in Providers)
             {
                 if (provider.TryGetMember(text, name, out value))
@@ -327,10 +331,9 @@ internal sealed partial class LythonRuntime
 
         private static StringSearchBounds ParseStringBounds(
             PyString text,
-            object[] arguments,
+            ReadOnlySpan<object?> arguments,
             LythonSourceSpan span,
-            ExecutionContext context,
-            string signature)
+            ExecutionContext context)
         {
             // Search bounds coerce through __index__ like CPython; bad
             // __index__ results propagate while other rejections stay Invalid.

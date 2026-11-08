@@ -35,114 +35,121 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private sealed class StringLayoutSearchMemberProvider : IStringMemberProvider
+        private static readonly ReceiverMethod CenterMethod = CreatePaddingMethod("center", PyStringOps.Center);
+        private static readonly ReceiverMethod LJustMethod = CreatePaddingMethod("ljust", PyStringOps.LJust);
+        private static readonly ReceiverMethod RJustMethod = CreatePaddingMethod("rjust", PyStringOps.RJust);
+        private static readonly ReceiverMethod ZFillMethod = new(
+            LythonCallableSignature.Create("str.zfill", ["width"]),
+            static (receiver, arguments, span, context) => ZFill((PyString)receiver, arguments.Span[0]!, span, context, false).GetAwaiter().GetResult(),
+            static (receiver, arguments, span, context) => ZFill((PyString)receiver, arguments.Span[0]!, span, context, true));
+        private static readonly ReceiverMethod FindMethod = CreateSearchMethod("find", PyStringOps.Find, false);
+        private static readonly ReceiverMethod IndexMethod = CreateSearchMethod("index", PyStringOps.Find, true);
+        private static readonly ReceiverMethod RFindMethod = CreateSearchMethod("rfind", PyStringOps.RFind, false);
+        private static readonly ReceiverMethod RIndexMethod = CreateSearchMethod("rindex", PyStringOps.RFind, true);
+        private static readonly ReceiverMethod CountMethod = CreateSearchMethod("count", PyStringOps.Count, false);
+
+        private static ReceiverMethod? GetLayoutSearchMethod(string name) => name switch
         {
-            // N17: hot fixed signatures hoisted per family.
-            private static readonly LythonCallableSignature StrZfillSignature = LythonCallableSignature.Create("str.zfill", ["width"]);
-        private static readonly LythonCallableSignature StrCenterSignature = LythonCallableSignature.Create("str.center", ["width", "fillchar"], 1);
-        private static readonly LythonCallableSignature StrLjustSignature = LythonCallableSignature.Create("str.ljust", ["width", "fillchar"], 1);
-        private static readonly LythonCallableSignature StrRjustSignature = LythonCallableSignature.Create("str.rjust", ["width", "fillchar"], 1);
-        private static readonly LythonCallableSignature StrFindSignature = LythonCallableSignature.Create("str.find", ["sub", "start", "end"], 1);
-        private static readonly LythonCallableSignature StrIndexSignature = LythonCallableSignature.Create("str.index", ["sub", "start", "end"], 1);
-        private static readonly LythonCallableSignature StrRfindSignature = LythonCallableSignature.Create("str.rfind", ["sub", "start", "end"], 1);
-        private static readonly LythonCallableSignature StrRindexSignature = LythonCallableSignature.Create("str.rindex", ["sub", "start", "end"], 1);
-        private static readonly LythonCallableSignature StrCountSignature = LythonCallableSignature.Create("str.count", ["sub", "start", "end"], 1);
-            public static readonly StringLayoutSearchMemberProvider Instance = new();
+            "center" => CenterMethod,
+            "ljust" => LJustMethod,
+            "rjust" => RJustMethod,
+            "zfill" => ZFillMethod,
+            "find" => FindMethod,
+            "index" => IndexMethod,
+            "rfind" => RFindMethod,
+            "rindex" => RIndexMethod,
+            "count" => CountMethod,
+            _ => null,
+        };
 
-            public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
+        private static ReceiverMethod CreatePaddingMethod(string name,
+            Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation)
+            => new(LythonCallableSignature.Create("str." + name, ["width", "fillchar"], 1),
+                (receiver, arguments, span, context) => Pad((PyString)receiver, arguments, operation, span, context, false).GetAwaiter().GetResult(),
+                (receiver, arguments, span, context) => Pad((PyString)receiver, arguments, operation, span, context, true));
+
+        private static ValueTask<object> Pad(PyString text, ReadOnlyMemory<object?> arguments,
+            Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (arguments.Span[0] is PyInstance)
+                return PadWithGuestWidthAsync(text, arguments, operation, span, context, asynchronous);
+            var width = NormalizeTextWidth(CoerceIoIntegerAsync(arguments.Span[0]!, span, context, false).GetAwaiter().GetResult(), span);
+            return new(PadWithWidth(text, width, arguments.Length == 2 ? arguments.Span[1] : null, operation, span, context));
+        }
+
+        private static async ValueTask<object> PadWithGuestWidthAsync(PyString text, ReadOnlyMemory<object?> arguments,
+            Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var width = NormalizeTextWidth(await CoerceIoIntegerAsync(arguments.Span[0]!, span, context, asynchronous).ConfigureAwait(false), span);
+            return PadWithWidth(text, width, arguments.Length == 2 ? arguments.Span[1] : null, operation, span, context);
+        }
+
+        private static object PadWithWidth(PyString text, int width, object? fillArgument,
+            Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            var fill = fillArgument is null ? null : RequireFillChar(fillArgument, span);
+            try { return OwnMethodResult(operation(text, width, fill, context.MemoryGovernor, span, context.State.CancellationToken), text, context.MemoryGovernor, span); }
+            catch (InvalidOperationException error) { throw new LythonRuntimeException("TypeError", error.Message, span); }
+        }
+
+        private static ValueTask<object> ZFill(PyString text, object width, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            => width is PyInstance ? ZFillWithGuestWidthAsync(text, width, span, context, asynchronous)
+                : new(OwnMethodResult(PyStringOps.ZFill(text,
+                    NormalizeTextWidth(CoerceIoIntegerAsync(width, span, context, false).GetAwaiter().GetResult(), span),
+                    context.MemoryGovernor, span, context.State.CancellationToken), text, context.MemoryGovernor, span));
+
+        private static async ValueTask<object> ZFillWithGuestWidthAsync(PyString text, object width,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+            => OwnMethodResult(PyStringOps.ZFill(text,
+                NormalizeTextWidth(await CoerceIoIntegerAsync(width, span, context, asynchronous).ConfigureAwait(false), span),
+                context.MemoryGovernor, span, context.State.CancellationToken), text, context.MemoryGovernor, span);
+
+        private static ReceiverMethod CreateSearchMethod(string name,
+            Func<PyString, PyString, int, int, BigInteger> operation, bool throwWhenMissing)
+            => new(LythonCallableSignature.Create("str." + name, ["sub", "start", "end"], 1),
+                (receiver, arguments, span, context) => Search((PyString)receiver, arguments, name, operation, throwWhenMissing, span, context, false).GetAwaiter().GetResult(),
+                (receiver, arguments, span, context) => Search((PyString)receiver, arguments, name, operation, throwWhenMissing, span, context, true));
+
+        private static ValueTask<object> Search(PyString text, ReadOnlyMemory<object?> arguments, string name,
+            Func<PyString, PyString, int, int, BigInteger> operation, bool throwWhenMissing,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            if (!PyStringOps.TryAsString(arguments.Span[0]!, out var needle))
             {
-                value = name switch
-                {
-                    "join" => ReceiverMethods.StringJoin.Bind(text),
-                    "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
-                    "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),
-                    "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust, StrRjustSignature),
-                    "zfill" => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        if (arguments.Length != 1)
-                        {
-                            throw new LythonRuntimeException("TypeError", "str.zfill(width) expects one integer width argument.", span);
-                        }
-
-                        var width = NormalizeTextWidth(CoerceIoIntegerAsync(arguments[0], span, context, false).GetAwaiter().GetResult(), span);
-                        return OwnMethodResult(PyStringOps.ZFill(text, width, context.MemoryGovernor, span, context.State.CancellationToken),text,context.MemoryGovernor,span);
-                    }, StrZfillSignature),
-                    "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false, StrFindSignature),
-                    "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true, StrIndexSignature),
-                    "rfind" => CreateSearchMethod("rfind", PyStringOps.RFind, throwWhenMissing: false, StrRfindSignature),
-                    "rindex" => CreateSearchMethod("rindex", PyStringOps.RFind, throwWhenMissing: true, StrRindexSignature),
-                    "count" => CreateSearchMethod("count", PyStringOps.Count, throwWhenMissing: false, StrCountSignature),
-                    _ => MissingMemberValue.Instance,
-                };
-
-                return !ReferenceEquals(value, MissingMemberValue.Instance);
-
-                BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation, LythonCallableSignature signature)
-                    => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        var signature = $"str.{methodName}(width[, fillchar])";
-                        if (arguments.Length is < 1 or > 2)
-                        {
-                            throw new LythonRuntimeException("TypeError", $"{signature} expects one integer width and an optional fill string.", span);
-                        }
-
-                        var width = NormalizeTextWidth(CoerceIoIntegerAsync(arguments[0], span, context, false).GetAwaiter().GetResult(), span);
-                        var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], span) : null;
-                        try
-                        {
-                            return OwnMethodResult(operation(text, width, fill, context.MemoryGovernor, span, context.State.CancellationToken),text,context.MemoryGovernor,span);
-                        }
-                        catch (InvalidOperationException ex)
-                        {
-                            throw new LythonRuntimeException("TypeError", ex.Message, span);
-                        }
-                    }, signature);
-
-                BoundCallable CreateSearchMethod(
-                    string methodName,
-                    Func<PyString, PyString, int, int, BigInteger> operation,
-                    bool throwWhenMissing,
-                    LythonCallableSignature signature)
-                    => BoundCallable.Create((arguments, span, context) =>
-                    {
-                        var signature = $"str.{methodName}(sub[, start[, end]])";
-                        if (arguments.Length is < 1 or > 3)
-                        {
-                            throw new LythonRuntimeException("TypeError", $"{signature} expects one string argument plus optional integer bounds.", span);
-                        }
-
-                        if (!PyStringOps.TryAsString(arguments[0], out var needle))
-                        {
-                            // CPython names the offending type, spelling a None needle bare.
-                            var needleType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
-                            throw new LythonRuntimeException("TypeError", $"{methodName}() argument 1 must be str, not {needleType}", span);
-                        }
-
-                        var bounds = ParseStringBounds(text, arguments, span, context, signature);
-                        if (!bounds.CanMatch)
-                        {
-                            if (methodName == "count")
-                            {
-                                return BigInteger.Zero;
-                            }
-
-                            if (throwWhenMissing)
-                            {
-                                throw new LythonRuntimeException("ValueError", "substring not found", span);
-                            }
-
-                            return new BigInteger(-1);
-                        }
-
-                        var result = operation(text, needle, bounds.StartByte, bounds.EndByte);
-                        if (throwWhenMissing && result < 0)
-                        {
-                            throw new LythonRuntimeException("ValueError", "substring not found", span);
-                        }
-
-                        return result;
-                    }, signature);
+                var needleType = arguments.Span[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments.Span[0]!);
+                throw RuntimeErrors.Type($"{name}() argument 1 must be str, not {needleType}", span);
             }
+            if ((arguments.Length >= 2 && arguments.Span[1] is PyInstance) || (arguments.Length == 3 && arguments.Span[2] is PyInstance))
+                return SearchWithGuestBoundsAsync(text, needle, arguments, name, operation, throwWhenMissing, span, context, asynchronous);
+            return new(SearchWithBounds(text, needle, ParseStringBounds(text, arguments.Span, span, context), name, operation, throwWhenMissing, span));
+        }
+
+        private static async ValueTask<object> SearchWithGuestBoundsAsync(PyString text, PyString needle,
+            ReadOnlyMemory<object?> arguments, string name, Func<PyString, PyString, int, int, BigInteger> operation,
+            bool throwWhenMissing, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            var start = await CoerceTypeIndexAsync(arguments.Span[1], context, span, asynchronous).ConfigureAwait(false);
+            _ = PyIndexing.NormalizeSliceBound(start, span);
+            var end = arguments.Length == 3
+                ? await CoerceTypeIndexAsync(arguments.Span[2], context, span, asynchronous).ConfigureAwait(false) : null;
+            return SearchWithBounds(text, needle, NormalizeStringBounds(text, start, end, span), name, operation, throwWhenMissing, span);
+        }
+
+        private static object SearchWithBounds(PyString text, PyString needle, StringSearchBounds bounds, string name,
+            Func<PyString, PyString, int, int, BigInteger> operation, bool throwWhenMissing, LythonSourceSpan span)
+        {
+            if (!bounds.CanMatch)
+            {
+                if (name == "count") return BigInteger.Zero;
+                if (throwWhenMissing) throw RuntimeErrors.Value("substring not found", span);
+                return new BigInteger(-1);
+            }
+            var result = operation(text, needle, bounds.StartByte, bounds.EndByte);
+            if (throwWhenMissing && result < 0) throw RuntimeErrors.Value("substring not found", span);
+            return result;
         }
     }
 }

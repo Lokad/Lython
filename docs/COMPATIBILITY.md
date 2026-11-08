@@ -181,6 +181,8 @@ literals retain their Python escape behavior. Unicode identifier normalization, 
 including custom mappings and defaultdict; unused keys are not inspected.
 RunAsync awaits supported field lookup, attribute and formatting callbacks in
 `format_map`. `str.format` retains its synchronous callback boundary.
+RunAsync also awaits custom index/width conversions for right splitting, tab
+expansion, padding and search bounds, and truth conversion for `splitlines`.
 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
 byte whitespace. Casing includes expansion and contextual final sigma. New

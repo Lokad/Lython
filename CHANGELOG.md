@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share string segmentation, search and padding method declarations; immediate
+  calls borrow their operands instead of creating receiver closures and bound
+  wrappers. Await custom index, width and line-ending truth callbacks in RunAsync.
+
 - Store short copied UTF-8 text inline and write casing, split and CSV payloads
   directly into reserved final storage. Preserve adopted capacity and stable
   retained-memory borrows under the existing ownership allowance.

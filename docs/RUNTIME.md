@@ -279,11 +279,14 @@ evaluation; custom lookup hooks, descriptors and exposed method values keep thei
 normal Python behavior. Both execution APIs use the same calling convention.
 Common builtin methods also separate the receiver from a shared immutable
 implementation and signature. Immediate regex match, list append, dictionary
-get/setdefault, file write, CSV row and string join/split/replace/affix calls borrow
-their existing positional operands. Exposed methods retain a distinct bound value
+get/setdefault, file write, CSV row and string join/replace/affix, segmentation,
+search and padding calls borrow their existing positional operands. String
+segmentation/search/padding declarations are shared rather than capturing a
+receiver on each lookup. Exposed methods retain a distinct bound value
 with its receiver and metadata; keyword and invalid-shape calls use the ordinary
 binder. Suspended protocols keep the receiver and operands funded until completion
-and cleanup. Native no-argument operations and helper-return proofs remain shared.
+and cleanup. Custom string index, width and line-ending truth callbacks can suspend
+under RunAsync. Native no-argument operations and helper-return proofs remain shared.
 Ordinary positional class calls also borrow the existing operand storage. The
 engine's default allocator needs no class-prefixed argument copy, and user
 allocators/initializers bind the class or instance directly into function locals.

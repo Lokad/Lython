@@ -53,6 +53,16 @@ internal sealed partial class LythonRuntime
         internal static Func<PyString, LythonSourceSpan, ExecutionContext, object> GetNoArgumentsOperation(NativeReturnOperation kind)
             => NoArgumentsOperations[(int)kind - (int)NativeReturnOperation.Strip];
 
+        internal static ReceiverMethod? GetMethod(string name)
+            => GetSegmentationMethod(name) ?? GetLayoutSearchMethod(name) ?? (name switch
+            {
+                "join" => ReceiverMethods.StringJoin,
+                "replace" => ReceiverMethods.StringReplace,
+                "startswith" => ReceiverMethods.StringStartsWith,
+                "endswith" => ReceiverMethods.StringEndsWith,
+                _ => null,
+            });
+
         internal static PyString Lower(PyString receiver, LythonSourceSpan span, ExecutionContext context)
             => PyStringOps.Lower(receiver, context, span);
 
@@ -109,9 +119,6 @@ internal sealed partial class LythonRuntime
                             : TextErrorMode.Strict;
                         return EncodeGuestBytes(text, encoding, errors, context, span);
                     }, StrEncodeSignature),
-                    "replace" => ReceiverMethods.StringReplace.Bind(text),
-                    "startswith" => ReceiverMethods.StringStartsWith.Bind(text),
-                    "endswith" => ReceiverMethods.StringEndsWith.Bind(text),
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", Lower),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => PyStringOps.Capitalize(receiver, context, span)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", GetNoArgumentsOperation(name)!),

@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 ? receiver switch
                 {
                     PyDict => DictMembers.GetNoArgumentsOperation(name),
-                    PyString => StringMembers.GetNoArgumentsOperation(name),
+                    PyString => (object?)StringMembers.GetNoArgumentsOperation(name) ?? StringMembers.GetMethod(name),
                     _ => null,
                 }
                 : receiver switch
@@ -39,15 +39,7 @@ internal sealed partial class LythonRuntime
                     ExecutionContext.TextFileHandle when name == "write" => ReceiverMethods.TextWrite,
                     ExecutionContext.BinaryFileHandle when name == "write" => ReceiverMethods.BinaryWrite,
                     CsvWriterObject when name == "writerow" => ReceiverMethods.CsvWriterow,
-                    PyString => name switch
-                    {
-                        "join" => ReceiverMethods.StringJoin,
-                        "split" => ReceiverMethods.StringSplit,
-                        "replace" => ReceiverMethods.StringReplace,
-                        "startswith" => ReceiverMethods.StringStartsWith,
-                        "endswith" => ReceiverMethods.StringEndsWith,
-                        _ => null,
-                    },
+                    PyString => StringMembers.GetMethod(name),
                     ReMatchObject => ReMatchMembers.GetMethod(name),
                     _ => null,
                 };

@@ -4178,3 +4178,20 @@ report1.44–1.47× and file search1.64–1.66×; ordinary JSON0.99–1.00×.
 No source-pair speedup, universal CPU/embedding latency or regression-debt claim.
 Original B437/B439 staging failures and B438 pre-sample role typo/owned-mount
 cleanup remain archived; bounded corrections retain sampling and OS free floor.
+
+## Shared string receiver families retained (2026-11-08)
+
+[R78](results/2026-11-08-string-receivers/README.md) migrates segmentation/search/
+padding onto existing immutable ReceiverMethod declarations/borrowed operands.
+Two providers, per-access receiver closures, immediate wrappers/general positional
+packing and three duplicate arms disappear.48baseline callback cases reproduce
+synchronous-host failures; genuine suspension/cancellation and ownership pass in
+the migration. Measured045517ea passes161internal/406public per actual11/10.
+Final63a7cc5e removes three unreachable duplicate arms and passes257public11;
+final allocation−21.26%, controlled045 elapsed−14.5–16.8%sync/−14.3–14.7%async.
+The final dead-arm cleanup was not VM-retimed. B441 five jobs141.343s passes all
+source/Ready/golden/quiet/join/fixture/archive gates. Report control old spread6.76%
+keeps its−6.74to+1.90% elapsed inconclusive. Original desktop textasync+21–25%,
+reportasync+13–17% and final mixed controls remain; coarseCPU supports affected
+direction, not universal CPU attribution. No per-name native-proof expansion or
+performance-objective closure; remaining helper activation/storage gap stays open.
