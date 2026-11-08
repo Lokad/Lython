@@ -65,7 +65,17 @@ internal sealed partial class ExecutableScript
 
         private void AddInstruction(int blockIndex, ExecutableInstruction instruction)
         {
-            _blocks[blockIndex].Instructions.Add(instruction);
+            var instructions = _blocks[blockIndex].Instructions;
+            if (instruction.OpCode == ExecutableOpCode.JumpIfFalse && instructions.Count != 0
+                && instructions[^1] is { OpCode: ExecutableOpCode.Binary } previous
+                && LythonRuntime.IsNumericComparison(previous.BinaryOperator) && previous.Span == instruction.Span)
+            {
+                // The value is consumed only as truth, in the same protected
+                // block/span. No escaping comparison result needs a guest box.
+                instructions[^1] = ExecutableInstruction.CompareJumpIfFalse(previous.BinaryOperator, instruction.TargetIndex, instruction.Span);
+                return;
+            }
+            instructions.Add(instruction);
         }
 
         private bool IsTerminated(int blockIndex)
@@ -219,6 +229,7 @@ internal sealed partial class ExecutableScript
                             break;
                         case ExecutableOpCode.Jump:
                         case ExecutableOpCode.JumpIfFalse:
+                        case ExecutableOpCode.CompareJumpIfFalse:
                         case ExecutableOpCode.ForNext:
                         case ExecutableOpCode.EndFinally:
                             pending.Push(jumpTargets[instruction.TargetIndex]);
@@ -273,6 +284,7 @@ internal sealed partial class ExecutableScript
                 ExecutableOpCode.AbruptJump => instruction.WithTargetIndex(NormalizedBlock(indexMap, instruction.TargetIndex)),
                 ExecutableOpCode.Jump or
                 ExecutableOpCode.JumpIfFalse or
+                ExecutableOpCode.CompareJumpIfFalse or
                 ExecutableOpCode.ForNext or
                 ExecutableOpCode.EndFinally => instruction.WithTargetIndex(NormalizedBlock(indexMap, jumpTargets[instruction.TargetIndex])),
                 ExecutableOpCode.MatchCase => instruction.WithFailureIndex(NormalizedBlock(indexMap, jumpTargets[instruction.FailureIndex])),

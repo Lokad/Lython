@@ -44,6 +44,9 @@ internal sealed partial class LythonRuntime
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
+        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison))
+            return numericComparison;
+
         if (op == BinaryOperatorSyntax.MatrixMultiply) return EvaluateMatrixMultiplyAsync(left, right, context, span, false).GetAwaiter().GetResult();
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         if (TryEvaluateNumericProtocol(op, left, right, context, span, out var protocolResult))
@@ -53,10 +56,8 @@ internal sealed partial class LythonRuntime
 
         return op switch
         {
-            BinaryOperatorSyntax.Less => EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0),
-            BinaryOperatorSyntax.LessEqual => EvaluateRichComparison(left, right, "__le__", "__ge__", context, span, static value => value <= 0),
-            BinaryOperatorSyntax.Greater => EvaluateRichComparison(left, right, "__gt__", "__lt__", context, span, static value => value > 0),
-            BinaryOperatorSyntax.GreaterEqual => EvaluateRichComparison(left, right, "__ge__", "__le__", context, span, static value => value >= 0),
+            BinaryOperatorSyntax.Less or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual
+                => EvaluateRichComparison(left, right, op, context, span),
             BinaryOperatorSyntax.Is => AreIdentical(left, right),
             BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
             BinaryOperatorSyntax.In => Contains(right, left, context, span),
@@ -77,6 +78,9 @@ internal sealed partial class LythonRuntime
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
+        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison))
+            return numericComparison;
+
         if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         var protocol = await EvaluateNumericProtocolAsync(op, left, right, context, span).ConfigureAwait(false);
@@ -88,10 +92,8 @@ internal sealed partial class LythonRuntime
         return op switch
         {
             BinaryOperatorSyntax.Multiply => await EvaluateMultiplyAsync(left, right, context, span).ConfigureAwait(false),
-            BinaryOperatorSyntax.Less => await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false),
-            BinaryOperatorSyntax.LessEqual => await EvaluateRichComparisonAsync(left, right, "__le__", "__ge__", context, span, static value => value <= 0).ConfigureAwait(false),
-            BinaryOperatorSyntax.Greater => await EvaluateRichComparisonAsync(left, right, "__gt__", "__lt__", context, span, static value => value > 0).ConfigureAwait(false),
-            BinaryOperatorSyntax.GreaterEqual => await EvaluateRichComparisonAsync(left, right, "__ge__", "__le__", context, span, static value => value >= 0).ConfigureAwait(false),
+            BinaryOperatorSyntax.Less or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual
+                => await EvaluateRichComparisonAsync(left, right, op, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.In => await ContainsAsync(right, left, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.NotIn => !await ContainsAsync(right, left, context, span).ConfigureAwait(false),
             BinaryOperatorSyntax.Equal => await AreEqualWithProtocolsAsync(left, right, context, span).ConfigureAwait(false),
@@ -1349,12 +1351,14 @@ internal sealed partial class LythonRuntime
     private static object EvaluateRichComparison(
         object left,
         object right,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
+        LythonSourceSpan span)
     {
+        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison)) return numericComparison;
+        var methods = OrderedComparisonMethods(op);
+        var method = methods.Left;
+        var reflectedMethod = methods.Right;
         // Sync twin of the async core below. The miss path runs per ordered
         // comparison, so routing it through an async state machine allocates
         // on every sync <, <=, > and >= even though the sync invoker below
@@ -1427,12 +1431,12 @@ internal sealed partial class LythonRuntime
         // stay on the structural relational path.
         if (left is PyList leftList && right is PyList rightList)
         {
-            return SequencesCompareOrderedLists(leftList, rightList, method, reflectedMethod, context, span, fallback);
+            return SequencesCompareOrderedLists(leftList, rightList, op, context, span);
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
         {
-            return SequencesCompareOrdered(left, right, leftTupleItems, rightTupleItems, method, reflectedMethod, context, span, fallback);
+            return SequencesCompareOrdered(left, right, leftTupleItems, rightTupleItems, op, context, span);
         }
 
         if (left is PySlice leftSlice && right is PySlice rightSlice)
@@ -1442,16 +1446,14 @@ internal sealed partial class LythonRuntime
                 right,
                 [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
                 [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
-                method,
-                reflectedMethod,
+                op,
                 context,
-                span,
-                fallback);
+                span);
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
         {
-            return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
+            return CompareOrderedResult(op, PyComparison.Compare(left, right, span, ComparisonSymbol(op)));
         }
     }
 
@@ -1463,11 +1465,9 @@ internal sealed partial class LythonRuntime
     private static object SequencesCompareOrderedLists(
         PyList left,
         PyList right,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
+        LythonSourceSpan span)
     {
         using (PyStructuralGuard.EnterPair(left, right, span, context))
         {
@@ -1486,10 +1486,10 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                return EvaluateRichComparison(leftItem, rightItem, method, reflectedMethod, context, span, fallback);
+                return EvaluateRichComparison(leftItem, rightItem, op, context, span);
             }
 
-            return fallback(left.Count.CompareTo(right.Count));
+            return CompareOrderedResult(op, left.Count.CompareTo(right.Count));
         }
     }
 
@@ -1498,11 +1498,9 @@ internal sealed partial class LythonRuntime
         object right,
         IReadOnlyList<object> leftItems,
         IReadOnlyList<object> rightItems,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
+        LythonSourceSpan span)
     {
         using (PyStructuralGuard.EnterPair(left, right, span, context))
         {
@@ -1522,39 +1520,21 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                return EvaluateRichComparison(leftItem, rightItem, method, reflectedMethod, context, span, fallback);
+                return EvaluateRichComparison(leftItem, rightItem, op, context, span);
             }
 
-            return fallback(leftItems.Count.CompareTo(rightItems.Count));
+            return CompareOrderedResult(op, leftItems.Count.CompareTo(rightItems.Count));
         }
     }
-    private static ValueTask<object> EvaluateRichComparisonAsync(
+    private static async ValueTask<object> EvaluateRichComparisonAsync(
         object left,
         object right,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
-        => EvaluateRichComparisonCoreAsync(
-            left,
-            right,
-            new BinarySpecialMethodPair(method, reflectedMethod),
-            context,
-            span,
-            fallback,
-            InvokeBinarySpecialMethodAsync,
-            IsTruthyAsync);
-    private static async ValueTask<object> EvaluateRichComparisonCoreAsync(
-        object left,
-        object right,
-        BinarySpecialMethodPair methods,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback,
-        BinarySpecialMethodInvoker invoke,
-        TruthinessEvaluator evaluateTruthiness)
+        LythonSourceSpan span)
     {
+        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison)) return numericComparison;
+        var methods = OrderedComparisonMethods(op);
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
             return await leftKey.CompareAsync(rightKey, methods.Left, span, context).ConfigureAwait(false);
@@ -1588,18 +1568,18 @@ internal sealed partial class LythonRuntime
         SpecialMethodInvocation invocation;
         if (ShouldTryReflectedFirst(left, right, methods.Right))
         {
-            invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
+            invocation = await InvokeBinarySpecialMethodAsync(right, methods.Right, left, context, span).ConfigureAwait(false);
             if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
             {
-                invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
+                invocation = await InvokeBinarySpecialMethodAsync(left, methods.Left, right, context, span).ConfigureAwait(false);
             }
         }
         else
         {
-            invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
+            invocation = await InvokeBinarySpecialMethodAsync(left, methods.Left, right, context, span).ConfigureAwait(false);
             if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
             {
-                invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
+                invocation = await InvokeBinarySpecialMethodAsync(right, methods.Right, left, context, span).ConfigureAwait(false);
             }
         }
 
@@ -1610,12 +1590,12 @@ internal sealed partial class LythonRuntime
 
         if (left is PyList leftList && right is PyList rightList)
         {
-            return await SequencesCompareOrderedListsAsync(leftList, rightList, methods.Left, methods.Right, context, span, fallback).ConfigureAwait(false);
+            return await SequencesCompareOrderedListsAsync(leftList, rightList, op, context, span).ConfigureAwait(false);
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
         {
-            return await SequencesCompareOrderedAsync(left, right, leftTupleItems, rightTupleItems, methods.Left, methods.Right, context, span, fallback).ConfigureAwait(false);
+            return await SequencesCompareOrderedAsync(left, right, leftTupleItems, rightTupleItems, op, context, span).ConfigureAwait(false);
         }
 
         if (left is PySlice leftSlice && right is PySlice rightSlice)
@@ -1625,16 +1605,14 @@ internal sealed partial class LythonRuntime
                 right,
                 [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
                 [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
-                methods.Left,
-                methods.Right,
+                op,
                 context,
-                span,
-                fallback).ConfigureAwait(false);
+                span).ConfigureAwait(false);
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
         {
-            return CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
+            return CompareOrderedResult(op, PyComparison.Compare(left, right, span, ComparisonSymbol(op)));
         }
     }
 
@@ -1663,11 +1641,9 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> SequencesCompareOrderedListsAsync(
         PyList left,
         PyList right,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
+        LythonSourceSpan span)
     {
         var guardState = context.State.StructuralTraversal;
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
@@ -1687,10 +1663,10 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                return await EvaluateRichComparisonAsync(leftItem, rightItem, method, reflectedMethod, context, span, fallback).ConfigureAwait(false);
+                return await EvaluateRichComparisonAsync(leftItem, rightItem, op, context, span).ConfigureAwait(false);
             }
 
-            return fallback(left.Count.CompareTo(right.Count));
+            return CompareOrderedResult(op, left.Count.CompareTo(right.Count));
         }
     }
 
@@ -1699,11 +1675,9 @@ internal sealed partial class LythonRuntime
         object right,
         IReadOnlyList<object> leftItems,
         IReadOnlyList<object> rightItems,
-        string method,
-        string reflectedMethod,
+        BinaryOperatorSyntax op,
         ExecutionContext context,
-        LythonSourceSpan span,
-        Func<int, bool> fallback)
+        LythonSourceSpan span)
     {
         var guardState = context.State.StructuralTraversal;
         using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
@@ -1724,19 +1698,12 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                return await EvaluateRichComparisonAsync(leftItem, rightItem, method, reflectedMethod, context, span, fallback).ConfigureAwait(false);
+                return await EvaluateRichComparisonAsync(leftItem, rightItem, op, context, span).ConfigureAwait(false);
             }
 
-            return fallback(leftItems.Count.CompareTo(rightItems.Count));
+            return CompareOrderedResult(op, leftItems.Count.CompareTo(rightItems.Count));
         }
     }
-    private static string ComparisonSymbol(string method) => method switch
-    {
-        "__lt__" => "<",
-        "__le__" => "<=",
-        "__gt__" => ">",
-        _ => ">=",
-    };
 
     private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
     {

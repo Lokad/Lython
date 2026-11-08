@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Combine direct comparison conditions into one executable operation and share
+  exact numeric ordering before protocol preparation. Remove ordered-comparison
+  predicate/name transport, the forwarding wrapper and obsolete numeric fallback;
+  preserve raw Python results, custom protocols and suspended truth conversion.
+
 - Share existing native casing-and-splitting preparation across closed helpers and
   ordinary executable chains, including branches and protected bodies. Remove the
   native-only fused operation variants while preserving dynamic method behavior.

@@ -242,6 +242,12 @@ mirrored locals keep their ordinary lookup. Missing direct locals retain their
 original read spans in cold metadata. One shape pass after forwarding prepares
 physical positions, live temporary extents, maximum workspace and exception-entry
 depths. Calls can still determine the workspace capacity.
+Comparisons consumed immediately as conditions use one comparison/branch
+instruction. Exact numeric truth needs no boxed temporary; escaping comparisons
+retain their Python result objects. Ordered comparison helpers share the operator
+and exact numeric ordering. Custom comparison and truth protocols keep their
+evaluation order and can suspend under RunAsync. Exact string comparisons complete
+synchronously under either API.
 Operation values are captured before protocols or admission; actual asynchronous
 work retains those values until completion. Type-subscription getters use the
 existing funded protocol slots to preserve the original receiver and key across

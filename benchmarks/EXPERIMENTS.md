@@ -4428,3 +4428,24 @@ Boolean7.25%CSV. Output/Ready/zero-lost/Closed/join/fixture/funding gates pass;
 original raw ticks retained. This supports assessing generic direct comparison
 branches before a universal value replacement or new ownership subsystem. No
 runtime change or speedup follows solely from this profile.
+
+## Direct comparison branches (2026-11-08)
+
+[R95/B455/B456](results/2026-11-08-direct-comparison-branches/README.md) consumes
+native numeric condition truth without a result box/publication and uses one
+operator enum through ordered comparison helpers. Predicate/name/forwarding/
+invoker and obsolete primitive fallback plumbing disappear. Existing exact-number
+ordering, general raw-result protocols, current cancellation, ownership and real
+comparison/truth suspension remain. No public API or memory framework change.
+
+Originalcde/B455 keeps affected gains and text elapsed+0.72to+6.58%/CPU+4.41to+7.46%.
+One justified refinement gives comparison control its own opcode handler, restoring
+the original ordinary value handler. Refined9d/B456 retains CSVsync−5–9%, async−10–16%
+(variable candidate control), JSON−6–8%, returnedCSV−3–8%. Text+1.28to+3.50%elapsed/
+CPU0to+2.90% remains explicit accepted debt; no unrelated gains repay it or complete
+causal explanation is claimed. Report inconclusive. All original sources/cores/
+failed conditions/adverse data remain; no further retiming to erase the debt.
+Focused76public/61internal per actual11/10 and stronger6public close assertions pass.
+Both source-pair gates/archive/local verification pass, no users/fixtures remain.
+Full delivery follows separately. This milestone does not close the performance
+objective; continue the substantial roadmap with measured storage/transport costs.

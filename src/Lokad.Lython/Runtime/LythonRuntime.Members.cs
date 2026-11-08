@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     // N11: route through the contextual operator path so element protocols apply.
-                    return IsTruthy(EvaluateRichComparison(list, other, "__lt__", "__gt__", context, span, static value => value < 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(list, other, BinaryOperatorSyntax.Less, context, span), context, span);
                 }, ListLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -391,7 +391,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(list, other, "__le__", "__ge__", context, span, static value => value <= 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(list, other, BinaryOperatorSyntax.LessEqual, context, span), context, span);
                 }, ListLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(list, other, "__gt__", "__lt__", context, span, static value => value > 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(list, other, BinaryOperatorSyntax.Greater, context, span), context, span);
                 }, ListGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(list, other, "__ge__", "__le__", context, span, static value => value >= 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(list, other, BinaryOperatorSyntax.GreaterEqual, context, span), context, span);
                 }, ListGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
@@ -771,7 +771,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__lt__", "__gt__", context, span, static value => value < 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], BinaryOperatorSyntax.Less, context, span), context, span);
                 }, TupleLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -786,7 +786,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__le__", "__ge__", context, span, static value => value <= 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], BinaryOperatorSyntax.LessEqual, context, span), context, span);
                 }, TupleLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -801,7 +801,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__gt__", "__lt__", context, span, static value => value > 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], BinaryOperatorSyntax.Greater, context, span), context, span);
                 }, TupleGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -816,7 +816,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__ge__", "__le__", context, span, static value => value >= 0), context, span);
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], BinaryOperatorSyntax.GreaterEqual, context, span), context, span);
                 }, TupleGeSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, context) =>
                 {

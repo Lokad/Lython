@@ -22,7 +22,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 var instruction = source[j];
                 instructions[offsets[i] + j] = instruction.OpCode switch
                 {
-                    ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
+                    ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse or
                         ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally => instruction.WithTargetIndex(offsets[instruction.TargetIndex]),
                     ExecutableOpCode.MatchCase => instruction.WithFailureIndex(offsets[instruction.FailureIndex]),
                     _ => instruction
@@ -117,6 +117,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                         Enter(instruction.TargetIndex, depth - 2);
                         break;
                     case ExecutableOpCode.JumpIfFalse:
+                    case ExecutableOpCode.CompareJumpIfFalse:
                         Enter(instruction.TargetIndex, depth);
                         break;
                     case ExecutableOpCode.MatchCase:
@@ -247,6 +248,7 @@ internal sealed record ExecutableStackLayout(int MaximumDepth, int?[] EntryDepth
                 ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FinishFormattedString or
                 ExecutableOpCode.Yield or ExecutableOpCode.YieldFrom => (1, 1),
             ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => (2, 1),
+            ExecutableOpCode.CompareJumpIfFalse => (2, 0),
             ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet => (instruction.ItemCount, 1),
             ExecutableOpCode.MakeDict => (checked(2 * instruction.PairCount), 1),
             ExecutableOpCode.Call => (checked(calls[instruction.CallSiteIndex].ArgumentCount + calls[instruction.CallSiteIndex].ArgumentOffset), 1),

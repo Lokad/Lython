@@ -1,0 +1,21 @@
+{
+  "status": "Retained source selected; focused Release peractual11/10 passes, full delivery pending",
+  "baselineSource": "05d81b83 fully qualified CI42467357131; metadata HEAD80143659",
+  "candidateSource": "80143659 plus R95 direct comparison migration with dedicated control handler after B455 text-control regression",
+  "coreSHA256": {
+    "before": "68f63d2969afd9953fc848926685daea5a951996b942fa05a416227b2ab4bdb3",
+    "candidate": "9d30623cefedc5c97a86a3e9fc8200eeb9db54d6b8e524a0421ed85026a24a30"
+  },
+  "originalCoreSHA256": "cde66aec60f7ced7ada0399c17f60edc9678df8988cc202b7d47df216933f8db",
+  "retainedTextElapsedDebtPercent": [
+    1.281,
+    3.496
+  ],
+  "retainedTextCpuDebtPercent": [
+    0,
+    2.899
+  ],
+  "noRemainingVMUsersOrFixtures": true,
+  "originalAdverseDataPreserved": true,
+  "archiveSHA256": "93b2f6b295a920a072ee9db7812efd291374a02678de732cf08dbcdb79ab796c"
+}

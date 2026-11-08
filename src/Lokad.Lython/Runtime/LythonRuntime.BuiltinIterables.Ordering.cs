@@ -307,7 +307,7 @@ internal sealed partial class LythonRuntime
         }
 
         // N11: ordering returns raw results; sort order truth-tests like CPython.
-        return IsTruthy(EvaluateRichComparison(left, right, "__lt__", "__gt__", context, span, static value => value < 0), context, span);
+        return IsTruthy(EvaluateRichComparison(left, right, BinaryOperatorSyntax.Less, context, span), context, span);
     }
 
     private static async ValueTask<bool> IsSortKeyLessThanAsync(object left, object right, LythonSourceSpan span, ExecutionContext context)
@@ -323,7 +323,7 @@ internal sealed partial class LythonRuntime
             return await IsTruthyAsync(await leftKey.CompareAsync(rightKey, "__lt__", span, context).ConfigureAwait(false), context, span).ConfigureAwait(false);
         }
 
-        return await IsTruthyAsync(await EvaluateRichComparisonAsync(left, right, "__lt__", "__gt__", context, span, static value => value < 0).ConfigureAwait(false), context, span).ConfigureAwait(false);
+        return await IsTruthyAsync(await EvaluateRichComparisonAsync(left, right, BinaryOperatorSyntax.Less, context, span).ConfigureAwait(false), context, span).ConfigureAwait(false);
     }
 
     private static PyStableSort.Buffer SortItems(

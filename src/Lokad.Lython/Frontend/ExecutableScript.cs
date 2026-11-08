@@ -60,6 +60,7 @@ internal enum ExecutableOpCode
     Unary,
     Jump,
     JumpIfFalse,
+    CompareJumpIfFalse,
     MatchException,
     BindException,
     ReraiseException,
@@ -129,7 +130,7 @@ internal readonly record struct ExecutableInstruction
     public int ThirdInput => ValueInputCount == 3 ? _resultSlot : throw InvalidOperand(nameof(ThirdInput));
     internal int ValueInputCount => OpCode switch
     {
-        ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript => 2,
+        ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript or ExecutableOpCode.CompareJumpIfFalse => 2,
         ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast => 3,
         ExecutableOpCode.Unary or ExecutableOpCode.StoreLocal or ExecutableOpCode.Return or
             ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember or
@@ -139,7 +140,7 @@ internal readonly record struct ExecutableInstruction
     // A subscript store pushes no result: its output position is its live
     // extent. Reuse that otherwise redundant field for its third input, keeping
     // every instruction at the existing size, including native helper code.
-    public int ResultSlot => OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+    public int ResultSlot => OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast or ExecutableOpCode.CompareJumpIfFalse
         ? LiveExtent : _resultSlot;
     // A complemented prepared extent marks the adjacent local-result store.
     // Decode the original extent; physical positions never name locals.
@@ -149,7 +150,8 @@ internal readonly record struct ExecutableInstruction
     internal ExecutableInstruction WithStorageSlots(int inputStart, int resultSlot, int liveExtent)
         => new(OpCode, Span, _primaryOperand,
             ValueInputCount > 1 ? checked(inputStart + 1) : _secondaryOperand,
-            inputStart, ValueInputCount == 3 ? checked(inputStart + 2) : resultSlot,
+            inputStart, OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot
+                : ValueInputCount == 3 ? checked(inputStart + 2) : resultSlot,
             HasLocalResult ? ~liveExtent : liveExtent);
 
     internal ExecutableInstruction WithValueInputs(int first, int second, int third = int.MaxValue)
@@ -191,7 +193,7 @@ internal readonly record struct ExecutableInstruction
     public int MatchCaseIndex => ReadPrimaryOperand(ExecutableOpCode.MatchCase, nameof(MatchCaseIndex));
     public int FailureIndex => OpCode == ExecutableOpCode.MatchCase
         ? _secondaryOperand : throw InvalidOperand("BlockIndex");
-    public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+    public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
         or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
     public int CallSiteIndex => ReadPrimaryOperand(ExecutableOpCode.Call, nameof(CallSiteIndex));
@@ -199,7 +201,7 @@ internal readonly record struct ExecutableInstruction
         : ReadPrimaryOperand(ExecutableOpCode.ExitContextManager, nameof(CleanupId));
     public int ExceptionNameIndex => ReadPrimaryOperand(ExecutableOpCode.ClearException, nameof(ExceptionNameIndex));
     public ExecutableSliceParts SliceParts => (ExecutableSliceParts)_primaryOperand;
-    public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)_primaryOperand;
+    public BinaryOperatorSyntax BinaryOperator => (BinaryOperatorSyntax)(OpCode == ExecutableOpCode.CompareJumpIfFalse ? _resultSlot : _primaryOperand);
     public ExecutableUnaryOperator UnaryOperator => (ExecutableUnaryOperator)_primaryOperand;
     public AugmentedAssignmentOperatorSyntax AugmentedOperator => (AugmentedAssignmentOperatorSyntax)_primaryOperand;
 
@@ -366,6 +368,9 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.JumpIfFalse, span, targetBlockIndex);
 
+    public static ExecutableInstruction CompareJumpIfFalse(BinaryOperatorSyntax op, int targetBlockIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.CompareJumpIfFalse, span, targetBlockIndex, resultSlot: (int)op);
+
     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ClearException, span, exceptionNameIndex);
 
@@ -391,7 +396,7 @@ internal readonly record struct ExecutableInstruction
         => new(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
 
     public ExecutableInstruction WithTargetIndex(int targetBlockIndex)
-        => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+        => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
             or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
             ? new(OpCode, Span, targetBlockIndex, _secondaryOperand, _inputStart, _resultSlot, _liveExtent)
             : throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.");

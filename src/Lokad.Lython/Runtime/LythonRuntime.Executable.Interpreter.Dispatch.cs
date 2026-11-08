@@ -156,6 +156,12 @@ internal sealed partial class LythonRuntime
                                 jumped = ConsumeOperation(ref pending);
                             }
                             break;
+                        case ExecutableOpCode.CompareJumpIfFalse:
+                            var comparisonPause = ExecuteComparisonInstruction(ref execution, scope, invocation, instruction, asynchronous,
+                                out pending, out pendingSpan);
+                            if (comparisonPause != InstructionPause.Continue) return comparisonPause;
+                            jumped = ConsumeOperation(ref pending);
+                            break;
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or ExecutableOpCode.Subscript
                             or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
