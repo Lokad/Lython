@@ -1,0 +1,178 @@
+{
+  "databaseId": 42527042378,
+  "headSha": "d97ca8f2524c8a8e873534ffcb7f9086d4bc13e0",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/Lokad/Lython/actions/runs/42527042378",
+  "observedUTC": "2026-11-08T22:19:56.214795+00:00",
+  "jobs": [
+    {
+      "name": "tests (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/Lokad/Lython/actions/runs/42527042378/job/128872850489",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build Release solution",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish crash dumps",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish test log",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "tests (ubuntu-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/Lokad/Lython/actions/runs/42527042378/job/128872850770",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build Release solution",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish crash dumps",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish test log",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "measuredRuntimeRevision": "6f76f99d876ad7f3678ed4f4ecc416619c648642",
+  "measuredFrozenCoreSHA256": "c6172fec19b0fd8d36ba5eba0046ac66578646ba3714f5f7bed99501619ff0bd",
+  "boundary": "d97 fixture-only correction leaves measured6f76 runtime unchanged. R124 working prototype is subsequent unqualified source, not covered. Frozen measured core is not a claim about CI binary hashes.",
+  "statusPolicy": "Cached terminal, never requery. Publication postponed."
+}

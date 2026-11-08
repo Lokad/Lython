@@ -1,7 +1,8 @@
 # Function lookup facts with explicit execution lifetime
 
-2026-11-08, R121; retained corec6172fec, source inventory in identity. Full combined
-source qualification is pending. Ordinary executable calls borrow lookup facts
+2026-11-08, R121; retained corec6172fec, source inventory in identity. Combined
+source qualification passes [cached CI42527042378](delivery-ci.json), fixture-only
+correction d97ca8f2 over runtime6f76f99d. Later prototypes are not covered. Ordinary executable calls borrow lookup facts
 from the existing execution-owned function definition. No global code dictionary,
 new owner, pool, ledger, policy, public option or execution route. Native-return
 guards remain unchanged; canonical field reads and formatting handle actual
@@ -57,8 +58,8 @@ Refined Release83internal/2133public plus15provider-callback checks per actual11
 pass. New focused cases cover reentrant first admission, refusal/cancellation,
 funded established backing, later fields changed during native formatting admission
 into genuinely suspended __format__, preserved earlier results and budget reuse.
-Full coherent Windows/Ubuntu/Stress/installed-core qualification pending; no new
-backend API qualification or publication. Earlier cached R119 CI is independent.
+Full coherent Windows/Ubuntu actual11/10 Release, original stress and installed-core
+qualification passes at d97. No new backend API qualification or publication. Earlier cached R119 CI is independent.
 
 All users joined and owned RAM unmounted; both persistent archives independently
 verified locally. Live finite owner270s/240s evidence is archived. The copied B480
@@ -78,5 +79,6 @@ platforms: their reflection constructor still supplied seven arguments. All16,84
 public tests passed per platform. The fix replaces reflection with direct internal
 access, preserving every disposal/order/ownership assertion.29focused cases pass
 peractual11/10; production source and measurements unchanged. NET10/full Stress/
-package steps were skipped by that failed run, so replacement delivery is required.
+package steps were skipped by that failed run; replacement delivery now passes
+in the separate cached receipt.
 [Original failure](initial-delivery-ci-failed.json), [logs and typed fixture](fixture-failure-and-fix.tgz).

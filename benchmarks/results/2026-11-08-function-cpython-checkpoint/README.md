@@ -3,8 +3,9 @@
 2026-11-08, R122/B481. Measured runtime `6f76f99d876ad7f3678ed4f4ecc416619c648642`,
 frozen core `c6172fec`; exact production inventory and auxiliary hashes in
 [identity](identity.json). Test-only fixture fix `d97ca8f2` leaves runtime source
-unchanged. Combined platform/stress/installed-core qualification is pending;
-earlier qualified revisions retain independent receipts.
+unchanged. Combined Windows/Ubuntu full Release actual.NET11/.NET10, original
+stress and installed-core consumers pass [cached delivery](../2026-11-08-function-lookup-lifetimes/delivery-ci.json).
+Later R124 prototypes are separate; earlier revisions keep independent receipts.
 
 Five unchanged maintained scripts, separately compilation, warm execution and
 compile-to-result: 15 jobs / 311.685s. Isolated CPython 3.13.16 versus .NET 11 RC3,

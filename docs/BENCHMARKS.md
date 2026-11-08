@@ -19,9 +19,11 @@ observations, not design acceptance thresholds. Variable cases remain visible.
 
 These measurements describe the named runtime source, rather than subsequent HEAD
 changes. Frozen core `c6172fec` matches the production inventory. Test-only commit
-`d97ca8f2` corrects a stale internal fixture; combined Windows/Ubuntu actual.NET11/
-.NET10, original stress and installed-core qualification is pending. Source
-qualification and performance evidence are separate.
+`d97ca8f2` corrects a stale internal fixture. Combined Windows/Ubuntu actual.NET11/
+.NET10 full Release, original stress and installed-core consumers pass
+[cached CI42527042378](../benchmarks/results/2026-11-08-function-lookup-lifetimes/delivery-ci.json).
+Source qualification and performance evidence are separate; later prototypes are
+outside this named-source checkpoint.
 
 The [R122 checkpoint](../benchmarks/results/2026-11-08-function-cpython-checkpoint/README.md)
 reuses five unchanged scripts, catalog/goldens and workers: 15 jobs / 311.685s.

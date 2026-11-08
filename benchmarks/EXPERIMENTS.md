@@ -4850,3 +4850,11 @@ recovery/post-audit17aliases pass. Owner exited1 aftercleanup for unsupported
 two-map archive assumption; corrected metadata underfreshidlelease/no rerun,
 samecaptures archived locallyverified. Full source qualification independent;
 performance objective and regex active, no publication.
+
+
+Combined R120/R121 runtime6f76/corec617 with typed fixture fixd97 is fully qualified:
+cached CI42527042378success observed22:19:56UTC, Windows/Ubuntu actual11/10 full
+Release, original stress both and installed-core consumers. [Receipt](results/2026-11-08-function-lookup-lifetimes/delivery-ci.json).
+No old terminal query, retiming or producer qualification replay. Current R122 guide
+updated from pending to named-source-qualified; later R124 working prototype remains
+independent and unqualified. Publication postponed; performance objective active.
