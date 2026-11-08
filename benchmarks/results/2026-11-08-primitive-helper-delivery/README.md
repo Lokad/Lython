@@ -2,7 +2,9 @@
 
 2026-11-08. Retained combined R113/R114/R115 source over9b61264b, frozen core
 93e926fe; reference fully qualified05790317/core13107e6b. Focused1526public/104
-internal Release pass peractual.NET11/.NET10. Full delivery qualification pending.
+internal Release pass peractual.NET11/.NET10. Full Windows/Ubuntu actual.NET11/.NET10 Release, original Stress both and installed
+core consumer qualification passes [cached delivery](delivery-ci.json) atb1e17b64.
+Original capture-time status remains in the archive.
 Public API/Python behavior unchanged; publication postponed.
 
 One pure compiler/runtime fact proves stable BigInteger/double/bool arithmetic,
@@ -41,8 +43,10 @@ not a refreshed external performance comparison or proof of the historical gap.
 
 Negative is faster. Text old-role spread3.54% and custom-sync3.19% are inconclusive.
 Report elapsed is nearbaseline but coarse CPU remains possible debt. Integer and
-float gains are supported; custom async has measured regression debt. Rejected
-proof attempts are source-visible, not isolated attribution of all CPU. Retain
+float gains are supported; custom async has measured regression debt. A rejected
+proof adds work on custom calls. Direct positional calls already suppress a repeated
+pre-frame proof; raw method definitions do not establish repeated work on that route.
+The dominant cause of the custom regression remains unprofiled. Retain
 the coherent simplification with that debt explicit; current whole-script CPU
 assessment must include custom operators and text, without reviving slower
 call-control/arena carriers. No universal CPU/speedup claim.

@@ -1,0 +1,174 @@
+{
+  "databaseId": 42512127664,
+  "headSha": "b1e17b64a300ce7f2ec612a1341141d150c79b8d",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/Lokad/Lython/actions/runs/42512127664",
+  "observedUTC": "2026-11-08T19:18:15.224696+00:00",
+  "jobs": [
+    {
+      "name": "tests (windows-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/Lokad/Lython/actions/runs/42512127664/job/128827259420",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build Release solution",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish crash dumps",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish test log",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "tests (ubuntu-latest)",
+      "conclusion": "success",
+      "url": "https://github.com/Lokad/Lython/actions/runs/42512127664/job/128827259770",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build Release solution",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test Release (.NET 10 checkpoint)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify Release package consumer",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Test original stress scales",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish crash dumps",
+          "status": "completed",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Publish test log",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Setup .NET",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

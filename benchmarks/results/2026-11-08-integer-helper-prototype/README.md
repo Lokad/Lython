@@ -1,5 +1,10 @@
 # Exact-integer helper intermediate prototype
 
+This preserved intermediate is superseded by the
+[qualified combinedb1e17b64 delivery](../2026-11-08-primitive-helper-delivery/README.md).
+Its own frozen intermediate was not separately fully qualified; original capture
+status and all adverse conditions remain in its archive.
+
 2026-11-08. Baseline qualified05790317/core13107e6b; prototype over9b61264b/
 core d8d2a6fb. Replaces Add-only native proof with conservative exact-integer Binary
 proof, reusing original canonical operators. No API/backend/owner/arena/value

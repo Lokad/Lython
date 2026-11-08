@@ -1,0 +1,288 @@
+{
+  "source": "b1e17b64/core93e926fe",
+  "sections": [
+    {
+      "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "size": 9627
+    },
+    {
+      "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+      "size": 10397
+    },
+    {
+      "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+      "size": 9614
+    },
+    {
+      "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+      "size": 12016
+    },
+    {
+      "header": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+      "size": 11989
+    }
+  ],
+  "ranges": [
+    {
+      "start": "0x7f50faf07ee0",
+      "size": 11989,
+      "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]"
+    }
+  ],
+  "blocks": [
+    {
+      "size": 11989,
+      "label": "G_M000_IG11",
+      "offset": "0xf1",
+      "leafSamples": 44,
+      "assembly": "xor      esi, esi\n       mov      dword ptr [rbp-0x30], esi\n       mov      esi, dword ptr [rdi+0x28]\n       cmp      esi, ebx\n       jae      G_M000_IG382\n       shl      rsi, 5\n       lea      rsi, bword ptr [rdx+rsi+0x10]\n       mov      bword ptr [rbp-0x238], rsi\n       mov      rsi, gword ptr [rax+0xB0]\n       mov      r8, bword ptr [rbp-0x238]\n       mov      r8, gword ptr [r8]\n       mov      r10, gword ptr [rsi+0x88]\n       mov      r10, gword ptr [r10+0x20]\n       test     r10, r10\n       jne      G_M000_IG381\n       mov      rsi, gword ptr [rsi+0x178]\n       test     rsi, rsi\n       jne      G_M000_IG380"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG09",
+      "offset": "0xcd",
+      "leafSamples": 36,
+      "assembly": "mov      rbx, bword ptr [rbp-0x208]\n       mov      edi, dword ptr [rbx+0x28]\n       mov      rdx, gword ptr [rbp-0x230]\n       mov      eax, dword ptr [rdx+0x08]\n       cmp      edi, eax\n       mov      rdi, rbx\n       jge      SHORT G_M000_IG04"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG12",
+      "offset": "0x146",
+      "leafSamples": 30,
+      "assembly": "mov      rsi, bword ptr [rbp-0x238]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 68\n       ja       G_M000_IG210"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG21",
+      "offset": "0x261",
+      "leafSamples": 11,
+      "assembly": "mov      rsi, bword ptr [rbp-0x238]\n       mov      r15d, dword ptr [rsi+0x10]\n       mov      rdi, bword ptr [rbp-0x208]\n       lea      rsi, bword ptr [rdi+0x30]\n       cmp      byte  ptr [rbx], bl\n       mov      rsi, gword ptr [rsi]\n       cmp      byte  ptr [rbx+0x2C], 0\n       setne    r8b\n       movzx    r8, r8b\n       add      r8d, r15d\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG369\n       mov      r14, gword ptr [rsi+8*r8+0x10]\n       test     r14, r14\n       je       G_M000_IG319\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x218]\n       mov      rcx, rbx\n       mov      r8d, r15d\n       mov      r9, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object):bool]\n       test     eax, eax\n       jne      G_M000_IG06"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG34",
+      "offset": "0x3fd",
+      "leafSamples": 10,
+      "assembly": "mov      rsi, gword ptr [rsi+0x08]\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG369\n       mov      r10d, r8d\n       mov      r14, gword ptr [rsi+8*r10+0x10]\n       mov      r13d, 1"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG13",
+      "offset": "0x159",
+      "leafSamples": 9,
+      "assembly": "mov      esi, esi\n       lea      r8, [reloc @RWD00]\n       mov      r8d, dword ptr [r8+4*rsi]\n       lea      r10, G_M000_IG02\n       add      r8, r10\n       jmp      r8"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG49",
+      "offset": "0x500",
+      "leafSamples": 9,
+      "assembly": "xor      r14, r14\n       xor      r13d, r13d\n       jmp      G_M000_IG35"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG62",
+      "offset": "0x5f1",
+      "leafSamples": 7,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       lea      rsi, bword ptr [rdi+0x30]\n       mov      r8, bword ptr [rbp-0x238]\n       mov      r8d, dword ptr [r8+0x10]\n       mov      r10d, r8d\n       mov      r11, gword ptr [rsi]\n       mov      rbx, r11\n       mov      r15d, dword ptr [rbx+0x08]\n       cmp      r10d, r15d\n       jae      G_M000_IG369\n       cmp      gword ptr [rbx+8*r10+0x10], 0\n       je       G_M000_IG288\n       xor      rbx, rbx\n       mov      gword ptr [r11+8*r10+0x10], rbx\n       mov      dword ptr [rsi+0x40], r8d\n       mov      rsi, bword ptr [rbp-0x238]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 52\n       jg       G_M000_IG290"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG14",
+      "offset": "0x173",
+      "leafSamples": 6,
+      "assembly": "mov      rax, gword ptr [rbp-0x210]\n       mov      r9, bword ptr [rbp-0x228]\n       mov      bword ptr [rsp], r9\n       movzx    r8, byte  ptr [rbp-0x2C]\n       mov      rdi, bword ptr [rbp-0x208]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x218]\n       mov      rcx, bword ptr [rbp-0x238]\n       mov      r9, bword ptr [rbp-0x220]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInputInstruction(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,bool,byref,byref):int]\n       test     eax, eax\n       je       G_M000_IG06"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG71",
+      "offset": "0x717",
+      "leafSamples": 5,
+      "assembly": "mov      r10, 0x7F50FAA40EC0\n       cmp      qword ptr [r8], r10\n       jne      G_M000_IG299\n       cmp      byte  ptr [r8+0x30], 0\n       jne      G_M000_IG296\n       mov      r10, gword ptr [r8+0x10]\n       movzx    r10, byte  ptr [r10+0x18]\n       test     r10d, r10d\n       jne      G_M000_IG296\n       mov      r15, gword ptr [r8+0x08]\n       test     r15, r15\n       jne      G_M000_IG74"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG31",
+      "offset": "0x392",
+      "leafSamples": 5,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       lea      rbx, bword ptr [rdi+0x30]\n       mov      rsi, bword ptr [rbp-0x238]\n       mov      r15d, dword ptr [rsi+0x10]\n       mov      rsi, gword ptr [rbx]\n       cmp      r15d, dword ptr [rsi+0x08]\n       jae      G_M000_IG369\n       mov      r8d, r15d\n       mov      rsi, gword ptr [rsi+8*r8+0x10]\n       test     rsi, rsi\n       je       G_M000_IG50"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG76",
+      "offset": "0x804",
+      "leafSamples": 4,
+      "assembly": "mov      r8, gword ptr [r15+0x30]\n       mov      r10, gword ptr [r8+0x88]\n       mov      r10, gword ptr [r10+0x20]\n       test     r10, r10\n       jne      G_M000_IG102\n       mov      r8, gword ptr [r8+0x178]\n       test     r8, r8\n       jne      G_M000_IG94"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG179",
+      "offset": "0x1197",
+      "leafSamples": 4,
+      "assembly": "mov      gword ptr [rbp-0x118], rsi\n       cmp      r14d, dword ptr [r15+0x08]\n       jae      G_M000_IG369\n       mov      esi, r14d\n       mov      r15, gword ptr [r15+8*rsi+0x10]\n       mov      rsi, 0x7F49198034C8\n       cmp      r15, gword ptr [rsi]\n       je       G_M000_IG214\n       mov      rax, gword ptr [rbp-0x210]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG10",
+      "offset": "0xe8",
+      "leafSamples": 4,
+      "assembly": "mov      ebx, eax\n       mov      rax, gword ptr [rbp-0x210]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG27",
+      "offset": "0x342",
+      "leafSamples": 4,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x218]\n       mov      rcx, bword ptr [rbp-0x238]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteControlFlow(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref):bool]\n       mov      dword ptr [rbp-0x30], eax\n       mov      rbx, bword ptr [rbp-0x208]\n       cmp      gword ptr [rbx+0x20], 0\n       je       G_M000_IG06"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG07",
+      "offset": "0xbd",
+      "leafSamples": 3,
+      "assembly": "cmp      dword ptr [rbp-0x30], 0\n       jne      SHORT G_M000_IG09"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG176",
+      "offset": "0x1153",
+      "leafSamples": 3,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       mov      rbx, gword ptr [rdi]\n       mov      r15, gword ptr [rdi+0x08]\n       mov      rsi, bword ptr [rbp-0x238]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG178"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG203",
+      "offset": "0x138a",
+      "leafSamples": 2,
+      "assembly": "mov      rax, gword ptr [rbp-0x210]\n       cmp      gword ptr [rbp-0x218], 0\n       sete     bl\n       movzx    rbx, bl\n       test     ebx, ebx\n       jne      SHORT G_M000_IG205"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG204",
+      "offset": "0x13a3",
+      "leafSamples": 2,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x218]\n       mov      rcx, bword ptr [rbp-0x238]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteStackTransfer(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref)]\n       jmp      G_M000_IG06"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG178",
+      "offset": "0x1179",
+      "leafSamples": 2,
+      "assembly": "mov      rsi, bword ptr [rbp-0x238]\n       mov      r14d, dword ptr [rsi+0x08]\n       mov      rsi, bword ptr [rbp-0x238]\n       mov      r13, gword ptr [rsi]\n       xor      rsi, rsi\n       mov      gword ptr [rbp-0x110], rsi"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG06",
+      "offset": "0xb3",
+      "leafSamples": 2,
+      "assembly": "cmp      byte  ptr [rbp-0x2C], 0\n       jne      G_M000_IG375"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG135",
+      "offset": "0xd5a",
+      "leafSamples": 2,
+      "assembly": "mov      r11, gword ptr [rdi+0x30]\n       cmp      r15d, dword ptr [r11+0x08]\n       jae      G_M000_IG369\n       mov      esi, r15d\n       mov      r14, gword ptr [r11+8*rsi+0x10]\n       test     r14, r14\n       je       G_M000_IG327\n       mov      r11, gword ptr [rdi]\n       mov      r11, gword ptr [r11+0x20]\n       mov      rsi, 0x7F50F934BEC0\n       cmp      qword ptr [r11], rsi\n       jne      G_M000_IG328\n       mov      r13d, dword ptr [r11+0x08]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG184",
+      "offset": "0x1219",
+      "leafSamples": 1,
+      "assembly": "mov      rsi, bword ptr [rbp-0x238]\n       mov      r14d, dword ptr [rsi+0x14]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG08",
+      "offset": "0xc3",
+      "leafSamples": 1,
+      "assembly": "mov      rbx, bword ptr [rbp-0x208]\n       inc      dword ptr [rbx+0x28]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG78",
+      "offset": "0x83a",
+      "leafSamples": 1,
+      "assembly": "xor      r8d, r8d\n       mov      dword ptr [rbp-0x1A0], r8d\n       cmp      byte  ptr [r15+0x6D], 0\n       jne      G_M000_IG96"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG88",
+      "offset": "0x931",
+      "leafSamples": 1,
+      "assembly": "mov      esi, r13d\n       sub      esi, r14d\n       mov      edx, r14d\n       mov      edi, esi\n       add      rdx, rdi\n       mov      edi, ecx\n       cmp      rdx, rdi\n       ja       G_M000_IG104\n       mov      edi, r14d\n       add      rdi, rax\n       mov      rdx, gword ptr [r15+0x30]\n       mov      rdx, gword ptr [rdx+0x88]\n       xor      rcx, rcx\n       call     [Lokad.Lython.Runtime.Text.PyString:CopyFromUtf8(System.ReadOnlySpan`1[byte],Lokad.Lython.Runtime.MemoryGovernor,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.Text.PyString]\n       mov      r14, rax"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG26",
+      "offset": "0x32d",
+      "leafSamples": 1,
+      "assembly": "mov      rax, gword ptr [rbp-0x210]\n       cmp      gword ptr [rbp-0x218], 0\n       je       G_M000_IG169"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG73",
+      "offset": "0x7a2",
+      "leafSamples": 1,
+      "assembly": "mov      dword ptr [rbx+0x50], 63\n       mov      r8, gword ptr [rbx+0x20]\n       mov      r10, gword ptr [rbx+0x10]\n       mov      r8, gword ptr [r8+0xB0]\n       mov      r11, gword ptr [r8+0x88]\n       mov      r11, gword ptr [r11+0x20]\n       test     r11, r11\n       jne      G_M000_IG294\n       mov      r8, gword ptr [r8+0x178]\n       test     r8, r8\n       je       G_M000_IG70\n       jmp      G_M000_IG295"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG68",
+      "offset": "0x689",
+      "leafSamples": 1,
+      "assembly": "xor      rsi, rsi\n       mov      gword ptr [rbp-0x198], rsi\n       mov      rsi, gword ptr [rbp-0x218]\n       mov      r8, gword ptr [rsi+0x150]\n       mov      r10, bword ptr [rbp-0x238]\n       mov      r10d, dword ptr [r10+0x10]\n       cmp      r10d, dword ptr [r8+0x08]\n       jae      G_M000_IG369\n       mov      r8, gword ptr [r8+8*r10+0x10]\n       test     r8, r8\n       je       G_M000_IG292\n       mov      rbx, r8\n       mov      r10, 0x7F50FA9FFC88\n       cmp      qword ptr [rbx], r10\n       jne      G_M000_IG293\n       cmp      gword ptr [rbx+0x20], 0\n       je       SHORT G_M000_IG70"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG153",
+      "offset": "0xec6",
+      "leafSamples": 1,
+      "assembly": "mov      rsi, gword ptr [rbx+0x08]\n       mov      r8d, r15d\n       sub      r8d, dword ptr [rbx+0x38]\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG369\n       xor      r10d, r10d\n       mov      dword ptr [rsi+4*r8+0x10], r10d\n       cmp      r13d, dword ptr [rbx+0x40]\n       jl       SHORT G_M000_IG158"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG38",
+      "offset": "0x444",
+      "leafSamples": 1,
+      "assembly": "mov      rsi, bword ptr [rbp-0x238]\n       cmp      dword ptr [rsi+0x18], 0\n       jl       G_M000_IG61"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG191",
+      "offset": "0x128c",
+      "leafSamples": 1,
+      "assembly": "mov      dword ptr [rbx+0x40], r13d\n       jmp      G_M000_IG06"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG190",
+      "offset": "0x127a",
+      "leafSamples": 1,
+      "assembly": "mov      rdi, r8\n       mov      rsi, r15\n       call     CORINFO_HELP_ASSIGN_REF\n       mov      rax, gword ptr [rbp-0x210]"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG182",
+      "offset": "0x11eb",
+      "leafSamples": 1,
+      "assembly": "mov      rdi, bword ptr [rbp-0x208]\n       lea      rbx, bword ptr [rdi+0x30]\n       mov      rsi, bword ptr [rbp-0x238]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 52\n       ja       SHORT G_M000_IG184"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG70",
+      "offset": "0x6f5",
+      "leafSamples": 1,
+      "assembly": "cmp      byte  ptr [rbx+0x54], 0\n       jne      G_M000_IG309\n       cmp      gword ptr [rbx+0x08], 0\n       je       G_M000_IG309\n       mov      r8, gword ptr [rbx+0x18]\n       test     r8, r8\n       je       G_M000_IG300"
+    },
+    {
+      "size": 11989,
+      "label": "G_M000_IG33",
+      "offset": "0x3d9",
+      "leafSamples": 1,
+      "assembly": "mov      r8, gword ptr [rbx+0x08]\n       mov      r10d, r15d\n       sub      r10d, dword ptr [rbx+0x38]\n       cmp      r10d, dword ptr [r8+0x08]\n       jae      G_M000_IG369\n       mov      r8d, dword ptr [r8+4*r10+0x10]\n       cmp      r8d, dword ptr [rsi+0x28]\n       jge      G_M000_IG49"
+    }
+  ],
+  "unmatched": 0,
+  "caveat": "Only exact native-size/tier matches; samples may land after an inlined operation or within useful work. Blocks are not pure dispatch phases; no normal elapsed or speedup inference. Original maps/raw/JIT retained."
+}

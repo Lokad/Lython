@@ -1,5 +1,10 @@
 # Independent native proof, intermediate
 
+This preserved intermediate is superseded by the
+[qualified combinedb1e17b64 delivery](../2026-11-08-primitive-helper-delivery/README.md).
+Its own frozen intermediate was not separately fully qualified; original capture
+status and all adverse conditions remain in its archive.
+
 2026-11-08. Combined R113/R114 core a383d084 over9b61264b, compared with fully
 qualified05790317/core13107e6b. Incremental local diagnostics compare with R113
 core d8d2a6fb; do not subtract percentages across those different runs.

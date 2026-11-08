@@ -1,6 +1,8 @@
 {
-  "status": "Intermediate active prototype, not committed or fully qualified. Continue coherent native-proof/forwarding milestone R114 before delivery decision.",
+  "status": "Preserved intermediate, superseded by combinedb1e17b64; only the combined production source received full platform/Stress/installed-core qualification.",
   "measurement": "Warm allocation neutral; compiler allocation+0.40\u20130.41%affected. CSV elapsed\u22121.53to\u22125.78%sync/\u22124.33to\u22126.28%async, syncCPU\u22120.69to+2.99%uncertain. JSON elapsed\u22123.54to\u22125.02%sync/\u22124.57to\u22126.67%async, CPU supports. Text nearbaseline, report elapsed\u22121.61to+2.98%/CPU0to+6.25%possible debt. All adverse/control roles retained.",
   "limitation": "Source showed all native bodies disable ordinary operand forwarding to preserve physical source offsets. Guard-failing mixed/protocol operands therefore lose that optimization. General ordinary workspaces are already reused: no per-call allocation savings follow from source alone.",
-  "fullQualification": "Pending combined retained-source boundary; qualified05790317 remains independently valid."
+  "fullQualification": "Pending combined retained-source boundary; qualified05790317 remains independently valid.",
+  "captureTimeStatus": "Intermediate active prototype, not committed or fully qualified. Continue coherent native-proof/forwarding milestone R114 before delivery decision.",
+  "supersededBy": "../2026-11-08-primitive-helper-delivery/README.md"
 }

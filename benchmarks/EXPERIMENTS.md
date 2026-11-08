@@ -4750,3 +4750,29 @@ possible debt. Retain coherent simplification with those limits, full delivery
 pending. Live270slimit captured; all historical conditions/intermediates remain.
 Continue current complete text/custom CPU attribution and primary checkpoint,
 not claim the performance objective complete or revive slower call carriers.
+
+## Current complete-text CPU assessment (2026-11-08)
+
+[R116/B476](results/2026-11-08-current-text-cpu/README.md), b1e17b64/core93e9,
+1160samples/5.85CPU/67unknown5.78%, all gates/archive/local. Prefix21818.79%,
+input69 5.95%, hash48 4.14%, split/casing97leaf8.36%, nativeproof7 0.60%,
+binding/contexts0leaf. Monitor50leaf4.31%maps to actual allocation preflights;
+fragment commit and dictionary replacement already avoid root resize. Direct
+positional calls already suppress duplicate pre-frame proof; earlier generic
+repeated-probe discussion was unverified for that measured route. No dominant
+redundant phase established, no prototype selected. Keep required checks/budget
+semantics, use bounded existing-PC/source analysis before any further redesign.
+Next current CPython checkpoint, custom async debt remains explicit.
+
+R115 exact-source deliveryb1e17b64 passes/cached CI42512127664: Windows/Ubuntu actual11/10 full Release, original Stress both and installed core consumers. [Receipt](results/2026-11-08-primitive-helper-delivery/delivery-ci.json). No changed timing, repeated old qualification, publication or implicit repair of custom async debt.
+
+## Qualified primitive-source CPython checkpoint (2026-11-08)
+
+[R117/B477](results/2026-11-08-primitive-cpython-checkpoint/README.md), qualified
+b1e17b64/core93e9, CPython3.13.16,15jobs311.431s/allgates/archive/local. Five
+unchanged scripts separate compile/warm/compile-to-result. Compile-to-result:
+returnedCSV1.23–1.25x, CSV1.06–1.07x, text1.52x, JSON0.92–0.96xvariable,
+report1.42–1.46xvariable. Warmtext1.58–1.65xvariable, CSV1.03–1.07xvariable;
+all roles/adverse data retained, no isolated gain/old-debt repayment. Historical
+config/search/manifest/extra variants remain726, not current-source claims.
+No publication, new framework or unchanged source qualification replay.
