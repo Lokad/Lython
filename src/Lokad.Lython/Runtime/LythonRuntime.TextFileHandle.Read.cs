@@ -47,6 +47,7 @@ internal sealed partial class LythonRuntime
             private bool _eof;
             private bool _bomChecked;
             private bool _released;
+            private bool _reading;
             internal long OwnedBytes => ShellBytes + (_raw?.LongLength ?? 0) + _windowCharge;
 
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
@@ -94,8 +95,9 @@ internal sealed partial class LythonRuntime
             private async ValueTask<bool> PullGzipAsync()
             {
                 EnsureRaw();
+                EnsureNotReleased();
                 var bytes = await _gzip!.ReadTextChunkAsync(_gzipCaller!, _gzipSpan!, _gzipAsynchronous).ConfigureAwait(false);
-                try { return AcceptGzipPayload(bytes.Memory); }
+                try { EnsureNotReleased(); return AcceptGzipPayload(bytes.Memory); }
                 finally { _services.MemoryGovernor.RefundUnpublishedValue(bytes); }
             }
 
@@ -109,11 +111,26 @@ internal sealed partial class LythonRuntime
 
             internal async ValueTask<int> ReadSymbolAsync(bool asynchronous)
             {
-                if (asynchronous) await RefillAsync().ConfigureAwait(false); else Refill();
-                if (Drained()) return -1;
-                Rune.DecodeFromUtf8(_window.Span[_windowConsumed..], out var rune, out var consumed);
-                Advance(_windowConsumed + consumed);
-                return rune.Value;
+                BeginRead();
+                var failed = true;
+                try
+                {
+                    if (asynchronous) await RefillAsync().ConfigureAwait(false); else Refill();
+                    var result = -1;
+                    if (!Drained())
+                    {
+                        Rune.DecodeFromUtf8(_window.Span[_windowConsumed..], out var rune, out var consumed);
+                        Advance(_windowConsumed + consumed);
+                        result = rune.Value;
+                    }
+                    failed = false;
+                    return result;
+                }
+                finally
+                {
+                    if (asynchronous) await EndReadAsync(failed).ConfigureAwait(false);
+                    else EndRead(failed);
+                }
             }
 
             internal async ValueTask<int> ReadGzipSymbolAsync(ExecutionContext caller, LythonSourceSpan span, bool asynchronous)
@@ -126,43 +143,86 @@ internal sealed partial class LythonRuntime
 
             public PyString Read(int size)
             {
-                if (size == 0)
+                BeginRead();
+                var failed = true;
+                try
                 {
-                    return PyString.Empty;
+                    var result = size == 0 ? PyString.Empty : size < 0 ? ReadAll() : ReadBounded(size);
+                    failed = false;
+                    return result;
                 }
-
-                return size < 0 ? ReadAll() : ReadBounded(size);
+                finally { EndRead(failed); }
             }
 
             public ValueTask<PyString> ReadAsync(int size)
             {
-                if (size == 0)
-                {
-                    return ValueTask.FromResult(PyString.Empty);
-                }
+                BeginRead();
+                ValueTask<PyString> pending;
+                try { pending = size == 0 ? new(PyString.Empty) : size < 0 ? ReadAllAsync() : ReadBoundedAsync(size); }
+                catch (Exception error) { pending = ValueTask.FromException<PyString>(error); }
+                return CompleteReadAsync(pending);
+            }
 
-                return size < 0 ? ReadAllAsync() : ReadBoundedAsync(size);
+            private ValueTask<PyString> CompleteReadAsync(ValueTask<PyString> pending)
+            {
+                if (!pending.IsCompleted || _released) return AwaitReadAsync(pending);
+                try { return new(pending.GetAwaiter().GetResult()); }
+                finally { _reading = false; }
+            }
+
+            private async ValueTask<PyString> AwaitReadAsync(ValueTask<PyString> pending)
+            {
+                var failed = true;
+                try
+                {
+                    var result = await pending.ConfigureAwait(false);
+                    failed = false;
+                    return result;
+                }
+                finally { await EndReadAsync(failed).ConfigureAwait(false); }
             }
 
             public PyString ReadLine(int size)
-                => ReadLineCore(size, asynchronous: false).GetAwaiter().GetResult();
+                => ReadLineOwned(size, null);
 
             public ValueTask<PyString> ReadLineAsync(int size)
-                => ReadLineCore(size, asynchronous: true);
+                => ReadLineOwnedAsync(size, null);
+
+            private PyString ReadLineOwned(int size, GovernedByteBuilder? destination)
+            {
+                BeginRead();
+                var failed = true;
+                try
+                {
+                    var result = ReadLineCore(size, asynchronous: false, destination).GetAwaiter().GetResult();
+                    failed = false;
+                    return result;
+                }
+                finally { EndRead(failed); }
+            }
+
+            private ValueTask<PyString> ReadLineOwnedAsync(int size, GovernedByteBuilder? destination)
+            {
+                BeginRead();
+                ValueTask<PyString> pending;
+                try { pending = ReadLineCore(size, asynchronous: true, destination); }
+                catch (Exception error) { pending = ValueTask.FromException<PyString>(error); }
+                return CompleteReadAsync(pending);
+            }
 
             // Native consumers own their destination through the complete line.
             // The same scanner appends directly; no intermediate string escapes.
             internal bool ReadLineInto(GovernedByteBuilder destination)
             {
                 var before = destination.Length;
-                _ = ReadLineCore(-1, asynchronous: false, destination).GetAwaiter().GetResult();
+                _ = ReadLineOwned(-1, destination);
                 return destination.Length != before;
             }
 
             internal ValueTask<bool> ReadLineIntoAsync(GovernedByteBuilder destination)
             {
                 var before = destination.Length;
-                var line = ReadLineCore(-1, asynchronous: true, destination);
+                var line = ReadLineOwnedAsync(-1, destination);
                 if (!line.IsCompletedSuccessfully) return AwaitLineIntoAsync(line, destination, before);
                 _ = line.GetAwaiter().GetResult();
                 return new(destination.Length != before);
@@ -178,16 +238,17 @@ internal sealed partial class LythonRuntime
             private ValueTask<PyString> ReadLineCore(int size, bool asynchronous,
                 GovernedByteBuilder? destination = null)
             {
-                if (size == 0) return new(PyString.Empty);
                 var ownsBuilder = destination is null;
                 var builder = destination;
                 var remaining = size;
                 var transferred = false;
                 try
                 {
+                    if (size == 0) return new(PyString.Empty);
                     while (true)
                     {
-                        _services.CheckExecution(null);
+                        // BeginRead checks entry; refills and completed lines
+                        // keep their checks through each bounded window.
                         if (_windowConsumed >= _window.Length)
                         {
                             if (asynchronous)
@@ -204,10 +265,15 @@ internal sealed partial class LythonRuntime
                             else Refill();
                         }
                         if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line))
+                        {
                             return new(line);
+                        }
                     }
                 }
-                finally { if (ownsBuilder && !transferred) builder?.Release(); }
+                finally
+                {
+                    if (!transferred && ownsBuilder) builder?.Release();
+                }
             }
 
             // A pending refill transfers the private builder to this one iterative
@@ -221,11 +287,17 @@ internal sealed partial class LythonRuntime
                     while (true)
                     {
                         _services.CheckExecution(null);
-                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line)) return line;
+                        if (TryReadLineWindow(ref remaining, ref builder, ownsBuilder, out var line))
+                        {
+                            return line;
+                        }
                         await RefillAsync().ConfigureAwait(false);
                     }
                 }
-                finally { if (ownsBuilder) builder?.Release(); }
+                finally
+                {
+                    if (ownsBuilder) builder?.Release();
+                }
             }
 
             private bool TryReadLineWindow(ref int remaining, ref GovernedByteBuilder? builder,
@@ -271,13 +343,48 @@ internal sealed partial class LythonRuntime
 
             public void Release()
             {
-                if (_released)
-                {
-                    return;
-                }
-
+                if (_released) return;
                 _released = true;
-                try { _file?.CloseAsync(null, false).GetAwaiter().GetResult(); }
+                // A budget callback can request cleanup while allocation still
+                // borrows our input. The active read owns final retirement.
+                if (!_reading) ReleaseCoreAsync(failed: false, asynchronous: false).GetAwaiter().GetResult();
+            }
+
+            private void BeginRead()
+            {
+                _services.CheckExecution(null);
+                EnsureNotReleased();
+                if (_reading) throw RuntimeErrors.Runtime("reentrant text read", null);
+                _reading = true;
+            }
+
+            private void EndRead(bool failed)
+            {
+                _reading = false;
+                if (_released) ReleaseCoreAsync(failed, asynchronous: false).GetAwaiter().GetResult();
+            }
+
+            private ValueTask EndReadAsync(bool failed)
+            {
+                _reading = false;
+                return _released ? ReleaseCoreAsync(failed, asynchronous: true) : default;
+            }
+
+            private void EnsureNotReleased()
+            {
+                if (_released) throw RuntimeErrors.Value("I/O operation on closed file", null);
+            }
+
+            private async ValueTask ReleaseCoreAsync(bool failed, bool asynchronous)
+            {
+                try
+                {
+                    if (_file is not null)
+                    {
+                        if (failed) await _file.CloseAfterFailureAsync(null, asynchronous).ConfigureAwait(false);
+                        else await _file.CloseAsync(null, asynchronous).ConfigureAwait(false);
+                    }
+                }
                 finally
                 {
                     ReleaseWindow();
@@ -500,6 +607,7 @@ internal sealed partial class LythonRuntime
 
             private void Refill()
             {
+                EnsureNotReleased();
                 while (_windowConsumed >= _window.Length)
                 {
                     ReleaseWindow();
@@ -514,6 +622,7 @@ internal sealed partial class LythonRuntime
 
             private async ValueTask RefillAsync()
             {
+                EnsureNotReleased();
                 while (_windowConsumed >= _window.Length)
                 {
                     ReleaseWindow();
@@ -704,11 +813,14 @@ internal sealed partial class LythonRuntime
 
             private async ValueTask<bool> PullCoreAsync(bool asynchronous)
             {
+                EnsureNotReleased();
                 if (_eof) return false;
                 if (_gzip is not null) return await PullGzipAsync().ConfigureAwait(false);
                 _services.CheckExecution(null);
                 EnsureRaw();
+                EnsureNotReleased();
                 var count = await _file!.ReadAsync(_raw!.AsMemory(_rawLength, _windowBytes), null, asynchronous).ConfigureAwait(false);
+                EnsureNotReleased();
                 return AcceptCount(count);
             }
 

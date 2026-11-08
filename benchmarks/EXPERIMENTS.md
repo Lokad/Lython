@@ -4892,3 +4892,24 @@ semantic/lifetime cases retained, two baseline controls; no runtime code change.
 ScopeDirectiveFacts/LexicalScopePreparation already share prepared lexical facts;
 apparent repeatedForFunction calls do not establish duplicate walks. Source gate
 recorded in active plan; no new inventory/capture/prototype from that hypothesis.
+
+
+## Text-read lifetime correctness (2026-11-09 Paris)
+
+[R125/B485](results/2026-11-09-text-read-lifetimes/README.md), qualifiedC617 versus
+final004e. Both reference regressions demonstrate premature342B refund while72B
+raw input is borrowed during output admission. One native-read lifetime defers
+raw/decoded/file retirement until actual copy/decoder/append/suspension users and
+awaited cleanup finish. Reentry explicit, no next refill after retirement; first
+refusal/cancellation wins over cleanup failure. No public policy/owner/ledger.
+228internal/140public focused Release eachactual11/10,16new lifetime cases pass.
+Five complete scripts/both APIs: allocation neutral within0.07%; original desktop
+async text+5.73–7.98% and refined sync text+12.83–13.47%/report+24.60–40.91% preserved.
+Source removed duplicate scanner poll after entry check. Controlled three-job
+quiet confirmation86.526s/allgates: sync text−1.19..+2.62%variable, async text
+−2.78..−0.22%, report−1.01..+0.89%; coarse CPU mixed, no gain claim. Original
+adverse async result not reproduced there; not proof of universal neutrality.
+Two space preflights refused before work; verified existing catalog reuse and
+remote-only redundant inventory trimming preserve original local proof and floors.
+Archive under lease verified locally, all users joined/RAM removed/terminal cached.
+Full coherent delivery pending; roadmap and regex independent, publication postponed.

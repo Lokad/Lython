@@ -86,6 +86,10 @@ Readline, file iteration and native CSV input share the same window scanner.
 Buffered asynchronous reads finish directly; a pending refill retains the private
 builder in one iterative continuation until the read settles. Native destinations
 remain owned by their caller throughout.
+Requested reader cleanup keeps raw and decoded storage funded until the active
+read finishes, including allocation callbacks and pending host operations. Async
+reads await disposal without blocking their caller. Cleanup prevents another
+refill; already buffered copying may finish. Reentrant reads fail explicitly.
 Carry compaction and refill wait until the current window is relinquished. Returned
 text always owns independent immutable storage before raw-buffer reuse. UTF-8 replacement, ignored
 bytes and backslash escapes preserve Python malformed-unit grouping; newline

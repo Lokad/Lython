@@ -1,0 +1,14 @@
+{
+  "status": "Focused Release passed",
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "uniqueInternalPerTarget": 228,
+  "publicPerTarget": 140,
+  "newReadCases": 16,
+  "explanation": "225 expanded internal + 3 cleanup-error cases; final16 includes13 already in expanded set. Public140 passed on the final runtime. No duplicate-case count inflation.",
+  "baselineRegression": "2 expected failures on qualified C617: allowance832->490 while72-byte raw input remains borrowed",
+  "initialNewFixtureMistake": "Transport close failures use HostOperationException subclass; exact-type fixture corrected, original failure log retained.",
+  "fullDelivery": "Pending coherent Windows/Ubuntu full Release11/10, original stress11/10 and installed-core consumers; publication postponed"
+}

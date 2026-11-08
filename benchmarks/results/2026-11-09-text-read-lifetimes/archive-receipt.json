@@ -1,0 +1,15 @@
+{
+  "unit": "MainPID=0\nResult=success\nExecMainStatus=0\nLoadState=not-found\nActiveState=inactive\n",
+  "exitcode": "0",
+  "receipt": {
+    "complete": true,
+    "jobs": 3,
+    "elapsedSeconds": 86.52615394024178,
+    "allWorkersJoined": true,
+    "guestFixtureDirectories": [],
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "archiveSHA256": "0937d726f8127cdf8727e083e42f7b35af5b2cd56d50152b6f0a2fb4adbeed3c"
+  },
+  "noUsersOrFixtures": true
+}

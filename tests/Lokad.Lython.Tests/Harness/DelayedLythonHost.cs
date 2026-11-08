@@ -21,6 +21,7 @@ internal sealed class DelayedLythonHost : ILythonHost
     public int ClosedFileCount => _inner.ClosedFileCount;
 
     public Action? OnTextReadCompleted { get; set; }
+    public Func<ValueTask>? BeforeFileClose { get; set; }
 
     public Action? OnStandardOutputWrite
     {
@@ -98,7 +99,11 @@ internal sealed class DelayedLythonHost : ILythonHost
         }
         public async ValueTask DisposeAsync()
         {
-            try { await host.Delay(CancellationToken.None).ConfigureAwait(false); }
+            try
+            {
+                if (host.BeforeFileClose is { } beforeClose) await beforeClose().ConfigureAwait(false);
+                await host.Delay(CancellationToken.None).ConfigureAwait(false);
+            }
             finally { await file.DisposeAsync().ConfigureAwait(false); }
         }
     }
