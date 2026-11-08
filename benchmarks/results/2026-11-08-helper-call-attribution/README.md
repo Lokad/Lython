@@ -39,8 +39,16 @@ original aliases and no temporary links. The first overly restrictive symlink
 preflight refusal and correction are retained; no mutation occurred on that refusal.
 
 [Helper attribution](attribution-helper-warm.json), [inline attribution](attribution-inline-warm.json),
-[exact-core census](census.json), [decision](decision.json), [identity](identity.json),
+[corrected exact-core census](current-census.json), [original inventory](census.json), [decision](decision.json), [identity](identity.json),
 [receipt](archive-receipt.json), [raw maps/stacks/disassembly/records](observations.tgz),
 [all preparation and failures](preparation-and-corrections.tgz),
 [dedup proof](dedup-proof.json), [post-audit and pre-mutation plan](space-post-audit.json).
 Performance objective and independent regex track remain active; publication postponed.
+
+
+Inventory correction: the original compile-only census.json used the initialC54
+prototype (80/128Bframes), while the actual timed profiles verifiedC617. The frozen
+reference preflight for R124 caught this path mismatch before any comparison ran.
+current-census.json is regenerated atC617(72/120B); all instructions/operations/
+counts/cache/local/native properties match. Original inventory remains intact.
+[Correction](census-correction.json). No changed timings or remeasurement.

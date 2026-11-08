@@ -46,3 +46,11 @@ evaluation order/retained aliases/budget reuse are semantic gates.
 This closes the attribution question, not the performance objective. No further
 capture without new source-specific uncertainty. Keep regex independent. All original
 failed collection/archive conditions survive; no remeasurement or percentage veto.
+
+
+Inventory correction: the original compile-only census.json used the initialC54
+prototype (80/128Bframes), while the actual timed profiles verifiedC617. The frozen
+reference preflight for R124 caught this path mismatch before any comparison ran.
+current-census.json is regenerated atC617(72/120B); all instructions/operations/
+counts/cache/local/native properties match. Original inventory remains intact.
+[Correction](census-correction.json). No changed timings or remeasurement.

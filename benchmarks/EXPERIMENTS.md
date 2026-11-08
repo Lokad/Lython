@@ -4858,3 +4858,11 @@ Release, original stress both and installed-core consumers. [Receipt](results/20
 No old terminal query, retiming or producer qualification replay. Current R122 guide
 updated from pending to named-source-qualified; later R124 working prototype remains
 independent and unqualified. Publication postponed; performance objective active.
+
+
+R123 compile-only inventory correction: original census used initialC54 path;
+actual VM profile core gates verifiedC617. R124 frozen-reference hash preflight
+rejected that old path before any comparison. Corrected current census C617 has
+identical instructions/operations/cache/local/native properties and72/120Bframes,
+not80/128B. [Correction](results/2026-11-08-helper-call-attribution/census-correction.json).
+Original inventory preserved; no CPU/elapsed changes or rerun.

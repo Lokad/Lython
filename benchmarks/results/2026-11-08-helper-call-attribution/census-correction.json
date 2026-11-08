@@ -1,0 +1,7 @@
+{
+  "originalArtifact": "census.json preserved at C54initial prototype, widths80/128",
+  "currentArtifact": "current-census.json coreC617, widths72/120",
+  "comparison": "All instructions, operations, counts, caches, names and lexical properties match; corrected binary identity/frame-width evidence.",
+  "measuredData": "VM profile Ready/core gates usedC617, normal B480/B481 unchanged; no CPU or elapsed rerun.",
+  "caughtBy": "R124 frozen-reference hash preflight rejected old images/candidate path; correct path is refined/images/candidate. No wrong-source comparison ran."
+}
