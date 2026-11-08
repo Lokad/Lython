@@ -4467,3 +4467,12 @@ All source/Ready/golden/quiet/Closed/join/archive/local verification gates pass;
 no VM users/fixtures. Baseline cb2 subsequently fully qualified CI42472284713;
 candidate delivery pending. The string-layout gate used existing64B samples and
 unchanged source; no speculative cold union/layout change or new measurement.
+
+[R97/B458](results/2026-11-08-direct-operand-checkpoint/README.md) refreshes the
+unchanged26-job CPython checkpoint at committed94cb8963/cored6254b2e after
+R92/R95/R96. Separate compile/warm/compile-to-result, identical sources/fixtures/
+goldens/worker/protocol, normalGC/tiering, two same-source Lython controls and
+CPython3.13.16. All gates/local archive verification pass; no remaining users.
+Full source qualification is independently pending CI42475420182.
+Updated primary guide and historical guide preserve every old
+ratio/adverse case; external ratios do not establish causal gains or repay debt.

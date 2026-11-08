@@ -1,0 +1,7 @@
+{
+  "vmArchive": "direct-operands-b457-20261108/observations.tgz",
+  "archiveSHA256": "ec10b49d091b17202954b799049e9d67430a6d267673f36aecde8c8cf4604e7c",
+  "member": "current-core.dll",
+  "coreSHA256": "d6254b2e546ae346d3e0a843fe849bd875056100a719eb04c98ce857caa8078d",
+  "immutableLocalArtifact": "benchmarks/results/2026-11-08-direct-operand-transport/observations.tar.xz (nested B457 archive)"
+}
