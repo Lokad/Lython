@@ -1,7 +1,9 @@
 # Text storage gate — R75, no current capture
 
 Frozen scripts preserve the original conditions; they are historical evidence,
-not maintained operational tooling.
+not maintained operational tooling. Their original bytes, complete inventories,
+failed-source snapshots, raw failure archives/receipts and historical profiles
+are retained together in the [raw archive](observations.tar.xz).
 
 2026-11-08, committed runtime33b6c191/corebb6e72b5. Production is unchanged by
 this investigation. **No valid current allocation capture or timing result.**

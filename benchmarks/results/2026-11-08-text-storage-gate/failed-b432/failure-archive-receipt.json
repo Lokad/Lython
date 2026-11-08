@@ -1,8 +1,0 @@
-{
-  "complete": true,
-  "failedBeforeGuestRequestsOrCollectorStartup": true,
-  "allUsersJoined": true,
-  "ownedFixturesRemovedAndUnmounted": true,
-  "archiveSHA256": "b01bf2b913397b29be2ab9e2e5ed8147e3b96cc80e49eab1f6e518e53d7e110b",
-  "cause": "Ready advertises loaded core, worker and CoreLib, not unloaded optional backend libraries. All staged auxiliaries were independently SHA-verified."
-}

@@ -1,6 +1,0 @@
-
-Traceback (most recent call last):
-  File "/home/lokad/lython-bench-checks/text-allocation-b431-launch.py", line 32, in <module>
-    assert shutil.disk_usage(base).free>required,(shutil.disk_usage(base).free,required)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: (281833472, 282652672)
