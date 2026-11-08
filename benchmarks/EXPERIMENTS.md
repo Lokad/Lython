@@ -4404,7 +4404,27 @@ evidence without a complete causal explanation. Fused/rsplit controls inconclusi
 CSV−0.26to+1.07% possible debt; small frontend allocation increase0.1–0.3% accepted,
 frontend elapsed unstable. No fixed-percentage veto or whole-objective closure.
 All source/Ready/golden/quiet/Closed/join/archive gates pass, no users/fixtures.
-Focused semantics/ownership pass per actual11/10; full delivery follows separately.
+Focused semantics/ownership pass per actual11/10; full CI42467357131 subsequently
+qualified committed05d81b83 on Windows/Ubuntu actual11/10, originalStress and
+installed consumers. The terminal receipt is cached with R92; no repeat dispatch.
 Bounded verified hardlinks preserved old core paths/bytes and all archives while
 freeing27,848,704B. Failed local inventory indentation/analysis-clock selection
 and early retrieval guard are recorded; no runtime failure was hidden or retried.
+
+## Remaining frame/operand attribution (2026-11-08)
+
+[R93/B454](results/2026-11-08-current-operand-attribution/README.md) closes the
+bounded source gate without a runtime prototype: argument presence/workspace/local
+reuse/context deferral already exist. Current complete rsplit script yields1092
+guest CPU samples,51unknown(4.67%); prefix17.12%self/input6.04% remain visible with
+inlining limits, not binder dominance. Current prefix maps uniquely; input listing
+absent. Existing CSV parser already scans native chunks/in-place. No new arena,
+fetch representation or parsing kernel is selected from these facts.
+
+[R94](results/2026-11-08-allocation-selection/README.md) uses the existing unchanged
+allocation collector for two bounded complete scripts. Sampled type association,
+not exact bytes/CPU: PyString44.81/29.13%, BigInteger21.61/27.13% (text/CSV),
+Boolean7.25%CSV. Output/Ready/zero-lost/Closed/join/fixture/funding gates pass;
+original raw ticks retained. This supports assessing generic direct comparison
+branches before a universal value replacement or new ownership subsystem. No
+runtime change or speedup follows solely from this profile.

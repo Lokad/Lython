@@ -9,8 +9,10 @@ second dispatch. No new kernel, owner, execution engine or public option.
 Baseline: committed ac5aea97, core `6a098198…`, fully qualified CI42463155006 and
 the [current CPython checkpoint](../2026-11-08-canonical-method-checkpoint/README.md).
 Candidate: bd18ea0f plus the archived R92 production sources, core `68f63d29…`.
-Full hashes/source inventory are in identity.json; full delivery is recorded
-separately when available. The primary CPython table still describes ac5aea97.
+Full hashes/source inventory are in identity.json. Committed05d81b83 is fully
+qualified by [CI42467357131](delivery-ci.json): Windows/Ubuntu actual11/10,
+original Stress and installed core consumers. The primary CPython table still
+describes ac5aea97.
 
 | Complete script | Allocation diagnostic | Quiet-VM elapsed, all four median pairings |
 | --- | ---: | ---: |

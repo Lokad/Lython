@@ -1,0 +1,299 @@
+{
+  "records": [
+    {
+      "label": "text",
+      "capturedTicks": 4303,
+      "withinCaptureTicks": 4303,
+      "eventsLost": 0,
+      "captureSeconds": 2.088661,
+      "rows": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 1928,
+          "tickPercent": 44.80594933767139,
+          "allocationIntervalProxyBytes": 205503272
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 930,
+          "tickPercent": 21.61282825935394,
+          "allocationIntervalProxyBytes": 99136672
+        },
+        {
+          "type": "System.Byte[]",
+          "ticks": 519,
+          "tickPercent": 12.06135254473623,
+          "allocationIntervalProxyBytes": 55541776
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyList",
+          "ticks": 396,
+          "tickPercent": 9.20288171043458,
+          "allocationIntervalProxyBytes": 42211728
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 291,
+          "tickPercent": 6.762723681152684,
+          "allocationIntervalProxyBytes": 31018424
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 185,
+          "tickPercent": 4.299326051591913,
+          "allocationIntervalProxyBytes": 19719360
+        },
+        {
+          "type": "System.String",
+          "ticks": 18,
+          "tickPercent": 0.41831280501975365,
+          "allocationIntervalProxyBytes": 1918800
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "ticks": 15,
+          "tickPercent": 0.348594004183128,
+          "allocationIntervalProxyBytes": 1599000
+        },
+        {
+          "type": "DelegateEnumerator[System.String]",
+          "ticks": 4,
+          "tickPercent": 0.09295840111550081,
+          "allocationIntervalProxyBytes": 426400
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Byte[]]",
+          "ticks": 3,
+          "tickPercent": 0.06971880083662561,
+          "allocationIntervalProxyBytes": 319800
+        },
+        {
+          "type": "System.Int32[]",
+          "ticks": 2,
+          "tickPercent": 0.04647920055775041,
+          "allocationIntervalProxyBytes": 221400
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ExecutionState",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Object]",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "ExceptionTypeValue",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.IO.Enumeration.FileSystemEnumerable`1[System.String]",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.Func`1[System.Threading.Tasks.ValueTask]",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyTuple",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Cursor",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Lokad.Lython.LythonExecutionResult",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "BuiltinCallable",
+          "ticks": 1,
+          "tickPercent": 0.023239600278875203,
+          "allocationIntervalProxyBytes": 106600
+        }
+      ]
+    },
+    {
+      "label": "csv",
+      "capturedTicks": 6359,
+      "withinCaptureTicks": 6358,
+      "eventsLost": 0,
+      "captureSeconds": 2.742064,
+      "rows": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "ticks": 1852,
+          "tickPercent": 29.12865681031771,
+          "allocationIntervalProxyBytes": 197420208
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "ticks": 1725,
+          "tickPercent": 27.13117332494495,
+          "allocationIntervalProxyBytes": 183870752
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "ticks": 931,
+          "tickPercent": 14.642969487260144,
+          "allocationIntervalProxyBytes": 99229592
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "ticks": 706,
+          "tickPercent": 11.104120792702108,
+          "allocationIntervalProxyBytes": 75254224
+        },
+        {
+          "type": "System.Object[]",
+          "ticks": 497,
+          "tickPercent": 7.816923560868197,
+          "allocationIntervalProxyBytes": 52978408
+        },
+        {
+          "type": "System.Boolean",
+          "ticks": 461,
+          "tickPercent": 7.250707769738912,
+          "allocationIntervalProxyBytes": 49132648
+        },
+        {
+          "type": "System.Byte[]",
+          "ticks": 127,
+          "tickPercent": 1.9974834853727588,
+          "allocationIntervalProxyBytes": 13881592
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "ticks": 32,
+          "tickPercent": 0.5033029254482542,
+          "allocationIntervalProxyBytes": 3411384
+        },
+        {
+          "type": "System.String",
+          "ticks": 5,
+          "tickPercent": 0.07864108210128971,
+          "allocationIntervalProxyBytes": 533000
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "ticks": 3,
+          "tickPercent": 0.04718464926077383,
+          "allocationIntervalProxyBytes": 320224
+        },
+        {
+          "type": "RuntimeTypeCache",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 213200
+        },
+        {
+          "type": "System.Int32[]",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 212008
+        },
+        {
+          "type": "Scope",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 213200
+        },
+        {
+          "type": "TypeNewMethod",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 211032
+        },
+        {
+          "type": "<>c__DisplayClass179_0",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 213200
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyTuple",
+          "ticks": 2,
+          "tickPercent": 0.031456432840515886,
+          "allocationIntervalProxyBytes": 213200
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ExecutionState",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.Text.PyString]",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "CsvWriterObject",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Entry[]",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "<GetEnumerator>d__58",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType[]",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        },
+        {
+          "type": "System.String[]",
+          "ticks": 1,
+          "tickPercent": 0.015728216420257943,
+          "allocationIntervalProxyBytes": 106600
+        }
+      ]
+    }
+  ],
+  "limitations": "Allocation-tick type association is sampled, not exact per-type bytes/object count or CPU causality. Interval proxy belongs to the interval ending at a sampled type, not exclusively that type. Complete batch includes reset, mediated disk I/O, full validation and prior result cleanup; startup/compile/warmup/final teardown excluded. Windows local diagnostic, normal GC/tiering; no comparison speed claim."
+}
