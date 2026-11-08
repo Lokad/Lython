@@ -904,5 +904,12 @@
     "src/Lokad.Lython/Runtime/Zip/ZipMemberReader.cs": "88a2ac8cc388a76782b755a3d78fa243e5f43ca5738e4aa85ab86cbd6315c066",
     "src/Lokad.Lython/Runtime/Zip/ZipRecordWriter.cs": "23dcf833b341bea3cfc03f1453ff0c2702ac54602e5eab4920bf474db4c00f7c",
     "src/Lokad.Lython/Runtime/Text/Data/html5.json": "0155d7c70a78db0554d8482f86017ad4c2ba9afec237399819d1f560dea33218"
+  },
+  "delivery": {
+    "sourceRevision": "5b9d569a5b7a0e29a97c39aa8bcf38774b2c043c",
+    "runId": 42443700988,
+    "status": "Fully qualified Windows/Ubuntu Release actual.NET11/10, original Stress both targets and installed core consumers",
+    "receipt": "delivery-ci.json",
+    "publication": "Postponed"
   }
 }

@@ -4201,4 +4201,5 @@ uses the existing signature layout for eleven migrated methods, rejecting invali
 Python keywords that old declarations/tests accepted.251public per actual11/10
 and43 independent CPython method/form/ordering observations pass. Argument effects,
 terminal refusal and callback suspension remain covered. No new binder/option or
-performance claim; full delivery batches with R78 at the following committed head.
+performance claim. Combined5b9d569a passes CI42443700988: Windows/Ubuntu actual
+11/10, original Stress both targets and installed core consumers; terminal cached.

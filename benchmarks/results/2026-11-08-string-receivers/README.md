@@ -63,8 +63,9 @@ links/users, immutable VM archive and independent local copies. All original byt
 remain recoverable.240MiB OS floor and7MiB evidence headroom preserved.
 
 Measured prototype passes161internal/406public per actual.NET11/10. After final
-dead-arm cleanup,257focused public actual.NET11 checks pass; final full platform,
-original Stress and installed-package delivery is recorded separately when complete.
+dead-arm cleanup,257focused public actual.NET11 checks pass; final production5b9d569a (including the positional correction) passes full
+Windows/Ubuntu actual11/10, original Stress and installed-package checks:
+[cached CI42443700988](delivery-ci.json). This does not qualify later R79 prototypes.
 Publication remains postponed. The residual helper gap (~3.09MB versus optimized
 split~1.50MB) includes remaining activation/intermediate-text work; it is not all
 attributed to one frame, and this milestone does not close the performance objective.
