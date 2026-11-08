@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -9,10 +8,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Keep transient guest references outside the long-running dispatch loop.
         // Genuine async work captures its values; raw type protocols use the
         // existing stack scratch. Context promotion runs no guest/admission hook.
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
             out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)

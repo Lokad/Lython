@@ -4913,3 +4913,21 @@ Two space preflights refused before work; verified existing catalog reuse and
 remote-only redundant inventory trimming preserve original local proof and floors.
 Archive under lease verified locally, all users joined/RAM removed/terminal cached.
 Full coherent delivery pending; roadmap and regex independent, publication postponed.
+
+
+## Dispatch CLR-liveness policy removal (2026-11-09 Paris)
+
+[R126](results/2026-11-09-dispatch-liveness/README.md), committedR125/core004e
+versusworking85e: five forcedNoInlining attributes/comments/imports removed,17lines,
+same canonical algorithms/operand owners/retirement. Thread/stack/empty-recursion
+boundaries remain.189internal/229public +21internalStack/60publicStack eachactual
+11/10 pass, matching probes built; no test/assertion/timeout changes. Allocation
+neutral within0.064%, full goldens/balances/isolation/cleanup pass. Desktop sync
+text−5.51..−6.04%/report−7.93..−8.96%, but JSON+5.69..+8.16%adverse survives;
+async controls drift17.54%. No CPU-gain or universal-neutrality claim. Retain
+development simplification with explicit JSON debt; one bounded quiet confirmation
+of text/report/adverseJSON next, no unchanged desktop replay. Full coherent
+platform/stress/package qualification pending; R125CI3109 is separate. Existing
+linear runner/shared layouts/inline presence/borrowed locals/tuple/adopted CSV
+correct source assumptions; no imagined duplicate phase or new VM. Publication
+postponed; complete-script objective remains open.

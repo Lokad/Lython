@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
@@ -20,9 +19,6 @@ internal sealed partial class LythonRuntime
             else CompleteLocalResult(ref execution, invocation, instruction, value);
         }
 
-        // Keep computed guest temporaries out of the long dispatch loop, as
-        // ordinary stores do. Unchanged operand publication needs no new fence.
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void CompleteLocalResult(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
         {

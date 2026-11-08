@@ -268,10 +268,6 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Pop's returned reference belongs to this completed transfer, rather
-        // than the long-running dispatch loop. Keep the CLR temporary here so
-        // deleting a slot can make its payload collectible before frame exit.
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
             => StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, instruction.LocalSlot,
                 TakeOperand(ref execution, instruction, scope), instruction.Span);

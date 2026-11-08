@@ -1,0 +1,18 @@
+{
+  "baselineCommit": "3109c871",
+  "baselineQualification": "CI42536319061 active,11passedbothplatforms;10/stress/packagepending23:51UTC",
+  "candidate": "R126 five dispatch helper liveness policies removed, same algorithms/ownership/public API",
+  "coreSHA256": {
+    "before": "004e844658a33543dbc73572181f4a74524182c91557804cd9d5357599c90b12",
+    "candidate": "85e68bf6d06297ecf8cac1a50f1150ef6be59f431bd9e0c18ea3fc4dcc625e71"
+  },
+  "changedSourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs": "3631680da6b86574b0900818a9754b7b75897721b0ece0e4818710475bc9764f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs": "cbf3e9397e25aebcb03e77d4bdf15627aad8414ce2b1a81fe65342f6493c2ada",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "4a435f4e6c983c33a3d04cadde05bd38d5dba4ca19ebdb3b405dc32cc508adad",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs": "d9f75f4c19797a8d87f758ec9a18b12707e3ff14a81460b938d0f328af51ceaf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs": "0d7c3826975e1bb5921f66b8a0320ae08e84f58845f4afc5d5b27d04acaafa1f"
+  },
+  "unchangedSourceBase": "All other tracked production paths match3109c871",
+  "qualification": "189internal/229public peractual11/10; separate focused managed stack/probe checks"
+}

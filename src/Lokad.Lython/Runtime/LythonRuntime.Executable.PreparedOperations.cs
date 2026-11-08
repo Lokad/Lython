@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
@@ -16,9 +15,6 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Keep transient guest values outside the shared dispatch loop, as
-        // result publication does. Only formatting opcodes enter this helper.
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool TryExecuteFormattedInstruction(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutionContext context)
         {

@@ -1337,6 +1337,8 @@ Hash originals and copies remain execution-owned through awaited host cleanup an
 diagnostic projection, then their incremental state is disposed. Failed construction
 and copying unwind their reservations/resources. Conservative batch charges can
 remain until execution ownership ends; physical collection does not drive cleanup.
+Operand retirement and awaited cleanup define ownership. Deleting a guest
+reference does not promise immediate CLR collection or a particular JIT lifetime.
 
 Text casing shares one governed UTF-8 mapping pipeline. Only capital Sigma
 requires original-subject context inspection; title keeps its separate word rule.

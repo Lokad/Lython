@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Text-read borrows](Lokad.Lython.Tests/TextReadBorrowLifetimeTests.cs) keep raw and
+decoded input funded through allocation callbacks, pending host reads and awaited
+disposal. Cancellation or first admission refusal survives a failing close;
+successful cleanup returns the shared allowance. Reentry fails explicitly and
+another refill cannot start after retirement is requested.
+
 [Function lookup lifetimes](Lokad.Lython.Tests/FunctionLookupLifetimeTests.cs)
 check reentrant first allocation, cancellation/refusal, pending-storage refunds
 and later fields changing into genuinely asynchronous formatting protocols.

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
@@ -8,7 +7,6 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static InstructionPause ExecuteComparisonInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
             out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)

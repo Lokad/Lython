@@ -1,0 +1,18 @@
+{
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "eachTarget": {
+    "internalLifetimeOwnership": 189,
+    "publicSemanticsProtocols": 229,
+    "internalStack": 21,
+    "publicStackAndCycles": 60
+  },
+  "probes": "Explicit matching Release builds/current core",
+  "testsRemoved": 0,
+  "assertionsRelaxed": 0,
+  "fullDelivery": "Pending coherent checkpoint; R125 CI qualifies3109only",
+  "performance": "Allocation neutral within0.064%; desktop elapsed diagnostic, adverse syncJSON retained; quiet comparison pending",
+  "decision": "Retain development policy deletion; no CPU-gain claim or release qualification"
+}
