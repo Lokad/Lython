@@ -1,0 +1,45 @@
+{
+  "sourceRevision": "15c06863ab90c21d953b5e22a6398592a447c20f",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Frontend/LythonFrontend.cs": "79efbad9d16c258ac116b2e1e2445222e9ac7ab62f65a22d8b47aa08e446fbcd",
+    "src/Lokad.Lython/Frontend/LexicalScopePreparation.cs": "f712b8da3416cfb364af0e5bbe1014070fba8a17c404545106557d941930142e",
+    "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs": "a839edbb1b46b46fb5998d0639cfcfbaf767a1c808fd777edc4d5b70b57379ef",
+    "src/Lokad.Lython/Frontend/LoweredScript.cs": "44fd7d4c5047c74fda4c00bf3a3569c3269313f06c4061ffc90b09b5a11f43f2",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Builder.cs": "496d627a2e4f04676ce5825602b59c73c795ea3a7fee642383dced8a2f44889d",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "c164c6a0e53a98b6f597b1c74a9b82f98baeecafc8a526b706ebcf887ff0cdd7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "3c7d2fadc552f8e685393bc5289e093a2bd98f9c1304e5e4d1f6e8ef8f76eb1c",
+    "src/Lokad.Lython/Frontend/CompiledRegexPrograms.cs": "6a123cfd5ac492ea6d97ccb4fa8c240745b184576a987fbc1988df5e2709dfff"
+  },
+  "findings": [
+    {
+      "area": "Frontend facts",
+      "finding": "Lexical preparation already retains module/function/lambda facts on syntax; lowered/executable compilation reuse them. Module facts assigned at end of preparation, not rebuilt by ForModule. Function locals use prepared LocalBindingOrder. No duplicate general binding pass selected.",
+      "eliminatedWork": "No new removal: prior work already delivered.",
+      "acceptance": "Preserve class-cell/super/walrus/comprehension/annotation scopes and diagnostics. Select a demonstrated remaining repeated phase before editing."
+    },
+    {
+      "area": "Calls and operand transport",
+      "finding": "Current native helper execution guards before all effects/admission, then evaluates existing prepared nodes. Dynamic leaf types/builtin identity can change. R93 guard2.11%/selection3.11%/evaluation4.03% guest leaves are distributed, not proof of dominant argument/frame creation. Presence/final workspace/native workstate already delivered.",
+      "eliminatedWork": "No flat guard bytecode, new carrier/arena or frame pool selected from these data.",
+      "acceptance": "Keep Python callbacks/evaluation order and terminal refusal. Never retry ordinary execution after native effects. Preserve R71 slower control/arena lessons."
+    },
+    {
+      "area": "Storage ownership",
+      "finding": "TemporaryMemoryReservation identity supports growth/shrink/commit/transfer and idempotent disposal across pending users. Allocation-tick share alone does not justify converting it to a copyable struct or wrapping it in another scope layer.",
+      "eliminatedWork": "No new ownership mechanism or audit.",
+      "acceptance": "No double refunds or refund before actual pending users/cleanup finish; retained aliases funded."
+    },
+    {
+      "area": "Remaining text and regex conversion",
+      "finding": "Trim already scans UTF8 rune boundaries and produces one final slice; compiled regex lookup already uses borrowed PyString/native UTF8 keys, not a CLR text cache. Scalar substring copies remain a deliberate independently owned result, not an automatic view conversion.",
+      "eliminatedWork": "No duplicate trimming pipeline or UTF16 cache selected; do not add consumer-specific method flags or new alias lifetimes without measured dominant work.",
+      "acceptance": "Preserve Unicode whitespace/custom chars, result independence, retained ownership, offsets and current caller cancellation."
+    }
+  ],
+  "producerSHA256": {
+    "Lokad.Utf8Regex.0.5.0-dev.55.nupkg": "692f69b7c60c76f3f002ff008d7a999740b039d0ac04adb70fc61d19f023829a",
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.55.nupkg": "5e462008db6f93aa7dfbf35dea36c8772495541336d703f16bdb8073f80748b0"
+  },
+  "producerStatus": "Latest locally supplied dev55 unchanged; no repeat qualification or sibling edits/builds.",
+  "conclusion": "Bounded source gate closed without another runtime prototype. Current comparisons and past failed conditions remain selection evidence; do not start a compiler/value/frame rewrite merely because a roadmap lists the area. R103 checkpoint running independently; next design must identify a complete remaining phase, not reopen completed work."
+}

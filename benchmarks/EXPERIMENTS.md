@@ -4553,3 +4553,21 @@ uncertainty preserved, as are desktop adverse/35.8%baseline drift. All full gold
 quiet/join/archive gates pass,172.779s; no remaining users/fixtures. Full retained
 source delivery pending separately. Future JSON changes must preserve one walker
 and explicitly decide debt; the broader whole-script performance goal remains.
+
+[R103/B462](results/2026-11-08-unified-json-checkpoint/README.md) updates the
+CPython comparison at committed15c06863/core1674 after R98/R99/R102.28jobs,
+581.936s, same26-job catalog plus two full JSON normalization
+warm cases. Separate compile/warm/compile-to-result, unchanged workers/normal
+runtime, isolated CPython3.13.16 and duplicated same-source Lython controls.
+All source/golden/quiet/join/archive/local gates pass; no users/fixtures. Full
+source qualification independently pendingCI42484943603. Primary guide updated; all prior
+named-source tables and variable/adverse cases preserved. External ratios do
+not repay eager source-pair debt or establish isolated CPU gains. R104 source gate
+finds common lexical facts/final call storage/native UTF8 caches already shared;
+no new speculative compiler/frame/ownership machinery selected. The broader
+whole-script performance objective remains open.
+
+Source15c06863 independently passes full Windows/Ubuntu actual.NET11/10, original
+Stress and installed core consumers, cached CI42484943603. This closes R102
+delivery and qualifies R103's measured source; it does not qualify later prototypes
+or alter the accepted eager source-pair regression. No unchanged qualification replay.

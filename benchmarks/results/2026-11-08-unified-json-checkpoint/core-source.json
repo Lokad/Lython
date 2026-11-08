@@ -1,0 +1,7 @@
+{
+  "vmArchive": "completed-json-b461-20261108/observations.tgz",
+  "archiveSHA256": "298dbc75d22589d653f61758411c725de414df7d544f086e5347f27304e72975",
+  "member": "current-core.dll",
+  "coreSHA256": "1674a06cf69c3b6680e74c2e7b74e72d0e84c275662ff1e3dfc5bda0cfa226ca",
+  "immutableLocalArtifact": "benchmarks/results/2026-11-08-unified-json-encoding/observations.tar.xz (nested B461)"
+}

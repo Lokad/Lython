@@ -8,7 +8,9 @@ No new lifetime fields, pools, caches, public options or parser changes.
 
 Baseline fully qualified c74c5802/core3fb37cc3; candidate b03fd326 plus archived
 two-file production patch/core1674a06c. Full production hashes in identity.json.
-Source platform/Stress/installed-core qualification is separate/pending. The main
+Committed15c06863 independently passes Windows/Ubuntu actual11/10, originalStress
+and installed core consumers at [cached CI42484943603](delivery-ci.json). This
+receipt does not qualify the later R105 prototype. The main
 CPython guide remains the named94cb8963 checkpoint.
 
 | Complete JSON normalization | Allocation sync / async | Controlled elapsed, all four median pairings |
