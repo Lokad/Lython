@@ -534,7 +534,7 @@ internal sealed partial class ExecutableCodeObject
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         PrepareCasedSplits(blocks, callSites);
-        NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count, callSites);
+        NativeBody = PrepareNativeBody(blocks, entryBlockIndex, exceptionRegions.Count, callSites);
         var reads = NativeBody is null ? ExecutableStackLayout.ForwardValues(this, blocks) : null;
         // Assign physical positions once, after removing forwarded loads. The
         // native proof retains its original instruction sequence and indices.

@@ -53,12 +53,19 @@ internal sealed partial class LythonRuntime
             else
             {
                 result = EvaluateNativeReturn(body.Root, code, body.Values, arguments, context, entryException);
-                context.State.CheckExecution(code.Instructions[^1].Span);
+                CheckNativeReturnExit(body.Root, code, body.Values, context);
             }
             context.State.SetCurrentException(entryException);
             return result;
         }
         finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static void CheckNativeReturnExit(int root, ExecutableCodeObject code,
+        NativeReturnValue[] values, ExecutionContext context)
+    {
+        var exit = values[root].ReturnInstruction;
+        if (exit >= 0) context.State.CheckExecution(code.Instructions[exit].Span);
     }
 
     private enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized }
@@ -83,6 +90,21 @@ internal sealed partial class LythonRuntime
         shape = NativeReturnShape.Other;
         switch (value.Operation)
         {
+            case NativeReturnOperation.None:
+                shape = NativeReturnShape.None;
+                return true;
+            case NativeReturnOperation.EmptySequence:
+                shape = NativeReturnShape.Sized;
+                return true;
+            case NativeReturnOperation.Conditional:
+                context.State.CheckExecution(code.Instructions[value.SourceInstruction].Span);
+                if (!GuardNativeReturn(value.First, code, values, arguments, context, out var condition)
+                    || condition == NativeReturnShape.Other
+                    || !GuardNativeReturn(value.Second, code, values, arguments, context, out var consequent)
+                    || !GuardNativeReturn(value.Third, code, values, arguments, context, out var alternative))
+                    return false;
+                shape = consequent == alternative ? consequent : NativeReturnShape.Other;
+                return true;
             case NativeReturnOperation.Read:
                 if (!TryReadNativeOperand(code, code.Instructions[value.SourceInstruction], arguments, context, out var input)) return false;
                 shape = ReturnShape(input);
@@ -196,8 +218,17 @@ internal sealed partial class LythonRuntime
     {
         ref readonly var value = ref values[index];
         ref readonly var instruction = ref code.Instructions[value.SourceInstruction];
+        if (value.Operation == NativeReturnOperation.Conditional)
+        {
+            var condition = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+            context.State.CheckExecution(instruction.Span);
+            var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
+            var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException);
+            CheckNativeReturnExit(selected, code, values, context);
+            return result;
+        }
         object? first = null, second = null, third = null, fourth = null;
-        if (value.Operation != NativeReturnOperation.Read)
+        if (value.Operation is not (NativeReturnOperation.Read or NativeReturnOperation.None or NativeReturnOperation.EmptySequence))
         {
             first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             if (value.Operation == NativeReturnOperation.CasedSplit)
@@ -221,6 +252,11 @@ internal sealed partial class LythonRuntime
         {
             switch (value.Operation)
             {
+                case NativeReturnOperation.None:
+                    return PyNone.Instance;
+                case NativeReturnOperation.EmptySequence:
+                    return instruction.OpCode == ExecutableOpCode.MakeTuple ? PyTuple.Empty
+                        : CreateEmptyNativeList(instruction.Span, context);
                 case NativeReturnOperation.Read:
                     TryReadNativeOperand(code, instruction, arguments, context, out var operand);
                     return RuntimeValue(operand);
@@ -250,6 +286,15 @@ internal sealed partial class LythonRuntime
             };
         }
         catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+    }
+
+    // Zero operands have no storage owner, and RetireTo(0) is a no-op.
+    // Keep this allocation helper's empty storage out of recursive evaluation.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static PyList CreateEmptyNativeList(LythonSourceSpan span, ExecutionContext context)
+    {
+        var empty = default(ExecutableValueStorage);
+        return CreateListFromStack(ref empty, 0, 0, span, context);
     }
 
     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,

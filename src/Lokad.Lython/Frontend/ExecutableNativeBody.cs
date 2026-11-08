@@ -14,10 +14,11 @@ internal enum NativeReturnOperation
     Split, Replace, StartsWith, EndsWith,
     CasedSplit,
     ConvertFormat, FormatValue,
+    Conditional, None, EmptySequence,
 }
 
 internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, int SourceInstruction, int First, int Second,
-    LythonRuntime.ReceiverMethod? Method = null);
+    LythonRuntime.ReceiverMethod? Method = null, int Third = -1, int ReturnInstruction = -1);
 
 internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root)
 {

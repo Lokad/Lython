@@ -412,6 +412,7 @@ instead of requerying historical green runs.
   verifies the actual shared benchmark helper releases results after consumption,
   including consumer and guest failures.
 - [Representative scripts](Lokad.Lython.PublicApi.Tests/RepresentativeScriptTests.cs): complete CSV, text, JSON and file results.
+- [Conditional helpers](Lokad.Lython.PublicApi.Tests/NativeConditionalHelperTests.cs): independent Python branch results, fresh aliases, actual truth suspension, terminal refusal and budget reuse. [Native boundaries](Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs) also preserve selected error spans and post-admission cancellation/refunds across call drivers.
 - [JSON string storage](Lokad.Lython.Tests/JsonStringTokenStorageTests.cs) and
   [escaped strings](Lokad.Lython.PublicApi.Tests/EscapedJsonStringTests.cs) cover
   native unescaping across buffer sizes, independent copies, construction overlap,

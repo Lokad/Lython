@@ -4592,3 +4592,35 @@ R105 sourcea7bd4103 independently passes full Windows/Ubuntu actual.NET11/10,
 originalStress and installed core consumers, cached CI42488128858. Controlled
 gains/possible configCPU debt remain scoped to their recorded pair. This receipt
 does not qualify the subsequent R106 conditional-helper prototype.
+
+## Native acyclic return trees (2026-11-08)
+
+[R106/B464](results/2026-11-08-native-conditional-helpers/README.md) replaces
+single-block native-return selection and final-unselected-return spans with one
+existing proof/evaluator for branch returns. Shared empty-list admission; no new
+engine/control carrier/arena/runtime owner/cache/options.205public/42internal
+peractual11/10 pass, independent Python and actual async truth/cancellation/refusal/
+funding/cleanup/selected-span coverage. Warm allocation neutral; compiler allocation
++0.08–0.53%. Controlled guarded elapsed−12.82to−13.48%sync/−13.61to−15.93%async,
+coarseCPU agrees. CSVruntime+2.71to+3.73%/CPU+4.65% retained debt, cause unresolved;
+rsplit/JSON nearbaseline. Controlled CSVcompile−1.23to+0.58%; original Windows
++74–79% not reproduced on Ubuntu or changed-order Windows confirmation, but other
+Windows compiler controls are adverse/variable. Windows compile timing remains
+uncertain; all originals/confirmation and rejected two-case driver invocation kept.
+Six jobs168.236s, all gates/archive/local verification pass; no users/fixtures.
+Exact new-source full delivery pending, a7's green does not qualify this prototype.
+No per-edit CPython replay, silent debt repayment or broader objective closure.
+
+## Native return-tree construction refinement (2026-11-08)
+
+[R106/B465](results/2026-11-08-native-conditional-helpers-final/README.md) retains
+the return-tree proof with the unchanged literal-list factory borrowed through a
+cold native helper. Initial general-list extraction and duplicate admission removed.
+205public/42internal Release peractual11/10 pass. Warm allocation neutral; controlled
+guarded elapsed−13–17% both APIs, coarse CPU supports the gain. Initial CSV +3%
+does not recur (−0.12to−1.92%, CPU flat/lower); cause remains unresolved, original
+source/data preserved. CSV compile+0.56to+1.48%, CPU mixed; JSON control variable.
+Windows compiler uncertainty and initial compiler allocation+0.08–0.53% remain.
+Six jobs168.190s/all gates/archive/local verification pass; no users/fixtures.
+Exact retained-source full delivery is independent/pending; no publication or
+completion of the broader performance objective.

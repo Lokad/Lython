@@ -4,168 +4,231 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount, ExecutableCallSite[] sites)
+    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks,
+        int entryBlock, int exceptionRegionCount, ExecutableCallSite[] sites)
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
-            || ClosureNames.Count != 0 || exceptionRegionCount != 0 || blocks.Count != 1)
+            || ClosureNames.Count != 0 || exceptionRegionCount != 0)
             return null;
-        // A second reachable block requires control flow, exception routing or
-        // implicit completion; none belongs to this straight-line proof.
-        var instructions = blocks[0].InstructionArray;
-        if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
+        if (blocks.Count == 1 && blocks[0].InstructionArray is [{ OpCode: ExecutableOpCode.ReturnNone }])
             return ExecutableNativeBody.ReturnNone;
-        if (instructions.Length < 2 || instructions[^1].OpCode != ExecutableOpCode.Return)
-            return null;
 
-        var values = new List<NativeReturnValue>();
-        var stack = new List<(int Value, int Member, int Depth)>();
-        HashSet<int>? forwardedLocals = null;
-        var hasEffects = false;
-        for (var index = 0; index < instructions.Length - 1; index++)
+        // These blocks need no synthetic Complete instruction. Native proofs
+        // keep the original sequence, so these offsets also match linearization.
+        var offsets = new int[blocks.Count + 1];
+        for (var block = 0; block < blocks.Count; block++)
         {
-            var instruction = instructions[index];
-            var operation = NativeReturnOperation.Read;
-            LythonRuntime.ReceiverMethod? nativeMethod = null;
-            var first = -1;
-            var second = -1;
-            var depth = 1;
-            switch (instruction.OpCode)
+            var instructions = blocks[block].InstructionArray;
+            if (instructions.Length == 0 || instructions[^1].OpCode is not
+                (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
+                return null;
+            offsets[block + 1] = checked(offsets[block] + instructions.Length);
+        }
+        var visited = new bool[offsets[^1]];
+        var values = new List<NativeReturnValue>();
+        var hasConditional = false;
+        var readsFormatStorage = false;
+        var proof = Compile(entryBlock, 0, false, null, 0);
+        if (proof is null || hasConditional && readsFormatStorage) return null;
+        return new(values.ToArray(), proof.Value.Root);
+
+        (int Root, int Depth)? Compile(int block, int firstInstruction, bool hasEffects,
+            HashSet<int>? forwardedLocals, int controlDepth)
+        {
+            // Compile/evaluate within the existing native recursion admission.
+            // Other control flow keeps ordinary executable code, before effects.
+            if (controlDepth > 16) return null;
+            var stack = new List<(int Value, int Member, int Depth, int MemberName)>();
+            var instructions = blocks[block].InstructionArray;
+            for (var index = firstInstruction; index < instructions.Length; index++)
             {
-                case ExecutableOpCode.LoadLocal:
-                    // A later read needs the actual binding, not its old input.
-                    if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
-                    goto case ExecutableOpCode.LoadConst;
-                case ExecutableOpCode.LoadConst:
-                    break;
-                case ExecutableOpCode.LoadName:
-                case ExecutableOpCode.LoadGlobal:
-                    // Earlier native work can invoke host admission. A later
-                    // mutable lookup cannot rely on the entry type proof.
-                    if (hasEffects) return null;
-                    break;
-                case ExecutableOpCode.StoreLocal:
-                    // Forward the operand only inside this closed native proof.
-                    // Ordinary bytecode retains both instructions and bindings
-                    // when protocols, locals inspection or other guards fail.
-                    if (stack.Count == 0 || stack[^1].Member >= 0 || index + 1 >= instructions.Length - 1
-                        || instructions[index + 1].OpCode != ExecutableOpCode.LoadLocal
-                        || instructions[index + 1].LocalSlot != instruction.LocalSlot)
-                        return null;
-                    forwardedLocals ??= new();
-                    if (!forwardedLocals.Add(instruction.LocalSlot)) return null;
-                    index++;
-                    continue;
-                case ExecutableOpCode.LoadCallMember:
-                    if (stack.Count == 0 || stack[^1].Member >= 0) return null;
-                    // Fold receiver+method into the call; no exposed bound value.
-                    stack[^1] = (stack[^1].Value, index, stack[^1].Depth);
-                    continue;
-                case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
-                case ExecutableOpCode.Subscript:
-                    if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
-                    if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                    operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Add : NativeReturnOperation.Subscript;
-                    first = stack[^2].Value;
-                    second = stack[^1].Value;
-                    depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
-                    stack.RemoveRange(stack.Count - 2, 2);
-                    break;
-                case ExecutableOpCode.ConvertFormattedValue:
-                case ExecutableOpCode.FormatField:
-                    operation = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
-                        ? NativeReturnOperation.ConvertFormat
-                        : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
-                            ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
-                    if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member >= 0) return null;
-                    first = stack[^1].Value;
-                    depth = 1 + stack[^1].Depth;
-                    stack.RemoveAt(stack.Count - 1);
-                    break;
-                case ExecutableOpCode.Call:
-                    var site = CallSites[instruction.CallSiteIndex];
-                    if (!site.IsPositionalOnly || site.ArgumentCount > 3 || stack.Count < site.ArgumentCount + 1)
-                        return null;
-                    var start = stack.Count - site.ArgumentCount - 1;
-                    var target = stack[start];
-                    if (site.HasReceiver && target.Member < 0) return null;
-                    for (var a = start + 1; a < stack.Count; a++)
-                    {
-                        if (stack[a].Member >= 0) return null;
-                        depth = Math.Max(depth, stack[a].Depth);
-                    }
-                    depth = 1 + Math.Max(depth, target.Depth);
-                    first = target.Value;
-                    second = target.Member;
-                    if (target.Member < 0)
-                    {
-                        // These shapes never passed the dynamic builtin proof.
-                        if (site.ArgumentCount != 1 || values[first].Operation != NativeReturnOperation.Read) return null;
-                        operation = NativeReturnOperation.BuiltinUnary;
-                    }
-                    else
-                    {
-                        var member = Names[instructions[target.Member].NameIndex];
-                        if (site.ArgumentCount == 0 && LythonRuntime.StringMembers.GetMethod(member) is { } method
-                            && method.AcceptsPositional(0)
-                            && StaticContracts.TryGetMemberReturnShape(AbstractValueKind.String, member, out var shape)
-                            && shape is StaticReturnShape.String or StaticReturnShape.Bytes or StaticReturnShape.Boolean or StaticReturnShape.ListOfString)
+                var sourceIndex = offsets[block] + index;
+                if (visited[sourceIndex]) return null; // cycles or shared joins
+                visited[sourceIndex] = true;
+                var instruction = instructions[index];
+                var operation = NativeReturnOperation.Read;
+                LythonRuntime.ReceiverMethod? nativeMethod = null;
+                var first = -1;
+                var second = -1;
+                var depth = 1;
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.Jump:
+                        block = instruction.TargetIndex;
+                        instructions = blocks[block].InstructionArray;
+                        index = -1;
+                        continue;
+                    case ExecutableOpCode.JumpIfFalse:
+                        if (stack.Count != 1 || stack[0].Member >= 0) return null;
+                        hasConditional = true;
+                        var condition = stack[0];
+                        var consequent = Compile(block, index + 1, hasEffects,
+                            forwardedLocals is null ? null : new(forwardedLocals), controlDepth + 1);
+                        var alternative = Compile(instruction.TargetIndex, 0, hasEffects,
+                            forwardedLocals, controlDepth + 1);
+                        if (consequent is null || alternative is null) return null;
+                        var conditionalDepth = 1 + Math.Max(condition.Depth,
+                            Math.Max(consequent.Value.Depth, alternative.Value.Depth));
+                        if (conditionalDepth > 16) return null;
+                        values.Add(new(NativeReturnOperation.Conditional, sourceIndex, condition.Value,
+                            consequent.Value.Root, Third: alternative.Value.Root));
+                        return (values.Count - 1, conditionalDepth);
+                    case ExecutableOpCode.Return:
+                        if (stack.Count != 1 || stack[0].Member >= 0) return null;
+                        var root = stack[0];
+                        values[root.Value] = values[root.Value] with { ReturnInstruction = sourceIndex };
+                        return (root.Value, root.Depth);
+                    case ExecutableOpCode.ReturnNone:
+                        if (stack.Count != 0) return null;
+                        values.Add(new(NativeReturnOperation.None, sourceIndex, -1, -1,
+                            ReturnInstruction: sourceIndex));
+                        return (values.Count - 1, 1);
+                    case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple when instruction.ItemCount == 0:
+                        operation = NativeReturnOperation.EmptySequence;
+                        break;
+                    case ExecutableOpCode.LoadLocal:
+                        // A later read needs the actual binding, not its old input.
+                        if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
+                        goto case ExecutableOpCode.LoadConst;
+                    case ExecutableOpCode.LoadConst:
+                        break;
+                    case ExecutableOpCode.LoadName:
+                    case ExecutableOpCode.LoadGlobal:
+                        // Earlier native work can invoke host admission. A later
+                        // mutable lookup cannot rely on the entry type proof.
+                        if (hasEffects) return null;
+                        break;
+                    case ExecutableOpCode.StoreLocal:
+                        // Forward the operand only inside this closed native proof.
+                        // Ordinary bytecode retains both instructions and bindings
+                        // when protocols, locals inspection or other guards fail.
+                        if (stack.Count == 0 || stack[^1].Member >= 0 || index + 1 >= instructions.Length
+                            || instructions[index + 1].OpCode != ExecutableOpCode.LoadLocal
+                            || instructions[index + 1].LocalSlot != instruction.LocalSlot)
+                            return null;
+                        forwardedLocals ??= new();
+                        if (!forwardedLocals.Add(instruction.LocalSlot)) return null;
+                        index++;
+                        if (visited[offsets[block] + index]) return null;
+                        visited[offsets[block] + index] = true;
+                        continue;
+                    case ExecutableOpCode.LoadCallMember:
+                        if (stack.Count == 0 || stack[^1].Member >= 0) return null;
+                        // Fold receiver+method into the call; no exposed bound value.
+                        stack[^1] = (stack[^1].Value, sourceIndex, stack[^1].Depth, instruction.NameIndex);
+                        continue;
+                    case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
+                    case ExecutableOpCode.Subscript:
+                        if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
+                        if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
+                        operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Add : NativeReturnOperation.Subscript;
+                        first = stack[^2].Value;
+                        second = stack[^1].Value;
+                        depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
+                        stack.RemoveRange(stack.Count - 2, 2);
+                        break;
+                    case ExecutableOpCode.ConvertFormattedValue:
+                    case ExecutableOpCode.FormatField:
+                        operation = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
+                            ? NativeReturnOperation.ConvertFormat
+                            : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
+                                ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
+                        if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member >= 0) return null;
+                        first = stack[^1].Value;
+                        depth = 1 + stack[^1].Depth;
+                        // Actual dictionary-value queries are not speculated on
+                        // an unselected branch. Straight-line proofs retain them.
+                        var formattedInput = first;
+                        while (values[formattedInput].Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+                            formattedInput = values[formattedInput].First;
+                        if (values[formattedInput].Operation == NativeReturnOperation.Subscript) readsFormatStorage = true;
+                        stack.RemoveAt(stack.Count - 1);
+                        break;
+                    case ExecutableOpCode.Call:
+                        var site = CallSites[instruction.CallSiteIndex];
+                        if (!site.IsPositionalOnly || site.ArgumentCount > 3 || stack.Count < site.ArgumentCount + 1)
+                            return null;
+                        var start = stack.Count - site.ArgumentCount - 1;
+                        var target = stack[start];
+                        if (site.HasReceiver && target.Member < 0) return null;
+                        for (var a = start + 1; a < stack.Count; a++)
                         {
-                            nativeMethod = method;
-                            operation = shape switch
-                            {
-                                StaticReturnShape.String => NativeReturnOperation.StringMethod,
-                                StaticReturnShape.Bytes => NativeReturnOperation.BytesMethod,
-                                StaticReturnShape.Boolean => NativeReturnOperation.BooleanMethod,
-                                _ => NativeReturnOperation.ListMethod,
-                            };
-                            if (member is "split" or "rsplit"
-                                && first == values.Count - 1 && target.Member == index - 1
-                                && values[first].Operation == NativeReturnOperation.StringMethod)
-                            {
-                                var producer = values[first];
-                                if (producer.SourceInstruction == producer.Second + 1
-                                    && PrepareCasedSplit(instructions, producer.SourceInstruction, index, sites) is not null)
-                                {
-                                    operation = NativeReturnOperation.CasedSplit;
-                                    first = producer.First;
-                                    second = -1;
-                                    nativeMethod = null;
-                                    values.RemoveAt(values.Count - 1);
-                                }
-                            }
+                            if (stack[a].Member >= 0) return null;
+                            depth = Math.Max(depth, stack[a].Depth);
+                        }
+                        depth = 1 + Math.Max(depth, target.Depth);
+                        first = target.Value;
+                        second = target.Member;
+                        if (target.Member < 0)
+                        {
+                            // These shapes never passed the dynamic builtin proof.
+                            if (site.ArgumentCount != 1 || values[first].Operation != NativeReturnOperation.Read) return null;
+                            operation = NativeReturnOperation.BuiltinUnary;
                         }
                         else
                         {
-                            var selected = member switch
+                            var member = Names[target.MemberName];
+                            if (site.ArgumentCount == 0 && LythonRuntime.StringMembers.GetMethod(member) is { } method
+                                && method.AcceptsPositional(0)
+                                && StaticContracts.TryGetMemberReturnShape(AbstractValueKind.String, member, out var shape)
+                                && shape is StaticReturnShape.String or StaticReturnShape.Bytes or StaticReturnShape.Boolean or StaticReturnShape.ListOfString)
                             {
-                                "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
-                                "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
-                                "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
-                                "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
-                                _ => (NativeReturnOperation?)null
-                            };
-                            if (selected is null) return null;
-                            operation = selected.Value;
+                                nativeMethod = method;
+                                operation = shape switch
+                                {
+                                    StaticReturnShape.String => NativeReturnOperation.StringMethod,
+                                    StaticReturnShape.Bytes => NativeReturnOperation.BytesMethod,
+                                    StaticReturnShape.Boolean => NativeReturnOperation.BooleanMethod,
+                                    _ => NativeReturnOperation.ListMethod,
+                                };
+                                if (member is "split" or "rsplit"
+                                    && first == values.Count - 1 && target.Member == sourceIndex - 1
+                                    && values[first].Operation == NativeReturnOperation.StringMethod)
+                                {
+                                    var producer = values[first];
+                                    if (producer.SourceInstruction >= offsets[block]
+                                        && producer.SourceInstruction == producer.Second + 1
+                                        && PrepareCasedSplit(instructions, producer.SourceInstruction - offsets[block], index, sites) is not null)
+                                    {
+                                        operation = NativeReturnOperation.CasedSplit;
+                                        first = producer.First;
+                                        second = -1;
+                                        nativeMethod = null;
+                                        values.RemoveAt(values.Count - 1);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var selected = member switch
+                                {
+                                    "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
+                                    "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
+                                    "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
+                                    "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
+                                    _ => (NativeReturnOperation?)null
+                                };
+                                if (selected is null) return null;
+                                operation = selected.Value;
+                            }
                         }
-                    }
-                    for (var a = 0; a < site.ArgumentCount; a++)
-                        site.Arguments[a] = site.Arguments[a] with
-                        {
-                            NativeValueIndex = stack[start + 1 + a].Value
-                        };
-                    stack.RemoveRange(start, site.ArgumentCount + 1);
-                    break;
-                default:
-                    return null;
+                        for (var a = 0; a < site.ArgumentCount; a++)
+                            site.Arguments[a] = site.Arguments[a] with
+                            {
+                                NativeValueIndex = stack[start + 1 + a].Value
+                            };
+                        stack.RemoveRange(start, site.ArgumentCount + 1);
+                        break;
+                    default:
+                        return null;
+                }
+                // Eligibility bound, never a guest syntax/nesting limit.
+                if (depth > 16) return null;
+                if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
+                values.Add(new(operation, sourceIndex, first, second, nativeMethod));
+                stack.Add((values.Count - 1, -1, depth, -1));
             }
-            // Eligibility bound for CLR-recursive evaluation, never a guest limit.
-            // Deeper expressions still execute through the ordinary engine.
-            if (depth > 16) return null;
-            if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
-            values.Add(new(operation, index, first, second, nativeMethod));
-            stack.Add((values.Count - 1, -1, depth));
+            return null;
         }
-        if (stack.Count != 1 || stack[0].Member >= 0) return null;
-        return new(values.ToArray(), stack[0].Value);
     }
 }

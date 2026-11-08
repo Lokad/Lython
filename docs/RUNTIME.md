@@ -456,6 +456,12 @@ calls without a bound receiver borrow their admitted caller operands synchronous
 without constructing bound argument storage. These completed helpers run directly
 in call dispatch, before pending-call state is created. Call and function stack
 admission still apply; result publication and input retirement follow completion.
+Eligible acyclic branch returns use this same prepared native expression proof.
+All type proofs precede effects; only selected operations execute, with the selected
+return's source span. Empty lists remain fresh and admitted, including cancellation
+after admission. Loops, shared joins, custom truth and format proofs that query
+container values keep ordinary executable dispatch. No separate branch interpreter
+or runtime working owner is introduced.
 The native evaluator reads a readonly
 span; it cannot retain that span or suspend. Returning an argument object preserves
 its existing ownership. Defaults, dynamic binding and suspending bodies retain owned

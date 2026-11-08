@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare native helper return trees across branches, retaining guard-before-work
+  semantics and selected return spans. Share fresh empty-list admission and keep
+  custom protocols, loops and shared joins on the existing executable path.
+
 - Share JSON encoder initialization and consume bound native options directly,
   removing temporary constructor dictionaries and keyword forwarding collections.
   Native eager calls borrow their value with the existing managed call protection;

@@ -1,0 +1,17 @@
+{
+  "status": "Retained acyclic native return proof, focused/controlled checks pass; CSV runtime debt and Windows compile uncertainty explicit. Exact new-source full delivery pending.",
+  "coreSHA256": {
+    "before": "aae80cc7335167ab87d17559d49de0dad0690a7faa9022134ce0aecfc3a4a9c2",
+    "candidate": "67e76e709fa015ef93823e5bb9aa9adc7fb8e1e00d534cf322d0d290fd0fa0bd"
+  },
+  "focusedChecks": {
+    "public11": 205,
+    "public10": 205,
+    "internal11": 42,
+    "internal10": 42
+  },
+  "archiveSHA256": "731125b15f671c8f800038d0f8c8974e96319035a4a6bc27a5ab6c0bcc6a1a7e",
+  "controlledArchiveSHA256": "b5a032305febde922ef9b85edceba9d67ceb00ba84fd3dac866e072fa40e7399",
+  "noRemainingVMUsersOrFixtures": true,
+  "referenceGuideSource": "15c06863"
+}

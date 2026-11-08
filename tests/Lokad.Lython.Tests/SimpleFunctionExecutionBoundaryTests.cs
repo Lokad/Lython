@@ -268,6 +268,107 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     }
 
     [Fact]
+    public void NativeBranchReturnsKeepFreshListsAndOriginalOwners()
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            {
+                var (function, context, code) = Function(
+                    "def f(value):\n    if value.isspace():return []\n    return value.lower().split()\n",
+                    new() { MemoryBudget = owner });
+                Assert.NotNull(code.NativeBody);
+                var input = PyString.FromString("  ", context.MemoryGovernor, CallSpan);
+                CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+                var first = Assert.IsType<PyList>(Invoke(function, arguments, context, driver));
+                var charge = context.MemoryGovernor.CurrentCommittedBytes;
+                var second = Assert.IsType<PyList>(Invoke(function, arguments, context, driver));
+                Assert.NotSame(first, second);
+                Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= charge + PyList.EstimateCapacityBytes(0));
+                first.Add(BigInteger.One);
+                Assert.Empty(second);
+                Assert.Equal("  ", input.AsString());
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                context.State.CloseResources();
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BranchListAdmissionRefusalOrCancellationPreservesOriginAndRefunds(bool cancel)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            using (var cancellation = new CancellationTokenSource())
+            {
+                var hook = new AdmissionHookMemoryBudget(owner);
+                var (function, context, code) = Function("def f(value):\n    if value:return []\n    return ()\n",
+                    new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+                Assert.NotNull(code.NativeBody);
+                // Establish any ordinary reusable call workspace before targeting
+                // the selected result's admission, independently of tiny limits.
+                Assert.Same(PyTuple.Empty, Invoke(function, [CallArgumentValue.Positional(false)], context, driver));
+                var governor = context.MemoryGovernor;
+                var committed = governor.CurrentCommittedBytes;
+                var active = new PyException("ValueError", "outer", PyNone.Instance);
+                context.State.SetCurrentException(active);
+                var bytes = PyList.EstimateCapacityBytes(0);
+                hook.RefuseGrowth = amount => !cancel && amount == bytes;
+                hook.AfterGrowth = amount => { if (cancel && amount == bytes) cancellation.Cancel(); };
+                var error = Assert.Throws<LythonRuntimeException>(() =>
+                    Invoke(function, [CallArgumentValue.Positional(true)], context, driver));
+                Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    error.Attribution?.Reason);
+                Assert.Same(Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.MakeList).Span, error.Span);
+                if (!cancel) Assert.Same(governor.AdmissionFailure, error);
+                Assert.Same(active, error.PythonContext);
+                Assert.Same(active, context.State.CurrentException);
+                Assert.Equal(committed, governor.CurrentCommittedBytes);
+                Assert.Equal(0, governor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                context.State.CloseResources();
+            }
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeBranchErrorsUseOnlyTheSelectedOperationSpan(bool consequent)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var (function, context, code) = Function(
+                "def f(flag, mapping):\n    if flag:return mapping['first']\n    return mapping['second']\n", new());
+            Assert.NotNull(code.NativeBody);
+            var mapping = new PyDict(context.MemoryGovernor, CallSpan);
+            var active = new PyException("ValueError", "outer", PyNone.Instance);
+            context.State.SetCurrentException(active);
+            var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function,
+                [CallArgumentValue.Positional(consequent), CallArgumentValue.Positional(mapping)], context, driver));
+            Assert.Equal("KeyError", error.ExceptionType);
+            var selected = code.Instructions.Where(i => i.OpCode == ExecutableOpCode.Subscript).ElementAt(consequent ? 0 : 1);
+            Assert.Same(selected.Span, error.Span);
+            Assert.Same(active, error.PythonContext);
+            Assert.Same(active, context.State.CurrentException);
+            Assert.Empty(mapping);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+        }
+    }
+
+    [Fact]
     public void FreshResultDenialKeepsSpanAndActiveException()
     {
         foreach (var driver in Enum.GetValues<Driver>())
