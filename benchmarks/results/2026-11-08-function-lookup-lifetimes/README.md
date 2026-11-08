@@ -72,3 +72,11 @@ B480SHA990a2cbc6324d249eac568f2f5c79b31fce3c21e6b153ddc96e42042d72daa88.
 [compile](compile-assessment.json), [design/history](design.md),
 [combined raw](combined-observations.tgz), [confirmation raw](confirmation-observations.tgz),
 [all local sources/binaries/adverse logs](local-evidence.tgz).
+
+Initial combined CI42525582689 failed17 operand-lifetime fixture cases on both
+platforms: their reflection constructor still supplied seven arguments. All16,845
+public tests passed per platform. The fix replaces reflection with direct internal
+access, preserving every disposal/order/ownership assertion.29focused cases pass
+peractual11/10; production source and measurements unchanged. NET10/full Stress/
+package steps were skipped by that failed run, so replacement delivery is required.
+[Original failure](initial-delivery-ci-failed.json), [logs and typed fixture](fixture-failure-and-fix.tgz).

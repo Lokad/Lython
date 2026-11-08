@@ -8,6 +8,8 @@
 - `Lokad.Lython.Tests` is the white-box suite. It references the built core and
   adapter; `InternalsVisibleTo` grants only `Lokad.Lython.WhiteBox.Tests` internal
   access to the core. It does not compile a duplicate runtime or widen public APIs.
+  Use that access directly for fixtures; constructor and member changes should
+  fail compilation rather than hide behind reflection.
 
 Behavior that can be expressed entirely through `LythonEngine`, `ILythonHost`,
 and other public contracts belongs in the public-API suite. Implementation

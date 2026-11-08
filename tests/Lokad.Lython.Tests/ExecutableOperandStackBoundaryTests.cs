@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -142,33 +140,23 @@ public sealed class ExecutableOperandStackBoundaryTests
     // real owner required by operand-capacity admission.
     private sealed class StackView : IDisposable
     {
-        private static readonly Type StackType = typeof(LythonRuntime).GetNestedType("ExecutableValueStorage", BindingFlags.NonPublic)!;
         private readonly LythonRuntime.ExecutionContext _context = new(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(64 * 1024) },regexProvider:Utf8RegexProvider.Instance);
-        private readonly object _stack;
+        private LythonRuntime.ExecutableValueStorage _stack;
         public StackView(int capacity, int? lastOwnedTemporarySlot = null)
-            => _stack = Activator.CreateInstance(StackType, [capacity, 0, lastOwnedTemporarySlot ?? capacity - 1,
-                _context, null, 0L, null])!;
+            => _stack = new(capacity, 0, lastOwnedTemporarySlot ?? capacity - 1,
+                _context, null, 0L, null, lookupOwner: null);
         public void Dispose()
         {
             RemoveTail(Count);
-            Invoke("ReleaseStorage");
+            _stack.ReleaseStorage();
             Assert.Equal(0, _context.MemoryGovernor.CurrentAccountedBytes);
         }
-        public int Count => (int)StackType.GetProperty("LiveExtent")!.GetValue(_stack)!;
-        public object At(int index) => StackType.GetProperty("Item")!.GetValue(_stack, [index])!;
-        public void Push(object value) => Invoke("PublishValue", Count, Count + 1, value);
-        public object Pop() => Invoke("TakeValue", Count - 1, Count - 1)!;
+        public int Count => _stack.LiveExtent;
+        public object At(int index) => _stack[index];
+        public void Push(object value) => _stack.PublishValue(Count, Count + 1, value);
+        public object Pop() => _stack.TakeValue(Count - 1, Count - 1);
         public object Peek() => At(Count - 1);
-        public void RemoveTail(int count) => Invoke("RetireTo", Count - count);
-        private object? Invoke(string method, params object[] arguments)
-        {
-            try { return StackType.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(_stack, arguments); }
-            catch (TargetInvocationException error) when (error.InnerException is { } inner)
-            {
-                ExceptionDispatchInfo.Capture(inner).Throw();
-                throw;
-            }
-        }
+        public void RemoveTail(int count) => _stack.RetireTo(Count - count);
     }
 }
