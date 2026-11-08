@@ -4834,3 +4834,19 @@ historical726cases retained. Optional dedup EPERM preserved, independent launch
 space preflight passed; fresh idle audit17aliases unchanged/no temporarylinks.
 Test-only fixture fixd97 leaves measured runtime unchanged; combined full delivery
 pending. No new framework, unchanged producer qualification or publication.
+
+
+## Complete helper/inline call attribution (2026-11-08)
+
+[R123/B482](results/2026-11-08-helper-call-attribution/README.md),6f76/corec617,
+two existing six-second CPU captures/helper1208samples6.08CPU57unknown4.72%,
+inline1174/5.90/69unknown5.88%. Helper binding/workspace4.97%leaf, preparation4.14%,
+tuple0.99%, context0; inclusive frame42% contains useful prefix work. Exacttuple
+unpack and bound locals already borrow existing funded storage, CSV adoptsarrays.
+No prototype or universal call-tax claim. Next source-gated ordinary fixed-shape
+binding consolidation, not carrier/arena/evaluator/owner expansion. Originalspace
+and symlink preflight refusals preserved; permitted-canonical5537792B exact-byte
+recovery/post-audit17aliases pass. Owner exited1 aftercleanup for unsupported
+two-map archive assumption; corrected metadata underfreshidlelease/no rerun,
+samecaptures archived locallyverified. Full source qualification independent;
+performance objective and regex active, no publication.

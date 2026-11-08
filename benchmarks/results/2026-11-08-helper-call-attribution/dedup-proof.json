@@ -1,0 +1,30 @@
+{
+  "beforeFreeBytes": 262606848,
+  "afterFreeBytes": 268144640,
+  "selected": {
+    "canonical": {
+      "path": "/home/lokad/lython-bench-checks/file-search-b79-20261102/worker/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816360,
+      "bytes": 5543936,
+      "links": 1,
+      "uid": 1000,
+      "parentWritable": true
+    },
+    "paths": [
+      {
+        "path": "/home/lokad/lython-bench-checks/compile-native-b86-20261102/wrapper/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 817071,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      }
+    ]
+  },
+  "all17PathsAndHashesPreserved": true,
+  "archivesUntouched": true,
+  "planPersistedBeforeMutation": true,
+  "allDisplacedInodeAliasesVerified": true
+}

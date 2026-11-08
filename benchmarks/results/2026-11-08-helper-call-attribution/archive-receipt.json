@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "capturedSeconds": 12.066995598,
+  "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+  "performanceQualified": false,
+  "originalOwnerExitCode": 1,
+  "archiveCorrection": "Removed unsupported assumption that CLR always produces perfinfo.map; actual perf.map copied/hash-verified after join, original failure preserved, no remeasurement"
+}

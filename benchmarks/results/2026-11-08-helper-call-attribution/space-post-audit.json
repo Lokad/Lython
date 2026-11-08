@@ -1,0 +1,297 @@
+{
+  "persistedPreMutationPlan": {
+    "beforeFreeBytes": 262606848,
+    "freshAliases": [
+      {
+        "path": "/home/lokad/lython-bench-checks/frame-transfer-8366e832-20261013/before/Lokad.Lython.dll",
+        "sha256": "4c64ac3c8f928db96c24a04f953d153f68ef73e7cb9f79fdd35592bff873aa5c",
+        "inode": 1906040,
+        "bytes": 5093888,
+        "links": 1,
+        "uid": 0,
+        "parentWritable": false
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013/before/Lokad.Lython.dll",
+        "sha256": "4c64ac3c8f928db96c24a04f953d153f68ef73e7cb9f79fdd35592bff873aa5c",
+        "inode": 1906088,
+        "bytes": 5093888,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/file-search-b79-20261102/worker/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 816360,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/compile-native-b86-20261102/wrapper/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 817071,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/cfg-b81-20261102/baseline/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 816612,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/frontend-b80-20261102/wrapper/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 816565,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/frontend-b80-20261102/worker/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 816506,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/dict-views-b303-20261105/baseline/Lokad.Lython.dll",
+        "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+        "inode": 838420,
+        "bytes": 5594112,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/counter-keys-final-b302-20261105/core/Lokad.Lython.dll",
+        "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+        "inode": 838318,
+        "bytes": 5594112,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/dict-views-final-b304-20261105/baseline/Lokad.Lython.dll",
+        "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+        "inode": 838520,
+        "bytes": 5594112,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/instruction-boundary-b287-20261105/core/Lokad.Lython.dll",
+        "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+        "inode": 836934,
+        "bytes": 5591552,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      {
+        "path": "/home/lokad/lython-bench-checks/instruction-boundary-confirm-b288-20261105/core/Lokad.Lython.dll",
+        "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+        "inode": 837033,
+        "bytes": 5591552,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      }
+    ],
+    "selected": {
+      "canonical": {
+        "path": "/home/lokad/lython-bench-checks/file-search-b79-20261102/worker/Lokad.Lython.dll",
+        "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+        "inode": 816360,
+        "bytes": 5543936,
+        "links": 1,
+        "uid": 1000,
+        "parentWritable": true
+      },
+      "paths": [
+        {
+          "path": "/home/lokad/lython-bench-checks/compile-native-b86-20261102/wrapper/Lokad.Lython.dll",
+          "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+          "inode": 817071,
+          "bytes": 5543936,
+          "links": 1,
+          "uid": 1000,
+          "parentWritable": true
+        }
+      ]
+    }
+  },
+  "readOnlyAudit": true,
+  "allKnownPathsAndBytesPreserved": true,
+  "aliases": [
+    {
+      "path": "/home/lokad/lython-bench-checks/frame-transfer-8366e832-20261013/before/Lokad.Lython.dll",
+      "sha256": "4c64ac3c8f928db96c24a04f953d153f68ef73e7cb9f79fdd35592bff873aa5c",
+      "inode": 1906040,
+      "bytes": 5093888,
+      "uid": 0,
+      "mode": "0o644",
+      "parentWritable": false
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013/before/Lokad.Lython.dll",
+      "sha256": "4c64ac3c8f928db96c24a04f953d153f68ef73e7cb9f79fdd35592bff873aa5c",
+      "inode": 1906088,
+      "bytes": 5093888,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/file-search-b79-20261102/worker/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816360,
+      "bytes": 5543936,
+      "uid": 1000,
+      "mode": "0o664",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/compile-native-b86-20261102/wrapper/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816360,
+      "bytes": 5543936,
+      "uid": 1000,
+      "mode": "0o664",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/cfg-b81-20261102/baseline/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816612,
+      "bytes": 5543936,
+      "uid": 1000,
+      "mode": "0o664",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/frontend-b80-20261102/wrapper/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816565,
+      "bytes": 5543936,
+      "uid": 1000,
+      "mode": "0o664",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/frontend-b80-20261102/worker/Lokad.Lython.dll",
+      "sha256": "cb0030174b3e11db90fd16136175582e88a3cd74512771746814c265fcb53957",
+      "inode": 816506,
+      "bytes": 5543936,
+      "uid": 1000,
+      "mode": "0o664",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/dict-views-b303-20261105/baseline/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838420,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/dict-views-b303-20261105/reference/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838420,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/counter-keys-final-b302-20261105/candidate/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838318,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/counter-keys-final-b302-20261105/core/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838318,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/dict-views-final-b304-20261105/baseline/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838520,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/dict-views-final-b304-20261105/reference/Lokad.Lython.dll",
+      "sha256": "48f4690c8501a2e0205d7c1bc2c4149dea67ebe098830844ec22b551c3d3b0a7",
+      "inode": 838520,
+      "bytes": 5594112,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/instruction-boundary-b287-20261105/candidate/Lokad.Lython.dll",
+      "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+      "inode": 836934,
+      "bytes": 5591552,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/instruction-boundary-b287-20261105/core/Lokad.Lython.dll",
+      "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+      "inode": 836934,
+      "bytes": 5591552,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/instruction-boundary-confirm-b288-20261105/candidate/Lokad.Lython.dll",
+      "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+      "inode": 837033,
+      "bytes": 5591552,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/instruction-boundary-confirm-b288-20261105/core/Lokad.Lython.dll",
+      "sha256": "e55e7fcc0edd975339007c85c70bde53eb29ec500ff0089d9e282b5ffd3747d5",
+      "inode": 837033,
+      "bytes": 5591552,
+      "uid": 1000,
+      "mode": "0o644",
+      "parentWritable": true
+    }
+  ],
+  "temporaryLinks": [],
+  "originalFailure": "Initial space refusal before root creation; permitted-canonical exact-byte recovery after fresh proof; all original paths and bytes preserved",
+  "futureRule": "Choose permitted canonical and writable alias directories; persist full plan before any mutation"
+}
