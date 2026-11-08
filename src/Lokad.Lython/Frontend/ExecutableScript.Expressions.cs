@@ -72,7 +72,7 @@ internal sealed partial class ExecutableScript
 
                 case LoweredMemberExpression member:
                     currentBlock = CompileExpression(member.Target, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(member.Member.MemberName), AllocateMemberCache(), member.Span));
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(member.Member.MemberName), AllocateLookupCache(), member.Span));
                     return currentBlock;
 
                 case LoweredCallExpression call:
@@ -150,7 +150,11 @@ internal sealed partial class ExecutableScript
                 case LoweredSubscriptExpression subscript:
                     currentBlock = CompileExpression(subscript.Target, currentBlock);
                     currentBlock = CompileExpression(subscript.Index, currentBlock);
-                    AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span));
+                    // A frame-local lookup can be reused only when this read
+                    // repeats within the invocation. Do not allocate a table
+                    // for each call of a one-shot field/formatting helper.
+                    AddInstruction(currentBlock, ExecutableInstruction.Subscript(subscript.Span,
+                        _loops.Count != 0 || _comprehensionNames.Count != 0 ? AllocateLookupCache() : -1));
                     return currentBlock;
 
                 case LoweredSliceExpression slice:
@@ -321,7 +325,7 @@ internal sealed partial class ExecutableScript
             {
                 exitBlock = CompileExpression(member.Target, exitBlock);
                 var nameIndex = InternName(member.Member.MemberName);
-                var cacheIndex = AllocateMemberCache();
+                var cacheIndex = AllocateLookupCache();
                 AddInstruction(exitBlock, ExecutableInstruction.LoadCallMember(nameIndex, cacheIndex, member.Span));
             }
             else exitBlock = CompileExpression(call.Target, exitBlock);

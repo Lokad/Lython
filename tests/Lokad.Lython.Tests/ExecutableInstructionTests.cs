@@ -13,7 +13,7 @@ public sealed class ExecutableInstructionTests
 
         Assert.Equal(3, call.CallSiteIndex);
         Assert.Throws<InvalidOperationException>(() => call.NameIndex);
-        Assert.Throws<InvalidOperationException>(() => call.MemberCacheIndex);
+        Assert.Throws<InvalidOperationException>(() => call.LookupCacheIndex);
     }
 
     [Fact]

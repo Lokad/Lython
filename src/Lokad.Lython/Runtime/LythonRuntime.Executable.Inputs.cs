@@ -64,6 +64,20 @@ internal sealed partial class LythonRuntime
                     return InstructionPause.Continue;
                 }
 
+                if (instruction.OpCode == ExecutableOpCode.Subscript && instruction.LookupCacheIndex >= 0 &&
+                    first is PyDict { HasSharedRecordKeys: true } record && second is PyString field)
+                {
+                    // Acquire backing before proving the live layout: admission
+                    // may reenter the host and mutate this same dictionary.
+                    var caches = execution.Stack.GetLookupCaches(execution.Code.LookupCacheCount, instruction.Span);
+                    if (record.TryReadRecordValue(field, ref caches[instruction.LookupCacheIndex], scope, instruction.Span,
+                        out var fieldValue))
+                    {
+                        PublishInstructionResult(ref execution, invocation, instruction, fieldValue);
+                        return InstructionPause.Continue;
+                    }
+                }
+
                 var immediate = (!asynchronous && invocation is not null) || (instruction.OpCode switch
                 {
                     ExecutableOpCode.Binary or ExecutableOpCode.Augmented =>

@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
         public LythonSourceSpan? AllocationSpan => _span;
 
         private static long EstimateStorage(ExecutableCodeObject code)
-            => checked(512L + 96L * (code.LocalNames.Count + code.MemberCacheCount + code.ExceptionRegions.Count));
+            => checked(512L + 96L * (code.LocalNames.Count + code.LookupCacheCount + code.ExceptionRegions.Count));
 
         internal static async ValueTask<PyGenerator> CreateExpressionAsync(ExecutableCodeObject code,
             ExecutionContext context, object outerValue, LythonSourceSpan outerSpan, LythonSourceSpan span, bool asynchronous)

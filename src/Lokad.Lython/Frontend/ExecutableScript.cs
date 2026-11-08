@@ -182,8 +182,9 @@ internal readonly record struct ExecutableInstruction
         or ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
         or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
         ? _primaryOperand : throw InvalidOperand(nameof(NameIndex));
-    public int MemberCacheIndex => OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
-        ? _secondaryOperand : throw InvalidOperand(nameof(MemberCacheIndex));
+    public int LookupCacheIndex => OpCode == ExecutableOpCode.Subscript ? _primaryOperand
+        : OpCode is ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember
+            ? _secondaryOperand : throw InvalidOperand(nameof(LookupCacheIndex));
     public bool DiscardIterator => OpCode == ExecutableOpCode.AbruptJump
         ? _secondaryOperand != 0 : throw InvalidOperand("ItemCount");
     public int ItemCount => OpCode is ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.MakeSet
@@ -342,8 +343,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.Call, span, callSiteIndex);
 
-    public static ExecutableInstruction Subscript(LythonSourceSpan span)
-        => new(ExecutableOpCode.Subscript, span);
+    public static ExecutableInstruction Subscript(LythonSourceSpan span, int cacheIndex = -1)
+        => new(ExecutableOpCode.Subscript, span, cacheIndex);
 
     public static ExecutableInstruction Slice(ExecutableSliceParts parts, LythonSourceSpan span)
         => new(ExecutableOpCode.Slice, span, (int)parts);
@@ -507,7 +508,7 @@ internal sealed partial class ExecutableCodeObject
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
         ExecutableCallSite[] callSites,
-        int memberCacheCount,
+        int lookupCacheCount,
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<LoweredStatement> statementFallbacks,
@@ -526,7 +527,7 @@ internal sealed partial class ExecutableCodeObject
         ScopeFacts = scopeFacts;
         Imports = imports;
         CallSites = callSites;
-        MemberCacheCount = memberCacheCount;
+        LookupCacheCount = lookupCacheCount;
         Functions = functions;
         MatchCases = matchCases;
         PatternStorageCount = matchCases.Select(item => item.Pattern.StorageCount).DefaultIfEmpty(0).Max();
@@ -588,7 +589,7 @@ internal sealed partial class ExecutableCodeObject
 
     public IReadOnlyList<ExecutableCallSite> CallSites { get; }
 
-    public int MemberCacheCount { get; }
+    public int LookupCacheCount { get; }
 
     public IReadOnlyList<ExecutableFunctionBinding> Functions { get; }
 

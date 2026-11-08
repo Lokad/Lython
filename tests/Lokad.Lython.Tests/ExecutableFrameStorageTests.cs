@@ -19,7 +19,7 @@ public sealed class ExecutableFrameStorageTests(Xunit.Abstractions.ITestOutputHe
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
-        Assert.True((caches ? code.MemberCacheCount : code.LocalNames.Count) >= capacity);
+        Assert.True((caches ? code.LookupCacheCount : code.LocalNames.Count) >= capacity);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var owner = budget.CreateScope())
         {

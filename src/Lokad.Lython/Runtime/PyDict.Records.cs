@@ -5,6 +5,37 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class PyDict
 {
     private RecordKeys? _recordKeys;
+    internal bool HasSharedRecordKeys => _recordKeys is not null;
+
+    // Layout identities survive changes to values, but not insertion of new
+    // keys. Deletion leaves a vacant slot. Read the current value only after
+    // checking both facts; a cache entry must never keep a previous row alive.
+    internal bool TryReadRecordValue(PyString key, ref LythonRuntime.ExecutableLookupCache cached,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+        [MaybeNullWhen(false)] out object value)
+    {
+        context.CheckExecution(span);
+        if (_recordKeys is not { } layout)
+        {
+            value = null;
+            return false;
+        }
+        int index;
+        if (ReferenceEquals(cached.Target, layout) && ReferenceEquals(cached.Value, key)) index = cached.Position;
+        else
+        {
+            var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+            index = FindNativeIndex(key, hash, context, span);
+            if (index < 0)
+            {
+                value = null;
+                return false;
+            }
+            cached = new(layout, key, index);
+        }
+        value = IsNativeLive(index) ? ReadNativeValue(index) : null;
+        return value is not null;
+    }
 
     // A layout retains keys only, never its originating row or values. Funding
     // belongs to the existing execution/cache owner, including superseded layouts

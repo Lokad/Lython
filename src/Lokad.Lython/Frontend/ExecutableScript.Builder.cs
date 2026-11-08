@@ -49,7 +49,7 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableExceptionRegion> _regions = [];
         private readonly List<ImportStatementSyntax> _imports = [];
         private readonly List<ExecutableCallSite> _callSites = [];
-        private int _memberCacheCount;
+        private int _lookupCacheCount;
         private readonly List<ExecutableFunctionBinding> _functions = [];
         private readonly List<ExecutableMatchCaseBinding> _matchCases = [];
         private readonly List<LoweredStatement> _statementFallbacks = [];
@@ -160,7 +160,7 @@ internal sealed partial class ExecutableScript
                 normalizedRegions,
                 _imports.ToArray(),
                 _callSites.ToArray(),
-                _memberCacheCount,
+                _lookupCacheCount,
                 _functions.ToArray(),
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),

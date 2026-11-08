@@ -406,7 +406,15 @@ Ownership admits the fixed whole-frame capacity and fresh cell/control storage
 before construction and retains them through suspension. A generic member lookup
 admits its frame's cache table before descriptor or protocol effects; direct
 builtin receiver paths need no table. Refusal remains terminal, including this
-later admission after earlier body effects. Read-only lexical misses leave unused
+later admission after earlier body effects. Lookup facts occupy one flat admitted
+array, without individual member-cache objects. Repeated string field reads in
+loop and comprehension bodies can reuse a position in an immutable shared CSV/JSON
+key layout across rows. Entries retain the layout and key, never a previous row
+or its value; every hit reads the current live slot. Deleted or detached fields
+and general Python mappings keep ordinary lookup. Backing admission precedes the
+layout check because a host callback can mutate the row. One-shot helper reads
+create no field-cache slots; these facts are private to the invocation.
+Read-only lexical misses leave unused
 namespace dictionaries unmaterialized; explicit namespace consumers retain the
 same stable dictionary. Arrays do not
 grow. Temporary retirement never clears the local prefix. Terminal cleanup refunds private working storage;

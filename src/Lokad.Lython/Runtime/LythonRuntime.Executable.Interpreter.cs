@@ -320,11 +320,11 @@ internal sealed partial class LythonRuntime
 
         private bool TryReadMemberCache(ExecutableInstruction instruction, object target, out object value)
         {
-            var cached = _execution.Stack.GetMemberCaches(_execution.Code.MemberCacheCount, instruction.Span)[instruction.MemberCacheIndex];
+            var cached = _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, instruction.Span)[instruction.LookupCacheIndex];
             // Equal objects may have different mutable members; identity is required.
-            if (cached is not null && ReferenceEquals(cached.Target, target))
+            if (ReferenceEquals(cached.Target, target))
             {
-                value = cached.Value;
+                value = cached.Value!;
                 return true;
             }
             value = PyNone.Instance;
@@ -332,9 +332,9 @@ internal sealed partial class LythonRuntime
         }
 
         private void PublishMemberCache(ExecutableInstruction instruction, object target, object value)
-            => _execution.Stack.GetMemberCaches(_execution.Code.MemberCacheCount, instruction.Span)[instruction.MemberCacheIndex] = CanCacheRuntimeMemberValue(target, value,
+            => _execution.Stack.GetLookupCaches(_execution.Code.LookupCacheCount, instruction.Span)[instruction.LookupCacheIndex] = CanCacheRuntimeMemberValue(target, value,
                 instruction.OpCode == ExecutableOpCode.LoadCallMember)
-                ? new ExecutableMemberCache(target, value) : null;
+                ? new ExecutableLookupCache(target, value) : default;
 
         private static void ExecuteStackTransfer(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
         {

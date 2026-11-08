@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Store executable lookup facts in a flat admitted array. Reuse immutable CSV/JSON
+  field layouts for repeated reads across rows, preserving current values,
+  mutation, cancellation, admission callbacks and cleanup. Avoid field-cache
+  allocation for one-shot helpers.
+
 - Use retained JSON record layouts to admit their final value capacity on growth,
   avoiding repeated replacement arrays for wide records. Keep changing shapes,
   callbacks and result ownership; spare hinted capacity remains charged.

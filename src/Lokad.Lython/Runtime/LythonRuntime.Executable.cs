@@ -271,15 +271,15 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
-    internal sealed record ExecutableMemberCache(object Target, object Value)
-    {
-    }
+    // One admitted array holds lookup facts. Entries retain immutable layout/key
+    // or member receiver/value pairs; record entries never retain a row's values.
+    internal readonly record struct ExecutableLookupCache(object? Target, object? Value, int Position = 0);
 
     internal struct ExecutableValueStorage
     {
         private object[] _items;
         private int[]? _nativeIterationPositions;
-        private ExecutableMemberCache?[]? _memberCaches;
+        private ExecutableLookupCache[]? _lookupCaches;
         private readonly ExecutionState _state;
         private long _ownedStorageBytes;
         private readonly int _firstTemporarySlot;
@@ -295,7 +295,7 @@ internal sealed partial class LythonRuntime
             _firstTemporarySlot = firstTemporarySlot;
             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
             _nativeIterationPositions = null;
-            _memberCaches = null;
+            _lookupCaches = null;
             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
             var governor = context.MemoryGovernor;
             governor.Reserve(bytes, allocationSpan);
@@ -313,15 +313,15 @@ internal sealed partial class LythonRuntime
         {
             _items = [];
             _nativeIterationPositions = null;
-            _memberCaches = null;
+            _lookupCaches = null;
             var bytes = _ownedStorageBytes;
             _ownedStorageBytes = 0;
             _state.MemoryGovernor.Release(bytes);
         }
 
-        internal ExecutableMemberCache?[] GetMemberCaches(int count, LythonSourceSpan span)
+        internal ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
         {
-            if (_memberCaches is { } existing) return existing;
+            if (_lookupCaches is { } existing) return existing;
             var bytes = checked(32L + 64L * count);
             var ownedBytes = checked(_ownedStorageBytes + bytes);
             var governor = _state.MemoryGovernor;
@@ -329,10 +329,10 @@ internal sealed partial class LythonRuntime
             try
             {
                 _state.CheckExecution(span);
-                var caches = new ExecutableMemberCache?[count];
+                var caches = new ExecutableLookupCache[count];
                 governor.Commit(bytes);
                 _ownedStorageBytes = ownedBytes;
-                return _memberCaches = caches;
+                return _lookupCaches = caches;
             }
             catch { governor.ReleaseReserved(bytes); throw; }
         }

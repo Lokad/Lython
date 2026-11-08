@@ -4776,3 +4776,18 @@ report1.42–1.46xvariable. Warmtext1.58–1.65xvariable, CSV1.03–1.07xvariabl
 all roles/adverse data retained, no isolated gain/old-debt repayment. Historical
 config/search/manifest/extra variants remain726, not current-source claims.
 No publication, new framework or unchanged source qualification replay.
+
+
+## Flat executable lookup facts and shared record fields (2026-11-08)
+
+[R119/B478](results/2026-11-08-record-field-resolution/README.md), qualified93e9
+reference/refined19b8 candidate,8jobs224.323s/allgates/archive/localverified.
+Complete native CSV/JSON elapsed−5.2–10.4% across source/control pairs, customCSV
+−3.1–6.4% across APIs/supporting CPU. Warm allocation near neutral except custom
++0.575%; compile allocation unchanged. Text inconclusive, report CPU+1.53–6.25%
+possible debt. Initial report+9.02%allocation explained by96B per-call cache;
+refinement restricts field slots to reusable loop/comprehension sites. Actual
+census corrects earlier false native-report inference. Retain flat existing
+lookup storage/shared layouts, no new opcode/owner/framework; full delivery pending.
+All initial/adverse source/core/raw retained. R118 guarded get/add/store source gate
+selected no prototype, complexity/evidence decision, not a permanent closure.

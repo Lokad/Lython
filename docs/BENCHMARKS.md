@@ -17,6 +17,10 @@ two independent Lython process medians, not confidence intervals. Control is the
 absolute difference; max IQR includes CPython. Diagnostic/Variable describe short
 observations, not design acceptance thresholds. Variable cases remain visible.
 
+These measurements describe the named source, rather than subsequent HEAD changes.
+The later [record-field comparison](../benchmarks/results/2026-11-08-record-field-resolution/README.md)
+measures Lython against that revision separately; it does not update these CPython ratios.
+
 Frozen core `93e926fe` matches the measured production inventory. Windows/Ubuntu
 Release actual.NET11/.NET10, original stress both and installed core consumers pass
 [cached CI42512127664](../benchmarks/results/2026-11-08-primitive-helper-delivery/delivery-ci.json).

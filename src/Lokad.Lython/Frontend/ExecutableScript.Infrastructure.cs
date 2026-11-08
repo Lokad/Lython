@@ -449,7 +449,7 @@ internal sealed partial class ExecutableScript
             return _imports.Count - 1;
         }
 
-        private int AllocateMemberCache() => _memberCacheCount++;
+        private int AllocateLookupCache() => _lookupCacheCount++;
 
         private int InternCallSite(LoweredCallExpression call, bool hasReceiver)
         {

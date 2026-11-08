@@ -172,7 +172,7 @@ internal sealed partial class ExecutableScript
                         currentBlock = CompileExpression(augmentedMember.Receiver, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Dup(augmentedMember.Span));
                         AddInstruction(currentBlock, ExecutableInstruction.LoadMember(InternName(augmentedMember.Target.MemberName),
-                            AllocateMemberCache(), augmentedMember.Span));
+                            AllocateLookupCache(), augmentedMember.Span));
                         currentBlock = CompileExpression(augmented.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Augmented(augmented.Assignment.Operator, augmented.Span));
                         AddInstruction(currentBlock, ExecutableInstruction.StoreMember(InternName(augmentedMember.Target.MemberName), InternConstant(augmentedMember.Span), augmented.Span, valueLast: true));
