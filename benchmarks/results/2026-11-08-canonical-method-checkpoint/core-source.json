@@ -1,0 +1,7 @@
+{
+  "vmArchive": "direct-native-fusion-b451-20261108/observations.tgz",
+  "archiveSHA256": "232b175d928e4b6f37bef2329edb02ab7df2259a3be49e0f22ef2712a19561c2",
+  "member": "current-core.dll",
+  "coreSHA256": "6a0981982d7003d4beb2d88da582e2b80bd3d56ea9b30823814c96eb7e4db002",
+  "immutableLocalArtifact": "benchmarks/results/2026-11-08-native-method-facts/observations.tar.xz (nested B451 archive)"
+}

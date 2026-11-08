@@ -4365,3 +4365,29 @@ coarseCPUflat. Reportinconclusive; earlier debt separate. All source/Ready/golde
 quiet/join/fixture/archive gates pass; no users remain. Exact baseline core reused
 without evidence deletion. Retain coherent simplification/affected improvement;
 full final-source delivery follows commit. Objective/publication remain open.
+
+R89 productionac5aea97 is fully qualified and cached as CI42463155006:
+Windows/Ubuntu Release actual.NET11/10, original Stress and installed core-package
+consumers. This qualifies the measured production inventory, not later changes.
+
+## Canonical-method CPython checkpoint (2026-11-08)
+
+[R90/B452](results/2026-11-08-canonical-method-checkpoint/README.md) refreshes the
+same26 maintained jobs at ac5aea97/core6a098198 in538.681s. Compilation/warm/
+compile-to-result and I/O/validation/prior cleanup remain separate. Warm ordinary
+rsplit1.80×CPython, guarded helper2.15×; other ordinary cases about1.00–1.67×,
+with variable cases visible. The guarded case includes an isspace predicate;
+different algorithms preclude attributing its entire gap to dispatch/fusion.
+All source/Ready/golden/quiet/join/fixture/archive gates pass; no users remain.
+Exact existing B451 core/archive reused after measured footprint/headroom proof,
+without evidence deletion. Current guide names the measured source/qualification,
+prior tables and adverse conditions remain linked. No single-change attribution,
+debt repayment or whole-performance-objective closure.
+
+The following source gate confirms ordinary integer formatting is already native
+UTF-8 on11/stack-bridged10 and valid escaped JSON already uses UTF-8 CopyString.
+Remaining large-integer JSON rendering is outside ordinary fixtures; builtin
+slots have per-run owner/live-namespace identity. No speculative conversion or
+global type-cache prototype follows. Next bounded design assessment considers
+sharing existing composed-receiver preparation across ordinary/native execution,
+with deletion of displaced native-only fusion machinery as a required outcome.

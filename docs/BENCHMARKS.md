@@ -2,16 +2,16 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV validation/returned records | 5,120 records / 68,625 B | 5.971–6.085 ms | 4.446 ms | 1.34–1.37× | Diagnostic; 1.91% / 2.33% |
-| CSV summary/ordinary helper | 4,096 records / 57,361 B | 3.954–3.983 ms | 3.398 ms | 1.16–1.17× | Diagnostic; 0.74% / 1.31% |
-| Text summary/helpers | 3,072 lines / 35,840 B | 2.027–2.092 ms | 1.282 ms | 1.58–1.63× | Variable; 3.20% / 0.79% |
-| JSON-lines/helpers | 4,096 records / 110,592 B | 4.293–4.315 ms | 4.256 ms | 1.01–1.01× | Diagnostic; 0.51% / 1.05% |
-| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.530–3.688 ms | 2.478 ms | 1.42–1.49× | Variable; 4.31% / 3.18% |
-| Configuration read/edit/write | 16 paths / 181 B | 142.254–142.958 µs | 124.868 µs | 1.14–1.14× | Variable; 0.49% / 3.11% |
-| Protected file search | 2,049 lines; exits after 1,025 / 42,010 B | 298.866–300.182 µs | 211.686 µs | 1.41–1.42× | Diagnostic; 0.44% / 1.48% |
-| Two-file copy/checksum/manifest | 2 files / 4,107 B | 384.468–387.899 µs | 260.080 µs | 1.48–1.49× | Diagnostic; 0.88% / 1.27% |
+| CSV validation/returned records | 5,120 records / 68,625 B | 6.003–6.019 ms | 4.501 ms | 1.33–1.34× | Diagnostic; 0.27% / 0.98% |
+| CSV summary/ordinary helper | 4,096 records / 57,361 B | 4.026–4.058 ms | 3.395 ms | 1.19–1.20× | Diagnostic; 0.81% / 1.14% |
+| Text summary/helpers | 3,072 lines / 35,840 B | 1.996–2.015 ms | 1.258 ms | 1.59–1.60× | Diagnostic; 0.98% / 1.07% |
+| JSON-lines/helpers | 4,096 records / 110,592 B | 4.312–4.319 ms | 4.218 ms | 1.02–1.02× | Diagnostic; 0.15% / 1.21% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.580–3.680 ms | 2.455 ms | 1.46–1.50× | Variable; 2.71% / 3.77% |
+| Configuration read/edit/write | 16 paths / 181 B | 143.494–145.169 µs | 125.252 µs | 1.15–1.16× | Diagnostic; 1.17% / 1.69% |
+| Protected file search | 2,049 lines; exits after 1,025 / 42,010 B | 297.297–311.737 µs | 209.917 µs | 1.42–1.49× | Variable; 4.86% / 1.63% |
+| Two-file copy/checksum/manifest | 2 files / 4,107 B | 382.472–384.928 µs | 258.757 µs | 1.48–1.49× | Diagnostic; 0.64% / 1.38% |
 
-**2026-11-08; measured source `91f15a3e`, CPython 3.13.16, .NET 11 RC3.**
+**2026-11-08; measured source `ac5aea97`, CPython 3.13.16, .NET 11 RC3.**
 These are **compilation plus one execution in an already-running host**, including
 mediated RAM-file I/O, complete output validation and prior-result cleanup.
 Startup and fixture staging/reset are excluded. **Ratio = Lython elapsed /
@@ -20,17 +20,17 @@ process medians, not confidence intervals. Control is their absolute difference
 relative to the candidate. Max IQR includes CPython. Diagnostic/Variable describe
 short observations, not design acceptance thresholds; inconclusive cases remain.
 
-Frozen core `4c072fed` matches the measured source's production inventory;
-informational SourceLink is precommit `71445454`. Windows/Ubuntu Release actual
+Frozen core `6a098198` matches the measured source's production inventory;
+informational SourceLink is precommit `aaa9cb09`. Windows/Ubuntu Release actual
 .NET11/.NET10, original Stress and installed core consumers pass
-[cached CI42451722109](../benchmarks/results/2026-11-08-prepared-consumers/delivery-ci.json).
+[cached CI42463155006](../benchmarks/results/2026-11-08-native-method-facts/delivery-ci.json).
 The benchmark and source qualification are separate evidence.
-The [26-job checkpoint](../benchmarks/results/2026-11-08-runtime-checkpoint/README.md)
+The [26-job checkpoint](../benchmarks/results/2026-11-08-canonical-method-checkpoint/README.md)
 records exact identities and verified raw evidence. Optional0.4 adapter/worker
-unchanged; no newer producer is certified. The [earlier measured-source38f53c33
-guide](../benchmarks/results/2026-11-08-runtime-checkpoint/prior-BENCHMARKS.md)
-preserves the previous comparison, including numeric-string warm cases.
-These tables describe the recorded source, not later HEAD.
+unchanged; no newer producer is certified. The [earlier source91f15a3e guide](../benchmarks/results/2026-11-08-canonical-method-checkpoint/prior-BENCHMARKS.md)
+preserves the previous tables and their inconclusive cases; still older named
+measurements remain linked there. These tables describe the recorded source,
+not a future HEAD.
 
 ## Warm execution, compilation and startup
 
@@ -43,29 +43,29 @@ time does not, by itself, separate call/frame costs from string processing.
 
 | Workload | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV validation/returned records | 5.726–5.887 ms | 4.327 ms | 1.32–1.36× | Variable; 2.72% / 0.52% |
-| CSV summary/ordinary helper | 3.835–3.928 ms | 3.249 ms | 1.18–1.21× | Variable; 2.43% / 0.72% |
-| Text summary/helpers | 1.887–1.961 ms | 1.203 ms | 1.57–1.63× | Variable; 3.92% / 2.14% |
-| JSON-lines/helpers | 3.988–4.074 ms | 4.067 ms | 0.98–1.00× | Variable; 2.11% / 0.69% |
-| JSON-to-Markdown report | 3.510–3.616 ms | 2.335 ms | 1.50–1.55× | Variable; 2.92% / 4.22% |
-| Configuration read/edit/write | 79.865–79.924 µs | 62.897 µs | 1.27–1.27× | Diagnostic; 0.07% / 1.81% |
-| Protected file search | 226.616–227.012 µs | 139.601 µs | 1.62–1.63× | Diagnostic; 0.17% / 1.14% |
-| Two-file copy/checksum/manifest | 242.192–243.121 µs | 155.211 µs | 1.56–1.57× | Diagnostic; 0.38% / 1.42% |
-| Text summary/rsplit helper | 2.527–2.583 ms | 1.160 ms | 2.18–2.23× | Variable; 2.19% / 0.99% |
-| Text summary/guarded helper | 2.546–2.594 ms | 1.201 ms | 2.12–2.16× | Diagnostic; 1.84% / 1.06% |
+| CSV validation/returned records | 5.718–5.985 ms | 4.355 ms | 1.31–1.37× | Variable; 4.67% / 1.28% |
+| CSV summary/ordinary helper | 3.861–3.888 ms | 3.230 ms | 1.20–1.20× | Diagnostic; 0.69% / 0.55% |
+| Text summary/helpers | 1.857–1.903 ms | 1.178 ms | 1.58–1.62× | Variable; 2.50% / 0.75% |
+| JSON-lines/helpers | 4.047–4.172 ms | 4.038 ms | 1.00–1.03× | Variable; 3.00% / 0.80% |
+| JSON-to-Markdown report | 3.510–3.531 ms | 2.350 ms | 1.49–1.50× | Variable; 0.60% / 4.27% |
+| Configuration read/edit/write | 79.649–80.620 µs | 61.833 µs | 1.29–1.30× | Diagnostic; 1.22% / 1.81% |
+| Protected file search | 225.616–230.023 µs | 137.392 µs | 1.64–1.67× | Diagnostic; 1.92% / 1.95% |
+| Two-file copy/checksum/manifest | 244.281–244.449 µs | 154.699 µs | 1.58–1.58× | Diagnostic; 0.07% / 2.83% |
+| Text summary/rsplit helper | 2.129–2.135 ms | 1.184 ms | 1.80–1.80× | Diagnostic; 0.30% / 0.92% |
+| Text summary/guarded helper | 2.557–2.563 ms | 1.190 ms | 2.15–2.15× | Diagnostic; 0.23% / 0.75% |
 
 Compilation alone includes construction and disposal under the shared allowance:
 
 | Workload | Lython | CPython | Lython / CPython | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- |
-| CSV validation/returned records | 70.268–71.335 µs | 65.395 µs | 1.07–1.09× | Diagnostic; 1.50% / 2.06% |
-| CSV summary/ordinary helper | 61.180–61.386 µs | 59.353 µs | 1.03–1.03× | Diagnostic; 0.34% / 0.91% |
-| Text summary/helpers | 44.740–45.281 µs | 41.415 µs | 1.08–1.09× | Diagnostic; 1.21% / 0.78% |
-| JSON-lines/helpers | 51.942–52.730 µs | 50.842 µs | 1.02–1.04× | Diagnostic; 1.50% / 0.82% |
-| JSON-to-Markdown report | 41.648–41.705 µs | 37.884 µs | 1.10–1.10× | Diagnostic; 0.14% / 1.54% |
-| Configuration read/edit/write | 38.453–38.581 µs | 34.349 µs | 1.12–1.12× | Diagnostic; 0.33% / 1.62% |
-| Protected file search | 29.125–29.228 µs | 30.886 µs | 0.94–0.95× | Diagnostic; 0.35% / 1.37% |
-| Two-file copy/checksum/manifest | 71.368–72.327 µs | 56.088 µs | 1.27–1.29× | Diagnostic; 1.34% / 0.90% |
+| CSV validation/returned records | 69.648–71.979 µs | 65.551 µs | 1.06–1.10× | Variable; 3.35% / 4.53% |
+| CSV summary/ordinary helper | 60.209–60.560 µs | 59.245 µs | 1.02–1.02× | Diagnostic; 0.58% / 1.63% |
+| Text summary/helpers | 44.772–45.612 µs | 41.519 µs | 1.08–1.10× | Diagnostic; 1.88% / 1.26% |
+| JSON-lines/helpers | 51.985–52.289 µs | 51.083 µs | 1.02–1.02× | Diagnostic; 0.58% / 0.99% |
+| JSON-to-Markdown report | 41.707–42.009 µs | 37.921 µs | 1.10–1.11× | Diagnostic; 0.72% / 0.86% |
+| Configuration read/edit/write | 38.179–39.154 µs | 34.355 µs | 1.11–1.14× | Variable; 2.49% / 0.70% |
+| Protected file search | 29.395–29.495 µs | 30.740 µs | 0.96–0.96× | Diagnostic; 0.34% / 2.32% |
+| Two-file copy/checksum/manifest | 72.170–73.486 µs | 56.331 µs | 1.28–1.30× | Diagnostic; 1.79% / 1.62% |
 
 **Startup, genuinely suspended-I/O latency, heap/RSS and embedding latency remain
 unmeasured.** A combined checkpoint does not isolate each change's CPU benefit,
@@ -80,7 +80,7 @@ one thread/core,16GiB/no swap. CPython GCC13.3 PGO/LTO, ordinary GIL/GC,
 no JIT/debug, `-I -S -X utf8`. SDK/runtime11.0.100-rc.3.26522.148 /
 11.0.0-rc.3.26522.148. Sequential independent processes, normal CLR GC/tiering,
 quiet endpoints; five-second warmup per role/job, seven rotated150ms rounds.
-All26 jobs completed in539.12seconds. Returned-record CSV parses5,120 rows and
+All26 jobs completed in538.68seconds. Returned-record CSV parses5,120 rows and
 accepts3,072; search exits after1,025 of2,049 lines, manifest copies two files.
 These small maintained scripts do not establish large-file throughput.
 
@@ -104,7 +104,7 @@ measure affected workloads; percentages are not additive or universal CPU gains.
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Shared closed-method preparation / text helpers | Allocation neutral; controlled rsplit elapsed −13.94–17.85% sync/−16.06–19.25% async, casefold sync −11.14–14.17% | Duplicate method inventory/dead fusion work removed. Fused/report controls inconclusive; CSV +0.42–1.03% possible debt. Full candidate delivery pending. [R89](../benchmarks/results/2026-11-08-native-method-facts/README.md) |
+| Shared closed-method preparation / text helpers | Allocation neutral; controlled rsplit elapsed −13.94–17.85% sync/−16.06–19.25% async, casefold sync −11.14–14.17% | Duplicate method inventory/dead fusion work removed. Fused/report controls inconclusive; CSV +0.42–1.03% possible debt. Full delivery qualified. [R89](../benchmarks/results/2026-11-08-native-method-facts/README.md) |
 | Native workstate dispatch | Ordinary/guarded helper reports allocate about 42% less; controlled elapsed 11.8–14.4% lower sync/14.5–16.1% async; guarded 10.5–12.2% lower | Native calls/iteration avoid full contexts. CSV elapsed +0.25–1.92% accepted debt; native control inconclusive. [R79](../benchmarks/results/2026-11-08-native-workstate/README.md) |
 | Shared string receiver declarations | Complete rsplit-helper report allocation −21.26%; controlled migration elapsed −14.5–16.8% sync/−14.3–14.7% async | Two providers/per-access closures/packing removed; callbacks genuinely suspend. Final duplicate-arm cleanup allocation-checked, not VM-retimed; report control inconclusive. [R78](../benchmarks/results/2026-11-08-string-receivers/README.md) |
 | Direct token storage / text, CSV | Allocation about−9.4% text/−8–9% CSV; controlled async text elapsed−2.3–3.3% | Sync text inconclusive; float async+0.9–2.7% accepted debt, full delivery qualified. [R76](../benchmarks/results/2026-11-08-inline-utf8/README.md) |

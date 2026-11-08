@@ -47,7 +47,9 @@ Timing includes invocation, mediated RAM I/O, full validation and prior-result
 cleanup; excludes compilation/startup/staging/reset/protocol/final cached teardown.
 I/O completes synchronously in timing; actual suspension is tested separately.
 No refreshed CPython ratio, universal CPU, RSS or embedding-tail claim. Full final
-Windows/Ubuntu actual11/10/originalStress/installed qualification follows commit.
+Windows/Ubuntu actual11/10/originalStress/installed qualification is fully green
+for committedac5aea97, with the exact measured production inventory, in
+[cached CI42463155006](delivery-ci.json). This does not qualify later work.
 
 All source/core/auxiliary/actualReady/runtime/golden/quiet/Closed/exit/join/fixture/
 archive gates pass. Both VM collections are terminal, archived under lease and
