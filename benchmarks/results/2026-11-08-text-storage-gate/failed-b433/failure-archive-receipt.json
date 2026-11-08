@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "failedBeforeCapture": true,
+  "allUsersJoined": true,
+  "ownedFixturesRemovedAndUnmounted": true,
+  "archiveSHA256": "957733a05d206d356febc2ef760cba3ebf13fec6499bab41ac6d81e29a773806",
+  "cause": "Linux diagnostic socket path exceeds108characters under the long owned TMPDIR; no collector attachment or allocation events. Correct with a short owned TMPDIR alias to the identical RAM fixture mount."
+}

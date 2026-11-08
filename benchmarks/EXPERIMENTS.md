@@ -4129,3 +4129,23 @@ universalCPU/CPython gain or objective completion. Fully green source68d5bffe is
 the baseline only; new full delivery pending. Verified B424 redundant prototype
 core links reclaimed with all immutable/local archives retained. B430 terminal/
 archived/verified; publication postponed, broader roadmap remains active.
+
+## Current text-storage gate without allocation capture (2026-11-08)
+
+[R75](results/2026-11-08-text-storage-gate/README.md) preserves the original
+staging-floor, Ready-list and diagnostic-socket failures. All started users joined,
+owned fixtures unmounted and failure archives verified locally. No current type
+attribution, timing or runtime prototype was obtained; stop this setup attempt.
+These failures establish missing evidence, not a rejected or permanently closed
+scalar/string design. Historical D36 allocation and R63 CPU evidence remain
+separately revision-labelled. Current source still allocates token wrappers/arrays;
+whole token storage is the next bounded representation assessment. Direct operand
+indices/native calls already exist; widening operands alone leaves escaping boxes.
+The source gate also found an uncancelled Unicode offset-cache construction loop;
+its cancellation/rollback correction precedes any storage prototype.
+
+R74's retained source33b6c191 subsequently passes full Windows/Ubuntu Release,
+actual11/10, original Stress on both targets and installed core consumers,
+CI42431587731. Its [terminal receipt](results/2026-11-08-json-float-entry/delivery-ci.json)
+is cached; never requery. Historical pending-at-measurement state stays unchanged.
+This receipt does not qualify subsequent Unicode-cache cancellation code.

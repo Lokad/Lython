@@ -1,0 +1,10 @@
+{
+  "coreSHA256": "402ae9f15552bc74858c13a1bd4984ff8415a0913247723e07846c3d6e1aefdd",
+  "sourceRevision": "a8e476bf;full41977587599 on same productionc6d71108 GREEN/all8gates cached",
+  "collectorSHA256": "7b540b471d5e450dc748d0e1b4339fcdf38ed523bf1fbe2ac23cdb887f6916a4",
+  "dependencies": {
+    "Microsoft.Diagnostics.NETCore.Client.dll": "e2cc9e1f6c97b3c4ee45ebabaa92408eb9b2fc81cb08ceeb342fe48bf79db15f",
+    "Microsoft.Diagnostics.Tracing.TraceEvent.dll": "92401392ce1887c3483a3c0085e6cc3656ee39da1be539943096ebabbad6ea21",
+    "Microsoft.Diagnostics.FastSerialization.dll": "e5bdad179ce97180646f37f357cb7b449f5baaf76f185eb09510eeafc5b773e1"
+  }
+}

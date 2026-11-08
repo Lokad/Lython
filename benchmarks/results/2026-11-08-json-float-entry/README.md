@@ -89,7 +89,10 @@ prototype core links, verified against archived81fba80c and SHA42020660. Immutab
 VM and independent local archives retain all bytes. Exact path/free-byte receipt
 remains.150sowner+30stop+30margin; no timeout/restart or terminal requery.
 B430 is terminal/archived/verified. Source68d5bffe's full green baseline receipt is
-separate; new-source qualification is pending. Publication postponed.
+separate. Retained source33b6c191 now passes full Windows/Ubuntu Release actual11/10,
+original Stress both targets and installed core consumers, CI42431587731
+([cached terminal receipt](delivery-ci.json)). This does not qualify later source.
+Publication postponed.
 
 [Controlled assessment](assessment.json), [allocation/adverse desktop](local-assessment.json),
 [focused/semantic checks](focused.json), [exact identities](identity.json), [VM identities](vm-identity.json),

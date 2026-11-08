@@ -1,0 +1,42 @@
+{
+  "sourceRevision": "33b6c19128cbfe4ae961875229417237355cd206",
+  "coreSHA256": "bb6e72b54a358d915c6ea85a9a3ed28001baa1ae4db0b92797808bb741dc0220",
+  "status": "No valid current allocation attribution; no production prototype or timing conclusion",
+  "stoppingDecision": "Stop this setup attempt after pre-capture failures; promising scalar/text designs remain unmeasured, not failed or permanently closed.",
+  "failures": [
+    {
+      "id": "B431",
+      "phase": "staging",
+      "cause": "Disk-floor gate before root/worker/collector creation",
+      "freeBytes": 281833472,
+      "requiredBytes": 282652672
+    },
+    {
+      "id": "B432",
+      "phase": "Ready verification before guest requests/collector",
+      "cause": "Harness incorrectly required unloaded adapter/backend assemblies in Ready; independently staged hashes valid",
+      "archiveSHA256": "b01bf2b913397b29be2ab9e2e5ed8147e3b96cc80e49eab1f6e518e53d7e110b"
+    },
+    {
+      "id": "B433",
+      "phase": "collector attachment after verified warmup",
+      "cause": "Linux diagnostic socket exceeds108characters under long owned TMPDIR; no capture",
+      "archiveSHA256": "957733a05d206d356febc2ef760cba3ebf13fec6499bab41ac6d81e29a773806"
+    },
+    {
+      "id": "B434",
+      "phase": "staging",
+      "cause": "Additional failed-setup archives leave insufficient reserved staging headroom; no root/worker/collector",
+      "freeBytes": 275062784,
+      "requiredBytes": 277024768
+    }
+  ],
+  "cleanup": "All started worker/collector users joined; B432/B433 owned fixture mounts empty/unmounted, archives verified under lease and locally. B431/B434 did not create a fixture mount. No active collector.",
+  "representationGate": "Direct operand indices, shared local/temporary storage, native helper returns, fused casing/split, fixed aggregate admission and intrinsic sequence adoption already exist. No redundant frame transport phase selected.",
+  "nextCandidate": "Whole token storage: assess eliminating per-token byte arrays and wrapper metadata without repeating withdrawn generic window cost. Historical D36 allocation64B PyString35.72%,byte[]18.44%,boxed BigInteger18.09%; these are sampled historical attribution, not current exact counts/CPU. R63 native CPU leaves remain separately revision-labelled.",
+  "limitations": [
+    "No current allocation type percentages or CPU attribution.",
+    "Old allocation sampling is approximate; collector changes normal costs.",
+    "No scalar/string redesign is promoted from historical attribution."
+  ]
+}
