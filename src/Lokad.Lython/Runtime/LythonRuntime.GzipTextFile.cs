@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
                 case "__next__":
                 {
                     var line = await ReadAsync(-1, true, context, span, asynchronous).ConfigureAwait(false);
-                    if (line.Utf8Bytes.Length == 0) throw new LythonRuntimeException("StopIteration", "", span);
+                    if (line.ByteLength == 0) throw new LythonRuntimeException("StopIteration", "", span);
                     return line;
                 }
                 case "readlines":
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
                     while (true)
                     {
                         var line = await ReadAsync(-1, true, context, span, asynchronous).ConfigureAwait(false);
-                        if (line.Utf8Bytes.Length == 0) break;
+                        if (line.ByteLength == 0) break;
                         lines.Add(line); consumed += line.Length;
                         if (hint > 0 && consumed > hint) break;
                     }

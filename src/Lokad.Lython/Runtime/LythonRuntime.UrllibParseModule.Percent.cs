@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-            var bytes = source.Utf8Bytes.Span;
+            var bytes = source.Utf8Span;
             try
             {
                 for (var i = 0; i < bytes.Length;)

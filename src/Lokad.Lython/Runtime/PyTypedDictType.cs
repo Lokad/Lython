@@ -16,7 +16,7 @@ internal sealed class PyTypedDictType : LythonRuntime.ICallable, IPyDynamicAttri
     internal PyTypedDictType(PyString name, PyDict annotations, bool total,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = 128L + 2L * name.Utf8Bytes.Length;
+        var bytes = 128L + 2L * name.ByteLength;
         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
         context.CheckExecution(span);
         _name = name;

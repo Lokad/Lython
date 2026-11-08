@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             else IsTruthy(arguments.Values[3], context, span);
         }
         using var scratch = PathOps.ReserveWorking(path, context, span);
-        var retained = checked(64L + 4L * (path.Utf8Bytes.Length + context.Host.Cwd.Length));
+        var retained = checked(64L + 4L * (path.ByteLength + context.Host.Cwd.Length));
         context.MemoryGovernor.Reserve(retained, span); context.MemoryGovernor.Commit(retained);
         return new PyWalkIterator(path.AsString(), topdown, onerror, context, span);
     }
@@ -84,8 +84,8 @@ internal sealed partial class LythonRuntime
     {
         if (value is PyBytes bytes) return bytes;
         var path = asynchronous ? await CoercePathLikeAsync(value, context, span, "os.fsencode").ConfigureAwait(false) : CoercePathLike(value, context, span, "os.fsencode");
-        using var reservation = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(path.Utf8Bytes.Length), span);
-        return new PyBytes(path.Utf8Bytes.ToArray(), context.MemoryGovernor, span, reservation);
+        using var reservation = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(path.ByteLength), span);
+        return new PyBytes(path.Utf8Span.ToArray(), context.MemoryGovernor, span, reservation);
     }
 
     private static object OsFsDecode(object[] arguments, LythonSourceSpan span, ExecutionContext context)

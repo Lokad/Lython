@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
 
     private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
     {
-        var input = text.Utf8Bytes.Span;
+        var input = text.Utf8Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         const string hex = "0123456789abcdef";
         try

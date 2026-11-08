@@ -42,7 +42,7 @@ internal static partial class PyStringOps
         context ??= PyStructuralGuard.AmbientContext;
         governor?.ThrowIfAdmissionFailed();
         context?.CheckExecution(span);
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         // Fixed, memory-safe stack scratch; larger results admit their backing
         // through the existing reservation before allocating a replacement.
         Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
@@ -68,7 +68,8 @@ internal static partial class PyStringOps
             {
                 context?.CheckExecution(span);
                 var range = ranges[reverse ? count - index - 1 : index];
-                var bytes = new byte[range.Capacity];
+                var fragment = PyString.CreateReservedUtf8(range.Capacity, governor);
+                var bytes = fragment.UnpublishedUtf8;
                 var written = bytes.Length;
                 if (casing is { } mapping)
                 {
@@ -81,12 +82,10 @@ internal static partial class PyStringOps
                     {
                         context?.CheckExecution(span);
                         var chunk = Math.Min(4096, bytes.Length - copied);
-                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.AsSpan(copied, chunk));
+                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.Slice(copied, chunk));
                         copied += chunk;
                     }
-                var fragment = governor is null ? PyString.FromReservedUtf8(bytes, written, null, span)
-                    : PyString.FromOwnedUtf8(bytes, governor, span, output!, written);
-                parts[index] = fragment;
+                parts[index] = fragment.CompleteReservedUtf8(written, output);
             }
             context?.CheckExecution(span);
             output?.Commit(listBytes);

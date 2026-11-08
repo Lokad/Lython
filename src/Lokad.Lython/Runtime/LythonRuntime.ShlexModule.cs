@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
 
         private static bool IsSafeShellWord(PyString value, LythonSourceSpan span, ExecutionContext context)
         {
-            var bytes = value.Utf8Bytes.Span;
+            var bytes = value.Utf8Span;
             if (bytes.IsEmpty) return false;
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -169,7 +169,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
             builder.Append((byte)'\'');
-            var bytes = value.Utf8Bytes.Span;
+            var bytes = value.Utf8Span;
             for (var i = 0; i < bytes.Length; i++)
             {
                 if ((i & 1023) == 0) context.CheckExecution(span);

@@ -684,7 +684,7 @@ internal sealed partial class LythonRuntime
             IEnumerable<object> Parents()
             {
                 var current = path.Value;
-                while (current.Utf8Bytes.Length > PathOps.RootLength(current.Utf8Bytes.Span) && !current.Utf8Bytes.Span.SequenceEqual("."u8))
+                while (current.ByteLength > PathOps.RootLength(current.Utf8Span) && !current.Utf8Span.SequenceEqual("."u8))
                 {
                     current = PathOps.Parent(current, context, span);
                     yield return OwnPathResult(current, current, context.MemoryGovernor, span, path.IsPure);

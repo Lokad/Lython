@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
         private static LythonRegexWindow Window(RegexSubjectRange range, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            var input = range.Original.Utf8Bytes.Span;
+            var input = range.Original.Utf8Span;
             var length = range.Original.Length;
             if (length == input.Length) return new(range.Pos, range.EndPos, range.Pos, range.EndPos);
             var start = range.Pos == 0 ? 0 : range.Pos == length ? input.Length : -1;
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
             if (match.Captures.Length != pattern.CaptureSlotCount || match.Captures.Length == 0 || match.Captures[0] is null ||
                 match.LastIndex is { } last && (last <= 0 || last >= match.Captures.Length || match.Captures[last] is null))
                 throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
-            var input = range.Original.Utf8Bytes.Span;
+            var input = range.Original.Utf8Span;
             for (var i = 0; i < match.Captures.Length; i++)
             {
                 context.CheckExecution(span);
@@ -125,7 +125,7 @@ internal sealed partial class LythonRuntime
             ref RegexScalarPosition previous, ExecutionContext context, LythonSourceSpan span)
         {
             var count = checked(2 * captures.Length);
-            var input = range.Original.Utf8Bytes.Span;
+            var input = range.Original.Utf8Span;
             if (range.Original.Length == input.Length)
             {
                 for (var i = 0; i < captures.Length; i++)
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
                 }
             }
             context.CheckExecution(span);
-            result.Add(window.StartByte == 0 && window.EndByte == range.Original.Utf8Bytes.Length && lastByte == 0
+            result.Add(window.StartByte == 0 && window.EndByte == range.Original.ByteLength && lastByte == 0
                 ? range.Original : CreateUtf8String(range.Original.Utf8Bytes.Slice(lastByte, window.EndByte - lastByte), context, span));
             return result;
         }
@@ -321,7 +321,7 @@ internal sealed partial class LythonRuntime
                     if (plan is null) projected = CreateMatchObject(pattern, range, match, ref position, context, span);
                     else ValidateMatch(pattern, range, match, context, span);
                     var whole = match.Captures[0]!.Value;
-                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..whole.StartByte], context, span);
+                    AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..whole.StartByte], context, span);
                     if (plan is not null) plan.AppendTo(builder, range, match.Captures, context, span);
                     else
                     {
@@ -333,7 +333,7 @@ internal sealed partial class LythonRuntime
                         context.CheckExecution(span);
                         if (!PyStringOps.TryAsString(value, out var text))
                             throw RuntimeErrors.Type("Regex replacement callable must return a string.", span);
-                        AppendRegexBytes(builder, text.Utf8Bytes.Span, context, span);
+                        AppendRegexBytes(builder, text.Utf8Span, context, span);
                     }
                     lastByte = whole.EndByte;
                     replaced++;
@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
                 if (replaced == 0) result = range.Original;
                 else
                 {
-                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span[lastByte..], context, span);
+                    AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..], context, span);
                     result = builder.ToPyStringAndRelease();
                     context.CheckExecution(span);
                 }

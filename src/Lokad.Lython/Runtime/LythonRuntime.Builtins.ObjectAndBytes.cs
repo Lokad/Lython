@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
     {
         // UTF-8 input bytes bound decoded UTF-16 capacity. Fund decoding
         // and an optional normalization buffer before either allocation.
-        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        var length = source is PyString text ? text.ByteLength : ((PyBytes)source).Length;
         var decodeBytes = RuntimeMemoryEstimates.SaturatingAdd(32,
             RuntimeMemoryEstimates.SaturatingMultiply(2, length));
         using var working = context.MemoryGovernor.ReserveTemporary(
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation working)
     {
         const string prefix = "could not convert string to float: ";
-        var length = source is PyString text ? text.Utf8Bytes.Length : ((PyBytes)source).Length;
+        var length = source is PyString text ? text.ByteLength : ((PyBytes)source).Length;
         // Repr expands each input byte to at most four UTF-16 units (\xNN).
         // Admit both the decoded repr and the final message while they overlap.
         var messageChars = RuntimeMemoryEstimates.SaturatingAdd(prefix.Length + 4,

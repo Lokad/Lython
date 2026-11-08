@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
             context?.CheckExecution(span);
             var bytes = GroupBytes(index);
             if (bytes.IsEmpty) return PyString.Empty;
-            if (bytes.Length == String.Utf8Bytes.Length) return String;
+            if (bytes.Length == String.ByteLength) return String;
             using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(bytes.Length), span);
             context?.CheckExecution(span);
             var copy = new byte[bytes.Length];

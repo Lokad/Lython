@@ -332,7 +332,7 @@ internal static class CallExpansion
     private static string DecodeKeywordName(PyString text, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         context.CheckExecution(span);
-        if (text.Utf8Bytes.IsEmpty) return string.Empty;
+        if (text.Utf8Span.IsEmpty) return string.Empty;
         var bytes = checked(32L + 2L * text.GetUtf16CodeUnitCount());
         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
         var name = text.AsString();

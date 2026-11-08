@@ -808,11 +808,11 @@ internal sealed partial class LythonRuntime
     {
         // Fund retained CLR names and the temporary validation inventories before
         // decoding or copying. The type constructor funds its own final backing.
-        var retainedBytes = 24L + 2L * name.Utf8Bytes.Length;
+        var retainedBytes = 24L + 2L * name.ByteLength;
         foreach (PyString field in names)
         {
             context.CheckExecution(span);
-            retainedBytes = checked(retainedBytes + 24L + 2L * field.Utf8Bytes.Length);
+            retainedBytes = checked(retainedBytes + 24L + 2L * field.ByteLength);
         }
         using var storage = context.MemoryGovernor.ReserveTemporary(checked(retainedBytes + 128L * names.Count + 32), span);
         context.CheckExecution(span);

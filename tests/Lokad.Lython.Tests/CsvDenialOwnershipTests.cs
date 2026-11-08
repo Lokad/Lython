@@ -53,6 +53,7 @@ public sealed class CsvDenialOwnershipTests
         parser.Feed("1,"u8);
         Assert.True(parser.TryTakeReady(out var retained));
         var held = PyString.FromString("held", governor, Span);
+        var heldBytes = held.Utf8Bytes;
         ILythonMemoryReservation? padding = null;
         // Fund the 130-byte UTF-8 value, leaving 70 bytes for its 72-byte float scratch.
         if (shared) Assert.True(budget.TryReserve(Cap - budget.ReservedBytes - 200, out padding));
@@ -65,7 +66,7 @@ public sealed class CsvDenialOwnershipTests
         Assert.Equal(72, governor.LastDeniedReservationBytes); // Existing float scratch for two UTF-8 bytes.
         Assert.Equal(1.0, Assert.IsType<double>(retained[0]));
         Assert.False(parser.TryTakeReady(out _));
-        Assert.True(held.Utf8Bytes.Span.SequenceEqual("held"u8));
+        Assert.True(heldBytes.Span.SequenceEqual("held"u8));
         Assert.Equal(0, governor.CurrentReservedBytes);
         parser.ResetRecord();
         Assert.Same(error, Assert.Throws<LythonRuntimeException>(() => parser.Feed("3\n"u8)));

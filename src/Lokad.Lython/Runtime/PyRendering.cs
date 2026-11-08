@@ -356,7 +356,7 @@ internal static class PyRendering
 
     private static PyString RenderStringLiteral(PyString text, PyRenderingContext context)
     {
-        var source = text.Utf8Bytes.Span;
+        var source = text.Utf8Span;
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         // Like CPython, a string holding a single quote but no double quote
         // renders wrapped in double quotes with its singles left bare;

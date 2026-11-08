@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
                     if (!_recursive || !(bool)info[2]) continue;
 
                     var name = (PyString)info[1];
-                    using var key = context.MemoryGovernor.ReserveTemporary(checked(256L + 8L * name.Utf8Bytes.Length), _span);
+                    using var key = context.MemoryGovernor.ReserveTemporary(checked(256L + 8L * name.ByteLength), _span);
                     object module;
                     try
                     {
@@ -171,8 +171,8 @@ internal sealed partial class LythonRuntime
                     var text = pulled.Value is PyPath pyPath ? pyPath.Value : pulled.Value as PyString
                         ?? throw RuntimeErrors.Type("pkgutil discovery expects an iterable of path strings", _span);
                     using var pathStorage = context.MemoryGovernor.ReserveTemporary(
-                        checked(256L + 128L * (text.Utf8Bytes.Length + (long)context.Host.Cwd.Length)), _span);
-                    var directory = text.Utf8Bytes.IsEmpty ? "." : text.AsString();
+                        checked(256L + 128L * (text.ByteLength + (long)context.Host.Cwd.Length)), _span);
+                    var directory = text.Utf8Span.IsEmpty ? "." : text.AsString();
                     IReadOnlyList<string> entries;
                     try { entries = _asynchronous ? await context.HostListDirAsync(directory, _span).ConfigureAwait(false)
                         : context.HostListDir(directory, _span); }
@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
                             var source = package ? PathOps.Join(child, "__init__.py") : child;
                             if (package && !(_asynchronous ? await context.HostExistsAsync(source, _span).ConfigureAwait(false) : context.HostExists(source, _span))) continue;
                             if (prefix is not PyString prefixText) throw RuntimeErrors.Type("pkgutil discovery prefix must be a string", _span);
-                            using var named = context.MemoryGovernor.ReserveTemporary(checked(128L + 8L * (prefixText.Utf8Bytes.Length + (long)leaf.Length)), _span);
+                            using var named = context.MemoryGovernor.ReserveTemporary(checked(128L + 8L * (prefixText.ByteLength + (long)leaf.Length)), _span);
                             var fullname = prefixText.AsString() + leaf;
                             if (!PkgutilModule.IsDiscoveredLocalModuleAllowed(fullname, source, context)) continue;
                             scratch.Grow(checked(256L + 8L * leaf.Length), _span);

@@ -241,7 +241,7 @@ internal sealed partial class LythonRuntime
                 {
                     context.CheckExecution(pattern.Span);
                     if (matchArgs[i] is PyString text)
-                        nameBytes = checked(nameBytes + 32L + 2L * text.Utf8Bytes.Length);
+                        nameBytes = checked(nameBytes + 32L + 2L * text.ByteLength);
                 }
         }
 

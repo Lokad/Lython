@@ -8,6 +8,8 @@ public sealed class TerminalStringStorageTests
 {
     [Theory]
     [InlineData("abc", "b")]
+    [InlineData("café", "é")]
+    [InlineData("α😀β", "😀")]
     [InlineData("café😀", "é")]
     [InlineData("😀β😀", "😀")]
     public void ContentOperationsExcludeUnusedInvalidTail(string content, string needle)

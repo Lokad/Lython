@@ -450,7 +450,7 @@ internal sealed partial class LythonRuntime
             {
                 if (pair.Value.StoredValue is PyString text)
                 {
-                    total = RuntimeMemoryEstimates.SaturatingAdd(total, text.Utf8Bytes.Length);
+                    total = RuntimeMemoryEstimates.SaturatingAdd(total, text.ByteLength);
                 }
 
                 var formula = worksheet.GetFormulaXml(pair.Key.Row, pair.Key.Column);

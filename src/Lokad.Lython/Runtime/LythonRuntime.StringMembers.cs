@@ -355,7 +355,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 if ((start is null or PyNone) && (end is null or PyNone))
-                    return new(0, text.Utf8Bytes.Length, true);
+                    return new(0, text.ByteLength, true);
 
                 var textLength = text.Length;
                 var normalized = PyStringOps.NormalizeRange(textLength, start, end);

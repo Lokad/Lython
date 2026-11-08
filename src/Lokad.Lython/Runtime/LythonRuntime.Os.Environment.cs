@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
         public bool TryGetString(string key, [MaybeNullWhen(false)] out string value) => _items.TryGetValue(key, out value);
 
         private MemoryGovernor.TemporaryMemoryReservation KeyScratch(object key, LythonSourceSpan? span)
-            => _governor.ReserveTemporary(key is PyString text ? 32L + 2L * text.Utf8Bytes.Length : 0, span);
+            => _governor.ReserveTemporary(key is PyString text ? 32L + 2L * text.ByteLength : 0, span);
 
         public object GetDefault(object key, object fallback, LythonSourceSpan span)
             => TryRead(key, span, out var value) ? value : fallback;
@@ -180,10 +180,10 @@ internal sealed partial class LythonRuntime
         {
             if (!PyStringOps.TryAsString(index, out var key) || !PyStringOps.TryAsString(value, out var text))
                 throw RuntimeErrors.Type("environment keys and values must be strings", span);
-            if (key.Utf8Bytes.IsEmpty) throw new LythonRuntimeException("OSError", "Invalid environment variable name", span);
-            if (key.Utf8Bytes.Span.Contains((byte)'=') || key.Utf8Bytes.Span.Contains((byte)0) || text.Utf8Bytes.Span.Contains((byte)0))
+            if (key.Utf8Span.IsEmpty) throw new LythonRuntimeException("OSError", "Invalid environment variable name", span);
+            if (key.Utf8Span.Contains((byte)'=') || key.Utf8Span.Contains((byte)0) || text.Utf8Span.Contains((byte)0))
                 throw new LythonRuntimeException("ValueError", "environment names cannot contain '=' or NUL and values cannot contain NUL", span);
-            var strings = checked(128L + 2L * (key.Utf8Bytes.Length + (long)text.Utf8Bytes.Length));
+            var strings = checked(128L + 2L * (key.ByteLength + (long)text.ByteLength));
             // Per-entry headroom funds retained table capacity and replacement
             // growth. Old decoded values may remain aliased by retained requests.
             using var construction = _governor.ReserveTemporary(checked(strings + 256), span);

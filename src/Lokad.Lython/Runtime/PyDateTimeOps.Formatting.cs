@@ -97,7 +97,7 @@ internal static partial class PyDateTimeOps
         var mondayBasedWeekday = value.Weekday;
         var yearDay = value.YearDay;
         var displayWeekday = new DateTime(2024, 1, 1).AddDays(mondayBasedWeekday);
-        var input = format.Utf8Bytes.Span;
+        var input = format.Utf8Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {

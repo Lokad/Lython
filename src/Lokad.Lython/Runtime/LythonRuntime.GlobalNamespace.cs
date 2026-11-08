@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
         {
             var textKey = key as PyString;
             // Fund the decoded name, metadata record and name lookup entry.
-            var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Bytes.Span);
+            var entryBytes = textKey is null ? 0 : NameEntryBytes + 2L * System.Text.Encoding.UTF8.GetCharCount(textKey.Utf8Span);
             using var entryFunding = _root.MemoryGovernor.ReserveTemporary(entryBytes, _span);
             var name = textKey?.ToString();
             ((PyDict)_entries).EnsureNativeCapacity(Count + 1, _root.MemoryGovernor, _span);

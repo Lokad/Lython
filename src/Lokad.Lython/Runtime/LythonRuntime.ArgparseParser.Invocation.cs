@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
             var estimate = checked(256L + 128L * arguments.Length);
             foreach (var argument in arguments)
                 if ((argument.IsPositional || argument.KeywordName is "dest" or "action" or "nargs" or "help" or "metavar" or "version") && PyStringOps.TryAsString(argument.Value, out var text))
-                    estimate = checked(estimate + 6L * text.Utf8Bytes.Length);
+                    estimate = checked(estimate + 6L * text.ByteLength);
             using var construction = context.MemoryGovernor.ReserveTemporary(estimate, span);
             EnsureFormatter(span);
             var spec = CreateArgumentSpec(arguments, span, groupId, context);
@@ -223,7 +223,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 if (!PyStringOps.TryAsString(item, out var text)) throw RuntimeErrors.Type($"{methodName}(args) expects an iterable of strings.", span);
-                working.Grow(128L + 4L * text.Utf8Bytes.Length, span);
+                working.Grow(128L + 4L * text.ByteLength, span);
                 argv.Add(text.AsString());
             }
             var namespaceObject = ReferenceEquals(namespaceValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(namespaceValue, PyNone.Instance)

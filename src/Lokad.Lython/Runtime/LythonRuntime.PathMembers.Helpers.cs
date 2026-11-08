@@ -38,8 +38,8 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> PathGlob(PyPath path, object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous, bool recursive, bool directory = false)
         {
             var pattern = directory ? DirectoryPattern : (asynchronous ? await CoercePathLikeAsync(arguments[0], context, span, "Path.glob").ConfigureAwait(false) : CoercePathLike(arguments[0], context, span, "Path.glob"));
-            if (pattern.Utf8Bytes.IsEmpty) throw RuntimeErrors.Value("Unacceptable pattern: empty pattern", span);
-            if (PathOps.RootLength(pattern.Utf8Bytes.Span) != 0) throw new LythonRuntimeException("NotImplementedError", "Non-relative patterns are unsupported", span);
+            if (pattern.Utf8Span.IsEmpty) throw RuntimeErrors.Value("Unacceptable pattern: empty pattern", span);
+            if (PathOps.RootLength(pattern.Utf8Span) != 0) throw new LythonRuntimeException("NotImplementedError", "Non-relative patterns are unsupported", span);
             if (arguments.Length >= 2 && arguments[1] is not PyNone && !(asynchronous ? await IsTruthyAsync(arguments[1], context, span).ConfigureAwait(false) : IsTruthy(arguments[1], context, span)))
                 throw new LythonRuntimeException("NotImplementedError", "case_sensitive=False is not supported", span);
             if (arguments.Length >= 3 && (asynchronous ? await IsTruthyAsync(arguments[2], context, span).ConfigureAwait(false) : IsTruthy(arguments[2], context, span)))
@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
             if (recursive)
             {
                 var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
-                try { builder.Append("**/"u8); PathOps.Append(builder, pattern.Utf8Bytes.Span, context, span); pattern = builder.ToPyStringAndRelease(); }
+                try { builder.Append("**/"u8); PathOps.Append(builder, pattern.Utf8Span, context, span); pattern = builder.ToPyStringAndRelease(); }
                 finally { builder.Release(); }
             }
             var bytes = checked(PathOps.WorkingBytes(path.Value, context, span) + PathOps.WorkingBytes(pattern, context, span) + 32L * context.Host.Cwd.Length);
@@ -139,7 +139,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 using var scratch = PathOps.ReserveWorking(pathValue, context, span);
-                var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
+                var pathBytes = checked(64L + 2L * pathValue.ByteLength);
                 context.MemoryGovernor.Reserve(pathBytes, span);
                 context.MemoryGovernor.Commit(pathBytes);
                 var path = pathValue.AsString();
@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 using var scratch = PathOps.ReserveWorking(pathValue, context, span);
-                var pathBytes = checked(64L + 2L * pathValue.Utf8Bytes.Length);
+                var pathBytes = checked(64L + 2L * pathValue.ByteLength);
                 context.MemoryGovernor.Reserve(pathBytes, span);
                 context.MemoryGovernor.Commit(pathBytes);
                 var path = pathValue.AsString();

@@ -509,8 +509,8 @@ internal sealed partial class LythonRuntime
     {
         if (sep is PyString sepText)
         {
-            Rune.DecodeFromUtf8(sepText.Utf8Bytes.Span, out var rune, out var consumed);
-            if (consumed == 0 || consumed != sepText.Utf8Bytes.Length)
+            Rune.DecodeFromUtf8(sepText.Utf8Span, out var rune, out var consumed);
+            if (consumed == 0 || consumed != sepText.ByteLength)
             {
                 throw new LythonRuntimeException("ValueError", "sep must be length 1.", span);
             }

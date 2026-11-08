@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
                 {
                     context.CheckExecution(span);
                     if (pair.Key is not PyString name) throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
-                    bytes = checked(bytes + 32L + 2L * name.Utf8Bytes.Length);
+                    bytes = checked(bytes + 32L + 2L * name.ByteLength);
                 }
             }
             using var working = context.MemoryGovernor.ReserveTemporary(bytes, span);
@@ -453,7 +453,7 @@ internal sealed partial class LythonRuntime
                     : cursor.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
                 if (!next.HasValue) break;
                 if (next.Value is not PyString text) throw RuntimeErrors.Type("attribute name must be string", span);
-                var nameBytes = checked(64L + 2L * text.GetUtf16CodeUnitCount() + text.Utf8Bytes.Length);
+                var nameBytes = checked(64L + 2L * text.GetUtf16CodeUnitCount() + text.ByteLength);
                 using var decoding = context.MemoryGovernor.ReserveTemporary(nameBytes, span);
                 // Attribute hooks and stores can retain name representations.
                 // Their conservative owner is this execution batch.

@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
                 : new object[] { matcher.BuildOpcodes(span, context) };
 
             builder.AppendAscii("<table class=\"diff\" summary=\"Differences\">\n");
-            if (!options.FromDescription.Utf8Bytes.IsEmpty || !options.ToDescription.Utf8Bytes.IsEmpty)
+            if (!options.FromDescription.Utf8Span.IsEmpty || !options.ToDescription.Utf8Span.IsEmpty)
             {
                 builder.AppendAscii("<thead><tr><th class=\"diff_next\"></th><th colspan=\"2\" class=\"diff_header\">");
                 AppendEscaped(builder, options.FromDescription, false, context, span);
@@ -132,12 +132,12 @@ internal sealed partial class LythonRuntime
         private PyString PrepareHtmlLine(PyString line, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            var bytes = line.Utf8Bytes.Span;
+            var bytes = line.Utf8Span;
             var length = bytes.Length;
             while (length > 0 && bytes[length - 1] is (byte)'\r' or (byte)'\n') length--;
             bytes = bytes[..length];
             if (_tabsize <= 0 || bytes.IndexOf((byte)'\t') < 0)
-                return length == line.Utf8Bytes.Length ? line : PyString.CopyFromUtf8(bytes, context.MemoryGovernor, span);
+                return length == line.ByteLength ? line : PyString.CopyFromUtf8(bytes, context.MemoryGovernor, span);
 
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
@@ -249,7 +249,7 @@ internal sealed partial class LythonRuntime
         private static void AppendEscaped(GovernedByteBuilder builder, PyString text, bool cell,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = text.Utf8Bytes.Span;
+            var bytes = text.Utf8Span;
             Span<byte> digits = stackalloc byte[16];
             while (!bytes.IsEmpty)
             {

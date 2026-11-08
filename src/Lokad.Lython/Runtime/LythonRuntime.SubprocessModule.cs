@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
         var encoding = ParseSubprocessEncoding(arguments, owner, span);
         var errors = ParseSubprocessErrors(arguments, owner, span);
         var (environment, envBytes) = ParseSubprocessEnvironment(arguments.Environment, owner, span, context, storage);
-        var cwdBytes = checked(256L + 32L * (context.Host.Cwd.Length + (arguments.CurrentDirectory is PyPath path ? path.Value.Utf8Bytes.Length : arguments.CurrentDirectory is PyString text ? text.Utf8Bytes.Length : 0L)));
+        var cwdBytes = checked(256L + 32L * (context.Host.Cwd.Length + (arguments.CurrentDirectory is PyPath path ? path.Value.ByteLength : arguments.CurrentDirectory is PyString text ? text.ByteLength : 0L)));
         storage.Grow(cwdBytes, span);
         var cwd = ParseSubprocessCwd(arguments.CurrentDirectory, owner, span, context);
 
@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
     private static void AppendWindowsCommandLineArgument(GovernedByteBuilder builder, PyString argument,
         ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = argument.Utf8Bytes.Span;
+        var bytes = argument.Utf8Span;
         var quoted = bytes.IsEmpty;
         for (var i = 0; i < bytes.Length && !quoted; i++)
         {

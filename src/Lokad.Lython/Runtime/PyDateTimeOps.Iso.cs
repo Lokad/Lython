@@ -38,7 +38,7 @@ internal static partial class PyDateTimeOps
     private static PyTime ParseTime(PyString input, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var text = input.Utf8Bytes.Span;
+        var text = input.Utf8Span;
         var cursor = text.Length > 0 && text[0] == 'T' ? 1 : 0;
         var time = ParseIsoClock(text, ref cursor, span, context, out var zone);
         if (cursor != text.Length) throw new FormatException("Invalid ISO time string.");
@@ -48,7 +48,7 @@ internal static partial class PyDateTimeOps
     private static PyDateTime ParseDateTime(PyString input, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecution(span);
-        var text = input.Utf8Bytes.Span;
+        var text = input.Utf8Span;
         var cursor = 0;
         var date = ParseIsoDate(text, ref cursor, span);
         if (cursor == text.Length) return new PyDateTime(date.ToDateTime(TimeOnly.MinValue));
@@ -144,7 +144,7 @@ internal static partial class PyDateTimeOps
     {
         // The diagnostic retains the original text; admit its CLR construction
         // and retained message before decoding, including replacement overlap.
-        var bytes = checked(512L + 6L * text.Utf8Bytes.Length);
+        var bytes = checked(512L + 6L * text.ByteLength);
         context.MemoryGovernor.Reserve(bytes, span);
         context.MemoryGovernor.Commit(bytes);
         return new LythonRuntimeException("ValueError", $"Invalid isoformat string: '{text.AsString()}'", span);

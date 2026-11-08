@@ -47,7 +47,7 @@ internal static partial class PyStringOps
     {
         var state = new FormatState(positional, keywords, resolveKeyword, resolveFieldSuffix, formatValue,
             forbidPositionalFields, governor, span, cancellationToken);
-        var builder = CreateBuilder(governor, span, checked(template.Utf8Bytes.Length + positional.Count * 8));
+        var builder = CreateBuilder(governor, span, checked(template.ByteLength + positional.Count * 8));
         try
         {
             await AppendFormatTemplateAsync(state, template.Utf8Bytes, builder).ConfigureAwait(false);
@@ -387,7 +387,7 @@ internal static partial class PyStringOps
                 _ => FromString(selected.ToString() ?? "None", state.Governor, state.Span)
             };
 
-            builder.Append(formatted.Utf8Bytes.Span);
+            builder.Append(formatted.Utf8Span);
             return;
         }
 
@@ -449,10 +449,10 @@ internal static partial class PyStringOps
     }
     public static PyString EscapeRegex(PyString value)
     {
-        var builder = CreateBuilder(value, value.Utf8Bytes.Length * 2);
+        var builder = CreateBuilder(value, value.ByteLength * 2);
         foreach (var rune in value.EnumerateRunes())
         {
-            if (rune.Utf8Bytes.Length == 1 && ".^$*+?{}[]\\|()&~#- \t\n\r\v\f".Contains((char)rune.Utf8Bytes.Span[0], StringComparison.Ordinal))
+            if (rune.ByteLength == 1 && ".^$*+?{}[]\\|()&~#- \t\n\r\v\f".Contains((char)rune.Utf8Span[0], StringComparison.Ordinal))
             {
                 builder.Append((byte)'\\');
             }

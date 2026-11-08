@@ -9,9 +9,9 @@ internal sealed partial class LythonRuntime
     {
         context.State.CancellationToken.ThrowIfCancellationRequested();
         using var builder = new GovernedByteBuilder(context.MemoryGovernor, span,
-            (int)Math.Min(int.MaxValue, pattern.Utf8Bytes.Length + 16L), context.State.CancellationToken);
+            (int)Math.Min(int.MaxValue, pattern.ByteLength + 16L), context.State.CancellationToken);
         builder.Append("(?s:"u8);
-        AppendWildcardSegment(builder, pattern.Utf8Bytes.Span, [], context.State.CancellationToken);
+        AppendWildcardSegment(builder, pattern.Utf8Span, [], context.State.CancellationToken);
         builder.Append(")\\Z"u8);
         return builder.ToPyStringAndRelease();
     }
@@ -19,8 +19,8 @@ internal sealed partial class LythonRuntime
     private static PyString TranslateGlobPattern(PyString pattern, bool recursive, bool includeHidden,
         PyString? separators, ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = pattern.Utf8Bytes.Span;
-        var seps = separators is null ? "/"u8 : separators.Utf8Bytes.Span;
+        var bytes = pattern.Utf8Span;
+        var seps = separators is null ? "/"u8 : separators.Utf8Span;
         var token = context.State.CancellationToken;
         // Admit a useful initial capacity once. Unusual separator/class expansion
         // still uses the builder's existing funded growth and replacement overlap.

@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
 
     private static PyComplex ParseComplexString(PyString value, ExecutionContext context, LythonSourceSpan span)
     {
-        using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 32L * value.Utf8Bytes.Length, span);
+        using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 32L * value.ByteLength, span);
         var text = value.AsString().Trim();
         if (text.StartsWith('(') && text.EndsWith(')')) text = text[1..^1].Trim();
         if (text.Length == 0 || text.Any(char.IsWhiteSpace)) throw Invalid();

@@ -39,8 +39,8 @@ internal sealed partial class LythonRuntime
 
         internal static StringIOObject FromBorrowedText(PyString text, ExecutionState services, LythonSourceSpan span)
         {
-            var result = new StringIOObject(services, span, "\n") { _borrowedText = text, _borrowedByteEnd = text.Utf8Bytes.Length };
-            for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)
+            var result = new StringIOObject(services, span, "\n") { _borrowedText = text, _borrowedByteEnd = text.ByteLength };
+            for (var bytes = text.Utf8Span; !bytes.IsEmpty;)
             {
                 if ((result._length & 1023) == 0) services.CheckExecution(span);
                 Rune.DecodeFromUtf8(bytes, out _, out var consumed);
@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
             long count = 0, translated = 0;
             var seen = 0;
             var previousCr = false;
-            for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)
+            for (var bytes = text.Utf8Span; !bytes.IsEmpty;)
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
             if (_position > _length) Array.Clear(_buffer, _length, (int)_position - _length);
             var cursor = (int)_position;
             previousCr = false;
-            for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)
+            for (var bytes = text.Utf8Span; !bytes.IsEmpty;)
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
             var seen = 0;
             var cr = false;
             var index = 0;
-            for (var bytes = text.Utf8Bytes.Span; !bytes.IsEmpty;)
+            for (var bytes = text.Utf8Span; !bytes.IsEmpty;)
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
                 if (_borrowedText is { } source)
                 {
                     var index = 0;
-                    for (var bytesLeft = source.Utf8Bytes.Span[.._borrowedByteEnd]; !bytesLeft.IsEmpty;)
+                    for (var bytesLeft = source.Utf8Span[.._borrowedByteEnd]; !bytesLeft.IsEmpty;)
                     {
                         if ((index & 1023) == 0) _services.CheckExecution(span);
                         Rune.DecodeFromUtf8(bytesLeft, out var rune, out var consumed);
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
             _services.CheckExecution(span);
             if (_position >= _length) return -1;
             if (_borrowedText is not { } text) return _buffer[(int)_position++];
-            Rune.DecodeFromUtf8(text.Utf8Bytes.Span[_borrowedByteOffset..], out var rune, out var consumed);
+            Rune.DecodeFromUtf8(text.Utf8Span[_borrowedByteOffset..], out var rune, out var consumed);
             _borrowedByteOffset += consumed;
             _position++;
             return rune.Value;
@@ -190,7 +190,7 @@ internal sealed partial class LythonRuntime
                     for (var offset = startByte; offset < endByte;)
                     {
                         _services.CheckExecution(span);
-                        var chunk = borrowed.Utf8Bytes.Span.Slice(offset, Math.Min(4096, endByte - offset));
+                        var chunk = borrowed.Utf8Span.Slice(offset, Math.Min(4096, endByte - offset));
                         var newline = chunk.IndexOf((byte)'\n');
                         if (newline >= 0) { endByte = offset + newline + 1; break; }
                         offset += chunk.Length;
@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
 
         private int BorrowedByteAfter(int start, int count, LythonSourceSpan span)
         {
-            var bytes = _borrowedText!.Utf8Bytes.Span;
+            var bytes = _borrowedText!.Utf8Span;
             for (var i = 0; i < count && start < _borrowedByteEnd; i++)
             {
                 if ((i & 1023) == 0) _services.CheckExecution(span);
@@ -270,8 +270,8 @@ internal sealed partial class LythonRuntime
         private PyString CopyBorrowedRange(int start, int end, LythonSourceSpan span)
         {
             var text = _borrowedText!;
-            if (start == 0 && end == text.Utf8Bytes.Length) return text;
-            return PyString.CopyFromUtf8(text.Utf8Bytes.Span[start..end], _services.MemoryGovernor, span);
+            if (start == 0 && end == text.ByteLength) return text;
+            return PyString.CopyFromUtf8(text.Utf8Span[start..end], _services.MemoryGovernor, span);
         }
 
         internal BigInteger Seek(long offset, long whence, LythonSourceSpan span)
@@ -328,7 +328,7 @@ internal sealed partial class LythonRuntime
         {
             var line = Read(-1, true, _creationSpan);
             value = line;
-            return line.Utf8Bytes.Length != 0;
+            return line.ByteLength != 0;
         }
         public IEnumerable<object> Iterate()
         {

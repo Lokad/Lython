@@ -16,7 +16,7 @@ internal static partial class PyStringOps
     private static bool IsCase(PyString value, RuneCase expected, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         var foundCased = false;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         for (var offset = 0; offset < source.Length;)
@@ -74,7 +74,7 @@ internal static partial class PyStringOps
     }
 
     public static PyString Capitalize(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
-        => value.Utf8Bytes.IsEmpty ? PyString.Empty : MapCase(value, CaseMapping.Capitalize, context, span);
+        => value.Utf8Span.IsEmpty ? PyString.Empty : MapCase(value, CaseMapping.Capitalize, context, span);
 
     public static PyString SwapCase(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => MapCase(value, CaseMapping.Swap, context, span);

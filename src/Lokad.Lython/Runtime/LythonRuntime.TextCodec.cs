@@ -441,7 +441,7 @@ internal sealed partial class LythonRuntime
     private static byte[] EncodeText(PyString text, TextEncodingMode encoding, TextErrorMode errors,
         TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span,
         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null)
-        => EncodeText(text.Utf8Bytes.Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, text);
+        => EncodeText(text.Utf8Span, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, text);
 
     private static byte[] EncodeText(
         ReadOnlySpan<byte> source,

@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.Utf8Bytes.Length, true, isStart, span);
+            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.ByteLength, true, isStart, span);
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -1735,7 +1735,7 @@ internal sealed partial class LythonRuntime
         // Positions count in the original string (spaces included): a space
         // directly inside a pair is invalid, while a lone trailing nibble
         // reports one past the end like CPython.
-        var source = text.Utf8Bytes.Span;
+        var source = text.Utf8Span;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         var index = 0;
         try
@@ -1983,12 +1983,12 @@ internal sealed partial class LythonRuntime
             ? await IsTruthyAsync(signedValue, context, span).ConfigureAwait(false) : IsTruthy(signedValue, context, span));
         if (byteorder is null) return (false, signed);
         var text = (PyString)byteorder;
-        if (text.Utf8Bytes.Span.SequenceEqual("little"u8))
+        if (text.Utf8Span.SequenceEqual("little"u8))
         {
             return (true, signed);
         }
 
-        if (text.Utf8Bytes.Span.SequenceEqual("big"u8))
+        if (text.Utf8Span.SequenceEqual("big"u8))
         {
             return (false, signed);
         }

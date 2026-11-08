@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                     if (writer.Options.QuoteChar is null) throw CsvError("quotechar must be set when quoting is enabled", span);
                     builder.Append(writer.Options.QuoteChar); builder.Append(writer.Options.QuoteChar);
                 }
-                AppendBytes(builder, writer.Options.LineTerminator.Utf8Bytes.Span, context, span);
+                AppendBytes(builder, writer.Options.LineTerminator.Utf8Span, context, span);
                 context.CheckExecution(span);
                 if (writer.WriteTarget is ExecutionContext.TextFileHandle textFile)
                     return InvokeFileWrite(textFile, builder.WrittenMemory, span, context);
@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
                 {
                     var bytes = writer.Rows[i].Utf8Bytes;
                     // The documented buffered extension omits the last terminator.
-                    if (i == writer.Rows.Count - 1) bytes = bytes[..(bytes.Length - writer.Options.LineTerminator.Utf8Bytes.Length)];
+                    if (i == writer.Rows.Count - 1) bytes = bytes[..(bytes.Length - writer.Options.LineTerminator.ByteLength)];
                     AppendBytes(builder, bytes.Span, context, span);
                 }
                 context.CheckExecution(span);
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
         private static int Character(PyString? text)
         {
             if (text is null) return -1;
-            Rune.DecodeFromUtf8(text.Utf8Bytes.Span, out var rune, out _);
+            Rune.DecodeFromUtf8(text.Utf8Span, out var rune, out _);
             return rune.Value;
         }
 
@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
         private static void AppendField(GovernedByteBuilder builder, PyString field, bool numeric, CsvOptions options,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = field.Utf8Bytes.Span;
+            var bytes = field.Utf8Span;
             var delimiter = Character(options.Delimiter); var quote = Character(options.QuoteChar); var escape = Character(options.EscapeChar);
             var quoted = options.Quoting == CsvQuotingMode.All || options.Quoting == CsvQuotingMode.NonNumeric && !numeric;
             if (bytes.IsEmpty && delimiter == ' ' && options.SkipInitialSpace)
@@ -159,7 +159,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 Rune.DecodeFromUtf8(bytes[offset..], out var rune, out var consumed);
                 var special = rune.Value == delimiter || rune.Value == quote || rune.Value == escape || rune.Value is '\n' or '\r' ||
-                    TerminatorContains(options.LineTerminator.Utf8Bytes.Span, bytes.Slice(offset, consumed), context, span);
+                    TerminatorContains(options.LineTerminator.Utf8Span, bytes.Slice(offset, consumed), context, span);
                 if (special)
                 {
                     var escaping = options.Quoting == CsvQuotingMode.None || rune.Value == escape || rune.Value == quote && !options.DoubleQuote;
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 Rune.DecodeFromUtf8(bytes[offset..], out var rune, out var consumed);
                 var special = rune.Value == delimiter || rune.Value == quote || rune.Value == escape || rune.Value is '\n' or '\r' ||
-                    TerminatorContains(options.LineTerminator.Utf8Bytes.Span, bytes.Slice(offset, consumed), context, span);
+                    TerminatorContains(options.LineTerminator.Utf8Span, bytes.Slice(offset, consumed), context, span);
                 if (special)
                 {
                     if (options.Quoting == CsvQuotingMode.None || rune.Value == escape || rune.Value == quote && !options.DoubleQuote)

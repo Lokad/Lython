@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
         }
         CheckPatternErrorWork(governor, token, span);
         // The CLR control error and guest args borrow this admitted summary.
-        var bytes = checked(32L + 2L * summary.Utf8Bytes.Length);
+        var bytes = checked(32L + 2L * summary.ByteLength);
         governor?.Reserve(bytes, span);
         string rendered;
         try { rendered = summary.AsString(); }
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
         MemoryGovernor? governor, CancellationToken token, LythonSourceSpan? span)
     {
         var text = pattern as PyString;
-        var source = text is not null ? text.Utf8Bytes.Span : ((PyBytes)pattern).Bytes;
+        var source = text is not null ? text.Utf8Span : ((PyBytes)pattern).Bytes;
         var length = text?.Length ?? source.Length;
         var end = position.Sign >= 0 ? position >= length ? length : (int)position
             : position <= -length ? 0 : length + (int)position;

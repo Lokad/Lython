@@ -69,10 +69,10 @@ internal sealed partial class LythonRuntime
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            for (var i = 0; i < path.Utf8Bytes.Length; i++)
+            for (var i = 0; i < path.ByteLength; i++)
             {
                 if ((i & 4095) == 0) context.CheckExecution(span);
-                var value = path.Utf8Bytes.Span[i];
+                var value = path.Utf8Span[i];
                 if (value is (byte)'*' or (byte)'?' or (byte)'[') { builder.Append((byte)'['); builder.Append(value); builder.Append((byte)']'); }
                 else builder.Append(value);
             }
@@ -88,10 +88,10 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> HasMagicCore(object argument, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var path = asynchronous ? await CoercePathLikeAsync(argument, context, span, "glob.has_magic").ConfigureAwait(false) : CoercePathLike(argument, context, span, "glob.has_magic");
-        for (var i = 0; i < path.Utf8Bytes.Length; i++)
+        for (var i = 0; i < path.ByteLength; i++)
         {
             if ((i & 4095) == 0) context.CheckExecution(span);
-            if (path.Utf8Bytes.Span[i] is (byte)'*' or (byte)'?' or (byte)'[') return true;
+            if (path.Utf8Span[i] is (byte)'*' or (byte)'?' or (byte)'[') return true;
         }
         return false;
     }
@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
         PyString? seps = null;
         if (arguments.Length >= 4 && arguments[3] is not PyNone && !PyStringOps.TryAsString(arguments[3], out seps))
             throw RuntimeErrors.Type("glob.translate seps expects a string or None", span);
-        if (seps is not null && seps.Utf8Bytes.IsEmpty) throw RuntimeErrors.Value("glob.translate expects at least one separator character", span);
+        if (seps is not null && seps.Utf8Span.IsEmpty) throw RuntimeErrors.Value("glob.translate expects at least one separator character", span);
         return TranslateGlobPattern(path, recursive, hidden, seps, context, span);
     }
 
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
         var hidden = arguments.Length >= 5 && (asynchronous ? await IsTruthyAsync(arguments[4], context, span).ConfigureAwait(false) : IsTruthy(arguments[4], context, span));
         var bytes = checked(PathOps.WorkingBytes(patternValue, context, span) + PathOps.WorkingBytes(rootValue, context, span) + 32L * context.Host.Cwd.Length);
         context.MemoryGovernor.Reserve(bytes, span); context.MemoryGovernor.Commit(bytes);
-        var pattern = patternValue.AsString(); var root = rootValue.Utf8Bytes.IsEmpty ? "." : rootValue.AsString();
+        var pattern = patternValue.AsString(); var root = rootValue.Utf8Span.IsEmpty ? "." : rootValue.AsString();
         return new GlobRequest(pattern, root, pattern.StartsWith("/", StringComparison.Ordinal), recursive, hidden);
     }
 

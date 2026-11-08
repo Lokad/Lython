@@ -24,7 +24,7 @@ internal static partial class PyDateTimeOps
         context.CheckExecution(span);
         // Fund CLR input/captures and composite-format growth before conversion.
         // All are scratch, returned independently of CLR collection.
-        using var textStorage = context.MemoryGovernor.ReserveTemporary(checked(2048L + 6L * input.Utf8Bytes.Length + 64L * pattern.Utf8Bytes.Length), span);
+        using var textStorage = context.MemoryGovernor.ReserveTemporary(checked(2048L + 6L * input.ByteLength + 64L * pattern.ByteLength), span);
         context.CheckExecution(span);
         try
         {

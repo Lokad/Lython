@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
             // No intermediate DOM. Reserve a conservative bound for the reader's
             // UTF-16 input/token storage, name table, namespace stack and buffers.
             // Guest graph storage and the conversion ledger are funded separately.
-            var inputBytes = args[0] is PyString textInput ? textInput.Utf8Bytes.Length : ((PyBytes)args[0]).Length;
+            var inputBytes = args[0] is PyString textInput ? textInput.ByteLength : ((PyBytes)args[0]).Length;
             using var parserScratch = context.MemoryGovernor.ReserveTemporary(16_384L + 24L * inputBytes, span);
             PyString source;
             try

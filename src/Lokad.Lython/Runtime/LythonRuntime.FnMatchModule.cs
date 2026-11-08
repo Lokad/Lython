@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal static bool MatchSimple(PyString name, PyString pattern, CancellationToken cancellationToken = default)
-            => MatchSimple(name.Utf8Bytes.Span, pattern.Utf8Bytes.Span, cancellationToken);
+            => MatchSimple(name.Utf8Span, pattern.Utf8Span, cancellationToken);
 
         private static bool MatchSimple(ReadOnlySpan<byte> name, ReadOnlySpan<byte> pattern, CancellationToken cancellationToken)
         {

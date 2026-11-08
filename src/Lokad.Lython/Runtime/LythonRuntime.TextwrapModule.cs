@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
 
         internal static PyString DedentText(PyString text, LythonSourceSpan span, ExecutionState services)
         {
-            var source = text.Utf8Bytes.Span;
+            var source = text.Utf8Span;
             var marginStart = 0;
             var marginLength = -1;
             var normalizeBlankLines = false;
@@ -121,9 +121,9 @@ internal sealed partial class LythonRuntime
             object? invalidItem = null;
             try
             {
-                for (var start = 0; start < text.Utf8Bytes.Length;)
+                for (var start = 0; start < text.ByteLength;)
                 {
-                    var line = ScanLine(text.Utf8Bytes.Span, start, span, services);
+                    var line = ScanLine(text.Utf8Span, start, span, services);
                     var selected = line.HasNonWhitespace;
                     PyString? lineText = null;
                     if (predicate is not PyNone)
@@ -138,8 +138,8 @@ internal sealed partial class LythonRuntime
                     }
                     else if (invalidItem is null)
                     {
-                        if (selected) builder.Append(((PyString)prefix).Utf8Bytes.Span);
-                        builder.Append(text.Utf8Bytes.Span[start..line.EndByte]);
+                        if (selected) builder.Append(((PyString)prefix).Utf8Span);
+                        builder.Append(text.Utf8Span[start..line.EndByte]);
                     }
                     start = line.EndByte;
                 }
@@ -187,8 +187,8 @@ internal sealed partial class LythonRuntime
                     invalidItem = true;
                 else if (!invalidItem)
                 {
-                    if (selected) builder.Append(((PyString)prefix).Utf8Bytes.Span);
-                    builder.Append(lineText.Utf8Bytes.Span);
+                    if (selected) builder.Append(((PyString)prefix).Utf8Span);
+                    builder.Append(lineText.Utf8Span);
                 }
             }
         }

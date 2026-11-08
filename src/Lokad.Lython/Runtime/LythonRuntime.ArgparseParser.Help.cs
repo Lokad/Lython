@@ -103,9 +103,9 @@ internal sealed partial class LythonRuntime
         {
             if (_options.Usage is { } usage)
             {
-                if (!usage.Utf8Bytes.Span.StartsWith("usage:"u8)) builder.AppendAscii("usage: ");
+                if (!usage.Utf8Span.StartsWith("usage:"u8)) builder.AppendAscii("usage: ");
                 AppendFormatted(builder, usage, null, context, span);
-                if (usage.Utf8Bytes.IsEmpty || usage.Utf8Bytes.Span[^1] != '\n') builder.Append((byte)'\n');
+                if (usage.Utf8Span.IsEmpty || usage.Utf8Span[^1] != '\n') builder.Append((byte)'\n');
                 return;
             }
             builder.AppendAscii("usage: "); builder.Append(_options.Prog);
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
         }
         private void AppendFormatted(GovernedByteBuilder builder, PyString text, ArgumentSpec? argument, ExecutionContext context, LythonSourceSpan span)
         {
-            var source = text.Utf8Bytes.Span;
+            var source = text.Utf8Span;
             var start = 0;
             for (var i = 0; i < source.Length; i++)
             {
@@ -208,7 +208,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 AppendFormatted(builder, text, argument, context, span);
-                if (text.Utf8Bytes.IsEmpty || text.Utf8Bytes.Span[^1] != '\n') builder.Append((byte)'\n');
+                if (text.Utf8Span.IsEmpty || text.Utf8Span[^1] != '\n') builder.Append((byte)'\n');
                 return builder.ToPyStringAndRelease();
             }
             finally { builder.Release(); }

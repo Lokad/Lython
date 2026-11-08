@@ -173,7 +173,7 @@ internal sealed partial class LythonRuntime
                             // the set, through final result ownership. Duplicate-heavy
                             // sets deliberately reserve more than their distinct runes.
                             using var working = context.MemoryGovernor.ReserveTemporary(
-                                chars.Utf8Bytes.IsEmpty ? 0 : checked(256L + 64L * chars.Utf8Bytes.Length), span);
+                                chars.Utf8Span.IsEmpty ? 0 : checked(256L + 64L * chars.ByteLength), span);
                             result = methodName switch
                             {
                                 "strip" => PyStringOps.Strip(target, chars),

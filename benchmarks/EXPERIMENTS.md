@@ -4149,3 +4149,19 @@ actual11/10, original Stress on both targets and installed core consumers,
 CI42431587731. Its [terminal receipt](results/2026-11-08-json-float-entry/delivery-ci.json)
 is cached; never requery. Historical pending-at-measurement state stays unchanged.
 This receipt does not qualify subsequent Unicode-cache cancellation code.
+
+## Completed token storage retained (2026-11-08)
+
+[R76](results/2026-11-08-inline-utf8/README.md) retains compiler-managed short UTF-8
+storage and direct reserved final writes for casing/split/CSV. No new owner, budget,
+ledger/pool/tracing, native dependency or unsafe source code. Adopted buffers keep
+capacity; stable tiny memory views are prepaid, with cold construction separated.
+Source903eb346 passes162internal/415public per actual11/10. Complete-script
+allocation text−9.4%, CSV−8–9%; B436 five-job141.346s controlled pair gives modest
+async-text−2.3–3.3% and report elapsed benefit, CSV near baseline. Sync text is
+inconclusive with11.59% unchanged-control spread. Float async+0.9–2.7% debt is
+explicitly accepted, not explained or repaid by unrelated gains. CPU quantized/
+mixed; no broad CPU/CPython/embedding-tail claim. Initial092/B435114.465s and
+intermediate7eb/5b adverse desktop/source conditions all remain in the raw archive.
+Tier1 hash already inlines its getter; no inlining attribute or causal claim.
+Full retained-source delivery pending at retention; publication postponed.

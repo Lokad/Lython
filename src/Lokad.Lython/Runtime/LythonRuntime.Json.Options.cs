@@ -65,10 +65,10 @@ internal sealed partial class LythonRuntime
         private static LythonRuntimeException CreateJsonDecodeError(PyString input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
         {
             var reportedBytePosition = ComputeJsonErrorBytePosition(
-                input.Utf8Bytes.Span,
+                input.Utf8Span,
                 exception.LineNumber.GetValueOrDefault(),
                 exception.BytePositionInLine.GetValueOrDefault());
-            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Bytes.Span, reportedBytePosition, exception.Message);
+            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Span, reportedBytePosition, exception.Message);
             return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
         }
 
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
 
                 // Newlines are single-byte, so no multi-byte sequence can
                 // start with this byte.
-                if (rune.Utf8Bytes.Span[0] == (byte)'\n')
+                if (rune.Utf8Span[0] == (byte)'\n')
                 {
                     line++;
                     lineStart = index + 1;
@@ -256,7 +256,7 @@ internal sealed partial class LythonRuntime
         {
             var line = 1;
             var lineStart = 0;
-            var bytes = document.Utf8Bytes.Span;
+            var bytes = document.Utf8Span;
             for (var position = 0; position < Math.Min(bytePosition, bytes.Length); position++)
             {
                 if (bytes[position] == (byte)'\n')

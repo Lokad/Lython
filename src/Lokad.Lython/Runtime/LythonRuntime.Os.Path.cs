@@ -163,12 +163,12 @@ internal sealed partial class LythonRuntime
     private static PyString CommonPathPart(PyString? prefix, PyString value, ExecutionContext context, LythonSourceSpan span)
     {
         value = PathOps.NormalizeLexical(value, context, span);
-        if (value.Utf8Bytes.Span.SequenceEqual("."u8)) value = PyString.Empty;
+        if (value.Utf8Span.SequenceEqual("."u8)) value = PyString.Empty;
         // os.path.commonpath has one POSIX root even where pathlib preserves //.
-        if (PathOps.RootLength(value.Utf8Bytes.Span) == 2)
-            value = PyString.CopyFromUtf8(value.Utf8Bytes.Span[1..], context.MemoryGovernor, span);
+        if (PathOps.RootLength(value.Utf8Span) == 2)
+            value = PyString.CopyFromUtf8(value.Utf8Span[1..], context.MemoryGovernor, span);
         if (prefix is null) return value;
-        var left = prefix.Utf8Bytes.Span; var right = value.Utf8Bytes.Span;
+        var left = prefix.Utf8Span; var right = value.Utf8Span;
         var root = PathOps.RootLength(left);
         if (root != PathOps.RootLength(right)) throw RuntimeErrors.Value("Can't mix absolute and relative paths", span);
         var end = root; var start = root;
@@ -197,12 +197,12 @@ internal sealed partial class LythonRuntime
         }
         else foreach (var item in ToSequence(arguments[0], span, context)) Accept(CoercePathLike(item, context, span, "os.path.commonprefix"));
         if (first is null || length == 0) return PyString.Empty;
-        return length == first.Utf8Bytes.Length ? first : PyString.CopyFromUtf8(first.Utf8Bytes.Span[..length], context.MemoryGovernor, span);
+        return length == first.ByteLength ? first : PyString.CopyFromUtf8(first.Utf8Span[..length], context.MemoryGovernor, span);
         void Accept(PyString candidate)
         {
             context.CheckExecution(span);
-            if (first is null) { first = candidate; length = candidate.Utf8Bytes.Length; return; }
-            var left = first.Utf8Bytes.Span; var right = candidate.Utf8Bytes.Span;
+            if (first is null) { first = candidate; length = candidate.ByteLength; return; }
+            var left = first.Utf8Span; var right = candidate.Utf8Span;
             var limit = Math.Min(length, right.Length); var count = 0;
             while (count < limit && left[count] == right[count]) { if ((count & 4095) == 0) context.CheckExecution(span); count++; }
             while (count > 0 && count < left.Length && (left[count] & 0xc0) == 0x80) count--;

@@ -110,7 +110,7 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
         _length += bytes.Length;
     }
 
-    public void Append(PyString value) => Append(value.Utf8Bytes.Span);
+    public void Append(PyString value) => Append(value.Utf8Span);
 
     public void Append(Rune value)
     {

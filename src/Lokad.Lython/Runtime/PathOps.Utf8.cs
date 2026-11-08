@@ -14,13 +14,13 @@ internal static partial class PathOps
 
     internal static long WorkingBytes(PyString first, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        long length = first.Utf8Bytes.Length;
+        long length = first.ByteLength;
         var segments = 2L;
         Count(first);
         return checked(256L + 12L * length + 96L * segments);
         void Count(PyString path)
         {
-            var bytes = path.Utf8Bytes.Span;
+            var bytes = path.Utf8Span;
             for (var i = 0; i < bytes.Length; i++)
             { if ((i & 4095) == 0) context.CheckExecution(span); if (bytes[i] == (byte)'/') segments++; }
         }
@@ -36,7 +36,7 @@ internal static partial class PathOps
 
     private static bool Canonical(PyString value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = value.Utf8Bytes.Span;
+        var bytes = value.Utf8Span;
         if (bytes.IsEmpty) return false;
         if (bytes.SequenceEqual("."u8) || bytes.SequenceEqual("/"u8) || bytes.SequenceEqual("//"u8)) return true;
         var start = RootLength(bytes);
@@ -54,7 +54,7 @@ internal static partial class PathOps
     internal static void AppendNormalized(GovernedByteBuilder builder, PyString value,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool resolveParents = false)
     {
-        var bytes = value.Utf8Bytes.Span;
+        var bytes = value.Utf8Span;
         var root = RootLength(bytes);
         if (root != 0) { builder.Truncate(0); builder.Append(root == 2 ? "//"u8 : "/"u8); }
         var start = root;
@@ -104,7 +104,7 @@ internal static partial class PathOps
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            if (RootLength(value.Utf8Bytes.Span) == 0)
+            if (RootLength(value.Utf8Span) == 0)
                 AppendNormalized(builder, PyString.FromString(context.Host.Cwd, context.MemoryGovernor, span), context, span, resolve);
             AppendNormalized(builder, value, context, span, resolve); return Finish(builder);
         }
@@ -113,7 +113,7 @@ internal static partial class PathOps
 
     internal static PyString Parent(PyString value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = value.Utf8Bytes.Span; var root = RootLength(bytes);
+        var bytes = value.Utf8Span; var root = RootLength(bytes);
         if (bytes.Length == root) return value;
         var slash = bytes.LastIndexOf((byte)'/');
         var end = Math.Max(root, slash);
@@ -144,10 +144,10 @@ internal static partial class PathOps
 
     internal static PyString WithName(PyString value, PyString name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = name.Utf8Bytes.Span;
+        var bytes = name.Utf8Span;
         if (NameBytes(value).IsEmpty || bytes.IsEmpty || bytes.SequenceEqual("."u8) || bytes.Contains((byte)'/'))
             throw RuntimeErrors.Value("Invalid name.", span);
-        var original = value.Utf8Bytes.Span; var prefix = original.LastIndexOf((byte)'/') + 1;
+        var original = value.Utf8Span; var prefix = original.LastIndexOf((byte)'/') + 1;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try { Append(builder, original[..prefix], context, span); Append(builder, bytes, context, span); return builder.ToPyStringAndRelease(); }
         finally { builder.Release(); }
@@ -155,10 +155,10 @@ internal static partial class PathOps
 
     internal static PyString WithSuffix(PyString value, PyString suffix, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = suffix.Utf8Bytes.Span;
+        var bytes = suffix.Utf8Span;
         if (NameBytes(value).IsEmpty || !bytes.IsEmpty && (bytes[0] != (byte)'.' || bytes.Length == 1 || bytes.Contains((byte)'/')))
             throw RuntimeErrors.Value("Invalid suffix.", span);
-        var original = value.Utf8Bytes.Span; var end = original.Length - SuffixBytes(value).Length;
+        var original = value.Utf8Span; var end = original.Length - SuffixBytes(value).Length;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try { Append(builder, original[..end], context, span); Append(builder, bytes, context, span); return builder.ToPyStringAndRelease(); }
         finally { builder.Release(); }
@@ -166,11 +166,11 @@ internal static partial class PathOps
 
     internal static PyString WithStem(PyString value, PyString stem, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (stem.Utf8Bytes.IsEmpty && !SuffixBytes(value).IsEmpty) throw RuntimeErrors.Value("Invalid stem: empty stem", span);
+        if (stem.Utf8Span.IsEmpty && !SuffixBytes(value).IsEmpty) throw RuntimeErrors.Value("Invalid stem: empty stem", span);
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
-            Append(builder, stem.Utf8Bytes.Span, context, span);
+            Append(builder, stem.Utf8Span, context, span);
             Append(builder, SuffixBytes(value).Span, context, span);
             return WithName(value, builder.ToPyStringAndRelease(), context, span);
         }
@@ -179,7 +179,7 @@ internal static partial class PathOps
 
     internal static bool TryRelative(PyString value, PyString parent, out int start)
     {
-        var left = value.Utf8Bytes.Span; var right = parent.Utf8Bytes.Span;
+        var left = value.Utf8Span; var right = parent.Utf8Span;
         start = 0;
         if (RootLength(left) == 0 && right.SequenceEqual("."u8)) return true;
         if (!left.StartsWith(right) || RootLength(left) != RootLength(right)) return false;

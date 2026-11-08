@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
     private static MemoryGovernor.TemporaryMemoryReservation? ReserveUtf16Output(PyString text,
         TextEncodingMode encoding, TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span)
         => IsUtf16Encoding(encoding)
-            ? context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Utf16EncodedByteCount(text.Utf8Bytes.Span, encoding, newline, context, span)), span)
+            ? context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Utf16EncodedByteCount(text.Utf8Span, encoding, newline, context, span)), span)
             : null;
 
     private static int Utf16EncodedByteCount(ReadOnlySpan<byte> source, TextEncodingMode encoding,

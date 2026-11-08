@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
 
         internal static PyString UnescapeText(PyString text, LythonSourceSpan span, ExecutionState services)
         {
-            var source = text.Utf8Bytes.Span;
+            var source = text.Utf8Span;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             var changed = false;
             long scalars = 0;

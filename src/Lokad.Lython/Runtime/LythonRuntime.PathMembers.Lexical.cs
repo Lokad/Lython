@@ -46,8 +46,8 @@ internal sealed partial class LythonRuntime
                 var relative = PathOps.TryRelative(path.Value, other, out var start);
                 if (!producePath) return relative;
                 if (!relative) throw RuntimeErrors.Value("path is not under the specified parent", span);
-                var result = start == path.Value.Utf8Bytes.Length ? PyStringOps.DotLiteral
-                    : PyString.CopyFromUtf8(path.Value.Utf8Bytes.Span[start..], context.MemoryGovernor, span);
+                var result = start == path.Value.ByteLength ? PyStringOps.DotLiteral
+                    : PyString.CopyFromUtf8(path.Value.Utf8Span[start..], context.MemoryGovernor, span);
                 return OwnPathResult(result, result, context.MemoryGovernor, span, path.IsPure);
             }
 
@@ -56,14 +56,14 @@ internal sealed partial class LythonRuntime
                 value = name switch
                 {
                     "drive" => PyString.Empty,
-                    "root" or "anchor" => PathOps.RootLength(path.Value.Utf8Bytes.Span) switch { 0 => PyString.Empty, 2 => DoubleSlash, _ => PyStringOps.SlashLiteral },
+                    "root" or "anchor" => PathOps.RootLength(path.Value.Utf8Span) switch { 0 => PyString.Empty, 2 => DoubleSlash, _ => PyStringOps.SlashLiteral },
                     "__fspath__" => BoundCallable.CreateNoArguments(path, "Path.__fspath__", static (receiver, _, _) => receiver.Value),
                     "is_absolute" => BoundCallable.CreateNoArguments(
                         path,
                         "Path.is_absolute",
-                        static (receiver, _, _) => PathOps.RootLength(receiver.Value.Utf8Bytes.Span) != 0),
+                        static (receiver, _, _) => PathOps.RootLength(receiver.Value.Utf8Span) != 0),
                     "is_reserved" => BoundCallable.CreateNoArguments(path, "Path.is_reserved", static (_, _, _) => false),
-                    "is_mount" when !path.IsPure => BoundCallable.CreateNoArguments(path, "Path.is_mount", static (receiver, _, _) => receiver.Value.Utf8Bytes.Span.SequenceEqual("/"u8)),
+                    "is_mount" when !path.IsPure => BoundCallable.CreateNoArguments(path, "Path.is_mount", static (receiver, _, _) => receiver.Value.Utf8Span.SequenceEqual("/"u8)),
                     "joinpath" => BoundCallable.Create(
                         (arguments, span, context) => JoinPath(path, arguments, span, context, false).GetAwaiter().GetResult(),
                         (arguments, span, context) => JoinPath(path, arguments, span, context, true)),

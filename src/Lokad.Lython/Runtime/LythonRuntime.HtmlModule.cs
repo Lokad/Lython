@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             var member = asynchronous
                 ? await PyTextStream.ResolveMemberAsync(target, "replace", span, context).ConfigureAwait(false)
                 : PyTextStream.ResolveMember(target, "replace", span, context);
-            var replacement = Replacement(oldText.Utf8Bytes.Span[0], mask)!;
+            var replacement = Replacement(oldText.Utf8Span[0], mask)!;
             CallArgumentValue[] arguments = [CallArgumentValue.Positional(oldText), CallArgumentValue.Positional(replacement)];
             var result = asynchronous
                 ? await InvokeCallableTargetAsync(member, span, span, context,
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
 
         private static PyString EscapeCharacters(PyString text, EscapeMask mask, LythonSourceSpan span, ExecutionState services)
         {
-            var source = text.Utf8Bytes.Span;
+            var source = text.Utf8Span;
             var builder = new GovernedByteBuilder(services.MemoryGovernor, span);
             var changed = false;
             long nextCheck = 0;

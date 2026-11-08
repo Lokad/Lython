@@ -492,8 +492,8 @@ internal static partial class PyDateTimeOps
         {
             context.CheckExecution(span);
             var cursor = 0;
-            var value = ParseIsoDate(text.Utf8Bytes.Span, ref cursor, span);
-            if (cursor != text.Utf8Bytes.Length) throw new FormatException("Invalid ISO date string.");
+            var value = ParseIsoDate(text.Utf8Span, ref cursor, span);
+            if (cursor != text.ByteLength) throw new FormatException("Invalid ISO date string.");
             return OwnDateTimeValue(new PyDate(value), context, span);
         }
         catch (FormatException)

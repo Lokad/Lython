@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
     {
         var (path, operation, encodingMode, errors, newline, binary) = ParseOpenArgumentsAsync(arguments, span, context, false).GetAwaiter().GetResult();
         using var scratch = PathOps.ReserveWorking(path, context, span);
-        var pathBytes = checked(64L + 2L * path.Utf8Bytes.Length);
+        var pathBytes = checked(64L + 2L * path.ByteLength);
         context.MemoryGovernor.Reserve(pathBytes, span); context.MemoryGovernor.Commit(pathBytes);
         if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, false).GetAwaiter().GetResult();
         return operation switch
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
     {
         var (path, operation, encodingMode, errors, newline, binary) = await ParseOpenArgumentsAsync(arguments, span, context, true).ConfigureAwait(false);
         using var scratch = PathOps.ReserveWorking(path, context, span);
-        var pathBytes = checked(64L + 2L * path.Utf8Bytes.Length);
+        var pathBytes = checked(64L + 2L * path.ByteLength);
         context.MemoryGovernor.Reserve(pathBytes, span); context.MemoryGovernor.Commit(pathBytes);
         if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, true).ConfigureAwait(false);
         return operation switch
@@ -776,7 +776,7 @@ internal sealed partial class LythonRuntime
     private static object ParseOwnedIntegerText(object source, int numberBase, ExecutionContext context, LythonSourceSpan span)
     {
         context.MemoryGovernor.ThrowIfAdmissionFailed();
-        ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Bytes.Span : ((PyBytes)source).Bytes;
+        ReadOnlySpan<byte> utf8 = source is PyString text ? text.Utf8Span : ((PyBytes)source).Bytes;
         // A bounded native decimal needs neither decoded text nor major scratch.
         // Complete consumption rejects suffixes/NULs; all other Python forms and
         // overflow keep the admitted general path. Small boxes use control headroom.

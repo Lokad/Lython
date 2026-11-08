@@ -327,7 +327,7 @@ internal sealed partial class LythonRuntime
         internal static void AppendSeparator(GovernedByteBuilder builder, PyString separator,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = separator.Utf8Bytes.Span;
+            var bytes = separator.Utf8Span;
             while (!bytes.IsEmpty)
             {
                 context.CheckExecution(span);
@@ -340,7 +340,7 @@ internal sealed partial class LythonRuntime
         internal static void AppendJsonString(GovernedByteBuilder builder, PyString text, bool ensureAscii,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = text.Utf8Bytes.Span;
+            var bytes = text.Utf8Span;
             builder.Append((byte)'"');
             var start = 0;
             var position = 0;

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Store short copied UTF-8 text inline and write casing, split and CSV payloads
+  directly into reserved final storage. Preserve adopted capacity and stable
+  retained-memory borrows under the existing ownership allowance.
+
 - Observe cancellation before allocating Unicode indexing caches, during their
   construction and before publication; return unpublished working allowance.
 

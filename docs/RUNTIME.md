@@ -43,6 +43,12 @@ Allocation failures use the requesting operation's explicit or current synchrono
 provenance. Internal helpers used without an execution context may have no span;
 the public execution boundary still reports its active Python instruction.
 
+Short copied text can store UTF-8 inline; adopted arrays retain their full capacity.
+Native operations read spans. APIs retaining memory receive a stable backing view,
+including a tiny cache funded by the original metadata allowance when necessary.
+Factories write into reserved final capacity and publish only completed immutable
+values. Native data views remain available to cleanup after command refusal.
+
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.

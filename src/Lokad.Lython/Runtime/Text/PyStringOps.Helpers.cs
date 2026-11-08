@@ -26,13 +26,13 @@ internal static partial class PyStringOps
     // durable scratch beside the result on padding-heavy inputs.
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
-        if (chars is not null && chars.Utf8Bytes.IsEmpty) return value;
+        if (chars is not null && chars.Utf8Span.IsEmpty) return value;
 
         HashSet<int>? trimRunes = null;
         if (chars is not null)
         {
             trimRunes = new HashSet<int>();
-            var characters = chars.Utf8Bytes.Span;
+            var characters = chars.Utf8Span;
             for (var offset = 0; offset < characters.Length;)
             {
                 PyStructuralGuard.NoteWork();
@@ -43,7 +43,7 @@ internal static partial class PyStringOps
             }
         }
 
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         var startByte = 0;
         var endByte = source.Length;
 
@@ -91,7 +91,7 @@ internal static partial class PyStringOps
     {
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         var capacity = CaseOutputCapacity(source, mapping, context, span);
         context?.CheckExecution(span);
         if (capacity == 0) return PyString.Empty;
@@ -103,10 +103,10 @@ internal static partial class PyStringOps
             // Admission can itself cancel the command. Keep the input funded and
             // check before allocating the one, conservative final backing.
             context?.CheckExecution(span);
-            var output = new byte[capacity];
-            var written = WriteCaseUtf8(source, output, mapping, context, span);
+            var output = PyString.CreateReservedUtf8(capacity, governor);
+            var written = WriteCaseUtf8(source, output.UnpublishedUtf8, mapping, context, span);
             context?.CheckExecution(span);
-            var result = PyString.FromReservedUtf8(output, written, governor, span);
+            var result = output.CompleteReservedUtf8(written);
             uncommittedBytes = 0;
             return CompleteOwnedString(result, context, span);
         }
@@ -269,7 +269,7 @@ internal static partial class PyStringOps
         LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         var sawRune = false;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         for (var byteIndex = 0; byteIndex < source.Length;)
@@ -380,7 +380,7 @@ internal static partial class PyStringOps
             _ => 0
         };
 
-        return PadUtf8(value.Utf8Bytes.Span, fillChar.Utf8Bytes.Span, left, padding - left,
+        return PadUtf8(value.Utf8Span, fillChar.Utf8Span, left, padding - left,
             governor, span, cancellationToken);
     }
 
@@ -391,7 +391,7 @@ internal static partial class PyStringOps
     {
         context.CheckExecution(span);
         if (precision is null && width is null or 0) return value;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         var token = context.State.CancellationToken;
         var (end, length) = FormattedStringBounds(source, precision, token);
         var padding = Math.Max(0, (width ?? 0) - length);
@@ -415,7 +415,7 @@ internal static partial class PyStringOps
     {
         context.CheckExecution(span);
         if (precision is null && width is null or 0) { output.Append(value); return; }
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         var token = context.State.CancellationToken;
         var (end, length) = FormattedStringBounds(source, precision, token);
         var padding = Math.Max(0, (width ?? 0) - length);
@@ -534,7 +534,7 @@ internal static partial class PyStringOps
 
         return governor is null || ReferenceEquals(governor, value.OwnerMemoryGovernor)
             ? value.SliceByByteRange(startByte, endByte)
-            : PyString.CopyFromUtf8(value.Utf8Bytes.Span[startByte..endByte], governor, span);
+            : PyString.CopyFromUtf8(value.Utf8Span[startByte..endByte], governor, span);
     }
 
     private static int GetPreviousRuneStart(ReadOnlySpan<byte> source, int endByte)

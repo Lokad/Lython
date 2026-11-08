@@ -152,7 +152,7 @@ internal sealed partial class LythonRuntime
                     }
                     builder.AppendAscii(")");
                     var rendered = builder.ToPyStringAndRelease();
-                    using var messageStorage = context.MemoryGovernor.ReserveTemporary(checked(32L + 2L * rendered.Utf8Bytes.Length), span);
+                    using var messageStorage = context.MemoryGovernor.ReserveTemporary(checked(32L + 2L * rendered.ByteLength), span);
                     var message = rendered.AsString();
                     messageStorage.Commit(checked(32L + 2L * message.Length));
                     throw new LythonRuntimeException("ValueError", message, span);

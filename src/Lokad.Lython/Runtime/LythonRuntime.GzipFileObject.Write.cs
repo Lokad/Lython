@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
             await WriteBytesAsync([8], span, asynchronous).ConfigureAwait(false);
             // Header names follow Lython's POSIX path convention, independently
             // of the normalized path used for contained host acquisition.
-            using var nameStaging = _services.MemoryGovernor.ReserveTemporary(256L + 8L * _name.Utf8Bytes.Length, span);
+            using var nameStaging = _services.MemoryGovernor.ReserveTemporary(256L + 8L * _name.ByteLength, span);
             var name = _name.AsString();
             name = name[(name.LastIndexOf('/') + 1)..];
             byte[] filename;

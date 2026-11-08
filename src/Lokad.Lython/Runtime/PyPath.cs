@@ -23,7 +23,7 @@ internal sealed class PyPath : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
         try
         {
             builder.Append(IsPure ? "PurePosixPath("u8 : "PosixPath("u8);
-            builder.Append(PyRendering.ToReprPyString(Value, context).Utf8Bytes.Span);
+            builder.Append(PyRendering.ToReprPyString(Value, context).Utf8Span);
             builder.Append((byte)')');
             return builder.ToPyStringAndRelease();
         }

@@ -218,7 +218,7 @@ internal static partial class PyStringOps
     }
 
     public static bool IsAscii(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
-        => value.Utf8Bytes.Length == 0 || CheckAllRunes(value, static rune => rune.Value < 128, context, span);
+        => value.ByteLength == 0 || CheckAllRunes(value, static rune => rune.Value < 128, context, span);
 
     public static bool IsDecimal(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
         => CheckAllRunes(value, static rune => Rune.GetUnicodeCategory(rune) == UnicodeCategory.DecimalDigitNumber, context, span);
@@ -245,7 +245,7 @@ internal static partial class PyStringOps
 
     public static bool IsPrintable(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
-        if (value.Utf8Bytes.Length == 0)
+        if (value.ByteLength == 0)
         {
             return true;
         }
@@ -256,7 +256,7 @@ internal static partial class PyStringOps
     public static bool IsIdentifier(PyString value, LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         var first = true;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         for (var offset = 0; offset < source.Length;)
@@ -309,7 +309,7 @@ internal static partial class PyStringOps
     {
         var previousIsCased = false;
         var foundCased = false;
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
         for (var offset = 0; offset < source.Length;)

@@ -231,7 +231,7 @@ internal sealed partial class LythonRuntime
                 bool boolean => boolean ? 1UL : 0UL,
                 double floating when double.IsFinite(floating) => BitConverter.DoubleToUInt64Bits(floating),
                 PyBytes bytes => FoldBytes(bytes.Bytes, context, span),
-                _ when PyStringOps.TryAsString(value, out var text) => FoldBytes(text.Utf8Bytes.Span, context, span),
+                _ when PyStringOps.TryAsString(value, out var text) => FoldBytes(text.Utf8Span, context, span),
                 _ => throw new LythonRuntimeException("TypeError", "random.seed(a) only supports None, bool, int, float, str, and bytes in Lython.", span)
             };
         }

@@ -69,7 +69,7 @@ internal static class RuntimeFailureProjection
         // Fund conversion before the CLR string exists, including UTF-8 overlap.
         // Final projection admits the surviving alias before this run owner ends.
         // UTF-8 length bounds UTF-16 width without another full text scan.
-        var bytes = checked(32L + 2L * message.Utf8Bytes.Length);
+        var bytes = checked(32L + 2L * message.ByteLength);
         var governor = context.MemoryGovernor;
         governor.Reserve(bytes, null);
         try

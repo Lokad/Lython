@@ -806,10 +806,10 @@ internal static partial class PyStringOps
     {
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.ByteLength);
         try
         {
-            var source = value.Utf8Bytes.Span;
+            var source = value.Utf8Span;
             for (var byteIndex = 0; byteIndex < source.Length;)
             {
                 context?.CheckExecution(span);

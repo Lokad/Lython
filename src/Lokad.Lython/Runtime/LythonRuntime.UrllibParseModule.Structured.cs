@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
         {
             // Complete Unicode 15.1 NFKC delimiter hazards (19 scalars). They
             // avoid allocating an unbounded normalized copy of the authority.
-            var source = netloc.Utf8Bytes.Span;
+            var source = netloc.Utf8Span;
             for (var i = 0; i < source.Length;)
             {
                 if ((i & 1023) == 0) context.CheckExecution(span);
@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
 
         private static void ValidateBrackets(PyString netloc, ExecutionContext context, LythonSourceSpan span)
         {
-            var source = netloc.Utf8Bytes.Span;
+            var source = netloc.Utf8Span;
             var open = FindByte(source, (byte)'[', 0, source.Length, context, span);
             var close = FindByte(source, (byte)']', 0, source.Length, context, span);
             if (open < 0 && close < 0) return;
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
 
         private static PyString LowerHost(PyString host, ExecutionContext context, LythonSourceSpan span, bool preserveZone)
         {
-            var source = host.Utf8Bytes.Span;
+            var source = host.Utf8Span;
             var percent = preserveZone ? FindByte(source, (byte)'%', 0, source.Length, context, span) : -1;
             var end = percent < 0 ? source.Length : percent;
             // Reuse the string lower operation, including its Unicode rules;
@@ -354,8 +354,8 @@ internal sealed partial class LythonRuntime
             var fragment = RequireUrlText(decoded[parameters ? 5 : 4], span);
             var withParams = param.Length != 0;
             var hasPath = path.Length != 0 || withParams;
-            var startsSlash = path.Length != 0 && path.Utf8Bytes.Span[0] == '/';
-            var doubleSlash = path.Utf8Bytes.Length >= 2 && path.Utf8Bytes.Span[0] == '/' && path.Utf8Bytes.Span[1] == '/';
+            var startsSlash = path.Length != 0 && path.Utf8Span[0] == '/';
+            var doubleSlash = path.ByteLength >= 2 && path.Utf8Span[0] == '/' && path.Utf8Span[1] == '/';
             var authorityPrefix = netloc.Length != 0 || doubleSlash || scheme.Length != 0 && UsesNetloc.Contains(scheme.AsString()) && (!hasPath || startsSlash);
             long scalarCount = scheme.Length + (long)netloc.Length + path.Length + param.Length + query.Length + fragment.Length;
             if (scheme.Length != 0) scalarCount++;

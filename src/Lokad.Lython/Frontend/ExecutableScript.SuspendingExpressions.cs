@@ -58,7 +58,7 @@ internal sealed partial class ExecutableScript
                 if (part is LoweredFormattedStringTextPart text)
                 {
                     var literal = PyString.FromString(text.Text);
-                    initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, literal.Utf8Bytes.Length));
+                    initialCapacity = Math.Min(256, initialCapacity + Math.Min(256, literal.ByteLength));
                     if (append) AddInstruction(block, ExecutableInstruction.AppendFormattedText(InternConstant(literal), span));
                     else AddInstruction(block, ExecutableInstruction.LoadConst(InternConstant(literal), span));
                 }

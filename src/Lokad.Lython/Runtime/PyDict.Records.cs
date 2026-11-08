@@ -95,7 +95,7 @@ internal sealed partial class PyDict
         private static bool EqualName(PyString name, ReadOnlySpan<byte> bytes,
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
-            var other = name.Utf8Bytes.Span;
+            var other = name.Utf8Span;
             if (other.Length != bytes.Length) return false;
             for (var offset = 0; offset < bytes.Length;)
             {

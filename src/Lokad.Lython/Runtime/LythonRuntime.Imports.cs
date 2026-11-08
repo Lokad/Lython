@@ -377,9 +377,9 @@ internal sealed partial class LythonRuntime
                 // original components and replacement overlap. A selected CLR path
                 // gets batch funding before this private reservation ends.
                 using var working = context.MemoryGovernor.ReserveTemporary(
-                    checked(256L + 16L * (moduleName.Length + (long)location.Utf8Bytes.Length)), span);
+                    checked(256L + 16L * (moduleName.Length + (long)location.ByteLength)), span);
                 var child = moduleName[(moduleName.LastIndexOf('.') + 1)..];
-                var root = location.Utf8Bytes.IsEmpty ? "." : location.AsString();
+                var root = location.Utf8Span.IsEmpty ? "." : location.AsString();
                 yield return new LocalImportCandidate(PathOps.Combine(root, child + "/__init__.py"), IsPackage: true);
                 yield return new LocalImportCandidate(PathOps.Combine(root, child + ".py"), IsPackage: false);
             }

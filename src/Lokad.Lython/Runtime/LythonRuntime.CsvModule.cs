@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
         {
             var args = bound.Values;
             if (bound.Assigned[layout.Dialect] && args[layout.Dialect] is not PyNone &&
-                !(args[layout.Dialect] is PyString dialect && dialect.Utf8Bytes.Span.SequenceEqual("excel"u8)))
+                !(args[layout.Dialect] is PyString dialect && dialect.Utf8Span.SequenceEqual("excel"u8)))
                 throw RuntimeErrors.Type("csv dialect registry is unsupported; pass explicit CSV options instead.", span);
             var delimiter = Character(layout.Delimiter, "delimiter", PyStringOps.CommaLiteral, false)!;
             var quote = Character(layout.QuoteCharacter, "quotechar", PyString.FromString("\""), true);
@@ -187,15 +187,15 @@ internal sealed partial class LythonRuntime
             void ValidateCharacter(PyString? value, string name, bool allowSpace)
             {
                 if (value is null) return;
-                var bytes = value.Utf8Bytes.Span;
+                var bytes = value.Utf8Span;
                 if (bytes.Length == 1 && (bytes[0] is 10 or 13 || bytes[0] == 32 && !allowSpace))
                     throw new LythonRuntimeException("ValueError", $"bad {name} value", span);
-                if (CsvWriterMembers.TerminatorContains(terminator.Utf8Bytes.Span, bytes, context, span))
+                if (CsvWriterMembers.TerminatorContains(terminator.Utf8Span, bytes, context, span))
                     throw new LythonRuntimeException("ValueError", $"bad {name} or lineterminator value", span);
             }
             void ValidatePair(PyString? left, string leftName, PyString? right, string rightName)
             {
-                if (left is not null && right is not null && left.Utf8Bytes.Span.SequenceEqual(right.Utf8Bytes.Span))
+                if (left is not null && right is not null && left.Utf8Span.SequenceEqual(right.Utf8Span))
                     throw new LythonRuntimeException("ValueError", $"bad {leftName} or {rightName} value", span);
             }
             PyString? Character(int index, string name, PyString? fallback, bool allowNone)
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
             if (!bound.Assigned[3]) return PyString.FromString("raise");
             if (bound.Values[3] is not PyString text) throw RuntimeErrors.Type("csv extrasaction must be a string.", span);
             // Only these fixed ASCII labels can match; reject before decoding large inputs.
-            var length = text.Utf8Bytes.Length;
+            var length = text.ByteLength;
             if (length == 5 && text.AsString().Equals("raise", StringComparison.OrdinalIgnoreCase)) return PyString.FromString("raise");
             if (length == 6 && text.AsString().Equals("ignore", StringComparison.OrdinalIgnoreCase)) return PyString.FromString("ignore");
             throw new LythonRuntimeException("ValueError", "extrasaction must be 'raise' or 'ignore'.", span);
@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
             PhysicalLineCount++;
             try
             {
-                _parser.Feed(line.Utf8Bytes.Span);
+                _parser.Feed(line.Utf8Span);
             }
             catch
             {
@@ -558,10 +558,10 @@ internal sealed partial class LythonRuntime
         public void Feed(ReadOnlySpan<byte> text)
         {
             if (_readyRecord is not null) throw new InvalidOperationException("CSV input advanced before consuming its record.");
-            var delimiter = _options.Delimiter.Utf8Bytes.Span;
+            var delimiter = _options.Delimiter.Utf8Span;
             var quote = _options.Quoting != CsvQuotingMode.None && _options.QuoteChar is { } q
-                ? q.Utf8Bytes.Span : default;
-            var escape = _options.EscapeChar is { } e ? e.Utf8Bytes.Span : default;
+                ? q.Utf8Span : default;
+            var escape = _options.EscapeChar is { } e ? e.Utf8Span : default;
             // Lead bytes find candidates; full scalar matches below distinguish
             // Unicode dialect characters sharing the same UTF-8 prefix.
             Span<byte> unquoted = stackalloc byte[5];
@@ -752,15 +752,16 @@ internal sealed partial class LythonRuntime
                 else if (field.Length == 0) cell = PyString.Empty;
                 else
                 {
-                    var bytes = new byte[field.Length];
+                    var text = PyString.CreateReservedUtf8(field.Length, _context.MemoryGovernor);
+                    var bytes = text.UnpublishedUtf8;
                     for (var offset = 0; offset < bytes.Length;)
                     {
                         _context.CheckExecution(_span);
                         var count = Math.Min(4096, bytes.Length - offset);
-                        _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.AsSpan(offset, count));
+                        _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
                         offset += count;
                     }
-                    cell = PyString.FromOwnedUtf8(bytes, _context.MemoryGovernor, _span, storage);
+                    cell = text.CompleteReservedUtf8(field.Length, storage);
                 }
                 row[index++] = cell;
             }

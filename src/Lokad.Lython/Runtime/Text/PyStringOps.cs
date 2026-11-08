@@ -37,7 +37,7 @@ internal static partial class PyStringOps
 
     public static PyString TrimTrailingNewline(PyString value)
     {
-        var bytes = value.Utf8Bytes.Span;
+        var bytes = value.Utf8Span;
         if (bytes.Length == 0)
         {
             return value;
@@ -76,7 +76,7 @@ internal static partial class PyStringOps
         governor ??= value.OwnerMemoryGovernor;
         span ??= PyStructuralGuard.AmbientSpan;
         var lines = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Bytes.Span;
+        var source = value.Utf8Span;
         var startByte = 0;
         for (var byteIndex = 0; byteIndex < source.Length;)
         {
@@ -132,8 +132,8 @@ internal static partial class PyStringOps
         governor ??= value.OwnerMemoryGovernor;
         span ??= PyStructuralGuard.AmbientSpan;
         var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Bytes.Span;
-        var needle = separator.Utf8Bytes.Span;
+        var source = value.Utf8Span;
+        var needle = separator.Utf8Span;
         var offset = 0;
         while (true)
         {
@@ -170,8 +170,8 @@ internal static partial class PyStringOps
         }
 
         var parts = governor is null ? new PyList() : new PyList([], governor, span);
-        var source = value.Utf8Bytes.Span;
-        var needle = separator.Utf8Bytes.Span;
+        var source = value.Utf8Span;
+        var needle = separator.Utf8Span;
         var offset = 0;
         var splits = 0;
         while (splits < maxSplit)
@@ -216,8 +216,8 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("empty separator");
         }
 
-        var source = value.Utf8Bytes.Span;
-        var needle = separator.Utf8Bytes.Span;
+        var source = value.Utf8Span;
+        var needle = separator.Utf8Span;
         var parts = new List<PyString>();
         var end = source.Length;
         var splits = 0;
@@ -263,13 +263,13 @@ internal static partial class PyStringOps
     // scalar conversion. Tuple affixes reuse the same borrowed window.
     public static BigInteger Find(PyString value, PyString needle, int startByte, int endByte)
     {
-        var found = PyString.IndexOfBytes(value.Utf8Bytes.Span[startByte..endByte], needle.Utf8Bytes.Span);
+        var found = PyString.IndexOfBytes(value.Utf8Span[startByte..endByte], needle.Utf8Span);
         return new(found < 0 ? -1 : value.ByteIndexToRuneIndex(startByte + found));
     }
 
     public static BigInteger RFind(PyString value, PyString needle, int startByte, int endByte)
     {
-        var found = LastIndexOfBytes(value.Utf8Bytes.Span[startByte..endByte], needle.Utf8Bytes.Span);
+        var found = LastIndexOfBytes(value.Utf8Span[startByte..endByte], needle.Utf8Span);
         return new(found < 0 ? -1 : value.ByteIndexToRuneIndex(startByte + found));
     }
 
@@ -278,8 +278,8 @@ internal static partial class PyStringOps
         if (!needle.IsTruthy())
             return new BigInteger(value.ByteIndexToRuneIndex(endByte) - value.ByteIndexToRuneIndex(startByte)) + BigInteger.One;
 
-        var span = value.Utf8Bytes.Span[startByte..endByte];
-        var needleBytes = needle.Utf8Bytes.Span;
+        var span = value.Utf8Span[startByte..endByte];
+        var needleBytes = needle.Utf8Span;
         var count = 0;
         var offset = 0;
         while (true)
@@ -293,10 +293,10 @@ internal static partial class PyStringOps
     }
 
     public static bool StartsWith(PyString value, PyString prefix, int startByte, int endByte)
-        => value.Utf8Bytes.Span[startByte..endByte].StartsWith(prefix.Utf8Bytes.Span);
+        => value.Utf8Span[startByte..endByte].StartsWith(prefix.Utf8Span);
 
     public static bool EndsWith(PyString value, PyString suffix, int startByte, int endByte)
-        => value.Utf8Bytes.Span[startByte..endByte].EndsWith(suffix.Utf8Bytes.Span);
+        => value.Utf8Span[startByte..endByte].EndsWith(suffix.Utf8Span);
 
     public static PyTuple Partition(PyString value, PyString separator)
         => Partition(value, separator, null, null);
@@ -311,7 +311,7 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("empty separator");
         }
 
-        var index = PyString.IndexOfBytes(value.Utf8Bytes.Span, separator.Utf8Bytes.Span);
+        var index = PyString.IndexOfBytes(value.Utf8Span, separator.Utf8Span);
         // Slice items through the call governor like split does: the value-owned
         // helper below would leave literal-receiver partitions ungoverned.
         return index < 0
@@ -319,7 +319,7 @@ internal static partial class PyStringOps
             : CreateTuple([
                 SliceUtf8(value, 0, index, governor, span),
                 separator,
-                SliceUtf8(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length, governor, span)
+                SliceUtf8(value, index + separator.ByteLength, value.ByteLength, governor, span)
             ], governor, span);
     }
 
@@ -336,13 +336,13 @@ internal static partial class PyStringOps
             throw new InvalidOperationException("empty separator");
         }
 
-        var index = LastIndexOfBytes(value.Utf8Bytes.Span, separator.Utf8Bytes.Span);
+        var index = LastIndexOfBytes(value.Utf8Span, separator.Utf8Span);
         return index < 0
             ? CreateTuple([PyString.Empty, PyString.Empty, value], governor, span)
             : CreateTuple([
                 SliceUtf8(value, 0, index, governor, span),
                 separator,
-                SliceUtf8(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length, governor, span)
+                SliceUtf8(value, index + separator.ByteLength, value.ByteLength, governor, span)
             ], governor, span);
     }
 
@@ -394,12 +394,12 @@ internal static partial class PyStringOps
         if (width <= value.Length) return value;
         cancellationToken.ThrowIfCancellationRequested();
         var padding = width - value.Length;
-        var bytes = checked((long)value.Utf8Bytes.Length + padding);
+        var bytes = checked((long)value.ByteLength + padding);
         if (bytes > int.MaxValue) throw RuntimeErrors.Memory("padded string exceeds supported capacity", span);
         var builder = CreateBuilder(governor, span, (int)bytes);
         try
         {
-            var source = value.Utf8Bytes.Span;
+            var source = value.Utf8Span;
             if (!source.IsEmpty && source[0] is (byte)'+' or (byte)'-')
             {
                 builder.Append(source[0]);
@@ -429,10 +429,10 @@ internal static partial class PyStringOps
     {
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
-        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.Utf8Bytes.Length);
+        var builder = CreateBuilder(context?.MemoryGovernor ?? value.OwnerMemoryGovernor, span, value.ByteLength);
         try
         {
-            var source = value.Utf8Bytes.Span;
+            var source = value.Utf8Span;
             long column = 0;
             for (var byteIndex = 0; byteIndex < source.Length;)
             {

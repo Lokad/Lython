@@ -21,7 +21,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_input is null) throw RuntimeErrors.Capability("standard input is not available.", span);
         _state.CheckExecution(span);
-        if (_pendingOffset >= _pendingLine.Utf8Bytes.Length)
+        if (_pendingOffset >= _pendingLine.ByteLength)
         {
             var bytes = asynchronous
                 ? await HostOperation.AwaitAsync(() => _input.ReadLineUtf8Async(_state.CancellationToken), "stdin.readline", span, _state.MemoryGovernor).ConfigureAwait(false)
@@ -30,26 +30,26 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
             _pendingLine = LythonRuntime.DecodeUtf8Text(bytes.Value, _state.MemoryGovernor, span, _state);
             _pendingOffset = 0;
         }
-        Rune.DecodeFromUtf8(_pendingLine.Utf8Bytes.Span[_pendingOffset..], out var rune, out var consumed);
+        Rune.DecodeFromUtf8(_pendingLine.Utf8Span[_pendingOffset..], out var rune, out var consumed);
         _pendingOffset += consumed;
         return rune.Value;
     }
 
     private bool TakePendingLine(out PyString line)
     {
-        line = _pendingLine.SliceByByteRange(_pendingOffset, _pendingLine.Utf8Bytes.Length);
+        line = _pendingLine.SliceByByteRange(_pendingOffset, _pendingLine.ByteLength);
         _pendingLine = PyString.Empty;
         _pendingOffset = 0;
-        return !line.Utf8Bytes.IsEmpty;
+        return !line.Utf8Span.IsEmpty;
     }
 
     private PyString PrependPending(PyString tail, LythonSourceSpan? span)
     {
-        if (_pendingOffset >= _pendingLine.Utf8Bytes.Length) return tail;
+        if (_pendingOffset >= _pendingLine.ByteLength) return tail;
         var builder = new GovernedByteBuilder(_state.MemoryGovernor, span);
         try
         {
-            builder.Append(_pendingLine.Utf8Bytes.Span[_pendingOffset..]);
+            builder.Append(_pendingLine.Utf8Span[_pendingOffset..]);
             builder.Append(tail);
             var result = builder.ToPyStringAndRelease();
             _pendingLine = PyString.Empty; _pendingOffset = 0;

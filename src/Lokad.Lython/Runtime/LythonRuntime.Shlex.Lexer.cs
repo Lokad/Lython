@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                 else if (punctuationChars is true) PunctuationChars = PyString.FromString("();<>|&");
                 else if (PyStringOps.TryAsString(punctuationChars, out var text)) PunctuationChars = text;
                 else throw new LythonRuntimeException("TypeError", "shlex.shlex(..., punctuation_chars=...) expects a bool or string.", span);
-                if (!PunctuationChars.Utf8Bytes.IsEmpty)
+                if (!PunctuationChars.Utf8Span.IsEmpty)
                 {
                     var builder = new GovernedByteBuilder(_context.MemoryGovernor, span);
                     try
@@ -388,7 +388,7 @@ internal sealed partial class LythonRuntime
 
                 // Punctuation mode needs character pushback so the next token can
                 // reconsider it under mutable sets; otherwise CPython pushes a token.
-                if (!PunctuationChars.Utf8Bytes.IsEmpty)
+                if (!PunctuationChars.Utf8Span.IsEmpty)
                 {
                     _pushbackChars.Push(next);
                 }
@@ -541,10 +541,10 @@ internal sealed partial class LythonRuntime
             private static bool Contains(PyString characters, int value)
             {
                 if (value < 0) return false;
-                if (value < 128) return characters.Utf8Bytes.Span.IndexOf((byte)value) >= 0;
+                if (value < 128) return characters.Utf8Span.IndexOf((byte)value) >= 0;
                 Span<byte> bytes = stackalloc byte[4];
                 var length = new Rune(value).EncodeToUtf8(bytes);
-                return characters.Utf8Bytes.Span.IndexOf(bytes[..length]) >= 0;
+                return characters.Utf8Span.IndexOf(bytes[..length]) >= 0;
             }
 
             private static LythonRuntimeException SourceInclusionUnsupported(LythonSourceSpan span)

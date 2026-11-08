@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                 var part = _parts[i];
                 if (part.Group < 0) AppendRegexBytes(builder, _literals.AsSpan(part.Start, part.Length), context, span);
                 else if (captures[part.Group] is { } capture)
-                    AppendRegexBytes(builder, range.Original.Utf8Bytes.Span.Slice(capture.StartByte,
+                    AppendRegexBytes(builder, range.Original.Utf8Span.Slice(capture.StartByte,
                         capture.EndByte - capture.StartByte), context, span);
             }
         }
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            var source = template.Utf8Bytes.Span;
+            var source = template.Utf8Span;
             var slashes = 0;
             for (var offset = 0; offset < source.Length;)
             {
@@ -233,7 +233,7 @@ internal sealed partial class LythonRuntime
         {
             // Python reads the following token before interpreting the current
             // one: a dangling slash there takes precedence over its group error.
-            var source = template.Utf8Bytes.Span;
+            var source = template.Utf8Span;
             if (offset == source.Length - 1 && source[offset] == '\\')
                 throw ReplacementError("bad escape (end of pattern)", template, offset, context, span);
         }
@@ -270,7 +270,7 @@ internal sealed partial class LythonRuntime
         private static LythonRuntimeException ReplacementError(string message, PyString template, int byteOffset,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var source = template.Utf8Bytes.Span;
+            var source = template.Utf8Span;
             var position = 0;
             for (var i = 0; i < byteOffset; i++)
             {

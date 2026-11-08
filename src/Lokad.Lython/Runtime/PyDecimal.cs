@@ -105,8 +105,8 @@ internal static partial class PyDecimalOps
                 if (PyStringOps.TryAsString(value, out var text))
                 {
                     context.CheckExecution(span);
-                    using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * text.Utf8Bytes.Length, span);
-                    var characters = new char[text.Utf8Bytes.Length];
+                    using var storage = context.MemoryGovernor.ReserveTemporary(128L + 2L * text.ByteLength, span);
+                    var characters = new char[text.ByteLength];
                     var raw = characters.AsSpan(0, text.CopyUtf16To(characters));
                     if (policy is not null && raw.Length != raw.Trim().Length)
                         throw policy.ConversionSyntaxError(context, span);

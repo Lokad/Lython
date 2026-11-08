@@ -468,11 +468,11 @@ internal static class PyTyping
 
         public NewTypeIdentityCallable(PyString name, object supertype, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = 128L + 2L * name.Utf8Bytes.Length;
+            var bytes = 128L + 2L * name.ByteLength;
             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
             context.CheckExecution(span);
             _qualifiedName = name;
-            var separator = name.Utf8Bytes.Span.LastIndexOf((byte)'.');
+            var separator = name.Utf8Span.LastIndexOf((byte)'.');
             _name = separator < 0 ? name : PyString.FromUtf8(name.Utf8Bytes[(separator + 1)..], context.MemoryGovernor, span);
             Name = _name.AsString();
             _supertype = supertype;

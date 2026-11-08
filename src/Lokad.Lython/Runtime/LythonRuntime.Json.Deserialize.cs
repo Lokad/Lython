@@ -27,8 +27,8 @@ internal sealed partial class LythonRuntime
             try
             {
                 var decoded = await ReadJsonValueAsync(text, options, context, span, 0, 0, asynchronous).ConfigureAwait(false);
-                var end = SkipJsonWhitespace(text.Utf8Bytes.Span, decoded.End, context, span);
-                if (end < text.Utf8Bytes.Length)
+                var end = SkipJsonWhitespace(text.Utf8Span, decoded.End, context, span);
+                if (end < text.ByteLength)
                 {
                     throw CreateJsonTrailingDataError(text, end, span, context);
                 }
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
         private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expectedPropertyNames = null, int expectedPosition = 0)
         {
             // Lenient rewriting affects only the token; coordinates keep the original document.
-            var original = input.Utf8Bytes.Span;
+            var original = input.Utf8Span;
             var end = position + 1;
             var controls = 0;
             var escaped = false;
@@ -292,7 +292,7 @@ internal sealed partial class LythonRuntime
                 }
                 else value = CreateString(reader.GetString() ?? string.Empty, context, span);
                 context.CheckExecution(span);
-                var existing = expectedPropertyNames?.FindName(value.Utf8Bytes.Span, expectedPosition, context, span);
+                var existing = expectedPropertyNames?.FindName(value.Utf8Span, expectedPosition, context, span);
                 if (existing is not null)
                 {
                     if (!ReferenceEquals(value, existing)) context.MemoryGovernor.RefundUnpublishedValue(value);
@@ -428,7 +428,7 @@ internal sealed partial class LythonRuntime
         private static int NextJsonContainerToken(PyString input, int valueEnd, bool isObject,
             ExecutionContext context, LythonSourceSpan span)
         {
-            var bytes = input.Utf8Bytes.Span;
+            var bytes = input.Utf8Span;
             var position = SkipJsonWhitespace(bytes, valueEnd, context, span);
             if (position < bytes.Length && bytes[position] == (isObject ? (byte)'}' : (byte)']')) return position;
             if (position >= bytes.Length || bytes[position] != (byte)',')
@@ -637,7 +637,7 @@ internal sealed partial class LythonRuntime
         {
             var line = 0;
             var lineStart = 0;
-            var bytes = input.Utf8Bytes.Span;
+            var bytes = input.Utf8Span;
             for (var index = 0; index < bytePosition; index++)
             {
                 if (bytes[index] == (byte)'\n')

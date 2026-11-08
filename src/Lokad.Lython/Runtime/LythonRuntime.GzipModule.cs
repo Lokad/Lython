@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
             var args = bound.Values;
             var requestedMode = !bound.Assigned[1] ? PyString.FromString("rb") : PyStringOps.TryAsString(args[1], out var text)
                 ? text : throw RuntimeErrors.Type("gzip.open mode must be str", span);
-            using var modeStorage = context.MemoryGovernor.ReserveTemporary(128L + 6L * requestedMode.Utf8Bytes.Length, span);
+            using var modeStorage = context.MemoryGovernor.ReserveTemporary(128L + 6L * requestedMode.ByteLength, span);
             var mode = requestedMode.AsString();
             if (mode.Contains('t') && mode.Contains('b')) throw RuntimeErrors.Value("Invalid mode: " + mode, span);
             var binaryMode = mode.Replace("t", "", StringComparison.Ordinal);

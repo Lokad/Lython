@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> ResolveName(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments[0] is not PyString text) throw RuntimeErrors.Type("resolve_name expects a string", span);
-            using var working = context.MemoryGovernor.ReserveTemporary(checked(256L + 64L * text.Utf8Bytes.Length), span);
+            using var working = context.MemoryGovernor.ReserveTemporary(checked(256L + 64L * text.ByteLength), span);
             var name = text.AsString();
             var colon = name.IndexOf(':');
             var modulePart = colon < 0 ? name : name[..colon];
@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a module name string.", span);
             }
 
-            var bytes = checked(64L + 4L * text.Utf8Bytes.Length);
+            var bytes = checked(64L + 4L * text.ByteLength);
             context.MemoryGovernor.Reserve(bytes, span);
             context.MemoryGovernor.Commit(bytes); // escaped native import keys belong to this execution
             return text.AsString();

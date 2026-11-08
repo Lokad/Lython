@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
         var args = new PyTuple([name, data, new BigInteger(start), new BigInteger(end), explanation], governor, span);
         var rendered = FormatCodecError(type, name, data, start, end, explanation, governor, span, guards);
         // Both the native exception and guest value borrow this one message.
-        var messageBytes = checked(32L + 2L * rendered.Utf8Bytes.Length);
+        var messageBytes = checked(32L + 2L * rendered.ByteLength);
         governor.Reserve(messageBytes, span);
         string message;
         try { message = rendered.AsString(); }
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
     private static bool TryRune(PyString text, int index, ExecutionState? guards, LythonSourceSpan? span, out Rune rune)
     {
         var position = 0;
-        var source = text.Utf8Bytes.Span;
+        var source = text.Utf8Span;
         for (var offset = 0; offset < source.Length;)
         {
             if ((position & 1023) == 0) guards?.CheckExecution(span);

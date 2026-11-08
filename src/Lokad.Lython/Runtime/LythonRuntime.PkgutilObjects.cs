@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
             if (arguments.Length != 0 && arguments[0] is not PyNone &&
                 (arguments[0] is not PyString fullname || !fullname.Equals(Name))) return PyNone.Instance;
             if (SourcePath is null) return PyNone.Instance;
-            using var path = context.MemoryGovernor.ReserveTemporary(checked(64L + 4L * SourcePath.Utf8Bytes.Length), span);
+            using var path = context.MemoryGovernor.ReserveTemporary(checked(64L + 4L * SourcePath.ByteLength), span);
             var source = SourcePath.AsString();
             return asynchronous ? await ReadGovernedHostTextAsync(source, context, span).ConfigureAwait(false)
                 : ReadGovernedHostText(source, context, span);

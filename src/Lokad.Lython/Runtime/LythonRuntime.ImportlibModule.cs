@@ -142,9 +142,9 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0 || arguments[0] is not PyString name)
             throw RuntimeErrors.Type(owner + " expects a string name", span);
-        if (name.Utf8Bytes.IsEmpty) throw new LythonRuntimeException("ValueError", "Empty module name", span);
+        if (name.Utf8Span.IsEmpty) throw new LythonRuntimeException("ValueError", "Empty module name", span);
         var package = arguments.Length > 1 ? arguments[1] : PyNone.Instance;
-        if (name.Utf8Bytes.Span[0] == '.' && (package is not PyString text || text.Utf8Bytes.IsEmpty))
+        if (name.Utf8Span[0] == '.' && (package is not PyString text || text.Utf8Span.IsEmpty))
             throw RuntimeErrors.Type("the 'package' argument is required for a relative import", span);
         var absolute = ResolveRelativeImportName(name, package, context, span);
         // Native registry/host keys can outlive this call. Keep their decoded
@@ -158,9 +158,9 @@ internal sealed partial class LythonRuntime
 
     private static PyString ResolveRelativeImportName(PyString name, object packageValue, ExecutionContext context, LythonSourceSpan span)
     {
-        var bytes = name.Utf8Bytes.Span;
+        var bytes = name.Utf8Span;
         if (bytes.IsEmpty || bytes[0] != '.') return name;
-        if (packageValue is not PyString package || package.Utf8Bytes.IsEmpty)
+        if (packageValue is not PyString package || package.Utf8Span.IsEmpty)
             throw new LythonRuntimeException("ImportError", "no package specified for relative module name", span);
         var level = 0;
         while (level < bytes.Length && bytes[level] == '.')
@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
             if ((level & 4095) == 0) context.CheckExecution(span);
             level++;
         }
-        var prefix = package.Utf8Bytes.Span;
+        var prefix = package.Utf8Span;
         var remaining = level - 1;
         for (var i = prefix.Length - 1; remaining > 0 && i >= 0; i--)
         {
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
             if (prefix[i] == '.') { prefix = prefix[..i]; remaining--; }
         }
         if (remaining != 0) throw new LythonRuntimeException("ImportError", "attempted relative import beyond top-level package", span);
-        if (prefix.Length == package.Utf8Bytes.Length && level == bytes.Length) return package;
+        if (prefix.Length == package.ByteLength && level == bytes.Length) return package;
         var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
         try
         {
@@ -291,7 +291,7 @@ internal sealed partial class LythonRuntime
             value = _members["name"];
             if (_members["submodule_search_locations"] is not PyNone) return true;
             if (value is not PyString text) throw RuntimeErrors.Type("module spec name must be a string", span);
-            var bytes = text.Utf8Bytes.Span;
+            var bytes = text.Utf8Span;
             var dot = bytes.LastIndexOf((byte)'.');
             value = dot < 0 ? PyString.Empty : PyString.CopyFromUtf8(bytes[..dot], context.MemoryGovernor, span);
             return true;

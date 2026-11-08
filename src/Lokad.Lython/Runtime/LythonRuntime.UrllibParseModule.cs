@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
             var safe = args.Length > 1 ? args[1] : plus ? PyString.Empty : Slash;
             // The fast path depends on source spaces, before encoding: an
             // encoded 0x20 can instead be part of a UTF-16 code unit.
-            if (plus && (input is PyString noSpaces && noSpaces.Utf8Bytes.Span.IndexOf((byte)' ') < 0 ||
+            if (plus && (input is PyString noSpaces && noSpaces.Utf8Span.IndexOf((byte)' ') < 0 ||
                          input is PyBytes noByteSpaces && noByteSpaces.Bytes.IndexOf((byte)' ') < 0))
                 plus = false;
             var addSpaceToSafe = plus && safe is PyString or PyBytes;
@@ -222,7 +222,7 @@ internal sealed partial class LythonRuntime
             if (PyStringOps.TryAsString(value, out var text))
             {
                 var index = 0;
-                foreach (var b in text.Utf8Bytes.Span)
+                foreach (var b in text.Utf8Span)
                 {
                     if ((index++ & 1023) == 0) context.CheckExecution(span);
                     if (b < 128) result.Add(b);
@@ -289,7 +289,7 @@ internal sealed partial class LythonRuntime
             }
             if (PyStringOps.TryAsString(input, out var text))
             {
-                if (text.Utf8Bytes.Span.IndexOf((byte)'%') < 0) return input;
+                if (text.Utf8Span.IndexOf((byte)'%') < 0) return input;
                 return UnquoteText(text, Codec(encodingValue, span), Errors(errorsValue, TextErrorMode.Replace, span), context, span);
             }
             var contains = asynchronous
@@ -313,7 +313,7 @@ internal sealed partial class LythonRuntime
             }
             if (PyStringOps.TryAsString(value, out var text))
             {
-                try { return PercentDecodeBytes(text.Utf8Bytes.Span, context, span); }
+                try { return PercentDecodeBytes(text.Utf8Span, context, span); }
                 finally { GC.KeepAlive(text); }
             }
             throw new LythonRuntimeException("AttributeError", "object has no attribute 'split'", span);
