@@ -1,0 +1,19 @@
+{
+  "productionSourceMatchesQualifiedD97": true,
+  "prototypeRemoved": true,
+  "forceNonincrementalBuildAfterRestore": true,
+  "retainedNewSemanticCases": 9,
+  "baselineControlCases": 2,
+  "checks": {
+    "net11.0": {
+      "internal": 5,
+      "public": 6
+    },
+    "net10.0": {
+      "internal": 5,
+      "public": 6
+    }
+  },
+  "qualification": "Production unchanged from cached CI42527042378; new coverage focused both targets, no unchanged full replay.",
+  "limitations": "HeldC4bb performance remains inconclusive; new tests do not imply a production speedup. Publication postponed."
+}

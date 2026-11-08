@@ -59,6 +59,78 @@ public sealed class GeneralBoundMethodDefaultLifetimeTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task NamedDefaultsKeepArgumentsFundedThroughSuspensionAndFailure(int failureKind)
+    {
+        const string source = """
+class Key:
+ def __hash__(self):return hash('value')
+ def __eq__(self,other):
+  tap()
+  return other=='value'
+def target(first,*,value):return first,value
+target.__kwdefaults__={Key():value}
+return target(first=value)
+""";
+        var definition = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!)).EntryPoint;
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using var owner = budget.CreateScope();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+        var value = PyString.FromString(new string('x', 2048), context.MemoryGovernor, null);
+        context.Variables["value"] = value;
+        var baseline = budget.ReservedBytes;
+        var tap = new DefaultTap(budget, baseline);
+        context.Variables["tap"] = tap;
+        var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(definition, context).AsTask();
+        try
+        {
+            await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            Assert.True(budget.ReservedBytes > baseline);
+            if (failureKind == 1)
+            {
+                tap.Release.TrySetCanceled();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+            }
+            else if (failureKind == 2)
+            {
+                var origin = new LythonSourceSpan(99, 3, 8, 5);
+                var first = context.MemoryGovernor.RefuseAdmission("controlled prepared default refusal", 777, origin);
+                tap.Release.TrySetResult();
+                var error = await Assert.ThrowsAsync<LythonRuntimeException>(() => pending);
+                Assert.Same(first, error);
+                Assert.Equal(origin, error.Span);
+                Assert.Equal(777L, error.Attribution?.Requested);
+            }
+            else
+            {
+                tap.Release.TrySetResult();
+                var result = Assert.IsType<PyTuple>(await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.Same(value, result[0]);
+                Assert.Same(value, result[1]);
+            }
+        }
+        finally
+        {
+            tap.Release.TrySetCanceled();
+            try { await pending.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (OperationCanceledException) { }
+            catch (LythonRuntimeException) when (failureKind == 2) { }
+            context.State.CloseResources();
+        }
+        Assert.Equal(new string('x', 2048), value.AsString());
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.True(budget.ReservedBytes >= baseline);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class DefaultTap(LythonMemoryBudget budget, long baseline) : LythonRuntime.ICallable
     {
         internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

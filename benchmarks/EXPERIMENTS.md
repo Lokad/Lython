@@ -4866,3 +4866,29 @@ rejected that old path before any comparison. Corrected current census C617 has
 identical instructions/operations/cache/local/native properties and72/120Bframes,
 not80/128B. [Correction](results/2026-11-08-helper-call-attribution/census-correction.json).
 Original inventory preserved; no CPU/elapsed changes or rerun.
+
+
+## Compile-owned named binding prototype held (2026-11-08)
+
+[R124](results/2026-11-08-prepared-function-binding/README.md), qualifiedC617/
+prototypeC4bb. Compiler-owned immutable-layout slots/shared default completion,
+no runtime cache/owner/engine/options.81internal/41public peractual11/10 plus262
+additional public11 pass. Warmallocation neutral, compilerallocation+0.199–0.254%.
+B483fourjobs114.346s and B484two-job confirmation109.217s/allgates/archive/localpass.
+Primary CSV candidate spread4.33%, no stable whole-script CPU gain; async text
+confirmation improves but original desktop+6.4%/quiet adverse survives, reportCPU
+0..+4%possible debt. Hold narrow form rather than promote extra compiler machinery
+without established benefit; not fixed-threshold rejection, semantic failure or
+permanent closure. Full source/core/raw/conditions preserved. Restore qualified
+production and retain useful observable lifetime/semantic tests, continue broader
+call/frame/frontend roadmap and independent regex. No third unchanged timing round
+or publication; future source-specific evidence can justify revisiting the design.
+
+
+R124 production restoration matches qualifiedd97; forced nonincremental builds and
+5internal/6public targeted checks pass eachactual11/10. Nine independent observable
+semantic/lifetime cases retained, two baseline controls; no runtime code change.
+[Validation](results/2026-11-08-prepared-function-binding/restored-validation.json).
+ScopeDirectiveFacts/LexicalScopePreparation already share prepared lexical facts;
+apparent repeatedForFunction calls do not establish duplicate walks. Source gate
+recorded in active plan; no new inventory/capture/prototype from that hypothesis.
