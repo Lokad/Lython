@@ -254,6 +254,9 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [Theory]
     [InlineData("return value + 3", 8)]
     [InlineData("intermediate = value + 3\n    return intermediate + 4", 12)]
+    [InlineData("return value * 3 - 2", 13)]
+    [InlineData("intermediate = value * 3\n    return intermediate // 4", 3)]
+    [InlineData("return (value << 2) | 3", 23)]
     public void NativeArithmeticReturnPreservesForwarding(string body, int expected)
     {
         foreach (var driver in Enum.GetValues<Driver>())
@@ -368,12 +371,16 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         }
     }
 
-    [Fact]
-    public void FreshResultDenialKeepsSpanAndActiveException()
+    [Theory]
+    [InlineData("+")]
+    [InlineData("-")]
+    [InlineData("*")]
+    [InlineData("<<")]
+    public void FreshResultDenialKeepsSpanAndActiveException(string operation)
     {
         foreach (var driver in Enum.GetValues<Driver>())
         {
-            var source = "def f(value, right):\n    return value + right\n";
+            var source = $"def f(value, right):\n    return value {operation} right\n";
             var (function, context, code) = Function(source, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(4096) });
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
@@ -395,6 +402,58 @@ public sealed class SimpleFunctionExecutionBoundaryTests
             Assert.Equal(0, context.State.CurrentRecursionDepth);
             Assert.Equal(0, context.State.CurrentInterpreterDepth);
 
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IntegerResultAdmissionStopsBeforePublicationAndRefunds(bool cancel)
+    {
+        foreach (var driver in Enum.GetValues<Driver>())
+        {
+            var budget = new LythonMemoryBudget(1024 * 1024);
+            using (var owner = budget.CreateScope())
+            using (var cancellation = new CancellationTokenSource())
+            {
+                var hook = new AdmissionHookMemoryBudget(owner);
+                var (function, context, code) = Function("def f(value):\n    return value << 40000\n",
+                    new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+                var reached = false;
+                hook.RefuseGrowth = bytes =>
+                {
+                    if (cancel || bytes < 4096) return false;
+                    reached = true;
+                    return true;
+                };
+                hook.AfterGrowth = bytes =>
+                {
+                    if (!cancel || bytes < 4096) return;
+                    reached = true;
+                    cancellation.Cancel();
+                };
+                var active = new PyException("ValueError", "outer", PyNone.Instance);
+                context.State.SetCurrentException(active);
+                var error = Assert.Throws<LythonRuntimeException>(() => Invoke(function,
+                    [CallArgumentValue.Positional(BigInteger.One)], context, driver));
+                Assert.True(reached);
+                Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                    error.Attribution?.Reason);
+                if (!cancel)
+                {
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                    Assert.Same(Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.Binary).Span, error.Span);
+                }
+                // Cancellation at the return checkpoint is a terminal host
+                // failure; unlike an operator error it carries no Python context.
+                if (!cancel) Assert.Same(active, error.PythonContext);
+                Assert.Same(active, context.State.CurrentException);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                context.State.CloseResources();
+            }
+            Assert.Equal(0, budget.ReservedBytes);
         }
     }
 

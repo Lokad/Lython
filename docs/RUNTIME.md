@@ -474,8 +474,12 @@ arity and supported casing/formatting combinations. Closed zero-argument string
 calls reuse the ordinary method declarations and frontend return facts; no separate
 method-kind inventory is needed. Existing casing/split fusion retains its original
 receiver and source checks, without a discarded casing node. Invocation checks actual
-types, callable identities and namespaces. Prepared values refer to original
-instructions and call inputs; evaluation requires no operand or argument arrays.
+types, callable identities and namespaces. Prepared values own immutable original opcode metadata and member/return source
+spans independently of physical bytecode positions. Ordinary operand forwarding
+still applies when native guards fail. One shared compiler/runtime result-shape
+fact covers primitive integer, float and boolean binary operations and string
+addition; execution uses the canonical operators. Custom protocols keep ordinary
+dispatch. Evaluation requires no operand or argument arrays.
 They retain no caller values or tokens. Deeper or unsupported
 expressions keep the full engine. Single-value primitive formatting can share
 that proof. Multipart formatted strings use ordinary executable instructions and

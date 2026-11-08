@@ -13,8 +13,8 @@ internal sealed partial class ExecutableCodeObject
         if (blocks.Count == 1 && blocks[0].InstructionArray is [{ OpCode: ExecutableOpCode.ReturnNone }])
             return ExecutableNativeBody.ReturnNone;
 
-        // These blocks need no synthetic Complete instruction. Native proofs
-        // keep the original sequence, so these offsets also match linearization.
+        // Offsets identify visited source operations only during preparation.
+        // Proof nodes own immutable metadata; ordinary bytecode may forward loads.
         var offsets = new int[blocks.Count + 1];
         for (var block = 0; block < blocks.Count; block++)
         {
@@ -38,7 +38,7 @@ internal sealed partial class ExecutableCodeObject
             // Compile/evaluate within the existing native recursion admission.
             // Other control flow keeps ordinary executable code, before effects.
             if (controlDepth > 16) return null;
-            var stack = new List<(int Value, int Member, int Depth, int MemberName)>();
+            var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer)>();
             var instructions = blocks[block].InstructionArray;
             for (var index = firstInstruction; index < instructions.Length; index++)
             {
@@ -51,6 +51,7 @@ internal sealed partial class ExecutableCodeObject
                 var first = -1;
                 var second = -1;
                 var depth = 1;
+                LythonSourceSpan? memberSpan = null;
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.Jump:
@@ -59,7 +60,7 @@ internal sealed partial class ExecutableCodeObject
                         index = -1;
                         continue;
                     case ExecutableOpCode.JumpIfFalse:
-                        if (stack.Count != 1 || stack[0].Member >= 0) return null;
+                        if (stack.Count != 1 || stack[0].Member is not null) return null;
                         hasConditional = true;
                         var condition = stack[0];
                         var consequent = Compile(block, index + 1, hasEffects,
@@ -70,18 +71,18 @@ internal sealed partial class ExecutableCodeObject
                         var conditionalDepth = 1 + Math.Max(condition.Depth,
                             Math.Max(consequent.Value.Depth, alternative.Value.Depth));
                         if (conditionalDepth > 16) return null;
-                        values.Add(new(NativeReturnOperation.Conditional, sourceIndex, condition.Value,
+                        values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
                             consequent.Value.Root, Third: alternative.Value.Root));
                         return (values.Count - 1, conditionalDepth);
                     case ExecutableOpCode.Return:
-                        if (stack.Count != 1 || stack[0].Member >= 0) return null;
+                        if (stack.Count != 1 || stack[0].Member is not null) return null;
                         var root = stack[0];
-                        values[root.Value] = values[root.Value] with { ReturnInstruction = sourceIndex };
+                        values[root.Value] = values[root.Value] with { ReturnSpan = instruction.Span };
                         return (root.Value, root.Depth);
                     case ExecutableOpCode.ReturnNone:
                         if (stack.Count != 0) return null;
-                        values.Add(new(NativeReturnOperation.None, sourceIndex, -1, -1,
-                            ReturnInstruction: sourceIndex));
+                        values.Add(new(NativeReturnOperation.None, instruction, -1, -1,
+                            ReturnSpan: instruction.Span));
                         return (values.Count - 1, 1);
                     case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple when instruction.ItemCount == 0:
                         operation = NativeReturnOperation.EmptySequence;
@@ -102,7 +103,7 @@ internal sealed partial class ExecutableCodeObject
                         // Forward the operand only inside this closed native proof.
                         // Ordinary bytecode retains both instructions and bindings
                         // when protocols, locals inspection or other guards fail.
-                        if (stack.Count == 0 || stack[^1].Member >= 0 || index + 1 >= instructions.Length
+                        if (stack.Count == 0 || stack[^1].Member is not null || index + 1 >= instructions.Length
                             || instructions[index + 1].OpCode != ExecutableOpCode.LoadLocal
                             || instructions[index + 1].LocalSlot != instruction.LocalSlot)
                             return null;
@@ -113,15 +114,16 @@ internal sealed partial class ExecutableCodeObject
                         visited[offsets[block] + index] = true;
                         continue;
                     case ExecutableOpCode.LoadCallMember:
-                        if (stack.Count == 0 || stack[^1].Member >= 0) return null;
+                        if (stack.Count == 0 || stack[^1].Member is not null) return null;
                         // Fold receiver+method into the call; no exposed bound value.
-                        stack[^1] = (stack[^1].Value, sourceIndex, stack[^1].Depth, instruction.NameIndex);
+                        stack[^1] = (stack[^1].Value, instruction.Span, stack[^1].Depth, instruction.NameIndex, stack[^1].Producer);
                         continue;
-                    case ExecutableOpCode.Binary when instruction.BinaryOperator == BinaryOperatorSyntax.Add:
+                    case ExecutableOpCode.Binary when LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
+                        LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
                     case ExecutableOpCode.Subscript:
                         if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
-                        if (stack.Count < 2 || stack[^1].Member >= 0 || stack[^2].Member >= 0) return null;
-                        operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Add : NativeReturnOperation.Subscript;
+                        if (stack.Count < 2 || stack[^1].Member is not null || stack[^2].Member is not null) return null;
+                        operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Binary : NativeReturnOperation.Subscript;
                         first = stack[^2].Value;
                         second = stack[^1].Value;
                         depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
@@ -133,7 +135,7 @@ internal sealed partial class ExecutableCodeObject
                             ? NativeReturnOperation.ConvertFormat
                             : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
                                 ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
-                        if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member >= 0) return null;
+                        if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member is not null) return null;
                         first = stack[^1].Value;
                         depth = 1 + stack[^1].Depth;
                         // Actual dictionary-value queries are not speculated on
@@ -150,16 +152,16 @@ internal sealed partial class ExecutableCodeObject
                             return null;
                         var start = stack.Count - site.ArgumentCount - 1;
                         var target = stack[start];
-                        if (site.HasReceiver && target.Member < 0) return null;
+                        if (site.HasReceiver && target.Member is null) return null;
                         for (var a = start + 1; a < stack.Count; a++)
                         {
-                            if (stack[a].Member >= 0) return null;
+                            if (stack[a].Member is not null) return null;
                             depth = Math.Max(depth, stack[a].Depth);
                         }
                         depth = 1 + Math.Max(depth, target.Depth);
                         first = target.Value;
-                        second = target.Member;
-                        if (target.Member < 0)
+                        memberSpan = target.Member;
+                        if (target.Member is null)
                         {
                             // These shapes never passed the dynamic builtin proof.
                             if (site.ArgumentCount != 1 || values[first].Operation != NativeReturnOperation.Read) return null;
@@ -182,13 +184,15 @@ internal sealed partial class ExecutableCodeObject
                                     _ => NativeReturnOperation.ListMethod,
                                 };
                                 if (member is "split" or "rsplit"
-                                    && first == values.Count - 1 && target.Member == sourceIndex - 1
+                                    && first == values.Count - 1 && index > 0
+                                    && ReferenceEquals(target.Member, instructions[index - 1].Span)
                                     && values[first].Operation == NativeReturnOperation.StringMethod)
                                 {
                                     var producer = values[first];
-                                    if (producer.SourceInstruction >= offsets[block]
-                                        && producer.SourceInstruction == producer.Second + 1
-                                        && PrepareCasedSplit(instructions, producer.SourceInstruction - offsets[block], index, sites) is not null)
+                                    var producerIndex = target.Producer - offsets[block];
+                                    if (producerIndex > 0 && producerIndex < instructions.Length
+                                        && ReferenceEquals(producer.MemberSpan, instructions[producerIndex - 1].Span)
+                                        && PrepareCasedSplit(instructions, producerIndex, index, sites) is not null)
                                     {
                                         operation = NativeReturnOperation.CasedSplit;
                                         first = producer.First;
@@ -225,8 +229,8 @@ internal sealed partial class ExecutableCodeObject
                 // Eligibility bound, never a guest syntax/nesting limit.
                 if (depth > 16) return null;
                 if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
-                values.Add(new(operation, sourceIndex, first, second, nativeMethod));
-                stack.Add((values.Count - 1, -1, depth, -1));
+                values.Add(new(operation, instruction, first, second, nativeMethod, MemberSpan: memberSpan));
+                stack.Add((values.Count - 1, null, depth, -1, sourceIndex));
             }
             return null;
         }

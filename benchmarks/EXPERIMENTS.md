@@ -4710,3 +4710,43 @@ benefit or allocation reduction. No fixed percentage veto/permanent design ban.
 Exact fully qualified baseline restored; prototype binaries must not be reused
 without a fresh build. Raw/source/binaries/adverse results archived and verified;
 all users ended/owned RAM unmounted. No full CI replay for restored identical code.
+
+## Integer helper proof, intermediate (2026-11-08)
+
+[R113/B473](results/2026-11-08-integer-helper-prototype/README.md) broadens existing
+Add-only proof to exact integer binary operators, canonical semantics. Focused
+1524public/104internal peractual11/10; allocation neutral, compile+0.40–0.41%affected.
+New complete CSV/JSON accounting scripts,168.664s/all gates: CSV−1.53to−5.78%sync/
+−4.33to−6.28%async; JSON−3.54to−5.02%sync/−4.57to−6.67%async with supportingCPU.
+CSVsyncCPU uncertain, reportCPU0to+6.25%possible debt. Intermediate, no full delivery
+or CPython refresh. Source revealed native proof indices disable ordinary operand
+forwarding even for failed guards; coherent next milestone makes those independent
+using immutable source metadata in existing nodes, with compiled-storage tradeoff.
+Disk preflight/alias-only failures/corrections preserved, no guard relaxation or
+archive deletion; users joined/RAM unmounted/archive locally verified.
+
+## Independent native proof, intermediate (2026-11-08)
+
+[R114/B474](results/2026-11-08-independent-native-proof/README.md) removes runtime
+source offsets/native-forwarding exclusion; immutable descriptor nodes32→72B,
+ordinary instructions32B. Allocation neutral, incremental compiler+0.59–1.09%.
+Eight jobs223.498s/all output/ownership/quiet/cleanup/archive gates. Integer scripts
+improve, async floatCSV+4.14–6.29%adverse; text mildly faster, report uncertain.
+Intermediate, no full qualification. R115 bounded correction shares primitive
+integer/float/bool proof with compiler; canonical operations, custom protocols
+ordinary and explicitly measured. Original limit metadata210 vs configured270/
+terminal infinity retained; no claim of independently observed earlier live limit.
+
+## Coherent primitive helper delivery (2026-11-08)
+
+[R115/B475](results/2026-11-08-primitive-helper-delivery/README.md) retains the
+combined shared primitive proof and independent descriptor/ordinary-forwarding
+design.1526public/104internal peractual11/10,8jobs224.458s/allgates/archive/local.
+IntegerCSV/JSON−3.5–5.2%, floatCSV−1.8–6.2%across APIs/supportingCPU; prior adverse
+float pair preserved. Warm allocations neutral in incremental diagnostics, direct
+compile+1.40–1.48%accounting/+0.59%text. Native nodes32to72B/instructions32B.
+Custom async+1.28–3.36%/CPU+6.67%explicit debt; text controls variable, reportCPU
+possible debt. Retain coherent simplification with those limits, full delivery
+pending. Live270slimit captured; all historical conditions/intermediates remain.
+Continue current complete text/custom CPU attribution and primary checkpoint,
+not claim the performance objective complete or revive slower call carriers.

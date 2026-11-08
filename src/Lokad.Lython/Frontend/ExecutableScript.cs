@@ -535,15 +535,15 @@ internal sealed partial class ExecutableCodeObject
         IsFunctionScope = isFunctionScope;
         PrepareCasedSplits(blocks, callSites);
         NativeBody = PrepareNativeBody(blocks, entryBlockIndex, exceptionRegions.Count, callSites);
-        var reads = NativeBody is null ? ExecutableStackLayout.ForwardValues(this, blocks) : null;
-        // Assign physical positions once, after removing forwarded loads. The
-        // native proof retains its original instruction sequence and indices.
+        var reads = ExecutableStackLayout.ForwardValues(this, blocks);
+        // Assign physical positions after forwarding. Native proof metadata is
+        // independent of these positions, including when a runtime guard fails.
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
             exceptionRegions, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
         OperandCapacity = operandLayout.MaximumDepth;
         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
-        _operandReadSpans = reads is null ? [] : reads.Select(read => new ExecutableOperandSpan(
+        _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
         ExceptionRegions = exceptionRegions

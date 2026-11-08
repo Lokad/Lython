@@ -7,7 +7,7 @@ namespace Lokad.Lython.Frontend;
 internal enum NativeReturnOperation
 {
     Read,
-    Add,
+    Binary,
     Subscript,
     BuiltinUnary,
     StringMethod, BytesMethod, BooleanMethod, ListMethod,
@@ -17,8 +17,8 @@ internal enum NativeReturnOperation
     Conditional, None, EmptySequence,
 }
 
-internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, int SourceInstruction, int First, int Second,
-    LythonRuntime.ReceiverMethod? Method = null, int Third = -1, int ReturnInstruction = -1);
+internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, ExecutableInstruction Instruction, int First, int Second,
+    LythonRuntime.ReceiverMethod? Method = null, int Third = -1, LythonSourceSpan? ReturnSpan = null, LythonSourceSpan? MemberSpan = null);
 
 internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root)
 {

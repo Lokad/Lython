@@ -1,0 +1,30 @@
+[
+  {
+    "image": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\independent-proof-r114\\images\\before\\Lokad.Lython.dll",
+    "type": "NativeReturnValue",
+    "small": 56,
+    "large": 32824,
+    "elementBytes": 32
+  },
+  {
+    "image": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\independent-proof-r114\\images\\before\\Lokad.Lython.dll",
+    "type": "ExecutableInstruction",
+    "small": 56,
+    "large": 32824,
+    "elementBytes": 32
+  },
+  {
+    "image": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\independent-proof-r114\\images\\candidate\\Lokad.Lython.dll",
+    "type": "NativeReturnValue",
+    "small": 96,
+    "large": 73824,
+    "elementBytes": 72
+  },
+  {
+    "image": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\independent-proof-r114\\images\\candidate\\Lokad.Lython.dll",
+    "type": "ExecutableInstruction",
+    "small": 56,
+    "large": 32824,
+    "elementBytes": 32
+  }
+]

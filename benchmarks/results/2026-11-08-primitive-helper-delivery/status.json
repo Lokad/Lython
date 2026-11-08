@@ -1,0 +1,14 @@
+{
+  "status": "Retained coherent R113/R114/R115 source, commit/full delivery qualification pending. No public API change; publication postponed.",
+  "decision": "Retain one primitive result-shape fact and independent immutable proof descriptors with ordinary forwarding; canonical arithmetic/semantics, no new engine/representation/arena/cache/owner/control carrier. Explicitly accept measured custom-operator async debt and compiled metadata cost; next current-source CPU attribution includes this debt and complete text.",
+  "validation": {
+    "publicnet11.0": 1526,
+    "internalnet11.0": 104,
+    "publicnet10.0": 1526,
+    "internalnet10.0": 104
+  },
+  "measurement": "B475224.458s/all output/ownership/quiet/lifecycle/archive gates. IntegerCSVelapsed\u22123.80to\u22125.17%,CPU\u22123.45%; JSON\u22123.47to\u22124.93%,CPU\u22123.57to\u22129.24%; floatCSV\u22121.76to\u22123.45%sync/\u22122.23to\u22126.16%async,CPU supports. CustomCSVsync\u22120.87to+2.57%with3.19%oldspread,async+1.28to+3.36%/CPU+6.67%debt. Text\u22122.69to+1.69%oldspread3.54%inconclusive; report\u22120.74to+0.54%/CPU0to+6.25%possible debt. Original adverse R114+4.14\u20136.29%float source pair preserved, not erased by refinement.",
+  "allocation": "Incremental warm diagnostics neutral; final qualified1310/current compile allocation+1.40\u20131.48%accounting/+0.59%text/report unchanged, desktop elapsed uncertain. Native nodes32to72B, instructions32B unchanged, ordinary forwarded loads removed. Coarse compilation allowance intentionally approximate.",
+  "limits": "New complete4096-record accounting variations, not refreshed CPython performance cases. Warm includes invocation/mediated RAM I/O/full stdout/file validation/prior-result cleanup; excludes compile/startup/staging/final cache teardown. No pending-I/O/embedding-tail/RSS claim. Custom protocol slowdown retained; no universal speedup or CPU attribution from source alone.",
+  "lifecycle": "Live finite270s owner captured atstartup; terminal transient unit resets toinfinity, original terminal data retained. Users joined/ownedRAMunmounted/archive locallyverified; no repeated terminal query. Earlier B474metadata errors and all adverse intermediate sources remain independent."
+}
