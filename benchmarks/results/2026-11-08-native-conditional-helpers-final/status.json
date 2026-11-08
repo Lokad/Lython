@@ -1,5 +1,5 @@
 {
-  "status": "Refined R106 retained; focused checks and controlled source pair pass. Exact committed-source full qualification pending independently.",
+  "status": "Retained R106 committed/pushed7265538c; full Windows/Ubuntu Release actual.NET11/10, original Stress both and installed core consumers pass. Original observations and uncertainties unchanged.",
   "coreSHA256": {
     "before": "aae80cc7335167ab87d17559d49de0dad0690a7faa9022134ce0aecfc3a4a9c2",
     "candidate": "1aa68ce9bddb5f8c88e1e950f32f3ce698e72223f6b7ca89a079dfd7bcfdc86b"
@@ -8,5 +8,7 @@
   "controlledArchiveSHA256": "8f596064ea9405cf44f345197a5e67b5b71d4a414c7d59b748079a2a23b32497",
   "noRemainingVMUsersOrFixtures": true,
   "initialPrototypeCore": "67e76e70",
-  "referenceGuideSource": "15c06863"
+  "referenceGuideSource": "15c06863",
+  "deliveryCI": 42496463028,
+  "qualifiedProductionRevision": "7265538c4f73abe0b133851797acf733d39b36e6"
 }

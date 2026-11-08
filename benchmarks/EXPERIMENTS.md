@@ -1,5 +1,11 @@
 # Benchmark experimental history
 
+These revision-specific records preserve observations and decisions; they do not
+describe HEAD or impose current experimental rules. Uncertain measurements can
+justify bounded confirmation, refinement or correction, with adverse results and
+original conditions retained. Current comparisons belong in
+[BENCHMARKS](../docs/BENCHMARKS.md).
+
 The [R27 execution source gate](results/2026-11-07-execution-source-gate/README.md)
 records existing operand/call/storage mechanisms and a bounded3,000-job Windows
 JIT inspection of R26. All text goldens/cleanup pass; mixed inlined semantics keep
@@ -4637,3 +4643,20 @@ formatted evaluator; do not reintroduce upfront mutable proofs. Offline classifi
 corrected actual call names/per-method deduplication; original/raw retained, no retime.
 All gates/archive/local verification pass, no users/RAM. Full delivery independent;
 next combined retained-source external checkpoint, no new framework/publication.
+
+## Combined retained-source CPython checkpoint (2026-11-08)
+
+[R109/B467](results/2026-11-08-json-conditional-checkpoint/README.md) at7265538c/
+core1aa68ce9, unchanged28jobs/normalsettings/catalog/workers/full goldens,
+581.729s. Separate compile/warm/compile-to-result, two independent
+same-source Lython controls and CPython3.13.16. All gates/archive/local verification
+pass, no users/fixtures. Full source qualification independently
+pendingCI42496463028. Current guide updated, prior15c guide and all
+variable/adverse observations preserved. No isolated CPU attribution, old-debt
+repayment, publication or broader objective closure.
+
+R106 exact-source delivery on7265538c passes/cached CI42496463028:
+Windows/Ubuntu actual11/10 full Release, original Stress both and installed core
+consumers. No runtime/source change or repeated earlier qualification. Focused
+205public/42internal peractual11/10, initial67e/refined1aa raw observations and
+uncertainties remain separate. [Receipt](results/2026-11-08-native-conditional-helpers-final/delivery-ci.json).

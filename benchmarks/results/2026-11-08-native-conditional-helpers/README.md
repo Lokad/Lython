@@ -17,8 +17,8 @@ existing proof bound; deeper syntax retains ordinary executable behavior.
 
 Baseline fully qualified a7bd4103/coreaae80cc7 at [cached CI42488128858](../2026-11-08-native-json-construction/delivery-ci.json).
 Candidatea7 plus archived five-file patch/core67e76e70, source hashes in identity.
-Informational binary revision predates the candidate commit. New-source full
-platform/Stress/installed qualification is separate/pending. The primary CPython
+Informational binary revision predates the candidate commit. This initial prototype was not separately fully qualified. Retained-source
+platform/Stress/installed qualification is recorded with the refinement. The primary CPython
 guide still names15c; no per-edit external remeasurement.
 
 | Complete script / phase | Controlled elapsed, all four median pairings | Coarse CPU |

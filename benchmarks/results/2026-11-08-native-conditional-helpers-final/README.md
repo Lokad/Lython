@@ -11,7 +11,9 @@ patch over `dee0ef1b`, core `1aa68ce9`; exact inventory and binary are archived.
 The empty-list branch borrows the unchanged literal-list factory through a cold
 non-inlined helper, preserving fresh values, preflight, cancellation and refunds.
 The [initial prototype](../2026-11-08-native-conditional-helpers/README.md) and all
-its adverse observations remain separate. Final platform qualification is pending;
+its adverse observations remain separate. Retained source committed/pushed `7265538c`; full Windows/Ubuntu Release actual
+.NET11/.NET10, original Stress both targets and installed core consumers pass
+[cached delivery](delivery-ci.json). Original capture-time status remains in its archive;
 the primary CPython guide still describes source `15c06863`.
 
 | Complete script / phase | Elapsed change, four median pairings | Coarse CPU change |

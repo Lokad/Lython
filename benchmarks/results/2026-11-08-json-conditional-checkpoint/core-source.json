@@ -1,0 +1,7 @@
+{
+  "vmArchive": "refined-conditional-helpers-b465-20261108/observations.tgz",
+  "archiveSHA256": "8f596064ea9405cf44f345197a5e67b5b71d4a414c7d59b748079a2a23b32497",
+  "member": "current-core.dll",
+  "coreSHA256": "1aa68ce9bddb5f8c88e1e950f32f3ce698e72223f6b7ca89a079dfd7bcfdc86b",
+  "immutableLocalArtifact": "benchmarks/results/2026-11-08-native-conditional-helpers-final/observations.tar.xz (nested B465)"
+}

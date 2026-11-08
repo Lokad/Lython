@@ -1,0 +1,61 @@
+{
+  "beforeFreeBytes": 258023424,
+  "afterFreeBytes": 285831168,
+  "groups": [
+    {
+      "sha256": "547825f9dfe52ddf22e24e76b8bc54ae8975428dae5b5e22052dd223624d2c42",
+      "paths": [
+        {
+          "path": "/home/lokad/lython-bench-checks/native-key-construction-b139-20261103/baseline/Lokad.Lython.dll",
+          "inode": 824565,
+          "bytes": 5561856,
+          "links": 5
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/json-key-storage-b138-20261103/baseline/Lokad.Lython.dll",
+          "inode": 824221,
+          "bytes": 5561856,
+          "links": 1
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/json-container-reader-b137-20261103/baseline/Lokad.Lython.dll",
+          "inode": 823882,
+          "bytes": 5561856,
+          "links": 1
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/json-container-reader-b137-refined-20261103/baseline/Lokad.Lython.dll",
+          "inode": 824053,
+          "bytes": 5561856,
+          "links": 1
+        }
+      ]
+    },
+    {
+      "sha256": "137b563ac198d769a13f45b1894b8fb4309a764b6da62b7e94bd14d01a8a58f5",
+      "paths": [
+        {
+          "path": "/home/lokad/lython-bench-checks/current-script-cpu-b126-20261102/candidate/Lokad.Lython.dll",
+          "inode": 822238,
+          "bytes": 5556736,
+          "links": 1
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/shared-iteration-b127-refined-20261102/baseline/Lokad.Lython.dll",
+          "inode": 822549,
+          "bytes": 5556736,
+          "links": 1
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks/cpython-checkpoint-b125-20261102/candidate/Lokad.Lython.dll",
+          "inode": 620604,
+          "bytes": 5556736,
+          "links": 1
+        }
+      ]
+    }
+  ],
+  "allPathsAndBytesPreserved": true,
+  "archivesUntouched": true,
+  "allOriginalAliasesVerified": true
+}
