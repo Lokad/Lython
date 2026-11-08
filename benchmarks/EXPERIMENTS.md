@@ -4660,3 +4660,23 @@ Windows/Ubuntu actual11/10 full Release, original Stress both and installed core
 consumers. No runtime/source change or repeated earlier qualification. Focused
 205public/42internal peractual11/10, initial67e/refined1aa raw observations and
 uncertainties remain separate. [Receipt](results/2026-11-08-native-conditional-helpers-final/delivery-ci.json).
+
+## Known-layout record value capacity (2026-11-08)
+
+[Initial R110/B468](results/2026-11-08-json-record-capacity-initial/README.md)
+uses full layout capacity at construction: wide allocation−11%, alternating+14.7%
+and elapsed+4.31to+10.82%. One [retained refinement/B469](results/2026-11-08-json-record-capacity/README.md)
+moves the existing capacity decision to actual ordered-prefix growth, removing
+intermediate arrays without a new owner/cache/predictor/policy. Eight-record full
+report replacement admissions21→7, initial reservations unchanged.897public/
+193internal peractual11/10 pass, independent full Python shapes/order plus actual
+async/cancellation/refusal/shared/retained ownership checks. Wide allocation−8.56–8.58%
+both APIs; controlled elapsed−3.80to−10.29%sync/−6.05to−7.53%async, coarseCPU supports.
+Alternating regression does not recur; allocation neutral, elapsed−1.59to−4.20%,
+CPUnearflat. CSVcontrol8.67%baseline spread inconclusive, JSON/shortreport nearbaseline.
+All original/adverse/desktop conditions preserved; no unrelated debt repayment.
+170.447s/sixjobs/all gates/archive/local pass, no users/fixtures. Initial disk
+preflight stopped before workers; actual wide evidence footprint+50% now uses32MiB
+headroom with unchanged240MiBfloor, exact-byte hardlinks preserve all evidence.
+Exact retained-source full delivery pending independently; primary CPython guide
+continues to name726. Publication/regex unchanged; broader objective stays active.

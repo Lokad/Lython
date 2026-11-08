@@ -171,7 +171,9 @@ internal sealed partial class PyDict
     private void EnsureRecordValueCapacity(int targetCount, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (targetCount <= _nativeValues!.Length) return;
-        var capacity = NativeCapacity(targetCount);
+        // The ordered prefix has outgrown its backing. Its remaining keys are
+        // already immutable, so admit the layout's final value capacity once.
+        var capacity = NativeCapacity(_recordKeys!.Count);
         using var replacement = _memoryGovernor!.ReserveTemporary(NativeValueStorageBytes(capacity), span);
         context.CheckExecution(span);
         var previous = _nativeValues;

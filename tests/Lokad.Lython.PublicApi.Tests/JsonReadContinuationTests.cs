@@ -108,6 +108,100 @@ public sealed class JsonReadContinuationTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData("success")]
+    [InlineData("cancel")]
+    [InlineData("refuse")]
+    public async Task WideRecordHooksKeepPendingUsersAndRetainedResultsFunded(string outcome)
+    {
+        const string source = """
+            import json,time
+            seen=[]
+            marker=['saved'*1024]
+            def hook(item):
+             item['alias']=marker
+             seen.append(item)
+             if len(seen)==1:time.sleep(0)
+             return item
+            try:
+             first=json.loads(document,object_hook=hook)
+             second=json.loads(document,object_hook=hook)
+            except BaseException:pass
+            assert len(first)==18 and len(second)==18
+            print(first['alias'] is second['alias'])
+            print('later')
+            return [first,second]
+            """;
+        var document = "{" + string.Join(",", Enumerable.Range(0, 17).Select(i => $"\"k{i:00}\":{i}")) + "}";
+        var globals = new Dictionary<string, object?> { ["document"] = document };
+        const long limit = 4 * 1024 * 1024;
+        var budget = new LythonMemoryBudget(limit);
+        var timing = new HeldTiming();
+        var host = new MockLythonHost(); host.SetTiming(timing);
+        using var cancellation = new CancellationTokenSource();
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var pending = script.RunAsync(host, globals, cancellation.Token);
+            ILythonMemoryReservation? fill = null;
+            try
+            {
+                Assert.Same(timing.Entered.Task, await Task.WhenAny(timing.Entered.Task, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.False(pending.IsCompleted);
+                Assert.Equal(cancellation.Token, timing.SeenToken);
+                var held = budget.ReservedBytes;
+                Assert.True(held > baseline);
+                var otherTiming = new HeldTiming(); otherTiming.Release.TrySetResult();
+                var otherHost = new MockLythonHost(); otherHost.SetTiming(otherTiming);
+                using (var other = await script.RunAsync(otherHost, globals).WaitAsync(TimeSpan.FromSeconds(5)))
+                {
+                    Assert.True(other.Success, other.Failure?.Message);
+                    Assert.Equal("True\nlater\n", other.StandardOutput);
+                    Assert.Equal(2, Assert.IsType<List<object?>>(other.ReturnValue).Count);
+                    Assert.True(budget.ReservedBytes > held);
+                }
+                Assert.Equal(held, budget.ReservedBytes);
+                if (outcome == "cancel") cancellation.Cancel();
+                if (outcome == "refuse") Assert.True(budget.TryReserve(limit - held, out fill));
+                Assert.False(pending.IsCompleted);
+                Assert.Equal(held + (fill?.Bytes ?? 0), budget.ReservedBytes);
+                timing.Release.TrySetResult();
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                if (outcome == "success")
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal("True\nlater\n", result.StandardOutput);
+                    Assert.Equal(2, Assert.IsType<List<object?>>(result.ReturnValue).Count);
+                    Assert.True(budget.ReservedBytes > baseline);
+                }
+                else
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(outcome == "cancel" ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                        result.FailureAttribution?.Reason);
+                    Assert.DoesNotContain("later", result.StandardOutput, StringComparison.Ordinal);
+                    if (outcome == "refuse") Assert.True(result.FailureAttribution?.Requested > 0);
+                }
+            }
+            finally
+            {
+                timing.Release.TrySetResult();
+                cancellation.Cancel();
+                using var settled = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                fill?.Dispose();
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            using (var reused = await script.RunAsync(host, globals))
+            {
+                Assert.True(reused.Success, reused.Failure?.Message);
+                Assert.Equal("True\nlater\n", reused.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private sealed class HeldTiming : ILythonTiming
     {
         internal readonly TaskCompletionSource Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);

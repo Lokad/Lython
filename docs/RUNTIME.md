@@ -980,6 +980,12 @@ Property names can reuse immutable UTF-8 keys from the previous completed native
 object, independently of field order. The native dictionary key table supplies
 this lookup; names own their bytes and never borrow input. Ordered matching
 records share immutable key/hash/order metadata with independently admitted values.
+When an ordered record prefix outgrows its value backing, it reserves the
+retained layout's full value capacity, avoiding repeated replacement arrays.
+Shorter prefixes can keep their initial storage. A narrower record that does grow
+can retain spare hinted capacity or be refused earlier; that capacity stays funded.
+Refusal never retries a smaller allocation. Changed shapes retain ordinary
+admitted dictionary growth.
 Mutable records remain independent. Equal decoded strings have no interning or
 cross-decode identity guarantee; duplicate dictionary entries retain their first
 key and last value. Value strings use the ordinary decoder.

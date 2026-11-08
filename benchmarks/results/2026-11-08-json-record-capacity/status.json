@@ -1,0 +1,17 @@
+{
+  "status": "Refined R110 retained, focused/controlled checks pass; exact committed-source full qualification pending independently.",
+  "coreSHA256": {
+    "before": "1aa68ce9bddb5f8c88e1e950f32f3ce698e72223f6b7ca89a079dfd7bcfdc86b",
+    "candidate": "13107e6bb98693a579c4f1ed342e410d751f6e9ccaf53cf8399e0b88c203fb54"
+  },
+  "focusedChecks": {
+    "public11": 897,
+    "public10": 897,
+    "internal11": 193,
+    "internal10": 193
+  },
+  "archiveSHA256": "7175e5ff4278e270c88cab6f6ce5d2536ceb647e2c5d5ec6acc360fa7996277a",
+  "controlledArchiveSHA256": "3386de9c03c6e856e600181a12de8a9c3a050e654773ce4582449e9ed29b4399",
+  "noRemainingVMUsersOrFixtures": true,
+  "referenceGuideSource": "7265538c"
+}

@@ -15,6 +15,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[JSON record shapes](Lokad.Lython.PublicApi.Tests/JsonRecordShapeTests.cs) checks
+wide, reordered, duplicate and nested records against independent CPython values
+and key order, with genuinely asynchronous hooks and retained shared-budget results.
+The JSON continuation checks also cover paused wide-record hooks, cancellation,
+refused admission, awaited cleanup and allowance reuse.
+
 [Prepared consumer protocols](Lokad.Lython.PublicApi.Tests/PreparedConsumerProtocolTests.cs)
 checks genuinely suspended truth, member and iterator callbacks, in-flight
 cancellation, awaited cleanup and return of the shared memory allowance.

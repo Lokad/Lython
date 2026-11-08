@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Use retained JSON record layouts to admit their final value capacity on growth,
+  avoiding repeated replacement arrays for wide records. Keep changing shapes,
+  callbacks and result ownership; spare hinted capacity remains charged.
+
 - Prepare native helper return trees across branches, retaining guard-before-work
   semantics and selected return spans. Share fresh empty-list admission and keep
   custom protocols, loops and shared joins on the existing executable path.

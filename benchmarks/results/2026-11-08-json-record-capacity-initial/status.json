@@ -1,0 +1,10 @@
+{
+  "status": "Initial startup capacity prototype superseded by one growth-capacity refinement. No full new-source qualification; original source/observations/adverse results preserved.",
+  "coreSHA256": {
+    "before": "1aa68ce9bddb5f8c88e1e950f32f3ce698e72223f6b7ca89a079dfd7bcfdc86b",
+    "candidate": "eb1444638fb1a5036f180f4b42f9f04da48af7f5c5935746e1a96afc25f32393"
+  },
+  "archiveSHA256": "96a712b617854b9a4c1a0ec49f0c2efa74d214ceb10b82ac81d7ddeac62b71b2",
+  "controlledArchiveSHA256": "cf4bb6544c8bb3db587bab80b364d1c3b089cc3edaf6dab602b96fcc27793127",
+  "noRemainingVMUsersOrFixtures": true
+}
