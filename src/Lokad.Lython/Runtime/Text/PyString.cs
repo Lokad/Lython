@@ -722,22 +722,28 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
 
         // Cache capacity describes its own charge; no separate accumulator.
+        var context = PyStructuralGuard.AmbientContext;
+        var span = PyStructuralGuard.AmbientSpan;
         var count = Length;
         var bytes = 32L + 4L * ((long)count + 1);
-        _memoryGovernor?.Reserve(bytes, PyStructuralGuard.AmbientSpan);
+        _memoryGovernor?.Reserve(bytes, span);
         try
         {
+            // Admission can invoke the host. Keep a cancelled construction
+            // private and refund its reservation before allocating the cache.
+            context?.CheckExecution(span);
             var offsets = new int[count + 1];
             var runeIndex = 0;
             for (var byteIndex = 0; byteIndex < _byteLength;)
             {
+                if ((runeIndex & 1023) == 0) context?.CheckExecution(span);
                 offsets[runeIndex++] = byteIndex;
                 byteIndex += GetRuneLengthAtByteIndex(byteIndex);
             }
             offsets[runeIndex] = _byteLength;
-            _runeByteOffsets = offsets;
+            context?.CheckExecution(span);
             _memoryGovernor?.Commit(bytes);
-            return offsets;
+            return _runeByteOffsets = offsets;
         }
         catch
         {

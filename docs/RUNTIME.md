@@ -43,6 +43,10 @@ Allocation failures use the requesting operation's explicit or current synchrono
 provenance. Internal helpers used without an execution context may have no span;
 the public execution boundary still reports its active Python instruction.
 
+Unicode indexing caches use the active caller's cancellation context during
+construction and remain unpublished until completion. Cancelled construction
+returns its working allowance while retaining the input's charge.
+
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before
 reporting the contract failure and releasing its borrowed storage. Text/binary

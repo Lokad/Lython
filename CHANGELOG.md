@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Observe cancellation before allocating Unicode indexing caches, during their
+  construction and before publication; return unpublished working allowance.
+
 - Resolve executable jump chains once and normalize dense block IDs directly,
   removing repeated hash-set walks, reachability sorting and dictionary remapping.
   Preserve cycle entry identity and protected cleanup targets.
