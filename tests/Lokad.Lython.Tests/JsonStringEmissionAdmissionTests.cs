@@ -43,26 +43,17 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
     }
 
     [Theory]
-    [InlineData("dumps", false, false)]
-    [InlineData("dumps", false, true)]
-    [InlineData("dumps", true, false)]
-    [InlineData("dumps", true, true)]
-    [InlineData("encode", false, false)]
-    [InlineData("encode", false, true)]
-    [InlineData("encode", true, false)]
-    [InlineData("encode", true, true)]
-    [InlineData("iterator", false, false)]
-    [InlineData("iterator", false, true)]
-    [InlineData("iterator", true, false)]
-    [InlineData("iterator", true, true)]
-    public async Task SmallResultStillRequiresAdmissionForRetainedUtf8(string route, bool asynchronous, bool shared)
+    [InlineData("dumps", false)] [InlineData("dumps", true)]
+    [InlineData("encode", false)] [InlineData("encode", true)]
+    [InlineData("iterator", false)] [InlineData("iterator", true)]
+    public async Task SmallResultStillRequiresAdmissionForRetainedUtf8(string route, bool asynchronous)
     {
-        const long limit = 1024 * 1024;
-        var budget = new LythonMemoryBudget(limit);
+        var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
+            var hook = new AdmissionHookMemoryBudget(owner);
             var context = new Context(new MockLythonHost(), new LythonRunOptions
-                { MemoryBudget = owner},regexProvider:Utf8RegexProvider.Instance);
+                { MemoryBudget = hook }, regexProvider: Utf8RegexProvider.Instance);
             var governor = context.MemoryGovernor;
             var input = PyString.FromString("a", governor, Span);
             var callable = Load(context, route);
@@ -70,33 +61,28 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
             var iterator = route == "iterator"
                 ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
             var resultBytes = PyString.EstimateApproximateBytes(3); // "a"
-            var padding = limit - budget.ReservedBytes - resultBytes + 1;
-            ILythonMemoryReservation? blocker = null;
-            if (shared) Assert.True(budget.TryReserve(padding, out blocker));
-            else { governor.Reserve(padding, Span); governor.Commit(padding); }
-            using (blocker)
+            // Refuse retained UTF-8 output independently of temporary working
+            // storage; exact tiny-budget thresholds are not this contract.
+            hook.RefuseGrowth = bytes => bytes == resultBytes;
+            var committed = governor.CurrentCommittedBytes;
+            object? published = null;
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
             {
-                var committed = governor.CurrentCommittedBytes;
-                object? published = null;
-                var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-                {
-                    if (iterator is null)
-                        published = asynchronous ? await callable.InvokeAsync(arguments, Span, context)
-                            : callable.Invoke(arguments, Span, context);
-                    else if (asynchronous) published = await iterator.TryMoveNextAsync();
-                    else { iterator.TryMoveNext(out var chunk); published = chunk; }
-                });
-                Assert.Null(published);
-                Assert.Equal(LythonFailureReason.SharedMemoryAllowance,
-                    error.Attribution?.Reason);
-                Assert.Same(governor.AdmissionFailure, error);
-                Assert.Same(Span, error.Span);
-                Assert.Equal(resultBytes, governor.LastDeniedReservationBytes);
-                Assert.Equal(committed, governor.CurrentCommittedBytes);
-                Assert.Equal("a", input.AsString());
-                Assert.Equal(0, governor.CurrentReservedBytes);
-                Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            }
+                if (iterator is null)
+                    published = asynchronous ? await callable.InvokeAsync(arguments, Span, context)
+                        : callable.Invoke(arguments, Span, context);
+                else if (asynchronous) published = await iterator.TryMoveNextAsync();
+                else { iterator.TryMoveNext(out var chunk); published = chunk; }
+            });
+            Assert.Null(published);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+            Assert.Same(governor.AdmissionFailure, error);
+            Assert.Same(Span, error.Span);
+            Assert.Equal(resultBytes, governor.LastDeniedReservationBytes);
+            Assert.Equal(committed, governor.CurrentCommittedBytes);
+            Assert.Equal("a", input.AsString());
+            Assert.Equal(0, governor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
         }
         Assert.Equal(0, budget.ReservedBytes);
     }

@@ -1015,7 +1015,11 @@ number callback. Refusal remains terminal, with ordinary awaited cleanup.
 
 JSON encoders write UTF-8 directly into governed capacity, including string
 escaping, keys, separators and indentation. Replacement buffers and the final
-independent result are admitted while earlier storage remains funded. Incremental
+independent result are admitted while earlier storage remains funded. Eager and
+incremental encoding share one iterative traversal. Eager encoding writes directly
+into its final builder and holds temporary traversal funding through pending
+callbacks; native completed operations do not create per-step async continuations.
+Incremental
 encoding reuses one admitted working buffer; each yielded string is an independent
 funded copy. Exhaustion or failure releases scratch; abandoned iterators retain it
 until their enclosing owner ends. Keeping the largest working chunk can require

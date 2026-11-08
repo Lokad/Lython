@@ -1,0 +1,17 @@
+{
+  "status": "Retained consolidation with explicit eager allocation/CPU debt; focused checks pass. Full retained-boundary qualification pending.",
+  "coreSHA256": {
+    "before": "3fb37cc35d354f53148fcb9a9e9a0056874ea3d41841402ef4ca297bd322a647",
+    "candidate": "1674a06cf69c3b6680e74c2e7b74e72d0e84c275662ff1e3dfc5bda0cfa226ca"
+  },
+  "focusedChecks": {
+    "public-final11": 765,
+    "public-final10": 765,
+    "internal-final11": 171,
+    "internal-final10": 171
+  },
+  "archiveSHA256": "c3cbe65fb3bd238e20808bdb4cdbfaf4b600096aaaf2ebc39b750ea07029c868",
+  "controlledArchiveSHA256": "298dbc75d22589d653f61758411c725de414df7d544f086e5347f27304e72975",
+  "noRemainingVMUsersOrFixtures": true,
+  "referenceGuideSource": "94cb8963"
+}

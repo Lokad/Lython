@@ -215,7 +215,8 @@ internal sealed partial class LythonRuntime
         private GovernedByteBuilder? _builder;
         private int _advancing;
 
-        public JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
+        public JsonEncodeIterator(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span,
+            MemoryGovernor.TemporaryMemoryReservation? workingStorage = null)
         {
             _rootValue = value;
             _hasRoot = true;
@@ -223,7 +224,9 @@ internal sealed partial class LythonRuntime
             _context = context;
             _span = span;
             _markers = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
-            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            // Exposed iterators retain their value charge. An eager caller holds
+            // admitted private working storage until traversal and callbacks end.
+            if (workingStorage is null) PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         }
 
         public override PyString RenderPython(PyRenderingContext context)
@@ -295,6 +298,32 @@ internal sealed partial class LythonRuntime
             finally { Volatile.Write(ref _advancing, 0); }
         }
 
+        // Eager encoding borrows its caller's final builder. Frames, markers and
+        // pending callbacks use the same traversal as exposed/streamed chunks;
+        // Finish never owns this builder or refunds it while a callback is live.
+        internal async ValueTask WriteToBuilderAsync(GovernedByteBuilder builder, bool asynchronous)
+        {
+            if (Interlocked.CompareExchange(ref _advancing, 1, 0) != 0)
+            {
+                _context.CheckExecution(_span);
+                throw new LythonRuntimeException("ValueError", "generator already executing", _span);
+            }
+            try
+            {
+                while (true)
+                {
+                    _context.CheckExecution(_span);
+                    var (advanced, _) = await AdvanceAsync(builder, asynchronous).ConfigureAwait(false);
+                    if (!advanced) return;
+                }
+            }
+            finally
+            {
+                try { Finish(); }
+                finally { Volatile.Write(ref _advancing, 0); }
+            }
+        }
+
         private void GrowScratch(long bytes)
         {
             if (bytes <= 0)
@@ -334,13 +363,12 @@ internal sealed partial class LythonRuntime
         // chunk when chunkReady). Structural order mirrors the eager renderer
         // exactly: separators, indent prefixes, keys and values concatenate to
         // the same text encode() produces.
-        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(GovernedByteBuilder builder, bool asynchronous)
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(GovernedByteBuilder builder, bool asynchronous)
         {
-            var chunkReady = false;
             if (_hasRoot)
             {
                 _hasRoot = false;
-                return await AdvanceValueAsync(_rootValue!, 0, builder, asynchronous).ConfigureAwait(false);
+                return AdvanceValueAsync(_rootValue!, 0, builder, asynchronous);
             }
 
             while (_stack.Count > 0)
@@ -351,13 +379,9 @@ internal sealed partial class LythonRuntime
                 {
                     frame.Opened = true;
                     if (_markers is not null && !_markers.Add(frame.Container))
-                    {
                         throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
-                    }
-
                     builder.Append(frame.IsList ? (byte)'[' : (byte)'{');
-                    chunkReady = true;
-                    return (true, chunkReady);
+                    return new((true, true));
                 }
 
                 if (frame.IsList)
@@ -366,120 +390,147 @@ internal sealed partial class LythonRuntime
                     {
                         CloseFrame(frame);
                         if (frame.Index > 0)
-                        {
                             JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
-                        }
-
                         builder.Append((byte)']');
-                        chunkReady = true;
-                        return (true, chunkReady);
+                        return new((true, true));
                     }
 
                     var element = frame.ListItems.Current;
                     if (frame.Index > 0)
-                    {
                         JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-                    }
-
                     AppendPrettyPrefix(builder, frame.Depth + 1);
                     frame.Index++;
-                    return await AdvanceValueAsync(element, frame.Depth + 1, builder, asynchronous).ConfigureAwait(false);
+                    return AdvanceValueAsync(element, frame.Depth + 1, builder, asynchronous);
                 }
 
-                var (hasPair, key, pairValue) = await TryTakePairAsync(frame, asynchronous).ConfigureAwait(false);
-                if (!hasPair)
-                {
-                    CloseFrame(frame);
-                    if (frame.Index > 0)
-                    {
-                        JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
-                    }
-
-                    builder.Append((byte)'}');
-                    chunkReady = true;
-                    return (true, chunkReady);
-                }
-
-                if (frame.Index > 0)
-                {
-                    JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
-                }
-
-                AppendPrettyPrefix(builder, frame.Depth + 1);
-                await JsonModule.AppendJsonObjectKeyAsync(builder, key, _options, _context, _span, asynchronous).ConfigureAwait(false);
-                JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
-                frame.Index++;
-                return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, asynchronous).ConfigureAwait(false);
+                var pending = TryTakePairAsync(frame, asynchronous);
+                return pending.IsCompleted
+                    ? AdvancePairAsync(frame, pending.GetAwaiter().GetResult(), builder, asynchronous)
+                    : CompletePairAsync(pending, frame, builder, asynchronous);
             }
-
-            return (false, false);
+            return new((false, false));
         }
 
-        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth, GovernedByteBuilder builder, bool asynchronous, int defaultDepth = 0)
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairAsync(EmitFrame frame,
+            (bool Found, object Key, object Value) pair, GovernedByteBuilder builder, bool asynchronous)
         {
-            var chunkReady = false;
-            _context.CheckExecution(_span);
-            if (depth >= ExecutionState.MaxInterpreterDepth || defaultDepth >= ExecutionState.MaxInterpreterDepth)
+            if (!pair.Found)
             {
-                throw RuntimeErrors.Attributed(
-                    "RecursionError",
-                    "maximum recursion depth exceeded while encoding a JSON object",
-                    _span, LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth,
-                    Math.Max(depth, defaultDepth));
+                CloseFrame(frame);
+                if (frame.Index > 0)
+                    JsonModule.AppendJsonContainerSuffix(builder, _options, frame.Depth, _context, _span);
+                builder.Append((byte)'}');
+                return new((true, true));
             }
 
-            switch (value)
-            {
-                case PyNone:
-                    builder.Append("null"u8);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case PyString text:
-                    JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, _context, _span);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case bool boolean:
-                    builder.Append(boolean ? "true"u8 : "false"u8);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
-                    _context.CheckExecution(_span);
-                    JsonModule.AppendJsonInteger(builder, integer, _context, _span);
-                    return (true, true);
-                case double floating:
-                    await JsonModule.AppendJsonDoubleAsync(builder, floating, _options, _context, _span, asynchronous).ConfigureAwait(false);
-                    chunkReady = true;
-                    return (true, chunkReady);
-                case PyList list:
-                    PushListFrame(list, list.GetEnumerator(), depth);
-                    return (true, chunkReady);
-                case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
-                    PushListFrame(tupleLike, tuple.GetEnumerator(), depth);
-                    return (true, chunkReady);
-                case PyDict dict:
-                    await PushDictFrameAsync(dict, depth, asynchronous).ConfigureAwait(false);
-                    return (true, chunkReady);
-                case PyCounter counter:
-                    await PushDictFrameAsync(counter.InnerDict, depth, asynchronous).ConfigureAwait(false);
-                    return (true, chunkReady);
-                case PyDefaultDict defaultDict:
-                    await PushDictFrameAsync(defaultDict.InnerDict, depth, asynchronous).ConfigureAwait(false);
-                    return (true, chunkReady);
-                default:
-                    if (_options.DefaultCallable is null)
-                    {
-                        throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
-                    }
+            if (frame.Index > 0)
+                JsonModule.AppendSeparator(builder, _options.ItemSeparator, _context, _span);
+            AppendPrettyPrefix(builder, frame.Depth + 1);
+            var pending = JsonModule.AppendJsonObjectKeyAsync(builder, pair.Key, _options, _context, _span, asynchronous);
+            if (!pending.IsCompleted) return CompleteKeyAsync(pending, frame, pair.Value, builder, asynchronous);
+            pending.GetAwaiter().GetResult();
+            return AdvancePairValueAsync(frame, pair.Value, builder, asynchronous);
+        }
 
-                    if (_markers is not null)
-                    {
-                        if (!_markers.Add(value)) throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
-                        _stack.Push(new EmitFrame { IsDefault = true, Opened = true, Container = value });
-                    }
-                    var replacement = await JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value, _context, _span, asynchronous).ConfigureAwait(false);
-                    return await AdvanceValueAsync(replacement, depth, builder, asynchronous, defaultDepth + 1).ConfigureAwait(false);
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvancePairValueAsync(EmitFrame frame,
+            object value, GovernedByteBuilder builder, bool asynchronous)
+        {
+            JsonModule.AppendSeparator(builder, _options.KeySeparator, _context, _span);
+            frame.Index++;
+            return AdvanceValueAsync(value, frame.Depth + 1, builder, asynchronous);
+        }
+
+        private async ValueTask<(bool Advanced, bool ChunkReady)> CompletePairAsync(
+            ValueTask<(bool Found, object Key, object Value)> pending, EmitFrame frame,
+            GovernedByteBuilder builder, bool asynchronous)
+            => await AdvancePairAsync(frame, await pending.ConfigureAwait(false), builder, asynchronous).ConfigureAwait(false);
+
+        private async ValueTask<(bool Advanced, bool ChunkReady)> CompleteKeyAsync(ValueTask pending,
+            EmitFrame frame, object value, GovernedByteBuilder builder, bool asynchronous)
+        {
+            await pending.ConfigureAwait(false);
+            return await AdvancePairValueAsync(frame, value, builder, asynchronous).ConfigureAwait(false);
+        }
+
+        private ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth,
+            GovernedByteBuilder builder, bool asynchronous, int defaultDepth = 0)
+        {
+            // Completed default replacements stay in the existing traversal.
+            // Only a genuinely pending callback retains continuation state.
+            while (true)
+            {
+                _context.CheckExecution(_span);
+                if (depth >= ExecutionState.MaxInterpreterDepth || defaultDepth >= ExecutionState.MaxInterpreterDepth)
+                    throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded while encoding a JSON object",
+                        _span, LythonFailureReason.InterpreterStackLimit, ExecutionState.MaxInterpreterDepth,
+                        Math.Max(depth, defaultDepth));
+
+                switch (value)
+                {
+                    case PyNone:
+                        builder.Append("null"u8);
+                        return new((true, true));
+                    case PyString text:
+                        JsonModule.AppendJsonString(builder, text, _options.EnsureAscii, _context, _span);
+                        return new((true, true));
+                    case bool boolean:
+                        builder.Append(boolean ? "true"u8 : "false"u8);
+                        return new((true, true));
+                    case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
+                        _context.CheckExecution(_span);
+                        JsonModule.AppendJsonInteger(builder, integer, _context, _span);
+                        return new((true, true));
+                    case double floating:
+                        return CompleteValue(JsonModule.AppendJsonDoubleAsync(builder, floating, _options,
+                            _context, _span, asynchronous), chunkReady: true);
+                    case PyList list:
+                        PushListFrame(list, list.GetEnumerator(), depth);
+                        return new((true, false));
+                    case object tupleLike when PyTupleLike.TryGetItems(tupleLike, out var tuple):
+                        PushListFrame(tupleLike, tuple.GetEnumerator(), depth);
+                        return new((true, false));
+                    case PyDict dict:
+                        return CompleteValue(PushDictFrameAsync(dict, depth, asynchronous), chunkReady: false);
+                    case PyCounter counter:
+                        return CompleteValue(PushDictFrameAsync(counter.InnerDict, depth, asynchronous), chunkReady: false);
+                    case PyDefaultDict defaultDict:
+                        return CompleteValue(PushDictFrameAsync(defaultDict.InnerDict, depth, asynchronous), chunkReady: false);
+                    default:
+                        if (_options.DefaultCallable is null)
+                            throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
+                        if (_markers is not null)
+                        {
+                            if (!_markers.Add(value))
+                                throw new LythonRuntimeException("ValueError", "Circular reference detected.", _span);
+                            _stack.Push(new EmitFrame { IsDefault = true, Opened = true, Container = value });
+                        }
+                        var replacement = JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value,
+                            _context, _span, asynchronous);
+                        if (!replacement.IsCompleted)
+                            return CompleteDefaultAsync(replacement, depth, builder, asynchronous, defaultDepth + 1);
+                        value = replacement.GetAwaiter().GetResult();
+                        defaultDepth++;
+                        break;
+                }
             }
         }
+
+        private static ValueTask<(bool Advanced, bool ChunkReady)> CompleteValue(ValueTask pending, bool chunkReady)
+        {
+            if (!pending.IsCompleted) return AwaitValueAsync(pending, chunkReady);
+            pending.GetAwaiter().GetResult();
+            return new((true, chunkReady));
+        }
+
+        private static async ValueTask<(bool Advanced, bool ChunkReady)> AwaitValueAsync(ValueTask pending, bool chunkReady)
+        {
+            await pending.ConfigureAwait(false);
+            return (true, chunkReady);
+        }
+
+        private async ValueTask<(bool Advanced, bool ChunkReady)> CompleteDefaultAsync(ValueTask<object> pending,
+            int depth, GovernedByteBuilder builder, bool asynchronous, int defaultDepth)
+            => await AdvanceValueAsync(await pending.ConfigureAwait(false), depth, builder, asynchronous, defaultDepth).ConfigureAwait(false);
 
         private void AppendPrettyPrefix(GovernedByteBuilder builder, int depth)
         {
@@ -502,16 +553,24 @@ internal sealed partial class LythonRuntime
             });
         }
 
-        private async ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
+        private ValueTask PushDictFrameAsync(PyDict dict, int depth, bool asynchronous)
         {
-            var frame = new EmitFrame
+            var frame = new EmitFrame { IsList = false, Container = dict, Depth = depth };
+            if (dict.Count == 0)
             {
-                IsList = false,
-                Container = dict,
-                Depth = depth,
-            };
+                PrepareDictFrame(frame, sorted: false);
+                return ValueTask.CompletedTask;
+            }
+            var pending = JsonOptionTruthAsync(_options.SortKeys, _context, _span, asynchronous);
+            if (!pending.IsCompleted) return CompleteDictFrameAsync(pending, frame);
+            PrepareDictFrame(frame, pending.GetAwaiter().GetResult());
+            return ValueTask.CompletedTask;
+        }
 
-            if (dict.Count == 0 || !await JsonOptionTruthAsync(_options.SortKeys, _context, _span, asynchronous).ConfigureAwait(false))
+        private void PrepareDictFrame(EmitFrame frame, bool sorted)
+        {
+            var dict = (PyDict)frame.Container;
+            if (!sorted)
             {
                 frame.DictPairs = dict.GetEnumerator();
                 _stack.Push(frame);
@@ -524,8 +583,7 @@ internal sealed partial class LythonRuntime
             GrowScratch(estimate);
             try
             {
-                var entries = JsonModule.CollectSortedJsonEntries(dict, _context, _span);
-                frame.SortedEntries = entries;
+                frame.SortedEntries = JsonModule.CollectSortedJsonEntries(dict, _context, _span);
                 frame.ScratchBytes = estimate;
                 _stack.Push(frame);
             }
@@ -536,7 +594,10 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private async ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(EmitFrame frame, bool asynchronous)
+        private async ValueTask CompleteDictFrameAsync(ValueTask<bool> pending, EmitFrame frame)
+            => PrepareDictFrame(frame, await pending.ConfigureAwait(false));
+
+        private ValueTask<(bool Found, object Key, object Value)> TryTakePairAsync(EmitFrame frame, bool asynchronous)
         {
             while (true)
             {
@@ -544,19 +605,29 @@ internal sealed partial class LythonRuntime
                 object key, value;
                 if (frame.SortedEntries is not null)
                 {
-                    if (frame.SortedIndex >= frame.SortedEntries.Count) return (false, PyNone.Instance, PyNone.Instance);
+                    if (frame.SortedIndex >= frame.SortedEntries.Count) return new((false, PyNone.Instance, PyNone.Instance));
                     (key, value) = frame.SortedEntries[frame.SortedIndex++];
                 }
                 else
                 {
-                    if (frame.DictPairs is null || !frame.DictPairs.MoveNext()) return (false, PyNone.Instance, PyNone.Instance);
+                    if (frame.DictPairs is null || !frame.DictPairs.MoveNext()) return new((false, PyNone.Instance, PyNone.Instance));
                     var pair = frame.DictPairs.Current;
                     key = pair.Key; value = pair.Value;
                 }
-                if (JsonModule.IsSupportedJsonObjectKey(key)) return (true, key, value);
-                if (!await JsonOptionTruthAsync(_options.SkipKeys, _context, _span, asynchronous).ConfigureAwait(false))
+                if (JsonModule.IsSupportedJsonObjectKey(key)) return new((true, key, value));
+                var pending = JsonOptionTruthAsync(_options.SkipKeys, _context, _span, asynchronous);
+                if (!pending.IsCompleted) return CompleteSkippedPairAsync(pending, frame, asynchronous);
+                if (!pending.GetAwaiter().GetResult())
                     throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
             }
+        }
+
+        private async ValueTask<(bool Found, object Key, object Value)> CompleteSkippedPairAsync(
+            ValueTask<bool> pending, EmitFrame frame, bool asynchronous)
+        {
+            if (!await pending.ConfigureAwait(false))
+                throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+            return await TryTakePairAsync(frame, asynchronous).ConfigureAwait(false);
         }
 
         private void CloseFrame(EmitFrame frame)

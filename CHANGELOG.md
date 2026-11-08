@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share one iterative JSON traversal for eager and incremental encoding, removing
+  the separate recursive renderer. Complete native steps directly and await actual
+  callbacks; release private working funding after traversal and cleanup.
+
 - Let default whitespace `rsplit()` share the existing casing/word preparation,
   eliminating its intermediate cased line in ordinary chains and closed helpers.
   Preserve supplied options, visible locals, custom methods and awaited cleanup.

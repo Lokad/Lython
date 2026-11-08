@@ -4538,3 +4538,18 @@ and installed core consumers, cached CI42479543467. R101 attribution reused that
 same production source/core; source qualification is separate from diagnostics.
 The next selected milestone is bounded completed JSON encoding on its existing
 frame stack, with exact chunks/hooks/token/ownership and measured source-pair gates.
+
+## Unified JSON encoding (2026-11-08)
+
+[R102/B461](results/2026-11-08-unified-json-encoding/README.md) retains one existing
+frame traversal for eager and streamed output, deleting four recursive renderer
+helpers and completing ordinary operations without per-step async state machines.
+765public/171internal peractual11/10 pass. Private metadata temporary ownership
+fix and original50+8accounting/threshold failures retained. Eager allocation+4.9%,
+controlled sync elapsed+3.27to+5.01%/coarseCPU+6.25%: accepted renderer-consolidation
+debt, not a speedup. Streamed elapsed−2.02to−4.70%sync/−3.28to−6.42%async with mixed/
+coarseCPUnearzero. CSVcontrol+1.17to+8.77%/6.14%candidate spread and JSON/config
+uncertainty preserved, as are desktop adverse/35.8%baseline drift. All full goldens/
+quiet/join/archive gates pass,172.779s; no remaining users/fixtures. Full retained
+source delivery pending separately. Future JSON changes must preserve one walker
+and explicitly decide debt; the broader whole-script performance goal remains.
