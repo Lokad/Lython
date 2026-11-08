@@ -6,7 +6,9 @@ seeding is unchanged. No new builder, owner, cache, predictor, dispatch or optio
 Ordinary shape mutation and CSV actual-width/owned-array construction remain.
 Baseline: fully qualified `7265538c`, core `1aa68ce9`. Candidate is the archived
 one-file patch over metadata HEADdea4504d; exact source inventory and binary are
-preserved. Full retained-source platform qualification is independently pending.
+preserved. Retained source is committed/pushed `05790317`; full Windows/Ubuntu Release actual
+.NET11/.NET10, original Stress both targets and installed core consumers pass
+[cached delivery](delivery-ci.json). Original capture-time status is preserved.
 
 An eight-record complete report proves replacement admissions **21→7**, while
 initial record reservations stay512B. Full stdout/file goldens and final allowance

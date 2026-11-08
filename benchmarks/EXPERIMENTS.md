@@ -4680,3 +4680,20 @@ preflight stopped before workers; actual wide evidence footprint+50% now uses32M
 headroom with unchanged240MiBfloor, exact-byte hardlinks preserve all evidence.
 Exact retained-source full delivery pending independently; primary CPython guide
 continues to name726. Publication/regex unchanged; broader objective stays active.
+
+R110 exact-source delivery05790317 passes/cached CI42502610937: Windows/Ubuntu actual11/10 full Release, original Stress both and installed core consumers. [Receipt](results/2026-11-08-json-record-capacity/delivery-ci.json). No runtime change or repeated qualification; initial/refined source pairs and uncertainties remain distinct.
+
+## Integer-loop transport evidence (2026-11-08)
+
+[R111/B470–B471](results/2026-11-08-integer-loop-attribution/README.md) at05790317/
+core1310. Existing16384iteration loop short normal micro700.968µs versusCPython
+596.612µs≈1.17x; oldcontrol713.390µs, lowIQR. Diagnostic, no quiet-after/general
+multiplier/R110numeric gain claim. Initial CPU collector rejected an omitted
+no-file digest before warmup; completed micro never repeated. Failure/maps/IPC
+metadata archived, users ended/RAM unmounted; one corrected profile-only capture
+passes allgates/archive/local.1170samples/5.92CPU seconds/63unknown5.38%, publication
+287leaf24.53%, prefix23420%, range14612.48%, exactaddition11810.09%, input1089.23%.
+Groups overlap; not all publication removable. Source next: defer compiler-name
+lookup/classification until actual namespace/mirroring needs it, preserving all
+cleanup/cell/global/synthetic/ownership/cancellation behavior. No tagged-value/frame
+redesign from boxing alone. Original classifiers and failed stage/capture retained.
