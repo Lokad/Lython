@@ -1,0 +1,113 @@
+{
+  "sourceRevision": "7796a24f",
+  "sameCoreAcrossAllRoles": true,
+  "cases": {
+    "scripts.csv-summary-functions.large.common-main-helper": {
+      "before": {
+        "milliseconds": 8.761275,
+        "allocatedBytes": 2648358.0
+      },
+      "before-control": {
+        "milliseconds": 9.8748,
+        "allocatedBytes": 2648184.0
+      },
+      "candidate": {
+        "milliseconds": 10.608025,
+        "allocatedBytes": 2648296.0
+      }
+    },
+    "scripts.csv-summary-functions.large.common-main-inline": {
+      "before": {
+        "milliseconds": 9.15445,
+        "allocatedBytes": 2688360.0
+      },
+      "before-control": {
+        "milliseconds": 9.99325,
+        "allocatedBytes": 2688472.0
+      },
+      "candidate": {
+        "milliseconds": 9.6191,
+        "allocatedBytes": 2688472.0
+      }
+    },
+    "scripts.text-summary-rsplit-helpers.large.common-main-helper": {
+      "before": {
+        "milliseconds": 8.94735,
+        "allocatedBytes": 1792376.0
+      },
+      "before-control": {
+        "milliseconds": 9.068375,
+        "allocatedBytes": 1792152.0
+      },
+      "candidate": {
+        "milliseconds": 8.85355,
+        "allocatedBytes": 1792326.0
+      }
+    },
+    "scripts.text-summary-rsplit-helpers.large.common-main-inline": {
+      "before": {
+        "milliseconds": 7.51935,
+        "allocatedBytes": 1792312.0
+      },
+      "before-control": {
+        "milliseconds": 8.05885,
+        "allocatedBytes": 1792032.0
+      },
+      "candidate": {
+        "milliseconds": 7.54345,
+        "allocatedBytes": 1792262.0
+      }
+    },
+    "scripts.report-render.large": {
+      "before": {
+        "milliseconds": 10.1966,
+        "allocatedBytes": 3267934.0
+      },
+      "before-control": {
+        "milliseconds": 9.459925,
+        "allocatedBytes": 3267060.0
+      },
+      "candidate": {
+        "milliseconds": 8.88405,
+        "allocatedBytes": 3266850.0
+      }
+    }
+  },
+  "sourceShapeContrasts": {
+    "scripts.csv-summary-functions.large": {
+      "before": {
+        "elapsedPercent": 4.487645919115657,
+        "allocationPercent": 1.5104453400937468,
+        "allocationDifferenceBytes": 40002.0
+      },
+      "before-control": {
+        "elapsedPercent": 1.1995179649207932,
+        "allocationPercent": 1.5213444383018748,
+        "allocationDifferenceBytes": 40288.0
+      },
+      "candidate": {
+        "elapsedPercent": -9.322423354017362,
+        "allocationPercent": 1.5170509640916263,
+        "allocationDifferenceBytes": 40176.0
+      }
+    },
+    "scripts.text-summary-rsplit-helpers.large": {
+      "before": {
+        "elapsedPercent": -15.960032858891182,
+        "allocationPercent": -0.0035706793663825565,
+        "allocationDifferenceBytes": -64.0
+      },
+      "before-control": {
+        "elapsedPercent": -11.132369360552474,
+        "allocationPercent": -0.0066958606189659875,
+        "allocationDifferenceBytes": -120.0
+      },
+      "candidate": {
+        "elapsedPercent": -14.797454128569898,
+        "allocationPercent": -0.0035707789765915265,
+        "allocationDifferenceBytes": -64.0
+      }
+    }
+  },
+  "limitations": "Diagnostic source contrast within common main-function scope; cases execute sequentially, same-process ALC/GC/tiering and no controlled temporal pairing. It measures function/local/retention shape together, not causal binder-only cost or an implementation speedup. Original four-case driver prelaunch refusal retained."
+}

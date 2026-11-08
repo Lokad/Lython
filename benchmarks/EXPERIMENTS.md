@@ -4325,3 +4325,18 @@ the older bulk proposal cannot be revived unchanged. All identity/golden/quiet/
 join/fixture/archive gates pass; existing B448 core archival reused, no evidence
 deleted. Keep raw/JIT/map/unknown evidence; next source gate maps existing samples
 to generated execution/operand work before selecting a coherent replacement.
+
+## Closed-helper preparation source gate (2026-11-08)
+
+[R87/R88](results/2026-11-08-helper-activation-gate/README.md) maps existing R86
+samples to unique Tier1/method/code-size groups: prefix fetching/dispatch dominate
+its samples; token/refusal checks are smaller. Input-handler JIT listing is absent.
+Current same-function-scope helper/inline contrast has neutral text allocation,
+diagnostic text elapsed−11.13to−15.96%, with unchanged role spreads2.43/7.18%.
+CSV allocation+1.51–1.52%, mixed elapsed/21.08%role spread and protected continue
+shape limit attribution; report14.77%spread retained. No causal binder/CPU claim.
+All complete goldens/funding/image/cleanup gates pass; initial driver row-count
+refusal is retained. Select consolidation of existing native-body method inventories
+onto canonical declarations/shared frontend return facts, preserving fusion/proofs
+and removing displaced enums/maps. No new engine/result-type catalog/proof markers;
+separate correctness/source-pair validation is required before retaining a change.
