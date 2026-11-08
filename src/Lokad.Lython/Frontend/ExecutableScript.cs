@@ -452,6 +452,7 @@ internal sealed record ExecutableCallSite(
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)
 {
+    public ExecutableCasedSplit? CasedSplit { get; init; }
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
@@ -499,7 +500,7 @@ internal sealed partial class ExecutableCodeObject
         int entryBlockIndex,
         IReadOnlyList<ExecutableExceptionRegion> exceptionRegions,
         IReadOnlyList<ImportStatementSyntax> imports,
-        IReadOnlyList<ExecutableCallSite> callSites,
+        ExecutableCallSite[] callSites,
         int memberCacheCount,
         IReadOnlyList<ExecutableFunctionBinding> functions,
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
@@ -526,7 +527,8 @@ internal sealed partial class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
-        NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count);
+        PrepareCasedSplits(blocks, callSites);
+        NativeBody = PrepareNativeBody(blocks, exceptionRegions.Count, callSites);
         var reads = NativeBody is null ? ExecutableStackLayout.ForwardValues(this, blocks) : null;
         // Assign physical positions once, after removing forwarded loads. The
         // native proof retains its original instruction sequence and indices.

@@ -30,7 +30,13 @@ public sealed class CasedWhitespacePipelineTests
     public async Task CompleteWordsPreservePythonCasingAndWhitespace(string operation, string text, string[] expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile($"def words(value):return value.{operation}().split()\nreturn words(text)", budget))
+        foreach (var source in new[]
+        {
+            $"def words(value):return value.{operation}().split()\nreturn words(text)",
+            $"def words(value):\n if value:return value.{operation}().split()\n return []\nreturn words(text)",
+            $"try:\n result=text.{operation}().split()\nfinally:\n marker=True\nreturn result",
+        })
+        using (var script = new LythonEngine().Compile(source, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;
@@ -52,7 +58,12 @@ public sealed class CasedWhitespacePipelineTests
     public async Task TwoResultsKeepIndependentWordsFundedUntilBothOwnersEnd()
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile("def words(value):return value.upper().split()\nreturn words(text)", budget))
+        foreach (var source in new[]
+        {
+            "def words(value):return value.upper().split()\nreturn words(text)",
+            "def words(value):\n if value:return value.upper().split()\n return []\nreturn words(text)",
+        })
+        using (var script = new LythonEngine().Compile(source, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;

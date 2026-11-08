@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
                     _ => NativeReturnShape.Sized,
                 };
                 return first == NativeReturnShape.String;
-            case NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace:
+            case NativeReturnOperation.CasedSplit:
                 shape = NativeReturnShape.Sized;
                 return first == NativeReturnShape.String;
         }
@@ -199,16 +199,12 @@ internal sealed partial class LythonRuntime
         object? first = null, second = null, third = null, fourth = null;
         if (value.Operation != NativeReturnOperation.Read)
         {
-            if (value.Operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
+            first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+            if (value.Operation == NativeReturnOperation.CasedSplit)
             {
-                first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
-                // Preparation proved both zero-argument member/call pairs are
-                // adjacent. Preserve their checks in original evaluation order.
-                context.State.CheckExecution(code.Instructions[value.Second - 1].Span);
-                context.State.CheckExecution(code.CallSites[code.Instructions[value.Second].CallSiteIndex].CallSpan);
-                context.State.CheckExecution(code.Instructions[value.SourceInstruction - 1].Span);
+                try { return ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first, context); }
+                catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
             }
-            else first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             if (value.Operation is NativeReturnOperation.Add or NativeReturnOperation.Subscript)
                 second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
             else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.EndsWith)
@@ -239,9 +235,6 @@ internal sealed partial class LythonRuntime
                     return FormatInterpolatedStringPart(first!, null, format.FormatSpecifier, context, instruction.Span, format.PreparedFormat);
             }
             var site = code.CallSites[instruction.CallSiteIndex];
-            if (value.Operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
-                return PyStringOps.SplitCasedWhitespace((PyString)first!, value.Operation == NativeReturnOperation.SplitUpperWhitespace,
-                    context.MemoryGovernor, site.CallSpan, context);
             if (value.Operation == NativeReturnOperation.BuiltinUnary)
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;

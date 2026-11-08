@@ -12,7 +12,7 @@ internal enum NativeReturnOperation
     BuiltinUnary,
     StringMethod, BytesMethod, BooleanMethod, ListMethod,
     Split, Replace, StartsWith, EndsWith,
-    SplitLowerWhitespace, SplitUpperWhitespace,
+    CasedSplit,
     ConvertFormat, FormatValue,
 }
 

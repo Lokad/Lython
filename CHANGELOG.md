@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share existing native casing-and-splitting preparation across closed helpers and
+  ordinary executable chains, including branches and protected bodies. Remove the
+  native-only fused operation variants while preserving dynamic method behavior.
+
 - Prepare closed string-method calls from shared declarations and compiler return
   facts, removing the duplicate native method inventory and dead fused casing node.
   Preserve Python dispatch, cancellation, admission and original source checks.

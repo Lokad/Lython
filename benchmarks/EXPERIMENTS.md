@@ -4391,3 +4391,20 @@ slots have per-run owner/live-namespace identity. No speculative conversion or
 global type-cache prototype follows. Next bounded design assessment considers
 sharing existing composed-receiver preparation across ordinary/native execution,
 with deletion of displaced native-only fusion machinery as a required outcome.
+
+## Shared casing/split preparation (2026-11-08)
+
+[R92/B453](results/2026-11-08-shared-cased-split/README.md) shares the existing
+kernel through ordinary call metadata and native helpers, deleting both old
+native-only fused variants and separate span/evaluation selection. Exact dynamic
+guards precede effects; forwarded local bindings remain ordinary-visible.
+Guarded full text allocation−12.74%; controlled elapsed sync−3.48to−4.84%,
+async−6.78to−8.01%, coarseCPU agrees. Desktop async+68.76to82.65% remains adverse
+evidence without a complete causal explanation. Fused/rsplit controls inconclusive;
+CSV−0.26to+1.07% possible debt; small frontend allocation increase0.1–0.3% accepted,
+frontend elapsed unstable. No fixed-percentage veto or whole-objective closure.
+All source/Ready/golden/quiet/Closed/join/archive gates pass, no users/fixtures.
+Focused semantics/ownership pass per actual11/10; full delivery follows separately.
+Bounded verified hardlinks preserved old core paths/bytes and all archives while
+freeing27,848,704B. Failed local inventory indentation/analysis-clock selection
+and early retrieval guard are recorded; no runtime failure was hidden or retried.

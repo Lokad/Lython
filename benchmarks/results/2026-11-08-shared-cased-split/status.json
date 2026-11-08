@@ -1,0 +1,19 @@
+{
+  "status": "Retained source selected, focused checks pass; full delivery pending",
+  "coreSHA256": {
+    "before": "6a0981982d7003d4beb2d88da582e2b80bd3d56ea9b30823814c96eb7e4db002",
+    "candidate": "68f63d2969afd9953fc848926685daea5a951996b942fa05a416227b2ab4bdb3"
+  },
+  "focusedChecks": {
+    "public-focused11": 3859,
+    "public-final11": 128,
+    "public-final10": 128,
+    "internal-initial11": 24,
+    "internal-focused10": 24
+  },
+  "controlledSeconds": 168.21957570081577,
+  "allSixJobGatesPassed": true,
+  "vmArchiveSHA256": "f72d516e04b26da268253534b63c365fcaeeac030e84b1b7d1325d17071a01ed",
+  "localArchiveSHA256": "369c62d7626db550321ef7213fca2b57fd627177f50c5c1f164607836082ed6a",
+  "noRemainingVMUsersOrFixtures": true
+}

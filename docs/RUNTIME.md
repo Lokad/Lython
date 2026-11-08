@@ -295,6 +295,12 @@ wrapper and raw argument validation; other shapes use the ordinary binder.
 Suspended protocols keep the receiver and operands funded until completion
 and cleanup. Custom string index, width and line-ending truth callbacks can suspend
 under RunAsync. Native no-argument operations and helper-return proofs remain shared.
+Immediate native `lower().split()` and `upper().split()` chains share one prepared
+recipe with closed helpers, including inside branches and protected bodies. They
+write final words without allocating a cased intermediate string. Custom receivers
+keep ordinary method dispatch and suspension; intervening local bindings remain
+observable on ordinary execution. Final storage is admitted before allocation and
+keeps the current cancellation context and requesting source span.
 Ordinary positional class calls also borrow the existing operand storage. The
 engine's default allocator needs no class-prefixed argument copy, and user
 allocators/initializers bind the class or instance directly into function locals.

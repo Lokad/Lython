@@ -4,7 +4,7 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
 {
-    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount)
+    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks, int exceptionRegionCount, ExecutableCallSite[] sites)
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
             || ClosureNames.Count != 0 || exceptionRegionCount != 0 || blocks.Count != 1)
@@ -123,18 +123,12 @@ internal sealed partial class ExecutableCodeObject
                                 && values[first].Operation == NativeReturnOperation.StringMethod)
                             {
                                 var producer = values[first];
-                                if (producer.SourceInstruction == producer.Second + 1)
+                                if (producer.SourceInstruction == producer.Second + 1
+                                    && PrepareCasedSplit(instructions, producer.SourceInstruction, index, sites) is not null)
                                 {
-                                    if (ReferenceEquals(producer.Method, LythonRuntime.StringMembers.GetMethod("lower"))) operation = NativeReturnOperation.SplitLowerWhitespace;
-                                    else if (ReferenceEquals(producer.Method, LythonRuntime.StringMembers.GetMethod("upper"))) operation = NativeReturnOperation.SplitUpperWhitespace;
-                                }
-                                if (operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
-                                {
-                                    // The kernel consumes the original string. Retain
-                                    // the producer's instruction/spans, not a dead
-                                    // method node and its redundant result proof.
+                                    operation = NativeReturnOperation.CasedSplit;
                                     first = producer.First;
-                                    second = producer.SourceInstruction;
+                                    second = -1;
                                     nativeMethod = null;
                                     values.RemoveAt(values.Count - 1);
                                 }

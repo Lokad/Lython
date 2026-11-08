@@ -51,6 +51,8 @@ internal sealed partial class LythonRuntime
             // before binding, callbacks or actual suspension.
             if (call.HasReceiver && call.ArgumentCount == 0 && call.IsPositionalOnly)
             {
+                if (call.CasedSplit is not null
+                    && TryExecuteCasedSplit(ref execution, invocation ?? scope, invocation, call, start, target)) return true;
                 try
                 {
                     object result;
