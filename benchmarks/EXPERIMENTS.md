@@ -4697,3 +4697,16 @@ Groups overlap; not all publication removable. Source next: defer compiler-name
 lookup/classification until actual namespace/mirroring needs it, preserving all
 cleanup/cell/global/synthetic/ownership/cancellation behavior. No tagged-value/frame
 redesign from boxing alone. Original classifiers and failed stage/capture retained.
+
+## Local publication tradeoff (2026-11-08)
+
+[R112/B472](results/2026-11-08-local-publication/README.md) defers compiler-name
+lookup/classification to real namespace branches; focused446public/132internal
+peractual11/10 pass, allocation neutral. Six controlled jobs167.915s/all gates:
+async loop modestly faster, sync loop/control spread inconclusive, representative
+file scripts nearbaseline/control-limited, report CPU+1.42–3.84%possible debt.
+Not retained: duplicated cold branch structure without convincing complete-script
+benefit or allocation reduction. No fixed percentage veto/permanent design ban.
+Exact fully qualified baseline restored; prototype binaries must not be reused
+without a fresh build. Raw/source/binaries/adverse results archived and verified;
+all users ended/owned RAM unmounted. No full CI replay for restored identical code.
