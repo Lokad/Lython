@@ -44,7 +44,11 @@ the bounded fixed-arity refinement; all original/refined controls remain. Timing
 uses completed I/O; actual suspension is independently tested. Includes public
 invocation/mediated RAM I/O/full validation/prior-result cleanup, excludes compile,
 startup/staging/reset/protocol/final cached teardown. No refreshed CPython, RSS,
-embedding-tail or general CPU claim. Full retained-source qualification follows.
+embedding-tail or general CPU claim. Full source02c76e52 CI42457767068 subsequently
+found exposed environment-view binding and unrelated Decimal diagnostic regressions;
+the [correction and qualification](../2026-11-08-receiver-binding-correction/README.md)
+are tracked separately. Its short allocation recheck preserves these reductions;
+these controlled elapsed results still describe the original aa4acebe core.
 
 All source/core/auxiliary/actualReady/runtime/golden/quiet/Closed/exit/join/fixture/
 archive gates pass. Workers join and owned RAM fixtures are removed/unmounted

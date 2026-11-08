@@ -29,7 +29,12 @@ internal sealed partial class LythonRuntime
                (Signature.Parameters is not NamedCallableParameterLayout named ||
                 named.MaximumPositionalArgumentCount.Accepts(count));
 
-        public ICallable Bind(object receiver) => BoundCallable.Create(receiver, this);
+        // Reuse the existing fixed-arity wrapper for exposed zero-argument
+        // values. It owns its bound receiver (including live mapping bridges)
+        // and validates raw arguments without changing unrelated binder errors.
+        public ICallable Bind(object receiver) => _noArgumentsImplementation is { } operation
+            ? BoundCallable.CreateNoArguments(receiver, Signature.Name, operation)
+            : BoundCallable.Create(receiver, this);
 
         public object Invoke(object receiver, ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
             => implementation(receiver, arguments, span, context);

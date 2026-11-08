@@ -4304,3 +4304,24 @@ gates pass; six jobs168.102s. One identical worker companion library atomically
 hardlinked, with all paths/bytes/evidence preserved. Retain this complete callable
 consolidation; no universal CPU claim or whole-script objective closure. Full
 platform/originalStress/installed source qualification follows the retained commit.
+
+Full CI42457767068 later found exposed environment-view receiver rebinding and
+unrelated Decimal diagnostic regressions. The [binding correction](results/2026-11-08-receiver-binding-correction/README.md)
+reuses existing fixed-arity exposed wrappers and deletes the overbroad binder
+override; original tests stay unchanged. Both actual targets pass focused checks,
+and affected allocations remain45–52%lower. Desktop timing/control instability
+is preserved; no new controlled elapsed confirmation is claimed. Corrected-source
+full delivery is independent of the original failed run and B448 timings.
+
+## Complete CSV-helper attribution (2026-11-08)
+
+[R86/B449](results/2026-11-08-csv-helper-attribution/README.md) uses committed02c76e52,
+before the exposed-callable correction:1,124guest samples/5.65CPU-s,79unknown.
+Parsing, instruction/input/return transport, adoption and numeric dispatch all
+contribute; binding/work construction is3.56%self/4.27%inclusive. This does not
+support a binder arena or universal value rewrite. Current CSV already incorporates
+funded raw-row transfer/shared keys/batched fields/in-place native compaction, so
+the older bulk proposal cannot be revived unchanged. All identity/golden/quiet/
+join/fixture/archive gates pass; existing B448 core archival reused, no evidence
+deleted. Keep raw/JIT/map/unknown evidence; next source gate maps existing samples
+to generated execution/operand work before selecting a coherent replacement.
