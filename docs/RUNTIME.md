@@ -1019,6 +1019,9 @@ independent result are admitted while earlier storage remains funded. Eager and
 incremental encoding share one iterative traversal. Eager encoding writes directly
 into its final builder and holds temporary traversal funding through pending
 callbacks; native completed operations do not create per-step async continuations.
+Module calls consume already-bound options directly for the built-in encoder,
+sharing initialization with explicit encoder objects. Guest classes retain their
+constructor and method dispatch; native eager calls retain the managed call guard.
 Incremental
 encoding reuses one admitted working buffer; each yielded string is an independent
 funded copy. Exhaustion or failure releases scratch; abandoned iterators retain it

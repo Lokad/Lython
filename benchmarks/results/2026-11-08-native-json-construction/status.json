@@ -1,0 +1,17 @@
+{
+  "status": "Retained native construction/call consolidation; focused and controlled checks pass; exact new-source full delivery pending independently.",
+  "coreSHA256": {
+    "before": "1674a06cf69c3b6680e74c2e7b74e72d0e84c275662ff1e3dfc5bda0cfa226ca",
+    "candidate": "aae80cc7335167ab87d17559d49de0dad0690a7faa9022134ce0aecfc3a4a9c2"
+  },
+  "focusedChecks": {
+    "public11": 765,
+    "public10": 765,
+    "internal11": 171,
+    "internal10": 171
+  },
+  "archiveSHA256": "0cdb942c1e7339de284bf6cd13a0edbdf35fb67d684c721dcfe083e2c94b4655",
+  "controlledArchiveSHA256": "2e6ffdb121265a31f0d0544a465fa3e8b9f04dec006815afe5ef79c8a912feed",
+  "noRemainingVMUsersOrFixtures": true,
+  "referenceGuideSource": "15c06863"
+}

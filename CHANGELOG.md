@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share JSON encoder initialization and consume bound native options directly,
+  removing temporary constructor dictionaries and keyword forwarding collections.
+  Native eager calls borrow their value with the existing managed call protection;
+  preserve mutable attributes, guest classes and awaited callbacks.
+
 - Share one iterative JSON traversal for eager and incremental encoding, removing
   the separate recursive renderer. Complete native steps directly and await actual
   callbacks; release private working funding after traversal and cleanup.

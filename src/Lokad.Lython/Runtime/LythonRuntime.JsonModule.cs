@@ -278,8 +278,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
-                var forwarded = BuildEncoderForwardArgs(bound, extras, JsonDumpCallForm.Dump).ToArray();
-                var instance = await ((ICallable)cls).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
+                var instance = await ConstructEncoderClassAsync(cls, bound, extras, JsonDumpCallForm.Dump, span, context, true).ConfigureAwait(false);
                 var method = await PyTextStream.ResolveMemberAsync(instance, "iterencode", span, context).ConfigureAwait(false);
                 chunks = await InvokeCallableTargetAsync(method, span, span, context,
                     () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound.Values[0])])).ConfigureAwait(false);
@@ -301,7 +300,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span, ExecutionContext context)
         {
             var cls = ResolveEncoderClass(GetOptional(bound.Values, 6), span);
-            var instance = ConstructEncoderClass(cls, bound, extras, JsonDumpCallForm.Dump, span, context);
+            var instance = ConstructEncoderClassAsync(cls, bound, extras, JsonDumpCallForm.Dump, span, context, false).GetAwaiter().GetResult();
             var method = PyTextStream.ResolveMember(instance, "iterencode", span, context);
             return InvokeCallableTarget(method, span, span, context, () => [CallArgumentValue.Positional(bound.Values[0])]);
         }
@@ -527,7 +526,9 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var instance = ConstructEncoderClass(clsValue, bound, extras, callForm, span, context);
+            var instance = ConstructEncoderClassAsync(clsValue, bound, extras, callForm, span, context, false).GetAwaiter().GetResult();
+            if (instance is JsonEncoderObject native)
+                return InvokeNativeEncoderAsync(native, value, span, context, false).GetAwaiter().GetResult();
             var method = PyTextStream.ResolveMember(instance, "encode", span, context);
             return InvokeCallableTarget(method, span, span, context, [CallArgumentValue.Positional(value)]);
         }
@@ -541,23 +542,41 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            var forwarded = BuildEncoderForwardArgs(bound, extras, callForm).ToArray();
-            var instance = await ((ICallable)clsValue).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
+            var instance = await ConstructEncoderClassAsync(clsValue, bound, extras, callForm, span, context, true).ConfigureAwait(false);
+            if (instance is JsonEncoderObject native)
+                return await InvokeNativeEncoderAsync(native, value, span, context, true).ConfigureAwait(false);
             var method = await PyTextStream.ResolveMemberAsync(instance, "encode", span, context).ConfigureAwait(false);
             return await InvokeCallableTargetAsync(method, span, span, context,
                 () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(value)])).ConfigureAwait(false);
         }
 
-        private static object ConstructEncoderClass(
+        private static async ValueTask<object> InvokeNativeEncoderAsync(JsonEncoderObject encoder,
+            object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            // Keep the same managed frame and exception policy as ordinary
+            // callable invocation while borrowing the already-evaluated value.
+            context.EnterInterpreterFrame(span);
+            try { return RuntimeValue(await encoder.EncodeValueAsync(value, span, context, asynchronous).ConfigureAwait(false)); }
+            catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+            finally { context.LeaveInterpreterFrame(); }
+        }
+
+        private static ValueTask<object> ConstructEncoderClassAsync(
             object clsValue,
             BoundCallArguments bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
             JsonDumpCallForm callForm,
             LythonSourceSpan span,
-            ExecutionContext context)
+            ExecutionContext context,
+            bool asynchronous)
         {
+            if (clsValue is JsonEncoderClass && extras.Count == 0)
+                return JsonEncoderClass.ConstructBoundAsync(bound,
+                    callForm == JsonDumpCallForm.Dumps ? 0 : 1, span, context, asynchronous);
             var forwarded = BuildEncoderForwardArgs(bound, extras, callForm).ToArray();
-            return ((ICallable)clsValue).Invoke(forwarded, span, context);
+            var callable = (ICallable)clsValue;
+            return asynchronous ? callable.InvokeAsync(forwarded, span, context)
+                : ValueTask.FromResult(callable.Invoke(forwarded, span, context));
         }
 
         private static List<CallArgumentValue> BuildEncoderForwardArgs(

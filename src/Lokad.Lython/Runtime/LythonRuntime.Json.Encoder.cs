@@ -55,11 +55,18 @@ internal sealed partial class LythonRuntime
             => EncodeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
         public ValueTask<object> EncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => EncodeCoreAsync(arguments, span, context, true);
-        private async ValueTask<object> EncodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        private ValueTask<object> EncodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 1) throw RuntimeErrors.Type("JSONEncoder.encode() takes exactly one argument", span);
+            return EncodeValueAsync(arguments[0], span, context, asynchronous);
+        }
+
+        // Native module calls already own their value; public/guest method
+        // invocation retains its ordinary argument and frame checks.
+        internal async ValueTask<object> EncodeValueAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
             context.CheckExecution(span);
-            if (arguments[0] is PyString text)
+            if (value is PyString text)
             {
                 var ascii = await JsonOptionTruthAsync(await ReadAsync("ensure_ascii", context, span, asynchronous).ConfigureAwait(false), context, span, asynchronous).ConfigureAwait(false);
                 return await JsonModule.SerializeJsonTextCoreAsync(text, JsonDumpOptions.Default with { EnsureAscii = ascii }, context, span, asynchronous).ConfigureAwait(false);
@@ -67,7 +74,7 @@ internal sealed partial class LythonRuntime
             if (GuestOwner is not null)
             {
                 var method = await ReadAsync("iterencode", context, span, asynchronous).ConfigureAwait(false);
-                CallArgumentValue[] call = [CallArgumentValue.Positional(arguments[0]), CallArgumentValue.Keyword("_one_shot", true)];
+                CallArgumentValue[] call = [CallArgumentValue.Positional(value), CallArgumentValue.Keyword("_one_shot", true)];
                 var chunks = asynchronous
                     ? await InvokeCallableTargetAsync(method, span, span, context, () => ValueTask.FromResult(call)).ConfigureAwait(false)
                     : InvokeCallableTarget(method, span, span, context, call);
@@ -75,7 +82,7 @@ internal sealed partial class LythonRuntime
                     : StringMembers.Join(PyString.Empty, chunks, span, context);
             }
             var options = await GetDumpOptionsAsync(context, span, asynchronous, true).ConfigureAwait(false);
-            return await JsonModule.SerializeJsonTextCoreAsync(arguments[0], options, context, span, asynchronous).ConfigureAwait(false);
+            return await JsonModule.SerializeJsonTextCoreAsync(value, options, context, span, asynchronous).ConfigureAwait(false);
         }
 
         public object IterEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -127,35 +134,64 @@ internal sealed partial class LythonRuntime
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ConstructAsync(arguments, null, span, context, true);
 
-        internal static async ValueTask<object> ConstructAsync(CallArgumentValue[] arguments, PyInstance? guest, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        internal static ValueTask<object> ConstructAsync(CallArgumentValue[] arguments, PyInstance? guest, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var values = new Dictionary<string, object>(StringComparer.Ordinal)
-            {
-                ["skipkeys"] = false, ["ensure_ascii"] = true, ["check_circular"] = true,
-                ["allow_nan"] = true, ["sort_keys"] = false, ["indent"] = PyNone.Instance,
-                ["separators"] = PyNone.Instance, ["default"] = PyNone.Instance
-            };
+            object skip = false, ascii = true, circular = true, nan = true, sort = false;
+            object indent = PyNone.Instance, separators = PyNone.Instance, callback = PyNone.Instance;
             foreach (var argument in arguments)
             {
                 if (argument.IsPositional) throw RuntimeErrors.Type("JSONEncoder.__init__() accepts keyword arguments only", span);
-                if (argument.KeywordName is null || !values.ContainsKey(argument.KeywordName))
-                    throw RuntimeErrors.Type("JSONEncoder.__init__() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
-                values[argument.KeywordName] = argument.Value;
+                switch (argument.KeywordName)
+                {
+                    case "skipkeys": skip = argument.Value; break;
+                    case "ensure_ascii": ascii = argument.Value; break;
+                    case "check_circular": circular = argument.Value; break;
+                    case "allow_nan": nan = argument.Value; break;
+                    case "sort_keys": sort = argument.Value; break;
+                    case "indent": indent = argument.Value; break;
+                    case "separators": separators = argument.Value; break;
+                    case "default": callback = argument.Value; break;
+                    default: throw RuntimeErrors.Type("JSONEncoder.__init__() got an unexpected keyword argument '" + argument.KeywordName + "'", span);
+                }
             }
-            object instance = guest is null ? new JsonEncoderObject() : guest;
-            foreach (var name in new[] { "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "sort_keys", "indent" })
-                await AssignWrapperAttributeAsync(instance, name, values[name], context, span, asynchronous).ConfigureAwait(false);
-            if (values["separators"] is not PyNone)
+            return InitializeAsync(guest is null ? new JsonEncoderObject() : guest,
+                skip, ascii, circular, nan, sort, indent, separators, callback, span, context, asynchronous);
+        }
+
+        // Module binding has already checked names and evaluated arguments.
+        // Consume that storage directly rather than forwarding eight keywords.
+        internal static ValueTask<object> ConstructBoundAsync(BoundCallArguments bound, int offset,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            context.CheckExecution(span);
+            object Flag(int index, bool fallback) => bound.Assigned[offset + index] ? bound.Values[offset + index] : fallback;
+            object Option(int index) => offset + index < bound.Values.Length ? bound.Values[offset + index] : PyNone.Instance;
+            return InitializeAsync(new JsonEncoderObject(), Flag(1, false), Flag(2, true),
+                Flag(3, true), Flag(4, true), Flag(9, false), Option(6), Option(7), Option(8),
+                span, context, asynchronous);
+        }
+
+        private static async ValueTask<object> InitializeAsync(object instance, object skip, object ascii,
+            object circular, object nan, object sort, object indent, object separatorValue, object callback,
+            LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+        {
+            await AssignWrapperAttributeAsync(instance, "skipkeys", skip, context, span, asynchronous).ConfigureAwait(false);
+            await AssignWrapperAttributeAsync(instance, "ensure_ascii", ascii, context, span, asynchronous).ConfigureAwait(false);
+            await AssignWrapperAttributeAsync(instance, "check_circular", circular, context, span, asynchronous).ConfigureAwait(false);
+            await AssignWrapperAttributeAsync(instance, "allow_nan", nan, context, span, asynchronous).ConfigureAwait(false);
+            await AssignWrapperAttributeAsync(instance, "sort_keys", sort, context, span, asynchronous).ConfigureAwait(false);
+            await AssignWrapperAttributeAsync(instance, "indent", indent, context, span, asynchronous).ConfigureAwait(false);
+            if (separatorValue is not PyNone)
             {
-                var separators = await JsonModule.ParseJsonSeparatorsAsync(values["separators"], span, context, asynchronous).ConfigureAwait(false);
+                var separators = await JsonModule.ParseJsonSeparatorsAsync(separatorValue, span, context, asynchronous).ConfigureAwait(false);
                 await AssignWrapperAttributeAsync(instance, "item_separator", separators.ItemSeparator, context, span, asynchronous).ConfigureAwait(false);
                 await AssignWrapperAttributeAsync(instance, "key_separator", separators.KeySeparator, context, span, asynchronous).ConfigureAwait(false);
             }
-            else if (values["indent"] is not PyNone)
+            else if (indent is not PyNone)
                 await AssignWrapperAttributeAsync(instance, "item_separator", JsonModule.PrettyItemSeparator, context, span, asynchronous).ConfigureAwait(false);
-            if (values["default"] is not PyNone)
-                await AssignWrapperAttributeAsync(instance, "default", values["default"], context, span, asynchronous).ConfigureAwait(false);
+            if (callback is not PyNone)
+                await AssignWrapperAttributeAsync(instance, "default", callback, context, span, asynchronous).ConfigureAwait(false);
             return instance;
         }
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<class 'json.JSONEncoder'>");

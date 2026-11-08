@@ -4571,3 +4571,19 @@ Source15c06863 independently passes full Windows/Ubuntu actual.NET11/10, origina
 Stress and installed core consumers, cached CI42484943603. This closes R102
 delivery and qualifies R103's measured source; it does not qualify later prototypes
 or alter the accepted eager source-pair regression. No unchanged qualification replay.
+
+## Native JSON constructor and call transport (2026-11-08)
+
+[R105/B463](results/2026-11-08-native-json-construction/README.md) shares one
+initializer across bound native module options, public construction and guest
+assignment. Remove constructor dictionary/name-array and native keyword/method/
+value transport; keep mutable attributes, genuine custom dispatch, managed call
+guard and one R102 renderer.765public/171internal peractual11/10 pass. Eager
+allocation−27.22%sync/−27.68%async, streamed−24.03/−23.85%. Controlled eager
+elapsed−9.05to−9.93%sync/−9.06to−11.58%async, streamed sync−6.25to−7.00%;
+coarseCPU agrees. Config elapsednearbaseline/coarseCPU+4.38to+5.70% possible debt,
+CSVcontrol variable and JSONsummary possible small debt retained. Original
+desktop+8.25%adverse/17.48%baseline drift remain. All gates/archive/local verification
+pass,172.758s; no users/fixtures. New-source full delivery pending independently;
+15c source's cached green does not qualify this prototype. No per-edit CPython replay,
+old-debt repayment or broader objective closure.
