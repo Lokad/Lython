@@ -1,0 +1,10 @@
+{
+  "priorRoundedDynamicBytes": 1687552,
+  "priorArchiveBytes": 189085,
+  "jobs": 15,
+  "newCatalogBytes": 2991962,
+  "estimateWith50PercentHeadroom": 7302898.5,
+  "evidenceHeadroomBytes": 12582912,
+  "osFloorBytes": 251658240,
+  "coreArchiveReused": true
+}

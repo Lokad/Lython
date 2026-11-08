@@ -4821,3 +4821,16 @@ callback checks peractual11/10 pass; full retained delivery pending. Existing
 function execution lifetime owns facts, conservative retention/earlier denial
 explicit; no new owner/ledger/framework/options, native guards/canonical behavior
 preserved. B480offline assertion corrected, actual four-job evidence unchanged.
+
+
+## Function-lookup-source CPython checkpoint (2026-11-08)
+
+[R122/B481](results/2026-11-08-function-cpython-checkpoint/README.md), runtime6f76/
+corec617, CPython3.13.16, 15jobs/311.685s/allgates/archive/local verified.
+Compile-to-result validatedCSV1.17x, CSV1.01–1.03xvariable, text1.52–1.53x,
+JSON0.91–0.96xvariable, report1.32–1.33x. Compile/warm/CPU/control separate;
+not source-pair causal gains or repayment of earlier debts. Prior guide and
+historical726cases retained. Optional dedup EPERM preserved, independent launch
+space preflight passed; fresh idle audit17aliases unchanged/no temporarylinks.
+Test-only fixture fixd97 leaves measured runtime unchanged; combined full delivery
+pending. No new framework, unchanged producer qualification or publication.
