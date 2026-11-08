@@ -44,6 +44,31 @@ internal sealed partial class LythonRuntime
                 catch { execution.Stack.RetireTo(start); throw; }
             }
 
+            // These existing native receiver operations need execution services,
+            // not a function namespace. Exact strings with no arguments cannot
+            // invoke a guest coercion protocol; dictionary views only retain
+            // their native receiver. Other shapes still materialize their frame
+            // before binding, callbacks or actual suspension.
+            if (call.HasReceiver && call.ArgumentCount == 0 && call.IsPositionalOnly)
+            {
+                try
+                {
+                    object result;
+                    var context = invocation ?? scope;
+                    var receiver = execution.Stack[start];
+                    if (receiver is PyString text && target is Func<PyString, LythonSourceSpan, ExecutionContext, object> textOperation)
+                        result = InvokeSingleInput(text, textOperation, call.CallSpan, context);
+                    else if (receiver is PyString && target is ReceiverMethod method && method.AcceptsPositional(0))
+                        result = InvokeReceiverMethod(method, receiver, ReadOnlyMemory<object?>.Empty, call.CallSpan, context);
+                    else if (receiver is PyDict dictionaryReceiver && target is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
+                        result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, context);
+                    else return false;
+                    PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
+                    return true;
+                }
+                catch { execution.Stack.RetireTo(start); throw; }
+            }
+
             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
             var dictionary = call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is 1 or 2 &&
                 ReferenceEquals(target, ReceiverMethods.DictionaryGet)
@@ -79,16 +104,6 @@ internal sealed partial class LythonRuntime
                     var arguments = _execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                     if (asynchronous) return CompleteCallValue(InvokeReceiverMethodAsync(receiverMethod, receiver, arguments, call.CallSpan, this), start);
                     result = InvokeReceiverMethod(receiverMethod, receiver, arguments, call.CallSpan, this);
-                }
-                else if (call.HasReceiver && _execution.Stack[start] is PyString stringReceiver &&
-                    target is Func<PyString, LythonSourceSpan, ExecutionContext, object> stringOperation)
-                {
-                    result = InvokeSingleInput(stringReceiver, stringOperation, call.CallSpan, this);
-                }
-                else if (call.HasReceiver && _execution.Stack[start] is PyDict dictionaryReceiver &&
-                    target is Func<PyDict, LythonSourceSpan, ExecutionContext, object> dictionaryOperation)
-                {
-                    result = InvokeSingleInput(dictionaryReceiver, dictionaryOperation, call.CallSpan, this);
                 }
                 else if (target is PyFunctionBase function)
                 {

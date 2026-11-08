@@ -265,8 +265,13 @@ for class suites, annotations, lazy type metadata and actual statement-opcode
 consumers. Supported expressions in executable code use instructions; there is no
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
-Executable state lives on its invocation's lexical context; a separate interpreter
-object is unnecessary. Terminal cleanup finishes pending users, then detaches
+Eligible invocations begin with owned slot workstate. Native zero-argument string
+operations, dictionary views and exact list/tuple iteration run there without
+allocating a lexical context. Other operations materialize a context when needed;
+closures, class cells, generators and protected bodies retain their lexical frames.
+The same native dispatch serves both forms. Admitted iteration positions transfer
+with the workstate, with one owner throughout. A separate interpreter object is
+unnecessary. Terminal cleanup finishes pending users, then detaches
 operand storage, private caches, handler records and caller references. Closures
 can retain that context's names and cells without retaining refunded workspace.
 Nonlocal ownership comes from immutable scope facts and lexical parent links;

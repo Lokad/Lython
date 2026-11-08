@@ -4203,3 +4203,20 @@ and43 independent CPython method/form/ordering observations pass. Argument effec
 terminal refusal and callback suspension remain covered. No new binder/option or
 performance claim. Combined5b9d569a passes CI42443700988: Windows/Ubuntu actual
 11/10, original Stress both targets and installed core consumers; terminal cached.
+
+## Native workstate dispatch retained (2026-11-08)
+
+[R79](results/2026-11-08-native-workstate/README.md) centralizes existing native
+receiver calls and puts admitted exact list/tuple iteration before context
+promotion. Duplicate ordinary native-call branches disappear; no new name marker,
+backend/dispatcher/arena/pool/owner. Same-core complete helper/inline gate separates
+~1.30MB invocation difference from~0.29MB fused-text difference. Source18b563e9
+passes140internal/326public per actual11/10. Ordinary/guarded reports allocate
+~42%less; B443 six jobs168.441s yields affected elapsed11.8–14.4%lower sync/
+14.5–16.1%async, guarded10.5–12.2%lower. Native control−1.26to+2.84% is
+inconclusive(current spread3.70%). CSV+0.25–1.92% elapsed is explicitly accepted
+debt; reportasync near baseline, coarseCPU not universal attribution. Original
+desktop adverse controls remain; no debt repayment or performance-objective
+closure. All source/Ready/golden/quiet/join/fixture/archive gates pass. New tests
+preserve native-loop adoption before true I/O, alias/result funding, nonallocating
+cancellation and terminal refusal. Final full delivery follows the retained commit.

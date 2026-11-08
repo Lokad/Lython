@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute existing native receiver operations and exact list/tuple iteration
+  before allocating a function context. Keep context promotion before guest
+  protocols or suspension, and transfer admitted working storage with it.
+
 - Reject keyword arguments for string padding, search and lstrip/rstrip methods,
   following Python's positional-only signatures. These invalid Python calls were
   previously accepted. Argument evaluation and admission refusal still precede

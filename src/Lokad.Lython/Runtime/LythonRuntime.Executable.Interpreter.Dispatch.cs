@@ -163,7 +163,6 @@ internal sealed partial class LythonRuntime
                             if (pause != InstructionPause.Continue) return pause;
                             break;
                         case ExecutableOpCode.ForNext:
-                            if (invocation is null) return InstructionPause.ContextRequired;
                             if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
                             {
                                 if (nativeNext.HasValue) PublishInstructionResult(ref execution, invocation, instruction, nativeNext.Value);
@@ -174,6 +173,7 @@ internal sealed partial class LythonRuntime
                                     jumped = true;
                                 }
                             }
+                            else if (invocation is null) return InstructionPause.ContextRequired;
                             else if (!asynchronous) jumped = invocation!.ExecuteForNext(instruction);
                             else
                             {
@@ -198,8 +198,8 @@ internal sealed partial class LythonRuntime
                             }
                             break;
                         case ExecutableOpCode.GetIter:
-                            if (invocation is null) return InstructionPause.ContextRequired;
                             if (execution.Stack.TryPrepareNativeIteration(instruction.InputStart, instruction.Span)) break;
+                            if (invocation is null) return InstructionPause.ContextRequired;
                             if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
                             else
                             {
