@@ -5,7 +5,7 @@
     "candidate": "903eb34663f37ece159669d4b52418b3e24b465c4d5e3ecc6f0ebe75599f1ab7"
   },
   "decision": "Retain coherent final storage implementation for stable allocation savings and modest affected elapsed gains. Accept explicit small async-float elapsed debt; no universal CPU/embedding claim.",
-  "qualification": "162 internal/415 public per actual.NET11/10; full Windows/Ubuntu, original Stress and installed consumers pending at retention",
+  "qualification": "Production38f53c33 fully qualified CI42439532114: Windows/Ubuntu Release actual.NET11/10, original Stress and installed core consumers. Cached delivery-ci.json; never requery.",
   "allocation": [
     {
       "phase": "warm-sync",

@@ -4164,4 +4164,17 @@ explicitly accepted, not explained or repaid by unrelated gains. CPU quantized/
 mixed; no broad CPU/CPython/embedding-tail claim. Initial092/B435114.465s and
 intermediate7eb/5b adverse desktop/source conditions all remain in the raw archive.
 Tier1 hash already inlines its getter; no inlining attribute or causal claim.
-Full retained-source delivery pending at retention; publication postponed.
+Full retained-source delivery passed CI42439532114: Windows/Ubuntu actual11/10,
+original Stress and installed core consumers. Publication postponed.
+
+## Combined current-script checkpoint (2026-11-08)
+
+[R77/B440](results/2026-11-08-inline-checkpoint/README.md) refreshes all eight
+maintained scripts against CPython3.13.16 at source38f53c33/core903eb346:
+26 jobs/539.66s, separate compilation/warm/compile-to-result and two explicitly
+labeled numeric-string inputs. All source/Ready/golden/quiet/join/fixture/archive
+gates pass. Remaining warm gaps include text1.65–1.67×, returned CSV1.33×,
+report1.44–1.47× and file search1.64–1.66×; ordinary JSON0.99–1.00×.
+No source-pair speedup, universal CPU/embedding latency or regression-debt claim.
+Original B437/B439 staging failures and B438 pre-sample role typo/owned-mount
+cleanup remain archived; bounded corrections retain sampling and OS free floor.

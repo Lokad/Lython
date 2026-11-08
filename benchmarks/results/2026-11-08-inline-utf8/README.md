@@ -2,8 +2,9 @@
 
 2026-11-08. Measured baseline core3efc0895 (runtime06651b11); final core903eb346
 is c384956f plus the archived complete R76 source inventory. Informational
-SourceLink alone does not establish source equivalence. Full delivery was pending
-at retention; its eventual receipt is recorded separately. Publication postponed.
+SourceLink alone does not establish source equivalence. Production38f53c33 passes
+full Windows/Ubuntu actual.NET11/10 Release, original Stress and installed-package
+checks: [cached CI42439532114](delivery-ci.json). Publication postponed.
 
 Copied short text can hold up to8 UTF-8 bytes in compiler-managed word storage.
 Casing/split and CSV factories write directly into reserved final capacity, then
