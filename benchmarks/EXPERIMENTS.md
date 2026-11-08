@@ -4195,3 +4195,10 @@ keeps its−6.74to+1.90% elapsed inconclusive. Original desktop textasync+21–2
 reportasync+13–17% and final mixed controls remain; coarseCPU supports affected
 direction, not universal CPU attribution. No per-name native-proof expansion or
 performance-objective closure; remaining helper activation/storage gap stays open.
+
+The [adjacent positional-only correction](results/2026-11-08-string-receivers/positional-correction.json)
+uses the existing signature layout for eleven migrated methods, rejecting invalid
+Python keywords that old declarations/tests accepted.251public per actual11/10
+and43 independent CPython method/form/ordering observations pass. Argument effects,
+terminal refusal and callback suspension remain covered. No new binder/option or
+performance claim; full delivery batches with R78 at the following committed head.

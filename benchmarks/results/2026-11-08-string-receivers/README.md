@@ -14,8 +14,10 @@ enter synchronous host I/O; they pass after migration, including cancellation,
 receiver withdrawal, retained borrows and awaited cleanup. Additional tests cover
 evaluation/binding, terminal refusal through suppression/finally, result retention
 after script disposal and allowance reuse. The semantic golden is independently
-checked with isolated CPython3.13. Existing keyword signatures are preserved;
-pre-existing padding/search keyword permissiveness is a separate compatibility item.
+checked with isolated CPython3.13. The measured migration preserves existing
+keyword signatures; the [separate positional-only correction](positional-correction.json)
+then rejects invalid padding/search/lstrip/rstrip keywords. It passes251public
+checks per actual11/10 and43 independent CPython observations; no performance claim.
 
 ## Measurements and source identities
 

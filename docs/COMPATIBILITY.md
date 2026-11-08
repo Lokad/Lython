@@ -183,6 +183,7 @@ RunAsync awaits supported field lookup, attribute and formatting callbacks in
 `format_map`. `str.format` retains its synchronous callback boundary.
 RunAsync also awaits custom index/width conversions for right splitting, tab
 expansion, padding and search bounds, and truth conversion for `splitlines`.
+Padding, search and stripping parameters are positional-only, following Python.
 
 Whitespace and line splitting follow Python's text rules, distinct from ASCII
 byte whitespace. Casing includes expansion and contextual final sigma. New

@@ -103,19 +103,19 @@ public sealed class StringMethodCompatibilityTests
     }
 
     [Fact]
-    public void StringMethods_AcceptKeywordShapedOptionalArguments()
+    public void StringMethods_AcceptSupportedKeywordArguments()
     {
         var host = new MockLythonHost();
 
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 vals = []
-vals.append("banana".replace(old="na", new="X", count=1))
+vals.append("banana".replace("na", "X", count=1))
 vals.append(str("a,b,c".split(sep=",", maxsplit=1)))
 vals.append(str("a,b,c".rsplit(sep=",", maxsplit=1)))
 vals.append("xyabcxy".strip("xy"))
-vals.append("abc".center(width=7))
-vals.append("42".zfill(width=5))
+vals.append("abc".center(7))
+vals.append("42".zfill(5))
 vals.append("{name}:{count}".format(name="alpha", count=2))
 vals.append("{name}".format_map({"name": "beta"}))
 vals.append("{items[0]}".format(items=["x", "y"]))

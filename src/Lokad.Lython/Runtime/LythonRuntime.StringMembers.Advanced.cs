@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
         private static readonly ReceiverMethod LJustMethod = CreatePaddingMethod("ljust", PyStringOps.LJust);
         private static readonly ReceiverMethod RJustMethod = CreatePaddingMethod("rjust", PyStringOps.RJust);
         private static readonly ReceiverMethod ZFillMethod = new(
-            LythonCallableSignature.Create("str.zfill", ["width"]),
+            LythonCallableSignature.Create("str.zfill", ["width"], 1, 1, LythonVariadicParameters.None, 1),
             static (receiver, arguments, span, context) => ZFill((PyString)receiver, arguments.Span[0]!, span, context, false).GetAwaiter().GetResult(),
             static (receiver, arguments, span, context) => ZFill((PyString)receiver, arguments.Span[0]!, span, context, true));
         private static readonly ReceiverMethod FindMethod = CreateSearchMethod("find", PyStringOps.Find, false);
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
 
         private static ReceiverMethod CreatePaddingMethod(string name,
             Func<PyString, int, PyString?, MemoryGovernor, LythonSourceSpan, CancellationToken, PyString> operation)
-            => new(LythonCallableSignature.Create("str." + name, ["width", "fillchar"], 1),
+            => new(LythonCallableSignature.Create("str." + name, ["width", "fillchar"], 1, 2, LythonVariadicParameters.None, 2),
                 (receiver, arguments, span, context) => Pad((PyString)receiver, arguments, operation, span, context, false).GetAwaiter().GetResult(),
                 (receiver, arguments, span, context) => Pad((PyString)receiver, arguments, operation, span, context, true));
 
@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
 
         private static ReceiverMethod CreateSearchMethod(string name,
             Func<PyString, PyString, int, int, BigInteger> operation, bool throwWhenMissing)
-            => new(LythonCallableSignature.Create("str." + name, ["sub", "start", "end"], 1),
+            => new(LythonCallableSignature.Create("str." + name, ["sub", "start", "end"], 1, 3, LythonVariadicParameters.None, 3),
                 (receiver, arguments, span, context) => Search((PyString)receiver, arguments, name, operation, throwWhenMissing, span, context, false).GetAwaiter().GetResult(),
                 (receiver, arguments, span, context) => Search((PyString)receiver, arguments, name, operation, throwWhenMissing, span, context, true));
 

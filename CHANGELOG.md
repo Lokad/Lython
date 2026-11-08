@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Reject keyword arguments for string padding, search and lstrip/rstrip methods,
+  following Python's positional-only signatures. These invalid Python calls were
+  previously accepted. Argument evaluation and admission refusal still precede
+  binding errors.
+
 - Share string segmentation, search and padding method declarations; immediate
   calls borrow their operands instead of creating receiver closures and bound
   wrappers. Await custom index, width and line-ending truth callbacks in RunAsync.
