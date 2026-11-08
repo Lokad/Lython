@@ -7,28 +7,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal readonly struct ExecutableInputs(object first, object? second = null, object? third = null)
-    {
-        internal readonly object First = first;
-        internal readonly object? Second = second;
-        internal readonly object? Third = third;
-    }
-
     internal sealed partial class ExecutionContext
     {
-        private static ExecutableInputs ReadInstructionInputs(ref ExecutableWorkState execution,
-            in ExecutableInstruction instruction, ExecutionContext scope, ExecutionContext? invocation)
-        {
-            // A descriptor getter already retained the original type/key in
-            // the existing funded protocol slots. Its callback may rebind locals;
-            // the resumed lookup must consume these snapshots, not those locals.
-            if (instruction.OpCode == ExecutableOpCode.Subscript && invocation?._preparedCallValue is not null)
-                return new(execution.Stack[instruction.ResultSlot], execution.Stack[instruction.ResultSlot + 1]);
-            return new(ReadOperand(ref execution, instruction.InputStart, scope, 0),
-                instruction.ValueInputCount > 1 ? ReadOperand(ref execution, instruction.SecondInput, scope, 1) : null,
-                instruction.ValueInputCount == 3 ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null);
-        }
-
         // Keep transient guest references outside the long-running dispatch loop.
         // Genuine async work captures its values; raw type protocols use the
         // existing stack scratch. Context promotion runs no guest/admission hook.
@@ -41,14 +21,23 @@ internal sealed partial class LythonRuntime
             pendingSpan = null;
             // A failed leaf read precedes operation cleanup/routing, just as the
             // separate load did. No protocol or admission has run at this point.
-            var inputs = ReadInstructionInputs(ref execution, instruction, scope, invocation);
+            // Descriptor resumption uses the original receiver/key retained in
+            // funded protocol slots. Otherwise read prepared positions once.
+            var retained = instruction.OpCode == ExecutableOpCode.Subscript && invocation?._preparedCallValue is not null;
+            var first = retained ? execution.Stack[instruction.ResultSlot]
+                : ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            var second = instruction.OpCode == ExecutableOpCode.Unary ? null
+                : retained ? execution.Stack[instruction.ResultSlot + 1]
+                : ReadOperand(ref execution, instruction.SecondInput, scope, 1);
+            var third = instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+                ? ReadOperand(ref execution, instruction.ThirdInput, scope, 2) : null;
             try
             {
                 if (instruction.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast)
                 {
-                    var receiver = instruction.ValueLast ? inputs.First : inputs.Second!;
-                    var key = instruction.ValueLast ? inputs.Second! : inputs.Third!;
-                    var value = instruction.ValueLast ? inputs.Third! : inputs.First;
+                    var receiver = instruction.ValueLast ? first : second!;
+                    var key = instruction.ValueLast ? second! : third!;
+                    var value = instruction.ValueLast ? third! : first;
                     var span = (LythonSourceSpan)execution.Code.Constants[instruction.TargetSpanIndex]!;
                     if (invocation is null)
                     {
@@ -78,11 +67,11 @@ internal sealed partial class LythonRuntime
                 var immediate = (!asynchronous && invocation is not null) || (instruction.OpCode switch
                 {
                     ExecutableOpCode.Binary or ExecutableOpCode.Augmented =>
-                        inputs.First is BigInteger or double or bool && inputs.Second is BigInteger or double or bool ||
-                        inputs.First is PyString && inputs.Second is PyString,
-                    ExecutableOpCode.Unary => inputs.First is BigInteger or double or bool,
-                    ExecutableOpCode.Subscript => inputs.Second is BigInteger && inputs.First is PyList or PyTuple or PyBytes or PyString or PyRange ||
-                        inputs.First is PyDict dictionary && dictionary.CanReadKeySynchronously(inputs.Second!),
+                        first is BigInteger or double or bool && second is BigInteger or double or bool ||
+                        first is PyString && second is PyString,
+                    ExecutableOpCode.Unary => first is BigInteger or double or bool,
+                    ExecutableOpCode.Subscript => second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
+                        first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!),
                     _ => throw new InvalidOperationException("Unexpected direct input instruction."),
                 });
                 if (!immediate && invocation is null)
@@ -90,7 +79,7 @@ internal sealed partial class LythonRuntime
                     return InstructionPause.ContextRequired;
                 }
                 if (instruction.OpCode == ExecutableOpCode.Subscript && invocation is not null &&
-                    invocation.TrySuspendForTypeSubscription(instruction, inputs))
+                    invocation.TrySuspendForTypeSubscription(instruction, first, second!))
                 {
                     return InstructionPause.Boundary;
                 }
@@ -98,19 +87,19 @@ internal sealed partial class LythonRuntime
                 {
                     var result = instruction.OpCode switch
                     {
-                        ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator, inputs.First, inputs.Second!, scope, instruction.Span),
-                        ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(inputs.First, inputs.Second!, instruction.AugmentedOperator, scope, instruction.Span),
-                        ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, inputs.First, scope, instruction.Span),
+                        ExecutableOpCode.Binary => EvaluateBinaryOperator(instruction.BinaryOperator, first, second!, scope, instruction.Span),
+                        ExecutableOpCode.Augmented => EvaluateAugmentedAssignment(first, second!, instruction.AugmentedOperator, scope, instruction.Span),
+                        ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, first, scope, instruction.Span),
                         ExecutableOpCode.Subscript => invocation?._preparedCallValue is not null
-                            ? invocation.InvokePreparedTypeSubscription(inputs.Second!, instruction.Span, false).GetAwaiter().GetResult()
-                            : ReadSubscriptValue(inputs.First, inputs.Second!, instruction.Span, scope),
+                            ? invocation.InvokePreparedTypeSubscription(second!, instruction.Span, false).GetAwaiter().GetResult()
+                            : ReadSubscriptValue(first, second!, instruction.Span, scope),
                         _ => throw new InvalidOperationException("Unexpected direct input instruction."),
                     };
                     PublishInstructionResult(ref execution, invocation, instruction, result);
                 }
                 else
                 {
-                    pending = WithoutJump(invocation!.ExecuteCapturedValueOperationAsync(instruction, inputs));
+                    pending = WithoutJump(invocation!.ExecuteCapturedValueOperationAsync(instruction, first, second));
                     if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                     _ = ConsumeOperation(ref pending);
                 }
@@ -123,7 +112,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private async ValueTask ExecuteCapturedValueOperationAsync(ExecutableInstruction instruction, ExecutableInputs inputs)
+        private async ValueTask ExecuteCapturedValueOperationAsync(ExecutableInstruction instruction, object first, object? second)
         {
             try
             {
@@ -131,18 +120,18 @@ internal sealed partial class LythonRuntime
                 switch (instruction.OpCode)
                 {
                     case ExecutableOpCode.Binary:
-                        result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator, inputs.First, inputs.Second!, this, instruction.Span).ConfigureAwait(false);
+                        result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator, first, second!, this, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Augmented:
-                        result = await EvaluateAugmentedAssignmentAsync(inputs.First, inputs.Second!, instruction.AugmentedOperator, this, instruction.Span).ConfigureAwait(false);
+                        result = await EvaluateAugmentedAssignmentAsync(first, second!, instruction.AugmentedOperator, this, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Unary:
-                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), inputs.First, this, instruction.Span).ConfigureAwait(false);
+                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), first, this, instruction.Span).ConfigureAwait(false);
                         break;
                     case ExecutableOpCode.Subscript:
                         result = _preparedCallValue is not null
-                            ? await InvokePreparedTypeSubscription(inputs.Second!, instruction.Span, true).ConfigureAwait(false)
-                            : await ReadLoweredSubscriptAsync(inputs.First, inputs.Second!, instruction.Span, this).ConfigureAwait(false);
+                            ? await InvokePreparedTypeSubscription(second!, instruction.Span, true).ConfigureAwait(false)
+                            : await ReadLoweredSubscriptAsync(first, second!, instruction.Span, this).ConfigureAwait(false);
                         break;
                     default: throw new InvalidOperationException("Unexpected captured value instruction.");
                 }

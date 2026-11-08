@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Read prepared operands directly, removing the shared operand bundle and runtime
+  arity reader. Preserve descriptor snapshots, original read errors, suspension
+  and ownership; borrow synchronous instruction metadata.
+
 - Combine direct comparison conditions into one executable operation and share
   exact numeric ordering before protocol preparation. Remove ordered-comparison
   predicate/name transport, the forwarding wrapper and obsolete numeric fallback;

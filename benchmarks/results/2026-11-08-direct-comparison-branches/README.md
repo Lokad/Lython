@@ -10,7 +10,9 @@ suspended comparison/truth semantics stay on the existing protocol helpers.
 
 Baseline: fully qualified05d81b83/core68f63d29 (metadata HEAD80143659).
 Retained candidate:80143659 plus archived R95 sources/core9d30623c. Full source/core
-hashes are in identity.json; candidate full delivery is recorded separately.
+hashes are in identity.json. Committedcb2b015e is fully qualified by
+[CI42472284713](delivery-ci.json): Windows/Ubuntu actual11/10, original Stress
+and installed core consumers.
 The primary CPython table still describes its named ac5aea97 checkpoint. These
 are Lython source-pair improvements, not new CPython ratios or universal gains.
 

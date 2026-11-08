@@ -127,7 +127,8 @@ internal readonly record struct ExecutableInstruction
     // no input-plan table or runtime shape calculation is needed.
     public int InputStart => _inputStart;
     public int SecondInput => _secondaryOperand;
-    public int ThirdInput => ValueInputCount == 3 ? _resultSlot : throw InvalidOperand(nameof(ThirdInput));
+    public int ThirdInput => OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast
+        ? _resultSlot : throw InvalidOperand(nameof(ThirdInput));
     internal int ValueInputCount => OpCode switch
     {
         ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript or ExecutableOpCode.CompareJumpIfFalse => 2,

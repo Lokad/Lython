@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
 
         // Type subscription has at most two calls: a raw descriptor getter,
         // then its callable result. Both use the existing admitted frame runner.
-        private bool TrySuspendForTypeSubscription(ExecutableInstruction instruction, ExecutableInputs inputs)
+        private bool TrySuspendForTypeSubscription(in ExecutableInstruction instruction, object receiver, object key)
         {
             var start = instruction.ResultSlot;
             if (_preparedCallValue is { } prepared)
@@ -105,14 +105,14 @@ internal sealed partial class LythonRuntime
                 _preparedCallValue = null;
                 return true;
             }
-            if (inputs.First is not PyType type ||
+            if (receiver is not PyType type ||
                 !type.TryLookupInMro("__class_getitem__", 0, out var raw, out _)) return false;
             if (raw is PyInstance descriptor &&
                 descriptor.Type.TryLookupInMro("__get__", 0, out var getter, out _) &&
                 getter is PyExecutableFunction { SupportsDirectPositional: true } function)
             {
-                _execution.Stack.PublishValue(start, start + 1, inputs.First);
-                _execution.Stack.PublishValue(start + 1, start + 2, inputs.Second!);
+                _execution.Stack.PublishValue(start, start + 1, receiver);
+                _execution.Stack.PublishValue(start + 1, start + 2, key);
                 // Match raw ternary invocation: prefix self through the binder,
                 // retaining the original receiver and key in their current slots.
                 _execution.Stack.PublishValue(start + 2, start + 3, PyNone.Instance);
@@ -125,8 +125,8 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             if (raw is not (PyClassMethod or PyStaticMethod or PyExecutableFunction)) return false;
-            _execution.Stack.PublishValue(start, start + 1, inputs.First);
-            _execution.Stack.PublishValue(start + 1, start + 2, inputs.Second!);
+            _execution.Stack.PublishValue(start, start + 1, receiver);
+            _execution.Stack.PublishValue(start + 1, start + 2, key);
             var member = PyAttributeLookup.BindForType(type, raw, this, instruction.Span);
             if (TryPrepareSubscriptionCallable(member, instruction.Span, start)) return true;
             _preparedCallValue = member;

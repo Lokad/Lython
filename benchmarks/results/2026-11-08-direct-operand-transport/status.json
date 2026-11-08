@@ -1,0 +1,18 @@
+{
+  "status": "Retained source/focused checks pass, full candidate delivery pending",
+  "baselineSource": "cb2b015e fully qualified CI42472284713",
+  "candidateSource": "cb2b015e plus R96 direct operand references, no carrier/runtime arity reader",
+  "coreSHA256": {
+    "before": "9d30623cefedc5c97a86a3e9fc8200eeb9db54d6b8e524a0421ed85026a24a30",
+    "candidate": "d6254b2e546ae346d3e0a843fe849bd875056100a719eb04c98ce857caa8078d"
+  },
+  "focusedChecks": {
+    "public-final11": 62,
+    "public-final10": 62,
+    "internal-final11": 24,
+    "internal-final10": 24
+  },
+  "noRemainingVMUsersOrFixtures": true,
+  "limitations": "Allocation neutral; variable text baseline and possible report elapsed debt; R95 text debt not repaid by inference.",
+  "archiveSHA256": "c708a550885e82a532379c2f0d66637a9ba4898885d7aa0bdada25e492108aeb"
+}

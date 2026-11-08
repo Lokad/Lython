@@ -15,29 +15,30 @@ internal sealed partial class LythonRuntime
         {
             pending = default;
             pendingSpan = null;
-            var inputs = ReadInstructionInputs(ref execution, instruction, scope, invocation);
+            var first = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+            var second = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
             try
             {
-                if (TryEvaluateNumericComparison(instruction.BinaryOperator, inputs.First, inputs.Second!, scope, instruction.Span, out var truth))
+                if (TryEvaluateNumericComparison(instruction.BinaryOperator, first, second!, scope, instruction.Span, out var truth))
                     pending = new(CompleteComparisonBranch(ref execution, scope, instruction, truth));
-                else if (inputs.First is PyString && inputs.Second is PyString)
+                else if (first is PyString && second is PyString)
                 {
                     // Exact strings already complete synchronously under
                     // either API, without a lexical-context promotion.
-                    var result = EvaluateBinaryOperator(instruction.BinaryOperator, inputs.First, inputs.Second!, scope, instruction.Span);
+                    var result = EvaluateBinaryOperator(instruction.BinaryOperator, first, second!, scope, instruction.Span);
                     pending = new(CompleteComparisonBranch(ref execution, scope, instruction, IsTruthy(result, scope, instruction.Span)));
                 }
                 else if (invocation is null) return InstructionPause.ContextRequired;
                 else if (!asynchronous)
                 {
-                    var result = EvaluateBinaryOperator(instruction.BinaryOperator, inputs.First, inputs.Second!, invocation, instruction.Span);
+                    var result = EvaluateBinaryOperator(instruction.BinaryOperator, first, second!, invocation, instruction.Span);
                     execution.Stack.RetireTo(instruction.LiveExtent);
                     invocation.CheckExecution(instruction.Span);
                     pending = new(CompleteComparisonBranch(ref execution, invocation, instruction, IsTruthy(result, invocation, instruction.Span)));
                 }
                 else
                 {
-                    pending = invocation.ExecuteComparisonBranchAsync(instruction, inputs);
+                    pending = invocation.ExecuteComparisonBranchAsync(instruction, first, second);
                     if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
                 }
                 return InstructionPause.Continue;
@@ -55,11 +56,11 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private async ValueTask<bool> ExecuteComparisonBranchAsync(ExecutableInstruction instruction, ExecutableInputs inputs)
+        private async ValueTask<bool> ExecuteComparisonBranchAsync(ExecutableInstruction instruction, object first, object second)
         {
             try
             {
-                var result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator, inputs.First, inputs.Second!, this, instruction.Span).ConfigureAwait(false);
+                var result = await EvaluateBinaryOperatorAsync(instruction.BinaryOperator, first, second!, this, instruction.Span).ConfigureAwait(false);
                 _execution.Stack.RetireTo(instruction.LiveExtent);
                 CheckExecution(instruction.Span);
                 var truth = await IsTruthyAsync(result, this, instruction.Span).ConfigureAwait(false);

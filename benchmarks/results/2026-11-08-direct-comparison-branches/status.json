@@ -1,5 +1,5 @@
 {
-  "status": "Retained source selected; focused Release peractual11/10 passes, full delivery pending",
+  "status": "Committedcb2b015e, fully qualified CI42472284713: Windows/Ubuntu actual.NET11/10, original Stress both targets and installed core consumers",
   "baselineSource": "05d81b83 fully qualified CI42467357131; metadata HEAD80143659",
   "candidateSource": "80143659 plus R95 direct comparison migration with dedicated control handler after B455 text-control regression",
   "coreSHA256": {
@@ -17,5 +17,6 @@
   ],
   "noRemainingVMUsersOrFixtures": true,
   "originalAdverseDataPreserved": true,
-  "archiveSHA256": "93b2f6b295a920a072ee9db7812efd291374a02678de732cf08dbcdb79ab796c"
+  "archiveSHA256": "93b2f6b295a920a072ee9db7812efd291374a02678de732cf08dbcdb79ab796c",
+  "deliveryReceipt": "delivery-ci.json"
 }

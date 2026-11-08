@@ -4447,5 +4447,23 @@ causal explanation is claimed. Report inconclusive. All original sources/cores/
 failed conditions/adverse data remain; no further retiming to erase the debt.
 Focused76public/61internal per actual11/10 and stronger6public close assertions pass.
 Both source-pair gates/archive/local verification pass, no users/fixtures remain.
-Full delivery follows separately. This milestone does not close the performance
+Committedcb2b015e subsequently passed full CI42472284713 on both platforms,
+actual11/10, original Stress and installed consumers. This milestone does not close the performance
 objective; continue the substantial roadmap with measured storage/transport costs.
+
+## Direct operand references (2026-11-08)
+
+[R96/B457](results/2026-11-08-direct-operand-transport/README.md) removes the24B
+operand carrier/reader and runtime general-arity projection. Direct references
+retain original leaf-read ordering and descriptor snapshots; actual async work
+keeps required references. Synchronous metadata is borrowed. No replacement carrier,
+pool, owner or public API. Existing62public/24internal checks peractual11/10 pass.
+Allocation neutral. Controlled CSV/JSON elapsed favorable; text direction favorable
+but old-source spread8.70% prevents precision. Report+0.88to+3.65%elapsed with mixed
+CPU is inconclusive/possible debt. Retain removal with those limits; original
+desktop adverse/failed migration conditions remain. R95 text debt is separate,
+and no unmatched-source repayment or universal CPU claim follows.
+All source/Ready/golden/quiet/Closed/join/archive/local verification gates pass;
+no VM users/fixtures. Baseline cb2 subsequently fully qualified CI42472284713;
+candidate delivery pending. The string-layout gate used existing64B samples and
+unchanged source; no speculative cold union/layout change or new measurement.
