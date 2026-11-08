@@ -14,7 +14,9 @@ Baseline committed15c06863/core1674a06c, independently fully qualified at
 [cached CI42484943603](../2026-11-08-unified-json-encoding/delivery-ci.json).
 Candidate15c plus archived two-file patch/coreaae80cc7; exact source hashes in
 identity.json. Informational binary revision predates the candidate commit.
-New-source full platform/Stress/installed-core qualification remains separate/pending.
+Committeda7bd4103 independently passes Windows/Ubuntu actual11/10, originalStress
+and installed core consumers at [cached CI42488128858](delivery-ci.json). This
+receipt does not qualify the subsequent R106 prototype.
 The main CPython guide accurately names15c; these source-pair results do not update
 that external baseline or silently repay earlier R102/R95/R96 regression debt.
 
@@ -60,7 +62,11 @@ All source/core/aux/Ready/golden/quiet/Closed/exit/join/fixture/archive/local ga
 pass. B463 terminal/cached; no users/fixtures, owned RAM unmounted before archive.
 Exact archived17baseline reused, uploaded onlyaae.240MiBOSfloor+7MiBevidence+
 actual payload preflight, no new space maintenance/evidence/core/path deletion.
-Full new-source delivery is independent; broader performance work remains.
+Full new-source delivery is independently green/cached at a7bd4103; broader
+performance work remains.
 
 [Controlled results](controlled-comparison.json), [allocation/desktop evidence](allocation-and-local.json),
 [identity](identity.json), [status](status.json), [sources/cores/logs/raw](observations.tar.xz).
+
+The derived allocation assessment corrects an inherited R102 limitation label;
+original archived labels/data remain intact and numeric observations are unchanged.

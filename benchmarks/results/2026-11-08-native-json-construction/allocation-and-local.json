@@ -263,5 +263,5 @@
       "oldSpreadPercent": -0.7919066820276432
     }
   ],
-  "limitations": "Same-process ALC allocation diagnostic with normal GC/tiering; desktop elapsed/coarseCPU not controlled confirmation. Preserve all original conditions and adverse/unstable controls; changed source unifies JSON rendering and removes completed-operation state machines; initial ownership/test-boundary failures preserved. No new controlled elapsed claim."
+  "limitations": "R105 same-process ALC allocation diagnostic, normal GC/tiering. Warm elapsed is Run phase only; allocation includes full host fixture reset/validation/result cleanup. Shared native JSON initialization/direct bound argument and value calls remove constructor/forwarding transport. Desktop elapsed/coarseCPU are not controlled CPU evidence. Preserve every adverse/unstable control; all focused checks passed on the first implementation. Original archived limitation label inherited R102 wording; this derived interpretation corrects that label without changing numeric observations."
 }
