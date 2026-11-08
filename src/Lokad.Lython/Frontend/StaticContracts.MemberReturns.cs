@@ -28,6 +28,12 @@ internal static partial class StaticContracts
         ("endswith", StaticReturnShape.Boolean),
         ("islower", StaticReturnShape.Boolean),
         ("isupper", StaticReturnShape.Boolean),
+        ("istitle", StaticReturnShape.Boolean),
+        ("isascii", StaticReturnShape.Boolean),
+        ("isdecimal", StaticReturnShape.Boolean),
+        ("isidentifier", StaticReturnShape.Boolean),
+        ("isnumeric", StaticReturnShape.Boolean),
+        ("isprintable", StaticReturnShape.Boolean),
         ("isalpha", StaticReturnShape.Boolean),
         ("isdigit", StaticReturnShape.Boolean),
         ("isalnum", StaticReturnShape.Boolean),
@@ -49,15 +55,24 @@ internal static partial class StaticContracts
 
     public static bool TryGetMemberReturn(AbstractValue receiver, string memberName, LythonSourceSpan span, out AbstractValue value)
     {
-        if (MemberReturnContractsByMember.TryGetValue(
-            new StaticMemberContractKey(receiver.Kind, memberName),
-            out var contract))
+        if (TryGetMemberReturnShape(receiver.Kind, memberName, out var shape))
         {
-            value = CreateReturnValue(contract.ReturnShape, receiver, span);
+            value = CreateReturnValue(shape, receiver, span);
             return true;
         }
 
         value = default;
+        return false;
+    }
+
+    internal static bool TryGetMemberReturnShape(AbstractValueKind receiverKind, string memberName, out StaticReturnShape shape)
+    {
+        if (MemberReturnContractsByMember.TryGetValue(new(receiverKind, memberName), out var contract))
+        {
+            shape = contract.ReturnShape;
+            return true;
+        }
+        shape = default;
         return false;
     }
 

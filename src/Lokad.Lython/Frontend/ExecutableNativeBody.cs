@@ -1,3 +1,5 @@
+using Lokad.Lython.Runtime;
+
 namespace Lokad.Lython.Frontend;
 
 // A closed native body prepares operation structure once. Ordinary code keeps
@@ -8,14 +10,14 @@ internal enum NativeReturnOperation
     Add,
     Subscript,
     BuiltinUnary,
-    Strip, Lower, Upper, IsLower, IsUpper, IsTitle, IsAlpha, IsDigit, IsAlnum,
-    IsAscii, IsDecimal, IsIdentifier, IsNumeric, IsPrintable, IsSpace,
+    StringMethod, BytesMethod, BooleanMethod, ListMethod,
     Split, Replace, StartsWith, EndsWith,
     SplitLowerWhitespace, SplitUpperWhitespace,
     ConvertFormat, FormatValue,
 }
 
-internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, int SourceInstruction, int First, int Second);
+internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, int SourceInstruction, int First, int Second,
+    LythonRuntime.ReceiverMethod? Method = null);
 
 internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root)
 {

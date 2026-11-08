@@ -25,6 +25,7 @@ internal sealed partial class ExecutableCodeObject
         {
             var instruction = instructions[index];
             var operation = NativeReturnOperation.Read;
+            LythonRuntime.ReceiverMethod? nativeMethod = null;
             var first = -1;
             var second = -1;
             var depth = 1;
@@ -104,21 +105,53 @@ internal sealed partial class ExecutableCodeObject
                     else
                     {
                         var member = Names[instructions[target.Member].NameIndex];
-                        var selected = member switch
+                        if (site.ArgumentCount == 0 && LythonRuntime.StringMembers.GetMethod(member) is { } method
+                            && method.AcceptsPositional(0)
+                            && StaticContracts.TryGetMemberReturnShape(AbstractValueKind.String, member, out var shape)
+                            && shape is StaticReturnShape.String or StaticReturnShape.Bytes or StaticReturnShape.Boolean or StaticReturnShape.ListOfString)
                         {
-                            "split" when site.ArgumentCount <= 2 => NativeReturnOperation.Split,
-                            "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
-                            "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
-                            "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
-                            _ when site.ArgumentCount == 0 => LythonRuntime.StringMembers.GetNoArgumentsKind(member),
-                            _ => null
-                        };
-                        if (selected is null) return null;
-                        operation = selected.Value;
-                        if (operation == NativeReturnOperation.Split && site.ArgumentCount == 0)
+                            nativeMethod = method;
+                            operation = shape switch
+                            {
+                                StaticReturnShape.String => NativeReturnOperation.StringMethod,
+                                StaticReturnShape.Bytes => NativeReturnOperation.BytesMethod,
+                                StaticReturnShape.Boolean => NativeReturnOperation.BooleanMethod,
+                                _ => NativeReturnOperation.ListMethod,
+                            };
+                            if (ReferenceEquals(method, LythonRuntime.StringMembers.GetMethod("split"))
+                                && first == values.Count - 1 && target.Member == index - 1
+                                && values[first].Operation == NativeReturnOperation.StringMethod)
+                            {
+                                var producer = values[first];
+                                if (producer.SourceInstruction == producer.Second + 1)
+                                {
+                                    if (ReferenceEquals(producer.Method, LythonRuntime.StringMembers.GetMethod("lower"))) operation = NativeReturnOperation.SplitLowerWhitespace;
+                                    else if (ReferenceEquals(producer.Method, LythonRuntime.StringMembers.GetMethod("upper"))) operation = NativeReturnOperation.SplitUpperWhitespace;
+                                }
+                                if (operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
+                                {
+                                    // The kernel consumes the original string. Retain
+                                    // the producer's instruction/spans, not a dead
+                                    // method node and its redundant result proof.
+                                    first = producer.First;
+                                    second = producer.SourceInstruction;
+                                    nativeMethod = null;
+                                    values.RemoveAt(values.Count - 1);
+                                }
+                            }
+                        }
+                        else
                         {
-                            if (values[first].Operation == NativeReturnOperation.Lower) operation = NativeReturnOperation.SplitLowerWhitespace;
-                            else if (values[first].Operation == NativeReturnOperation.Upper) operation = NativeReturnOperation.SplitUpperWhitespace;
+                            var selected = member switch
+                            {
+                                "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
+                                "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
+                                "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
+                                "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
+                                _ => (NativeReturnOperation?)null
+                            };
+                            if (selected is null) return null;
+                            operation = selected.Value;
                         }
                     }
                     for (var a = 0; a < site.ArgumentCount; a++)
@@ -135,7 +168,7 @@ internal sealed partial class ExecutableCodeObject
             // Deeper expressions still execute through the ordinary engine.
             if (depth > 16) return null;
             if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
-            values.Add(new(operation, index, first, second));
+            values.Add(new(operation, index, first, second, nativeMethod));
             stack.Add((values.Count - 1, -1, depth));
         }
         if (stack.Count != 1 || stack[0].Member >= 0) return null;

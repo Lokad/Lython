@@ -1,5 +1,4 @@
 using Lokad.Lython.Runtime.Text;
-using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
@@ -7,27 +6,6 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
-        internal static NativeReturnOperation? GetNoArgumentsKind(string name)
-            => name switch
-            {
-                "strip" => NativeReturnOperation.Strip,
-                "lower" => NativeReturnOperation.Lower,
-                "upper" => NativeReturnOperation.Upper,
-                "islower" => NativeReturnOperation.IsLower,
-                "isupper" => NativeReturnOperation.IsUpper,
-                "istitle" => NativeReturnOperation.IsTitle,
-                "isalpha" => NativeReturnOperation.IsAlpha,
-                "isdigit" => NativeReturnOperation.IsDigit,
-                "isalnum" => NativeReturnOperation.IsAlnum,
-                "isascii" => NativeReturnOperation.IsAscii,
-                "isdecimal" => NativeReturnOperation.IsDecimal,
-                "isidentifier" => NativeReturnOperation.IsIdentifier,
-                "isnumeric" => NativeReturnOperation.IsNumeric,
-                "isprintable" => NativeReturnOperation.IsPrintable,
-                "isspace" => NativeReturnOperation.IsSpace,
-                _ => null
-            };
-
         internal static ReceiverMethod? GetMethod(string name)
             => name switch
             {
@@ -50,21 +28,21 @@ internal sealed partial class LythonRuntime
                 "replace" => ReceiverMethods.StringReplace,
                 "startswith" => ReceiverMethods.StringStartsWith,
                 "endswith" => ReceiverMethods.StringEndsWith,
-                "strip" => GetNoArgumentsMethod(NativeReturnOperation.Strip),
-                "lower" => GetNoArgumentsMethod(NativeReturnOperation.Lower),
-                "upper" => GetNoArgumentsMethod(NativeReturnOperation.Upper),
-                "islower" => GetNoArgumentsMethod(NativeReturnOperation.IsLower),
-                "isupper" => GetNoArgumentsMethod(NativeReturnOperation.IsUpper),
-                "istitle" => GetNoArgumentsMethod(NativeReturnOperation.IsTitle),
-                "isalpha" => GetNoArgumentsMethod(NativeReturnOperation.IsAlpha),
-                "isdigit" => GetNoArgumentsMethod(NativeReturnOperation.IsDigit),
-                "isalnum" => GetNoArgumentsMethod(NativeReturnOperation.IsAlnum),
-                "isascii" => GetNoArgumentsMethod(NativeReturnOperation.IsAscii),
-                "isdecimal" => GetNoArgumentsMethod(NativeReturnOperation.IsDecimal),
-                "isidentifier" => GetNoArgumentsMethod(NativeReturnOperation.IsIdentifier),
-                "isnumeric" => GetNoArgumentsMethod(NativeReturnOperation.IsNumeric),
-                "isprintable" => GetNoArgumentsMethod(NativeReturnOperation.IsPrintable),
-                "isspace" => GetNoArgumentsMethod(NativeReturnOperation.IsSpace),
+                "strip" => StripMethod,
+                "lower" => CasingMethods.Lower,
+                "upper" => CasingMethods.Upper,
+                "islower" => CasingMethods.IsLower,
+                "isupper" => CasingMethods.IsUpper,
+                "istitle" => CasingMethods.IsTitle,
+                "isalpha" => CasingMethods.IsAlpha,
+                "isdigit" => CasingMethods.IsDigit,
+                "isalnum" => CasingMethods.IsAlnum,
+                "isascii" => CasingMethods.IsAscii,
+                "isdecimal" => CasingMethods.IsDecimal,
+                "isidentifier" => CasingMethods.IsIdentifier,
+                "isnumeric" => CasingMethods.IsNumeric,
+                "isprintable" => CasingMethods.IsPrintable,
+                "isspace" => CasingMethods.IsSpace,
                 "capitalize" => CasingMethods.Capitalize,
                 "swapcase" => CasingMethods.SwapCase,
                 "title" => CasingMethods.Title,

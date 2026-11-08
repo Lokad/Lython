@@ -4344,3 +4344,24 @@ refusal is retained. Select consolidation of existing native-body method invento
 onto canonical declarations/shared frontend return facts, preserving fusion/proofs
 and removing displaced enums/maps. No new engine/result-type catalog/proof markers;
 separate correctness/source-pair validation is required before retaining a change.
+
+## Canonical closed-method preparation (2026-11-08)
+
+[R89/B450–B451](results/2026-11-08-native-method-facts/README.md) removes the duplicate
+native method enums/map/indexed declaration array/accessors, reusing existing
+canonical methods/frontend return facts. Six missing Boolean facts join the existing
+catalog. Per-callsite prototype metadata is replaced by one native-node reference
+and four generic result shapes. No new engine/catalog/per-name proof markers.
+397internal/2165public per actual11/10 pass, three independent CPython cases.
+
+Initial source and all desktop adverse/unstable controls remain. B450167.945s
+shows affected elapsed13–18%lower, but fused control+2.52–8.29% with adverse CPU.
+The existing fusion then drops its dead producer/type proof/empty argument scan,
+preserving original span-check order. One refined B451168.406s: rsplit sync
+−13.94–17.85%, async−16.06–19.25%, casefoldsync−11.14–14.17%, coarseCPU agrees.
+Allocation neutral. Fused−3.77to+2.31% is inconclusive; old concern not reproduced,
+no complete causal explanation. CSV+0.42–1.03%possible elapsed debt accepted,
+coarseCPUflat. Reportinconclusive; earlier debt separate. All source/Ready/golden/
+quiet/join/fixture/archive gates pass; no users remain. Exact baseline core reused
+without evidence deletion. Retain coherent simplification/affected improvement;
+full final-source delivery follows commit. Objective/publication remain open.

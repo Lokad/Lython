@@ -117,8 +117,15 @@ internal sealed partial class LythonRuntime
             case NativeReturnOperation.Subscript:
                 return GuardNativeReturn(value.Second, code, values, arguments, context, out var key)
                     && first == NativeReturnShape.Dictionary && key == NativeReturnShape.String;
-            case >= NativeReturnOperation.Strip and <= NativeReturnOperation.IsSpace:
-                shape = value.Operation <= NativeReturnOperation.Upper ? NativeReturnShape.String : NativeReturnShape.Boolean;
+            case NativeReturnOperation.StringMethod or NativeReturnOperation.BytesMethod
+                or NativeReturnOperation.BooleanMethod or NativeReturnOperation.ListMethod:
+                shape = value.Operation switch
+                {
+                    NativeReturnOperation.StringMethod => NativeReturnShape.String,
+                    NativeReturnOperation.BytesMethod => NativeReturnShape.Bytes,
+                    NativeReturnOperation.BooleanMethod => NativeReturnShape.Boolean,
+                    _ => NativeReturnShape.Sized,
+                };
                 return first == NativeReturnShape.String;
             case NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace:
                 shape = NativeReturnShape.Sized;
@@ -194,15 +201,17 @@ internal sealed partial class LythonRuntime
         {
             if (value.Operation is NativeReturnOperation.SplitLowerWhitespace or NativeReturnOperation.SplitUpperWhitespace)
             {
-                ref readonly var producer = ref values[value.First];
-                first = EvaluateNativeReturn(producer.First, code, values, arguments, context, entryException);
-                context.State.CheckExecution(code.Instructions[producer.Second].Span);
-                context.State.CheckExecution(code.CallSites[code.Instructions[producer.SourceInstruction].CallSiteIndex].CallSpan);
+                first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+                // Preparation proved both zero-argument member/call pairs are
+                // adjacent. Preserve their checks in original evaluation order.
+                context.State.CheckExecution(code.Instructions[value.Second - 1].Span);
+                context.State.CheckExecution(code.CallSites[code.Instructions[value.Second].CallSiteIndex].CallSpan);
+                context.State.CheckExecution(code.Instructions[value.SourceInstruction - 1].Span);
             }
             else first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             if (value.Operation is NativeReturnOperation.Add or NativeReturnOperation.Subscript)
                 second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
-            else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.SplitUpperWhitespace)
+            else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.EndsWith)
             {
                 if (value.Second >= 0) context.State.CheckExecution(code.Instructions[value.Second].Span);
                 var call = code.CallSites[instruction.CallSiteIndex];
@@ -236,8 +245,8 @@ internal sealed partial class LythonRuntime
             if (value.Operation == NativeReturnOperation.BuiltinUnary)
                 return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
             var receiver = (PyString)first!;
-            if (value.Operation is >= NativeReturnOperation.Strip and <= NativeReturnOperation.IsSpace)
-                return InvokeReceiverMethod(StringMembers.GetNoArgumentsMethod(value.Operation), receiver, site.CallSpan, context);
+            if (value.Method is { } method)
+                return InvokeReceiverMethod(method, receiver, site.CallSpan, context);
             return value.Operation switch
             {
                 NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
