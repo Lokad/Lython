@@ -5147,3 +5147,20 @@ permanentclosure. No space recovery/floorrelaxation; allusersjoined/RAMremoved/
 terminalcached. Six-case local catalog initially refused before users; condition
 preserved, corrected to unchanged five-case driver. Candidate full qualification
 batches now; publication postponed, performance objective open.
+
+
+## Current three-script CPython delivery checkpoint (2026-11-09 Paris)
+
+[R136/B496](results/2026-11-09-cpython-checkpoint/README.md),6d73/freshea65, CPython3.13.16.
+Ninejobs188.968s/normalGCtiering/threeprocessroles/allidentity/quiet/golden/budget/
+Closed/join/RAM/archive/localgates pass. Current completeCSV1.15–1.16xDiagnostic,
+text1.44–1.45xDiagnostic,report1.35–1.38xVariable. Warm1.16–1.18/1.55–1.57/1.38–1.40x;
+compile1.05–1.08/1.05–1.07/1.08xVariable. FreshReleaseworker22331/coreea65 from6d73;
+24818runtimeILbodies/signatures/policies exactlymatch focused76d, source/PDBmetadata
+differs. Worker source only defaultcatalog additions; external source/fixtures/
+host/protocol/boundaries unchanged. Exactspaceproof2duplicates/allpathbytes preserved,
+floors unchanged. Guideupdates3cases, prior459config/file and6f76CSV/JSONrowshistorical;
+no across-checkpoint sourcegainattribution or regexqualification. FullUbuntu
+qualification passes; Windows native-hash pre-cancellation IsCompleted assertion
+failed, remaining stages skipped. Cached terminal evidence retained separately;
+publication postponed, performance objective remains open.

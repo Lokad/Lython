@@ -1,0 +1,50 @@
+[
+  {
+    "path": "Lokad.Lython.Benchmarks.dll",
+    "bytes": 444928,
+    "sha256": "22331fd36f4a319fab07c2e508be6a2e4ae556cd9abd58618b06c57eeb8b8489",
+    "priorSHA256": "7cf37ca597d07517548e10af1c61bfb5a20afe070af89506189b015a0c8e86cf"
+  },
+  {
+    "path": "Lokad.Lython.Benchmarks.exe",
+    "bytes": 74240,
+    "sha256": "be4e5f27b029faa55d93818821ba1203301ff259f985d8c6090b8d4620097b17",
+    "priorSHA256": "3e93bc6f9f507b03d6f4a2f24f1da99254f360f3a9de6b403759a542498b897d"
+  },
+  {
+    "path": "Lokad.Lython.Benchmarks.pdb",
+    "bytes": 81840,
+    "sha256": "c72646a5e8419819fc06d7e18a1f45e608ef37eacfb861ae35ca78c2a27b91ca",
+    "priorSHA256": null
+  },
+  {
+    "path": "Lokad.Lython.dll",
+    "bytes": 5654528,
+    "sha256": "ea65554eec30a0d919ea003f2e21d3d656c5d8df396a6d4d32659912668b0550",
+    "priorSHA256": "76d99682469c328c38faec5e6795c9d3990e7ff78e622740150dbcb7605d9722"
+  },
+  {
+    "path": "Lokad.Lython.pdb",
+    "bytes": 1334288,
+    "sha256": "d7902887d8bab1d91ae1ce2dda814872275696625cee3dc1e207d2ae85de0df8",
+    "priorSHA256": null
+  },
+  {
+    "path": "Lokad.Lython.Utf8Regex.dll",
+    "bytes": 15872,
+    "sha256": "7453864211ca85ecf628bd015e673ec45b51e4b322fa90439a59e16e24dcff7e",
+    "priorSHA256": "27211dbe7d6755f0af427db013d5a386747250a6aba7dd8cc42f03bb3b79b98a"
+  },
+  {
+    "path": "Lokad.Lython.Utf8Regex.pdb",
+    "bytes": 14736,
+    "sha256": "991a20b94eb9e4d268672d58b7a19a93087e512ed409af288e6b8236dc212ba7",
+    "priorSHA256": null
+  },
+  {
+    "path": "RepresentativeScripts/csv-validated-records.py",
+    "bytes": 776,
+    "sha256": "1a35af8ed5bdce1e9a294a9663b305a504ddfaed2a44518aa152995b3caef5ee",
+    "priorSHA256": null
+  }
+]

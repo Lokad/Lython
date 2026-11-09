@@ -1,0 +1,15 @@
+{
+  "commit": "6d73c7429f719c27320195d381ee83f9fa0892ce",
+  "freshBuild": "build-release.log, explicit Release/net11 --no-incremental --no-restore",
+  "coreSHA256": "ea65554eec30a0d919ea003f2e21d3d656c5d8df396a6d4d32659912668b0550",
+  "exactILProof": {
+    "methodCount": 25040,
+    "identicalExecutableBodies": 24818,
+    "changedImplementationPolicies": [],
+    "allMethodSignaturesAttributesAndBodyMetadataEqual": true,
+    "beforeSHA256": "76D99682469C328C38FAEC5E6795C9D3990E7FF78E622740150DBCB7605D9722",
+    "candidateSHA256": "EA65554EEC30A0D919EA003F2E21D3D656C5D8DF396A6D4D32659912668B0550",
+    "limitation": "IL identity is not JIT-code identity or platform/performance qualification. Assembly/PDB/source revision metadata may differ."
+  },
+  "benchmarkSourceDiff": "Default catalog construction only; source/host/timing/protocol unchanged on supplied external catalog. Added local fixture equals catalog source exactly."
+}
