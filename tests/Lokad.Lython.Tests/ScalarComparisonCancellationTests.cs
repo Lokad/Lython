@@ -94,10 +94,10 @@ public sealed class ScalarComparisonCancellationTests
     [Theory, Trait("Category", "Stress")]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ActiveStringComparisonStopsBeforeReturningItsResult(bool ordered)
+    public async Task ConcurrentStringComparisonPreservesCancellationAndCompletion(bool ordered)
     {
-        // Keep a real nonallocating comparison longer than a scheduler quantum.
-        // This is a concurrent observation, not a deterministic scheduling proof.
+        // Give the canceller a substantial real nonallocating comparison to interrupt.
+        // The scheduler may still let the comparison finish before cancellation.
         const int length = 256 * 1024 * 1024;
         var budget = new LythonMemoryBudget(2L * length + 32 * 1024 * 1024);
         using (var owner = budget.CreateScope())
@@ -137,10 +137,24 @@ public sealed class ScalarComparisonCancellationTests
                     finally { requestedAtCompletion = cancellation.IsCancellationRequested; }
                 }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 var observed = await Record.ExceptionAsync(async () => await run.WaitAsync(TimeSpan.FromSeconds(10)));
-                if (observed is null) Assert.Fail($"Comparison returned normally; cancellation requested before completion: {requestedAtCompletion}.");
-                var failure = Assert.IsType<LythonRuntimeException>(observed);
-                Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
-                Assert.Equal(Span, failure.Span);
+                if (observed is null)
+                {
+                    // A scheduler can postpone the canceller beyond completion.
+                    // No request existed to interrupt that successful scan.
+                    Assert.False(requestedAtCompletion, "Comparison returned after cancellation was requested.");
+                    Assert.Equal(!ordered, Assert.IsType<bool>(await run));
+                }
+                else
+                {
+                    var failure = Assert.IsType<LythonRuntimeException>(observed);
+                    Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                    Assert.Equal(Span, failure.Span);
+                }
+                cancellation.Cancel();
+                var cancelled = Assert.Throws<LythonRuntimeException>(() =>
+                    LythonRuntime.EvaluateBinaryOperator(comparison, left, right, context, Span));
+                Assert.Equal(LythonFailureReason.Cancelled, cancelled.Attribution?.Reason);
+                Assert.Equal(Span, cancelled.Span);
             }
             finally
             {

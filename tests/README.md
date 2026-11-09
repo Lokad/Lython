@@ -26,7 +26,8 @@ admission. They observe concurrent cancellation without test-only checkpoints.
 current tokens, bound-method reuse, nested native comparisons, terminal admission
 refusal and allowance reuse. Their long-string equality and ordering
 cancellation observation runs only as Stress, with both workers joined before
-retiring input. Public comparison values cover independently captured Python
+retiring input. A comparison finishing before the request must return its correct
+value; the same inputs are then checked with an already-cancelled token. Public comparison values cover independently captured Python
 UTF-8 ordering and branches alongside genuine suspended custom protocols.
 
 [Generator storage](Lokad.Lython.PublicApi.Tests/GeneratorStorageSemanticsTests.cs)

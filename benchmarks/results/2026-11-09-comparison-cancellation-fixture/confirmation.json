@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "original": {
+      "exitCode": 1,
+      "sourceSHA256": "4eabaf97a4f63eac4c0a1a87a3e3b0215e6c888d9f6fe2737f8047afad70a421",
+      "assemblySHA256": "49a257470f8276db74ac18a65818e51fccd08ea79d150f696551dd9887d67f94"
+    },
+    "corrected": {
+      "exitCode": 0,
+      "sourceSHA256": "6e5494d4849a2208452c32e7d66d79f3556e8f91513907b2554b0c371ab9864b",
+      "assemblySHA256": "c762b4d95876af7330deb2cad479229aedf1d8e7d69c7a334324b27494da13d5"
+    }
+  },
+  "conditions": "Isolated snapshot builds; only canceller sleep changed from 1ms to 2000ms to reproduce legal completion before request. Normal fixture still 1ms, 256MiB, 10s timeout. No production source change."
+}
