@@ -17,6 +17,8 @@ Remaining bridges: DetailedData has no distinct working owner; native group-name
 enumeration still uses GetGroupNames plus adapter encoding; cursor creation retains
 its token despite per-move tokens, requiring stable current-token forwarding.
 Native UTF-8 patterns/windows/captures and cursor working allowance are available.
+The623 documented Core/PythonRe member names match dev.55 exactly
+([comparison](api-difference.json)); this is not an API compatibility proof.
 Producer improvements do not remove these remaining API-shape limitations. They
 defer only affected final adapter qualification; core development stays independent.
 The optional adapter remains nonpackable; the core has no producer dependency.

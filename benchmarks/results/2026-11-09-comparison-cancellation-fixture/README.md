@@ -21,4 +21,8 @@ Release scalar/native-construction checks pass7 each on actual.NET11/10.
 
 [Original source](original.cs), [controlled confirmation](confirmation.json),
 [isolated recipe](confirm.py), [original CI and both snapshot/focused logs](observations.tgz).
-Full delivery retries separately; publication remains postponed.
+Full delivery [CI42667400495](https://github.com/Lokad/Lython/actions/runs/42667400495)
+on e0522ef5 is green: Windows/Ubuntu actual.NET11/10, original Stress and installed
+consumers. [Terminal receipt](ci-terminal.json) is cached; no unchanged replay.
+This qualifies R167/R171, before the later R172 runtime correction. Publication
+remains postponed.

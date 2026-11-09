@@ -58,9 +58,9 @@ ordering primitives accept the current execution context for bounded cooperative
 checks. String methods, contextual structural comparisons, native sorting and
 contextual dictionary text-key probes use these primitives without retaining caller
 tokens. Cached key hashes do not bypass cancellation during equality. Custom
-comparison and truth protocols keep their ordinary synchronous/async behavior. Context-free native
-comparers have no token and retain their whole-span operations; cancellation is
-then observed by the enclosing execution.
+comparison and truth protocols keep their ordinary synchronous/async behavior.
+Context-free native comparers have no token and retain their whole-span operations;
+cancellation is then observed by the enclosing execution.
 
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before

@@ -1,0 +1,9 @@
+{
+  "before": "0.5.0-dev.55 XML from tracked R68 archive",
+  "after": "0.5.0-dev.59 exact verified package XML",
+  "beforeCount": 623,
+  "afterCount": 623,
+  "added": [],
+  "removed": [],
+  "limitations": "Documented member-name comparison only; not an API compatibility proof. Contract/semantic qualification independent."
+}

@@ -62,9 +62,11 @@ raw trees, receipts and frozen workers survive.240MiB OS/12MiB evidence floors
 unchanged. All identity/golden/quiet/owner/Closed/join/unmount/archive-under-lease/
 localSHA gates pass; no VM users or fixtures remain, terminal cached.
 
-Full R167 platform/original Stress/installed-consumer qualification is pending the
-coherent checkpoint. Predecessor R164/R165 is fully green; its receipt does not cover
-this change. Publication remains postponed.
+Full R167 qualification is GREEN as CI42667400495/e0522ef5: Windows/Ubuntu
+actual.NET11/10, original Stress and installed consumers. The first run exposed
+the separate R171 fixture race; both original failure and corrected delivery are
+retained in the [fixture record](../2026-11-09-comparison-cancellation-fixture/README.md).
+This does not qualify later R172 source. Publication remains postponed.
 
 [Quiet summary](summary.json), [decision/checks](decision.json), [source](source.json),
 [prototype source](prototype-source.json), [regression proof](regression-proof.json),

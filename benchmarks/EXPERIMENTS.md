@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R172 native text-key cancellation correction](results/2026-11-09-native-text-key-cancellation/README.md)
+forwards the current caller through actual native dictionary equality even when
+hashes are cached. One frozen-old read returns after cancellation; final27internal/
+825public eachactual11/10 pass. Original comparator-boundary and missing-identity
+refinements, all adversity and the overstrict proof-analysis correction remain.
+Final desktop syncCSV+5.13–5.86%/asyncText+3.78–12.72% are possible costs accepted
+for effective cancellation; other favorable results do not establish gains. No CPU/
+equivalence claim. The next substantial checkpoint carries these controls; full
+platform qualification of this new source remains separate from R167/R171 delivery.
+
 The [R169 representative CPython checkpoint](results/2026-11-09-current-cpython-checkpoint/README.md)
 refreshes five complete scripts at43350e4f-equivalent production source, separately
 compile/warm/compile-to-result. Fifteen jobs410.313s, two independent processes per
@@ -23,8 +33,10 @@ The [R171 concurrent cancellation fixture correction](results/2026-11-09-compari
 preserves the failed Windows10 Stress condition: comparison finished before any
 request. Controlled original2fail/corrected2pass snapshots reproduce the scheduler
 assumption without runtime changes. Normal focused7each11/10 pass; original sizes,
-timeouts, joined workers and exact ownership assertions remain. Full delivery retries
-separately; no performance retiming for this fixture-only change.
+timeouts, joined workers and exact ownership assertions remain. Full42667400495/
+e0522ef5 is GREEN across both OS/frameworks, original Stress and installed consumers.
+Its cached terminal receipt qualifies R167/R171, not later R172. No performance
+retiming for this fixture-only change.
 
 The [R168 native-return source gate](results/2026-11-09-native-return-source-gate/README.md)
 retains the borrowed-input/no-workspace optimization: ordinary calls already defer
@@ -41,7 +53,7 @@ accepts possible CSV+0.76–4.23% elapsed cost for rollback correctness; text ov
 controls, adverse async controls do not reproduce. Allocation flat; no CPU/equivalence
 claim. Original source/timing/fixture/space failures remain. Full delivery42661297753
 passed Ubuntu and ordinary/package Windows checks; Windows10 Stress exposed the
-separate R171 fixture race. Full corrected-fixture delivery retries independently.
+separate R171 fixture race. Full corrected-fixture42667400495/e0522ef5 is GREEN.
 
 The [R166 current whole-text attribution](results/2026-11-09-current-text-runtime/README.md)
 reuses the96e-equivalent freeze, one5.856s capture/5.77guestCPU/1147guest samples.
