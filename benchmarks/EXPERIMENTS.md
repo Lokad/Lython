@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R168 native-return source gate](results/2026-11-09-native-return-source-gate/README.md)
+retains the borrowed-input/no-workspace optimization: ordinary calls already defer
+contexts but need array-backed value storage. Primitive semantics/facts are shared.
+Unification needs a real storage redesign; no new accessor/arena/prototype or CPU
+claim follows. Prior slower arena/control work remains evidence, not a permanent
+veto. Next: representative external-baseline delivery checkpoint.
+
 The [R167 native text-construction milestone](results/2026-11-09-native-text-construction/README.md)
 removes per-fragment accounting/payload-result plumbing and commits complete native
 split/ordinary CSV results together.386internal/824public eachactual11/10 pass;

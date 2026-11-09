@@ -1,0 +1,23 @@
+{
+  "assessedSources": {
+    "src/Lokad.Lython/Frontend/ExecutableNativeBody.cs": "17caf54bee54b7d746079f594a20e2f689578908986d0e4830049965e55a602b",
+    "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "0d9004c796b59b218ac8806badeb097dfb429030e4ee4ed1015d613c4d672ef9",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "f58e691b12b8c7e7feded5660ef02f9c84a2950803099735ba785e64ff2566b1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs": "450b0070bfea50bab256de4df831dfe79e836458cfa610da45da8d22c484370e",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "9a565197ccd616bb53c82a7a3799e1d25278d464ad72c6291df0d110ddcf7fa6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "d5b1e14d99c32bc83475ff54ddf73ba8be5f960af5e662579c545a6f564d3026",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "94fa6dd3a5d3678c912cc3c2abea9ca7f4c2cde9429b87f68b723bad17d4a82e",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "5803735d8e48c79c57244d41d3ec14f8b1441627c74ae3f9f62bab6c7c873faf"
+  },
+  "hypothesis": "Reuse the normal executable path to retire the closed native-return tree without losing its borrowed-input/no-workspace benefit.",
+  "findings": [
+    "Ordinary functions already defer invocation contexts and bind into final shared local/operand arrays.",
+    "The direct native call borrows the caller operand slice before binding; its guard tree precedes effects.",
+    "The existing ordinary work state requires an array-backed locals/operand workspace even when no invocation context is created.",
+    "Native evaluation shares underlying primitives and shape facts; its separate tree avoids workspace construction/binding and permits entry proof before admission.",
+    "Blindly removing that tree reverses the measured allocation benefit; retaining its input behavior in the normal engine requires a broader operand-storage change.",
+    "The prior B69 arena also removed call allocations and still regressed complete CSV/text5.0to6.8%; the control-record trial retained allocation and regressed. These are cautionary evidence, not permanent vetoes."
+  ],
+  "decision": "No bounded native-return consolidation prototype selected. Preserve measured optimization and correct guards. A future shared storage redesign must demonstrate benefit through complete scripts, retain caller/async borrows and remove displaced machinery. This phase stops at the explicit storage/guard tradeoff, not another CPU capture.",
+  "next": "R167 retention/debt decision and a source-qualified representative CPython refresh at the coherent delivery checkpoint; no repeated unchanged qualification."
+}
