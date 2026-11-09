@@ -1,0 +1,309 @@
+[
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "groups": {
+      "guest": {
+        "samples": 1205,
+        "unknownLeaf": 59,
+        "observedPhase": [
+          [
+            "VM prefix",
+            481
+          ],
+          [
+            "text kernels",
+            266
+          ],
+          [
+            "dictionary",
+            121
+          ],
+          [
+            "memory admission",
+            80
+          ],
+          [
+            "scalar operators",
+            77
+          ],
+          [
+            "native call preparation",
+            71
+          ],
+          [
+            "host/filesystem",
+            29
+          ],
+          [
+            "unassigned",
+            22
+          ],
+          [
+            "managed cancellation/stack",
+            21
+          ],
+          [
+            "native evaluation",
+            16
+          ],
+          [
+            "native guard",
+            10
+          ],
+          [
+            "text reader",
+            10
+          ],
+          [
+            "builtin initialization",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+            246
+          ],
+          [
+            "[unknown]",
+            59
+          ],
+          [
+            "int32 [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::ComputeStructuralHashCode(object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+            51
+          ],
+          [
+            "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::InvokeDictionaryGet(class Lokad.Lython.Runtime.PyDict,object,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+            50
+          ],
+          [
+            "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInputInstruction(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+            49
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::CollectWhitespaceForward(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,valuetype [System.Runtime]System.Span`1<valuetype [System.Runtime]System.ValueTuple`3<int32,int32,int32>>&,int32&,int64&,int64&,class Lokad.Lython.Runtime.MemoryGovernor/TemporaryMemoryReservation&,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<valuetype Lokad.Lython.Runtime.Text.PyStringOps/CaseMapping>)[OptimizedTier1]",
+            45
+          ],
+          [
+            "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            40
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteLocalResult(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&,object)[OptimizedTier1]",
+            36
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+            32
+          ],
+          [
+            "__tls_get_addr",
+            31
+          ],
+          [
+            "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+            31
+          ],
+          [
+            "int32 [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::WriteCaseUtf8(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,valuetype [System.Runtime]System.Span`1<uint8>,valuetype Lokad.Lython.Runtime.Text.PyStringOps/CaseMapping,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            29
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+            27
+          ],
+          [
+            "class Lokad.Lython.Runtime.PyList [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::SplitCore(class Lokad.Lython.Runtime.Text.PyString,int32,bool,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.Nullable`1<valuetype Lokad.Lython.Runtime.Text.PyStringOps/CaseMapping>,class Lokad.Lython.Runtime.Text.PyString)[Optimized]",
+            25
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::SetSubscriptValue(object,object,object,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)[OptimizedTier1]",
+            25
+          ],
+          [
+            "instance void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage::RetireTo(int32)[OptimizedTier1]",
+            23
+          ]
+        ]
+      },
+      "caller/other": {
+        "samples": 44,
+        "unknownLeaf": 0,
+        "observedPhase": [
+          [
+            "fixture reset",
+            29
+          ],
+          [
+            "host/filesystem",
+            9
+          ],
+          [
+            "protocol",
+            6
+          ]
+        ],
+        "topLeaf": [
+          [
+            "inode_permission",
+            2
+          ],
+          [
+            "generic_permission",
+            2
+          ],
+          [
+            "filemap_remove_folio",
+            2
+          ],
+          [
+            "int32 [System.Private.CoreLib] Interop+Sys::RmDir(string)[OptimizedTier1]",
+            1
+          ],
+          [
+            "generic_perform_write",
+            1
+          ],
+          [
+            "stub ReportStubBlock<CallCountingStub>",
+            1
+          ],
+          [
+            "finish_task_switch.isra.0",
+            1
+          ],
+          [
+            "security_inode_getattr",
+            1
+          ],
+          [
+            "step_into",
+            1
+          ],
+          [
+            "_raw_spin_unlock_irqrestore",
+            1
+          ],
+          [
+            "shmem_xattr_handler_get",
+            1
+          ],
+          [
+            "srso_safe_ret",
+            1
+          ],
+          [
+            "vfs_unlink",
+            1
+          ],
+          [
+            "mntput",
+            1
+          ],
+          [
+            "do_futex",
+            1
+          ],
+          [
+            "__cond_resched",
+            1
+          ]
+        ]
+      },
+      "tiering": {
+        "samples": 26,
+        "unknownLeaf": 25,
+        "observedPhase": [
+          [
+            "unassigned",
+            26
+          ]
+        ],
+        "topLeaf": [
+          [
+            "[unknown]",
+            25
+          ],
+          [
+            "__mprotect",
+            1
+          ]
+        ]
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "3455983",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455984",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455985",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455986",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455987",
+        "name": ".NET Finalizer",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455989",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455990",
+        "name": ".NET TP Worker",
+        "seconds": 0.030000000000000027
+      },
+      {
+        "tid": "3455991",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455992",
+        "name": ".NET TP Worker",
+        "seconds": 0.09
+      },
+      {
+        "tid": "3455993",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3455994",
+        "name": ".NET TP Worker",
+        "seconds": 0.09
+      },
+      {
+        "tid": "3455995",
+        "name": "Lython executio",
+        "seconds": 6.0600000000000005
+      },
+      {
+        "tid": "3455996",
+        "name": ".NET TP Worker",
+        "seconds": 0.04
+      },
+      {
+        "tid": "3455997",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.13
+      }
+    ],
+    "correction": "Collector selects actual named Lython execution workers; all threads and raw stacks retained. Offline attribution uses actual names and separates caller/tiering/collection. One original text capture, no retiming.",
+    "limits": "Whole-batch sampling is wider than execution clocks and includes reset/protocol/validation. Phase shares overlap parent work only through assignment to innermost observed category; inlining/truncation/unknown IPs limit attribution. Native guard/evaluation includes useful work, not a removable tax."
+  }
+]

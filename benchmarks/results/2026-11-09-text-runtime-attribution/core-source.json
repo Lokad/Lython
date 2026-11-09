@@ -1,0 +1,14 @@
+{
+  "vmArchive": "lexical-operands-b498-20261109/observations.tgz",
+  "archiveSHA256": "8ead6be5724daabc6212db4b61f40779bb1196d9e9d5f329101f1836a399c025",
+  "member": "current-core.dll",
+  "coreSHA256": "a063ed2be1fd20238446c8bff3ce6da8160ca0551392d75805c56eeae55b7164",
+  "sourceRevision": "23e95e7a",
+  "sourceSHA256": {
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.Binding.cs": "3182789a4d637ea0d4ce7e434ae279e59f5cf77314f6f28571bb04e8dc832855",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.Interpreter.Dispatch.cs": "854f45ac46538651a4a22e3b03794051b7ff994e768a602c4c87fba065c29fd7",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.Interpreter.cs": "a2934f2b8354cf781b5230846fee76b9ad90e2d6a10fc56c97c771f71c84ee01",
+    "src\\Lokad.Lython\\Runtime\\PyExecutableFunction.cs": "5803735d8e48c79c57244d41d3ec14f8b1441627c74ae3f9f62bab6c7c873faf"
+  },
+  "proof": "All production changes froma58 to23e are exactly the four source hashes frozen/tested in R139; all other production sources unchanged. Actual core metadataa58, no post-commit build implied."
+}

@@ -5227,3 +5227,20 @@ space before workers; fresh exact2+1duplicate proofs preserve everypath/byte/
 metadata/alias, floors unchanged. CSV field storage already admitted once; no new
 scope layer or automatic bulk-copy revival. Full corrected delivery batches;
 publication postponed, broader performance objective remains open.
+
+
+## Current original-text CPU attribution (2026-11-09 Paris)
+
+[R140/B499](results/2026-11-09-text-runtime-attribution/README.md),23e-equivalent
+frozena063, sourcehashproof/actualassemblymetadataa58 explicit. One unchanged text
+script,6swarmup/6.153scapture/normalGCtiering/perf maps, namedguest6.06CPUseconds.
+1205guest/44caller/26tiering samples,59guestunknown4.90%. Correct named-thread
+classifier beforecapture; allraw/names/maps/CPU survive. Innermost observed shares:
+VMprefix39.92/text22.07/dict10.04/admission6.64/scalars6.39/nativecall5.89%; guard+
+eval2.16%, not dominant. Prefix246leaves20.41% includes inlined useful work; not
+all removable dispatch. Integer boxing allocation does not prove CPUdominance.
+Source gates confirm native hashes already stay native and CSV field storage
+already admitted once. No speculative JIT/value rewrite or second capture selected.
+Allidentity/golden/quiet/Closed/joins/RAM/archiveunderlease/localSHA pass; terminal
+cached, no users/fixtures, fresh exactduplicate preserves everypath/byte/metadata,
+floors unchanged. No elapsed/sourcepair/CPython or embedding-tail claim.
