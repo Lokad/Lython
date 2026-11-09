@@ -129,7 +129,7 @@ public sealed class NativeHashCancellationTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Theory]
+    [Theory, Trait("Category", "Stress")]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ActiveNativeHashStopsBeforePublishingItsCache(bool binary)
@@ -153,20 +153,16 @@ public sealed class NativeHashCancellationTests
             _ = warm.Invoke([], Span, context);
             var callable = HashMember(value);
             var baseline = budget.ReservedBytes;
-            using var started = new ManualResetEventSlim();
             var run = Task.Factory.StartNew(() =>
             {
-                started.Set();
+                // Arm on this worker immediately before the warmed native call.
+                // A delayed parent continuation must not postpone cancellation
+                // until after the scan. This remains a timed stress observation.
+                cancellation.CancelAfter(TimeSpan.FromMilliseconds(1));
                 return callable.Invoke([], Span, context);
             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             try
             {
-                Assert.True(started.Wait(TimeSpan.FromSeconds(10)));
-                // Warmed native entry, then cancel while the substantial scan
-                // remains active. No interpreter exit can supply the failure.
-                Thread.SpinWait(10_000);
-                Assert.False(run.IsCompleted);
-                cancellation.Cancel();
                 var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
                     await run.WaitAsync(TimeSpan.FromSeconds(10)));
                 Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
@@ -175,7 +171,9 @@ public sealed class NativeHashCancellationTests
             finally
             {
                 cancellation.Cancel();
-                try { await run.WaitAsync(TimeSpan.FromSeconds(10)); }
+                // Keep the input funded until its actual user finishes, even
+                // when a failed assertion or broken checkpoint takes this path.
+                try { await run; }
                 catch (LythonRuntimeException failure) when (failure.Attribution?.Reason == LythonFailureReason.Cancelled) { }
             }
             // A completed cache would bypass the scan even for this token. A
@@ -186,8 +184,8 @@ public sealed class NativeHashCancellationTests
                     : ((PyBytes)value).GetHashCode(cancellation.Token, Span);
             });
             Assert.Equal(LythonFailureReason.Cancelled, retry.Attribution?.Reason);
-            var completed = callable.Invoke([], Span, nextCaller);
-            Assert.Equal(completed, callable.Invoke([], Span, nextCaller));
+            var hash = callable.Invoke([], Span, nextCaller);
+            Assert.Equal(hash, callable.Invoke([], Span, nextCaller));
             Assert.Equal(baseline, budget.ReservedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(0, context.State.CurrentInterpreterDepth);

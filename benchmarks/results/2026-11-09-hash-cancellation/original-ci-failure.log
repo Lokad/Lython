@@ -1,0 +1,39 @@
+tests (windows-latest)	Test Release (.NET 11)	﻿2026-11-09T04:01:46.5093006Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5094426Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5095178Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5156902Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5157180Z env:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5157342Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5157618Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5157963Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5158299Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5158660Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5158965Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5159219Z   DOTNET_DbgEnableMiniDump: 1
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5159406Z   DOTNET_DbgMiniDumpType: Mini
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5159628Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:46.5159860Z ##[endgroup]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:47.1918313Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.0453938Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.0652025Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.2020740Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.2141032Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.4590711Z Blame: Attaching crash dump utility to process testhost (8484).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:01:48.4751430Z Blame: Attaching crash dump utility to process testhost (8680).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6224105Z ^[[31;1m[xUnit.net 00:00:28.22]     Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(binary: True) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6249360Z   Failed Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(binary: True) [100 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6257124Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6257973Z    Assert.False() Failure
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6259700Z Expected: False
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6260897Z Actual:   True
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6262890Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6264681Z      at Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(Boolean binary) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\NativeHashCancellationTests.cs:line 168
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6267451Z    at Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(Boolean binary) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\NativeHashCancellationTests.cs:line 179
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:17.6268928Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:24.4116080Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:24.4508858Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:02:24.4510108Z Failed!  - Failed:     1, Passed:  4437, Skipped:     0, Total:  4438, Duration: 33 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:06:06.8049787Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:06:06.8191069Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:06:06.8378711Z Passed!  - Failed:     0, Passed: 16853, Skipped:     0, Total: 16853, Duration: 4 m 9 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:06:07.2832447Z ##[error]Process completed with exit code 1.

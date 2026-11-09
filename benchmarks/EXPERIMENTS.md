@@ -5164,3 +5164,15 @@ no across-checkpoint sourcegainattribution or regexqualification. FullUbuntu
 qualification passes; Windows native-hash pre-cancellation IsCompleted assertion
 failed, remaining stages skipped. Cached terminal evidence retained separately;
 publication postponed, performance objective remains open.
+
+
+## Native hash cancellation scheduling (2026-11-09 Paris)
+
+[R137](results/2026-11-09-hash-cancellation/README.md) retains the original Windows
+6d73 CI failure before cancellation was requested. The64MiB timed scan now arms
+cancellation on its own hashing worker; its parent continuation is outside that
+window. Same input/deadline/cache/attribution/refund assertions, actual users joined.
+Two concurrent cases move to Stress;14small checks stay ordinary. Removing only
+loop checks (entry check retained) fails both native cases; exact source restored,
+nonincremental builds16/16pass eachactual11/10. No runtime change or speedup claim.
+Full delivery remains incomplete pending the corrected Windows checkpoint.

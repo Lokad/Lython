@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Native hashing](Lokad.Lython.Tests/NativeHashCancellationTests.cs) keeps small
+current-token, cache, refusal and value checks in the ordinary suite. Its timed
+64 MiB cancellation scans are Stress cases: cancellation is armed on the hashing
+worker, and the input remains funded until that worker finishes. These are
+concurrent observations, not deterministic scheduling proofs.
+
 [Text-read borrows](Lokad.Lython.Tests/TextReadBorrowLifetimeTests.cs) keep raw and
 decoded input funded through allocation callbacks, pending host reads and awaited
 disposal. Cancellation or first admission refusal survives a failing close;
