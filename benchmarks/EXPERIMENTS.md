@@ -4945,3 +4945,10 @@ Fresh idle exact-byte proof/persisted plan/two singleton compiler-assembly exten
 linked to permitted canonical,14016512B recovered; all historical paths/bytes
 preserved, no floor reduction/deletion. [Raw/proofs](results/2026-11-09-dispatch-liveness/README.md).
 Full coherent delivery pending separately; publication postponed.
+
+
+R125/3109 full delivery complete:cached CI42536319061success observed Nov9
+00:08:01UTC, Windows/Ubuntu actual11/10 fullRelease/originalStressboth/installedcore.
+[Receipt](results/2026-11-09-text-read-lifetimes/delivery-ci.json). Never requery
+terminal run. LaterR126/9f2e remains separate, focused/quiet checked and full delivery
+pending; no retrospective qualification or publication claim.

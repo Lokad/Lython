@@ -46,7 +46,9 @@ owned-RAM removal, archive-under-lease and local archive/hash verification all p
 The adverse async-text desktop result does not reproduce here. Sync text and coarse
 process-CPU ticks leave uncertainty; these short results establish neither a
 speedup nor absence of every regression. Retain for demonstrated ownership
-correctness; no further unchanged retiming selected. Full delivery is separate.
+correctness; no further unchanged retiming selected. R125 full delivery now passes Windows/Ubuntu actual.NET11/.NET10 Release, original
+stress on both targets and installed-core consumers: [cached CI42536319061](delivery-ci.json).
+Observed Nov9 00:08:01UTC; qualifies3109/core004e, not later R126. Never requery.
 
 Two launch preflights refused insufficient persistent free space before extraction
 or measurement. Reuse of a SHA-verified existing catalog and removal of redundant
