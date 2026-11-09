@@ -5207,3 +5207,23 @@ semantics. Existing failures reproduce locally35pass/two fail; combined active
 R139 prototype+correction101public pass eachactual11/10. Corrected baseline and
 candidate qualification/source pair still pending; no performance claim or erased
 prior failure. Publication remains postponed.
+
+
+## Explicit incoming lexical operands (2026-11-09 Paris)
+
+[R139/B498](results/2026-11-09-lexical-operands/README.md),correcteda58/core0216
+versusa063, native global proof fix on both sides. Work-state cell reader replaces
+frame-only read/transfer; no incoming-cell eager context. Writes/missing fallback/
+local-cell construction/special scopes keep contexts.606internal/323public each
+actual11/10 after exact source restoration/nonincremental builds; baseline37class/
+global regressions pass. WarmallocationCSV−38.67%,report−26.1%,text unchanged (explicit
+split still promotes), compile0%. Original4e94asyncCSV+60..64/report+11.7..17.7%desktop
+and corrected CSV+12.7..20.1/asyncCSV+12.1..14.4%adverse/control drift preserved.
+Seven quiet jobs196.580s/allgates: CSV−7.31..7.93/asyncCSV−7.50..11.93/report−4.97..9.14/
+asyncReport−5.67..7.65%elapsed, supportingCPU. Text−3.13..+4.49/search−8.15..+4.29
+controls inconclusive; JSONclose. Retain phase removal/allocation/affectedbenefit,
+no universal gain. Terminalcached/localSHA/joins/RAMremoved. Initial setup refuses
+space before workers; fresh exact2+1duplicate proofs preserve everypath/byte/
+metadata/alias, floors unchanged. CSV field storage already admitted once; no new
+scope layer or automatic bulk-copy revival. Full corrected delivery batches;
+publication postponed, broader performance objective remains open.

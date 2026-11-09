@@ -8,13 +8,16 @@ namespace Lokad.Lython.Tests;
 public sealed class CompletedHelperCallOwnershipTests
 {
     [Theory]
-    [InlineData(false, 0, false), InlineData(true, 0, false)]
-    [InlineData(false, 0, true), InlineData(true, 0, true)]
-    [InlineData(false, 1, false), InlineData(true, 1, false)]
-    [InlineData(false, 1, true), InlineData(true, 1, true)]
-    [InlineData(false, 2, false), InlineData(true, 2, false)]
-    [InlineData(false, 2, true), InlineData(true, 2, true)]
-    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind, bool nested)
+    [InlineData(false, 0, 0), InlineData(true, 0, 0)]
+    [InlineData(false, 0, 1), InlineData(true, 0, 1)]
+    [InlineData(false, 0, 2), InlineData(true, 0, 2)]
+    [InlineData(false, 1, 0), InlineData(true, 1, 0)]
+    [InlineData(false, 1, 1), InlineData(true, 1, 1)]
+    [InlineData(false, 1, 2), InlineData(true, 1, 2)]
+    [InlineData(false, 2, 0), InlineData(true, 2, 0)]
+    [InlineData(false, 2, 1), InlineData(true, 2, 1)]
+    [InlineData(false, 2, 2), InlineData(true, 2, 2)]
+    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind, int scopeShape)
     {
         // The two-statement caller also exercises a deferred lexical context.
         var source = """
@@ -25,7 +28,8 @@ def through(value):
     return result
 effects.append(through(input))
 """;
-        if (nested) source = "def main():\n" + string.Join('\n', source.Split('\n').Select(line => " " + line)) + "\nmain()\n";
+        if (scopeShape == 2) source = "suffix=''\n" + source.Replace("return value.lower()", "return value.lower()+suffix", StringComparison.Ordinal);
+        if (scopeShape != 0) source = "def main():\n" + string.Join('\n', source.Split('\n').Select(line => " " + line)) + "\nmain()\n";
         var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;

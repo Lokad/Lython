@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Read incoming closure cells from existing executable work state, deferring the
+  invocation context until scope-sensitive work. Preserve live rebinding, nonlocal
+  writes, captured return ownership and asynchronous cleanup.
+
 - Require explicit global lookup facts in native helpers. Preserve enclosing
   function cells when class methods have unresolved lexical names.
 

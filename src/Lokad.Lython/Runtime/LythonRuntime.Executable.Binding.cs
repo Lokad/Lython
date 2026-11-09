@@ -25,22 +25,34 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
-    private static object LoadClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, LythonSourceSpan span)
+    private static bool TryLoadClosure(in ExecutableWorkState execution, ExecutionContext? context,
+        int slot, LythonSourceSpan span, out object value)
     {
-        var frame = context.CurrentExecutableFrame;
-        if (frame is null || !frame.TryGetClosureCell(slot, out var cell))
+        var codeObject = execution.Code;
+        if (execution.ClosureCells is not { } cells || (uint)slot >= (uint)cells.Count)
         {
+            // Missing-cell/nonlocal resolution needs the actual invocation's
+            // lexical scope. Present cells belong to the work, not its frame.
+            if (context is null)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
             if (codeObject.ScopeFacts.IsNonlocal(codeObject.ClosureNames[slot]))
-                return ResolveName(codeObject.ClosureNames[slot], span, context);
+            {
+                value = ResolveName(codeObject.ClosureNames[slot], span, context);
+                return true;
+            }
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
-        if (ReferenceEquals(cell.Value, UninitializedLocal))
+        value = cells[slot].Value;
+        if (ReferenceEquals(value, UninitializedLocal))
         {
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
-        return cell.Value;
+        return true;
     }
 
     private static object ResolveExecutableGlobal(string name, LythonSourceSpan span, ExecutionContext context)

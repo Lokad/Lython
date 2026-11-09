@@ -34,6 +34,11 @@ internal sealed partial class LythonRuntime
                             PublishInstructionResult(ref execution, invocation, instruction,
                                 LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
                             break;
+                        case ExecutableOpCode.LoadClosure:
+                            if (!TryLoadClosure(in execution, invocation, instruction.ClosureSlot, instruction.Span, out var captured))
+                                return InstructionPause.ContextRequired;
+                            PublishInstructionResult(ref execution, invocation, instruction, captured);
+                            break;
                         case ExecutableOpCode.StoreLocal:
                             StoreExecutableLocal(ref execution, scope, invocation, instruction);
                             break;
@@ -126,7 +131,7 @@ internal sealed partial class LythonRuntime
                                 _ = ConsumeOperation(ref pending);
                             }
                             break;
-                        case ExecutableOpCode.LoadConst or ExecutableOpCode.LoadClosure or ExecutableOpCode.LoadGlobal or
+                        case ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or
                              ExecutableOpCode.LoadName or ExecutableOpCode.PreloadImplicitSuperArguments or
                              ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or
                              ExecutableOpCode.Dup or ExecutableOpCode.PopTop:

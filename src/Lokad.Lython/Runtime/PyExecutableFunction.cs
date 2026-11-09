@@ -56,11 +56,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
 
-    // Closed nested functions use the same slot-owned prefix as module functions.
+    // Incoming cells already belong to the work; new local cells still need a frame.
     // Scope-sensitive operations still promote before observing their namespace.
     internal bool CanDeferInvocationContext => OwnerType is null && ArgumentsAreLocals &&
         !_codeObject.ScopeFacts.RequiresClassCell &&
-        _codeObject.CapturedLocalSlots.Count == 0 && _closureCells.Count == 0 &&
+        _codeObject.CapturedLocalSlots.Count == 0 &&
         _codeObject.ExceptionRegions.Count == 0 &&
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };

@@ -1,0 +1,11 @@
+{
+  "revision": "a58ca859daba3cc52fb9fd17296fc73149c81640",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs": "77bee190119059d47116b916dfc5ab44e00cc080dc38733b297e36d92bb89b97",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "e416ae1dafcf4d9ffe92e1853bd8a348bc824b5d19e1731ba1254e37cd23b88a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "4a435f4e6c983c33a3d04cadde05bd38d5dba4ca19ebdb3b405dc32cc508adad",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "e44cdcb9ecf91ead583f5f17a10bca624438b2cf5a0603758b0167d1ec62577a"
+  },
+  "scope": "Corrected committed a58 baseline only; incoming-cell prototype temporarily absent, tests still contain independent new semantics.",
+  "coreSHA256": "021669ce25e47df041b05f5853964c932f7de117474bd1833fdab09370e3a605"
+}

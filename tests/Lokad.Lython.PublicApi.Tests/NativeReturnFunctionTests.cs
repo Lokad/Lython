@@ -7,6 +7,10 @@ public sealed class NativeReturnFunctionTests
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {
+        { "captured-read-before-and-after-binding", "def outer():\n def read():return value+1\n try:read()\n except NameError as error:print(type(error).__name__)\n value=3\n print(read())\n del value\n try:read()\n except NameError as error:print(type(error).__name__)\n return read\nread=outer()\ntry:read()\nexcept NameError as error:print(type(error).__name__)\n", "NameError\n4\nNameError\nNameError\n" },
+        { "captured-callable-rebinding", "def outer():\n operation=int\n def convert(text):return operation(text)\n print(convert('7'))\n operation=lambda value:'changed'\n print(convert('8'))\n return convert\nprint(outer()('9'))\n", "7\nchanged\nchanged\n" },
+        { "captured-read-then-local-introspection", "def outer():\n offset=5\n def work(value):\n  value+=offset\n  return value,locals()['offset'],locals()['value']\n return work\nprint(outer()(3))\n", "(8, 5, 8)\n" },
+        { "captured-write-promotion", "def outer():\n total=1\n def bump(value):\n  nonlocal total\n  total+=value\n  return total\n def read():return total\n print(bump(2),read(),bump(4),read())\n return bump,read\nbump,read=outer()\nprint(bump(8),read())\n", "3 3 7 7\n15 15\n" },
         { "closed-nested-global-and-shadow", "offset=7\ndef outer():\n offset=99\n def convert(value):return int(value)+global_offset\n return convert\nglobal_offset=3\nconvert=outer()\nprint(convert('7'))\nglobal_offset=8\nprint(convert('7'),convert.__qualname__)\n", "10\n15 outer.<locals>.convert\n" },
         { "closed-nested-locals-promotion", "value=100\ndef outer():\n value=99\n def work(value):\n  value+=3\n  if value<0:return None\n  return value,locals()['value'],globals()['value']\n return work\nprint(outer()(4))\n", "(7, 7, 100)\n" },
         { "real-capture-live-cell", "def outer():\n offset=3\n def add(value):return value+offset\n print(add(2))\n offset=9\n return add\nprint(outer()(2))\n", "5\n11\n" },
@@ -79,11 +83,48 @@ public sealed class NativeReturnFunctionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public async Task BorrowedReturnSurvivesOperandReuseAndCodeDisposal()
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task UnboundCaptureKeepsItsReadSpanAndFunctionTrace(bool asynchronous)
     {
-        const string source = "def keep(value):return value\npayload='é'*4096\nheld=keep(payload)\n" +
+        const string source = "def make(bind):\n def read():return value+1\n if bind:value=7\n return read\nreturn make(bind)()\n";
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var bind in new[] { false, true })
+            {
+                var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["bind"] = bind } };
+                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+                {
+                    if (bind)
+                    {
+                        Assert.True(result.Success, result.Failure?.Message);
+                        Assert.Equal(new System.Numerics.BigInteger(8), result.ReturnValue);
+                    }
+                    else
+                    {
+                        var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
+                        Assert.Equal("NameError", failure.ExceptionType);
+                        Assert.Equal(2, failure.Span?.Line);
+                        Assert.Contains(failure.StackTrace, frame => frame.FunctionName == "read" && frame.Span?.Line == 5);
+                    }
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task BorrowedReturnSurvivesOperandReuseAndCodeDisposal(bool captured)
+    {
+        var source = "def keep(value):return value\npayload='é'*4096\nheld=keep(payload)\n" +
             "for i in range(16):keep(str(i))\nprint(held is payload)\nreturn held\n";
+        if (captured) source = "def make(value):\n def keep():return value\n return keep\npayload='é'*4096\nkeep=make(payload)\nheld=keep()\n" +
+            "for i in range(16):keep()\nprint(held is payload)\npayload=None\nkeep=None\nreturn held\n";
         foreach (var asynchronous in new[] { false, true })
         {
             var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -111,14 +152,16 @@ public sealed class NativeReturnFunctionTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup(bool nested)
+    [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup(int scopeShape)
     {
         var source = "def count(value):\n result=len(value.lower().split())\n return result\n" +
             "def length(value):\n with open('/pause') as file:\n  return int(file.read())\n" +
             "len=length\nprint(count('A B'))\nprint('late')\n";
-        if (nested) source = source.Replace("def count(value):\n result=len(value.lower().split())\n return result\n",
+        if (scopeShape != 0) source = source.Replace("def count(value):\n result=len(value.lower().split())\n return result\n",
             "def outer():\n def count(value):\n  result=len(value.lower().split())\n  return result\n return count\ncount=outer()\n", StringComparison.Ordinal);
+        if (scopeShape == 2) source = source.Replace("def outer():\n", "def outer():\n separator=None\n", StringComparison.Ordinal)
+            .Replace("value.lower().split()", "value.lower().split(separator)", StringComparison.Ordinal);
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {

@@ -115,7 +115,9 @@ first origin, active Python exception state, stopped effects and released storag
 [Completed helper ownership](Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs)
 triggers real output admission through a helper and its deferred caller. Both
 execution APIs preserve input funding, stop following effects on cancellation or
-first refusal, restore managed depths and return the shared budget after cleanup.
+first refusal, restore managed depths and return the shared budget after cleanup. Captured helpers also
+exercise current incoming cells, retained returns through code disposal, original
+unbound-read spans/traces and promotion before genuinely suspended protocols.
 
 [Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
 exercise real suspending keyword-default equality, live replacement of subsequent

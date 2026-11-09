@@ -349,10 +349,6 @@ internal sealed partial class LythonRuntime
                     PublishInstructionResult(ref execution, invocation, instruction, constant);
                     break;
 
-                case ExecutableOpCode.LoadClosure:
-                    PublishInstructionResult(ref execution, invocation, instruction, LoadClosure(execution.Code, invocation!, instruction.ClosureSlot, instruction.Span));
-                    break;
-
                 case ExecutableOpCode.LoadGlobal:
                     PublishInstructionResult(ref execution, invocation, instruction, ResolveExecutableGlobal(execution.Code.Names[instruction.NameIndex], instruction.Span, scope));
                     break;

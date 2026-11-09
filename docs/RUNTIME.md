@@ -538,13 +538,17 @@ admission. Both paths share the existing operations, cancellation and ownership.
 Synchronous calls, asynchronous calls and native return expressions share unary
 builtin selection; ordinary calls keep broader protocol/error behavior while
 native returns require a closed result proof.
-Other closed helpers can begin with their owned local/operand storage and
-the same instruction dispatch, without a lexical context. Plain list and tuple
+Eligible helpers begin with their owned local/operand storage and existing
+incoming cells in the same instruction dispatch, without an invocation context.
+Cell reads observe live values directly from that work state; unbound reads keep
+their Python error/span. Missing-cell fallback and writes first create the ordinary
+lexical context. Plain list and tuple
 construction reuse their admitted storage builders in this loop. Starred displays
 and dictionary/set key protocols keep their ordinary protocol paths. Scope-sensitive work,
 guest protocols, nested calls and host operations create the ordinary context at
 the current instruction and adopt that storage; bindings and prior effects are
-not replayed. Protected and capturing bodies start with their normal context.
+not replayed. Protected bodies and functions creating captured local cells start
+with their normal context.
 Native dictionary writes use this deferred context only when an already funded
 table needs neither capacity growth nor key protocols. Growth creates the context
 before admission. Operand storage retains shared execution services rather than
@@ -557,8 +561,9 @@ module entries own interpreter admission. Managed stack checks, large-stack
 workers and configured recursion bounds remain active. Compiler
 capture facts determine eligibility independently of lexical placement. Defining
 closure chains remain retained; scope-sensitive operations promote before they
-observe function locals or invoke guest protocols. Genuine captures and special
-class, annotation and type-parameter scopes keep their existing lexical handling.
+observe function locals or invoke guest protocols. Incoming cells retain their
+defining owners; class, annotation and type-parameter scopes keep their existing
+lexical handling.
 
 Reusable workers provide the managed stack for the synchronous prefix. Actual
 asynchronous suspension releases that worker instead of parking it through I/O.
