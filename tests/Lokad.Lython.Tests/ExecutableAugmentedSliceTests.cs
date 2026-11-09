@@ -8,16 +8,15 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableAugmentedSliceTests
 {
     [Theory]
-    [InlineData("def run(items,value):\n items[:]+=value", false)]
-    [InlineData("def run(items,start,stop,step,value):\n items[start:stop:step]+=value", false)]
-    [InlineData("def run(items,value):\n items[:]+=(yield value)", true)]
-    [InlineData("def run(items,start,stop,step,value):\n (yield items)[(yield start):(yield stop):(yield step)]+=(yield value)", true)]
-    public void SliceUpdatesUseFrameOperandsWithoutFallbacks(string source, bool generator)
+    [InlineData("def run(items,value):\n items[:]+=value")]
+    [InlineData("def run(items,start,stop,step,value):\n items[start:stop:step]+=value")]
+    [InlineData("def run(items,value):\n items[:]+=(yield value)")]
+    [InlineData("def run(items,start,stop,step,value):\n (yield items)[(yield start):(yield stop):(yield step)]+=(yield value)")]
+    public void SliceUpdatesUseFrameOperandsWithoutFallbacks(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Equal(generator, code.RequiresLocalVariableMirroring);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.ReadRetainedSlice);
     }

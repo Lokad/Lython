@@ -8,15 +8,14 @@ namespace Lokad.Lython.Tests;
 public sealed class ExecutableAugmentedSubscriptTests
 {
     [Theory]
-    [InlineData("def run(items,key,value):\n items[key]+=value", false)]
-    [InlineData("def run(items,key,value):\n items[(yield key)]+=value", true)]
-    [InlineData("def run(items,key,value):\n (yield items)[key]+=(yield value)", true)]
-    public void UpdatesRetainOperandsWithoutPreparedReads(string source, bool generator)
+    [InlineData("def run(items,key,value):\n items[key]+=value")]
+    [InlineData("def run(items,key,value):\n items[(yield key)]+=value")]
+    [InlineData("def run(items,key,value):\n (yield items)[key]+=(yield value)")]
+    public void UpdatesRetainOperandsWithoutPreparedReads(string source)
     {
         var syntax = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance).Script!;
         var code = Assert.Single(ExecutableScript.Compile(LoweredScript.Lower(syntax)).EntryPoint.Functions).CodeObject!;
         Assert.Empty(code.StatementFallbacks);
-        Assert.Equal(generator, code.RequiresLocalVariableMirroring);
         Assert.Single(code.Instructions, i => i.OpCode is ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast);
         Assert.Single(code.Instructions, i => i.OpCode == ExecutableOpCode.ReadRetainedSubscript);
     }

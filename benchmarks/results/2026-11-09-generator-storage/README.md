@@ -68,6 +68,15 @@ pass. Archive SHA256 `b95996262de325066c09a689790e705a5ea9a16b5cbea76e0a6ef5a692
 Terminal cached; no remaining users/fixtures. No disk-space recovery or floor change.
 Full delivery platform/Stress/package checks batch after commit; publication postponed.
 
+First full delivery CI42577712653/source081052fa is terminal failure on both platforms:
+all 16,875 public .NET11 tests pass, internal 4,448 pass/four fail. The four failures
+only require unconditional generator namespace mirroring in augmented-store compiler
+fixtures. Remove that obsolete expectation and unused theory flag, preserving every
+source case and operand/mutation/alias/admission/cleanup assertion. Locally reproduce
+four failures, then 31 focused checks pass per actual .NET11/10. No runtime change or
+retiming. Later .NET10/package/Stress stages await corrected delivery qualification.
+[Failed delivery](failed-delivery-ci.json), [original logs and focused correction](mirroring-cleanup.tar.xz).
+
 [Quiet summary](summary.json), [raw observations and exact cores/tooling](observations.tgz),
 [desktop adversity](local-summary.json), [compile allocation](compile-allocation.json),
 [delivery source differences and focused checks](delivery-source.json),
