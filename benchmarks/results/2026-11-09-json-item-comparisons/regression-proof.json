@@ -1,0 +1,7 @@
+{
+  "baselineCoreSHA256": "92ac7703b28ec6373a675bec8872c1e90b8fff176fc240ee7de28b480e77577b",
+  "sourceRestored": false,
+  "failedBefore": 3,
+  "passedCurrent": 3,
+  "testAssemblySHA256": "0e361decd6d227f7f5da5fdbe0d205ce5563ba6c20bb825d90b2b74be36b3a46"
+}

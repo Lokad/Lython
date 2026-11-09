@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Compare original JSON item pairs before skipping unsupported keys, preserving
+  equality effects and value ordering when keys become equal.
+
 - Reuse UTF-8 comparison primitives across scalar operators, explicit string
   methods, structural comparisons and native sorting. Use the current execution
   context for cooperative checks and preserve context-free native interfaces.

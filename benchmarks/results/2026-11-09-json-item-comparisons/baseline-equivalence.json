@@ -1,0 +1,6 @@
+{
+  "identicalProductionSources": true,
+  "reusedCoreSHA256": "6761213518e097ac610a046c7b6200d5e21e9901872ad9d0b3531a3fb86aa68c",
+  "freshPostcommitCoreSHA256": "2842c85f628cbf19ea093a0a329d85debf7786dd41bfc8d007af24f17d6c7033",
+  "reason": "Initial local preparation rejected binary identity before any VM mutation. R163 final precommit and f6861aa5 production sources are identical; reuse the explicitly identified prior freeze, not a postcommit binary."
+}

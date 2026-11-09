@@ -1,0 +1,23 @@
+{
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "failSecondEquality": false,
+      "source": "import json\nevents=[]\nclass Same:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append('equal')\n        if False and len(events)==2:raise ValueError('second comparison')\n        return True\nfirst=Same()\nsecond=Same()\ntry:print(json.dumps({((first,),'b'):1,((second,),'a'):2},skipkeys=True,sort_keys=True),events)\nexcept ValueError as error:print(str(error),events)",
+      "stdout": "{} ['equal', 'equal']\n",
+      "stderr": ""
+    },
+    {
+      "failSecondEquality": true,
+      "source": "import json\nevents=[]\nclass Same:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append('equal')\n        if True and len(events)==2:raise ValueError('second comparison')\n        return True\nfirst=Same()\nsecond=Same()\ntry:print(json.dumps({((first,),'b'):1,((second,),'a'):2},skipkeys=True,sort_keys=True),events)\nexcept ValueError as error:print(str(error),events)",
+      "stdout": "second comparison ['equal', 'equal']\n",
+      "stderr": ""
+    },
+    {
+      "case": "equal-mutated-keys",
+      "source": "import json\nequal=False\nevents=[]\nclass Same:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append('equal')\n        return equal\nfirst=Same()\nsecond=Same()\nmapping={((first,),):2,((second,),):None}\nevents.clear()\nequal=True\ntry:print(json.dumps(mapping,skipkeys=True,sort_keys=True))\nexcept TypeError:print('value comparison failed',events)",
+      "stdout": "value comparison failed ['equal']\n",
+      "stderr": ""
+    }
+  ]
+}

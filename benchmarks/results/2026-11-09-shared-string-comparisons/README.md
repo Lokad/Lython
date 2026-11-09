@@ -42,3 +42,7 @@ the green f6861aa5 delivery receipt qualifies only the predecessor. Publication 
 [Final diagnostic](summary.json), [original diagnostic](prototype-summary.json),
 [Python proof](python-proof.json), [mutation proof](mutation-proof.json),
 [JSON gap](json-item-comparison-gap.json), [raw/source/cores/checks](observations.tar.xz).
+
+Subsequent [R165 controlled confirmation/debt decision](../2026-11-09-json-item-comparisons/README.md)
+retains the consolidation: sync CSV adversity did not reproduce; async controls
+remain inconclusive. The original provisional decision and observations above stay.

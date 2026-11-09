@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     private sealed partial class JsonModule : PyModule
     {
         // Callers fund the retained reference pairs before entering. CPython
-        // sorts the original keys before applying skipkeys or key validation.
+        // sorts original item pairs before applying skipkeys or key validation.
         internal static List<(object OriginalKey, object Value)> CollectSortedJsonEntries(
             PyDict dict, ExecutionContext context, LythonSourceSpan span)
         {
@@ -27,7 +27,15 @@ internal sealed partial class LythonRuntime
             var hadGuestContext = PyStructuralGuard.AmbientContext is not null && PyStructuralGuard.AmbientSpan is not null;
             using var ambient = PyStructuralGuard.PushAmbient(context, span);
             using var native = hadGuestContext ? (PyStructuralGuard.ComparerScope?)null : PyStructuralGuard.SuppressGuestDispatch();
-            ExecutionSort.Sort(entries, context, span, (left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
+            ExecutionSort.Sort(entries, context, span, (left, right) =>
+            {
+                // Like tuple ordering, equality selects which member to order.
+                // Identity is an element shortcut even for a shared NaN.
+                if (!ReferenceEquals(left.OriginalKey, right.OriginalKey) && !PyEquality.AreEqual(left.OriginalKey, right.OriginalKey))
+                    return PyComparison.Compare(left.OriginalKey, right.OriginalKey, span);
+                return ReferenceEquals(left.Value, right.Value) || PyEquality.AreEqual(left.Value, right.Value)
+                    ? 0 : PyComparison.Compare(left.Value, right.Value, span);
+            });
             return entries;
         }
 

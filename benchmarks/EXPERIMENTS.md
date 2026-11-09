@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R165 JSON item-pair correction/delivery decision](results/2026-11-09-json-item-comparisons/README.md)
+replaces the native key-only comparator. Three regressions fail frozen R164 and
+match independent Python after correction. Focused198/1378actual11 and196/1372actual10
+pass (Stress selection differs explicitly). Quiet three-job88.558s CSVsync−1.38to+0.21%
+does not reproduce desktop slowdown; async controls7.50% apart remain inconclusive,
+config within±0.71%. Retain R164/R165; no CPU/equivalence claim, original adversity
+preserved, debt decision closed. Exact initial binary/space refusals survive.
+
 The [R164 shared UTF-8 comparison milestone](results/2026-11-09-shared-string-comparisons/README.md)
 consolidates contextual kernels and deletes a private loop/static rendering comparer.
 Focused108internal/150public per actual11/10 pass; frozen mutation preserves JSON
