@@ -5352,3 +5352,14 @@ logs preserved; success reverified exact identity and idle lease. No floor chang
 space recovery; terminal cached/no users. Full65ed CI found the separately corrected
 lazy-scope defect; no relabelling as58d3 or final-binary timing claim. Older guide/
 all displaced rows remain. Broader performance and independent regex work continue.
+
+## Current general operand transport gate (2026-11-09 Paris)
+
+[R147](results/2026-11-09-operand-transport-assessment/README.md), compile-only census
+of five maintained scripts and corrected58d3 source. All listed modules/helpers
+nonmirrored. Input forwarding and general producer/local-result forwarding already
+remove ordinary temporary publication/store dispatch. Retained store instructions
+carry pending cleanup continuation, original terminal check/span/publication order.
+No duplicate phase selected; no extra capture/timing/dispatch/arena. Static counts
+are not CPU shares. Direct finalUTF8/bulkASCII/fusedsplit/coarsecounter admission
+also already exist. Gate complete, no permanent design ban; broader roadmap open.

@@ -1,0 +1,108 @@
+{
+  "sourceRevision": "58d3ec0f",
+  "coreSHA256": "CCD58E92F8C049D12F5FDDDA78301E9F5C0E3BEC1F5FD80E63209FE0F42FE05D",
+  "noGuestExecution": true,
+  "noProductionEdits": true,
+  "selectedFrom": "R140/R143 prefix attribution is inclusive/useful work, not a removable-tax estimate.",
+  "sourceFindings": [
+    "Direct constant/uncaptured-local inputs already replace producer loads in ForwardValues.",
+    "HasLocalResult already forwards general producer results to local stores and skips normal temporary publication/dispatch.",
+    "The following store remains as pending-disposal continuation, preserving its original terminal check/span and publication order.",
+    "All five maintained script modules and listed helpers are already nonmirrored; blanket-mirroring premise does not apply.",
+    "Managed bulk ASCII/direct final UTF8/fused split and coarse small-integer magnitude admission already exist."
+  ],
+  "rows": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "code": "<module>",
+      "instructions": 93,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 6,
+      "retainedStoreInstructions": 15
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "code": "validated_record",
+      "instructions": 13,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 1,
+      "retainedStoreInstructions": 1
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "code": "<module>",
+      "instructions": 74,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 5,
+      "retainedStoreInstructions": 12
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "code": "words_from_line",
+      "instructions": 5,
+      "requiresMirroring": false,
+      "native": true,
+      "forwardedResults": 0,
+      "retainedStoreInstructions": 0
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "code": "<module>",
+      "instructions": 80,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 6,
+      "retainedStoreInstructions": 13
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "code": "record_amount",
+      "instructions": 2,
+      "requiresMirroring": false,
+      "native": true,
+      "forwardedResults": 0,
+      "retainedStoreInstructions": 0
+    },
+    {
+      "case": "scripts.report-render.large",
+      "code": "<module>",
+      "instructions": 58,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 3,
+      "retainedStoreInstructions": 10
+    },
+    {
+      "case": "scripts.report-render.large",
+      "code": "render",
+      "instructions": 13,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 0,
+      "retainedStoreInstructions": 0
+    },
+    {
+      "case": "scripts.file-search.large",
+      "code": "<module>",
+      "instructions": 54,
+      "requiresMirroring": false,
+      "native": false,
+      "forwardedResults": 2,
+      "retainedStoreInstructions": 11
+    },
+    {
+      "case": "scripts.file-search.large",
+      "code": "wanted",
+      "instructions": 4,
+      "requiresMirroring": false,
+      "native": true,
+      "forwardedResults": 0,
+      "retainedStoreInstructions": 0
+    }
+  ],
+  "decision": "Source/census gate complete. No duplicate operand phase selected for reimplementation. Removing store continuation without replacement would weaken cleanup/refusal; metadata-only repacking does not demonstrate CPU value. No additional timing/capture, new dispatch/arena or permanent design ban.",
+  "limitations": "Static counts are not execution frequencies or savings. Compiler tree above is immutable code metadata, not guest heap tracing. Runtime source equals58d3 but binary built before that commit has earlier assembly metadata; no timing claim."
+}
