@@ -509,7 +509,9 @@ arity and supported casing/formatting combinations. Closed zero-argument string
 calls reuse the ordinary method declarations and frontend return facts; no separate
 method-kind inventory is needed. Existing casing/split fusion retains its original
 receiver and source checks, without a discarded casing node. Invocation checks actual
-types, callable identities and namespaces. Prepared values own immutable original opcode metadata and member/return source
+types, callable identities and namespaces. Native global reads require the
+compiler's explicit global opcode; unresolved lexical names retain ordinary
+scope resolution. Prepared values own immutable original opcode metadata and member/return source
 spans independently of physical bytecode positions. Ordinary operand forwarding
 still applies when native guards fail. One shared compiler/runtime result-shape
 fact covers primitive integer, float and boolean binary operations and string

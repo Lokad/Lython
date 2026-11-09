@@ -1,0 +1,39 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+index 08aaaf55..1521c067 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+@@ -109,6 +109,9 @@ internal sealed partial class ExecutableCodeObject
+                         stack.Add((source, null, 1, -1, sourceIndex, instruction.Span));
+                         continue;
+                     case ExecutableOpCode.LoadName:
++                        // Unresolved lexical lookup needs an invocation context.
++                        // Only explicit globals have the native module semantics.
++                        return null;
+                     case ExecutableOpCode.LoadGlobal:
+                         // Earlier native work can invoke host admission. A later
+                         // mutable lookup cannot rely on the entry type proof.
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index fa4d1d6b..993fb3af 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -359,19 +359,9 @@ internal sealed partial class LythonRuntime
+             value = codeObject.Constants[instruction.ConstantIndex];
+             return true;
+         }
+-        if (instruction.OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName)
++        if (instruction.OpCode == ExecutableOpCode.LoadGlobal)
+         {
+             var name = codeObject.Names[instruction.NameIndex];
+-            // Implicit module lookup is pure. Nested/class/comprehension and
+-            // nonlocal name rules keep their existing executable resolution.
+-            if (instruction.OpCode == ExecutableOpCode.LoadName &&
+-                (context.ParentContext?.ParentContext is not null || context.IsClassBody || context.IsAnnotationScope ||
+-                 codeObject.ScopeFacts.IsNonlocal(name) || codeObject.ScopeFacts.LocalNames.Contains(name) ||
+-                 context.InlinedComprehensionLookup is not null || context.TryGetInlinedBinding(name, out _)))
+-            {
+-                value = null;
+-                return false;
+-            }
+             return TryResolveExecutableGlobal(name, context, out value);
+         }
+         var index = instruction.LocalSlot;

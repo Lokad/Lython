@@ -5193,3 +5193,17 @@ universal gain or CPython ratio.68internal/279public thenfinal36/76eachactual11/
 independentPython/nestedcapacity/realasync/cancel/refusal/alias/depth/budget checks.
 Terminalcached/localSHA/joins/RAMremoved, no floors relaxed. Full delivery batching;
 publication postponed and broader performance objective open.
+
+
+## Unresolved lexical names in native proofs (2026-11-09 Paris)
+
+[R139a](results/2026-11-09-lexical-name-proof/README.md). Full CI42563792033/df3
+fails two existing class-scope regressions eachWindows/Ubuntu actual11;4446internal/
+16857public pass, later stages skipped. Removing the R138 lexical-parent barrier
+exposed incomplete class-method facts: zero capture slots did not prove global
+lookup. Native proof now declines LoadName; explicit LoadGlobal stays eligible.
+Delete parent-depth/class/nonlocal heuristic; ordinary resolution/promotion retains
+semantics. Existing failures reproduce locally35pass/two fail; combined active
+R139 prototype+correction101public pass eachactual11/10. Corrected baseline and
+candidate qualification/source pair still pending; no performance claim or erased
+prior failure. Publication remains postponed.

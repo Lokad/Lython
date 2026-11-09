@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Require explicit global lookup facts in native helpers. Preserve enclosing
+  function cells when class methods have unresolved lexical names.
+
 - Let closed nested helpers share the existing native and deferred-context paths.
   Avoid unnecessary invocation contexts while preserving captured cells, local
   namespaces, genuinely asynchronous protocols and cooperative ownership.

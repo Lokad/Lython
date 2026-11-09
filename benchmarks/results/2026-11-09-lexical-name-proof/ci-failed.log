@@ -1,0 +1,105 @@
+tests (ubuntu-latest)	Test Release (.NET 11)	﻿2026-11-09T04:50:51.5415992Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5417244Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5417979Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5463503Z shell: /usr/bin/pwsh -command ". '{0}'"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5463740Z env:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5463908Z   DOTNET_ROOT: /usr/share/dotnet
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5464171Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5464675Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5465008Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5465358Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5465655Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5465949Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5466219Z   DOTNET_DbgEnableMiniDump: 1
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5466428Z   DOTNET_DbgMiniDumpType: Mini
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5466707Z   DOTNET_DbgMiniDumpName: /home/runner/work/Lython/Lython/crash-%p.dmp
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:51.5466993Z ##[endgroup]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:52.4303819Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.0253260Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.1913144Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net11.0/Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.2048705Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.3257614Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.4128012Z Blame: Attaching crash dump utility to process dotnet (3666).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:50:53.5174363Z Blame: Attaching crash dump utility to process dotnet (3684).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:18.4660262Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:18.4794260Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:18.4879641Z Passed!  - Failed:     0, Passed:  4446, Skipped:     0, Total:  4446, Duration: 22 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6062700Z ^[[31;1m[xUnit.net 00:00:58.67]     Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\ndef outer():\n    value = 'outer"···, expected: "outer\n") [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6072877Z   Failed Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\ndef outer():\n    value = 'outer"···, expected: "outer\n") [2 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6098005Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6098310Z    Assert.Equal() Failure: Strings differ
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6098778Z            ↓ (pos 0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6099082Z Expected: "outer\n"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6099354Z Actual:   "module\n"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6099665Z            ↑ (pos 0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6100073Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6101931Z      at Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(String name, String source, String expected) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/PreparedGlobalLookupTests.cs:line 90
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:51:52.6103434Z --- End of stack trace from previous location ---
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:21.9700180Z ^[[31;1m[xUnit.net 00:02:28.15]     Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0552529Z   Failed Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0553434Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0553765Z    Assert.Equal() Failure: Strings differ
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0554370Z                           ↓ (pos 15)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0554766Z Expected: "module:changed outer:cell False\n"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0555056Z Actual:   "module:changed module:changed False\n"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0555346Z                           ↑ (pos 15)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0555545Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0556214Z      at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.AssertOutput(String source, String expected) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/ClassScopeDirectiveTests.cs:line 408
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0557393Z    at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods() in /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/ClassScopeDirectiveTests.cs:line 101
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:53:22.0558365Z --- End of stack trace from previous location ---
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:55:01.7583065Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:55:01.7724292Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:55:01.7926552Z Failed!  - Failed:     2, Passed: 16857, Skipped:     0, Total: 16859, Duration: 3 m 58 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-09T04:55:02.4750612Z ##[error]Process completed with exit code 1.
+tests (windows-latest)	Test Release (.NET 11)	﻿2026-11-09T04:51:39.0016001Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0017353Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0018055Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0090175Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0090463Z env:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0090629Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0090900Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0091256Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0091601Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0091986Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0092293Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0092561Z   DOTNET_DbgEnableMiniDump: 1
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0092992Z   DOTNET_DbgMiniDumpType: Mini
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0093226Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.0093472Z ##[endgroup]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:39.6823335Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:40.5317338Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:40.6017957Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:40.6847994Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:40.7559194Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:40.9393959Z Blame: Attaching crash dump utility to process testhost (2016).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:51:41.0061055Z Blame: Attaching crash dump utility to process testhost (7508).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:12.9453674Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:12.9601814Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:12.9683915Z Passed!  - Failed:     0, Passed:  4446, Skipped:     0, Total:  4446, Duration: 29 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9526382Z ^[[31;1m[xUnit.net 00:00:40.59]     Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9558662Z   Failed Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [3 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9559709Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9560112Z    Assert.Equal() Failure: Strings differ
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9561228Z                           ↓ (pos 15)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9562323Z Expected: "module:changed outer:cell False\n"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9563610Z Actual:   "module:changed module:changed False\n"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9564781Z                           ↑ (pos 15)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9726643Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9729986Z      at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.AssertOutput(String source, String expected) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\ClassScopeDirectiveTests.cs:line 408
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9731638Z    at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods() in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\ClassScopeDirectiveTests.cs:line 101
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:52:21.9732801Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8027276Z ^[[31;1m[xUnit.net 00:02:17.52]     Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\r\ndef outer():\r\n    value = 'o"···, expected: "outer\n") [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8165057Z   Failed Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\r\ndef outer():\r\n    value = 'o"···, expected: "outer\n") [< 1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8166768Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8167126Z    Assert.Equal() Failure: Strings differ
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8167608Z            ↓ (pos 0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8167994Z Expected: "outer\n"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8168304Z Actual:   "module\n"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8181543Z            ↑ (pos 0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8181942Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8183499Z      at Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(String name, String source, String expected) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\PreparedGlobalLookupTests.cs:line 90
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:53:58.8189649Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:55:50.2821541Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:55:50.2972742Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:55:50.3163652Z Failed!  - Failed:     2, Passed: 16857, Skipped:     0, Total: 16859, Duration: 4 m - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-09T04:55:51.1468736Z ##[error]Process completed with exit code 1.

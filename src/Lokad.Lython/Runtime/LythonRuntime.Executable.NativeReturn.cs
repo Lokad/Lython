@@ -359,19 +359,9 @@ internal sealed partial class LythonRuntime
             value = codeObject.Constants[instruction.ConstantIndex];
             return true;
         }
-        if (instruction.OpCode is ExecutableOpCode.LoadGlobal or ExecutableOpCode.LoadName)
+        if (instruction.OpCode == ExecutableOpCode.LoadGlobal)
         {
             var name = codeObject.Names[instruction.NameIndex];
-            // Implicit module lookup is pure. Nested/class/comprehension and
-            // nonlocal name rules keep their existing executable resolution.
-            if (instruction.OpCode == ExecutableOpCode.LoadName &&
-                (context.ParentContext?.ParentContext is not null || context.IsClassBody || context.IsAnnotationScope ||
-                 codeObject.ScopeFacts.IsNonlocal(name) || codeObject.ScopeFacts.LocalNames.Contains(name) ||
-                 context.InlinedComprehensionLookup is not null || context.TryGetInlinedBinding(name, out _)))
-            {
-                value = null;
-                return false;
-            }
             return TryResolveExecutableGlobal(name, context, out value);
         }
         var index = instruction.LocalSlot;

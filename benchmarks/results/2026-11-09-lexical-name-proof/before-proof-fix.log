@@ -1,0 +1,28 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.97]     Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\ndef outer():\n    value = 'outer"···, expected: "outer\n") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(name: "class_barrier", source: "value = 'module'\ndef outer():\n    value = 'outer"···, expected: "outer\n") [107 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "outer\n"
+Actual:   "module\n"
+           ↑ (pos 0)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.PreparedGlobalLookupTests.PreparedLoadsPreserveLiveNamespacesAndLexicalBarriers(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\PreparedGlobalLookupTests.cs:line 90
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.04]     Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                          ↓ (pos 15)
+Expected: "module:changed outer:cell False\n"
+Actual:   "module:changed module:changed False\n"
+                          ↑ (pos 15)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.AssertOutput(String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ClassScopeDirectiveTests.cs:line 408
+   at Lokad.Lython.PublicApi.Tests.ClassScopeDirectiveTests.ClassGlobalDoesNotRedirectMethods() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\ClassScopeDirectiveTests.cs:line 101
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:    35, Skipped:     0, Total:    37, Duration: 548 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)

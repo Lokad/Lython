@@ -109,6 +109,9 @@ internal sealed partial class ExecutableCodeObject
                         stack.Add((source, null, 1, -1, sourceIndex, instruction.Span));
                         continue;
                     case ExecutableOpCode.LoadName:
+                        // Unresolved lexical lookup needs an invocation context.
+                        // Only explicit globals have the native module semantics.
+                        return null;
                     case ExecutableOpCode.LoadGlobal:
                         // Earlier native work can invoke host admission. A later
                         // mutable lookup cannot rely on the entry type proof.
