@@ -25,8 +25,9 @@ guard and60public isolated recursion/rendering/cycle cases. Probes built explici
 for each matching framework/current core. All pass. Existing GC/lifetime assertions
 remain unchanged; no tests deleted, weakened or retimed. Public APIs are unchanged.
 No pending-user, retained-alias or stack-protection dependence on a fence was found
-by these checks. Full platform/stress/package qualification remains pending a
-coherent delivery checkpoint; R125's separate in-flight CI does not qualify R126.
+by these checks. Full Windows/Ubuntu Release actual.NET11/.NET10, original stress on both targets
+and installed-core consumers now pass [cached CI42538659198](delivery-ci.json),
+observed Nov9 00:35:33UTC. It qualifies source9f2e/core85e; later R127 is separate.
 
 Five unchanged complete scripts, both APIs, same worker/optional0.4 and isolated
 images sharing CoreLib/processGC. Normal GC/tiering. Warm public Run/awaitedRunAsync,
@@ -66,8 +67,7 @@ possible improvement; reference spread5.27% and coarse CPU ticks prevent a preci
 gain claim. Report remains inconclusive with possible CPU debt, not established
 neutrality. Retain the policy deletion for simplification and passing focused
 semantics/ownership/stack checks; no further unchanged timing or speculative
-boundary restoration selected. Full coherent platform/stress/package qualification
-remains pending. No percentage veto, permanent closure or publication.
+boundary restoration selected. Full coherent platform/stress/package qualification now passes as above. No percentage veto, permanent closure or publication.
 
 Before launch, a fresh idle lease verified complete inode aliases/SHA/ownership/
 writable parents for two redundant compiler-assembly extents. The persisted plan

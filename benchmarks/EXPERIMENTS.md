@@ -4952,3 +4952,10 @@ R125/3109 full delivery complete:cached CI42536319061success observed Nov9
 [Receipt](results/2026-11-09-text-read-lifetimes/delivery-ci.json). Never requery
 terminal run. LaterR126/9f2e remains separate, focused/quiet checked and full delivery
 pending; no retrospective qualification or publication claim.
+
+
+R126/9f2e source (core85e) full delivery complete:cached CI42538659198success
+observed Nov9 00:35:33UTC, Windows/Ubuntu actual11/10 fullRelease/originalStressboth/
+installedcore. [Receipt](results/2026-11-09-dispatch-liveness/delivery-ci.json).
+Terminal cached, never requery. Later R127 declaration-layout prototype remains
+independent; performance uncertainty/debts survive. Publication postponed.
