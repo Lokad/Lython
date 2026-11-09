@@ -42,7 +42,7 @@ internal static class StrictDeflateInflater
 
     private static readonly int[] CodeLengthOrder =
     {
-        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1,
+        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
     };
 
     private static readonly HuffmanTree FixedLiteralTree = BuildFixedLiteralTree();

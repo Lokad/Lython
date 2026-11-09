@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Read valid DEFLATE ZIP members whose dynamic block declares all nineteen
+  code-length entries, preserving Python errors for malformed blocks.
+
 - Reuse sufficient function-workspace capacity under its existing execution owner.
   Remove duplicate byte ledgers and preserve logical bindings, cleared references,
   suspended borrows and actual-capacity funding.
