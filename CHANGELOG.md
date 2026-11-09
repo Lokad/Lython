@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Make default and `None` argparse inputs follow `sys.argv[1:]`, including
+  changes to the exposed argument list. Explicit argument lists retain every
+  supplied element; host `Args` continues to include the program name.
+
 - Use managed bulk search for ASCII whitespace split boundaries, preserving
   Unicode handling, bounded cancellation checks and admitted final fragments.
 

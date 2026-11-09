@@ -215,7 +215,19 @@ internal sealed partial class LythonRuntime
             }
             var argv = new List<string>();
             if (ReferenceEquals(argsValue, ArgparseUnspecifiedValue.Instance) || ReferenceEquals(argsValue, PyNone.Instance))
-                foreach (var item in context.State.Args) AddArgumentText(item);
+            {
+                IReadOnlyList<object> currentArgs = context.State.Args;
+                // An imported sys module exposes a mutable argv list. Read that
+                // list when present, without importing an additional capability.
+                var loaded = asynchronous
+                    ? await context.State.ImportedModules.TryGetStringValueAsync("sys", context, span).ConfigureAwait(false)
+                    : context.State.ImportedModules.TryGetStringValue("sys", context.MemoryGovernor, span, context, out var module)
+                        ? (Found: true, Value: module) : (Found: false, Value: (object)PyNone.Instance);
+                if (loaded.Found && loaded.Value is SysModule sys &&
+                    sys.TryGetMember("argv", out var value) && value is PyList exposedArgs)
+                    currentArgs = exposedArgs;
+                for (var i = 1; i < currentArgs.Count; i++) AddArgumentText(currentArgs[i]);
+            }
             else if (asynchronous)
                 await foreach (var item in ToSequenceAsync(argsValue, span, context).ConfigureAwait(false)) AddArgumentText(item);
             else foreach (var item in ToSequence(argsValue, span, context)) AddArgumentText(item);

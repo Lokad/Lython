@@ -55,7 +55,7 @@ __lython_file.close()
             host,
             new LythonRunOptions
             {
-                Args = ["--lang", "fr", "--include", "a", "--include", "b", "--apply", "--max-rounds", "5"]
+                Args = ["check.py", "--lang", "fr", "--include", "a", "--include", "b", "--apply", "--max-rounds", "5"]
             });
 
         if (!result.Success)

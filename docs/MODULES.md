@@ -265,7 +265,10 @@ request; wait, communicate, pipe reads or context exit execute it. Poll returns
 timed-out live process are outside this contract. Use run/helpers for ordinary
 completed commands; the host owns actual execution and authorization.
 
-`argparse` retains default/constant aliases and updates supplied namespaces as
+`argparse` defaults to the current `sys.argv[1:]` for omitted or `None` arguments;
+explicit argument lists include every supplied element. Host `Args` remains the
+complete `sys.argv`, including the program name when provided.
+It retains default/constant aliases and updates supplied namespaces as
 arguments are consumed, including progress before errors. Append copies on use;
 absent append values are `None`. String defaults convert when still applicable.
 Choices use normal membership, including guest hooks and native range operations.

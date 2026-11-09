@@ -161,7 +161,8 @@ internal static class StaticArgparseContractFamily
 
     private static void AnalyzeArgparseParseArgsCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (!arguments.TryGetValue(0, "args", out var argsExpression))
+        if (!arguments.TryGetValue(0, "args", out var argsExpression) ||
+            StaticAbstractValueResolver.ResolveOrUnknown(argsExpression, bindings).Kind == AbstractValueKind.None)
         {
             return;
         }

@@ -5,6 +5,67 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ArgparseProtocolTests
 {
     [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 0)]
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, 3)]
+    [InlineData(true, 3)]
+    public async Task DefaultArgumentsExcludeProgramName(bool asynchronous, int argumentCount)
+    {
+        using var script = new LythonEngine().Compile("""
+            import argparse
+            p=argparse.ArgumentParser(prog='check.py',add_help=False)
+            p.add_argument('--value')
+            print(p.parse_args().value,p.parse_args(None).value)
+            known,extra=p.parse_known_args()
+            print(known.value,extra)
+            known,extra=p.parse_known_args(None)
+            print(known.value,extra)
+            print(p.parse_args([]).value)
+            known,extra=p.parse_known_args(['check.py','--value','explicit'])
+            print(known.value,extra)
+            import sys
+            print(len(sys.argv))
+            """);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        string[] args = argumentCount switch { 0 => [], 1 => ["check.py"], _ => ["check.py", "--value", "42"] };
+        var options = new LythonRunOptions { Args = args, MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, Describe(result));
+            var value = argumentCount == 3 ? "42" : "None";
+            Assert.Equal($"{value} {value}\n{value} []\n{value} []\nNone\nexplicit ['check.py']\n{argumentCount}\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DefaultArgumentsObserveTheCurrentSysArgvList(bool asynchronous)
+    {
+        using var script = new LythonEngine().Compile("""
+            import argparse
+            import sys
+            p=argparse.ArgumentParser(add_help=False)
+            p.add_argument('--value')
+            sys.argv[:]=['changed.py','--value','new']
+            print(p.parse_args().value,p.parse_known_args(None)[1])
+            sys.argv.clear()
+            print(p.parse_args(None).value)
+            """);
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        var options = new LythonRunOptions { Args = ["original.py", "--value", "old"], MemoryBudget = budget };
+        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options))
+        {
+            Assert.True(result.Success, Describe(result));
+            Assert.Equal("new []\nNone\n", result.StandardOutput);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DefaultsRetainAliasesAndAppendCopiesOnlyOnUse(bool asynchronous)

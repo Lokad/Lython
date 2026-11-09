@@ -478,7 +478,7 @@ __lython_file.close()
             host,
             new LythonRunOptions
             {
-                Args = ["--lang", "fr", "--include", "a", "--include", "b", "--apply", "--max-rounds", "5"]
+                Args = ["check.py", "--lang", "fr", "--include", "a", "--include", "b", "--apply", "--max-rounds", "5"]
             });
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -512,7 +512,7 @@ __lython_file.close()
             host,
             new LythonRunOptions
             {
-                Args = ["--lang", "fr"]
+                Args = ["check.py", "--lang", "fr"]
             });
 
         Assert.True(result.Success, result.Failure?.Message);
@@ -533,7 +533,7 @@ parser.parse_args()
             new MockLythonHost(),
             new LythonRunOptions
             {
-                Args = ["--lang", "es"]
+                Args = ["check.py", "--lang", "es"]
             });
 
         Assert.False(result.Success);

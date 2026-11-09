@@ -5517,3 +5517,19 @@ join/RAM/archive/localSHA gates pass. R157 now fully qualified by cached green
 CI42627090614/source038f7fb4, Windows/Ubuntu actual11/10, original Stress both and
 installed consumers; [receipt](results/2026-11-09-managed-whitespace-search/delivery-ci.json).
 No unchanged replay. Next distinct source gate is maintained validated CSV.
+
+
+## R161 — default argparse input correction
+
+New handoff integrated into ignored PLAN and removed. Default/None parse_args and
+parse_known_args skip program name, explicit lists retain all elements; current
+exposed sys.argv mutations observed without importing another capability. Frontend
+now accepts None consistently with runtime. Module-registry lookup uses existing
+async protocols under RunAsync. Four old fixtures corrected to the documented
+complete host argv contract; direct sys.argv assertions remain unchanged.
+201focused public regressions each actual .NET11/10 pass, including existing
+cancellation, first-refusal, retained-default/alias and awaited-cleanup scenarios.
+Eight new cases cover both APIs; four independent CPython3.13.2 scenarios agree.
+The empty-argv control supplies prog explicitly, isolating argument parsing from
+CPython's constructor indexing argv[0]. Initial frontend rejection and old fixture
+failures preserved privately. No performance claim; full qualification is batched.

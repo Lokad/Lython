@@ -68,7 +68,7 @@ __lython_file.close()
             new LythonRunOptions
             {
                 SourcePath = "/repo/tool.py",
-                Args = ["--lang", "fr"]
+                Args = ["tool.py", "--lang", "fr"]
             });
 
         Assert.True(result.Success, result.Failure?.Message);
