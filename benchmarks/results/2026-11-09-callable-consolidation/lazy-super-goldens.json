@@ -1,0 +1,27 @@
+[
+  {
+    "source": "class Holder[T:super]:pass\nclass C:\n def attribute(self):\n  del self\n  return super().__self__\ntry:C().attribute()\nexcept Exception as e:print(type(e).__name__,str(e))\n",
+    "stdout": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "source": "class Holder[T=super]:pass\nclass C:\n def attribute(self):\n  del self\n  return super().__self__\ntry:C().attribute()\nexcept Exception as e:print(type(e).__name__,str(e))\n",
+    "stdout": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "source": "def holder[T:super]():pass\nclass C:\n def attribute(self):\n  del self\n  return super().__self__\ntry:C().attribute()\nexcept Exception as e:print(type(e).__name__,str(e))\n",
+    "stdout": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "source": "def holder[T=super]():pass\nclass C:\n def attribute(self):\n  del self\n  return super().__self__\ntry:C().attribute()\nexcept Exception as e:print(type(e).__name__,str(e))\n",
+    "stdout": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  {
+    "source": "type Alias[T:super]=int\nclass C:\n def attribute(self):\n  del self\n  return super().__self__\ntry:C().attribute()\nexcept Exception as e:print(type(e).__name__,str(e))\n",
+    "stdout": "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  }
+]

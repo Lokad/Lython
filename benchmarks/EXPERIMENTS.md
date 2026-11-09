@@ -5308,3 +5308,32 @@ shared helper proof/execution, preserving guards before effects and avoiding nar
 affix intrinsics, another guard VM/cache/arena or second capture from these counts.
 Allquiet/identity/golden/Closed/join/maps/RAM/archive/localSHA gates pass; no space
 recovery or floor change. Terminal cached/no users. Broader performance remains open.
+
+## One executable callable engine (2026-11-09 Paris)
+
+[R145/B502](results/2026-11-09-callable-consolidation/README.md), committed65ed6cf7;
+measured081052fa/core3f8d versus source-identical delivery freezecce0. Existing
+enclosing capture decisions prepare executable lambdas; namespace-backed and lazy
+type consumers compile once before execution. Remove PyFunction, its mode and
+177-line duplicate dispatcher, runtime lambda lowering/compilation and unused bodies.
+Original prototype hash recursion, class-cell and lazy-preparation failures survive
+with fixes. Nine independent Python goldens;357internal/1722public plus46compiler/
+lambda checks eachactual11/10. Full delivery42586293361 runs independently.
+
+Complete affected class-callable CSV/text/JSON: allocation−23–26%/−74–76%/−56–57%
+across both APIs. Five quiet jobs/142.598s: elapsed−9.2–11.9%/−37.5–39.3%/−12.5–14.7%,
+supporting CPU. Same source/input/golden per pair, not CPython or shape ratios.
+Compile allocation+3.2–5.2% accepted as preparing formerly runtime-only code;
+report control+0.05–1.12%elapsed/0–4.44%coarseCPU remains uncertain. Earlier R142
+debt stays; desktop drift/adversity retained. All identity/output/quiet/join/RAM/
+archive/localSHA gates pass. No floor change/space recovery; terminal cached/no users.
+No universal/startup/pending-I/O claim. Broader performance roadmap remains active.
+
+First R145 delivery42586293361 is cached terminal failure on both OS:109 internal
+raw-module setup cases and one public lazy-alias/super classification regression.
+Keep real annotation scopes separate from module reads; migrate three fixture
+families to executable entry with an explicit live namespace where needed. Preserve
+all semantic/refusal/ownership/cleanup assertions. Five additional Python goldens;
+200internal/752public focused checks eachactual11/10. Later delivery gates were
+skipped; corrected delivery batches. Original measured65ed source remains labelled,
+with no timing/neutrality claim for the correction or repeated unchanged campaign.

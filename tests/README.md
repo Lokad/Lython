@@ -24,6 +24,12 @@ execution APIs. Each cleanup returns the shared allowance to its compiled baseli
 Existing generator fixtures retain pending-protocol cancellation/refusal, send,
 throw, close and awaited resource cleanup checks.
 
+[Lambda execution](Lokad.Lython.PublicApi.Tests/LambdaExecutionTests.cs) checks
+ordinary and class callables, live/deleted captures, class cells, lazy type metadata
+and bound/default expressions against independent Python results. Both APIs return
+the shared allowance to baseline after cleanup. Genuinely pending reads exercise
+completion and cancellation through class and module lambda bodies.
+
 [Native hashing](Lokad.Lython.Tests/NativeHashCancellationTests.cs) keeps small
 current-token, cache, refusal and value checks in the ordinary suite. Its timed
 256 MiB cancellation scans are Stress cases: an already-started dedicated

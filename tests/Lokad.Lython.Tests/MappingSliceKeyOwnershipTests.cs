@@ -142,7 +142,11 @@ public sealed class MappingSliceKeyOwnershipTests
             + "def read_key():return next(iter(mapping))\ndef erase():del mapping[3:5:2]\ndef run():\n " + body + "\n";
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
+        // This fixture calls functions and mutates the module namespace after
+        // its entry frame has ended; retain that live namespace explicitly.
+        root.MirrorLocalStores = true;
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
         return root;
     }
 

@@ -5,9 +5,9 @@ namespace Lokad.Lython.Frontend;
 internal static class LexicalScopePreparation
 {
     private sealed record Scope(Scope? Parent, ScopeDirectiveFacts Facts,
-        bool Function = false, bool Class = false, bool Positional = false)
+        bool Function = false, bool Class = false, bool Positional = false, bool Annotation = false)
     {
-        public bool IsModule => !Function && !Class && (Parent?.IsModule ?? true);
+        public bool IsModule => !Function && !Class && !Annotation && (Parent?.IsModule ?? true);
 
         public bool CanPreload => Function && Positional &&
             !Facts.IsGlobal("__class__") && !Facts.LocalNames.Contains("__class__") &&
@@ -87,7 +87,8 @@ internal static class LexicalScopePreparation
                 // statement-expression walk, but their callable code is eager.
                 if (statement is TypeAliasStatementSyntax alias)
                 {
-                    var aliasScope = TypeParameterScope(scope, alias.TypeParameters);
+                    var aliasScope = new Scope(TypeParameterScope(scope, alias.TypeParameters),
+                        ScopeDirectiveFacts.Empty, Annotation: true);
                     pending.Push((alias.Value, aliasScope));
                     PushTypeParameters(alias.TypeParameters, aliasScope);
                     continue;
@@ -184,7 +185,7 @@ internal static class LexicalScopePreparation
         if (parameters is not { Count: > 0 }) return parent;
         var names = parameters.Select(p => p.Name).ToArray();
         return new Scope(parent, new ScopeDirectiveFacts(ScopeDirectiveFacts.Empty.GlobalNames,
-            ScopeDirectiveFacts.Empty.NonlocalNames, new HashSet<string>(names, StringComparer.Ordinal), names));
+            ScopeDirectiveFacts.Empty.NonlocalNames, new HashSet<string>(names, StringComparer.Ordinal), names), Annotation: true);
     }
 
     private static ExpressionSyntax Unwrap(ExpressionSyntax expression)

@@ -58,3 +58,16 @@ Terminal cached; no users/fixtures. No space recovery or floor/headroom change.
 [terminal](terminal.json), [independent script goldens](script-goldens.json),
 [Python semantic goldens](python-goldens.json), [source/qualification status](delivery-source.json),
 [preparation, original failures and focused checks](preparation.tar.xz).
+
+First full delivery42586293361/source65ed6cf7 fails on both OS:4,343 internal pass/
+109 raw-module fixture failures,16,885 public pass/one real compiler failure.
+Lazy alias/type-parameter scopes were traversed as module scope, incorrectly
+disabling implicit-super preparation elsewhere. Correct their scope classification;
+keep both ordinary module reads and lazy callable preparation. Three fixture
+families now compile/execute module setup, explicitly retaining the namespace when
+later host calls/mutations need it. Independent assertions remain. Five additional
+CPython goldens cover lazy bounds/defaults and super. Later actual10/Stress/package
+stages were skipped; corrected delivery remains pending. Measured source65ed is
+unchanged historical evidence, not a timing claim for the correction.
+[Failed CI](failed-delivery-ci.json), [correction/source status](delivery-correction.json),
+[independent goldens](lazy-super-goldens.json), [original failure and focused checks](delivery-correction.tar.xz).

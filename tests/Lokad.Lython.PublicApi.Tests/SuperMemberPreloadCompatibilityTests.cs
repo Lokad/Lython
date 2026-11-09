@@ -312,6 +312,22 @@ public sealed class SuperMemberPreloadCompatibilityTests
             try: C().attribute()
             except Exception as e: print(type(e).__name__,str(e))
             """, "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n"];
+        foreach (var declaration in new[]
+        {
+            "class Holder[T:super]:pass",
+            "class Holder[T=super]:pass",
+            "def holder[T:super]():pass",
+            "def holder[T=super]():pass",
+            "type Alias[T:super]=int",
+        })
+            yield return ["lazy_type_boundary_" + declaration, declaration + "\n" + """
+                class C:
+                    def attribute(self):
+                        del self
+                        return super().__self__
+                try: C().attribute()
+                except Exception as e: print(type(e).__name__,str(e))
+                """, "UnboundLocalError cannot access local variable 'self' where it is not associated with a value\n"];
     }
 
     [Theory]

@@ -1,0 +1,26 @@
+{
+  "firstDeliverySource": "65ed6cf7",
+  "firstDeliveryCI": 42586293361,
+  "firstDeliveryStatus": "terminal failure, both OS",
+  "internalPerOS": {
+    "passed": 4343,
+    "failed": 109
+  },
+  "publicPerOS": {
+    "passed": 16885,
+    "failed": 1
+  },
+  "skipped": "actual.NET10, original Stress and installed-package stages",
+  "productionCorrection": "Mark lazy alias/type-parameter scopes separately from module scope during existing lexical preparation. Their super reads must not disable ordinary module implicit-super preparation. Keep actual enclosing class/capture facts.",
+  "fixtureCorrection": "Three raw-module setup families now compile/execute through existing engine; MappingSlice fixture explicitly retains its namespace after entry frame completion. No semantic, identity, refusal, side-effect, pending-user or cleanup assertion removed.",
+  "sourceDifferenceFromMeasuredFreeze": {
+    "src/Lokad.Lython/Frontend/LexicalScopePreparation.cs": "3cebcdd6caf912ea3f559bd9093195e7c52cf461d9dfa8af04fbf66b5f54e6e1"
+  },
+  "independentAdditionalGoldens": 5,
+  "focusedPerFramework": {
+    "internal": 200,
+    "public": 752
+  },
+  "performance": "Original R145/B502 and R146/B503 binaries/source65ed remain accurately labelled. No timing for this correction or repeated unchanged measurement claimed.",
+  "qualification": "Corrected full delivery pending; publication postponed."
+}

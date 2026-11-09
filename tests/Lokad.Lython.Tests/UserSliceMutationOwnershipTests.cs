@@ -202,7 +202,8 @@ public sealed class UserSliceMutationOwnershipTests
             """ + "\ndef run():\n " + operation + "\n";
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        await LythonRuntime.ExecuteStatementsAsync(LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements, root);
+        await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+            ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint, root);
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         root.State.SetCurrentException(active);
         return new(root, Assert.IsType<PyInstance>(root.Variables["target"]),
