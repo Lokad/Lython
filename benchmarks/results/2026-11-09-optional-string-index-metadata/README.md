@@ -80,10 +80,12 @@ One early health check showed3jobs complete. All5jobs then pass identity/output/
 ownership/quiet/Closed/join/RAM/archive-under-lease/localSHA gates; no users remain.
 The initial failure is part of the successful immutable archive, not discarded.
 
-R172 full CI42672245421 is separately partial: Ubuntu allgates passed, Windows job
-absent and overall failure without failed job log. It does not qualify R173. Final
-platform/original Stress/installed-consumer checks batch at this coherent delivery
-boundary. Publication remains postponed; regex development stays independent.
+Combined delivery [42684724223](ci-terminal.json), source6d852edc (production
+cac4acf8), is GREEN: Windows and Ubuntu, actual.NET11/.NET10, original Stress and
+installed-package consumers, all eight gates. This qualifies R172 and R173; it
+does not change their timing conclusions. The earlier R172 run42672245421 remains
+partial/failed, with Ubuntu green and Windows absent without a failed-job log.
+Publication remains postponed; regex development stays independent.
 
 [Final identity/source hashes](identity.json), [quiet summary](summary.json),
 [raw observations/frozen cores/failed first start](observations.tgz),

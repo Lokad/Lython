@@ -6,6 +6,11 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+Combined delivery42684724223/source6d852edc is GREEN for R172/R173: Windows/Ubuntu,
+actual11/10, original Stress and installed consumers, all eight gates. The
+[cached terminal](results/2026-11-09-optional-string-index-metadata/ci-terminal.json)
+does not change timing uncertainty; prior partial/failed qualification remains.
+
 The [R173 optional index metadata milestone](results/2026-11-09-optional-string-index-metadata/README.md)
 removes every string's separate rune-table reference while retaining direct UTF-8
 and scalar-length caches. Actual56B versus64B shell;42internal/4042public each11/10
