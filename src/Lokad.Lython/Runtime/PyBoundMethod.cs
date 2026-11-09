@@ -16,7 +16,7 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         _function = function;
         _displayName = function switch
         {
-            PyFunction pyFunction => pyFunction.Name,
+            PyFunctionBase pyFunction => pyFunction.Name,
             // Engine callables reporting a short name render it instead of
             // leaking CLR type names (generated dataclass methods and kin).
             INamedRuntimeCallable named => named.Name,

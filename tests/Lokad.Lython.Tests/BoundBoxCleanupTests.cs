@@ -59,16 +59,17 @@ public sealed class BoundBoxCleanupTests
             new("a", FunctionParameterKind.Positional, null, null),
             new("b", FunctionParameterKind.Positional, null, null),
         };
-        var fun = new PyFunction(
+        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
+            LoweredScript.Lower(LythonFrontend.Compile("def f(a,b):pass").Script!).Statements));
+        var fun = new PyExecutableFunction(
             "f",
             FunctionParameterLayout.Create(parameters),
-            [],
+            ExecutableScript.CompileClassFunction(definition),
             closure,
+            [],
             new Dictionary<string, object>(),
             ScopeDirectiveFacts.Empty);
-        var plan = TwoParameterPlan();
-        var box = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure);
+        var box = fun.BindPositionalOperands([1, 2], Span, closure);
         LythonRuntime.ReturnBoundArguments(box);
 
         // Zero recursion depth trips inside EnterInvocationFrame, after the
@@ -77,8 +78,7 @@ public sealed class BoundBoxCleanupTests
             fun.Invoke([CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, closure));
         Assert.Equal("RecursionError", failure.ExceptionType);
 
-        var again = LythonRuntime.BindFunctionArguments(
-            [CallArgumentValue.Positional(1), CallArgumentValue.Positional(2)], Span, plan, closure);
+        var again = fun.BindPositionalOperands([1, 2], Span, closure);
         LythonRuntime.ReturnBoundArguments(again);
         Assert.Same(box.Values, again.Values);
         Assert.All(again.Values, value => Assert.Null(value));

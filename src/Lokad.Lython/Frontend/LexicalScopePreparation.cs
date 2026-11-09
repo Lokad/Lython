@@ -69,6 +69,7 @@ internal static class LexicalScopePreparation
         var moduleFacts = ScopeDirectiveFactsCollector.ForFunction([], script.Statements, includeClassCellRequirement: false);
         var moduleUsesSuper = moduleFacts.LocalNames.Contains("super") || moduleFacts.IsGlobal("super");
         List<CallExpressionSyntax>? preloads = null;
+        List<LambdaExpressionSyntax>? lambdas = null;
         // Module bindings do not supply lexical class cells to child functions.
         var root = new Scope(null, ScopeDirectiveFacts.Empty);
         var pending = new Stack<(object Syntax, Scope Scope)>();
@@ -82,10 +83,20 @@ internal static class LexicalScopePreparation
                 // module symbol table. Decide candidate tags after this walk.
                 if (statement is ScopeDirectiveStatementSyntax { Kind: ScopeDirectiveKind.Global } directive &&
                     directive.Names.Contains("super", StringComparer.Ordinal)) moduleUsesSuper = true;
+                // Lazy type expressions are deliberately outside the ordinary
+                // statement-expression walk, but their callable code is eager.
+                if (statement is TypeAliasStatementSyntax alias)
+                {
+                    var aliasScope = TypeParameterScope(scope, alias.TypeParameters);
+                    pending.Push((alias.Value, aliasScope));
+                    PushTypeParameters(alias.TypeParameters, aliasScope);
+                    continue;
+                }
                 foreach (var expression in ReadExpressions(statement, postponed)) pending.Push((expression, scope));
                 if (statement is FunctionDefinitionStatementSyntax function)
                 {
                     var enclosing = TypeParameterScope(scope, function.TypeParameters);
+                    PushTypeParameters(function.TypeParameters, enclosing);
                     var facts = ScopeDirectiveFactsCollector.ForFunctionBindings(function);
                     var functionScope = new Scope(enclosing, facts,
                         Function: true, Positional: function.Parameters.Any(p => p.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly));
@@ -95,8 +106,12 @@ internal static class LexicalScopePreparation
                     PushStatements(function.Body, functionScope);
                 }
                 else if (statement is ClassDefinitionStatementSyntax definition)
-                    PushStatements(definition.Body, new Scope(TypeParameterScope(scope, definition.TypeParameters),
+                {
+                    var enclosing = TypeParameterScope(scope, definition.TypeParameters);
+                    PushTypeParameters(definition.TypeParameters, enclosing);
+                    PushStatements(definition.Body, new Scope(enclosing,
                         ScopeDirectiveFactsCollector.ForClass(definition), Class: true));
+                }
                 else foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement)) PushStatements(body, scope);
                 continue;
             }
@@ -109,6 +124,7 @@ internal static class LexicalScopePreparation
                 (preloads ??= []).Add(call);
             if (node is LambdaExpressionSyntax lambda)
             {
+                (lambdas ??= []).Add(lambda);
                 foreach (var parameter in lambda.Parameters)
                     if (parameter.DefaultValue is { } value) pending.Push((value, scope));
                 var facts = ScopeDirectiveFactsCollector.ForLambda(lambda);
@@ -145,10 +161,21 @@ internal static class LexicalScopePreparation
             foreach (var call in preloads) call.PreloadImplicitSuperArguments = true;
 
         script.PreparedScopeFacts = moduleFacts;
+        script.PreparedLambdas = lambdas ?? [];
 
         void PushStatements(IReadOnlyList<StatementSyntax> statements, Scope scope)
         {
             foreach (var statement in statements) pending.Push((statement, scope));
+        }
+
+        void PushTypeParameters(IReadOnlyList<TypeParameterSyntax>? parameters, Scope scope)
+        {
+            if (parameters is null) return;
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Bound is { } bound) pending.Push((bound, scope));
+                if (parameter.Default is { } value) pending.Push((value, scope));
+            }
         }
     }
 

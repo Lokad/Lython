@@ -20,13 +20,23 @@ internal sealed partial class ExecutableScript
     {
         var entryPoint = new Builder(null, null, ScopeDirectiveFactsCollector.ForModule(lowered.Syntax), completeLexicalParent: true)
             .CompileCodeObject("<module>", lowered.Statements);
+        // Actual executable sites have supplied their lexical capture facts.
+        // Remaining lambdas belong to retained lowered consumers and keep their
+        // existing namespace closure, with code prepared before execution.
+        foreach (var syntax in lowered.Syntax.PreparedLambdas)
+        {
+            // Lazy annotations/type values can retain raw expressions until
+            // runtime. Prepare their callable code without evaluating them.
+            var lambda = syntax.PreparedCallable ?? (LoweredLambdaExpression)LoweredScript.LowerStandaloneExpression(syntax);
+            if (lambda.PreparedCode is null) CompileNamespaceLambda(lambda);
+        }
         return new ExecutableScript(entryPoint.ScopeFacts.ContainsVariableAnnotations
             ? lowered.Syntax.Statements[0].Span : null, entryPoint);
     }
 
-    internal static ExecutableCodeObject CompileGenerator(FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
-        ScopeDirectiveFacts scopeFacts)
-        => new Builder(parameterLayout, true, scopeFacts).CompileCodeObject("<generator>", body);
+    private static void CompileNamespaceLambda(LoweredLambdaExpression lambda)
+        => lambda.CompleteCompilation(new Builder(lambda.ParameterLayout, lambda.IsGenerator, lambda.ScopeFacts)
+            .CompileCodeObject("<lambda>", lambda.FunctionBody), namespaceClosure: true);
 
     internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
         => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts)

@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
-        => CreateLoweredLambda(new LoweredLambdaExpression(lambda, LoweredScript.LowerStandaloneExpression(lambda.Body)), context);
+        => CreateLoweredLambda(lambda.PreparedCallable.RequireNotNull(), context);
 
     private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store, Func<object, ValueTask>? AsyncStore = null)
     {

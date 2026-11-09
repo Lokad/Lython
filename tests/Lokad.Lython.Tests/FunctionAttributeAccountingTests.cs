@@ -16,7 +16,7 @@ public sealed class FunctionAttributeAccountingTests
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", FunctionParameterLayout.Create([]), [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
+        var function = Function(context);
         var value = new PyList([42], context.MemoryGovernor, null);
         var beforeTag = context.MemoryGovernor.CurrentAccountedBytes;
         function.TrySetMember("tag", value);
@@ -48,7 +48,7 @@ public sealed class FunctionAttributeAccountingTests
         const long limit = 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) },regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", FunctionParameterLayout.Create([]), [], context, new Dictionary<string, object>(), ScopeDirectiveFacts.Empty);
+        var function = Function(context);
         var beforeFound = function.TryGetMember(name, out var before);
         var padding = limit - context.MemoryGovernor.CurrentAccountedBytes;
         context.MemoryGovernor.Reserve(padding, null);
@@ -65,13 +65,7 @@ public sealed class FunctionAttributeAccountingTests
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction(
-            "f",
-            FunctionParameterLayout.Create([]),
-            [],
-            context,
-            new Dictionary<string, object>(StringComparer.Ordinal),
-            ScopeDirectiveFacts.Empty);
+        var function = Function(context);
         Assert.True(function.TrySetMember("a", PyNone.Instance));
         var afterFirst = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(function.TrySetMember("a", PyNone.Instance));
@@ -82,5 +76,14 @@ public sealed class FunctionAttributeAccountingTests
         Assert.True(function.TryGetMember("__dict__", out var attributes));
         Assert.Equal(3, Assert.IsType<PyDict>(attributes).Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    private static PyExecutableFunction Function(LythonRuntime.ExecutionContext context)
+    {
+        var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
+            LoweredScript.Lower(LythonFrontend.Compile("def f():pass").Script!).Statements));
+        return new PyExecutableFunction("f", definition.ParameterLayout,
+            ExecutableScript.CompileClassFunction(definition), context, [],
+            new Dictionary<string, object>(), definition.ScopeFacts);
     }
 }

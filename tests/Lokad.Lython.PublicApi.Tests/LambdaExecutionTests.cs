@@ -31,6 +31,15 @@ public sealed class LambdaExecutionTests
         { "def outer():\n value=7\n def middle():\n  return lambda:value\n return middle\nprint(outer()()())", "7\n" },
         { "def make():\n f=lambda value=(yield 'default'):value+1\n yield f\ng=make()\nprint(next(g),g.send(3)(4))", "default 5\n" },
         { "f=lambda value=1,*,first=2,last=3:(value,first,last)\nprint(f.__defaults__,list(f.__kwdefaults__.items()))\nf.__defaults__=(4,)\nf.__kwdefaults__={'first':5,'last':6}\nprint(f())", "(1,) [('first', 2), ('last', 3)]\n(4, 5, 6)\n" },
+        { "def make():\n value=1\n class Holder:\n  read=lambda self:value\n def set_value(new):\n  nonlocal value\n  value=new\n def delete_value():\n  nonlocal value\n  del value\n return Holder(),set_value,delete_value\nh,set_value,delete_value=make()\nprint(h.read())\nset_value(7)\nprint(h.read())\ndelete_value()\ntry:h.read()\nexcept NameError:print('deleted')", "1\n7\ndeleted\n" },
+        { "value=9\nclass Holder:\n value=2\n read=lambda self,initial=value:(initial,value)\nprint(Holder().read())", "(2, 9)\n" },
+        { "value=9\ndef make():\n global value\n class Holder:\n  value=2\n  read=lambda self:value\n return Holder()\nh=make()\nvalue=7\nprint(h.read())", "7\n" },
+        { "def f(first=lambda:1,last=lambda:2):return first(),last()\nprint(f())\nclass Holder:\n first=lambda self:1\n last=lambda self:2\nprint(Holder().first(),Holder().last())", "(1, 2)\n1 2\n" },
+        { "class Base:\n def read(self):return 3\nclass Child(Base):\n read=lambda self:(yield super().read())\ng=Child().read()\nprint(next(g))\ntry:g.send(7)\nexcept StopIteration as done:print(done.value)", "3\n7\n" },
+        { "type Alias[T]=((lambda initial=T:lambda:initial)(),(lambda:global_value)())\nglobal_value=9\nfirst,second=Alias.__value__\nprint(first().__name__,second)", "T 9\n" },
+        { "value='global'\nclass Holder:\n value='class'\n type Alias=((lambda:value)(),list((lambda:(yield value))()))\nprint(Holder.Alias.__value__)", "('global', ['global'])\n" },
+        { "class Holder[T:(lambda:int)(),U=(lambda:str)()]:pass\nprint(Holder.__type_params__[0].__bound__.__name__,Holder.__type_params__[1].__default__.__name__)", "int str\n" },
+        { "def f[T:(lambda:int)(),U=(lambda:str)()](value):return value\nprint(f.__type_params__[0].__bound__.__name__,f.__type_params__[1].__default__.__name__,f(7))", "int str 7\n" },
     };
 
     [Theory]
@@ -53,11 +62,14 @@ public sealed class LambdaExecutionTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task LambdaBodyCanSuspendAndCancel(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task LambdaBodyCanSuspendAndCancel(bool cancel, bool classBody)
     {
-        const string source = "def read():\n with open('value.txt') as value:return value.read()\nf=lambda:read()\nprint(f())";
+        var source = "def read():\n with open('value.txt') as value:return value.read()\n" +
+            (classBody ? "class Reader:\n read=lambda self:read()\nf=Reader().read\n" : "f=lambda:read()\n") + "print(f())";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);

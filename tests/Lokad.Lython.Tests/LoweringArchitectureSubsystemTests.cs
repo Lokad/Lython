@@ -136,7 +136,8 @@ else:
 
         var lambdaAssignment = Assert.IsType<LoweredNameAssignmentStatement>(lowered.Statements[0]);
         var lambda = Assert.IsType<LoweredLambdaExpression>(lambdaAssignment.Expression);
-        Assert.IsType<LoweredBinaryExpression>(lambda.Body);
+        Assert.IsType<LoweredBinaryExpression>(Assert.IsType<LoweredReturnStatement>(
+            Assert.Single(lambda.FunctionBody)).Expression);
         Assert.Equal(FunctionParameterKind.KeywordOnly, lambda.Lambda.Parameters[1].Kind);
 
         var assertStatement = Assert.IsType<LoweredAssertStatement>(lowered.Statements[1]);
@@ -1466,11 +1467,8 @@ return helper(payload["items"]) + "|" + text
                     yield return nested;
                 }
                 break;
-            case LoweredLambdaExpression lambda:
-                foreach (var nested in FlattenExpressions(lambda.Body))
-                {
-                    yield return nested;
-                }
+            case LoweredLambdaExpression { PreparedCode: null } lambda:
+                foreach (var nested in FlattenExpressions(lambda.FunctionBody)) yield return nested;
                 break;
         }
     }

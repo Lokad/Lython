@@ -289,7 +289,7 @@ internal sealed class LoweredScript
             AssignmentExpressionSyntax assignment => new LoweredAssignmentExpression(
                 assignment,
                 LowerExpression(assignment.Expression)),
-            LambdaExpressionSyntax lambda => new LoweredLambdaExpression(
+            LambdaExpressionSyntax lambda => lambda.PreparedCallable ?? new LoweredLambdaExpression(
                 lambda,
                 LowerExpression(lambda.Body)),
             _ => throw new InvalidOperationException($"Unknown expression during lowering: {expression.GetType().Name}")

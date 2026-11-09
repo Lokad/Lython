@@ -4,7 +4,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-public sealed class LoweredFunctionInvocationBoundaryTests
+public sealed class ExecutableFunctionInvocationBoundaryTests
 {
     private static readonly LythonSourceSpan CallSpan = new(100, 6, 20, 3);
 
@@ -17,18 +17,16 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     [InlineData(2, true)]
     public async Task IdentityBodyKeepsArgumentsAndCleanup(int width, bool asynchronous)
     {
+        var (function, context) = Function(width, new LythonRunOptions
         {
-            var (function, context, expression) = Function(width, new LythonRunOptions
-            {
-            SourcePath = "/lowered-function.py"
-            });
-            var receiver = new object();
-                var value = asynchronous
-                    ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
-                    : function.Invoke(Arguments(width, receiver), CallSpan, context);
-                Assert.Same(receiver, value);
-            AssertUnwound(context);
-        }
+            SourcePath = "/function.py"
+        });
+        var receiver = new object();
+        var value = asynchronous
+            ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
+            : function.Invoke(Arguments(width, receiver), CallSpan, context);
+        Assert.Same(receiver, value);
+        AssertUnwound(context);
     }
 
     [Theory]
@@ -41,7 +39,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     public async Task InvocationChecksCancellation(int width,bool asynchronous)
     {
         using var cancellation = new CancellationTokenSource();
-        var (function, context, _) = Function(width, new LythonRunOptions
+        var (function, context) = Function(width, new LythonRunOptions
         {
             CancellationToken = cancellation.Token
         });
@@ -63,7 +61,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     [InlineData(2, true)]
     public async Task AdmissionDenialKeepsFundingExceptionAndSpan(int width, bool asynchronous)
     {
-        var (function, context, _) = Function(width, new LythonRunOptions
+        var (function, context) = Function(width, new LythonRunOptions
         {
             MemoryBudget = new LythonMemoryBudget(8192), MaxRecursionDepth = 0
         });
@@ -85,7 +83,7 @@ public sealed class LoweredFunctionInvocationBoundaryTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task BodyUsesActualFrameServicesAndMirroredArguments(int width)
+    public async Task BodyUsesActualFrameServicesAndLiveArguments(int width)
     {
         var snapshots = new List<(long Accounted, long Reserved)>();
         foreach (var asynchronous in new[] { false, true })
@@ -95,14 +93,15 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             var definition = Definition($"def f({parameters}):\n return tap({parameters})\n");
             var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
             {
-            MemoryBudget = new LythonMemoryBudget(8192), SourcePath = "/actual-frame.py"
+                MemoryBudget = new LythonMemoryBudget(8192), SourcePath = "/actual-frame.py"
             },regexProvider:Utf8RegexProvider.Instance);
             var receiver = new object();
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
             var tap = new RecordingTap(context, active, receiver, width);
             context.Variables["tap"] = tap;
-            var function = new PyFunction("f", definition.ParameterLayout, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
+            var function = new PyExecutableFunction("f", definition.ParameterLayout,
+                ExecutableScript.CompileClassFunction(definition), context, [], new Dictionary<string, object>(), definition.ScopeFacts);
             var result = asynchronous
                 ? await function.InvokeAsync(Arguments(width, receiver), CallSpan, context)
                 : function.Invoke(Arguments(width, receiver), CallSpan, context);
@@ -128,23 +127,25 @@ public sealed class LoweredFunctionInvocationBoundaryTests
             Assert.Equal(closure.SourcePath, context.SourcePath);
             Assert.Same(active, context.State.CurrentException);
             Assert.Equal(1, context.State.CurrentRecursionDepth);
-            Assert.Same(receiver, context.Variables["self"]);
-            Assert.Equal(width + 1, context.Variables.Count);
+            var locals = context.CurrentExecutableFrame!.EnumerateVisibleLocals().ToDictionary();
+            Assert.Same(receiver, locals["self"]);
+            Assert.Equal(width + 1, locals.Count);
             Assert.Equal(width + 1, arguments.Length);
             Assert.Same(receiver, arguments[0].Value);
-            for (var i = 0; i < width; i++) Assert.Equal(i + 7, context.Variables[$"arg{i}"]);
+            for (var i = 0; i < width; i++) Assert.Equal(i + 7, locals[$"arg{i}"]);
             Snapshot = (context.MemoryGovernor.CurrentAccountedBytes, context.MemoryGovernor.CurrentReservedBytes);
             return receiver;
         }
     }
 
-    private static (PyFunction Function, LythonRuntime.ExecutionContext Context, LoweredExpression Expression) Function(int width, LythonRunOptions options)
+    private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context) Function(int width, LythonRunOptions options)
     {
         var parameters = string.Join(",", new[] { "self" }.Concat(Enumerable.Range(0, width).Select(i => $"arg{i}")));
         var definition = Definition($"def f({parameters}):\n return self\n");
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options,regexProvider:Utf8RegexProvider.Instance);
-        var function = new PyFunction("f", definition.ParameterLayout, definition.Body, context, new Dictionary<string, object>(), ScopeDirectiveFactsCollector.ForFunction(definition.Syntax));
-        return (function, context, Assert.IsType<LoweredReturnStatement>(Assert.Single(definition.Body)).Expression!);
+        var function = new PyExecutableFunction("f", definition.ParameterLayout,
+            ExecutableScript.CompileClassFunction(definition), context, [], new Dictionary<string, object>(), definition.ScopeFacts);
+        return (function, context);
     }
 
     private static LoweredFunctionDefinitionStatement Definition(string source)

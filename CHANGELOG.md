@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Compile lambdas once, including class callables and lazy type metadata, and use
+  the shared executable function engine. Remove runtime lambda compilation and
+  the duplicate interpreted-function dispatcher while preserving lexical scopes,
+  asynchronous callbacks, cancellation and shared-memory ownership.
+
 - Compile generator definitions with enclosing lexical facts and initialize their
   retained storage through the shared executable state. Remove redundant namespace
   copies while preserving suspended captures, Python cleanup and shared admission.

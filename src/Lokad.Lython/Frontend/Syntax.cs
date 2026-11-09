@@ -8,6 +8,7 @@ internal sealed record ScriptSyntax(
     IReadOnlyList<StatementSyntax> Statements)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+    internal IReadOnlyList<LambdaExpressionSyntax> PreparedLambdas { get; set; } = [];
 }
 
 internal abstract record StatementSyntax(
@@ -808,6 +809,17 @@ internal sealed record LambdaExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span)
 {
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
+    internal LoweredLambdaExpression? PreparedCallable { get; set; }
+
+    // The prepared callable points back to this syntax. It is compilation
+    // metadata, not part of structural syntax equality or constant interning.
+    public bool Equals(LambdaExpressionSyntax? other)
+        => ReferenceEquals(this, other) || other is not null && base.Equals(other) &&
+            EqualityComparer<IReadOnlyList<FunctionParameterSyntax>>.Default.Equals(Parameters, other.Parameters) &&
+            EqualityComparer<ExpressionSyntax>.Default.Equals(Body, other.Body) &&
+            EqualityComparer<ScopeDirectiveFacts?>.Default.Equals(PreparedScopeFacts, other.PreparedScopeFacts);
+
+    public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Parameters, Body, PreparedScopeFacts);
 }
 
 internal abstract record PatternSyntax(

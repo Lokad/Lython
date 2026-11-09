@@ -17,34 +17,26 @@ public sealed class LoweredDispatchBoundaryTests
     public void ExpressionCheckpointsKeepEvaluationOrderAndSpans(string source, string expected)
     {
         var expression = Expression(source);
-        foreach (var directFunctionDispatch in new[] { false, true })
-        {
-            var context = Context(new LythonRunOptions { SourcePath = "/lowered.py" });
-            context.UseSynchronousLoweredFunctionDispatch = directFunctionDispatch;
-                var result = LythonRuntime.EvaluateLoweredExpression(expression, context);
-                Assert.Equal(expected, result.ToString());
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.State.CurrentRecursionDepth);
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        }
+        var context = Context(new LythonRunOptions { SourcePath = "/lowered.py" });
+        var result = LythonRuntime.EvaluateLoweredExpression(expression, context);
+        Assert.Equal(expected, result.ToString());
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Fact]
     public void ExpressionChecksCancellation()
     {
-        foreach (var directFunctionDispatch in new[] { false, true })
-        {
-            using var cancellation = new CancellationTokenSource();
-            var expression = Expression("1 + 2");
-            var context = Context(new LythonRunOptions { CancellationToken = cancellation.Token });
-            context.UseSynchronousLoweredFunctionDispatch = directFunctionDispatch;
-            cancellation.Cancel();
-            var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(expression, context));
-            Assert.Same(expression.Span, error.Span);
-            Assert.Equal("execution canceled", error.Message);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-        }
+        using var cancellation = new CancellationTokenSource();
+        var expression = Expression("1 + 2");
+        var context = Context(new LythonRunOptions { CancellationToken = cancellation.Token });
+        cancellation.Cancel();
+        var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(expression, context));
+        Assert.Same(expression.Span, error.Span);
+        Assert.Equal("execution canceled", error.Message);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
     }
 
     [Theory]

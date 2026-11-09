@@ -393,22 +393,14 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         IReadOnlyDictionary<string, object> defaults)
     {
-        var code = functionDefinition.PreparedCode;
-        var cells = code is { ClosureNames.Count: > 0 }
+        var code = functionDefinition.PreparedCode.RequireNotNull();
+        var cells = code.ClosureNames.Count > 0
             ? CaptureExecutableClosures(code, context.FunctionClosureContext, functionDefinition.Span) : [];
-        PyFunctionBase function = code is not null
-            ? functionDefinition.Syntax.IsGenerator
+        PyFunctionBase function = functionDefinition.Syntax.IsGenerator
                 ? new PyGeneratorFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
                     code, context.FunctionClosureContext, defaults, code.ScopeFacts, cells)
                 : new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
-                    code, context.FunctionClosureContext, cells, defaults, code.ScopeFacts)
-            : new PyFunction(
-            functionDefinition.Syntax.DeclaredName,
-            functionDefinition.ParameterLayout,
-            functionDefinition.Body,
-            context.FunctionClosureContext,
-            defaults,
-            functionDefinition.ScopeFacts);
+                    code, context.FunctionClosureContext, cells, defaults, code.ScopeFacts);
         ChargeFunctionValue(context, functionDefinition.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
         PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Docstring, context, functionDefinition.Span);
@@ -762,23 +754,21 @@ internal sealed partial class LythonRuntime
     }
 
     private static PyFunctionBase CreateLambdaFunction(LoweredLambdaExpression lambda,
-        IReadOnlyDictionary<string, object> defaults, ExecutionContext context,
-        ExecutableCodeObject? code = null)
+        IReadOnlyDictionary<string, object> defaults, ExecutionContext context)
     {
-        var cells = code is null ? [] : CaptureExecutableClosures(code, context, lambda.Span);
+        var code = lambda.Code;
+        var cells = CaptureExecutableClosures(code,
+            lambda.NamespaceClosure ? context.FunctionClosureContext : context, lambda.Span);
         ChargeFunctionValue(context, lambda.Span);
-        PyFunctionBase function = lambda.GeneratorCode is { } generator
-            ? new PyGeneratorFunction("<lambda>", lambda.ParameterLayout, generator, context.FunctionClosureContext,
+        PyFunctionBase function = lambda.IsGenerator
+            ? new PyGeneratorFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
                 defaults, lambda.ScopeFacts, cells, PythonCallableKind.Lambda)
-            : code is not null
-            ? new PyExecutableFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
-                cells, defaults, lambda.ScopeFacts, PythonCallableKind.Lambda)
-            : new PyFunction("<lambda>", lambda.ParameterLayout, lambda.FunctionBody, context.FunctionClosureContext,
-                defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
+            : new PyExecutableFunction("<lambda>", lambda.ParameterLayout, code, context.FunctionClosureContext,
+                cells, defaults, lambda.ScopeFacts, PythonCallableKind.Lambda);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         // Module lambdas expose their globals after the executable slots leave.
         // Retain the existing namespace once, without lowering a compiled body.
-        if (code is null || code.RequiresLocalVariableMirroring ||
+        if (lambda.NamespaceClosure || code.RequiresLocalVariableMirroring ||
             context.FunctionClosureContext.ParentContext is null && !context.FunctionClosureContext.MirrorLocalStores)
             RetainLocalsForLambda(context.FunctionClosureContext);
         return function;

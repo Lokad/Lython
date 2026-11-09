@@ -1,8 +1,10 @@
 namespace Lokad.Lython.Frontend;
 
 internal sealed record ExecutableCreateFunction(ExecutableFunctionBinding Binding, IReadOnlyList<LoweredExpression> Inputs) : ExecutableOperation;
-internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression,
-    ExecutableCodeObject CodeObject) : ExecutableOperation;
+internal sealed record ExecutableCreateLambda(LoweredLambdaExpression Expression) : ExecutableOperation
+{
+    internal ExecutableCodeObject CodeObject => Expression.Code;
+}
 internal sealed record ExecutableAnnotationsEnabled : ExecutableOperation;
 internal sealed record ExecutableStartClassHeader(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateClass(LoweredClassDefinitionStatement Definition, bool ExpandedHeader) : ExecutableOperation;
@@ -40,9 +42,10 @@ internal sealed partial class ExecutableScript
         {
             foreach (var parameter in lambda.Parameters)
                 if (parameter.DefaultValue is not null) block = CompileExpression(parameter.DefaultValue, block);
-            var code = lambda.GeneratorCode ?? CompileFunctionCode("<lambda>", lambda.ParameterLayout, lambda.FunctionBody,
-                lambda.ScopeFacts);
-            EmitOperation(new ExecutableCreateLambda(lambda, code), lambda.Span, block);
+            if (lambda.PreparedCode is null)
+                lambda.CompleteCompilation(CompileFunctionCode("<lambda>", lambda.ParameterLayout,
+                    lambda.FunctionBody, lambda.ScopeFacts, generator: lambda.IsGenerator));
+            EmitOperation(new ExecutableCreateLambda(lambda), lambda.Span, block);
             return block;
         }
 

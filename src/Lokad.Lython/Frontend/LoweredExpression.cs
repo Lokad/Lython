@@ -302,24 +302,33 @@ internal sealed record LoweredLambdaExpression : LoweredExpression
     public LoweredLambdaExpression(LambdaExpressionSyntax lambda, LoweredExpression body)
     {
         Lambda = lambda;
-        Body = body;
         Parameters = lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
             parameter.Name, parameter.Kind,
             parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
             parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue))).ToArray();
         ParameterLayout = FunctionParameterLayout.Create(Parameters);
-        FunctionBody = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
         ScopeFacts = ScopeDirectiveFactsCollector.ForLambda(lambda);
-        if (GeneratorSyntaxFacts.ContainsYield(lambda.Body))
-            GeneratorCode = ExecutableScript.CompileGenerator(ParameterLayout, FunctionBody, ScopeFacts);
+        IsGenerator = GeneratorSyntaxFacts.ContainsYield(lambda.Body);
+        _body = [new LoweredReturnStatement(new ReturnStatementSyntax(lambda.Body, lambda.Span), body)];
+        lambda.PreparedCallable = this;
     }
 
     public LambdaExpressionSyntax Lambda { get; }
-    public LoweredExpression Body { get; }
     public IReadOnlyList<LoweredFunctionParameter> Parameters { get; }
     public FunctionParameterLayout ParameterLayout { get; }
-    public IReadOnlyList<LoweredStatement> FunctionBody { get; }
     public ScopeDirectiveFacts ScopeFacts { get; }
     public override ExpressionSyntax Syntax => Lambda;
-    public ExecutableCodeObject? GeneratorCode { get; }
+    public bool IsGenerator { get; }
+    private IReadOnlyList<LoweredStatement>? _body;
+    internal IReadOnlyList<LoweredStatement> FunctionBody => _body.RequireNotNull();
+    internal ExecutableCodeObject? PreparedCode { get; private set; }
+    public ExecutableCodeObject Code => PreparedCode.RequireNotNull();
+    internal bool NamespaceClosure { get; private set; }
+
+    internal void CompleteCompilation(ExecutableCodeObject code, bool namespaceClosure = false)
+    {
+        PreparedCode = code;
+        NamespaceClosure = namespaceClosure;
+        _body = null;
+    }
 }

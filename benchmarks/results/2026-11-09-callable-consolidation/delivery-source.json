@@ -1,0 +1,24 @@
+{
+  "productionSourceMatchesMeasuredFreeze": true,
+  "measuredCoreSHA256": "cce077fbaaaf9803e38a868b35ba81d2d7518741d4ac49e5a06a10c3e18a42aa",
+  "baseline": {
+    "sourceRevision": "081052fa",
+    "currentProductionIdentical": true,
+    "coreSHA256": "3f8df65a2e4bc88f4661ad72723f533645c3750d1ab69b4c971df419b92f09be"
+  },
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedPerFramework": {
+    "internal": 357,
+    "public": 1722,
+    "additionalCompilerLambda": 46
+  },
+  "independentPythonGoldens": 9,
+  "postMeasurementChanges": "Two additional independently checked class/function type-parameter bound/default tests; documentation only. No production source changes.",
+  "removed": "PyFunction; UseSynchronousLoweredFunctionDispatch; duplicate177-line dispatcher; runtime lambda lowering/compilation; unused retained lambda Body/FunctionBody and eager generator-lambda code; nullable lowered-function backend selection.",
+  "preserved": "Existing executable capture decisions; incomplete namespace bridges; lower evaluators for real consumers; Python scopes/defaults/class cells/generators; current cancellation and terminal first refusal; admitted cells/workspace/caches; escaping aliases and awaited pending cleanup.",
+  "limitations": "Compile allocation plus3.18to5.24percent accepted; report control plus0.05to1.12percent elapsed and zeroTo4.44percent coarseCPU uncertain. Earlier R142 report debt unresolved. No startup/pending-I/O/CPython timing from this source pair.",
+  "delivery": "Focused actual11/10 pass; full Windows/Ubuntu actual11/10, original Stress and installed-package qualification next. Publication postponed."
+}
