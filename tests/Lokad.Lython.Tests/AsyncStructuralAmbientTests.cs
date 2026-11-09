@@ -18,11 +18,14 @@ public sealed class AsyncStructuralAmbientTests
     [InlineData("Counter(values())")]
     [InlineData("{probe() for i in [0]}")]
     [InlineData("{probe(): probe() for i in [0]}")]
+    [InlineData("[json.dumps({'b':1,'a':2},sort_keys=True),probe()][1:]")]
+    [InlineData("[failed_json_sort({0:0,'a':1})]")]
     public async Task StructuralAmbientNeverSpansGuestSuspension(string expression)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("""
 import time
+import json
 from collections import Counter, defaultdict
 def probe():
     time.sleep(1)
@@ -34,6 +37,11 @@ def values():
     yield probe()
 def pairs():
     yield ('a', probe())
+
+def failed_json_sort(value):
+    try:json.dumps(value,sort_keys=True)
+    except TypeError:return probe()
+    raise AssertionError('mixed-key sorting must fail')
 """ + "\nresult = " + expression + "\nprint(len(result))", budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
         var baseline = budget.ReservedBytes;
@@ -59,6 +67,7 @@ def pairs():
             // A synchronous comparer scope must end on the same thread. It
             // cannot remain installed while arbitrary guest/host work awaits.
             Assert.Null(PyStructuralGuard.AmbientContext);
+            Assert.False(PyStructuralGuard.GuestDispatchSuppressed);
             Calls++;
             await Task.Yield();
             cancellationToken.ThrowIfCancellationRequested();

@@ -641,9 +641,26 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public override string ToString() => AsString();
 
-    public bool Equals(PyString? other)
+    public bool Equals(PyString? other) => other is not null && Utf8Span.SequenceEqual(other.Utf8Span);
+
+    internal bool Equals(PyString? other, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        return other is not null && Utf8Span.SequenceEqual(other.Utf8Span);
+        if (context is null) return Equals(other);
+        context.CheckExecution(span);
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (_byteLength != other._byteLength) return false;
+        var left = Utf8Span;
+        var right = other.Utf8Span;
+        for (var offset = 0; offset < left.Length;)
+        {
+            context.CheckExecution(span);
+            var count = Math.Min(4096, left.Length - offset);
+            if (!left.Slice(offset, count).SequenceEqual(right.Slice(offset, count))) return false;
+            offset += count;
+        }
+        context.CheckExecution(span);
+        return true;
     }
 
     public override bool Equals(object? obj) => obj is PyString other && Equals(other);
@@ -685,9 +702,26 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return hash.ToHashCode();
     }
 
-    public static int CompareOrdinal(PyString left, PyString right)
+    public static int CompareOrdinal(PyString left, PyString right) => left.Utf8Span.SequenceCompareTo(right.Utf8Span);
+
+    internal static int CompareOrdinal(PyString left, PyString right, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        return left.Utf8Span.SequenceCompareTo(right.Utf8Span);
+        if (context is null) return CompareOrdinal(left, right);
+        context.CheckExecution(span);
+        if (ReferenceEquals(left, right)) return 0;
+        var lhs = left.Utf8Span;
+        var rhs = right.Utf8Span;
+        var length = Math.Min(lhs.Length, rhs.Length);
+        for (var offset = 0; offset < length;)
+        {
+            context.CheckExecution(span);
+            var count = Math.Min(4096, length - offset);
+            var comparison = lhs.Slice(offset, count).SequenceCompareTo(rhs.Slice(offset, count));
+            if (comparison != 0) return comparison;
+            offset += count;
+        }
+        context.CheckExecution(span);
+        return lhs.Length.CompareTo(rhs.Length);
     }
 
     public object GetIndex(int index) => Index(index);

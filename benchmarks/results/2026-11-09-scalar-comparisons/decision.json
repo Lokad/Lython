@@ -22,6 +22,6 @@
       "logSHA256": "84c03278ac8d5019a357a0bc82494ba89fe4c896f1791c3550e74fdc0dd7707d"
     }
   },
-  "delivery": "Full Windows/Ubuntu actual11/10, originalStress and installed consumers pending one coherent checkpoint.",
+  "delivery": "Full Windows/Ubuntu actual11/10, originalStress both and installed consumers pass in cached CI42640859228/sourcef6861aa5. Excludes subsequent R164.",
   "limitations": "Structural equality/order still uses separate unbounded span primitives. R164 will consolidate the existing PyString kernels with explicit current context, preserving interfaces and protocol/owner semantics. No blanket comparison preemption claim."
 }

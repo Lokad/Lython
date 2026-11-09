@@ -1,0 +1,135 @@
+{
+  "warm-sync": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "milliseconds": 12.3307,
+          "bytes": 3441898.0
+        },
+        "before-control": {
+          "milliseconds": 12.696984375,
+          "bytes": 3441724.0
+        },
+        "candidate": {
+          "milliseconds": 13.00269375,
+          "bytes": 3442358.25
+        }
+      },
+      "allocationPercent": [
+        0.01337198255149108,
+        0.018428264439562803
+      ],
+      "elapsedPercent": [
+        5.4497615707137514,
+        2.407732150965969
+      ],
+      "referenceSpreadPercent": 2.970507554315649
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 8.559925,
+          "bytes": 1496106.75
+        },
+        "before-control": {
+          "milliseconds": 8.717765625,
+          "bytes": 1496113.75
+        },
+        "candidate": {
+          "milliseconds": 8.65250625,
+          "bytes": 1496103.25
+        }
+      },
+      "allocationPercent": [
+        -0.000233940525973253,
+        -0.0007018182942353235
+      ],
+      "elapsedPercent": [
+        1.0815661352173045,
+        -0.7485791406556697
+      ],
+      "referenceSpreadPercent": 1.843948691139241
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "milliseconds": 13.04174375,
+          "bytes": 3266637.0
+        },
+        "before-control": {
+          "milliseconds": 13.73785,
+          "bytes": 3266726.5
+        },
+        "candidate": {
+          "milliseconds": 12.551771875,
+          "bytes": 3266557.75
+        }
+      },
+      "allocationPercent": [
+        -0.0024260424405841974,
+        -0.005165721709488036
+      ],
+      "elapsedPercent": [
+        -3.756950637831691,
+        -8.63365173589754
+      ],
+      "referenceSpreadPercent": 5.337524362875179
+    },
+    {
+      "case": "scripts.file-search.large",
+      "roles": {
+        "before": {
+          "milliseconds": 6.826821875,
+          "bytes": 189373.75
+        },
+        "before-control": {
+          "milliseconds": 7.0001375,
+          "bytes": 189366.0
+        },
+        "candidate": {
+          "milliseconds": 6.22033125,
+          "bytes": 189366.0
+        }
+      },
+      "allocationPercent": [
+        -0.004092436253699816,
+        0.0
+      ],
+      "elapsedPercent": [
+        -8.883938033025075,
+        -11.139870466830114
+      ],
+      "referenceSpreadPercent": 2.5387453806973603
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "milliseconds": 1.1803875,
+          "bytes": 39289.25
+        },
+        "before-control": {
+          "milliseconds": 1.261934375,
+          "bytes": 39289.25
+        },
+        "candidate": {
+          "milliseconds": 1.202921875,
+          "bytes": 39289.25
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": [
+        1.9090658787898063,
+        -4.676352524274496
+      ],
+      "referenceSpreadPercent": 6.908483442937174
+    }
+  ],
+  "limitations": "Same-process isolated ALCs; actual allocation, diagnostic elapsed. Same whole script/fixture pair; not a CPython timing or machine-independent CPU claim. Pending-I/O latency/startup not measured. Includes mediated I/O, output validation and prior-result cleanup; compilation separate, fixture reset/protocol/final cache teardown excluded."
+}

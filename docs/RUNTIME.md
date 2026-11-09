@@ -53,11 +53,13 @@ Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.
 
-Exact number and string operators share scalar dispatch. Long UTF-8 comparisons
-on this path check the current token between bounded byte chunks; custom
-comparison and truth protocols retain their ordinary synchronous/async behavior.
-Some structural string comparisons still use whole-span primitives and observe
-cancellation around the enclosing operation.
+Exact number and string operators share scalar dispatch. UTF-8 equality and
+ordering primitives accept the current execution context for bounded cooperative
+checks. String methods, contextual structural comparisons and native sorting use
+these primitives without retaining caller tokens. Custom comparison and truth
+protocols keep their ordinary synchronous/async behavior. Context-free native
+comparers have no token and retain their whole-span operations; cancellation is
+then observed by the enclosing execution.
 
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before

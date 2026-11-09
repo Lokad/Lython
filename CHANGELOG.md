@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse UTF-8 comparison primitives across scalar operators, explicit string
+  methods, structural comparisons and native sorting. Use the current execution
+  context for cooperative checks and preserve context-free native interfaces.
+
 - Share exact number/string comparison dispatch and remove the executable
   string detour through general operators. Long UTF-8 comparisons observe
   cooperative cancellation between bounded chunks.

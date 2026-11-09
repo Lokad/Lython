@@ -18,7 +18,8 @@ invariants belong in the white-box suite.
 ## Test responsibilities
 
 [Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
-current tokens, terminal admission refusal and allowance reuse. Their long-string
+current tokens, bound-method reuse, nested native comparisons, terminal admission
+refusal and allowance reuse. Their long-string equality and ordering
 cancellation observation runs only as Stress, with both workers joined before
 retiring input. Public comparison values cover independently captured Python
 UTF-8 ordering and branches alongside genuine suspended custom protocols.

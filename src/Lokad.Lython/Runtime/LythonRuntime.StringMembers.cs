@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
             }
             if (name == "__eq__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -87,14 +87,14 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return text.Equals(other);
+                    return text.Equals(other, context, span);
                 }, StrEqSignature);
                 return true;
             }
 
             if (name == "__ne__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -106,14 +106,14 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return !text.Equals(other);
+                    return !text.Equals(other, context, span);
                 }, StrNeSignature);
                 return true;
             }
 
             if (name == "__lt__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -125,14 +125,14 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyString.CompareOrdinal(text, other) < 0;
+                    return PyString.CompareOrdinal(text, other, context, span) < 0;
                 }, StrLtSignature);
                 return true;
             }
 
             if (name == "__le__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -144,14 +144,14 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyString.CompareOrdinal(text, other) <= 0;
+                    return PyString.CompareOrdinal(text, other, context, span) <= 0;
                 }, StrLeSignature);
                 return true;
             }
 
             if (name == "__gt__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -163,14 +163,14 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyString.CompareOrdinal(text, other) > 0;
+                    return PyString.CompareOrdinal(text, other, context, span) > 0;
                 }, StrGtSignature);
                 return true;
             }
 
             if (name == "__ge__")
             {
-                value = BoundCallable.Create((arguments, span, _) =>
+                value = BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyString.CompareOrdinal(text, other) >= 0;
+                    return PyString.CompareOrdinal(text, other, context, span) >= 0;
                 }, StrGeSignature);
                 return true;
             }

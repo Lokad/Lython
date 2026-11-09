@@ -1,0 +1,23 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "label": "nested-json-comparison-hook",
+      "source": "import json\nevents=[]\nclass Same:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append('equal')\n        return True\nfirst=Same()\nsecond=Same()\nprint(json.dumps({((first,),'b'):1,((second,),'a'):2},skipkeys=True,sort_keys=True),bool(events))\n",
+      "stdout": "{} True\n",
+      "stderr": ""
+    },
+    {
+      "label": "native-values-methods-structural",
+      "source": "pairs=[('', ''),('', 'a'),('a',''),('a','b'),('abcdefg','abcdefgh'),('abcdefgh','abcdefg'),('é','ê'),('\\ue000','\\U00010000'),('a\\0b','a\\0c'),('a'*4095+'é','a'*4095+'ê'),('a'*4096+'😀','a'*4096+'😀'),('a'*4097+'😀','a'*4097+'😁')]\nfor left,right in pairs:\n    values=[left==right,left!=right,left<right,left<=right,left>right,left>=right]\n    assert values==[left.__eq__(right),left.__ne__(right),left.__lt__(right),left.__le__(right),left.__gt__(right),left.__ge__(right)]\n    assert values==[[left]==[right],[left]!=[right],[left]<[right],[left]<=[right],[left]>[right],[left]>=[right]]\n    branches=[]\n    if left==right:branches.append('eq')\n    if left!=right:branches.append('ne')\n    if left<right:branches.append('lt')\n    if left<=right:branches.append('le')\n    if left>right:branches.append('gt')\n    if left>=right:branches.append('ge')\n    print(values,branches)\n",
+      "stdout": "[True, False, False, True, False, True] ['eq', 'le', 'ge']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, False, False, True, True] ['ne', 'gt', 'ge']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, False, False, True, True] ['ne', 'gt', 'ge']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n[True, False, False, True, False, True] ['eq', 'le', 'ge']\n[False, True, True, True, False, False] ['ne', 'lt', 'le']\n",
+      "stderr": ""
+    },
+    {
+      "label": "native-sorting-rendering",
+      "source": "import json,difflib\nfirst='a'*4095+'\\ue000'\nsecond='a'*4095+'\\U00010000'\nprint(list(json.loads(json.dumps({second:2,first:1},sort_keys=True)).values()))\nprint(difflib.get_close_matches('a',['é','ä'],n=2,cutoff=0))\nprint(len(repr({first,second})))\n",
+      "stdout": "[1, 2]\n['é', 'ä']\n8205\n",
+      "stderr": ""
+    }
+  ]
+}

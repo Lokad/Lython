@@ -1,0 +1,11 @@
+{
+  "rejectedFrozenPrototype": true,
+  "unchangedBaselinePassed": true,
+  "sourceRestored": false,
+  "mutation": "Original R164 binary always suppressed guest dispatch inside native JSON sorting",
+  "coreSHA256": "10f10feebcfe782542875b6a61ada49b7c7e64a35a3386eae8fc4b8323768556",
+  "baselineCoreSHA256": "2842c85f628cbf19ea093a0a329d85debf7786dd41bfc8d007af24f17d6c7033",
+  "testAssemblySHA256": "85eec3afb4886cf5c79befd3906a818ad410f8633c5eb92db60cf1dd435a3fd1",
+  "failure": "Values are not comparable.",
+  "currentSourceTestPassed": true
+}

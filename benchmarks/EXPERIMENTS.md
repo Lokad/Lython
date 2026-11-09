@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R164 shared UTF-8 comparison milestone](results/2026-11-09-shared-string-comparisons/README.md)
+consolidates contextual kernels and deletes a private loop/static rendering comparer.
+Focused108internal/150public per actual11/10 pass; frozen mutation preserves JSON
+guest-hook availability. Allocation flat; possible desktop CSV+2.41–5.45% debt is
+explicit pending the R165 boundary. Original adversity and corrected-source raw
+controls survive. No CPU claim or refresh of historical CPython rows.
+
 The [R159 current config boundary](results/2026-11-09-config-boundary/README.md)
 measures7c10322c-equivalent/cfeb, stock CPython3.13.16, one unchanged181B file edit.
 Three jobs88.416s/four independent roles: compile1.06–1.07×, warm1.27–1.28×,

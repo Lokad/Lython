@@ -79,10 +79,24 @@ public sealed class ComparisonValueTests
     // Expected output checked independently with isolated CPython 3.13.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "native_utf8_sorts", """
+            import json,difflib
+            first='a'*4095+'\ue000'
+            second='a'*4095+'\U00010000'
+            print(list(json.loads(json.dumps({second:2,first:1},sort_keys=True)).values()))
+            print(difflib.get_close_matches('a',['é','ä'],n=2,cutoff=0))
+            print(len(repr({first,second})))
+            """, """
+            [1, 2]
+            ['é', 'ä']
+            8205
+            """.ReplaceLineEndings("\n") + "\n" },
         { "native_utf8_boundaries", """
             pairs=[('', ''),('', 'a'),('a',''),('a','b'),('abcdefg','abcdefgh'),('abcdefgh','abcdefg'),('é','ê'),('\ue000','\U00010000'),('a\0b','a\0c'),('a'*4095+'é','a'*4095+'ê'),('a'*4096+'😀','a'*4096+'😀'),('a'*4097+'😀','a'*4097+'😁')]
             for left,right in pairs:
                 values=[left==right,left!=right,left<right,left<=right,left>right,left>=right]
+                assert values==[left.__eq__(right),left.__ne__(right),left.__lt__(right),left.__le__(right),left.__gt__(right),left.__ge__(right)]
+                assert values==[[left]==[right],[left]!=[right],[left]<[right],[left]<=[right],[left]>[right],[left]>=[right]]
                 branches=[]
                 if left==right:branches.append('eq')
                 if left!=right:branches.append('ne')

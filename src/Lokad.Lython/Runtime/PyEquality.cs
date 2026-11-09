@@ -67,12 +67,12 @@ internal static class PyEquality
 
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
         {
-            return leftText.Equals(rightText);
+            return leftText.Equals(rightText, PyStructuralGuard.AmbientContext, PyStructuralGuard.AmbientSpan);
         }
 
         if (left is PyPath leftPath && right is PyPath rightPath)
         {
-            return leftPath.Value.Equals(rightPath.Value);
+            return leftPath.Value.Equals(rightPath.Value, PyStructuralGuard.AmbientContext, PyStructuralGuard.AmbientSpan);
         }
 
         if (left is PyList leftList && right is PyList rightList)

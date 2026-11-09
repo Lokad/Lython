@@ -1,0 +1,8 @@
+{
+  "source": "import json\nevents=[]\nclass Same:\n    def __hash__(self):return 1\n    def __eq__(self,other):\n        events.append('equal')\n        return True\nfirst=Same()\nsecond=Same()\nprint(json.dumps({((first,),'b'):1,((second,),'a'):2},skipkeys=True,sort_keys=True),events)\n",
+  "reference": "Python 3.13.2",
+  "cpythonStdout": "{} ['equal', 'equal']\n",
+  "lythonStdout": "{} ['equal']\n",
+  "lythonEvidence": "sort-nested-hook-current.log passes exact prior assertion recorded in json-hook-count-case.cs",
+  "reason": "CPython sorts complete item pairs; key equality can run before key ordering. Lython compares only original keys. Pre-existing difference, separate R165."
+}

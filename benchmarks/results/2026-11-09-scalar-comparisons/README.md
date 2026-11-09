@@ -53,8 +53,9 @@ Fresh sufficient space would skip deletion. Same staged payload resumed; floors
 remain240MiB OS+12MiB evidence. All identity/golden/quiet/ownership/Closed/join/RAM/
 archive-under-lease/localSHA gates pass. No users/fixtures remain.
 
-Full Windows/Ubuntu actual11/10, originalStress and installed consumers are pending
-the coherent delivery checkpoint. Publication postponed. Structural string equality/
+Full Windows/Ubuntu actual11/10, originalStress on both platforms and installed
+consumers pass in [CI42640859228](delivery-ci.json), sourcef6861aa5. Terminal success
+cached; never requery. R164 is separate source and not qualified by this receipt. Publication postponed. Structural string equality/
 ordering still use older whole-span primitives outside this operator path; next
 R164 consolidates the existing kernel with explicit current context. No claim of
 universal string-comparison interruption or completion of the performance objective.

@@ -24,7 +24,7 @@ internal static class PyComparison
 
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
         {
-            return PyString.CompareOrdinal(leftText, rightText);
+            return PyString.CompareOrdinal(leftText, rightText, PyStructuralGuard.AmbientContext, span);
         }
 
         if (left is PyBytes leftBytes && right is PyBytes rightBytes)
@@ -34,7 +34,7 @@ internal static class PyComparison
 
         if (left is PyPath leftPath && right is PyPath rightPath)
         {
-            return PyString.CompareOrdinal(leftPath.Value, rightPath.Value);
+            return PyString.CompareOrdinal(leftPath.Value, rightPath.Value, PyStructuralGuard.AmbientContext, span);
         }
 
         if (left is PyList leftList && right is PyList rightList)

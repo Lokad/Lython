@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
             ExecutionSort.Sort(scored, context, span, (left, right) =>
             {
                 var byScore = right.Score.CompareTo(left.Score);
-                return byScore != 0 ? byScore : PyString.CompareOrdinal(right.Value, left.Value);
+                return byScore != 0 ? byScore : PyString.CompareOrdinal(right.Value, left.Value, context, span);
             });
 
             return new PyList(scored.Take((int)BigInteger.Min(limit, scored.Count)).Select(item => (object)item.Value), context.MemoryGovernor, span);

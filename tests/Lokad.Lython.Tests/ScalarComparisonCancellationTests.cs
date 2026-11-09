@@ -24,6 +24,14 @@ public sealed class ScalarComparisonCancellationTests
             var next = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
             var left = PyString.FromString("left", context.MemoryGovernor, Span);
             var right = PyString.FromString("right", context.MemoryGovernor, Span);
+            var members = new[] { "__eq__", "__ne__", "__lt__", "__le__", "__gt__", "__ge__" }
+                .Select(name =>
+                {
+                    Assert.True(LythonRuntime.StringMembers.TryGetMember(left, name, out var member));
+                    return Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
+                }).ToArray();
+            var leftNested = new PyTuple([new PyList([left], context.MemoryGovernor, Span)], context.MemoryGovernor, Span);
+            var rightNested = new PyTuple([new PyList([right], context.MemoryGovernor, Span)], context.MemoryGovernor, Span);
             var baseline = budget.ReservedBytes;
             LythonRuntimeException? origin = refused ? Assert.Throws<LythonRuntimeException>(() =>
                 context.MemoryGovernor.Reserve(budget.LimitBytes!.Value + 1, Span)) : null;
@@ -43,17 +51,50 @@ public sealed class ScalarComparisonCancellationTests
                         if (origin is not null) Assert.Same(origin, failure);
                     }
                 }
+                foreach (var member in members)
+                    CheckFailure(() => member.Invoke([CallArgumentValue.Positional(right)], Span, context));
+                CheckFailure(() => left.Equals(right, context, Span));
+                CheckFailure(() => left.Equals(left, context, Span));
+                CheckFailure(() => left.Equals(null, context, Span));
+                CheckFailure(() => PyString.CompareOrdinal(left, right, context, Span));
+                CheckFailure(() => PyString.CompareOrdinal(left, left, context, Span));
+                using (PyStructuralGuard.PushAmbient(context, Span))
+                {
+                    CheckFailure(() => PyEquality.AreEqual(leftNested, rightNested));
+                    CheckFailure(() => PyComparison.Compare(leftNested, rightNested, Span));
+                    using (PyStructuralGuard.SuppressGuestDispatch())
+                    {
+                        CheckFailure(() => PyEquality.AreEqual(left, right));
+                        CheckFailure(() => PyComparison.Compare(left, right, Span));
+                    }
+                }
+                // Values and cached bound methods retain no previous caller token.
+                Assert.False(left.Equals(right));
+                Assert.True(PyString.CompareOrdinal(left, right) < 0);
+                Assert.False(Assert.IsType<bool>(members[0].Invoke([CallArgumentValue.Positional(right)], Span, next)));
                 Assert.False(Assert.IsType<bool>(LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, left, right, next, Span)));
                 Assert.Equal(baseline, budget.ReservedBytes);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Null(PyStructuralGuard.AmbientContext);
+                Assert.False(PyStructuralGuard.GuestDispatchSuppressed);
+
+                void CheckFailure(Func<object> operation)
+                {
+                    var failure = Assert.Throws<LythonRuntimeException>(operation);
+                    Assert.Equal(refused ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                    Assert.Equal(Span, failure.Span);
+                    if (origin is not null) Assert.Same(origin, failure);
+                }
             }
             finally { context.State.CloseResources(); next.State.CloseResources(); }
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact, Trait("Category", "Stress")]
-    public async Task ActiveStringComparisonStopsBeforeReturningItsResult()
+    [Theory, Trait("Category", "Stress")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ActiveStringComparisonStopsBeforeReturningItsResult(bool ordered)
     {
         // Keep a real nonallocating comparison longer than a scheduler quantum.
         // This is a concurrent observation, not a deterministic scheduling proof.
@@ -73,7 +114,8 @@ public sealed class ScalarComparisonCancellationTests
             var left = CreateInput();
             var right = CreateInput();
             var baseline = budget.ReservedBytes;
-            _ = LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, PyString.FromString("warm"), PyString.FromString("warm"), context, Span);
+            var comparison = ordered ? BinaryOperatorSyntax.Less : BinaryOperatorSyntax.Equal;
+            _ = LythonRuntime.EvaluateBinaryOperator(comparison, PyString.FromString("warm"), PyString.FromString("warm"), context, Span);
             using var started = new ManualResetEventSlim();
             using var cancellerReady = new ManualResetEventSlim();
             var canceller = Task.Factory.StartNew(() =>
@@ -91,7 +133,7 @@ public sealed class ScalarComparisonCancellationTests
                 run = Task.Factory.StartNew(() =>
                 {
                     started.Set();
-                    try { return LythonRuntime.EvaluateBinaryOperator(BinaryOperatorSyntax.Equal, left, right, context, Span); }
+                    try { return LythonRuntime.EvaluateBinaryOperator(comparison, left, right, context, Span); }
                     finally { requestedAtCompletion = cancellation.IsCancellationRequested; }
                 }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 var observed = await Record.ExceptionAsync(async () => await run.WaitAsync(TimeSpan.FromSeconds(10)));

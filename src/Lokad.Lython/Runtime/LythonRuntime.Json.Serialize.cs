@@ -22,6 +22,11 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 entries.Add((pair.Key, pair.Value));
             }
+            // Supply the current token without changing whether an enclosing
+            // structural operation already allowed guest comparison hooks.
+            var hadGuestContext = PyStructuralGuard.AmbientContext is not null && PyStructuralGuard.AmbientSpan is not null;
+            using var ambient = PyStructuralGuard.PushAmbient(context, span);
+            using var native = hadGuestContext ? (PyStructuralGuard.ComparerScope?)null : PyStructuralGuard.SuppressGuestDispatch();
             ExecutionSort.Sort(entries, context, span, (left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
             return entries;
         }

@@ -533,7 +533,8 @@ internal static class PyRendering
                 rendered.Add(ToReprPyStringCore(item, context, activeContainers));
             }
 
-            ExecutionSort.Sort(rendered, context.Context, null, PyStringOrdinalComparer.Instance.Compare);
+            ExecutionSort.Sort(rendered, context.Context, null,
+                (left, right) => PyString.CompareOrdinal(left, right, context.Context, null));
             return JoinRenderedSequence("{", rendered, "}", context);
         }
         finally
@@ -561,28 +562,4 @@ internal static class PyRendering
         finally { builder.Release(); }
     }
 
-    internal sealed class PyStringOrdinalComparer : IComparer<PyString>
-    {
-        public static readonly PyStringOrdinalComparer Instance = new();
-
-        public int Compare(PyString? x, PyString? y)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return 0;
-            }
-
-            if (x is null)
-            {
-                return -1;
-            }
-
-            if (y is null)
-            {
-                return 1;
-            }
-
-            return PyString.CompareOrdinal(x, y);
-        }
-    }
 }

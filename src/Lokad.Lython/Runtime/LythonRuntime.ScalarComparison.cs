@@ -27,31 +27,13 @@ internal sealed partial class LythonRuntime
             return true;
         }
         if (left is not PyString leftText || right is not PyString rightText) return false;
-        result = CompareStringScalars(op, leftText, rightText, context, span);
-        return true;
-    }
-
-    private static bool CompareStringScalars(BinaryOperatorSyntax op, PyString left, PyString right,
-        ExecutionContext context, LythonSourceSpan span)
-    {
-        context.CheckExecution(span);
-        if (ReferenceEquals(left, right)) return CompareOrderedResult(op, 0);
-        var lhs = left.Utf8Span;
-        var rhs = right.Utf8Span;
-        if (op is BinaryOperatorSyntax.Equal or BinaryOperatorSyntax.NotEqual && lhs.Length != rhs.Length)
-            return op == BinaryOperatorSyntax.NotEqual;
-        var comparison = 0;
-        var length = Math.Min(lhs.Length, rhs.Length);
-        for (var offset = 0; offset < length;)
+        result = op switch
         {
-            context.CheckExecution(span);
-            var count = Math.Min(4096, length - offset);
-            comparison = lhs.Slice(offset, count).SequenceCompareTo(rhs.Slice(offset, count));
-            if (comparison != 0) break;
-            offset += count;
-        }
-        context.CheckExecution(span);
-        return CompareOrderedResult(op, comparison == 0 ? lhs.Length.CompareTo(rhs.Length) : comparison);
+            BinaryOperatorSyntax.Equal => leftText.Equals(rightText, context, span),
+            BinaryOperatorSyntax.NotEqual => !leftText.Equals(rightText, context, span),
+            _ => CompareOrderedResult(op, PyString.CompareOrdinal(leftText, rightText, context, span)),
+        };
+        return true;
     }
 
     private static bool CompareOrderedResult(BinaryOperatorSyntax op, int comparison) => op switch
