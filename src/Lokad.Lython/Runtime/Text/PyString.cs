@@ -21,14 +21,20 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private struct InlineUtf8 { private long _first; }
 
     private byte[]? _utf8;
+    // Keep payload reads direct. Optional indexing metadata retains the original
+    // governor without giving every string a separate rune-table reference.
+    private object? _metadata;
+    private sealed class RuneIndexCache(MemoryGovernor? governor, int[] offsets)
+    {
+        internal readonly MemoryGovernor? Governor = governor;
+        internal readonly int[] Offsets = offsets;
+    }
     private InlineUtf8 _inlineUtf8;
     // Zero means adopted array storage. A positive capacity also funds any
     // later stable memory borrow; native span readers keep using inline bytes.
     private readonly byte _inlineCapacity;
     private int _byteLength;
-    private readonly MemoryGovernor? _memoryGovernor;
     private int _runeLength = -1;
-    private int[]? _runeByteOffsets;
     private int _hashCode;
     private bool _hashCodeComputed;
 
@@ -38,7 +44,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     {
         _utf8 = utf8;
         _byteLength = byteLength;
-        _memoryGovernor = governor;
+        _metadata = governor;
     }
 
     private PyString(ReadOnlySpan<byte> utf8, int capacity, MemoryGovernor? governor)
@@ -48,7 +54,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         utf8.CopyTo(InlineBytes);
         _inlineCapacity = checked((byte)capacity);
         _byteLength = utf8.Length;
-        _memoryGovernor = governor;
+        _metadata = governor;
     }
 
     // Factory-private construction. The whole capacity is already reserved;
@@ -59,7 +65,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         if (capacity <= InlineUtf8Capacity) _inlineCapacity = (byte)capacity;
         else _utf8 = new byte[capacity];
         _byteLength = capacity;
-        _memoryGovernor = governor;
+        _metadata = governor;
     }
 
     internal static PyString CreateReservedUtf8(int capacity, MemoryGovernor? governor)
@@ -149,8 +155,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private ReadOnlyMemory<byte> MaterializeInlineMemory()
     {
         // Initial 128B metadata admission covers this at-most-eight-byte
-        // array in addition to the wrapper. This prepaid data view also
-        // stays available to native cleanup after command refusal.
+        // array and the optional indexing carrier in addition to the wrapper.
+        // This prepaid data view stays available to cleanup after refusal.
         lock (this)
         {
             if (_utf8 is not { } bytes)
@@ -162,7 +168,14 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         }
     }
 
-    public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+    public MemoryGovernor? OwnerMemoryGovernor
+    {
+        get
+        {
+            var metadata = Volatile.Read(ref _metadata);
+            return metadata is RuneIndexCache indexed ? indexed.Governor : (MemoryGovernor?)metadata;
+        }
+    }
 
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
         OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedOwnedBytes, out chargeBytes);
@@ -332,7 +345,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public PyString Concat(PyString other)
     {
-        var governor = _memoryGovernor ?? other._memoryGovernor;
+        var governor = OwnerMemoryGovernor ?? other.OwnerMemoryGovernor;
         var allocationSpan = PyStructuralGuard.AmbientSpan;
         return ConcatCore(other, governor, allocationSpan);
     }
@@ -362,7 +375,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public PyString Repeat(int count)
     {
-        return RepeatCore(count, _memoryGovernor, PyStructuralGuard.AmbientSpan);
+        return RepeatCore(count, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
     }
 
     public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
@@ -410,9 +423,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         var resultLength = CheckedByteLength(totalBytes, PyStructuralGuard.AmbientSpan);
         Span<byte> inline = stackalloc byte[InlineUtf8Capacity];
-        var result = resultLength <= InlineUtf8Capacity ? null : _memoryGovernor is null
+        var result = resultLength <= InlineUtf8Capacity ? null : OwnerMemoryGovernor is null
             ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, _memoryGovernor, PyStructuralGuard.AmbientSpan);
+            : AllocateGovernedUtf8(resultLength, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
         var destination = result is null ? inline[..resultLength] : result.AsSpan();
         var offset = 0;
         foreach (var runeIndex in runeIndices)
@@ -422,8 +435,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             offset += length;
         }
 
-        return result is null ? CopyFromUtf8(destination, _memoryGovernor, PyStructuralGuard.AmbientSpan)
-            : new PyString(result, result.Length, _memoryGovernor);
+        return result is null ? CopyFromUtf8(destination, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan)
+            : new PyString(result, result.Length, OwnerMemoryGovernor);
     }
 
     public PyString Slice(PyIndexing.SliceBounds bounds)
@@ -449,9 +462,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         var resultLength = CheckedByteLength(totalBytes, PyStructuralGuard.AmbientSpan);
         Span<byte> inline = stackalloc byte[InlineUtf8Capacity];
-        var result = resultLength <= InlineUtf8Capacity ? null : _memoryGovernor is null
+        var result = resultLength <= InlineUtf8Capacity ? null : OwnerMemoryGovernor is null
             ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, _memoryGovernor, PyStructuralGuard.AmbientSpan);
+            : AllocateGovernedUtf8(resultLength, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
         var destination = result is null ? inline[..resultLength] : result.AsSpan();
         var offset = 0;
         for (long runeIndex = bounds.Start; bounds.Step > 0 ? runeIndex < bounds.End : runeIndex > bounds.End; runeIndex += bounds.Step)
@@ -461,8 +474,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             offset += length;
         }
 
-        return result is null ? CopyFromUtf8(destination, _memoryGovernor, PyStructuralGuard.AmbientSpan)
-            : new PyString(result, result.Length, _memoryGovernor);
+        return result is null ? CopyFromUtf8(destination, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan)
+            : new PyString(result, result.Length, OwnerMemoryGovernor);
     }
 
     public PyString Index(int runeIndex)
@@ -472,7 +485,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         {
             return AsciiCharacters[Utf8Span[start]];
         }
-        return CopyFromUtf8(Utf8Span.Slice(start, length), _memoryGovernor, PyStructuralGuard.AmbientSpan);
+        return CopyFromUtf8(Utf8Span.Slice(start, length), OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
     }
 
     public IEnumerable<PyString> EnumerateRunes()
@@ -487,7 +500,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 continue;
             }
 
-            yield return CopyFromUtf8(Utf8Span.Slice(byteIndex, runeLength), _memoryGovernor, PyStructuralGuard.AmbientSpan);
+            yield return CopyFromUtf8(Utf8Span.Slice(byteIndex, runeLength), OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
             byteIndex += runeLength;
         }
     }
@@ -506,7 +519,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(Utf8Span, destination);
 
     internal long CommittedOwnedBytes => EstimateApproximateBytes(_inlineCapacity != 0 ? _inlineCapacity : _utf8!.Length)
-        + (_memoryGovernor is not null && _runeByteOffsets is { } offsets ? 32L + 4L * offsets.Length : 0);
+        + (OwnerMemoryGovernor is not null && _metadata is RuneIndexCache indexed ? 32L + 4L * indexed.Offsets.Length : 0);
 
     public string AsString(int runeIndex)
     {
@@ -564,7 +577,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         if (count == 0) return this;
         context ??= PyStructuralGuard.AmbientContext;
         span ??= PyStructuralGuard.AmbientSpan;
-        var governor = context?.MemoryGovernor ?? _memoryGovernor;
+        var governor = context?.MemoryGovernor ?? OwnerMemoryGovernor;
         context?.CheckExecution(span);
         var remaining = count < 0 ? long.MaxValue : count;
         if (oldValue._byteLength == 0)
@@ -824,7 +837,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return Empty;
         }
 
-        return CopyFromUtf8(Utf8Span[startByte..endByte], _memoryGovernor, PyStructuralGuard.AmbientSpan);
+        return CopyFromUtf8(Utf8Span[startByte..endByte], OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
     }
 
     public static int IndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
@@ -854,22 +867,25 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     private int[] GetRuneByteOffsets()
     {
-        if (_runeByteOffsets is not null)
+        if (Volatile.Read(ref _metadata) is RuneIndexCache cached)
         {
-            return _runeByteOffsets;
+            return cached.Offsets;
         }
 
         // Cache capacity describes its own charge; no separate accumulator.
         var context = PyStructuralGuard.AmbientContext;
         var span = PyStructuralGuard.AmbientSpan;
+        var governor = OwnerMemoryGovernor;
         var count = Length;
         var bytes = 32L + 4L * ((long)count + 1);
-        _memoryGovernor?.Reserve(bytes, span);
+        governor?.Reserve(bytes, span);
+        var unpublishedBytes = bytes;
         try
         {
             // Admission can invoke the host. Keep a cancelled construction
             // private and refund its reservation before allocating the cache.
             context?.CheckExecution(span);
+            if (Volatile.Read(ref _metadata) is RuneIndexCache reentered) return reentered.Offsets;
             var offsets = new int[count + 1];
             var runeIndex = 0;
             for (var byteIndex = 0; byteIndex < _byteLength;)
@@ -879,14 +895,24 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
                 byteIndex += GetRuneLengthAtByteIndex(byteIndex);
             }
             offsets[runeIndex] = _byteLength;
-            context?.CheckExecution(span);
-            _memoryGovernor?.Commit(bytes);
-            return _runeByteOffsets = offsets;
+            // Reuse the existing short publication lock; admission and scans
+            // stay outside it. A reentrant cache keeps its original funding.
+            lock (this)
+            {
+                context?.CheckExecution(span);
+                if (_metadata is RuneIndexCache published) return published.Offsets;
+                // Original metadata headroom prepays this small carrier. Only
+                // the substantial rune table needs the additional admission.
+                var indexed = new RuneIndexCache(governor, offsets);
+                governor?.Commit(bytes);
+                unpublishedBytes = 0;
+                Volatile.Write(ref _metadata, indexed);
+                return offsets;
+            }
         }
-        catch
+        finally
         {
-            _memoryGovernor?.ReleaseReserved(bytes);
-            throw;
+            governor?.ReleaseReserved(unpublishedBytes);
         }
     }
 

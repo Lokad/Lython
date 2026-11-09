@@ -1,0 +1,67 @@
+[
+  {
+    "case": "scripts.csv-validated-records.large",
+    "allocatedBytes": {
+      "before": 171161.25,
+      "before-control": 171161.25,
+      "candidate": 171081.25
+    },
+    "changePercent": [
+      -0.04673955115425121,
+      -0.04673955115425121
+    ],
+    "limits": "Compilation construction/disposal only; short desktop batches do not qualify compile CPU."
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "allocatedBytes": {
+      "before": 125897.25,
+      "before-control": 125897.25,
+      "candidate": 125857.25
+    },
+    "changePercent": [
+      -0.0317719410074524,
+      -0.0317719410074524
+    ],
+    "limits": "Compilation construction/disposal only; short desktop batches do not qualify compile CPU."
+  },
+  {
+    "case": "scripts.report-render.large",
+    "allocatedBytes": {
+      "before": 112681.25,
+      "before-control": 112681.25,
+      "candidate": 112593.25
+    },
+    "changePercent": [
+      -0.07809640024405429,
+      -0.07809640024405429
+    ],
+    "limits": "Compilation construction/disposal only; short desktop batches do not qualify compile CPU."
+  },
+  {
+    "case": "scripts.unicode-index-report.control",
+    "allocatedBytes": {
+      "before": 80673.25,
+      "before-control": 80673.25,
+      "candidate": 80649.25
+    },
+    "changePercent": [
+      -0.029749638201015394,
+      -0.029749638201015394
+    ],
+    "limits": "Compilation construction/disposal only; short desktop batches do not qualify compile CPU."
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "allocatedBytes": {
+      "before": 100041.25,
+      "before-control": 100041.25,
+      "candidate": 99945.25
+    },
+    "changePercent": [
+      -0.0959604163282668,
+      -0.0959604163282668
+    ],
+    "limits": "Compilation construction/disposal only; short desktop batches do not qualify compile CPU."
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "version": "Python 3.13.2",
+  "source": "total = 0\nwith open('input.txt') as source:\n    for line in source:\n        total += ord(line[0]) + ord(line[1]) + len(line)\nwith open('report.txt', 'w', newline='') as target:\n    target.write(str(total) + chr(10))\nprint(total)\n",
+  "inputSHA256": "6407629874062cd247fb522578af60334561bc2461d5a9c4ab7e417c90a27e87",
+  "output": "132568064\n",
+  "physicalStdoutBase64": "MTMyNTY4MDY0DQo=",
+  "stdoutNormalization": "Windows physical CRLF becomes logical LF; report file must independently contain exact LF bytes.",
+  "files": {
+    "report.txt": "132568064\n"
+  },
+  "purpose": "Independent trusted CPython golden, not a timing baseline",
+  "preparationCorrections": "Original source wrote a literal backslash-n; corrected source uses chr(10). Initial capture also compared physical Windows stdout CRLF with logical LF. Both original fixture directories/scripts remain; no timed data existed."
+}

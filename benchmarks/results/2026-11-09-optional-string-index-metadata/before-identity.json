@@ -1,0 +1,5 @@
+{
+  "revision": "230a0572c9f8507c03fc7583882a500d22f73f27",
+  "sourceSHA256": "a37dbfe6c8105d02c3bc34459185c9c6cd8ed9fbaf0c8fe8550dd4c1a2cece05",
+  "hypothesis": "Replace always-present rune-offset reference with an optional indexing carrier behind existing backing reference. Preserve cached scalar length and inline reads; measure managed model size first."
+}

@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "focused-internal-net11.0": 42,
+    "focused-public-net11.0": 4042,
+    "focused-internal-net10.0": 42,
+    "focused-public-net10.0": 4042
+  },
+  "net11InternalInitial": 42,
+  "stressExcluded": true,
+  "limitations": "Focused current string/storage/Unicode/CSV/JSON/regex checks only; full platform/stress/package batches at next coherent boundary."
+}

@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R173 optional index metadata milestone](results/2026-11-09-optional-string-index-metadata/README.md)
+removes every string's separate rune-table reference while retaining direct UTF-8
+and scalar-length caches. Actual56B versus64B shell;42internal/4042public each11/10
+pass. Deterministic old reentry overcharge232vs184B fails; keep only one published
+cache and refund unpublished admission. Desktop allocationsCSV−3.58/text−4.94/report
+−2.01%, Unicode-index+1.26%. One quiet5job140.642s confirmation overlaps controls;
+no CPU gain/equivalence claim. Retain the coherent field reduction with indexed cost;
+broader whole-script CPU objective remains active. Original payload-carrier adversity,
+fixture, disk, unused desktop-symbol/apphost and missing protocol-link failures
+remain. Corrected finite owner archives all5jobs plus failed first start; localSHA/
+all cleanup gates pass, no remaining users. Full new-source delivery remains separate.
+
 The [R172 native text-key cancellation correction](results/2026-11-09-native-text-key-cancellation/README.md)
 forwards the current caller through actual native dictionary equality even when
 hashes are cached. One frozen-old read returns after cancellation; final27internal/

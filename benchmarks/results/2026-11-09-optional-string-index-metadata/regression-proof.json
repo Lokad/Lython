@@ -1,0 +1,8 @@
+{
+  "baselineRevision": "R172102bed2b-equivalent precommit core, source230a0572 equivalent",
+  "coreSHA256": "aa2bab72766faa1e3efa4a1fb6ee2e6508910ba32be0eef5d3a44d1c2967c77e",
+  "testAssemblySHA256": "8463f4b008eff3c93d0d88503c33b2411a449f4cd3ac5c7da8d0fa6d37e08ddd",
+  "failed": 1,
+  "passed": 3,
+  "condition": "Admission callback recursively constructs the same rune index. Old code commits two caches, new code reuses the published one and refunds only unpublished working admission. Other stable-view cases pass old/new."
+}

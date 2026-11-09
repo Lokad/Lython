@@ -52,6 +52,10 @@ values. Native data views remain available to cleanup after command refusal.
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.
+The optional index shares metadata with the original storage-owner reference;
+scalar length and UTF-8 payload access remain direct. The base string estimate
+prepays the small metadata carrier; the rune table is admitted separately. Reentrant
+construction reuses a completed cache and refunds only unpublished working storage.
 
 Exact number and string operators share scalar dispatch. UTF-8 equality and
 ordering primitives accept the current execution context for bounded cooperative

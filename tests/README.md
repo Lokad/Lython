@@ -17,6 +17,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[String storage publication](Lokad.Lython.Tests/StringStoragePublicationTests.cs)
+checks stable UTF-8 borrows before and after indexing, cache publication during
+admission reentry, retained owner funding and refund of duplicate unpublished work.
+Existing index-cache checks retain cancellation and first-refusal rollback coverage.
+
 [Native text-key cancellation](Lokad.Lython.Tests/NativeTextKeyCancellationTests.cs)
 checks explicit comparer provenance and first-refusal priority. Stress probes warm
 both key hashes before concurrent dictionary reads/writes, preserve correct early

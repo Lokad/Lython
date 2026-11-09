@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate optional Unicode index metadata, preserving direct UTF-8 storage,
+  stable memory borrows and cache funding through reentrant admission.
+
 - Forward the current execution context through native dictionary text-key equality,
   including probes whose key hashes were already cached.
 
