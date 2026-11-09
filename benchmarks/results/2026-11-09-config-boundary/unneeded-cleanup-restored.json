@@ -1,0 +1,10 @@
+{
+  "restoredExactArchive": true,
+  "sha256": "db1091c851b67974b2eef1cb2544f2ed662aa03cdda768ee19cbad9545175f6e",
+  "path": "/home/lokad/lython-bench-checks/bulk-whitespace-b508-20261109/observations.tgz",
+  "originalModeOwnerGroupRestored": true,
+  "freshIdleLease": true,
+  "noTimedWorkStarted": true,
+  "reason": "Fresh free space already exceeded original payload/floor requirement. Preparatory duplicate cleanup unnecessary; restore exact tracked bytes without overwriting another file.",
+  "freeBytes": 299110400
+}

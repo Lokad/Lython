@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R159 current config boundary](results/2026-11-09-config-boundary/README.md)
+measures7c10322c-equivalent/cfeb, stock CPython3.13.16, one unchanged181B file edit.
+Three jobs88.416s/four independent roles: compile1.06–1.07×, warm1.27–1.28×,
+complete1.11–1.12×; maxIQR2.98%. Only config guide rows refresh; old source labels/
+guide remain. No setup-cause or individual-gain attribution. Initial duplicate
+cleanup was unnecessary; exact tracked bytes/mode/owner/group restored before
+timing, both proofs retained, floors unchanged. All quiet/output/owner/cleanup/
+archive gates pass; next bounded step is current on-CPU attribution, not a cache
+or default-stack redesign from aggregate elapsed.
+
 The [R158 frontend-flow source gate](results/2026-11-09-frontend-flow-gate/README.md)
 reuses R128 traces; current name/abstract statement visitors are unchanged. Name
 diagnostics account for0.43/1.75% of old config/CSV compile samples, distinct from
