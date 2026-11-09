@@ -5281,3 +5281,26 @@ unresolved debt. Original desktop JSON+6.39–8.03% and drifting controls remain
 coherent deletion/affected benefit; no universal CPU/neutrality or final-binary timing
 claim. All quiet/identity/output/funding/join/RAM/archive/localSHA gates pass. No space
 recovery/floor change; terminal cached, no users. Full delivery batches; broader work open.
+
+R142 delivery42577712653/source081052fa: both OS .NET11 public16,875pass; internal
+4,448pass/four obsolete mirroring assertions fail. Later10/package/Stress skipped.
+Test-only27353cfb removes that expectation and unused flags, keeping every source,
+operand/mutation/alias/admission/cleanup assertion. Four failures reproduced;31
+focused pass peractual11/10. Originalfailure/logs preserved; corrected delivery batches.
+
+## Current file-search call and frame attribution (2026-11-09 Paris)
+
+[R143/B501](results/2026-11-09-search-runtime-attribution/README.md), fresh081052fa/
+core3f8d, unchanged maintained search script and goldens. One6s wall capture after
+6s execution warmup,4.842s recorded execution, normalGC/tiering and namedguest4.29CPU s.
+843guest/328caller/53tiering samples,4.86%guest unknown. Innermost observed prefix31.67%,
+host15.18%,native call9.49%,admission9.02%,guard7.83%,evaluation6.88%,scalar5.22%,context/
+builtin initialization0.36%each. Caller reset230/host69/protocol27 separated. Useful
+inlined/affix work remains inside these shares; no removable-cost/elapsed/CPython claim.
+Source disproves new frame/argument/iterator construction phase for this helper.
+Direct final UTF8 casing/one Unicode pass/fused final words/commit without resize
+also already delivered. Source gate/capture complete; next bounded design gate is
+shared helper proof/execution, preserving guards before effects and avoiding narrow
+affix intrinsics, another guard VM/cache/arena or second capture from these counts.
+Allquiet/identity/golden/Closed/join/maps/RAM/archive/localSHA gates pass; no space
+recovery or floor change. Terminal cached/no users. Broader performance remains open.

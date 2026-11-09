@@ -133,7 +133,8 @@ not additive or universal CPU gains:
 Other delivered source pairs, rejected designs, detailed qualification and original
 failed conditions remain in [experimental history](../benchmarks/EXPERIMENTS.md),
 the [previous guide](../benchmarks/results/2026-11-08-primitive-cpython-checkpoint/prior-BENCHMARKS.md)
-and [benchmark tooling](../benchmarks/README.md). [Current text CPU attribution](../benchmarks/results/2026-11-09-text-runtime-attribution/README.md)
-finds native helper guards/evaluation small; the larger VM-loop category includes
-inlined useful work. It does not establish that all interpreter work is removable
-or justify a new value representation from allocation counts alone.
+and [benchmark tooling](../benchmarks/README.md). Sampled attribution is workload-specific:
+[text](../benchmarks/results/2026-11-09-text-runtime-attribution/README.md) finds native
+helper guards/evaluation small, while [protected search](../benchmarks/results/2026-11-09-search-runtime-attribution/README.md)
+finds roughly 15% in those categories and little frame construction. Categories
+include useful inlined work; these are not removable-cost estimates or predicted gains.
