@@ -1,0 +1,130 @@
+{
+  "rows": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "milliseconds": 0.606275,
+          "allocation": 184778.0
+        },
+        "before-control": {
+          "milliseconds": 0.61335,
+          "allocation": 184778.0
+        },
+        "candidate": {
+          "milliseconds": 0.594375,
+          "allocation": 178450.0
+        }
+      },
+      "allocationPercent": [
+        -3.4246501206853575,
+        -3.4246501206853575
+      ],
+      "elapsedPercent": [
+        -1.9628056574986674,
+        -3.093665932990941
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 0.57705,
+          "allocation": 135314.0
+        },
+        "before-control": {
+          "milliseconds": 0.568625,
+          "allocation": 135314.0
+        },
+        "candidate": {
+          "milliseconds": 0.654075,
+          "allocation": 131338.0
+        }
+      },
+      "allocationPercent": [
+        -2.938350798882594,
+        -2.938350798882594
+      ],
+      "elapsedPercent": [
+        13.348063426046263,
+        15.027478566717933
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 0.60245,
+          "allocation": 146666.0
+        },
+        "before-control": {
+          "milliseconds": 0.581025,
+          "allocation": 146666.0
+        },
+        "candidate": {
+          "milliseconds": 0.6213,
+          "allocation": 140458.0
+        }
+      },
+      "allocationPercent": [
+        -4.232746512484143,
+        -4.232746512484143
+      ],
+      "elapsedPercent": [
+        3.1288903643455823,
+        6.931715502775249
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "milliseconds": 0.4965,
+          "allocation": 122538.0
+        },
+        "before-control": {
+          "milliseconds": 0.504175,
+          "allocation": 122538.0
+        },
+        "candidate": {
+          "milliseconds": 0.486775,
+          "allocation": 115714.0
+        }
+      },
+      "allocationPercent": [
+        -5.568884754117088,
+        -5.568884754117088
+      ],
+      "elapsedPercent": [
+        -1.958710976837863,
+        -3.4511826250805844
+      ]
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "milliseconds": 0.3913,
+          "allocation": 115298.0
+        },
+        "before-control": {
+          "milliseconds": 0.41845,
+          "allocation": 115298.0
+        },
+        "candidate": {
+          "milliseconds": 0.4081,
+          "allocation": 103890.0
+        }
+      },
+      "allocationPercent": [
+        -9.89436070009887,
+        -9.89436070009887
+      ],
+      "elapsedPercent": [
+        4.29338103756709,
+        -2.4734137889831476
+      ]
+    }
+  ],
+  "limitations": "Compilation only through existing diagnostic driver, allocation includes validation/owned code teardown; normal GC/tiering and same-process ALCs, desktop elapsed uncertain. No compile-to-result or CPython inference."
+}

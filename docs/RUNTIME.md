@@ -175,7 +175,10 @@ scopes omit binding analysis after their final relevant annotation check. Consta
 regex analysis retains its full conservative bindings across dead/deferred scopes.
 
 Compilation tokenizes/parses source, validates the subset, computes scope facts,
-lowers constructs, and builds executable instructions. The complete validity walk
+lowers constructs, and builds executable instructions. String-literal decoding borrows
+source spans; unescaped bodies need no decoding builder, while adjacent pieces
+create concatenation storage only when needed. Already-parsed f-string text uses
+the same body decoder directly. The complete validity walk
 selects generator, modern-type and future-import validation only when the relevant
 syntax occurs, including in dead bodies. Those validators retain their own scope
 rules and diagnostic order. Comprehension and type-parameter validation allocate

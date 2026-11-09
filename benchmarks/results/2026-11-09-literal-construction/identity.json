@@ -1,0 +1,16 @@
+{
+  "baseline": "8472935f/coreac6b; full CI42543394041 pending separately",
+  "candidate": "R129 working source-to-literal consolidation",
+  "coreSHA256": {
+    "before": "ac6bda6e26430beb475bacfc9abed4e560a55929dac26e7c95eb99b151479699",
+    "candidate": "1be2a325f98e06e0c874142c9a173f13c56da5680a2d48c5f95fbf50d09faf27"
+  },
+  "changedSources": {
+    "src/Lokad.Lython/Frontend/Parser.Expressions.Primary.cs": "06fcc87ef091b6b0d8052c7d4e505212c4faf7348a09a7e9df16671b393aabbf",
+    "src/Lokad.Lython/Frontend/Parser.StringLiterals.cs": "b9e60e9ae530eb51b8455cff4521acd9b67175d642d49608ef7e8b774940134f",
+    "src/Lokad.Lython/Frontend/TokenizedSource.cs": "1d31c2a2e06363449f3a2898fa884ffd6952bdf100375b0fa5f52020d9428e1d"
+  },
+  "patchBase": "8472935f",
+  "qualification": "42internal/529public focused eachactual11/10 pass, no test changes",
+  "contract": "AST/static strings and runtime UTF8 ownership unchanged; compilation admission estimate unchanged; warm execution expected unchanged"
+}

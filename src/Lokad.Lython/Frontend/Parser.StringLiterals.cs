@@ -12,11 +12,11 @@ internal sealed partial class Parser
             : message == SyntaxNestingLimitMessage ? "LA0003"
             : "LA1007";
 
-    private bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
+    private bool TryDecodeStringLiteral(ReadOnlySpan<char> literal, [MaybeNullWhen(false)] out string value, out string message)
         => TryDecodeStringLiteral(literal, out value, out message, true);
 
     private bool TryDecodeStringLiteral(
-        string literal,
+        ReadOnlySpan<char> literal,
         [MaybeNullWhen(false)] out string value,
         out string message,
         bool decodeUnicodeEscapes)
@@ -67,14 +67,26 @@ internal sealed partial class Parser
             return false;
         }
 
-        if (isRaw)
+        return TryDecodeStringBody(literal[start..end], isRaw, out value, out message, decodeUnicodeEscapes);
+    }
+
+    private bool TryDecodeStringBody(ReadOnlySpan<char> literal, bool isRaw,
+        [MaybeNullWhen(false)] out string value, out string message, bool decodeUnicodeEscapes = true)
+    {
+        CheckCancellation();
+        value = string.Empty;
+        var start = 0;
+        var end = literal.Length;
+        // Borrow the token body until its one AST value is materialized. Only
+        // actual escape decoding needs mutable output storage.
+        if (isRaw || literal.IndexOf('\\') < 0)
         {
-            // Tokenization has already established the closing delimiter. Raw strings
-            // preserve every body code unit here, including backslash sequences.
-            value = literal[start..end];
-            return ValidateScalarString(value, out message);
+            if (!ValidateScalarString(literal, out message)) return false;
+            value = literal.ToString();
+            return true;
         }
 
+        message = "Invalid string literal. Malformed literal body.";
         var builder = new System.Text.StringBuilder(end - start);
         for (var i = start; i < end; i++)
         {
@@ -130,7 +142,7 @@ internal sealed partial class Parser
                     break;
                 case 'x':
                     if (i + 2 >= end ||
-                        !byte.TryParse(literal.AsSpan(i + 1, 2), System.Globalization.NumberStyles.HexNumber, null, out var hex))
+                        !byte.TryParse(literal.Slice(i + 1, 2), System.Globalization.NumberStyles.HexNumber, null, out var hex))
                     {
                         message = "Invalid string literal. Malformed \\x escape; expected two hexadecimal digits.";
                         return false;
@@ -210,7 +222,7 @@ internal sealed partial class Parser
         return ValidateScalarString(value, out message);
     }
 
-    private bool ValidateScalarString(string text, out string message)
+    private bool ValidateScalarString(ReadOnlySpan<char> text, out string message)
     {
         for (var i = 0; i < text.Length; i++)
         {
@@ -229,7 +241,7 @@ internal sealed partial class Parser
     }
 
     private static bool TryReadHexCodePoint(
-        string literal,
+        ReadOnlySpan<char> literal,
         int start,
         int length,
         int end,
@@ -362,10 +374,8 @@ internal sealed partial class Parser
             return ValidateScalarString(value, out message);
         }
 
-        // This is an already-delimited f-string text segment, so synthetic
-        // triple delimiters let the shared decoder process its body without
-        // interpreting any quotes in the segment as token boundaries.
-        return TryDecodeStringLiteral("\"\"\"" + text + "\"\"\"", out value, out message);
+        // A parsed f-string text segment already is a body, not another token.
+        return TryDecodeStringBody(text, isRaw: false, out value, out message);
     }
 
 }

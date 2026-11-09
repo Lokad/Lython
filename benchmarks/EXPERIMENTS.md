@@ -4996,3 +4996,22 @@ zero-budget/join/RAM/archive/local gates pass; terminal cached, no production ch
 Next selectedR129 consolidates actual string-literal staging within parsing:
 source spans/canonical body decoder/lazy concatenation, not a new AST/value/backend.
 Original raw/maps and phase classifier preserved. Publication postponed.
+
+
+## Source-to-literal construction consolidation (2026-11-09 Paris)
+
+[R129/B489](results/2026-11-09-literal-construction/README.md), committed847/coreac6b
+versus prototype1be2. Borrowed token spans, canonical literal/body decoder, direct
+unescaped materialization, lazy adjacent concatenation/formatted parts. Removes
+ordinary token copy/two-builder staging and synthetic f-string triple delimiters;
+AST/static strings and runtime UTF8 storage/owners unchanged.42internal/529public
+focused peractual11/10 pass; no tests/assertions changed. Compilation allocation
+−2.94..−9.89% (config−11408B), warm neutralwithin0.023%; admission estimate unchanged.
+Desktop textcompile+13.35..+15.03%/JSON+3.13..+6.93%adverse and warm/control drift
+preserved. B489 six quiet jobs167.303s/allgates/archive/localpass: compileconfig
+−4.79..−3.66%/CPU−5.54..−5.00%, text−1.37..+0.03%, JSON−3.03..−0.15%, report
+−4.24..−2.60%; completeconfig−3.35..−1.08%, supportingCPU. Warmtext+0.36..+1.01%
+possible debt, no warm gain/universalneutrality claim. Original large adverse
+compile timings do not reproduce. Retain complete staging removal; no unchanged
+retiming selected. Allusersjoined/RAMremoved/persistentarchive locallyverified,
+terminalcached. Full candidate delivery pending; publication postponed.

@@ -1,0 +1,14 @@
+{
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "eachTarget": {
+    "internal": 42,
+    "public": 529
+  },
+  "testsChanged": 0,
+  "coverage": "Escapes/raw/triple/adjacent/u/f/bytes, scalar diagnostics, annotation/pattern constants, cancellation/refusal and retained compile-owned aliases/cleanup",
+  "decision": "Retain one source-to-literal pipeline; compilation allocation\u22122.94..\u22129.89%, quiet compilation/config compile-to-result gains; warm text+0.36..+1.01%possible debt, no universal CPU gain",
+  "fullDelivery": "Pending coherent candidate delivery; previous CI qualifies847/coreac6b only"
+}

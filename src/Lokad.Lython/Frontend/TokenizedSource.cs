@@ -13,10 +13,12 @@ internal sealed class TokenizedSource(string buffer, IReadOnlyList<SourceToken> 
     public LythonDiagnostic? LexicalDiagnostic { get; } = lexicalDiagnostic;
     public int Count => Tokens.Count;
 
-    public string GetString(int index)
+    public string GetString(int index) => GetSpan(index).ToString();
+
+    public ReadOnlySpan<char> GetSpan(int index)
     {
         var token = Tokens[index];
-        return token.Length == 0 ? string.Empty : Buffer.Substring(token.Start, token.Length);
+        return Buffer.AsSpan(token.Start, token.Length);
     }
 
     public void LineOfPosition(int position, out int line, out int column)

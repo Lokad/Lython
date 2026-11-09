@@ -198,54 +198,42 @@ internal sealed partial class Parser
     {
         var firstToken = -1;
         var lastToken = -1;
-        var text = new System.Text.StringBuilder();
-        var parts = new List<FormattedStringPartSyntax>();
-        var hasFormatted = false;
+        var text = string.Empty;
+        System.Text.StringBuilder? adjacent = null;
+        List<FormattedStringPartSyntax>? parts = null;
 
         while (true)
         {
-            if (CurrentToken == Token.String)
+            var prefix = IsNameToken(CurrentToken) && PeekToken(1) == Token.String
+                ? _tokens.GetString(_position) : null;
+            if (CurrentToken == Token.String || prefix is "u" or "U")
             {
-                var tokenIndex = ReadToken();
-                if (firstToken < 0)
-                {
-                    firstToken = tokenIndex;
-                }
-
-                var literal = _tokens.GetString(tokenIndex);
-                if (!TryDecodeStringLiteral(literal, out var value, out var message))
-                {
-                    AddDiagnostic(StringLiteralDiagnosticCode(message), message, tokenIndex);
-                    return null;
-                }
-
-                text.Append(value);
-                lastToken = tokenIndex;
-                continue;
-            }
-
-            if (IsNameToken(CurrentToken) && PeekToken(1) == Token.String)
-            {
-                var prefix = _tokens.GetString(_position);
-                if (prefix is "u" or "U")
+                var pieceStart = _position;
+                if (prefix is not null)
                 {
                     var unicodePrefixToken = ReadToken();
-                    var unicodeStringToken = ReadToken();
-                    if (_tokens.Tokens[unicodePrefixToken].Start + _tokens.Tokens[unicodePrefixToken].Length != _tokens.Tokens[unicodeStringToken].Start)
+                    if (_tokens.Tokens[unicodePrefixToken].Start + _tokens.Tokens[unicodePrefixToken].Length != _tokens.Tokens[_position].Start)
                     {
                         AddDiagnostic("LA1007", "String prefix must be adjacent to its literal.", unicodePrefixToken);
                         return null;
                     }
-                    if (!TryDecodeStringLiteral(_tokens.GetString(unicodeStringToken), out var value, out var message))
-                    {
-                        AddDiagnostic(StringLiteralDiagnosticCode(message), message, unicodeStringToken);
-                        return null;
-                    }
-                    if (firstToken < 0) firstToken = unicodePrefixToken;
-                    text.Append(value);
-                    lastToken = unicodeStringToken;
-                    continue;
                 }
+                var tokenIndex = ReadToken();
+                if (firstToken < 0) firstToken = pieceStart;
+                if (!TryDecodeStringLiteral(_tokens.GetSpan(tokenIndex), out var value, out var message))
+                {
+                    AddDiagnostic(StringLiteralDiagnosticCode(message), message, tokenIndex);
+                    return null;
+                }
+                if (adjacent is not null) adjacent.Append(value);
+                else if (text.Length == 0) text = value;
+                else adjacent = new System.Text.StringBuilder(text).Append(value);
+                lastToken = tokenIndex;
+                continue;
+            }
+
+            if (prefix is not null)
+            {
                 if (!IsFormattedStringPrefix(prefix))
                 {
                     if (IsBytesStringPrefix(prefix))
@@ -275,14 +263,15 @@ internal sealed partial class Parser
                     return null;
                 }
 
+                parts ??= [];
+                if (adjacent is not null) { text = adjacent.ToString(); adjacent = null; }
                 if (text.Length > 0)
                 {
-                    parts.Add(new FormattedStringTextPartSyntax(text.ToString()));
-                    text.Clear();
+                    parts.Add(new FormattedStringTextPartSyntax(text));
+                    text = string.Empty;
                 }
 
                 parts.AddRange(segmentParts);
-                hasFormatted = true;
                 lastToken = stringToken;
                 continue;
             }
@@ -290,17 +279,17 @@ internal sealed partial class Parser
             break;
         }
 
-        if (!hasFormatted)
+        if (adjacent is not null) text = adjacent.ToString();
+        if (parts is null)
         {
             return new StringLiteralExpressionSyntax(
-                text.ToString(),
+                text,
                 Merge(SpanOf(firstToken), SpanOf(lastToken)));
         }
 
         if (text.Length > 0)
         {
-            parts.Add(new FormattedStringTextPartSyntax(text.ToString()));
-            text.Clear();
+            parts.Add(new FormattedStringTextPartSyntax(text));
         }
 
         return new FormattedStringExpressionSyntax(
