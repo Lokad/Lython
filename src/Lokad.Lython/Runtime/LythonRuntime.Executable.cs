@@ -74,18 +74,6 @@ internal sealed partial class LythonRuntime
     {
         internal ExecutableWorkState _execution = new();
 
-        internal void InitializeExecutableBindings(
-            ExecutableCodeObject codeObject,
-            object[] locals,
-            ExecutableCell?[]? localCells,
-            IReadOnlyList<ExecutableCell>? closureCells)
-        {
-            _execution.Code = codeObject;
-            _execution.Locals = locals;
-            _execution.LocalCells = localCells;
-            _execution.ClosureCells = closureCells;
-        }
-
         private void ClearExecutableBindings()
         {
             _execution.Code = null!;

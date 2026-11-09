@@ -17,7 +17,7 @@ public sealed class NativeAggregateStateTests
         var list = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["list"]);
         CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyTuple.Empty)];
         var previous = context;
-        context.InitializeExecutableBindings(Compile("pass\n").EntryPoint, [], null, null);
+        context._execution = new() { Code = Compile("pass\n").EntryPoint, Locals = [] };
         context.EnterExecutableSlots();
         var funding = ((LythonMemoryBudget)context.MemoryGovernor.Budget!).LimitBytes!.Value - context.MemoryGovernor.CurrentCommittedBytes;
         context.MemoryGovernor.Reserve(funding, Span);
@@ -144,7 +144,7 @@ public sealed class NativeAggregateStateTests
         {
             var context = Context(owner);
             var previous = context;
-            context.InitializeExecutableBindings(Compile("pass\n").EntryPoint, [], null, null);
+            context._execution = new() { Code = Compile("pass\n").EntryPoint, Locals = [] };
             context.EnterExecutableSlots();
             var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
             var source = new FailingSource(context, budget);

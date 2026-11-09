@@ -47,16 +47,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        internal void InitializeExecutableExecution(
-            ExecutableCodeObject codeObject, object[] locals, ExecutableCell?[]? localCells,
-            IReadOnlyList<ExecutableCell>? closureCells, ExecutableValueStorage stack)
-        {
-            InitializeExecutableBindings(codeObject, locals, localCells, closureCells);
-            _execution.InstructionIndex = codeObject.EntryIndex;
-            _entryActiveException = State.CurrentException;
-            _execution.Stack = stack;
-        }
-
         internal void AdoptExecutableExecution(ref ExecutableWorkState execution, PyException? entryException)
         {
             _execution = execution;

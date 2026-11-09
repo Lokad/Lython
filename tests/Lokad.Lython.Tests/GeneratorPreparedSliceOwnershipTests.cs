@@ -127,8 +127,9 @@ public sealed class GeneratorPreparedSliceOwnershipTests
         var tape = new Tape(root, cancellation);
         root.Variables["gettap"] = new Callback(tape, "get");
         root.Variables["storetap"] = new Callback(tape, "store");
-        if (asynchronous) await LythonRuntime.ExecuteStatementsAsync(lowered.Statements, root);
-        else LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(lowered).EntryPoint, root, default, null);
+        var code = ExecutableScript.Compile(lowered).EntryPoint;
+        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, root);
+        else LythonRuntime.ExecuteExecutableCodeObject(code, root, default, null);
         AssertUnwound(root);
         return new(root, Assert.IsType<LythonRuntime.PyGenerator>(root.Variables["g"]), tape, active);
     }

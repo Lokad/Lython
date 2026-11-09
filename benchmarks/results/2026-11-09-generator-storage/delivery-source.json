@@ -1,0 +1,31 @@
+{
+  "measuredBaseline": {
+    "scope": "Fresh nonincremental committed baseline, before R142 source edits",
+    "coreSHA256": "d1c931961fc451560410b9a442812454270f43265c4f3e4ce992d20eb6319818",
+    "revision": "7aa637bf763cfb40b6f79f7300670d21d27ad0b1"
+  },
+  "measuredCoreSHA256": "2ce8dbc1f7b840f98da725ddcc578d85a3d798d1105cc15ee51d8c33c7440ec1",
+  "postMeasurementSourceDelta": {
+    "src/Lokad.Lython/Public/LythonEngine.cs": {
+      "measuredSHA256": "7a633054d6ded111de1dec2adc62d0c640bd596f5f7848964a4d8eaea0c74538",
+      "deliverySHA256": "424434fd6909971bb54c887ad79abb4d2d5590505ba96aed2a178d709990e90f"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": {
+      "measuredSHA256": "544392877780d3076d9c553822096a2da55973c0b3e3d327c1895707ef5e79dc",
+      "deliverySHA256": "94fa6dd3a5d3678c912cc3c2abea9ca7f4c2cde9429b87f68b723bad17d4a82e"
+    }
+  },
+  "postMeasurementChanges": "Restore the original between-phase cancellation/refusal checks inside the expanded generator-diagnostic catch; remove now-unused InitializeExecutableBindings and update four white-box fixture calls to explicit work data. No measured guest-path change or final-binary timing claim.",
+  "finalFocusedPerFramework": {
+    "internal": 184,
+    "public": 628,
+    "compilerDiagnostics": 37
+  },
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "independentPythonGoldens": 8,
+  "validation": "Live/deleted incoming/local/transitive cells, nonlocal writes, locals/default snapshots, retained arguments, class/super barriers, lazy creation, metadata, send/throw/close/delegation, genuinely pending I/O, cancellation/first refusal, awaited cleanup, aliases and shared allowance reuse. Full platform/package/Stress qualification still batches at delivery.",
+  "decision": "Retain shared lexical compilation/state construction and affected workload benefit. Warm text allocation minus15.1percent; compile allocation plus1.3to1.6percent retained as debt. Quiet report control plus1.17to4.54percent elapsed and plus0.39to4.44percent CPU unresolved; no neutrality/universal speedup or unchanged retiming claim. Generator lambdas/incomplete class/type scopes retain existing bridges."
+}

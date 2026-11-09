@@ -51,24 +51,12 @@ internal sealed record LoweredFunctionDefinitionStatement(
     ScopeDirectiveFacts ScopeFacts) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
-    private readonly (FunctionParameterLayout Layout, ExecutableCodeObject? Generator) _preparedParameters =
-        PrepareParameters(Syntax, Body, ScopeFacts);
-    public FunctionParameterLayout ParameterLayout => _preparedParameters.Layout;
-    // Class suites still execute lowered; their ordinary method bodies are
+    public FunctionParameterLayout ParameterLayout => Syntax.ParameterLayout;
+    // Class suites still execute lowered; their method bodies are
     // prepared once, without retaining an unused second lowered body.
     public ExecutableCodeObject? PreparedCode { get; init; }
     public string? Docstring { get; } = Runtime.PyFunctionBase.LeadingDocstring(Body);
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
-    public ExecutableCodeObject? GeneratorCode => _preparedParameters.Generator;
-
-    private static (FunctionParameterLayout, ExecutableCodeObject?) PrepareParameters(
-        FunctionDefinitionStatementSyntax syntax,
-        IReadOnlyList<LoweredStatement> body, ScopeDirectiveFacts facts)
-    {
-        var layout = syntax.ParameterLayout;
-        return (layout, syntax.IsGenerator
-            ? ExecutableScript.CompileGenerator(layout, body, facts) : null);
-    }
 }
 
 internal sealed record LoweredClassDefinitionStatement(

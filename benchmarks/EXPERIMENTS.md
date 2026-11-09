@@ -5258,4 +5258,26 @@ input/depth/refund assertions, no retries/ignored windows. Both users joined.
 16native+6internalStress pass eachactual11/10. Remove only loopchecks, entryretained:
 both nativecases fail eachframework, completionToken=true. Exactsource restored,
 nonincrementalbuilds/finalchecks pass. No production/policy/API/performance change.
-Full corrected CI still required; publication postponed.
+Corrected CI42573178034/source7aa637bf is cached terminal success: Windows/Ubuntu
+actual11/10, installed core consumers and original Stress both. Original failures
+remain; no production speedup or repeated unchanged qualification. Publication postponed.
+
+## Shared generator compilation and retained storage (2026-11-09 Paris)
+
+[R142/B500](results/2026-11-09-generator-storage/README.md): committed7aa/cored1c9
+versus prototype2ce8. Reuse enclosing lexical compilation and executable work-state
+construction. Delete eager isolated generator-definition code/tuple, blanket complete-
+scope mirroring, argument namespace round trip and duplicate initializers; class and
+generator-lambda bridges remain where needed. Capture delete-only nonlocals and
+synchronize actual cells/live slots; keep suspended class namespaces. Final source
+restores compile phase checks and removes the initializer with only fixture callers.
+184internal/628public plus37compiler diagnostics per actual11/10; eight independent
+Python goldens, real pending cleanup/refusal/cancellation and shared ownership retained.
+
+Text warm allocation−15.1% both APIs; compile allocation+1.3–1.6%. Four quiet jobs/
+114.323s: CSVelapsed−5.82–10.95%, text−11.60–12.08%, JSON−6.17–6.28%, supporting CPU.
+CSV references differ5.24%; report control+1.17–4.54%elapsed/+0.39–4.44%CPU remains
+unresolved debt. Original desktop JSON+6.39–8.03% and drifting controls remain. Retain
+coherent deletion/affected benefit; no universal CPU/neutrality or final-binary timing
+claim. All quiet/identity/output/funding/join/RAM/archive/localSHA gates pass. No space
+recovery/floor change; terminal cached, no users. Full delivery batches; broader work open.

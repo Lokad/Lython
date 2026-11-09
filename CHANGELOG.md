@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Compile generator definitions with enclosing lexical facts and initialize their
+  retained storage through the shared executable state. Remove redundant namespace
+  copies while preserving suspended captures, Python cleanup and shared admission.
+
 - Read incoming closure cells from existing executable work state, deferring the
   invocation context until scope-sensitive work. Preserve live rebinding, nonlocal
   writes, captured return ownership and asynchronous cleanup.

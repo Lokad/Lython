@@ -21,7 +21,7 @@ public sealed class LambdaExecutableTests
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
         cells[outer.LocalNameToSlot["value"]] = cell;
-        context.InitializeExecutableBindings(outer, values, cells, null);
+        context._execution = new() { Code = outer, Locals = values, LocalCells = cells };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
             .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, LythonRuntime.ExecutableCell[]>>();

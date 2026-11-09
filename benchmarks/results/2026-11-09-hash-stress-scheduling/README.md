@@ -24,8 +24,10 @@ removes only the two in-loop checks, retaining entry: both native cases fail on
 both frameworks with cancellationRequestedAtCompletion=true. Restore exact runtime
 bytes, force nonincremental builds, then repeat the relevant checks successfully.
 No production code, checkpoint, memory estimate, API or performance claim changes.
-Full corrected CI qualification is required; prior successful source checks remain
-recorded. Publication postponed.
+Corrected [CI42573178034](delivery-ci.json), source7aa637bf, is terminal success:
+Windows/Ubuntu actual.NET11/10, installed-core consumers and original Stress on
+both targets pass. Original failures and mutation evidence remain. No further
+query of that terminal handle. Publication postponed.
 
 [Original CI](ci-terminal.json), [failed stress log](ci-failed.log),
 [original fixture](original-test.cs), [change](source.patch),

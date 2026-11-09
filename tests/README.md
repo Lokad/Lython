@@ -17,6 +17,13 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Generator storage](Lokad.Lython.PublicApi.Tests/GeneratorStorageSemanticsTests.cs)
+checks independently captured Python results for suspended live/deleted cells,
+retained arguments, defaults, transitive captures and class barriers under both
+execution APIs. Each cleanup returns the shared allowance to its compiled baseline.
+Existing generator fixtures retain pending-protocol cancellation/refusal, send,
+throw, close and awaited resource cleanup checks.
+
 [Native hashing](Lokad.Lython.Tests/NativeHashCancellationTests.cs) keeps small
 current-token, cache, refusal and value checks in the ordinary suite. Its timed
 256 MiB cancellation scans are Stress cases: an already-started dedicated

@@ -1,0 +1,62 @@
+[
+  {
+    "case": "scripts.csv-validated-records.generator.large",
+    "allocation": {
+      "before": 189706.0,
+      "before-control": 189706.0,
+      "candidate": 192186.0
+    },
+    "allocationPercent": [
+      1.30728601098542,
+      1.30728601098542
+    ]
+  },
+  {
+    "case": "scripts.text-summary-helpers.generator.large",
+    "allocation": {
+      "before": 127018.0,
+      "before-control": 127018.0,
+      "candidate": 129106.0
+    },
+    "allocationPercent": [
+      1.6438614999448875,
+      1.6438614999448875
+    ]
+  },
+  {
+    "case": "scripts.json-summary-helpers.generator.large",
+    "allocation": {
+      "before": 153442.0,
+      "before-control": 153442.0,
+      "candidate": 155842.0
+    },
+    "allocationPercent": [
+      1.5641089141173792,
+      1.5641089141173792
+    ]
+  },
+  {
+    "case": "scripts.report-render.control.large",
+    "allocation": {
+      "before": 112738.0,
+      "before-control": 112738.0,
+      "candidate": 112722.0
+    },
+    "allocationPercent": [
+      -0.014192197839235643,
+      -0.014192197839235643
+    ]
+  },
+  {
+    "case": "scripts.file-search.control.large",
+    "allocation": {
+      "before": 86778.0,
+      "before-control": 86778.0,
+      "candidate": 86762.0
+    },
+    "allocationPercent": [
+      -0.018437852912023267,
+      -0.018437852912023267
+    ]
+  }
+]

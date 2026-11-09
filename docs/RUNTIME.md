@@ -212,9 +212,11 @@ function and class scopes retain their own capture requirements.
 Class creation reads its prepared own-cell requirement; it does not repeat lexical
 syntax analysis at execution. Each created class still owns its fresh cell.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
-When enclosing compilation supplies complete lexical bindings, ordinary function
+When enclosing compilation supplies complete lexical bindings, function and generator
 free names use the existing live global/builtin lookup after local and captured
-names. Independently compiled class/generator bodies and type-parameter scopes
+names. Generator definitions use that same enclosing compilation; they do not
+first build a separate code object without its capture facts. Independently
+compiled class methods, generator lambdas and type-parameter scopes
 retain general lexical resolution. No global value is frozen or cached by this choice.
 Each abstract binding state caches resolutions by syntax-node identity and clears
 them when its facts change; clones and branch joins have independent caches.
@@ -332,6 +334,12 @@ Arguments and the new instance remain owned until those users and cleanup finish
 Dynamic engine callables receive admitted owned argument copies when required;
 these copies conservatively remain charged to the execution/result owner.
 Suspended generators keep their state until completion and own one context handle.
+They initialize locals and cells through the shared executable-state constructor.
+Bound arguments copy directly into their admitted retained workspace before the
+call's binding storage returns. Complete lexical scopes need no blanket namespace
+mirroring; lowered class construction and incomplete scopes retain their namespace
+bridge. Nonlocal stores and deletions update captured cells even after the defining
+workspace has detached, while live defining frames retain synchronized slots.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working
 positions are prepared once. Captures stay private until a complete pattern succeeds;
@@ -382,12 +390,12 @@ span. Abandoned cursors finish cleanup before another guest instruction or handl
 runs. Both APIs use the same identity-based member-cache eligibility rules;
 mutable descriptors and guest protocols retain their normal resolution.
 
-Ordinary functions defined in class suites have executable bodies prepared once
+Functions and generators defined in class suites have executable bodies prepared once
 during compilation, including definitions inside compound suites. Class suites,
 decorators, defaults and annotations keep their existing evaluation order. Methods
 reuse lexical/class cells and retained namespaces; nonlocals without known parent
 cell slots use the shared namespace lookup. Unused lowered method bodies are
-discarded. Generator preparation and other real lowered consumers remain.
+discarded. Other real lowered consumers remain.
 
 Executable function bindings retain declaration inputs and prepared code without
 the original function body tree. Defaults use one evaluator across both APIs and
@@ -441,7 +449,7 @@ same stable dictionary. Arrays do not
 grow. Temporary retirement never clears the local prefix. Terminal cleanup refunds private working storage;
 escaping cells first acquire retained ownership. Reused bound locals are charged
 once. Generators keep their existing retained metadata owner and admit their
-workspace before first advancement. These conservative estimates can reject
+workspace, including local-cell capacity, before first advancement. These conservative estimates can reject
 tighter allowances earlier, including capacity needed only by an unused branch.
 Large native-call argument packets acquire separate working admission before
 allocation, even when the operand buffer already has capacity. Their reservation

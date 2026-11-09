@@ -31,7 +31,7 @@ internal sealed class LoweredScript
         foreach (var statement in statements)
         {
             var item = LowerStatement(statement, classScope);
-            if (classScope && item is LoweredFunctionDefinitionStatement { GeneratorCode: null } function)
+            if (classScope && item is LoweredFunctionDefinitionStatement function)
             {
                 var code = ExecutableScript.CompileClassFunction(function);
                 item = function with { PreparedCode = code, Body = [] };

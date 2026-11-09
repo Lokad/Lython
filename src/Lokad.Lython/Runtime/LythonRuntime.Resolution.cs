@@ -95,6 +95,10 @@ internal sealed partial class LythonRuntime
 
     internal static void StoreName(string name, object value, ExecutionContext context, LythonSourceSpan span)
     {
+        // A retained closure cell remains authoritative after its defining
+        // executable workspace has detached. Do not write only its old namespace.
+        if (context.ScopeFacts.IsNonlocal(name))
+            context.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)
         {
@@ -107,11 +111,18 @@ internal sealed partial class LythonRuntime
 
     internal static bool DeleteName(string name, ExecutionContext context, LythonSourceSpan span)
     {
+        var removed = false;
+        if (context.ScopeFacts.IsNonlocal(name) && context.CurrentExecutableFrame is { } frame &&
+            frame.TryGetCell(name, out var cell))
+        {
+            removed = !ReferenceEquals(cell.Value, UninitializedLocal);
+            cell.Value = UninitializedLocal;
+        }
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)
             return storageContext.GlobalNamespaceBacking!.TryGetNameKey(name, out var key) &&
                 storageContext.GlobalNamespace.Remove(key);
-        var removed = storageContext.Variables.Remove(name);
+        removed |= storageContext.Variables.Remove(name);
         removed |= storageContext.CurrentExecutableFrame?.TryDeleteLocalOrClosure(name) == true;
 
         return removed;

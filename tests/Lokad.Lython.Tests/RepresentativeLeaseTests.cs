@@ -34,13 +34,29 @@ public sealed class RepresentativeLeaseTests
         {
             CancellationToken = cancellation.Token, MemoryBudget = new LythonMemoryBudget(262144),
         },regexProvider:Utf8RegexProvider.Instance);
+        // This fixture inspects the source handle after executable storage ends.
+        context.MirrorLocalStores = true;
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
-        var script = LoweredScript.Lower(frontend.Script!);
+        var script = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!)).EntryPoint;
         LythonRuntimeException error;
-        if (asynchronous)
-            error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteStatementsAsync(script.Statements, context));
-        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteStatements(script.Statements, context));
+        try
+        {
+            if (asynchronous)
+                error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(script, context));
+            else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(script, context));
+        }
+        finally
+        {
+            // Match the public execution boundary: terminal cancellation stops
+            // guest work, then native resource cleanup is awaited independently.
+            try
+            {
+                if (asynchronous) await context.State.TryCloseOpenFilesAsync(context);
+                else context.State.TryCloseOpenFiles(context);
+            }
+            finally { context.State.CloseResources(); }
+        }
         Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
         Assert.True(LythonRuntime.TryResolveRuntimeMember(context.Variables["source"], "closed", context, new(0, 0, 0, 0), out var closed));
         Assert.Equal(true, closed);

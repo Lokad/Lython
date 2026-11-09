@@ -24,9 +24,11 @@ observations, not design acceptance thresholds. Variable cases remain visible.
 Each row reports a fixed source checkpoint, rather than arbitrary later HEAD.
 Source `6d73` uses a fresh post-commit Release core `ea65554e`, with executable IL
 identical to the focused Boolean candidate. Focused semantic/cancellation/ownership
-checks pass on both target frameworks. Full Ubuntu delivery checks pass; Windows
-qualification is incomplete after a timing-dependent native-hash cancellation test
-failed before its remaining stages.
+checks pass on both target frameworks. Its original Windows checkpoint stopped
+at a timing-dependent hash stress fixture; that failed condition remains in the
+evidence. Later source `7aa637bf`, including closure correctness fixes and the
+corrected fixture, passes Windows/Ubuntu .NET 11/.NET 10, original Stress and
+installed-package checks. This does not relabel the measured revision as that source.
 Earlier `4598` and `6f76` sources have completed platform/stress/package checks.
 Qualification and performance evidence are separate; no individual optimization
 speedup can be inferred from ratios across these checkpoints.
@@ -113,6 +115,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
+| Shared generator state / complete CSV, text and JSON pipelines | Prototype warm elapsed −5.8–11.0%, −11.6–12.1%, −6.2–6.3%, supporting CPU; text allocation −15.1% | Compile allocation +1.3–1.6%; report control +1.2–4.5% elapsed remains debt. Final cleanup differs from the measured prototype. [R142](../benchmarks/results/2026-11-09-generator-storage/README.md) |
 | Incoming lexical reads / captured CSV and report helpers | Warm elapsed −7.3–7.9% /−5.0–9.1%; allocation −38.7% /−26.1%, supporting CPU | Async improves; captured text/search control inconclusive. Both sources include the lexical-name proof correction; original desktop adversity retained. [R139](../benchmarks/results/2026-11-09-lexical-operands/README.md) |
 | Closed nested helpers / complete CSV, text and report in `main()` | Warm elapsed −8.2%, −19.6–20.0%, −10.5–13.2%; allocation −38.7%, −46.5%, −28.5%, supporting CPU | Async report −6.2–7.7%; report/control variability and original adverse desktop results retained. Same-script Lython pair; full qualification found class-scope regressions, with a [subsequent proof correction](../benchmarks/results/2026-11-09-lexical-name-proof/README.md). [R138](../benchmarks/results/2026-11-09-closed-nested-helpers/README.md) |
 | Native Boolean results / CSV and search | Actual warm allocation −9.09% /−11.54–11.66%; id()/is singleton consistency corrected | No general CPU gain; report +0.11–2.44% possible elapsed debt, controls variable. [R135](../benchmarks/results/2026-11-09-native-booleans/README.md) |

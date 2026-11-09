@@ -29,7 +29,7 @@ internal sealed partial class ExecutableScript
         => new Builder(parameterLayout, true, scopeFacts).CompileCodeObject("<generator>", body);
 
     internal static ExecutableCodeObject CompileClassFunction(LoweredFunctionDefinitionStatement function)
-        => new Builder(function.ParameterLayout, parentClosureCandidates: null, function.ScopeFacts)
+        => new Builder(function.ParameterLayout, function.Syntax.IsGenerator, function.ScopeFacts)
             .CompileCodeObject(function.Syntax.DeclaredName, function.Body);
 
     private sealed partial class Builder
@@ -76,7 +76,7 @@ internal sealed partial class ExecutableScript
             _scopeFacts = scopeFacts;
             _parameterLayout = parameterLayout;
             // Only enclosing executable compilation supplies complete lexical
-            // bindings. Independently compiled class/generator bodies still use
+            // bindings. Independently compiled class methods/generator lambdas use
             // their live retained namespaces for unresolved names.
             _completeLexicalParent = completeLexicalParent;
             _parentClosureCandidates = parentClosureCandidates is null
@@ -93,7 +93,7 @@ internal sealed partial class ExecutableScript
             // through their retained lexical chain. Generator expressions have
             // the defining builder's candidates and capture the existing cell.
             // Module facts are prepared too, but a module is not a closure.
-            if ((!_generator || generatorExpression is not null) && _scopeFacts.RequiresClassCell && _parameterLayout is not null)
+            if ((!_generator || generatorExpression is not null || _completeLexicalParent) && _scopeFacts.RequiresClassCell && _parameterLayout is not null)
                 InternClosure("__class__");
             // Binding and executable locals use one prepared parameter order.
             // Body locals are appended below, without reclassifying the signature.
@@ -137,8 +137,9 @@ internal sealed partial class ExecutableScript
                 _constants.Any(value => value is ExecutableAnnotationsEnabled) &&
                 (_functions.Count != 0 || _constants.Any(value => value is ExecutableCreateLambda or ExecutableCreateGeneratorExpression));
             var requiresLocalVariableMirroring =
-                moduleAnnotationNamespace || (_generator && generatorExpression is null) ||
+                moduleAnnotationNamespace || (_generator && generatorExpression is null && !_completeLexicalParent) ||
                 _statementFallbacks.Count != 0 ||
+                _constants.Any(value => value is ExecutableCreateClass) ||
                 _functions.Any(function => function.CodeObject.RequiresLocalVariableMirroring) ||
                 _constants.OfType<ExecutableCreateLambda>().Any(lambda => lambda.CodeObject.RequiresLocalVariableMirroring) ||
                 _constants.OfType<ExecutableCreateGeneratorExpression>().Any(generator => generator.CodeObject.RequiresLocalVariableMirroring);

@@ -465,21 +465,22 @@ internal sealed partial class ExecutableScript
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
             InternModuleBinding(functionDefinition.Syntax.Name);
-            var codeObject = functionDefinition.GeneratorCode ?? CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
+            var codeObject = CompileFunctionCode(functionDefinition.Syntax.DeclaredName,
                 functionDefinition.ParameterLayout, functionDefinition.Body,
-                functionDefinition.ScopeFacts, functionDefinition.TypeParameters);
+                functionDefinition.ScopeFacts, functionDefinition.TypeParameters, functionDefinition.Syntax.IsGenerator);
 
             _functions.Add(new ExecutableFunctionBinding(
                 functionDefinition.Syntax.Name, functionDefinition.Syntax.DeclaredName, functionDefinition.Span,
                 functionDefinition.Decorators, functionDefinition.Parameters, functionDefinition.ReturnAnnotation,
-                functionDefinition.TypeParameters, codeObject, functionDefinition.GeneratorCode is not null,
+                functionDefinition.TypeParameters, codeObject, functionDefinition.Syntax.IsGenerator,
                 functionDefinition.Docstring) { ParameterLayout = functionDefinition.ParameterLayout });
             return _functions.Count - 1;
         }
 
         private ExecutableCodeObject CompileFunctionCode(string name,
             FunctionParameterLayout parameterLayout, IReadOnlyList<LoweredStatement> body,
-            ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null)
+            ScopeDirectiveFacts scopeFacts, IReadOnlyList<LoweredTypeParameter>? typeParameters = null,
+            bool generator = false)
         {
             // Forward transitive free names as before. Comprehension names
             // are inner bindings, even at module scope or when the caller
@@ -491,6 +492,7 @@ internal sealed partial class ExecutableScript
                 candidates = candidates.Except(typeParameters.Select(static parameter => parameter.Syntax.Name), StringComparer.Ordinal);
             return new Builder(parameterLayout, candidates, scopeFacts,
                 completeLexicalParent: _completeLexicalParent && typeParameters is not { Count: > 0 })
+                { _generator = generator }
                 .CompileCodeObject(name, body);
         }
 

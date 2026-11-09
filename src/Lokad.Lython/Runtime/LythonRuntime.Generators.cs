@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
                 var cells = CaptureExecutableClosures(code, context, span);
                 var frame = new ExecutionContext(context.FunctionClosureContext, code.ScopeFacts)
                 { FunctionName = "<genexpr>", FirstPositionalParameterName = ".0" };
-                generator = new PyGenerator(code, frame, span, cells);
+                generator = new PyGenerator(code, frame, span, cells, default);
                 var outer = asynchronous
                     ? await PyIteration.AcquireGeneratorOuterAsync(outerValue, outerSpan, context).ConfigureAwait(false)
                     : PyIteration.AcquireGeneratorOuter(outerValue, outerSpan, context);
@@ -67,7 +67,8 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, IReadOnlyList<ExecutableCell>? closureCells = null)
+        internal static PyGenerator Create(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
+            IReadOnlyList<ExecutableCell>? closureCells = null, BoundCallArguments arguments = default)
         {
             // Fund locals, cells, caches and handler/delegation state. The fixed
             // operand workspace is admitted separately before construction.
@@ -75,13 +76,13 @@ internal sealed partial class LythonRuntime
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
             PyGenerator generator;
-            try { generator = new PyGenerator(code, frame, span, closureCells); }
+            try { generator = new PyGenerator(code, frame, span, closureCells, arguments); }
             catch { frame.MemoryGovernor.Release(bytes); throw; }
             return generator;
         }
 
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span,
-            IReadOnlyList<ExecutableCell>? closureCells)
+            IReadOnlyList<ExecutableCell>? closureCells, BoundCallArguments arguments)
         {
             _frame = frame;
             // Mirrored namespaces remain authoritative for retained cells while
@@ -89,29 +90,10 @@ internal sealed partial class LythonRuntime
             frame.MirrorLocalStores |= code.RequiresLocalVariableMirroring;
             _span = span;
             OwnerMemoryGovernor = frame.MemoryGovernor;
-            // EstimateStorage already funds this retained frame's metadata.
-            var stack = new ExecutableValueStorage(code.ValueStorageCapacity, code.FirstTemporarySlot,
-                code.LastOwnedTemporarySlot, frame, span,
-                checked((long)code.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes), null, lookupOwner: null);
-            try
-            {
-                var locals = stack.Values;
-                Array.Fill(locals, UninitializedLocal, 0, code.LocalNames.Count);
-                for (var i = 0; i < code.LocalNames.Count; i++)
-                    if (frame.Variables.TryGetValue(code.LocalNames[i], out var value)) locals[i] = value;
-                ExecutableCell?[]? cells = null;
-                if (code.CapturedLocalSlots.Count != 0)
-                {
-                    cells = new ExecutableCell[code.LocalNames.Count];
-                    foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
-                }
-                frame.InitializeExecutableExecution(code, locals, cells, closureCells, stack);
-            }
-            catch
-            {
-                stack.ReleaseStorage();
-                throw;
-            }
+            // Bound storage returns when this call ends. Copy directly into the
+            // generator's admitted workspace, never through a name dictionary.
+            var execution = CreateExecutableWorkState(code, frame, arguments, closureCells, argumentsAreLocals: false);
+            frame.AdoptExecutableExecution(ref execution, frame.State.CurrentException);
         }
 
         public bool IsTruthy() => true;

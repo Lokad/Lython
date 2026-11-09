@@ -242,12 +242,15 @@ public sealed class ExecutableAsyncIteratorCleanupTests
     {
         var frontend = LythonFrontend.Compile("def scan(source):\n" + body,regexProvider:Utf8RegexProvider.Instance);
         Assert.NotNull(frontend.Script);
-        var definition = Assert.Single(LoweredScript.Lower(frontend.Script).Statements.OfType<LoweredFunctionDefinitionStatement>());
+        var lowered = LoweredScript.Lower(frontend.Script);
+        var definition = Assert.Single(lowered.Statements.OfType<LoweredFunctionDefinitionStatement>());
+        var code = Assert.Single(ExecutableScript.Compile(lowered).EntryPoint.Functions).CodeObject;
         var frame = new Context(context, ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
         { FunctionName = "scan", FirstPositionalParameterName = "source" };
         frame.Variables["source"] = sources[0];
-        if (sources.Length > 1) frame.Variables["inner"] = sources[1];
-        return LythonRuntime.PyGenerator.Create(definition.GeneratorCode!, frame, definition.Span);
+        if (sources.Length > 1) context.Variables["inner"] = sources[1];
+        return LythonRuntime.PyGenerator.Create(code, frame, definition.Span,
+            arguments: new BoundCallArguments([sources[0]], new ArgumentPresence(1)));
     }
 
     private sealed class PausedSource(bool empty = false) : IPyAsyncIterableValue, IEnumerable<object>, IAsyncEnumerable<object>, IAsyncEnumerator<object>

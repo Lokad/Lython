@@ -393,16 +393,15 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         IReadOnlyDictionary<string, object> defaults)
     {
-        var code = functionDefinition.GeneratorCode ?? functionDefinition.PreparedCode;
-        var cells = code is { ClosureNames.Count: > 0 } &&
-            (functionDefinition.PreparedCode is not null || context.CurrentExecutableFrame is not null)
-            ? CaptureExecutableClosures(code, functionDefinition.PreparedCode is null ? context : context.FunctionClosureContext,
-                functionDefinition.Span) : [];
-        PyFunctionBase function = functionDefinition.GeneratorCode is not null
-            ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, cells)
-            : functionDefinition.PreparedCode is { } prepared
-                ? new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
-                    prepared, context.FunctionClosureContext, cells, defaults, prepared.ScopeFacts)
+        var code = functionDefinition.PreparedCode;
+        var cells = code is { ClosureNames.Count: > 0 }
+            ? CaptureExecutableClosures(code, context.FunctionClosureContext, functionDefinition.Span) : [];
+        PyFunctionBase function = code is not null
+            ? functionDefinition.Syntax.IsGenerator
+                ? new PyGeneratorFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
+                    code, context.FunctionClosureContext, defaults, code.ScopeFacts, cells)
+                : new PyExecutableFunction(functionDefinition.Syntax.DeclaredName, functionDefinition.ParameterLayout,
+                    code, context.FunctionClosureContext, cells, defaults, code.ScopeFacts)
             : new PyFunction(
             functionDefinition.Syntax.DeclaredName,
             functionDefinition.ParameterLayout,

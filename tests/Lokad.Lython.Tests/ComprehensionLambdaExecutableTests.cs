@@ -73,7 +73,7 @@ public sealed class ComprehensionLambdaExecutableTests
         var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
         cells[outer.LocalNameToSlot["offset"]] = parentCell;
-        context.InitializeExecutableBindings(outer, values, cells, null);
+        context._execution = new() { Code = outer, Locals = values, LocalCells = cells };
         context.EnterExecutableSlots();
         var previousClosure = context.FunctionClosureContext;
         var scope = context.EnterComprehension(facts);
