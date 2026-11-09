@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share direct constant/local operand sources with closed native helpers, removing
+  consumed read nodes and their recursive dispatch. Prepare the fixed local prefix
+  once while preserving guard-before-effects, cancellation, ownership and fallback.
+
 - Keep text-reader storage funded through active copies, decoding, pending reads
   and awaited disposal. Preserve the original failure when cleanup also fails.
 

@@ -1,0 +1,14 @@
+{
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "eachTarget": {
+    "internal": 87,
+    "public": 394
+  },
+  "eachVariant": "Initial4f7, refined3afe and final95fc pass after actual source changes; no test/assertion/timeout changes",
+  "ordinaryInstructionMetadata": "Identical with fixed local-prefix counts; wanted3to1, words2to1, charge9to4 native nodes",
+  "fullDelivery": "Pending coherent candidate delivery; reference459/core1be2 cachedCI42545629905success",
+  "decision": "Retain canonical native operand representation and one immutable prefix fact. Syncsearch elapsed\u22122.45..\u22123.40% in B493; CPU not consistently supportive, textCPU debt/control uncertainty remains; no general CPU gain claim"
+}

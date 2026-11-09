@@ -30,7 +30,7 @@ internal sealed partial class ExecutableCodeObject
         var readsFormatStorage = false;
         var proof = Compile(entryBlock, 0, false, null, 0);
         if (proof is null || hasConditional && readsFormatStorage) return null;
-        return new(values.ToArray(), proof.Value.Root);
+        return new(values.ToArray(), proof.Value.Root - FirstTemporarySlot);
 
         (int Root, int Depth)? Compile(int block, int firstInstruction, bool hasEffects,
             HashSet<int>? forwardedLocals, int controlDepth)
@@ -38,7 +38,7 @@ internal sealed partial class ExecutableCodeObject
             // Compile/evaluate within the existing native recursion admission.
             // Other control flow keeps ordinary executable code, before effects.
             if (controlDepth > 16) return null;
-            var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer)>();
+            var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer, LythonSourceSpan? ReadSpan)>();
             var instructions = blocks[block].InstructionArray;
             for (var index = firstInstruction; index < instructions.Length; index++)
             {
@@ -73,17 +73,29 @@ internal sealed partial class ExecutableCodeObject
                         if (conditionalDepth > 16) return null;
                         values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
                             consequent.Value.Root, Third: alternative.Value.Root));
-                        return (values.Count - 1, conditionalDepth);
+                        return (FirstTemporarySlot + values.Count - 1, conditionalDepth);
                     case ExecutableOpCode.Return:
                         if (stack.Count != 1 || stack[0].Member is not null) return null;
                         var root = stack[0];
-                        values[root.Value] = values[root.Value] with { ReturnSpan = instruction.Span };
+                        if (root.Value < FirstTemporarySlot)
+                        {
+                            // A real return keeps its source/exit metadata. Consumed
+                            // pure leaves need no node in the native operation tree.
+                            var read = root.Value < 0
+                                ? ExecutableInstruction.LoadConst(~root.Value, root.ReadSpan!)
+                                : ExecutableInstruction.LoadLocal(root.Value, root.ReadSpan!);
+                            values.Add(new(NativeReturnOperation.Read, read, -1, -1,
+                                ReturnSpan: instruction.Span));
+                            return (FirstTemporarySlot + values.Count - 1, root.Depth);
+                        }
+                        var rootIndex = root.Value - FirstTemporarySlot;
+                        values[rootIndex] = values[rootIndex] with { ReturnSpan = instruction.Span };
                         return (root.Value, root.Depth);
                     case ExecutableOpCode.ReturnNone:
                         if (stack.Count != 0) return null;
                         values.Add(new(NativeReturnOperation.None, instruction, -1, -1,
                             ReturnSpan: instruction.Span));
-                        return (values.Count - 1, 1);
+                        return (FirstTemporarySlot + values.Count - 1, 1);
                     case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple when instruction.ItemCount == 0:
                         operation = NativeReturnOperation.EmptySequence;
                         break;
@@ -92,7 +104,10 @@ internal sealed partial class ExecutableCodeObject
                         if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
                         goto case ExecutableOpCode.LoadConst;
                     case ExecutableOpCode.LoadConst:
-                        break;
+                        var source = instruction.OpCode == ExecutableOpCode.LoadConst
+                            ? ~instruction.ConstantIndex : instruction.LocalSlot;
+                        stack.Add((source, null, 1, -1, sourceIndex, instruction.Span));
+                        continue;
                     case ExecutableOpCode.LoadName:
                     case ExecutableOpCode.LoadGlobal:
                         // Earlier native work can invoke host admission. A later
@@ -116,7 +131,7 @@ internal sealed partial class ExecutableCodeObject
                     case ExecutableOpCode.LoadCallMember:
                         if (stack.Count == 0 || stack[^1].Member is not null) return null;
                         // Fold receiver+method into the call; no exposed bound value.
-                        stack[^1] = (stack[^1].Value, instruction.Span, stack[^1].Depth, instruction.NameIndex, stack[^1].Producer);
+                        stack[^1] = (stack[^1].Value, instruction.Span, stack[^1].Depth, instruction.NameIndex, stack[^1].Producer, stack[^1].ReadSpan);
                         continue;
                     case ExecutableOpCode.Binary when LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
                         LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
@@ -141,9 +156,11 @@ internal sealed partial class ExecutableCodeObject
                         // Actual dictionary-value queries are not speculated on
                         // an unselected branch. Straight-line proofs retain them.
                         var formattedInput = first;
-                        while (values[formattedInput].Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
-                            formattedInput = values[formattedInput].First;
-                        if (values[formattedInput].Operation == NativeReturnOperation.Subscript) readsFormatStorage = true;
+                        while (formattedInput >= FirstTemporarySlot &&
+                            values[formattedInput - FirstTemporarySlot].Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+                            formattedInput = values[formattedInput - FirstTemporarySlot].First;
+                        if (formattedInput >= FirstTemporarySlot &&
+                            values[formattedInput - FirstTemporarySlot].Operation == NativeReturnOperation.Subscript) readsFormatStorage = true;
                         stack.RemoveAt(stack.Count - 1);
                         break;
                     case ExecutableOpCode.Call:
@@ -164,7 +181,7 @@ internal sealed partial class ExecutableCodeObject
                         if (target.Member is null)
                         {
                             // These shapes never passed the dynamic builtin proof.
-                            if (site.ArgumentCount != 1 || values[first].Operation != NativeReturnOperation.Read) return null;
+                            if (site.ArgumentCount != 1 || first >= FirstTemporarySlot && values[first - FirstTemporarySlot].Operation != NativeReturnOperation.Read) return null;
                             operation = NativeReturnOperation.BuiltinUnary;
                         }
                         else
@@ -184,11 +201,11 @@ internal sealed partial class ExecutableCodeObject
                                     _ => NativeReturnOperation.ListMethod,
                                 };
                                 if (member is "split" or "rsplit"
-                                    && first == values.Count - 1 && index > 0
+                                    && first >= FirstTemporarySlot && first - FirstTemporarySlot == values.Count - 1 && index > 0
                                     && ReferenceEquals(target.Member, instructions[index - 1].Span)
-                                    && values[first].Operation == NativeReturnOperation.StringMethod)
+                                    && values[first - FirstTemporarySlot].Operation == NativeReturnOperation.StringMethod)
                                 {
-                                    var producer = values[first];
+                                    var producer = values[first - FirstTemporarySlot];
                                     var producerIndex = target.Producer - offsets[block];
                                     if (producerIndex > 0 && producerIndex < instructions.Length
                                         && ReferenceEquals(producer.MemberSpan, instructions[producerIndex - 1].Span)
@@ -219,7 +236,7 @@ internal sealed partial class ExecutableCodeObject
                         for (var a = 0; a < site.ArgumentCount; a++)
                             site.Arguments[a] = site.Arguments[a] with
                             {
-                                NativeValueIndex = stack[start + 1 + a].Value
+                                NativeInput = stack[start + 1 + a].Value
                             };
                         stack.RemoveRange(start, site.ArgumentCount + 1);
                         break;
@@ -230,7 +247,7 @@ internal sealed partial class ExecutableCodeObject
                 if (depth > 16) return null;
                 if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
                 values.Add(new(operation, instruction, first, second, nativeMethod, MemberSpan: memberSpan));
-                stack.Add((values.Count - 1, null, depth, -1, sourceIndex));
+                stack.Add((FirstTemporarySlot + values.Count - 1, null, depth, -1, sourceIndex, null));
             }
             return null;
         }

@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
     // uses the ordinary executable engine; actual work never falls back/retries.
     private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
         ReadOnlySpan<object?> arguments, ExecutionContext context)
-        => body.Root < 0 || GuardNativeReturn(body.Root, code, body.Values, arguments, context, out _);
+        => body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _);
 
     private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
         ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan)
@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
             if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
             else
             {
-                result = EvaluateNativeReturn(body.Root, code, body.Values, arguments, context, entryException);
+                result = EvaluateNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, entryException);
                 CheckNativeReturnExit(body.Root, body.Values, context);
             }
             context.State.SetCurrentException(entryException);
@@ -112,11 +112,30 @@ internal sealed partial class LythonRuntime
         return result != NativeReturnShape.Other;
     }
 
+    private static bool TryReadNativeInput(int source, ExecutableCodeObject code, NativeReturnValue[] values,
+        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+    {
+        if (source < 0) { value = code.Constants[~source]; return true; }
+        if (source < code.FirstTemporarySlot)
+        {
+            var bound = (uint)source < (uint)arguments.Length;
+            value = bound ? arguments[source] : null;
+            return bound;
+        }
+        return TryReadNativeOperand(code, values[source - code.FirstTemporarySlot].Instruction, arguments, context, out value);
+    }
+
     private static bool GuardNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
         ReadOnlySpan<object?> arguments, ExecutionContext context, out NativeReturnShape shape)
     {
-        ref readonly var value = ref values[index];
         shape = NativeReturnShape.Other;
+        if (index < code.FirstTemporarySlot)
+        {
+            if (!TryReadNativeInput(index, code, values, arguments, context, out var inputValue)) return false;
+            shape = ReturnShape(inputValue);
+            return true;
+        }
+        ref readonly var value = ref values[index - code.FirstTemporarySlot];
         switch (value.Operation)
         {
             case NativeReturnOperation.None:
@@ -142,17 +161,15 @@ internal sealed partial class LythonRuntime
                 shape = NativeReturnShape.String;
                 return GuardNativeFormattedValue(value.First, code, values, arguments, context);
             case NativeReturnOperation.BuiltinUnary:
-                ref readonly var targetValue = ref values[value.First];
-                if (!TryReadNativeOperand(code, targetValue.Instruction, arguments, context, out var target)
+                if (!TryReadNativeInput(value.First, code, values, arguments, context, out var target)
                     || target is not BuiltinCallable) return false;
                 var call = code.CallSites[value.Instruction.CallSiteIndex];
-                var argumentIndex = call.NativeArgumentIndex(0);
-                ref readonly var argument = ref values[argumentIndex];
+                var argumentIndex = call.NativeArgumentSource(0);
                 object? actual = null;
                 var inputShape = NativeReturnShape.Other;
-                if (argument.Operation == NativeReturnOperation.Read)
+                if (argumentIndex < code.FirstTemporarySlot || values[argumentIndex - code.FirstTemporarySlot].Operation == NativeReturnOperation.Read)
                 {
-                    if (!TryReadNativeOperand(code, argument.Instruction, arguments, context, out actual)) return false;
+                    if (!TryReadNativeInput(argumentIndex, code, values, arguments, context, out actual)) return false;
                 }
                 else if (!GuardNativeReturn(argumentIndex, code, values, arguments, context, out inputShape)) return false;
                 return SelectNativeUnaryOperation(target, actual, inputShape, out shape) is not null && shape != NativeReturnShape.Other;
@@ -186,11 +203,11 @@ internal sealed partial class LythonRuntime
         var second = NativeReturnShape.None;
         var third = NativeReturnShape.None;
         var fourth = NativeReturnShape.None;
-        if (site.NativeArgumentIndex(0) is >= 0 and var secondIndex
+        if (site.NativeArgumentSource(0) is not int.MaxValue and var secondIndex
             && !GuardNativeReturn(secondIndex, code, values, arguments, context, out second)) return false;
-        if (site.NativeArgumentIndex(1) is >= 0 and var thirdIndex
+        if (site.NativeArgumentSource(1) is not int.MaxValue and var thirdIndex
             && !GuardNativeReturn(thirdIndex, code, values, arguments, context, out third)) return false;
-        if (site.NativeArgumentIndex(2) is >= 0 and var fourthIndex
+        if (site.NativeArgumentSource(2) is not int.MaxValue and var fourthIndex
             && !GuardNativeReturn(fourthIndex, code, values, arguments, context, out fourth)) return false;
         if (first != NativeReturnShape.String) return false;
         switch (value.Operation)
@@ -213,9 +230,12 @@ internal sealed partial class LythonRuntime
     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
         NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
     {
-        ref readonly var value = ref values[index];
-        if (value.Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
-            return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+        if (index >= code.FirstTemporarySlot)
+        {
+            ref readonly var value = ref values[index - code.FirstTemporarySlot];
+            if (value.Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+                return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+        }
         // Only this guard needs the actual field type. Do not reuse its value
         // after later admission/effects; execution performs the original read.
         var shape = TryReadNativeFormattedValue(index, code, values, arguments, context, out var field)
@@ -228,7 +248,9 @@ internal sealed partial class LythonRuntime
     private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
         NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? result)
     {
-        ref readonly var value = ref values[index];
+        if (index < code.FirstTemporarySlot)
+            return TryReadNativeInput(index, code, values, arguments, context, out result);
+        ref readonly var value = ref values[index - code.FirstTemporarySlot];
         if (value.Operation == NativeReturnOperation.Read)
             return TryReadNativeOperand(code, value.Instruction, arguments, context, out result);
         if (value.Operation == NativeReturnOperation.Subscript
@@ -244,7 +266,11 @@ internal sealed partial class LythonRuntime
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
         ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
     {
-        ref readonly var value = ref values[index];
+        // Bound direct inputs are pure. Operations and real roots retain their
+        // cancellation/refusal checks without a recursive leaf dispatch.
+        if (index < code.FirstTemporarySlot)
+            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
+        ref readonly var value = ref values[index - code.FirstTemporarySlot];
         var instruction = value.Instruction;
         if (value.Operation == NativeReturnOperation.Conditional)
         {
@@ -252,7 +278,7 @@ internal sealed partial class LythonRuntime
             context.State.CheckExecution(instruction.Span);
             var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
             var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException);
-            CheckNativeReturnExit(selected, values, context);
+            CheckNativeReturnExit(selected - code.FirstTemporarySlot, values, context);
             return result;
         }
         object? first = null, second = null, third = null, fourth = null;
@@ -270,9 +296,9 @@ internal sealed partial class LythonRuntime
             {
                 if (value.MemberSpan is { } memberSpan) context.State.CheckExecution(memberSpan);
                 var call = code.CallSites[instruction.CallSiteIndex];
-                if (call.NativeArgumentIndex(0) is >= 0 and var a) second = EvaluateNativeReturn(a, code, values, arguments, context, entryException);
-                if (call.NativeArgumentIndex(1) is >= 0 and var b) third = EvaluateNativeReturn(b, code, values, arguments, context, entryException);
-                if (call.NativeArgumentIndex(2) is >= 0 and var c) fourth = EvaluateNativeReturn(c, code, values, arguments, context, entryException);
+                if (call.NativeArgumentSource(0) is not int.MaxValue and var a) second = EvaluateNativeReturn(a, code, values, arguments, context, entryException);
+                if (call.NativeArgumentSource(1) is not int.MaxValue and var b) third = EvaluateNativeReturn(b, code, values, arguments, context, entryException);
+                if (call.NativeArgumentSource(2) is not int.MaxValue and var c) fourth = EvaluateNativeReturn(c, code, values, arguments, context, entryException);
             }
         }
         context.State.CheckExecution(instruction.Span);

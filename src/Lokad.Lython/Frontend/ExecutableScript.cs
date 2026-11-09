@@ -435,7 +435,7 @@ internal sealed record ExecutableExceptionRegion(
     int? CleanupId = null,
     int StackDepth = 0);
 
-// Executable argument forms retain native value indexes for eligible bodies;
+// Executable argument forms retain direct native sources for eligible bodies;
 // ordinary binding uses the same existing form array.
 internal readonly record struct ExecutableCallArgument
 {
@@ -444,12 +444,12 @@ internal readonly record struct ExecutableCallArgument
     {
         Kind = form.Kind;
         _keywordName = form.Kind == CallArgumentKind.Keyword ? form.KeywordName : string.Empty;
-        NativeValueIndex = -1;
+        NativeInput = int.MaxValue;
     }
     public CallArgumentKind Kind { get; }
     public string KeywordName => Kind == CallArgumentKind.Keyword ? _keywordName
         : throw new InvalidOperationException("Only a keyword argument has a keyword name.");
-    public int NativeValueIndex { get; init; }
+    public int NativeInput { get; init; }
 }
 
 internal sealed record ExecutableCallSite(
@@ -463,8 +463,8 @@ internal sealed record ExecutableCallSite(
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
-    public int NativeArgumentIndex(int index) => (uint)index < (uint)Arguments.Length
-        ? Arguments[index].NativeValueIndex : -1;
+    public int NativeArgumentSource(int index) => (uint)index < (uint)Arguments.Length
+        ? Arguments[index].NativeInput : int.MaxValue;
 }
 
 // Execution retains declaration inputs, not the original syntax/body graph.
@@ -520,6 +520,7 @@ internal sealed partial class ExecutableCodeObject
         Constants = constants;
         Names = names;
         LocalNames = localNames;
+        FirstTemporarySlot = localNames.Count;
         LocalNameToSlot = localNameToSlot;
         CapturedLocalSlots = capturedLocalSlots;
         ClosureNames = closureNames;
@@ -602,7 +603,8 @@ internal sealed partial class ExecutableCodeObject
     public bool IsFunctionScope { get; }
 
     public int OperandCapacity { get; }
-    public int FirstTemporarySlot => LocalNames.Count;
+    // The compiled local prefix is fixed; native and ordinary operands share it.
+    public int FirstTemporarySlot { get; }
     public int LastOwnedTemporarySlot { get; }
     public int PatternStorageCount { get; }
     public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));

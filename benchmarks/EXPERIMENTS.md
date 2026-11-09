@@ -5062,3 +5062,29 @@ R129/459/core1be2 full delivery complete:cachedCI42545629905success,
 Windows/Ubuntu fullactual11/10/originalstressboth/installedcore, terminal observation
 in [receipt](results/2026-11-09-literal-construction/delivery-ci.json). Never requery.
 Source-qualified R130 measurements name459; laterR132 is a separate prototype.
+
+
+## Native helper direct inputs and fixed local prefix (2026-11-09 Paris)
+
+[R132](results/2026-11-09-native-inputs/README.md), qualified459/core1be2 versus
+final95fc. Native helper inputs reuse ordinary direct constant/local domains;
+consumed leaves no longer allocate/recursively dispatch full Read nodes. Real roots/
+mutable names keep metadata; old NativeValueIndex/NativeArgumentIndex plumbing removed.
+Guard-before-effects, field re-reads, operation/member/root/return cancellation,
+managed depth and borrowed funding remain. Fixed compiler local prefix published once.
+No new frame, array, owner, cache, engine, option or syntax restriction. Each of4f7/
+3afe/95fc passes87internal/394public peractual11/10 after source changes; no test changes.
+Census wanted3→1/words2→1/charge9→4 nodes, ordinary instruction metadata/prefix counts
+identical. Final compileallocation−.018..−1.18%affected, report+.014%small metadata;
+warmwithin.038%. Original desktop text+57%/search+34%/control drift43.63% preserved.
+B492 sixjobs169.786s: mixed/search−2.05..+1.43%/textCPU+1.25..5.33%/reportelapsed
++1.85..4.64%. Source refinement removes repeated interface Count for immutable prefix.
+B493 sixjobs169.776s/allgates/archive/localpass: syncsearch−3.40..−2.45%, close controls;
+text−.05..+.98%/CPU0..+5.35%, report−2.86..+.95%candidateSpread3.65%, numeric
+−3.47..+1.32%spread3.64%, validatedCSV−5.65..+.69%reference/candidate~3%, asyncsearch
+−4.96..+.87%candidateSpread5.53%. CPU includes wider reset/protocol boundary, coarse
+ticks; no generalCPUgain/universalneutrality claim. Retain coherent representation
+and bounded syncsearch elapsed benefit; explicit textCPU/debt/control uncertainty.
+No further unchanged retiming selected, not permanent closure. Both archives verified,
+all users joined/RAM removed/terminalcached; qualified catalog reused by owned SHA link,
+no disk recovery/floor relaxation. Full candidate delivery pending; objective open.

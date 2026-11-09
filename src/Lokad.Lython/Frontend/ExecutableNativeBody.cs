@@ -4,6 +4,9 @@ namespace Lokad.Lython.Frontend;
 
 // A closed native body prepares operation structure once. Ordinary code keeps
 // its own physical operands and source spans; only eligible helpers own nodes.
+// Inputs use the existing operand domains: negative constant indexes, the local
+// prefix, then operation indexes offset by that prefix. Consumed local/constant
+// leaves need no Read node; real roots and mutable name reads retain metadata.
 internal enum NativeReturnOperation
 {
     Read,

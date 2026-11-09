@@ -1,0 +1,30 @@
+{
+  "native": [
+    {
+      "case": "scripts.file-search.large",
+      "function": "wanted",
+      "beforeNodes": 3,
+      "candidateNodes": 1,
+      "beforeReads": 2,
+      "candidateReads": 0
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "function": "words_from_line",
+      "beforeNodes": 2,
+      "candidateNodes": 1,
+      "beforeReads": 1,
+      "candidateReads": 0
+    },
+    {
+      "case": "scripts.csv-integer-accounting.large",
+      "function": "charge",
+      "beforeNodes": 9,
+      "candidateNodes": 4,
+      "beforeReads": 5,
+      "candidateReads": 0
+    }
+  ],
+  "sourceOrdinaryInstructionMetadataAndPrefixCountsIdentical": true,
+  "notCpuEvidence": true
+}

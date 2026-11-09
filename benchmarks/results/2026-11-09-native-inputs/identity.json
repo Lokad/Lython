@@ -1,0 +1,17 @@
+{
+  "baseline": "Committed459813a3/core1be2; full source CI42545629905success cached, never requery",
+  "candidate": "R132 direct native inputs and immutable local prefix after57266452",
+  "coreSHA256": {
+    "before": "1be2a325f98e06e0c874142c9a173f13c56da5680a2d48c5f95fbf50d09faf27",
+    "candidate": "95fccafa9dd6934e638041c1b249f7e8fa3783fa6ace093f9b7a42c7fd880d8e"
+  },
+  "changedSources": {
+    "src/Lokad.Lython/Frontend/ExecutableNativeBody.cs": "17caf54bee54b7d746079f594a20e2f689578908986d0e4830049965e55a602b",
+    "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "4ec83b426e6fdabe46d70ad47b4d3d5490e19906b0fab2bd33fcf653dc8ba56a",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "838a1b9ac25625f1afd3c98c1232390106894e4825bc9ec464c0f435d4ede8d2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "74465bc375b0d01ef4fbbca0c92c3a188ea9ef6e16fb29348d7870ad3bbcee03"
+  },
+  "patchBase": "57266452 (production459)",
+  "qualification": "87internal/394public eachactual11/10 pass, no tests/assertions changed",
+  "contract": "No new storage owner/array/engine/API/limit; native operation/return checkpoints replace consumed pure-leaf checks, no checkpoint count/fuel contract; guard-before-effects/mutable field rereads and compiled/runtime owners retained"
+}

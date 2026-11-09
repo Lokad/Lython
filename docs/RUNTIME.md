@@ -488,6 +488,11 @@ return's source span. Empty lists remain fresh and admitted, including cancellat
 after admission. Loops, shared joins, custom truth and format proofs that query
 container values keep ordinary executable dispatch. No separate branch interpreter
 or runtime working owner is introduced.
+Native helper inputs share the ordinary direct constant/local operand convention;
+consumed pure leaves need no separate read node or recursive read dispatch. Real
+root and mutable-name reads retain their metadata. Both paths use one fixed local
+prefix prepared with the code. Native operations, members, entries and returns
+retain cancellation/refusal checks; pure input reads have no checkpoint-count contract.
 The native evaluator reads a readonly
 span; it cannot retain that span or suspend. Returning an argument object preserves
 its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
