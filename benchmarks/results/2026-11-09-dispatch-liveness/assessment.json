@@ -1,0 +1,150 @@
+{
+  "complete": true,
+  "ownedSeconds": 87.00101802032441,
+  "jobs": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.001886135164556962,
+          "cpuSeconds": 0.0020253164556962027,
+          "iqrPercent": 1.4886606446007038
+        },
+        "reference-control": {
+          "seconds": 0.001985599586666667,
+          "cpuSeconds": 0.0021333333333333334,
+          "iqrPercent": 0.4872717909308808
+        },
+        "candidate": {
+          "seconds": 0.0018454615,
+          "cpuSeconds": 0.002,
+          "iqrPercent": 0.5048418783052515
+        },
+        "candidate-control": {
+          "seconds": 0.0018419620975609757,
+          "cpuSeconds": 0.001951219512195122,
+          "iqrPercent": 0.236508137147385
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          -2.156455450344985,
+          -7.057721385907634
+        ],
+        "candidate-control": [
+          -2.341988412392604,
+          -7.233960465655775
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          -1.2500000000000067,
+          -6.25
+        ],
+        "candidate-control": [
+          -3.658536585365857,
+          -8.536585365853666
+        ]
+      },
+      "baselineSpreadPercent": 5.273451446045674,
+      "candidateSpreadPercent": -0.18962207767673211
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.0032412773913043477,
+          "cpuSeconds": 0.0034782608695652175,
+          "iqrPercent": 2.4691083949993935
+        },
+        "reference-control": {
+          "seconds": 0.0033872105416666667,
+          "cpuSeconds": 0.003541666666666667,
+          "iqrPercent": 4.313288307673721
+        },
+        "candidate": {
+          "seconds": 0.0032466868510638296,
+          "cpuSeconds": 0.003617021276595745,
+          "iqrPercent": 0.6537839995865607
+        },
+        "candidate-control": {
+          "seconds": 0.0032839883958333334,
+          "cpuSeconds": 0.003541666666666667,
+          "iqrPercent": 2.4476931293460265
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          0.16689283595394677,
+          -4.148655327864348
+        ],
+        "candidate-control": [
+          1.3177213602134197,
+          -3.047408614362168
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          3.9893617021276695,
+          2.127659574468077
+        ],
+        "candidate-control": [
+          1.822916666666674,
+          0.0
+        ]
+      },
+      "baselineSpreadPercent": 4.502334504100958,
+      "candidateSpreadPercent": 1.1489110739855146
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.003913256051282052,
+          "cpuSeconds": 0.0041025641025641026,
+          "iqrPercent": 0.19542254621648159
+        },
+        "reference-control": {
+          "seconds": 0.0038476947249999997,
+          "cpuSeconds": 0.004,
+          "iqrPercent": 1.1747306694140038
+        },
+        "candidate": {
+          "seconds": 0.003883744625,
+          "cpuSeconds": 0.004,
+          "iqrPercent": 0.4832372313872225
+        },
+        "candidate-control": {
+          "seconds": 0.0038322246249999996,
+          "cpuSeconds": 0.00425,
+          "iqrPercent": 0.5141899139067352
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          -0.7541399258140458,
+          0.9369220423275593
+        ],
+        "candidate-control": [
+          -2.0706906274508885,
+          -0.40206152269526285
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          -2.500000000000002,
+          0.0
+        ],
+        "candidate-control": [
+          3.5937500000000178,
+          6.25
+        ]
+      },
+      "baselineSpreadPercent": -1.6753651032002659,
+      "candidateSpreadPercent": -1.3265547808772316
+    }
+  ]
+}

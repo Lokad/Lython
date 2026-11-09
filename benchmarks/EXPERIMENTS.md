@@ -4931,3 +4931,17 @@ platform/stress/package qualification pending; R125CI3109 is separate. Existing
 linear runner/shared layouts/inline presence/borrowed locals/tuple/adopted CSV
 correct source assumptions; no imagined duplicate phase or new VM. Publication
 postponed; complete-script objective remains open.
+
+
+R126 bounded quiet confirmation B486:3jobs87.001s/allgates/archive/localpass, no
+users/RAM remain, terminal cached. Text elapsed−7.23..−2.16%/CPU−8.54..−1.25%,
+but reference spread5.27% prevents a precise gain; report elapsed−4.15..+1.32%/
+CPU0..+3.99%possible debt with reference4.50%; JSON−2.07..+0.94%, adverse desktop
+elapsed not reproduced/coarseCPU mixed. Retain policy deletion for simplification
+and focused correctness, no universal gain/neutrality claim or further unchanged
+retiming. Offline25019methods/24797ILbodies/signatures/locals/exception metadata
+identical, onlyfiveNoInlining bits removed; not JIT identity or full qualification.
+Fresh idle exact-byte proof/persisted plan/two singleton compiler-assembly extents
+linked to permitted canonical,14016512B recovered; all historical paths/bytes
+preserved, no floor reduction/deletion. [Raw/proofs](results/2026-11-09-dispatch-liveness/README.md).
+Full coherent delivery pending separately; publication postponed.

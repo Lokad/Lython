@@ -14,6 +14,11 @@ reassesses that premise explicitly. It does not interpret all input/prefix sampl
 as removable dispatch cost or predict a fixed CPU improvement. CLR inlining remains
 heuristic; removing an attribute does not prove a helper actually became inlined.
 
+Offline PE verification checks25,019method identities/signatures/attributes and
+24,797executable IL bodies, locals, exception regions and max-stack metadata:
+all unchanged; implementation flags differ only by those five NoInlining removals.
+This isolates the policy change without proving identical JIT code or performance.
+
 Release actual.NET11/.NET10 each:189internal lifetime/ownership/cancellation cases,
 229public semantics/protocol/refusal/cleanup cases, plus21internal managed-stack/
 guard and60public isolated recursion/rendering/cycle cases. Probes built explicitly
@@ -41,11 +46,34 @@ Original adverse JSON sync is retained; old control spread2.33% does not explain
 fully. Async controls drift up to17.54%; sync text/report controls0.56%/1.13% are
 closer. This cannot establish CPU gains or universal neutrality. Retain the
 mechanism deletion as development simplification with explicit regression debt,
-rather than claim a measured speedup. A bounded quiet-VM comparison of text/report/
-adverse JSON with independent controls is the next measurement gate; do not repeat
-the unchanged desktop round. It may justify refinement of individual JIT choices,
-without restoring a blanket GC-liveness policy. No percentage veto or permanent
-design closure. Final delivery/publication is not claimed.
+rather than claim a measured speedup. Original adverse evidence stays visible.
+
+B486 quiet F4as_v7/Ubuntu24.04.4/.NET11RC3 confirmation: three jobs87.001s,
+four independent processes/job,5swarmup/role,7rotated150msrounds, normalGC/tiering.
+Same existing scripts/worker/auxiliaries, warm public execution with mediated
+RAM-file I/O/full goldens/prior-result cleanup; compile/startup/reset/protocol/
+final cache teardown excluded. All Ready/core/auxiliary/golden/budget/quiet/Closed/
+joined-user/RAM-removal/archive-under-lease/local-verification gates pass:
+
+| Complete sync script | Elapsed change vs both reference processes | Process CPU change | Reference / candidate spread |
+| --- | ---: | ---: | ---: |
+| Text/helpers | −7.23..−2.16% | −8.54..−1.25% |5.27% /0.19% |
+| Report rendering | −4.15..+1.32% |0.00..+3.99% |4.50% /1.15% |
+| JSON-lines/helpers | −2.07..+0.94% | −2.50..+6.25% |1.67% /1.33% |
+
+The adverse desktop JSON elapsed result does not reproduce. Text supports a
+possible improvement; reference spread5.27% and coarse CPU ticks prevent a precise
+gain claim. Report remains inconclusive with possible CPU debt, not established
+neutrality. Retain the policy deletion for simplification and passing focused
+semantics/ownership/stack checks; no further unchanged timing or speculative
+boundary restoration selected. Full coherent platform/stress/package qualification
+remains pending. No percentage veto, permanent closure or publication.
+
+Before launch, a fresh idle lease verified complete inode aliases/SHA/ownership/
+writable parents for two redundant compiler-assembly extents. The persisted plan
+preceded atomic exact-byte hardlink replacement;14,016,512bytes recovered. Every
+historical path/byte preserved, no evidence deletion or floor reduction. Full proof
+and receipt travel with the archive. B486 terminal cached; no users/fixtures remain.
 
 The broader call/frame/operand and complete-script objective stays active. Source
 inspection confirms the existing linear caller-return engine, shared parameter
@@ -57,4 +85,6 @@ evidence remains separate from current HEAD; no extra capture selected.
 
 [Source identity](identity.json), [diagnostic](assessment-local.json),
 [focused validation](focused-validation.json),
-[source/conditions/binaries/raw checks](source-and-diagnostics.tar.xz).
+[source/conditions/binaries/raw checks](source-and-diagnostics.tar.xz),
+[IL verification](il-proof.json), [quiet comparison](assessment.json),
+[receipt](archive-receipt.json), [raw quiet evidence](observations.tgz).
