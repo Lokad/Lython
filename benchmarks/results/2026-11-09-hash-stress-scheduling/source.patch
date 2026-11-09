@@ -1,0 +1,80 @@
+diff --git a/tests/Lokad.Lython.Tests/NativeHashCancellationTests.cs b/tests/Lokad.Lython.Tests/NativeHashCancellationTests.cs
+index a637279c..36fbf698 100644
+--- a/tests/Lokad.Lython.Tests/NativeHashCancellationTests.cs
++++ b/tests/Lokad.Lython.Tests/NativeHashCancellationTests.cs
+@@ -134,8 +134,10 @@ public sealed class NativeHashCancellationTests
+     [InlineData(true)]
+     public async Task ActiveNativeHashStopsBeforePublishingItsCache(bool binary)
+     {
+-        const int length = 64 * 1024 * 1024;
+-        var budget = new LythonMemoryBudget(96 * 1024 * 1024);
++        // Keep the nonallocating scan longer than a normal scheduler quantum.
++        // This stress case owns one buffer; ordinary checks stay small.
++        const int length = 256 * 1024 * 1024;
++        var budget = new LythonMemoryBudget(length + 32 * 1024 * 1024);
+         using (var owner = budget.CreateScope())
+         using (var cancellation = new CancellationTokenSource())
+         {
+@@ -153,28 +155,51 @@ public sealed class NativeHashCancellationTests
+             _ = warm.Invoke([], Span, context);
+             var callable = HashMember(value);
+             var baseline = budget.ReservedBytes;
+-            var run = Task.Factory.StartNew(() =>
++            using var started = new ManualResetEventSlim();
++            using var cancellerReady = new ManualResetEventSlim();
++            var canceller = Task.Factory.StartNew(() =>
+             {
+-                // Arm on this worker immediately before the warmed native call.
+-                // A delayed parent continuation must not postpone cancellation
+-                // until after the scan. This remains a timed stress observation.
+-                cancellation.CancelAfter(TimeSpan.FromMilliseconds(1));
+-                return callable.Invoke([], Span, context);
++                cancellerReady.Set();
++                Assert.True(started.Wait(TimeSpan.FromSeconds(10)));
++                // Request directly from an owned thread. Timer-queue or pool
++                // startup must not postpone cancellation past this scan.
++                Thread.Sleep(1);
++                cancellation.Cancel();
+             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
++            var requestedAtCompletion = false;
++            Task<object>? run = null;
+             try
+             {
+-                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
++                Assert.True(cancellerReady.Wait(TimeSpan.FromSeconds(10)));
++                run = Task.Factory.StartNew(() =>
++                {
++                    started.Set();
++                    try { return callable.Invoke([], Span, context); }
++                    finally { requestedAtCompletion = cancellation.IsCancellationRequested; }
++                }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
++                var observed = await Record.ExceptionAsync(async () =>
+                     await run.WaitAsync(TimeSpan.FromSeconds(10)));
++                if (observed is null)
++                    Assert.Fail($"Hash completed normally; cancellation requested before completion: {requestedAtCompletion}.");
++                var failure = Assert.IsType<LythonRuntimeException>(observed);
+                 Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+                 Assert.Equal(Span, failure.Span);
+             }
+             finally
+             {
+                 cancellation.Cancel();
+-                // Keep the input funded until its actual user finishes, even
+-                // when a failed assertion or broken checkpoint takes this path.
+-                try { await run; }
+-                catch (LythonRuntimeException failure) when (failure.Attribution?.Reason == LythonFailureReason.Cancelled) { }
++                started.Set();
++                // Both owned workers end before the input or events retire,
++                // including when an assertion or checkpoint fails.
++                try { await canceller; }
++                finally
++                {
++                    if (run is not null)
++                    {
++                        try { await run; }
++                        catch (LythonRuntimeException failure) when (failure.Attribution?.Reason == LythonFailureReason.Cancelled) { }
++                    }
++                }
+             }
+             // A completed cache would bypass the scan even for this token. A
+             // refusal here proves that cancellation did not finish/cache it.

@@ -5244,3 +5244,18 @@ already admitted once. No speculative JIT/value rewrite or second capture select
 Allidentity/golden/quiet/Closed/joins/RAM/archiveunderlease/localSHA pass; terminal
 cached, no users/fixtures, fresh exactduplicate preserves everypath/byte/metadata,
 floors unchanged. No elapsed/sourcepair/CPython or embedding-tail claim.
+
+
+## Native hash stress scheduling window (2026-11-09 Paris)
+
+[R141](results/2026-11-09-hash-stress-scheduling/README.md). CI42567067318/23e
+fullWindows/Ubuntu actual11/10/package passes; Ubuntu Stressbothpasses. Windows
+.NET11publicStress406passes, internal5pass/one hashfail, .NET10Stress skipped.
+Timer fixture misses window; local.NET10 diagnostic completionToken=false even
+with warmedtimer, original failure retained. Replace timer/pool with owned ready
+canceller +256MiB native input/same32MiBheadroom; same10sdeadline/cache/attribution/
+input/depth/refund assertions, no retries/ignored windows. Both users joined.
+16native+6internalStress pass eachactual11/10. Remove only loopchecks, entryretained:
+both nativecases fail eachframework, completionToken=true. Exactsource restored,
+nonincrementalbuilds/finalchecks pass. No production/policy/API/performance change.
+Full corrected CI still required; publication postponed.

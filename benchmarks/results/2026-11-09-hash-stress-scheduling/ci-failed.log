@@ -1,0 +1,37 @@
+tests (windows-latest)	Test original stress scales	﻿2026-11-09T05:37:48.6425907Z ##[group]Run foreach ($framework in @('net11.0', 'net10.0')) {
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6426631Z ^[[36;1mforeach ($framework in @('net11.0', 'net10.0')) {^[[0m
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6428019Z ^[[36;1m  try { dotnet test Lokad.Lython.slnx -c Release -f $framework --no-build --filter 'Category=Stress' --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath "stress-$framework.log" } catch { exit 1 }^[[0m
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6429401Z ^[[36;1m  if ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6429777Z ^[[36;1m}^[[0m
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6511299Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6511993Z env:
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6512296Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6512788Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6513420Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6514072Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6514748Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6515317Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:48.6515761Z ##[endgroup]
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:49.6563048Z 
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:50.9985796Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:51.0787671Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:51.3905914Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:51.7549923Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:51.8693340Z Blame: Attaching crash dump utility to process testhost (9516).
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:52.2057556Z Blame: Attaching crash dump utility to process testhost (10056).
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:55.5200441Z ^[[31;1m[xUnit.net 00:00:02.55]     Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(binary: False) [FAIL]^[[0m
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4516871Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4749396Z   Failed Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(binary: False) [102 ms]
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4751187Z   Error Message:
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4752249Z    Assert.Throws() Failure: No exception was thrown
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4753556Z Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4754563Z   Stack Trace:
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4757108Z      at Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(Boolean binary) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\NativeHashCancellationTests.cs:line 166
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4761717Z    at Lokad.Lython.Tests.NativeHashCancellationTests.ActiveNativeHashStopsBeforePublishingItsCache(Boolean binary) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\NativeHashCancellationTests.cs:line 177
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4763747Z --- End of stack trace from previous location ---
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.4781424Z 
+tests (windows-latest)	Test original stress scales	2026-11-09T05:37:56.5050769Z Failed!  - Failed:     1, Passed:     5, Skipped:     0, Total:     6, Duration: 1 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (windows-latest)	Test original stress scales	2026-11-09T05:43:55.6983593Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test original stress scales	2026-11-09T05:43:55.7169578Z 
+tests (windows-latest)	Test original stress scales	2026-11-09T05:43:55.7216022Z Passed!  - Failed:     0, Passed:   406, Skipped:     0, Total:   406, Duration: 5 m 57 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (windows-latest)	Test original stress scales	2026-11-09T05:43:56.2974290Z ##[error]Process completed with exit code 1.
