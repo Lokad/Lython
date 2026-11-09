@@ -5337,3 +5337,18 @@ all semantic/refusal/ownership/cleanup assertions. Five additional Python golden
 200internal/752public focused checks eachactual11/10. Later delivery gates were
 skipped; corrected delivery batches. Original measured65ed source remains labelled,
 with no timing/neutrality claim for the correction or repeated unchanged campaign.
+
+## Current representative CPython checkpoint (2026-11-09 Paris)
+
+[R146/B503](results/2026-11-09-cpython-callable-checkpoint/README.md), fresh committed
+65ed6cf7/core082a, unchanged R136 worker/adapter/catalog/protocol. Twelve jobs/250.847s:
+main CSV/text/JSON-report/search complete ratios1.13–1.17×/1.49–1.51×/1.35×/1.34–1.35×;
+warm1.15–1.17×/1.56–1.60×/1.37–1.38×/1.61–1.63×. Variable controls stay explicit.
+Compile roughly1.05–1.09×, search0.95×; no individual optimization attribution.
+Search input2049physical lines, exits1025; fix label without changing bytes/work.
+All quiet/output/ownership/join/RAM/archive/localSHA gates pass. Initial staging
+catalog-link and continuation-script errors precede timing, with cleanup/original
+logs preserved; success reverified exact identity and idle lease. No floor change/
+space recovery; terminal cached/no users. Full65ed CI found the separately corrected
+lazy-scope defect; no relabelling as58d3 or final-binary timing claim. Older guide/
+all displaced rows remain. Broader performance and independent regex work continue.
