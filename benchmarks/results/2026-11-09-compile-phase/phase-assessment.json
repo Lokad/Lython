@@ -1,0 +1,228 @@
+[
+  {
+    "case": "scripts.config-edit.small",
+    "lane": "compile",
+    "samples": 1172,
+    "unknownLeaf": 161,
+    "exclusiveObservedPhase": [
+      {
+        "phase": "parsing",
+        "samples": 505,
+        "percent": 43.08873720136519
+      },
+      {
+        "phase": "abstract analysis",
+        "samples": 224,
+        "percent": 19.112627986348123
+      },
+      {
+        "phase": "executable construction",
+        "samples": 217,
+        "percent": 18.515358361774744
+      },
+      {
+        "phase": "lexical preparation",
+        "samples": 85,
+        "percent": 7.252559726962457
+      },
+      {
+        "phase": "unassigned",
+        "samples": 47,
+        "percent": 4.010238907849829
+      },
+      {
+        "phase": "syntax validity",
+        "samples": 34,
+        "percent": 2.901023890784983
+      },
+      {
+        "phase": "lowering",
+        "samples": 27,
+        "percent": 2.303754266211604
+      },
+      {
+        "phase": "tokenization",
+        "samples": 19,
+        "percent": 1.621160409556314
+      },
+      {
+        "phase": "annotation analysis",
+        "samples": 7,
+        "percent": 0.5972696245733788
+      },
+      {
+        "phase": "name diagnostics",
+        "samples": 5,
+        "percent": 0.42662116040955633
+      },
+      {
+        "phase": "postponed annotation text",
+        "samples": 2,
+        "percent": 0.17064846416382254
+      }
+    ],
+    "inclusiveObservedPhase": {
+      "executable construction": 217,
+      "parsing": 505,
+      "syntax validity": 34,
+      "lexical preparation": 85,
+      "abstract analysis": 224,
+      "tokenization": 19,
+      "lowering": 27,
+      "name diagnostics": 5,
+      "annotation analysis": 7,
+      "postponed annotation text": 2
+    },
+    "expressionTraversalLeafCallers": [
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectExpressionBindings(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Runtime]System.Collections.Generic.ICollection`1<string>)[OptimizedTier1]",
+        14
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+        9
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+        9
+      ],
+      [
+        "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+        6
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+        2
+      ],
+      [
+        "class Lokad.Lython.Frontend.FrontendResult [Lokad.Lython] Lokad.Lython.Frontend.LythonFrontend::Compile(string,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,valuetype [System.Runtime]System.Threading.CancellationToken,class Lokad.Lython.Frontend.CompiledRegexPrograms)[OptimizedTier1]",
+        1
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::UpdateBindings(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+        1
+      ]
+    ],
+    "limits": "Diagnostic frame-pointer samples; inlining/truncation/unknown leaf IPs prevent exact attribution. Phase samples are not removable costs; normal GC and prior-script disposal included."
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "lane": "compile",
+    "samples": 1199,
+    "unknownLeaf": 191,
+    "exclusiveObservedPhase": [
+      {
+        "phase": "abstract analysis",
+        "samples": 350,
+        "percent": 29.190992493744787
+      },
+      {
+        "phase": "parsing",
+        "samples": 311,
+        "percent": 25.938281901584652
+      },
+      {
+        "phase": "executable construction",
+        "samples": 225,
+        "percent": 18.76563803169308
+      },
+      {
+        "phase": "lexical preparation",
+        "samples": 101,
+        "percent": 8.423686405337781
+      },
+      {
+        "phase": "syntax validity",
+        "samples": 64,
+        "percent": 5.337781484570475
+      },
+      {
+        "phase": "lowering",
+        "samples": 43,
+        "percent": 3.586321934945788
+      },
+      {
+        "phase": "unassigned",
+        "samples": 40,
+        "percent": 3.336113427856547
+      },
+      {
+        "phase": "tokenization",
+        "samples": 27,
+        "percent": 2.2518765638031693
+      },
+      {
+        "phase": "name diagnostics",
+        "samples": 21,
+        "percent": 1.7514595496246872
+      },
+      {
+        "phase": "scope diagnostics",
+        "samples": 10,
+        "percent": 0.8340283569641368
+      },
+      {
+        "phase": "annotation analysis",
+        "samples": 4,
+        "percent": 0.3336113427856547
+      },
+      {
+        "phase": "postponed annotation text",
+        "samples": 3,
+        "percent": 0.25020850708924103
+      }
+    ],
+    "inclusiveObservedPhase": {
+      "abstract analysis": 350,
+      "parsing": 311,
+      "tokenization": 27,
+      "lexical preparation": 101,
+      "executable construction": 226,
+      "syntax validity": 64,
+      "annotation analysis": 4,
+      "lowering": 43,
+      "scope diagnostics": 10,
+      "name diagnostics": 21,
+      "postponed annotation text": 3
+    },
+    "expressionTraversalLeafCallers": [
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.ScopeDirectiveFactsCollector::CollectExpressionBindings(class Lokad.Lython.Frontend.ExpressionSyntax,class [System.Runtime]System.Collections.Generic.ICollection`1<string>)[OptimizedTier1]",
+        12
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::<Analyze>g__Expressions|0_3(class Lokad.Lython.Frontend.ExpressionSyntax,valuetype Lokad.Lython.Frontend.SyntaxValidityDiagnostics/<>c__DisplayClass0_0&)[OptimizedTier1]",
+        7
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.LexicalScopePreparation::Prepare(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+        7
+      ],
+      [
+        "class [System.Collections]System.Collections.Generic.HashSet`1<string> [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.StatementSyntax,class Lokad.Lython.Frontend.AbstractState)[OptimizedTier1]",
+        6
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.StaticBindingEngine::CollectMutatedReceiverNames(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.AbstractState,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+        3
+      ],
+      [
+        "bool [Lokad.Lython] Lokad.Lython.Frontend.GeneratorSyntaxFacts::ContainsYield(class Lokad.Lython.Frontend.ExpressionSyntax)[OptimizedTier1]",
+        1
+      ],
+      [
+        "class Lokad.Lython.Frontend.FrontendResult [Lokad.Lython] Lokad.Lython.Frontend.LythonFrontend::Compile(string,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.ILythonRegexProvider,valuetype [System.Runtime]System.Threading.CancellationToken,class Lokad.Lython.Frontend.CompiledRegexPrograms)[OptimizedTier1]",
+        1
+      ],
+      [
+        "class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.LythonDiagnostic> [Lokad.Lython] Lokad.Lython.Frontend.SyntaxValidityDiagnostics::Analyze(class Lokad.Lython.Frontend.ScriptSyntax)[OptimizedTier1]",
+        1
+      ],
+      [
+        "void [Lokad.Lython] Lokad.Lython.Frontend.StaticNameBindingDiagnostics::AnalyzeExpression(class Lokad.Lython.Frontend.ExpressionSyntax,class Lokad.Lython.Frontend.StaticAnalysisContext,class [System.Collections]System.Collections.Generic.HashSet`1<string>,class [System.Collections]System.Collections.Generic.HashSet`1<string>)[OptimizedTier1]",
+        1
+      ]
+    ],
+    "limits": "Diagnostic frame-pointer samples; inlining/truncation/unknown leaf IPs prevent exact attribution. Phase samples are not removable costs; normal GC and prior-script disposal included."
+  }
+]

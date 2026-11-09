@@ -4982,3 +4982,17 @@ Space plan preceded exact-byte links for eight singleton compiler-library aliase
 56,131,584B recovered with historical paths/bytes/metadata preserved. Original
 Windows argument-length launch failure and corrected stdin transport retained.
 All users joined/RAM removed/archive verified locally; terminal cached. Publication postponed.
+
+
+## Current compilation phase attribution (2026-11-09 Paris)
+
+[R128/B488](results/2026-11-09-compile-phase/README.md), committed847/coreac6b.
+Two existing compile-only6s samples,1172/1199active-worker samples: config/helper
+parsing43.09/25.94%, abstract19.11/29.19%, executable18.52/18.77%, lexical7.25/8.42%,
+lowering2.30/3.59%. Unknown leaf13.74/15.93%, frame/inlining limits explicit; shares
+are useful work too, not removable taxes or elapsed improvements. No dominant
+single duplicate phase supports a general rewrite. Allsource/quiet/golden/Closed/
+zero-budget/join/RAM/archive/local gates pass; terminal cached, no production change.
+Next selectedR129 consolidates actual string-literal staging within parsing:
+source spans/canonical body decoder/lazy concatenation, not a new AST/value/backend.
+Original raw/maps and phase classifier preserved. Publication postponed.
