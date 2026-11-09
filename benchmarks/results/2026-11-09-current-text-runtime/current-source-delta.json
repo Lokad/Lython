@@ -1,0 +1,6 @@
+{
+  "productionSourcesIdentical": true,
+  "trackedRevision": "96e534f948fabd592b02617b4e69b40cc337c322",
+  "coreSHA256": "80a3540d915f3f8c0623a50bf215627815a80574e3506b7d18e97c54d18a14bd",
+  "note": "R164/R165 final precommit freeze, production-source equivalent to committed96e534f9; no postcommit binary claim."
+}

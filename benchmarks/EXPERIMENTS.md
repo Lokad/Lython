@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R166 current whole-text attribution](results/2026-11-09-current-text-runtime/README.md)
+reuses the96e-equivalent freeze, one5.856s capture/5.77guestCPU/1147guest samples.
+Text23.37%, dictionary8.37%, scalar6.36%; VM prefix38.71% contains useful inlining.
+Existing native helper returns remove ordinary binding/frame phases from this script.
+No assumed per-character string conversion, duplicate hash or row copy remains.
+Select a bounded complete text-construction/dictionary pipeline design phase;
+no elapsed/speedup claim, new arena/cache/tagged-value commitment or permanent veto.
+All gates/raw/maps/source and initial space refusal survive; no VM users remain.
+
 The [R165 JSON item-pair correction/delivery decision](results/2026-11-09-json-item-comparisons/README.md)
 replaces the native key-only comparator. Three regressions fail frozen R164 and
 match independent Python after correction. Focused198/1378actual11 and196/1372actual10

@@ -1,0 +1,19 @@
+{
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Helpers.cs": "10cfdef7f2160b9e9753ece71ff9cb60889da3121bb4169e8938fcadfd7fae53",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "5ff22b178f89432ee4d369b7dd0239a117e7b1c0a234d663dd99eb317fc86593",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "3c4f409445f2d902cb489fa839b5101b31aa9cfbc9f6086b2ec4c89721eacdae",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "808c45e1a017e27cfc9cb727ab45078edd2b1977513face6a74ca9aa1f8cf48b",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "1e3d1268f741d10ef079c98b9c5f9b40cc820fec64ad3b93316f721275abd90d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "d5b1e14d99c32bc83475ff54ddf73ba8be5f960af5e662579c545a6f564d3026"
+  },
+  "established": [
+    "ASCII lower/upper already use managed Ascii.ToLower/ToUpper; no scalar-string conversion loop",
+    "Whitespace split already bulk-scans ASCII and writes final independently owned fragments",
+    "UTF-8 construction completion does not recount scalars or validate the already-internal payload",
+    "String hashes already cached; no repeated whole-token hash premise",
+    "CSV parser already bulk-scans syntax candidates; rows/field payloads admit together and transfer arrays",
+    "Bindings already target final slots with inline presence, reused workspace and deferred context"
+  ],
+  "decision": "Await current text CPU leaf/phase evidence; no new cache, scalar representation or frame arena selected from source guesses."
+}

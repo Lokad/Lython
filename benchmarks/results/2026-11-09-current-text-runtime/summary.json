@@ -1,0 +1,85 @@
+{
+  "case": "scripts.text-summary-helpers.large",
+  "guestSamples": 1147,
+  "unknownGuestSamples": 70,
+  "activeGuestCpuSeconds": 5.77,
+  "capturedSeconds": 5.855644768,
+  "phases": [
+    {
+      "name": "VM prefix",
+      "samples": 444,
+      "percent": 38.70967741935484
+    },
+    {
+      "name": "text kernels",
+      "samples": 268,
+      "percent": 23.365300784655624
+    },
+    {
+      "name": "dictionary",
+      "samples": 96,
+      "percent": 8.369659982563208
+    },
+    {
+      "name": "scalar operators",
+      "samples": 73,
+      "percent": 6.364428945074106
+    },
+    {
+      "name": "native call preparation",
+      "samples": 71,
+      "percent": 6.190061028770706
+    },
+    {
+      "name": "memory admission",
+      "samples": 62,
+      "percent": 5.405405405405405
+    },
+    {
+      "name": "unassigned",
+      "samples": 30,
+      "percent": 2.6155187445510024
+    },
+    {
+      "name": "operand/result publication",
+      "samples": 27,
+      "percent": 2.353966870095902
+    },
+    {
+      "name": "host/filesystem",
+      "samples": 21,
+      "percent": 1.8308631211857018
+    },
+    {
+      "name": "managed cancellation/stack",
+      "samples": 20,
+      "percent": 1.7436791630340018
+    },
+    {
+      "name": "native guard",
+      "samples": 12,
+      "percent": 1.046207497820401
+    },
+    {
+      "name": "text reader",
+      "samples": 11,
+      "percent": 0.9590235396687009
+    },
+    {
+      "name": "native evaluation",
+      "samples": 9,
+      "percent": 0.7846556233653008
+    },
+    {
+      "name": "builtin initialization",
+      "samples": 2,
+      "percent": 0.17436791630340018
+    },
+    {
+      "name": "context initialization",
+      "samples": 1,
+      "percent": 0.08718395815170009
+    }
+  ],
+  "limits": "Diagnostic CPU attribution of complete warm batches, wider than execution clocks. No elapsed comparison, removed-work or speedup estimate. Inlining/truncation/unknown IPs remain explicit."
+}
