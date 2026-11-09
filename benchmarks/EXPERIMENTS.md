@@ -5088,3 +5088,20 @@ and bounded syncsearch elapsed benefit; explicit textCPU/debt/control uncertaint
 No further unchanged retiming selected, not permanent closure. Both archives verified,
 all users joined/RAM removed/terminalcached; qualified catalog reused by owned SHA link,
 no disk recovery/floor relaxation. Full candidate delivery pending; objective open.
+
+
+## Canonical static call syntax (2026-11-09 Paris)
+
+[R133/B494](results/2026-11-09-static-call-shape/README.md), c343/core95fc versus36fd.
+One syntax-only ordinary-call partition replaces repeated static positional/keyword
+and parallel inferred-value construction. No inferred binding-state cache; expanded
+arguments remain current.47internal/206public peractual11/10 pass,3new state/expansion
+regressions. Compileallocation−2.59..−4.14%, warmwithin.081%. Desktop configcompile
++15.74..+17.70% and large controls/adverseasyncJSON retained. Seven quiet jobs196.114s,
+normalGC/tiering/fourprocesscontrols/allgates/archive/localpass: compiler elapsedCSV
+−2.33..+.25%,text−1.41..+.32%,JSON−3.41..−.59%,report−.01..+.62%,config−2.09..+.04%.
+Completeconfig−1.17..+2.33%with3.34%candidate spread; widerprocessCPU+3.17..+5.14%possible
+debt, warmcontrol mixed. Retain construction/allocation removal; no generalCPUclaim
+or unchanged retiming selected. Original evidence/space proofs preserved, allusers
+joined/RAMremoved/terminalcached. Candidate full qualification batches later;
+publication postponed and performance objective remains open.

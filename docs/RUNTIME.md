@@ -190,6 +190,9 @@ without a cross-script cache. A function declaration also owns one flat paramete
 name/slot table, role counts and generator classification, shared by analysis,
 lowering and its created functions. Flow-dependent abstract bindings stay separate;
 no per-call keyword-shape map or repeated generator-body scan is needed.
+Ordinary call syntax also owns its positional/keyword expression partition, shared
+by static contract checks and return analysis. Inferred values belong to the
+current analysis state; `*` and `**` expansion is resolved again from that state.
 Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before

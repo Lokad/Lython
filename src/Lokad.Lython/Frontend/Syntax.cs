@@ -663,6 +663,19 @@ internal sealed record CallExpressionSyntax(
     // Prepared once before the frontend publishes the syntax graph. Copies
     // made for class-name mangling retain this static lexical decision.
     internal bool PreloadImplicitSuperArguments { get; set; }
+
+    // Argument expressions are finalized before analysis. Share their syntax
+    // partition, never inferred values: those belong to each current binding
+    // state. Expanded calls must still resolve their input in that state.
+    private bool? _concreteArgumentsAvailable;
+    private ConcreteCallArguments _concreteArguments;
+    internal bool TryGetConcreteArguments(out ConcreteCallArguments arguments)
+    {
+        if (_concreteArgumentsAvailable is null)
+            _concreteArgumentsAvailable = StaticCallArguments.TryPartitionArguments(Arguments, out _concreteArguments);
+        arguments = _concreteArguments;
+        return _concreteArgumentsAvailable.Value;
+    }
 }
 
 internal enum CallArgumentKind

@@ -1,3 +1,5 @@
+using System.Collections.Frozen;
+
 namespace Lokad.Lython.Frontend;
 
 internal readonly record struct ConcreteCallArguments(
@@ -77,34 +79,49 @@ internal readonly record struct ConcreteCallArguments(
 internal static class StaticCallArguments
 {
     public static bool TryGetConcreteArguments(CallExpressionSyntax call, out ConcreteCallArguments arguments)
-    {
-        var positional = new List<ExpressionSyntax>(call.Arguments.Count);
-        var keywords = new Dictionary<string, ExpressionSyntax>(StringComparer.Ordinal);
+        => call.TryGetConcreteArguments(out arguments);
 
-        foreach (var argument in call.Arguments)
+    internal static bool TryPartitionArguments(IReadOnlyList<CallArgumentSyntax> source, out ConcreteCallArguments arguments)
+    {
+        var positionalCount = 0;
+        for (var i = 0; i < source.Count; i++)
         {
+            var argument = source[i];
             if (argument.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
             {
                 arguments = default;
                 return false;
             }
+            if (argument.Kind == CallArgumentKind.Positional) positionalCount++;
+        }
+
+        var positional = positionalCount == 0 ? Array.Empty<ExpressionSyntax>() : new ExpressionSyntax[positionalCount];
+        Dictionary<string, ExpressionSyntax>? keywords = null;
+        var position = 0;
+        for (var i = 0; i < source.Count; i++)
+        {
+            var argument = source[i];
 
             if (argument.Kind == CallArgumentKind.Keyword)
             {
+                keywords ??= new(source.Count - positionalCount, StringComparer.Ordinal);
                 keywords[argument.KeywordName] = argument.Expression;
             }
             else
             {
-                positional.Add(argument.Expression);
+                positional[position++] = argument.Expression;
             }
         }
 
-        arguments = new ConcreteCallArguments(positional, keywords);
+        arguments = new ConcreteCallArguments(positional,
+            keywords ?? (IReadOnlyDictionary<string, ExpressionSyntax>)FrozenDictionary<string, ExpressionSyntax>.Empty);
         return true;
     }
 
     public static bool TryGetConcreteArguments(CallExpressionSyntax call, AbstractState bindings, out ConcreteCallArguments arguments)
     {
+        if (call.TryGetConcreteArguments(out arguments)) return true;
+
         var positional = new List<ExpressionSyntax>(call.Arguments.Count);
         var positionalValues = new List<AbstractValue?>(call.Arguments.Count);
         var keywords = new Dictionary<string, ExpressionSyntax>(StringComparer.Ordinal);

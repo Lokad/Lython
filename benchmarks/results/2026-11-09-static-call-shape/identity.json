@@ -1,0 +1,15 @@
+{
+  "beforeRevision": "c343687b (full checkpoint42552506089 independently running)",
+  "patchBase": "c343687bc1e88c6866b20ae5180a6b7b139a6023",
+  "coreSHA256": {
+    "before": "95fccafa9dd6934e638041c1b249f7e8fa3783fa6ace093f9b7a42c7fd880d8e",
+    "candidate": "36fd515a6bb50f39589dc5d3524acdd0bf7d60952c97d2fa90dd91f1ef36f6a7"
+  },
+  "changedSources": {
+    "src/Lokad.Lython/Frontend/Syntax.cs": "d093102d36041961597753e8885d7b9aaa724ddc566de43e1b2f717de8bcc95f",
+    "src/Lokad.Lython/Frontend/StaticCallArguments.cs": "368554ccfe6050ba86c9e8d8bf16579a808408e180f3fe1385dda1ff5f384f83",
+    "tests/Lokad.Lython.Tests/StaticCallArgumentStateTests.cs": "3b51f230341003935b44375e3d23c6b1bb2704a0ba3fb887a8b9dfa992434741"
+  },
+  "contract": "Immutable syntactic partition only; no binding-state values retained. Current-binding expansions unchanged. No runtime/API/owner/admission estimate changes.",
+  "qualification": "47 internal/206 public per actual11/10 after final source; 3 new observable binding-state cases, existing assertions unchanged"
+}

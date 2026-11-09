@@ -11,7 +11,9 @@
 
 - Share immutable function-declaration facts across analysis, lowering and binding.
   Decode string literals from borrowed source spans and allocate concatenation
-  storage only when needed, reducing compilation allocation.
+  storage only when needed. Reuse ordinary call syntax during static analysis,
+  while resolving inferred values and expansions from current bindings, reducing
+  compilation allocation.
 
 - Store executable lookup facts in a flat admitted array. Reuse immutable CSV/JSON
   field layouts for repeated reads across rows, preserving current values,
