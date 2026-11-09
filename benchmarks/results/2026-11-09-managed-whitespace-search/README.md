@@ -52,9 +52,10 @@ mode/parents/pre-mutation proof recovered only five redundant remote compressed
 archives. Raw trees, receipts, frozen workers and canonical Git copies survive;
 original240MiB OS floor and12MiB trace/archive headroom unchanged. No users remain.
 
-Full Windows/Ubuntu, original Stress and installed-package qualification for this
-change is deferred to the next coherent delivery checkpoint. Broader whole-script
-performance work and publication deferral remain active.
+Full Windows/Ubuntu actual .NET11/10, original Stress on both platforms and
+installed-package checks pass in [CI42627090614](delivery-ci.json), source038f7fb4
+(production7c10322c). Terminal success cached; no repeated qualification. Broader
+whole-script performance work and publication deferral remain active.
 
 [Quiet summary](summary.json), [original local results](local-summary.json),
 [measured sources](final-source.json), [focused checks/decision](delivery-source.json),

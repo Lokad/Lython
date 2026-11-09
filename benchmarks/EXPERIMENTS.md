@@ -5504,3 +5504,16 @@ R151 delivery42605184549/source99844959 is cached terminal success: Windows/Ubun
 actual.NET11/10, original Stress both and installed Release core consumers. Original
 packet-lifetime failures/fix and all adverse/control uncertainty survive; no unchanged
 qualification/retiming. Publication postponed; broader performance roadmap continues.
+
+
+## R160 — current config CPU attribution and delivery qualification
+
+[One current-source capture](results/2026-11-09-config-runtime-attribution/README.md)
+separates545guest samples/2.90CPU seconds from567caller/reset/protocol,38tiering.
+Mediated filesystem51.74%, JSON9.91%, builtin initialization2.20%; inclusive prefix
+and unknowns remain explicit. No builtin sharing/cache redesign or CPU-gain claim.
+Original pre-work identity-shape failure/correction preserved. All ownership/quiet/
+join/RAM/archive/localSHA gates pass. R157 now fully qualified by cached green
+CI42627090614/source038f7fb4, Windows/Ubuntu actual11/10, original Stress both and
+installed consumers; [receipt](results/2026-11-09-managed-whitespace-search/delivery-ci.json).
+No unchanged replay. Next distinct source gate is maintained validated CSV.

@@ -1,0 +1,14 @@
+{
+  "assessedSources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "0253c68b5303e05d0c5769a149328afd3ec266c843ab86cb61db89f21a5ea01b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "b6579872352c3216e771c7e4e9a021c196a98f17b83725ea9bb277e26ef037ba",
+    "src/Lokad.Lython/Runtime/ExecutionFrame.cs": "5dbc4671f7eca3df8cb869ec09b1eea4ea240bb5d4eb3917d5fc8b2b0bfcda0a",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "0c32f32a4b613d5060b72d3d7aa777567991aeb42b320ce6c90994fff80a7ab2",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "9a565197ccd616bb53c82a7a3799e1d25278d464ad72c6291df0d110ddcf7fa6",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "d5b1e14d99c32bc83475ff54ddf73ba8be5f960af5e662579c545a6f564d3026",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "c8bf411ca4f4f6a98c0cfa353d875b989dd1b9433ab7b8485de6dbe62da23f3f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.ObjectAndBytes.cs": "b9a93458e7b483acb524eaec6ba0c94a60f866433d1b9360b5717a010a85a7ae"
+  },
+  "decision": "No builtin singleton/frame redesign selected from this capture. Fixed ordinary functions/signatures already shared. Per-run object/type descriptors bind owners; exception/callable facades have lazy name/new slots. Ordinary executable function namespaces are lazy and frames already deferred. Builtin initialization is12/545 observed guest samples, not dominant. Do not infer off-CPU scheduling from CPU samples.",
+  "next": "Assess the maintained validated-CSV family before selecting a per-record/call redesign; no new benchmark framework or presumed copy removal."
+}
