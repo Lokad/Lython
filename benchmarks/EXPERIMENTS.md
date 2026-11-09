@@ -5400,3 +5400,22 @@ allocation benefits without a fixed-percentage veto or another unchanged campaig
 All quiet/identity/output/join/RAM/archive/localSHA gates pass; no space/floor change,
 terminal cached/no users. Original pre-timing invalid CSV transform retained. Full
 delivery batches with R148; broader performance and independent regex work remain open.
+
+## Maintained JSON-report CPU attribution (2026-11-09 Paris)
+
+[R150/B505](results/2026-11-09-json-runtime-attribution/README.md), committedafb11d97/
+core6417B97A verified unchanged from the fresh R149 freeze. Original maintained JSON
+script/input/goldens, common worker/adapter. One6s capture/6.083s recorded execution,
+6.03guestCPU s,1201guest/29caller/17tiering samples,5.66%unknown guest leaves. Observed
+innermost prefix40.47%,JSON19.90%,dictionary7.83%,admission6.91%,nativecall6.74%,text6.41%,
+managed cancellation/stack4.33%. Prefix includes useful inline work and parent
+assignment for unknown/truncated leaves; no removable-cost/elapsed/CPython claim.
+
+Instructions already compact/immutable/read by readonly reference. Plain JSON strings
+already skip backend reparsing/scratch; record keys/completed-value loops share work;
+default JSON calls skip general binding. Early binding facts must not be cached as
+final class-cell facts. No new phase deletion selected from inclusive counts; no
+second capture/new dispatcher/arena/cache or permanent design veto. Original offline
+classifier omitted JSON method names; preserve it and corrected owner classification
+of the same raw stacks. All quiet/identity/golden/Closed/join/maps/RAM/archive/localSHA
+gates pass, no space/floor change, terminal cached/no users. Broader roadmap remains.

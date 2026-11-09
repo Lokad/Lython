@@ -1,0 +1,317 @@
+[
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "groups": {
+      "guest": {
+        "samples": 1201,
+        "unknownLeaf": 68,
+        "observedPhase": [
+          [
+            "VM prefix",
+            486
+          ],
+          [
+            "JSON",
+            239
+          ],
+          [
+            "dictionary",
+            94
+          ],
+          [
+            "memory admission",
+            83
+          ],
+          [
+            "native call preparation",
+            81
+          ],
+          [
+            "text kernels",
+            77
+          ],
+          [
+            "managed cancellation/stack",
+            52
+          ],
+          [
+            "native evaluation",
+            36
+          ],
+          [
+            "native guard",
+            15
+          ],
+          [
+            "scalar operators",
+            14
+          ],
+          [
+            "unassigned",
+            9
+          ],
+          [
+            "host/filesystem",
+            9
+          ],
+          [
+            "text reader",
+            5
+          ],
+          [
+            "builtin initialization",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+            188
+          ],
+          [
+            "[unknown]",
+            68
+          ],
+          [
+            "valuetype [System.Runtime]System.ValueTuple`2<class Lokad.Lython.Runtime.Text.PyString,int32> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonString(class Lokad.Lython.Runtime.Text.PyString,bool,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.PyDict/RecordKeys,int32)[Optimized]",
+            59
+          ],
+          [
+            "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonContainerRemainder(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,bool,bool,object,class Lokad.Lython.Runtime.PyDict/RecordKeys,int32)[OptimizedTier1]",
+            49
+          ],
+          [
+            "__tls_get_addr",
+            49
+          ],
+          [
+            "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,object,bool)[OptimizedTier1]",
+            43
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+            34
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+            33
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::CompleteLocalResult(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&,object)[OptimizedTier1]",
+            31
+          ],
+          [
+            "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<object,int32>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonModule::ReadJsonValueExactAsync(class Lokad.Lython.Runtime.Text.PyString,class Lokad.Lython.Runtime.LythonRuntime/JsonLoadOptions,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,int32,int32,bool)[OptimizedTier1]",
+            31
+          ],
+          [
+            "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryLoadDirectCallReceiver(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+            31
+          ],
+          [
+            "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+            25
+          ],
+          [
+            "class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.Text.PyStringOps::Strip(class Lokad.Lython.Runtime.Text.PyString)[OptimizedTier1]",
+            25
+          ],
+          [
+            "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteNativeCall(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,object)[OptimizedTier1]",
+            25
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteStackTransfer(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&)[OptimizedTier1]",
+            21
+          ],
+          [
+            "instance class Lokad.Lython.Runtime.Text.PyString [Lokad.Lython] Lokad.Lython.Runtime.PyDict+RecordKeys::FindName(valuetype [System.Runtime]System.ReadOnlySpan`1<uint8>,int32,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            21
+          ]
+        ]
+      },
+      "caller/other": {
+        "samples": 29,
+        "unknownLeaf": 3,
+        "observedPhase": [
+          [
+            "fixture reset",
+            19
+          ],
+          [
+            "host/filesystem",
+            6
+          ],
+          [
+            "protocol",
+            3
+          ],
+          [
+            "unassigned",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "[unknown]",
+            3
+          ],
+          [
+            "_raw_spin_unlock_irqrestore",
+            2
+          ],
+          [
+            "truncate_cleanup_folio",
+            2
+          ],
+          [
+            "copy_folio_from_iter_atomic",
+            1
+          ],
+          [
+            "__shmem_get_inode",
+            1
+          ],
+          [
+            "common_perm_cond",
+            1
+          ],
+          [
+            "__check_object_size.part.0",
+            1
+          ],
+          [
+            "do_dentry_open",
+            1
+          ],
+          [
+            "__dquot_alloc_space",
+            1
+          ],
+          [
+            "vfs_mkdir",
+            1
+          ],
+          [
+            "folio_add_lru",
+            1
+          ],
+          [
+            "valuetype System.Buffers.OperationStatus [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::TranscodeToUtf8(char*,int32,uint8*,int32,char*&,uint8*&)[OptimizedTier1]",
+            1
+          ],
+          [
+            "srso_return_thunk",
+            1
+          ],
+          [
+            "__vm_enough_memory",
+            1
+          ],
+          [
+            "strncpy_from_user",
+            1
+          ],
+          [
+            "shmem_add_to_page_cache",
+            1
+          ]
+        ]
+      },
+      "tiering": {
+        "samples": 17,
+        "unknownLeaf": 16,
+        "observedPhase": [
+          [
+            "unassigned",
+            17
+          ]
+        ],
+        "topLeaf": [
+          [
+            "[unknown]",
+            16
+          ],
+          [
+            "do_user_addr_fault",
+            1
+          ]
+        ]
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "3463161",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463162",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463163",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463164",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463165",
+        "name": ".NET Finalizer",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463167",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463168",
+        "name": ".NET TP Worker",
+        "seconds": 0.07
+      },
+      {
+        "tid": "3463169",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463170",
+        "name": ".NET TP Worker",
+        "seconds": 0.03
+      },
+      {
+        "tid": "3463171",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463172",
+        "name": ".NET TP Worker",
+        "seconds": 0.04
+      },
+      {
+        "tid": "3463173",
+        "name": "Lython executio",
+        "seconds": 6.030000000000001
+      },
+      {
+        "tid": "3463174",
+        "name": ".NET TP Worker",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3463176",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.08
+      }
+    ],
+    "correction": "Collector selects actual named Lython execution workers; all threads and raw stacks retained. Offline attribution uses actual names and separates caller/tiering/collection. One original JSON-report capture, no retiming.",
+    "limits": "Whole-batch sampling is wider than execution clocks and includes reset/protocol/validation. Phase shares overlap parent work only through assignment to innermost observed category; inlining/truncation/unknown IPs limit attribution. Native guard/evaluation includes useful work, not a removable tax."
+  }
+]

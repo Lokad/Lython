@@ -1,0 +1,201 @@
+{
+  "sourceRevision": "afb11d972f64864338e68b3da52c44a4be28a31e",
+  "coreSHA256": "6417b97a646c8e73e8ccab4b7adc027a5604f95acd20631736000716a1b5d49b",
+  "workload": "scripts.json-summary-helpers.large",
+  "capturedExecutionSeconds": 6.082805351,
+  "guestCpuSeconds": 6.030000000000001,
+  "guestSamples": 1201,
+  "unknownGuestLeaves": 68,
+  "unknownPercent": 5.661948376353039,
+  "innermostObservedPhases": [
+    {
+      "phase": "VM prefix",
+      "samples": 486,
+      "percent": 40.46627810158201
+    },
+    {
+      "phase": "JSON",
+      "samples": 239,
+      "percent": 19.900083263946712
+    },
+    {
+      "phase": "dictionary",
+      "samples": 94,
+      "percent": 7.826810990840966
+    },
+    {
+      "phase": "memory admission",
+      "samples": 83,
+      "percent": 6.910907577019151
+    },
+    {
+      "phase": "native call preparation",
+      "samples": 81,
+      "percent": 6.7443796835970025
+    },
+    {
+      "phase": "text kernels",
+      "samples": 77,
+      "percent": 6.411323896752706
+    },
+    {
+      "phase": "managed cancellation/stack",
+      "samples": 52,
+      "percent": 4.329725228975853
+    },
+    {
+      "phase": "native evaluation",
+      "samples": 36,
+      "percent": 2.9975020815986677
+    },
+    {
+      "phase": "native guard",
+      "samples": 15,
+      "percent": 1.2489592006661117
+    },
+    {
+      "phase": "scalar operators",
+      "samples": 14,
+      "percent": 1.1656952539550374
+    },
+    {
+      "phase": "unassigned",
+      "samples": 9,
+      "percent": 0.7493755203996669
+    },
+    {
+      "phase": "host/filesystem",
+      "samples": 9,
+      "percent": 0.7493755203996669
+    },
+    {
+      "phase": "text reader",
+      "samples": 5,
+      "percent": 0.4163197335553705
+    },
+    {
+      "phase": "builtin initialization",
+      "samples": 1,
+      "percent": 0.08326394671107411
+    }
+  ],
+  "otherGroups": {
+    "caller/other": {
+      "samples": 29,
+      "unknownLeaf": 3,
+      "observedPhase": [
+        [
+          "fixture reset",
+          19
+        ],
+        [
+          "host/filesystem",
+          6
+        ],
+        [
+          "protocol",
+          3
+        ],
+        [
+          "unassigned",
+          1
+        ]
+      ],
+      "topLeaf": [
+        [
+          "[unknown]",
+          3
+        ],
+        [
+          "_raw_spin_unlock_irqrestore",
+          2
+        ],
+        [
+          "truncate_cleanup_folio",
+          2
+        ],
+        [
+          "copy_folio_from_iter_atomic",
+          1
+        ],
+        [
+          "__shmem_get_inode",
+          1
+        ],
+        [
+          "common_perm_cond",
+          1
+        ],
+        [
+          "__check_object_size.part.0",
+          1
+        ],
+        [
+          "do_dentry_open",
+          1
+        ],
+        [
+          "__dquot_alloc_space",
+          1
+        ],
+        [
+          "vfs_mkdir",
+          1
+        ],
+        [
+          "folio_add_lru",
+          1
+        ],
+        [
+          "valuetype System.Buffers.OperationStatus [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::TranscodeToUtf8(char*,int32,uint8*,int32,char*&,uint8*&)[OptimizedTier1]",
+          1
+        ],
+        [
+          "srso_return_thunk",
+          1
+        ],
+        [
+          "__vm_enough_memory",
+          1
+        ],
+        [
+          "strncpy_from_user",
+          1
+        ],
+        [
+          "shmem_add_to_page_cache",
+          1
+        ]
+      ]
+    },
+    "tiering": {
+      "samples": 17,
+      "unknownLeaf": 16,
+      "observedPhase": [
+        [
+          "unassigned",
+          17
+        ]
+      ],
+      "topLeaf": [
+        [
+          "[unknown]",
+          16
+        ],
+        [
+          "do_user_addr_fault",
+          1
+        ]
+      ]
+    }
+  },
+  "sourceGate": [
+    "Instruction loop already reads compact immutable instructions by readonly reference; no ordinary instruction-copy phase selected.",
+    "JSON plain strings already bypass backend token reparsing/decoding scratch; shared record keys and completed-value loop already exist.",
+    "Default JSON calls already avoid general binding; class-cell binding-only facts intentionally precede final lexical demand."
+  ],
+  "decision": "One usable capture closes this attribution gap; no new phase deletion selected from inclusive samples. Keep actual prefix/JSON/dictionary/admission/call work distinct; require a concrete current phase and semantic/ownership acceptance before a redesign. No extra capture or permanent design veto.",
+  "limits": "Whole-batch sampling is wider than execution clocks and includes reset/protocol/validation. Phase shares overlap parent work only through assignment to innermost observed category; inlining/truncation/unknown IPs limit attribution. Native guard/evaluation includes useful work, not a removable tax.",
+  "productionSourceUnchanged": true,
+  "performanceQualified": false
+}
