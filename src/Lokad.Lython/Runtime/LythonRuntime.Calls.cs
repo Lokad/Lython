@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
             => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
-    private abstract class BoundArgumentsCallable : ICallable
+    internal abstract class BoundArgumentsCallable : ICallable
     {
         private readonly PythonCallableKind _callableKind;
 
@@ -467,6 +467,9 @@ internal sealed partial class LythonRuntime
         protected LythonCallableSignature Signature { get; }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => Invoke(arguments.AsSpan(), span, context);
+
+        internal object Invoke(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
             return PreservePresence
@@ -475,6 +478,9 @@ internal sealed partial class LythonRuntime
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => InvokeAsync(arguments.AsSpan(), span, context);
+
+        internal ValueTask<object> InvokeAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
             return PreservePresence

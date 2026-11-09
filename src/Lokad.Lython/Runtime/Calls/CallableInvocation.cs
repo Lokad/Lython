@@ -1,169 +1,97 @@
+using System.Runtime.CompilerServices;
+
 namespace Lokad.Lython.Runtime;
 
 internal static class CallableInvocation
 {
-    [ThreadStatic]
-    private static CallArgumentValue[]? _unaryArguments;
-
-    [ThreadStatic]
-    private static CallArgumentValue[]? _binaryArguments;
-
-    [ThreadStatic]
-    private static CallArgumentValue[]? _ternaryArguments;
-
-    public static object InvokeUnary(
-        object callable,
-        object value,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
+    // Binders consume this managed stack storage into invocation-owned values
+    // before returning a pending operation. Other callable implementations may
+    // retain their arguments and therefore still receive an owned array.
+    [InlineArray(3)]
+    internal struct Arguments
     {
-        var arguments = RentUnaryArguments(value);
-        try
-        {
-            return (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).Invoke(arguments, span, context);
-        }
-        finally
-        {
-            ReturnUnaryArguments(arguments);
-        }
+        private CallArgumentValue _first;
     }
 
-    public static async ValueTask<object> InvokeUnaryAsync(
-        object callable,
-        object value,
-        LythonSourceSpan span,
+    public static object InvokeUnary(object callable, object value, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context)
     {
-        var arguments = RentUnaryArguments(value);
-        try
-        {
-            return await (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
-        }
-        finally
-        {
-            ReturnUnaryArguments(arguments);
-        }
-    }
-
-    public static object InvokeBinary(
-        object callable,
-        object first,
-        object second,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        var arguments = RentBinaryArguments(first, second);
-        try
-        {
-            return (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).Invoke(arguments, span, context);
-        }
-        finally
-        {
-            ReturnBinaryArguments(arguments);
-        }
-    }
-
-    public static async ValueTask<object> InvokeBinaryAsync(
-        object callable,
-        object first,
-        object second,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        var arguments = RentBinaryArguments(first, second);
-        try
-        {
-            return await (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span)).InvokeAsync(arguments, span, context).ConfigureAwait(false);
-        }
-        finally
-        {
-            ReturnBinaryArguments(arguments);
-        }
-    }
-
-    public static object InvokeTernary(
-        LythonRuntime.ICallable callable,
-        object first,
-        object second,
-        object third,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        var arguments = RentTernaryArguments(first, second, third);
-        try
-        {
-            return callable.Invoke(arguments, span, context);
-        }
-        finally
-        {
-            ReturnTernaryArguments(arguments);
-        }
-    }
-
-    public static async ValueTask<object> InvokeTernaryAsync(
-        LythonRuntime.ICallable callable,
-        object first,
-        object second,
-        object third,
-        LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
-    {
-        var arguments = RentTernaryArguments(first, second, third);
-        try
-        {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
-        }
-        finally
-        {
-            ReturnTernaryArguments(arguments);
-        }
-    }
-
-    private static CallArgumentValue[] RentUnaryArguments(object value)
-    {
-        var arguments = _unaryArguments ?? new CallArgumentValue[1];
-        _unaryArguments = null;
+        Arguments arguments = default;
         arguments[0] = CallArgumentValue.Positional(value);
-        return arguments;
+        return Invoke(callable, arguments[..1], span, context);
     }
 
-    private static void ReturnUnaryArguments(CallArgumentValue[] arguments)
+    public static ValueTask<object> InvokeUnaryAsync(object callable, object value, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-        _unaryArguments ??= arguments;
+        Arguments arguments = default;
+        arguments[0] = CallArgumentValue.Positional(value);
+        return InvokeAsync(callable, arguments[..1], span, context);
     }
 
-    private static CallArgumentValue[] RentBinaryArguments(object first, object second)
+    public static object InvokeBinary(object callable, object first, object second, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        var arguments = _binaryArguments ?? new CallArgumentValue[2];
-        _binaryArguments = null;
+        Arguments arguments = default;
         arguments[0] = CallArgumentValue.Positional(first);
         arguments[1] = CallArgumentValue.Positional(second);
-        return arguments;
+        return Invoke(callable, arguments[..2], span, context);
     }
 
-    private static void ReturnBinaryArguments(CallArgumentValue[] arguments)
+    public static ValueTask<object> InvokeBinaryAsync(object callable, object first, object second, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-        arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
-        _binaryArguments ??= arguments;
+        Arguments arguments = default;
+        arguments[0] = CallArgumentValue.Positional(first);
+        arguments[1] = CallArgumentValue.Positional(second);
+        return InvokeAsync(callable, arguments[..2], span, context);
     }
 
-    private static CallArgumentValue[] RentTernaryArguments(object first, object second, object third)
+    public static object InvokeTernary(LythonRuntime.ICallable callable, object first, object second, object third,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var arguments = _ternaryArguments ?? new CallArgumentValue[3];
-        _ternaryArguments = null;
+        Arguments arguments = default;
         arguments[0] = CallArgumentValue.Positional(first);
         arguments[1] = CallArgumentValue.Positional(second);
         arguments[2] = CallArgumentValue.Positional(third);
-        return arguments;
+        return Invoke(callable, arguments, span, context);
     }
 
-    private static void ReturnTernaryArguments(CallArgumentValue[] arguments)
+    public static ValueTask<object> InvokeTernaryAsync(LythonRuntime.ICallable callable, object first, object second, object third,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-        arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
-        arguments[2] = CallArgumentValue.Positional(PyNone.Instance);
-        _ternaryArguments ??= arguments;
+        Arguments arguments = default;
+        arguments[0] = CallArgumentValue.Positional(first);
+        arguments[1] = CallArgumentValue.Positional(second);
+        arguments[2] = CallArgumentValue.Positional(third);
+        return InvokeAsync(callable, arguments, span, context);
+    }
+
+    internal static object Invoke(object callable, ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+        => callable switch
+        {
+            PyFunctionBase function => function.Invoke(arguments, span, context),
+            PyBoundMethod { Function: PyFunctionBase function } method => function.Invoke(arguments, span, context, method.Receiver),
+            LythonRuntime.BoundArgumentsCallable builtin => builtin.Invoke(arguments, span, context),
+            LythonRuntime.ICallable other => other.Invoke(arguments.ToArray(), span, context),
+            _ => throw LythonRuntime.NotCallableError(callable, context, span)
+        };
+
+    internal static ValueTask<object> InvokeAsync(object callable, ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        try
+        {
+            return callable switch
+            {
+                PyFunctionBase function => function.InvokeAsync(arguments, span, context),
+                PyBoundMethod { Function: PyFunctionBase function } method => function.InvokeAsync(arguments, span, context, method.Receiver),
+                LythonRuntime.BoundArgumentsCallable builtin => builtin.InvokeAsync(arguments, span, context),
+                LythonRuntime.ICallable other => other.InvokeAsync(arguments.ToArray(), span, context),
+                _ => throw LythonRuntime.NotCallableError(callable, context, span)
+            };
+        }
+        catch (Exception error) { return ValueTask.FromException<object>(error); }
     }
 }

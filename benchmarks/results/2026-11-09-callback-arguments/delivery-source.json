@@ -1,0 +1,20 @@
+{
+  "productionSourceMatchesMeasuredFreeze": true,
+  "baselineRevision": "46e3746e91e8b9c3e3b6a019c54bbc26f08db4ec",
+  "measuredCoreSHA256": "6417b97a646c8e73e8ccab4b7adc027a5604f95acd20631736000716a1b5d49b",
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedPerFramework": {
+    "internal": 60,
+    "public": 1636
+  },
+  "newPublicCases": 5,
+  "independentPythonGoldens": 2,
+  "independentWholeScriptGoldens": 5,
+  "removed": "Three thread-local callback argument pools, six rent/return/clear helpers, forwarding async state machines, duplicate function Invoke/InvokeAsync binding bodies; ordinary map per-record argument arrays and their temporary reservations.",
+  "preserved": "Existing owned function/builtin binders; dynamic callable arrays, admitted wide map storage, evaluation/error order, receivers, variadics/defaults, pending default lookup, reentrancy/generators, current cancellation, first terminal refusal and awaited owner cleanup.",
+  "delivery": "Focused actual11/10 pass; full Windows/Ubuntu actual11/10, original Stress and installed consumers batch next. Publication postponed.",
+  "limitations": "Same source per pair; map-based scripts are explicit workload shapes, not speedups over prior differently shaped scripts. Desktop control drift retained. Native callback fallback implementations may allocate owned arrays instead of borrowing thread-local storage; no universal speedup claim."
+}

@@ -184,8 +184,10 @@ internal sealed class PyMapIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        using var scratch = _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span);
-        var arguments = new CallArgumentValue[_iterators.Length];
+        using var scratch = _iterators.Length > 3
+            ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
+        CallableInvocation.Arguments inline = default;
+        var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
             if (!_iterators[i].TryMoveNext(out var current))
@@ -194,17 +196,23 @@ internal sealed class PyMapIterator : PyIteratorBase
                 return false;
             }
 
-            arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
+            var argument = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
+            if (arguments is null) inline[i] = argument;
+            else arguments[i] = argument;
         }
 
-        value = LythonRuntime.RuntimeValue((_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context));
+        value = LythonRuntime.RuntimeValue(arguments is null
+            ? CallableInvocation.Invoke(_function, inline[.._iterators.Length], _span, _context)
+            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).Invoke(arguments, _span, _context));
         return true;
     }
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        using var scratch = _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span);
-        var arguments = new CallArgumentValue[_iterators.Length];
+        using var scratch = _iterators.Length > 3
+            ? _context.MemoryGovernor.ReserveTemporary(32L + 24L * _iterators.Length, _span) : null;
+        CallableInvocation.Arguments inline = default;
+        var arguments = _iterators.Length > 3 ? new CallArgumentValue[_iterators.Length] : null;
         for (var i = 0; i < _iterators.Length; i++)
         {
             var (hasValue, current) = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
@@ -213,10 +221,15 @@ internal sealed class PyMapIterator : PyIteratorBase
                 return PyIterationResult.End;
             }
 
-            arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
+            var argument = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
+            if (arguments is null) inline[i] = argument;
+            else arguments[i] = argument;
         }
 
-        var value = LythonRuntime.RuntimeValue(await (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
+        var pending = arguments is null
+            ? CallableInvocation.InvokeAsync(_function, inline[.._iterators.Length], _span, _context)
+            : (_function as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(_function, _context, _span)).InvokeAsync(arguments, _span, _context);
+        var value = LythonRuntime.RuntimeValue(await pending.ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
 

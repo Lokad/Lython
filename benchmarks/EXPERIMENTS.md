@@ -5368,3 +5368,35 @@ Corrected R145 delivery42588611410/source58d3ec0f is cached terminal success:
 Windows/Ubuntu actual11/10, original Stress both and installed Release core consumers.
 Qualification complete; preserve the first failure/correction and original65ed
 timing sources. No unchanged retiming. Publication postponed; broader roadmap active.
+
+## Filename-filter asynchronous iteration (2026-11-09 Paris)
+
+[R148](results/2026-11-09-wildcard-iteration/README.md), committed46e3746e. Original
+pending file-backed generator fails under RunAsync because fnmatch.filter pulls it
+synchronously. Use the existing cursor's active API for acquisition, pulls and
+awaited disposal; keep native UTF-8 matching. 305 focused public checks eachactual11/10,
+four independent Python goldens, including user iteration protocols, gated cleanup,
+retained identity, terminal refusal and budget reuse. No speedup claim. Full delivery
+batches with the next coherent runtime milestone; R145 qualification remains source
+labelled. Publication postponed; broader performance and regex priorities remain open.
+
+## Direct native callback argument transport (2026-11-09 Paris)
+
+[R149/B504](results/2026-11-09-callback-arguments/README.md), fresh46e3746e/coreDEDD85
+versus source freeze6417B97A. Existing binders accept short managed spans and own
+values before suspension. Remove three thread-local pools/six rent-clear-return
+helpers, async forwarders and duplicate binding bodies; ordinary map stops allocating
+per-record argument arrays/reservations. Wide/dynamic callables retain owned storage.
+No public API/framework/pool. Actual11/10:60internal/1636public each, five new cases,
+two callback and five complete-script independent Python goldens. Pending default
+lookup/gated cancellation cleanup and existing overlap/refusal/ownership pass.
+
+Same-source map-based CSV/text/JSON warm allocation−6.8/−14.1/−4.7% across both APIs;
+compile allocation unchanged. Original desktop controls vary up to16.5%, elapsed
+inconclusive. Five quiet jobs142.204s/four roles: CSVelapsed−2.8–3.2% (coarse CPU
+mixed), text−3.0–6.6% (supporting CPU), JSON−1.5–+2.7% mixed. Reportcontrol−0.6–3.9%,
+search−2.6–+2.9%; attribution/general CPU uncertainty remains. Retain deletion and
+allocation benefits without a fixed-percentage veto or another unchanged campaign.
+All quiet/identity/output/join/RAM/archive/localSHA gates pass; no space/floor change,
+terminal cached/no users. Original pre-timing invalid CSV transform retained. Full
+delivery batches with R148; broader performance and independent regex work remain open.

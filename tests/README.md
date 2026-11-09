@@ -34,6 +34,11 @@ completion and cancellation through class and module lambda bodies.
 checks genuine suspension in generators and user iteration, cancellation through
 awaited file cleanup, retained name identity, terminal refusal and allowance reuse.
 
+[Native callback arguments](Lokad.Lython.PublicApi.Tests/NativeCallbackArgumentsTests.cs)
+checks bound receivers, variadics, defaults, wide and reentrant calls, and arguments
+surviving a genuinely suspending default lookup. Existing callback lifetime tests
+retain overlapping execution, cancellation, cleanup and shared-budget assertions.
+
 [Native hashing](Lokad.Lython.Tests/NativeHashCancellationTests.cs) keeps small
 current-token, cache, refusal and value checks in the ordinary suite. Its timed
 256 MiB cancellation scans are Stress cases: an already-started dedicated

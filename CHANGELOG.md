@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Pass short native callback and `map` arguments directly into existing owned
+  binders. Remove thread-local argument pools while preserving asynchronous
+  default lookup, reentrancy, retained arguments and shared-memory admission.
+
 - Let `fnmatch.filter` await file-backed generators and user iteration protocols
   under `RunAsync`, preserving cancellation, retained names and awaited cleanup.
 

@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static BoundCallArguments BindFunctionArguments(
-        CallArgumentValue[] arguments,
+        ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,
@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static ValueTask<BoundCallArguments> BindFunctionArgumentsAsync(
-        CallArgumentValue[] arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
+        ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context,
         object? receiver = null, ExecutableCallSite? callSite = null, ReadOnlySpan<object?> operands = default,
         int? storageCapacity = null)
     {
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
     // the catch in BindFunctionArguments, which returns the rented box.
     private static BoundCallArguments BindInto(
         BoundCallArguments storage,
-        CallArgumentValue[] arguments,
+        ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
         ExecutionContext context,

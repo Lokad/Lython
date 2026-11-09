@@ -85,7 +85,7 @@ internal struct ArgumentPresence
 internal static class CallBinder
 {
     public static object[] BindNamedArguments(
-        CallArgumentValue[] arguments,
+        ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
         PythonCallableKind callableKind)
@@ -99,7 +99,7 @@ internal static class CallBinder
     }
 
     public static BoundCallArguments BindNamedArgumentsWithPresence(
-        CallArgumentValue[] arguments,
+        ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         LythonCallableSignature signature,
         PythonCallableKind callableKind)
@@ -114,7 +114,7 @@ internal static class CallBinder
     }
 
     private static BoundCallArguments BindNamedArgumentsCore(
-        CallArgumentValue[] arguments,
+        ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         string callableName,
         PythonCallableKind callableKind,

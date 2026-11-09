@@ -105,16 +105,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     protected abstract bool RequiresArgumentMirroring { get; }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        context.CheckExecution(span);
-        var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, storageCapacity: _storageCapacity);
-        return InvokeBound(boundArguments, span);
-    }
+        => Invoke(arguments.AsSpan(), span, context);
 
     // A separate receiver entry keeps the existing invocation depth and guards;
     // the binder consumes self first without materializing a prefixed array.
-    internal object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object receiver)
+    internal object Invoke(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null)
     {
         context.CheckExecution(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context, receiver, storageCapacity: _storageCapacity);
@@ -162,18 +158,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     }
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        try
-        {
-            context.CheckExecution(span);
-            var binding = LythonRuntime.BindFunctionArgumentsAsync(arguments, span, _bindingPlan, context, storageCapacity: _storageCapacity);
-            return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
-        }
-        catch (Exception error) { return ValueTask.FromException<object>(error); }
-    }
+        => InvokeAsync(arguments.AsSpan(), span, context);
 
-    internal ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context, object receiver)
+    internal ValueTask<object> InvokeAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context, object? receiver = null)
     {
         try
         {
