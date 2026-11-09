@@ -1,0 +1,77 @@
+{
+  "measuredProduction": "99844959/core21cf1118, fully qualified42605184549; not HEAD78fd7bb4",
+  "captureSeconds": 6.10443641,
+  "guestSamples": 1194,
+  "guestCpuSeconds": 6.01,
+  "prefixSelfSamples": 246,
+  "prefixSelfPercent": 20.603015075376884,
+  "uniqueTier1CodeBytes": 14159,
+  "observedLoopBoundsAndSwitch": {
+    "samples": 75,
+    "percent": 6.28140703517588
+  },
+  "mixedInstructionFetchAndRequiredChecks": {
+    "samples": 44,
+    "percent": 3.6850921273031827
+  },
+  "phaseShares": [
+    [
+      "VM prefix",
+      497
+    ],
+    [
+      "text kernels",
+      264
+    ],
+    [
+      "dictionary",
+      111
+    ],
+    [
+      "scalar operators",
+      96
+    ],
+    [
+      "native call preparation",
+      68
+    ],
+    [
+      "memory admission",
+      51
+    ],
+    [
+      "unassigned",
+      31
+    ],
+    [
+      "managed cancellation/stack",
+      21
+    ],
+    [
+      "host/filesystem",
+      18
+    ],
+    [
+      "native evaluation",
+      13
+    ],
+    [
+      "native guard",
+      11
+    ],
+    [
+      "text reader",
+      11
+    ],
+    [
+      "builtin initialization",
+      2
+    ]
+  ],
+  "unknownLeaves": 66,
+  "selectedNext": "Shared managed bulk ASCII boundary discovery. CollectWhitespaceForward is62 guest leaves; retain Unicode paths, bounded cancellation chunks and existing capacity/ownership. No claimed speedup or automatic percent gate.",
+  "notSelected": "Loop rotation would interact with direct-local publication, pending iterator disposal and protected-region layout. Do not add continuation/target machinery for an assumed saving. Not a permanent design ban.",
+  "correction": "Initial phase classifier treated sibling prefix-jit.txt as a case directory. Original classifier and failure retained; filter directories offline on unchanged raw. No capture restarted.",
+  "limitations": "Same-process method/tier/code-extent uniquely match; block samples include useful inlined operations and sampling skid. Not all dispatch or check work can be removed. Unknown/parent-assigned leaves remain. No elapsed/source-pair/CPython or HEAD performance claim.",
+  "space": "Original read-only free260743168B below original252MiB before payload. Removed only exact single-alias remote B506 compressed duplicate after fresh lease/SHA/metadata/parents/persisted plan; local tracked archive and raw/receipt/workers survive. All floors unchanged."
+}

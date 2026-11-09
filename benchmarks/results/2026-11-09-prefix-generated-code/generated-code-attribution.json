@@ -1,0 +1,328 @@
+{
+  "ExecuteInstructionPrefix": {
+    "status": "Unique method/tier/size match",
+    "rangeStart": "0x763b53d37300",
+    "codeBytes": 14159,
+    "selfSamples": 246,
+    "blocks": [
+      {
+        "offset": 310,
+        "end": 395,
+        "samples": 44,
+        "assembly": "G_M000_IG14:                ;; offset=0x0136\n       xor      esi, esi\n       mov      dword ptr [rbp-0x30], esi\n       mov      esi, dword ptr [rdi+0x28]\n       cmp      esi, ebx\n       jae      G_M000_IG438\n       shl      rsi, 5\n       lea      rsi, bword ptr [rdx+rsi+0x10]\n       mov      bword ptr [rbp-0x278], rsi\n       mov      rsi, gword ptr [rax+0xB0]\n       mov      r8, bword ptr [rbp-0x278]\n       mov      r8, gword ptr [r8]\n       mov      r10, gword ptr [rsi+0x88]\n       mov      r10, gword ptr [r10+0x20]\n       test     r10, r10\n       jne      G_M000_IG437\n       mov      rsi, gword ptr [rsi+0x178]\n       test     rsi, rsi\n       jne      G_M000_IG436\n \n"
+      },
+      {
+        "offset": 270,
+        "end": 301,
+        "samples": 43,
+        "assembly": "G_M000_IG12:                ;; offset=0x010E\n       mov      rbx, bword ptr [rbp-0x248]\n       mov      edi, dword ptr [rbx+0x28]\n       mov      rdx, gword ptr [rbp-0x270]\n       mov      eax, dword ptr [rdx+0x08]\n       cmp      edi, eax\n       mov      rdi, rbx\n       jge      G_M000_IG04\n \n"
+      },
+      {
+        "offset": 395,
+        "end": 414,
+        "samples": 21,
+        "assembly": "G_M000_IG15:                ;; offset=0x018B\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 68\n       ja       G_M000_IG212\n \n"
+      },
+      {
+        "offset": 414,
+        "end": 440,
+        "samples": 11,
+        "assembly": "G_M000_IG16:                ;; offset=0x019E\n       mov      esi, esi\n       lea      r8, [reloc @RWD00]\n       mov      r8d, dword ptr [r8+4*rsi]\n       lea      r10, G_M000_IG02\n       add      r8, r10\n       jmp      r8\n \n"
+      },
+      {
+        "offset": 1462,
+        "end": 1561,
+        "samples": 8,
+        "assembly": "G_M000_IG45:                ;; offset=0x05B6\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      r15d, dword ptr [rsi+0x10]\n       mov      rdi, bword ptr [rbp-0x248]\n       lea      rsi, bword ptr [rdi+0x30]\n       cmp      byte  ptr [rbx], bl\n       mov      rsi, gword ptr [rsi]\n       cmp      byte  ptr [rbx+0x2C], 0\n       setne    r8b\n       movzx    r8, r8b\n       add      r8d, r15d\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       mov      r14, gword ptr [rsi+8*r8+0x10]\n       test     r14, r14\n       je       G_M000_IG395\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x258]\n       mov      rcx, rbx\n       mov      r8d, r15d\n       mov      r9, r14\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object):bool]\n       test     eax, eax\n       jne      G_M000_IG09\n \n"
+      },
+      {
+        "offset": 2326,
+        "end": 2440,
+        "samples": 7,
+        "assembly": "G_M000_IG84:                ;; offset=0x0916\n       mov      r8, gword ptr [rbx]\n       cmp      esi, dword ptr [r8+0x08]\n       jae      G_M000_IG432\n       mov      r10d, esi\n       xor      r11, r11\n       mov      gword ptr [r8+8*r10+0x10], r11\n       mov      dword ptr [rbx+0x40], esi\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rsi, gword ptr [rdi]\n       mov      rsi, gword ptr [rsi+0x50]\n       mov      r8d, dword ptr [rdi+0x28]\n       inc      r8d\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       shl      r8, 5\n       lea      rbx, bword ptr [rsi+r8+0x10]\n       lea      rsi, bword ptr [rdi+0x30]\n       mov      r8, gword ptr [rbx]\n       mov      rsi, gword ptr [rsi+0x18]\n       mov      r10, gword ptr [rsi+0x88]\n       mov      r10, gword ptr [r10+0x20]\n       test     r10, r10\n       jne      G_M000_IG352\n       mov      rsi, gword ptr [rsi+0x178]\n       test     rsi, rsi\n       jne      G_M000_IG353\n \n"
+      },
+      {
+        "offset": 2752,
+        "end": 2838,
+        "samples": 7,
+        "assembly": "G_M000_IG98:                ;; offset=0x0AC0\n       mov      rdi, bword ptr [rbp-0x248]\n       lea      rsi, bword ptr [rdi+0x30]\n       mov      r8, bword ptr [rbp-0x278]\n       mov      r8d, dword ptr [r8+0x10]\n       mov      r10d, r8d\n       mov      r11, gword ptr [rsi]\n       mov      rbx, r11\n       mov      r15d, dword ptr [rbx+0x08]\n       cmp      r10d, r15d\n       jae      G_M000_IG432\n       cmp      gword ptr [rbx+8*r10+0x10], 0\n       je       G_M000_IG361\n       xor      rbx, rbx\n       mov      gword ptr [r11+8*r10+0x10], rbx\n       mov      dword ptr [rsi+0x40], r8d\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 52\n       jg       G_M000_IG363\n \n"
+      },
+      {
+        "offset": 248,
+        "end": 254,
+        "samples": 6,
+        "assembly": "G_M000_IG09:                ;; offset=0x00F8\n       cmp      byte  ptr [rbp-0x2C], 0\n       jne      SHORT G_M000_IG06\n \n"
+      },
+      {
+        "offset": 2522,
+        "end": 2564,
+        "samples": 6,
+        "assembly": "G_M000_IG88:                ;; offset=0x09DA\n       mov      gword ptr [rbp-0x298], r8\n       cmp      word  ptr [r8+0x0C], 60\n       setne    r10b\n       movzx    r10, r10b\n       mov      dword ptr [rbp-0x1A4], r10d\n       cmp      gword ptr [rbp-0x258], 0\n       je       G_M000_IG356\n \n"
+      },
+      {
+        "offset": 6822,
+        "end": 6862,
+        "samples": 6,
+        "assembly": "G_M000_IG237:                ;; offset=0x1AA6\n       mov      rsi, gword ptr [rbx]\n       movsxd   r8, r14d\n       mov      r10d, dword ptr [rsi+0x08]\n       cmp      r10, r8\n       jbe      G_M000_IG296\n       lea      r8, bword ptr [rsi+8*r8+0x10]\n       mov      r10, qword ptr [rsi]\n       mov      r10, qword ptr [r10+0x30]\n       test     r15, r15\n       je       G_M000_IG251\n \n"
+      },
+      {
+        "offset": 254,
+        "end": 260,
+        "samples": 5,
+        "assembly": "G_M000_IG10:                ;; offset=0x00FE\n       cmp      dword ptr [rbp-0x30], 0\n       jne      SHORT G_M000_IG12\n \n"
+      },
+      {
+        "offset": 260,
+        "end": 270,
+        "samples": 5,
+        "assembly": "G_M000_IG11:                ;; offset=0x0104\n       mov      rbx, bword ptr [rbp-0x248]\n       inc      dword ptr [rbx+0x28]\n \n"
+      },
+      {
+        "offset": 301,
+        "end": 310,
+        "samples": 5,
+        "assembly": "G_M000_IG13:                ;; offset=0x012D\n       mov      ebx, eax\n       mov      rax, gword ptr [rbp-0x250]\n \n"
+      },
+      {
+        "offset": 440,
+        "end": 508,
+        "samples": 5,
+        "assembly": "G_M000_IG17:                ;; offset=0x01B8\n       mov      rax, gword ptr [rbp-0x250]\n       mov      r9, bword ptr [rbp-0x268]\n       mov      bword ptr [rsp], r9\n       movzx    r8, byte  ptr [rbp-0x2C]\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x258]\n       mov      rcx, bword ptr [rbp-0x278]\n       mov      r9, bword ptr [rbp-0x260]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInputInstruction(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,bool,byref,byref):int]\n       test     eax, eax\n       je       G_M000_IG09\n \n"
+      },
+      {
+        "offset": 1172,
+        "end": 1193,
+        "samples": 5,
+        "assembly": "G_M000_IG36:                ;; offset=0x0494\n       mov      rax, gword ptr [rbp-0x250]\n       cmp      gword ptr [rbp-0x258], 0\n       je       G_M000_IG220\n \n"
+      },
+      {
+        "offset": 1368,
+        "end": 1462,
+        "samples": 5,
+        "assembly": "G_M000_IG44:                ;; offset=0x0558\n       mov      rax, gword ptr [rbp-0x250]\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rsi, gword ptr [rdi]\n       mov      rsi, gword ptr [rsi+0x68]\n       mov      r11, bword ptr [rbp-0x278]\n       cmp      dword ptr [r11+0x1C], 43\n       jne      G_M000_IG393\n       mov      r11, bword ptr [rbp-0x278]\n       mov      r11d, dword ptr [r11+0x08]\n       mov      r8, 0x763B537951D8\n       cmp      qword ptr [rsi], r8\n       jne      G_M000_IG394\n       cmp      dword ptr [rsi+0x08], r11d\n       jbe      G_M000_IG304\n       cmp      r11d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       mov      rbx, gword ptr [rsi+8*r11+0x10]\n \n"
+      },
+      {
+        "offset": 1773,
+        "end": 1801,
+        "samples": 4,
+        "assembly": "G_M000_IG53:                ;; offset=0x06ED\n       mov      rsi, gword ptr [rsi+0x08]\n       cmp      r8d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       mov      r10d, r8d\n       mov      r14, gword ptr [rsi+8*r10+0x10]\n       mov      r13d, 1\n \n"
+      },
+      {
+        "offset": 1666,
+        "end": 1718,
+        "samples": 3,
+        "assembly": "G_M000_IG50:                ;; offset=0x0682\n       mov      rdi, bword ptr [rbp-0x248]\n       lea      rbx, bword ptr [rdi+0x30]\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      r15d, dword ptr [rsi+0x10]\n       mov      rsi, gword ptr [rbx]\n       cmp      r15d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       mov      r8d, r15d\n       mov      rsi, gword ptr [rsi+8*r8+0x10]\n       test     rsi, rsi\n       je       G_M000_IG69\n \n"
+      },
+      {
+        "offset": 1718,
+        "end": 1737,
+        "samples": 3,
+        "assembly": "G_M000_IG51:                ;; offset=0x06B6\n       mov      r8, 0x763B5383E1A0\n       cmp      qword ptr [rsi], r8\n       jne      G_M000_IG69\n \n"
+      },
+      {
+        "offset": 1737,
+        "end": 1773,
+        "samples": 3,
+        "assembly": "G_M000_IG52:                ;; offset=0x06C9\n       mov      r8, gword ptr [rbx+0x08]\n       mov      r10d, r15d\n       sub      r10d, dword ptr [rbx+0x38]\n       cmp      r10d, dword ptr [r8+0x08]\n       jae      G_M000_IG432\n       mov      r8d, dword ptr [r8+4*r10+0x10]\n       cmp      r8d, dword ptr [rsi+0x28]\n       jge      G_M000_IG68\n \n"
+      },
+      {
+        "offset": 1835,
+        "end": 1844,
+        "samples": 3,
+        "assembly": "G_M000_IG56:                ;; offset=0x072B\n       test     r13b, r13b\n       je       G_M000_IG98\n \n"
+      },
+      {
+        "offset": 6591,
+        "end": 6620,
+        "samples": 3,
+        "assembly": "G_M000_IG226:                ;; offset=0x19BF\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rbx, gword ptr [rdi]\n       mov      r15, gword ptr [rdi+0x08]\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      esi, dword ptr [rsi+0x1C]\n       cmp      esi, 4\n       je       SHORT G_M000_IG228\n \n"
+      },
+      {
+        "offset": 1193,
+        "end": 1244,
+        "samples": 2,
+        "assembly": "G_M000_IG37:                ;; offset=0x04A9\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x258]\n       mov      rcx, bword ptr [rbp-0x278]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteControlFlow(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref):bool]\n       mov      dword ptr [rbp-0x30], eax\n       mov      rbx, bword ptr [rbp-0x248]\n       cmp      gword ptr [rbx+0x20], 0\n       je       G_M000_IG09\n \n"
+      },
+      {
+        "offset": 2032,
+        "end": 2043,
+        "samples": 2,
+        "assembly": "G_M000_IG68:                ;; offset=0x07F0\n       xor      r14, r14\n       xor      r13d, r13d\n       jmp      G_M000_IG54\n \n"
+      },
+      {
+        "offset": 3159,
+        "end": 3225,
+        "samples": 2,
+        "assembly": "G_M000_IG109:                ;; offset=0x0C57\n       test     rbx, rbx\n       je       G_M000_IG370\n       mov      gword ptr [rbp-0x2A8], rbx\n       xor      r8, r8\n       mov      gword ptr [rbp-0x2B0], r8\n       mov      r8, gword ptr [rbx+0x30]\n       mov      r10, gword ptr [r8+0x88]\n       mov      r10, gword ptr [r10+0x20]\n       test     r10, r10\n       jne      G_M000_IG371\n       mov      r8, gword ptr [r8+0x178]\n       test     r8, r8\n       jne      G_M000_IG372\n \n"
+      },
+      {
+        "offset": 3593,
+        "end": 3651,
+        "samples": 2,
+        "assembly": "G_M000_IG123:                ;; offset=0x0E09\n       mov      esi, r15d\n       sub      esi, ebx\n       mov      edx, ebx\n       mov      edi, esi\n       add      rdx, rdi\n       mov      edi, r12d\n       cmp      rdx, rdi\n       ja       G_M000_IG137\n       mov      edi, ebx\n       add      rdi, r13\n       mov      rdx, gword ptr [rbp-0x2A8]\n       mov      rdx, gword ptr [rdx+0x30]\n       mov      rdx, gword ptr [rdx+0x88]\n       xor      rcx, rcx\n       call     [Lokad.Lython.Runtime.Text.PyString:CopyFromUtf8(System.ReadOnlySpan`1[byte],Lokad.Lython.Runtime.MemoryGovernor,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.Text.PyString]\n       mov      rbx, rax\n \n"
+      },
+      {
+        "offset": 6659,
+        "end": 6710,
+        "samples": 2,
+        "assembly": "G_M000_IG229:                ;; offset=0x1A03\n       mov      gword ptr [rbp-0x120], rsi\n       cmp      r14d, dword ptr [r15+0x08]\n       jae      G_M000_IG432\n       mov      esi, r14d\n       mov      r15, gword ptr [r15+8*rsi+0x10]\n       mov      rsi, 0x76336D8034E0\n       cmp      r15, gword ptr [rsi]\n       je       G_M000_IG275\n       mov      rax, gword ptr [rbp-0x250]\n \n"
+      },
+      {
+        "offset": 6789,
+        "end": 6800,
+        "samples": 2,
+        "assembly": "G_M000_IG234:                ;; offset=0x1A85\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      r14d, dword ptr [rsi+0x14]\n \n"
+      },
+      {
+        "offset": 7691,
+        "end": 7726,
+        "samples": 2,
+        "assembly": "G_M000_IG273:                ;; offset=0x1E0B\n       mov      rdi, bword ptr [rbp-0x248]\n       mov      rsi, rax\n       mov      rdx, gword ptr [rbp-0x258]\n       mov      rcx, bword ptr [rbp-0x278]\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteStackTransfer(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref)]\n       jmp      G_M000_IG09\n \n"
+      },
+      {
+        "offset": 1801,
+        "end": 1806,
+        "samples": 1,
+        "assembly": "G_M000_IG54:                ;; offset=0x0709\n       test     r13d, r13d\n       je       SHORT G_M000_IG56\n \n"
+      },
+      {
+        "offset": 2052,
+        "end": 2071,
+        "samples": 1,
+        "assembly": "G_M000_IG70:                ;; offset=0x0804\n       mov      r8, 0x763B535844D8\n       cmp      qword ptr [rsi], r8\n       jne      G_M000_IG102\n \n"
+      },
+      {
+        "offset": 2238,
+        "end": 2266,
+        "samples": 1,
+        "assembly": "G_M000_IG80:                ;; offset=0x08BE\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      esi, dword ptr [rsi+0x18]\n       not      esi\n       mov      rdi, bword ptr [rbp-0x248]\n       cmp      esi, dword ptr [rdi+0x70]\n       jl       G_M000_IG349\n \n"
+      },
+      {
+        "offset": 2475,
+        "end": 2522,
+        "samples": 1,
+        "assembly": "G_M000_IG87:                ;; offset=0x09AB\n       mov      ebx, dword ptr [rbx+0x08]\n       mov      rsi, gword ptr [r15+0x20]\n       mov      r11, 0x763B5216BEC0\n       cmp      qword ptr [rsi], r11\n       jne      G_M000_IG355\n       mov      r11d, dword ptr [rsi+0x08]\n       cmp      r11d, ebx\n       jbe      G_M000_IG304\n       mov      r11d, ebx\n       mov      r8, gword ptr [rsi+8*r11+0x10]\n \n"
+      },
+      {
+        "offset": 2578,
+        "end": 2639,
+        "samples": 1,
+        "assembly": "G_M000_IG90:                ;; offset=0x0A12\n       test     rsi, rsi\n       setne    sil\n       movzx    rsi, sil\n       test     esi, r10d\n       jne      G_M000_IG357\n       movsxd   rsi, ebx\n       mov      r8d, dword ptr [r13+0x08]\n       cmp      r8, rsi\n       jbe      G_M000_IG296\n       lea      r8, bword ptr [r13+8*rsi+0x10]\n       mov      rsi, qword ptr [r13]\n       mov      r13, qword ptr [rsi+0x30]\n       mov      qword ptr [rbp-0x1B0], r13\n       test     r14, r14\n       je       SHORT G_M000_IG97\n \n"
+      },
+      {
+        "offset": 2674,
+        "end": 2683,
+        "samples": 1,
+        "assembly": "G_M000_IG94:                ;; offset=0x0A72\n       test     r12, r12\n       jne      G_M000_IG359\n \n"
+      },
+      {
+        "offset": 2904,
+        "end": 3005,
+        "samples": 1,
+        "assembly": "G_M000_IG104:                ;; offset=0x0B58\n       xor      rsi, rsi\n       mov      gword ptr [rbp-0x1B8], rsi\n       mov      rsi, gword ptr [rbp-0x258]\n       mov      r8, gword ptr [rsi+0x150]\n       mov      r10, bword ptr [rbp-0x278]\n       mov      r10d, dword ptr [r10+0x10]\n       cmp      r10d, dword ptr [r8+0x08]\n       jae      G_M000_IG432\n       mov      r8, gword ptr [r8+8*r10+0x10]\n       test     r8, r8\n       je       G_M000_IG365\n       mov      r10, r8\n       mov      r11, 0x763B5383B3B0\n       cmp      qword ptr [r10], r11\n       jne      G_M000_IG366\n       mov      gword ptr [rbp-0x2A0], r10\n       mov      r8, gword ptr [rbp-0x2A0]\n       cmp      gword ptr [r8+0x20], 0\n       je       SHORT G_M000_IG106\n \n"
+      },
+      {
+        "offset": 3040,
+        "end": 3096,
+        "samples": 1,
+        "assembly": "G_M000_IG106:                ;; offset=0x0BE0\n       mov      r8, gword ptr [rbp-0x2A0]\n       cmp      byte  ptr [r8+0x54], 0\n       jne      G_M000_IG386\n       mov      r8, gword ptr [rbp-0x2A0]\n       cmp      gword ptr [r8+0x08], 0\n       je       G_M000_IG386\n       mov      r8, gword ptr [rbp-0x2A0]\n       mov      r8, gword ptr [r8+0x18]\n       test     r8, r8\n       je       G_M000_IG377\n \n"
+      },
+      {
+        "offset": 3096,
+        "end": 3157,
+        "samples": 1,
+        "assembly": "G_M000_IG107:                ;; offset=0x0C18\n       mov      r10, 0x763B538767D0\n       cmp      qword ptr [r8], r10\n       jne      G_M000_IG376\n       cmp      byte  ptr [r8+0x30], 0\n       jne      G_M000_IG369\n       mov      r10, gword ptr [r8+0x10]\n       movzx    r10, byte  ptr [r10+0x18]\n       test     r10d, r10d\n       jne      G_M000_IG369\n       mov      rbx, gword ptr [r8+0x08]\n       test     rbx, rbx\n       jne      G_M000_IG218\n \n"
+      },
+      {
+        "offset": 3259,
+        "end": 3274,
+        "samples": 1,
+        "assembly": "G_M000_IG111:                ;; offset=0x0CBB\n       xor      r8, r8\n       mov      gword ptr [rbp-0x2B8], r8\n       mov      ebx, -1\n \n"
+      },
+      {
+        "offset": 3556,
+        "end": 3593,
+        "samples": 1,
+        "assembly": "G_M000_IG122:                ;; offset=0x0DE4\n       mov      edx, dword ptr [r14+0x08]\n       and      edx, 0x7FFFFFFF\n       mov      edi, dword ptr [r14+0x0C]\n       mov      esi, edi\n       add      rsi, rdx\n       mov      ecx, r12d\n       cmp      rsi, rcx\n       ja       G_M000_IG137\n       add      r13, rdx\n       mov      r12d, edi\n \n"
+      },
+      {
+        "offset": 3670,
+        "end": 3689,
+        "samples": 1,
+        "assembly": "G_M000_IG125:                ;; offset=0x0E56\n       mov      rax, qword ptr [rdi]\n       test     dword ptr [rax], 0xFFFFFFFF80000000\n       je       G_M000_IG140\n       mov      r13d, dword ptr [rdi+0x08]\n \n"
+      },
+      {
+        "offset": 4251,
+        "end": 4261,
+        "samples": 1,
+        "assembly": "G_M000_IG144:                ;; offset=0x109B\n       cmp      gword ptr [rbp-0x2B8], 0\n       jne      SHORT G_M000_IG146\n \n"
+      },
+      {
+        "offset": 4299,
+        "end": 4316,
+        "samples": 1,
+        "assembly": "G_M000_IG148:                ;; offset=0x10CB\n       mov      rdi, gword ptr [rbp-0x2B0]\n       cmp      dword ptr [rdi+0x20], 0\n       je       G_M000_IG375\n \n"
+      },
+      {
+        "offset": 4343,
+        "end": 4381,
+        "samples": 1,
+        "assembly": "G_M000_IG151:                ;; offset=0x10F7\n       mov      rbx, gword ptr [rbp-0x1B8]\n       mov      rsi, gword ptr [rbp-0x258]\n       lea      rdi, bword ptr [rsi+0x120]\n       mov      rax, bword ptr [rbp-0x278]\n       cmp      dword ptr [rax+0x18], 0\n       jl       G_M000_IG168\n \n"
+      },
+      {
+        "offset": 4537,
+        "end": 4554,
+        "samples": 1,
+        "assembly": "G_M000_IG164:                ;; offset=0x11B9\n       xor      rdi, rdi\n       mov      gword ptr [rbp-0x1B8], rdi\n       mov      dword ptr [rbp-0x30], ebx\n       jmp      G_M000_IG09\n \n"
+      },
+      {
+        "offset": 4593,
+        "end": 4618,
+        "samples": 1,
+        "assembly": "G_M000_IG168:                ;; offset=0x11F1\n       mov      rsi, gword ptr [rbp-0x258]\n       mov      rdx, bword ptr [rbp-0x278]\n       mov      rcx, rbx\n       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CompleteLocalResult(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,System.Object)]\n       jmp      SHORT G_M000_IG163\n \n"
+      },
+      {
+        "offset": 4759,
+        "end": 4790,
+        "samples": 1,
+        "assembly": "G_M000_IG171:                ;; offset=0x1297\n       mov      rdi, bword ptr [rbp-0x248]\n       lea      rbx, bword ptr [rdi+0x30]\n       mov      rsi, bword ptr [rbp-0x278]\n       mov      r15d, dword ptr [rsi+0x10]\n       test     r15d, r15d\n       jl       G_M000_IG203\n \n"
+      },
+      {
+        "offset": 4790,
+        "end": 4833,
+        "samples": 1,
+        "assembly": "G_M000_IG172:                ;; offset=0x12B6\n       mov      rsi, gword ptr [rdi+0x30]\n       cmp      r15d, dword ptr [rsi+0x08]\n       jae      G_M000_IG432\n       mov      r8d, r15d\n       mov      r14, gword ptr [rsi+8*r8+0x10]\n       test     r14, r14\n       je       G_M000_IG403\n       mov      rsi, gword ptr [rdi]\n       cmp      r15d, dword ptr [rsi+0xA4]\n       jge      SHORT G_M000_IG174\n \n"
+      },
+      {
+        "offset": 4901,
+        "end": 4919,
+        "samples": 1,
+        "assembly": "G_M000_IG177:                ;; offset=0x1325\n       mov      r8, bword ptr [rbp-0x278]\n       cmp      dword ptr [r8+0x18], 0\n       jl       G_M000_IG205\n \n"
+      },
+      {
+        "offset": 4919,
+        "end": 4930,
+        "samples": 1,
+        "assembly": "G_M000_IG178:                ;; offset=0x1337\n       mov      r8, bword ptr [rbp-0x278]\n       mov      r11d, dword ptr [r8+0x18]\n \n"
+      },
+      {
+        "offset": 6719,
+        "end": 6743,
+        "samples": 1,
+        "assembly": "G_M000_IG231:                ;; offset=0x1A3F\n       mov      gword ptr [rbp-0x120], rsi\n       mov      rsi, bword ptr [rbp-0x278]\n       cmp      dword ptr [rsi+0x18], 0\n       jl       G_M000_IG252\n \n"
+      },
+      {
+        "offset": 6862,
+        "end": 6867,
+        "samples": 1,
+        "assembly": "G_M000_IG238:                ;; offset=0x1ACE\n       cmp      r10, qword ptr [r15]\n       je       SHORT G_M000_IG240\n \n"
+      },
+      {
+        "offset": 7624,
+        "end": 7646,
+        "samples": 1,
+        "assembly": "G_M000_IG269:                ;; offset=0x1DC8\n       mov      rax, gword ptr [rbp-0x250]\n       mov      rdi, bword ptr [rbp-0x248]\n       inc      dword ptr [rdi+0x28]\n       jmp      G_M000_IG09\n \n"
+      }
+    ]
+  }
+}

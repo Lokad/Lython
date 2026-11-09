@@ -30,6 +30,8 @@ even when no invocation context was created. Original failures and source remain
 in [observations.tar.xz](observations.tar.xz), together with catalogs, raw rotated
 samples, drivers, nonincremental build logs and focused validation.
 [Delivery source](delivery-source.json) records focused actual .NET11/10 checks;
-platform, original Stress and installed-package qualification are a later batch.
+initially preceded the full delivery batch. [Delivery42615908221](delivery-ci.json)
+on78fd7bb4 passes Windows/Ubuntu actual .NET11/10, original Stress both and
+installed core consumers, including the subsequent valid-DEFLATE correction.
 
 No new pool, reservation layer, public option or cancellation policy was added.

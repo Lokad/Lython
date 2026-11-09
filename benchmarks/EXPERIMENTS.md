@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R156 same-process prefix attribution](results/2026-11-09-prefix-generated-code/README.md)
+matches the14159-byte Tier1 prefix to246self samples, measured fully qualified
+R151/core21cf, notHEAD78fd. Of1194guest samples, observed loop bounds/switch account
+for6.28%; mixed instruction fetch/required checks3.69%. Neither is a saving estimate.
+Original headroom failure, exact redundant-archive recovery, offline classifier
+failure/correction and all raw/JIT/code identities survive. No capture restarted or
+CPU claim. Select the shared ASCII boundary scanner as the next bounded source phase;
+do not infer a VM rewrite from inclusive prefix shares.
+
 The [R154 function-workspace capacity milestone](results/2026-11-09-workspace-capacity/README.md)
 removes two byte ledgers and exact-size eviction from the existing execution-owned
 idle cache. Actual capacity stays funded through smaller logical loans; no new
@@ -14,7 +23,9 @@ in both APIs before correction; original source/failures are retained. Focused
 actual11/10 pass832 internal/3184 public per framework. Nested-constructor CSV
 allocation−0.81%; ordinary/compile unchanged. Original async-text adversity and
 corrected identical-control spread26.43% prevent a CPU claim. Both frozen source
-pairs and raw results survive; full qualification is batched with the next fix.
+pairs and raw results survive. Full delivery42615908221/source78fd7bb4 passes bothOS
+actual11/10, original Stress both and installed consumers, including the valid
+nineteen-code-length DEFLATE correction and its supplied regression. Terminal cached.
 
 The [R27 execution source gate](results/2026-11-07-execution-source-gate/README.md)
 records existing operand/call/storage mechanisms and a bounded3,000-job Windows
