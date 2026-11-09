@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep text-reader storage funded through active copies, decoding, pending reads
+  and awaited disposal. Preserve the original failure when cleanup also fails.
+
+- Share immutable function-declaration facts across analysis, lowering and binding.
+  Decode string literals from borrowed source spans and allocate concatenation
+  storage only when needed, reducing compilation allocation.
+
 - Store executable lookup facts in a flat admitted array. Reuse immutable CSV/JSON
   field layouts for repeated reads across rows, preserving current values,
   mutation, cancellation, admission callbacks and cleanup. Avoid field-cache

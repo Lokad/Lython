@@ -5015,3 +5015,24 @@ possible debt, no warm gain/universalneutrality claim. Original large adverse
 compile timings do not reproduce. Retain complete staging removal; no unchanged
 retiming selected. Allusersjoined/RAMremoved/persistentarchive locallyverified,
 terminalcached. Full candidate delivery pending; publication postponed.
+
+
+## Targeted agent-workload CPython refresh (2026-11-09 Paris)
+
+[R130/B490](results/2026-11-09-agent-workloads/README.md), committed459/core1be2,
+CPython3.13.16/.NET11RC3, same quietF4as_v7. Ninejobs193.226s/allsource/quiet/golden/
+ownership/Closed/join/RAM/archive/localgates pass. Existing scripts/fixtures/goldens/
+worker/protocol, three roles,5swarmup/7rotated150msrounds. No new framework or main
+five-case replay. Compile-to-result config1.09–1.10xVariable (IQR3.95%), search
+1.40–1.41x, two-small-file manifest1.47–1.48x. Separate warm ratios1.26–1.27x,
+1.69–1.71x,1.56–1.59x; compile1.08–1.09x,.96–.97x,1.25–1.27x. Guide labels every
+row6f76/4598; old historical baseline retained, no attribution/additive gain claim.
+Full459 platform/stress/package qualification pending independently. Search's warm
+gap despite competitive compilation justifies bounded current runtime/host-I/O
+attribution next; ratio alone is not an interpreter tax. Publication postponed.
+
+
+R127/847/coreac6b full delivery complete:cached CI42543394041success observed
+Nov9 01:37:39UTC, Windows/Ubuntu full actual11/10, originalstressboth/installedcore.
+[Receipt](results/2026-11-09-declaration-metadata/delivery-ci.json). Never requery.
+LaterR129/459/core1be2 remains independent; measured uncertainty/debts survive.

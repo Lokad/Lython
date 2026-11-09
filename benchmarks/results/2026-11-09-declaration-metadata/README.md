@@ -13,8 +13,9 @@ Focused Release actual .NET11/.NET10 each: 41 internal/360 public cases plus 23
 internal/149 public additional cases pass, including scope/default/generator/order,
 provider/static analysis, cancellation, refused admission, suspended argument/default
 ownership and generated definitions. Four test fixture constructor calls changed;
-no assertions, timeouts or semantic coverage were removed. Full candidate platform,
-stress and installed-core qualification is pending; prior CI qualifies core85e only.
+no assertions, timeouts or semantic coverage were removed. Full Windows/Ubuntu Release actual11/10, original stress both and installed-core
+qualification passes [cached CI42543394041](delivery-ci.json), observed Nov9
+01:37:39UTC. It qualifies847/coreac6b; later459/core1be2 is separate.
 
 Five existing complete scripts, identical fixtures/worker/optional0.4/normal GC and
 tiering. Desktop allocation checks isolate images sharing CoreLib/process GC;
