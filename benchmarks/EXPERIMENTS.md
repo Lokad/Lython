@@ -5450,3 +5450,8 @@ removing only two redundant remote compressed archives, both byte-identical in G
 raw trees/receipts retained. Identical staged source/payload/floors on retry; no timed
 work restarted. All quiet/identity/output/join/RAM/archive/localSHA gates pass,
 terminal cached/no users. Full delivery next; broader performance/regex work active.
+
+R151 delivery42605184549/source99844959 is cached terminal success: Windows/Ubuntu
+actual.NET11/10, original Stress both and installed Release core consumers. Original
+packet-lifetime failures/fix and all adverse/control uncertainty survive; no unchanged
+qualification/retiming. Publication postponed; broader performance roadmap continues.

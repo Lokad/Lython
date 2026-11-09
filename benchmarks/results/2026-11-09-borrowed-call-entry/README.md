@@ -44,8 +44,10 @@ fallback packets through pending completion/failure/cancellation, preserving the
 original assertions. Receiver/order/default/variadic/invalid-call/constructor,
 first-refusal, retained aliases, pending cleanup and budget-reuse coverage remains.
 Five independent CPython stdout/file goldens validate the three maintained scripts
-and explicit map/constructor shapes. Full platform/Stress/installed consumers batch
-at delivery; focused checks do not claim that qualification is complete.
+and explicit map/constructor shapes. [Delivery42605184549](delivery-ci.json),
+source99844959, is cached terminal success: Windows/Ubuntu actual.NET11/10, original
+Stress both and installed Release core consumers. Qualification complete; source-pair
+timings and explicit constructor/text debt remain as measured.
 
 Initial VM setup refused for4.6MB of headroom before any service/root/fixture existed.
 Under a fresh idle lease, verify exact hashes, single aliases, ownership and parents,
