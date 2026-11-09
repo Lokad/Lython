@@ -478,9 +478,10 @@ and exception routing. Prepared operations route directly to their existing
 handler; native stores do not traverse asynchronous display and definition
 forwarders. Genuine suspension retains the original operand cleanup.
 Guarded native return expressions retain binding and function/interpreter entry
-checks while omitting resumable interpreter storage. Closed module-level helpers
-also borrow their defining module's state and globals directly: they cannot
-observe a separate lexical context, so none is constructed. Fully supplied positional
+checks while omitting resumable interpreter storage. Closed helpers, including ordinary nested definitions,
+borrow their defining execution state and resolve globals in the module. Their
+compiler proof excludes captured cells and observable lexical work, so a separate
+invocation context is unnecessary. Fully supplied positional
 calls without a bound receiver borrow their admitted caller operands synchronously,
 without constructing bound argument storage. These completed helpers run directly
 in call dispatch, before pending-call state is created. Call and function stack
@@ -499,8 +500,8 @@ retain cancellation/refusal checks; pure input reads have no checkpoint-count co
 The native evaluator reads a readonly
 span; it cannot retain that span or suspend. Returning an argument object preserves
 its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
-bindings. Class/nested definitions
-and other lexical cases retain their function contexts. Native conversions,
+bindings. Functions requiring lexical storage or special scope handling retain
+their function contexts. Native conversions,
 dictionary string-key reads and compound
 native string operations qualify only after the entire expression's runtime
 guards pass, before native work. Compilation prepares operation kinds, method
@@ -535,7 +536,7 @@ admission. Both paths share the existing operations, cancellation and ownership.
 Synchronous calls, asynchronous calls and native return expressions share unary
 builtin selection; ordinary calls keep broader protocol/error behavior while
 native returns require a closed result proof.
-Other closed module helpers can begin with their owned local/operand storage and
+Other closed helpers can begin with their owned local/operand storage and
 the same instruction dispatch, without a lexical context. Plain list and tuple
 construction reuse their admitted storage builders in this loop. Starred displays
 and dictionary/set key protocols keep their ordinary protocol paths. Scope-sensitive work,
@@ -551,7 +552,11 @@ invocation routes. A bound
 function body reuses its call admission rather than adding a second logical
 nesting charge. Raw protocols retain function-depth and managed-stack protection;
 module entries own interpreter admission. Managed stack checks, large-stack
-workers and configured recursion bounds remain active.
+workers and configured recursion bounds remain active. Compiler
+capture facts determine eligibility independently of lexical placement. Defining
+closure chains remain retained; scope-sensitive operations promote before they
+observe function locals or invoke guest protocols. Genuine captures and special
+class, annotation and type-parameter scopes keep their existing lexical handling.
 
 Reusable workers provide the managed stack for the synchronous prefix. Actual
 asynchronous suspension releases that worker instead of parking it through I/O.

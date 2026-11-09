@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Let closed nested helpers share the existing native and deferred-context paths.
+  Avoid unnecessary invocation contexts while preserving captured cells, local
+  namespaces, genuinely asynchronous protocols and cooperative ownership.
+
 - Reuse native Boolean results and keep `id()` consistent with Python Boolean
   singleton identity across literals, module results and host inputs. Preserve
   arbitrary custom comparison results and cooperative cleanup.

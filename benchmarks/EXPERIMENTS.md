@@ -5176,3 +5176,20 @@ Two concurrent cases move to Stress;14small checks stay ordinary. Removing only
 loop checks (entry check retained) fails both native cases; exact source restored,
 nonincremental builds16/16pass eachactual11/10. No runtime change or speedup claim.
 Full delivery remains incomplete pending the corrected Windows checkpoint.
+
+
+## Closed nested invocation construction (2026-11-09 Paris)
+
+[R138/B497](results/2026-11-09-closed-nested-helpers/README.md),6d73/coreea65 versus345f.
+Remove lexical-parent barriers to existing native/deferred paths; capture facts
+and promotion keep Python scoping, no new binder/arena/cache/owner. Complete current
+CSV/text/report in ordinary main() wrappers, original JSON/search controls. Actual
+warm allocation−38.67/46.5/28.5%bothAPIs, compileallocationneutral. Desktop async
+report+2.25..10.25/search+6.8..7.6%adverse preserved. Six quiet jobs169.171s/allgates:
+CSV−8.16..8.39/text−19.62..20.04/report−10.50..13.22/asyncReport−6.24..7.68%elapsed,
+supporting widerCPU. Report candidatespread2.98%; searchreference2.49% remains
+variable, JSONclose. Retain actual phase removal/alloc/affectedscriptbenefit; no
+universal gain or CPython ratio.68internal/279public thenfinal36/76eachactual11/10,
+independentPython/nestedcapacity/realasync/cancel/refusal/alias/depth/budget checks.
+Terminalcached/localSHA/joins/RAMremoved, no floors relaxed. Full delivery batching;
+publication postponed and broader performance objective open.

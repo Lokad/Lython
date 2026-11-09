@@ -10,15 +10,19 @@ namespace Lokad.Lython.Tests;
 public sealed class DeferredFunctionOwnershipTests
 {
     [Theory]
-    [InlineData(false, false)] [InlineData(false, true)]
-    [InlineData(true, false)] [InlineData(true, true)]
-    public async Task CapacityAdmissionSeesCurrentFunctionLocalsAndNeverReplaysPriorWrites(bool asynchronous, bool refuse)
+    [InlineData(false, false, false)] [InlineData(false, true, false)]
+    [InlineData(true, false, false)] [InlineData(true, true, false)]
+    [InlineData(false, false, true)] [InlineData(false, true, true)]
+    [InlineData(true, false, true)] [InlineData(true, true, true)]
+    public async Task CapacityAdmissionSeesCurrentFunctionLocalsAndNeverReplaysPriorWrites(bool asynchronous, bool refuse, bool nested)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var hook = new AdmissionHookMemoryBudget(owner);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
-        Execute("namespace=globals()\ntotals={'seen':0,'held':100}\ndef update(mapping,value):\n value+=3\n mapping['seen']=mapping['seen']+1\n if value<0:return None\n mapping['new']=value\n return value\n", context);
+        var definition = "def update(mapping,value):\n value+=3\n mapping['seen']=mapping['seen']+1\n if value<0:return None\n mapping['new']=value\n return value\n";
+        if (nested) definition = "def factory():\n" + string.Join('\n', definition.Split('\n').Select(line => " " + line)) + "\n return update\nupdate=factory()\n";
+        Execute("namespace=globals()\ntotals={'seen':0,'held':100}\n" + definition, context);
         var totals = Assert.IsType<PyDict>(context.Variables["totals"]);
         var observed = false;
         bool Observe()

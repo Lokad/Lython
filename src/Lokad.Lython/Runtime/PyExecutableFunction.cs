@@ -56,25 +56,28 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
 
+    // Closed nested functions use the same slot-owned prefix as module functions.
+    // Scope-sensitive operations still promote before observing their namespace.
     internal bool CanDeferInvocationContext => OwnerType is null && ArgumentsAreLocals &&
         !_codeObject.ScopeFacts.RequiresClassCell &&
         _codeObject.CapturedLocalSlots.Count == 0 && _closureCells.Count == 0 &&
-        _codeObject.ExceptionRegions.Count == 0 && Closure.ParentContext is null &&
+        _codeObject.ExceptionRegions.Count == 0 &&
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
     {
         // Closed native bodies cannot observe a function namespace or suspend.
-        // Nested and class-cell scopes keep their lexical machinery.
-        if (_codeObject.NativeBody is null || Closure.ParentContext is not null
-            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.ClassCell is not null
+        // Compiler capture facts, not lexical nesting alone, establish closure.
+        // Class/annotation contexts keep their existing lexical machinery.
+        if (_codeObject.NativeBody is null
+            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
             || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
         {
             result = PyNone.Instance;
             return false;
         }
-        return LythonRuntime.TryExecuteNativeModuleFunction(_codeObject, Closure, arguments, Name, span, out result);
+        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result);
     }
 
     protected override object ExecuteBody(

@@ -19,20 +19,20 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    internal static bool TryExecuteNativeModuleFunction(ExecutableCodeObject code, ExecutionContext module,
+    internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
         ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
     {
         result = PyNone.Instance;
         var body = code.NativeBody!;
-        if (!GuardNativeBody(code, body, arguments, module)) return false;
-        module.EnterFunctionCall(span);
-        try { result = ExecuteNativeBody(code, body, module, arguments, span); return true; }
+        if (!GuardNativeBody(code, body, arguments, context)) return false;
+        context.EnterFunctionCall(span);
+        try { result = ExecuteNativeBody(code, body, context, arguments, span); return true; }
         catch (LythonRuntimeException error)
         {
-            PyFunctionBinding.AnnotateException(error, module, name, span);
+            PyFunctionBinding.AnnotateException(error, context, name, span);
             throw;
         }
-        finally { module.LeaveFunctionCall(); }
+        finally { context.LeaveFunctionCall(); }
     }
 
     // Dynamic checks precede all effects, including admission. A failed proof

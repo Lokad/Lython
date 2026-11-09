@@ -1,0 +1,25 @@
+{
+  "broad": {
+    "internalPerFramework": 68,
+    "publicPerFramework": 279
+  },
+  "final": {
+    "internalPerFramework": 36,
+    "publicPerFramework": 76
+  },
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "independentPythonGoldens": 5,
+  "addedNestedCapacityCases": 4,
+  "purpose": "Final method rename and nested capacity admission, native/pending protocols, cancellation/refusal, shared-budget reuse and closed/genuine captured scopes. Broad and final checks overlap; counts not additive.",
+  "compileAllocationPercent": [
+    0,
+    0
+  ],
+  "runtimeSourceSHA256": {
+    "src\\Lokad.Lython\\Runtime\\PyExecutableFunction.cs": "a6b4dedecf731c90c2cfb0f578f57f56b6abe6a001696336d494c962b1b9788c",
+    "src\\Lokad.Lython\\Runtime\\LythonRuntime.Executable.NativeReturn.cs": "b33e722c0a4ef811849f19e58e72701a02615225ed030cdbed7a20ecc423ed93"
+  }
+}

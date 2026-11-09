@@ -8,20 +8,25 @@ namespace Lokad.Lython.Tests;
 public sealed class CompletedHelperCallOwnershipTests
 {
     [Theory]
-    [InlineData(false, 0), InlineData(true, 0)]
-    [InlineData(false, 1), InlineData(true, 1)]
-    [InlineData(false, 2), InlineData(true, 2)]
-    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind)
+    [InlineData(false, 0, false), InlineData(true, 0, false)]
+    [InlineData(false, 0, true), InlineData(true, 0, true)]
+    [InlineData(false, 1, false), InlineData(true, 1, false)]
+    [InlineData(false, 1, true), InlineData(true, 1, true)]
+    [InlineData(false, 2, false), InlineData(true, 2, false)]
+    [InlineData(false, 2, true), InlineData(true, 2, true)]
+    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind, bool nested)
     {
         // The two-statement caller also exercises a deferred lexical context.
-        var frontend = LythonFrontend.Compile("""
+        var source = """
 def lower(value):
     return value.lower()
 def through(value):
     result = lower(value)
     return result
 effects.append(through(input))
-""");
+""";
+        if (nested) source = "def main():\n" + string.Join('\n', source.Split('\n').Select(line => " " + line)) + "\nmain()\n";
+        var frontend = LythonFrontend.Compile(source);
         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
         var budget = new LythonMemoryBudget(1024 * 1024);

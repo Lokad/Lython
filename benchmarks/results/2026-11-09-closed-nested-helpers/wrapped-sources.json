@@ -1,0 +1,23 @@
+[
+  {
+    "case": "scripts.csv-validated-records.large",
+    "originalSource": "import csv\n\n\ndef validated_record(record: dict, *, minimum=0):\n    amount = int(record['amount'])\n    if amount < minimum:\n        return None\n    if record['note'] == 'skip':\n        return None\n    return record['kind'], amount\n\n\ntotals = {}\naccepted = 0\nwith open('input.csv', newline='') as source:\n    for row in csv.DictReader(source):\n        item = validated_record(row, minimum=0)\n        if item is None:\n            continue\n        kind, amount = item\n        totals[kind] = totals.get(kind, 0) + amount\n        accepted += 1\nwith open('report.csv', 'w', newline='') as target:\n    writer = csv.writer(target, lineterminator='\\n')\n    writer.writerow(['kind', 'total'])\n    for kind in sorted(totals):\n        writer.writerow([kind, totals[kind]])\nprint(accepted)\n",
+    "wrappedSource": "def main():\n    import csv\n\n\n    def validated_record(record: dict, *, minimum=0):\n        amount = int(record['amount'])\n        if amount < minimum:\n            return None\n        if record['note'] == 'skip':\n            return None\n        return record['kind'], amount\n\n\n    totals = {}\n    accepted = 0\n    with open('input.csv', newline='') as source:\n        for row in csv.DictReader(source):\n            item = validated_record(row, minimum=0)\n            if item is None:\n                continue\n            kind, amount = item\n            totals[kind] = totals.get(kind, 0) + amount\n            accepted += 1\n    with open('report.csv', 'w', newline='') as target:\n        writer = csv.writer(target, lineterminator='\\n')\n        writer.writerow(['kind', 'total'])\n        for kind in sorted(totals):\n            writer.writerow([kind, totals[kind]])\n    print(accepted)\n\nmain()\n",
+    "expectedOutput": "3072\n",
+    "newSourceSHA": "6541f1d41ea7bb995c3231a6a3d8746cb3519d2626392a8cf9d839ce1cded6c1"
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "originalSource": "def words_from_line(line:str)->list:\n    return line.lower().split()\n\ncounts = {}\ntotal = 0\nwith open('input.txt') as source:\n    for line in source:\n        for word in words_from_line(line):\n            counts[word] = counts.get(word, 0) + 1\n            total += 1\nwith open('report.txt', 'w', newline='') as target:\n    for word in sorted(counts):\n        target.write(word + '=' + str(counts[word]) + '\\n')\nprint(total)\n",
+    "wrappedSource": "def main():\n    def words_from_line(line:str)->list:\n        return line.lower().split()\n\n    counts = {}\n    total = 0\n    with open('input.txt') as source:\n        for line in source:\n            for word in words_from_line(line):\n                counts[word] = counts.get(word, 0) + 1\n                total += 1\n    with open('report.txt', 'w', newline='') as target:\n        for word in sorted(counts):\n            target.write(word + '=' + str(counts[word]) + '\\n')\n    print(total)\n\nmain()\n",
+    "expectedOutput": "6144\n",
+    "newSourceSHA": "1d7e76aaf124bc5d3168165400b2e6aaa1ce8a61ebb8f66ab2d9ae76b512fa28"
+  },
+  {
+    "case": "scripts.report-render.large",
+    "originalSource": "import json\n\n\ndef render(record):\n    return f\"| {record['name']:<20.12s} | {record['state']:^8s} | {record['amount']:>8,d} |\\n\"\n\n\nwith open('records.json') as source:\n    records = json.load(source)\nwritten = 0\nwith open('report.md', 'w', newline='') as target:\n    target.write('# Shipment report\\n\\n| Name | State | Amount |\\n| --- | --- | ---: |\\n')\n    for record in records:\n        target.write(render(record))\n        written += 1\nprint(written)\n",
+    "wrappedSource": "def main():\n    import json\n\n\n    def render(record):\n        return f\"| {record['name']:<20.12s} | {record['state']:^8s} | {record['amount']:>8,d} |\\n\"\n\n\n    with open('records.json') as source:\n        records = json.load(source)\n    written = 0\n    with open('report.md', 'w', newline='') as target:\n        target.write('# Shipment report\\n\\n| Name | State | Amount |\\n| --- | --- | ---: |\\n')\n        for record in records:\n            target.write(render(record))\n            written += 1\n    print(written)\n\nmain()\n",
+    "expectedOutput": "3072\n",
+    "newSourceSHA": "0e6b4d616a48e26159cfcf168a06fe02540e7531af893b9c31bab68ebf1d697c"
+  }
+]

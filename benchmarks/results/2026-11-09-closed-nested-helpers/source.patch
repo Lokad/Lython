@@ -1,0 +1,140 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index a36bd16b..fa4d1d6b 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -19,20 +19,20 @@ internal sealed partial class LythonRuntime
+         return true;
+     }
+ 
+-    internal static bool TryExecuteNativeModuleFunction(ExecutableCodeObject code, ExecutionContext module,
++    internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
+         ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
+     {
+         result = PyNone.Instance;
+         var body = code.NativeBody!;
+-        if (!GuardNativeBody(code, body, arguments, module)) return false;
+-        module.EnterFunctionCall(span);
+-        try { result = ExecuteNativeBody(code, body, module, arguments, span); return true; }
++        if (!GuardNativeBody(code, body, arguments, context)) return false;
++        context.EnterFunctionCall(span);
++        try { result = ExecuteNativeBody(code, body, context, arguments, span); return true; }
+         catch (LythonRuntimeException error)
+         {
+-            PyFunctionBinding.AnnotateException(error, module, name, span);
++            PyFunctionBinding.AnnotateException(error, context, name, span);
+             throw;
+         }
+-        finally { module.LeaveFunctionCall(); }
++        finally { context.LeaveFunctionCall(); }
+     }
+ 
+     // Dynamic checks precede all effects, including admission. A failed proof
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index 31c0aef3..de47a1a5 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -56,25 +56,28 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
+     internal LythonRuntime.ExecutionContext DefinitionContext => Closure;
+ 
++    // Closed nested functions use the same slot-owned prefix as module functions.
++    // Scope-sensitive operations still promote before observing their namespace.
+     internal bool CanDeferInvocationContext => OwnerType is null && ArgumentsAreLocals &&
+         !_codeObject.ScopeFacts.RequiresClassCell &&
+         _codeObject.CapturedLocalSlots.Count == 0 && _closureCells.Count == 0 &&
+-        _codeObject.ExceptionRegions.Count == 0 && Closure.ParentContext is null &&
++        _codeObject.ExceptionRegions.Count == 0 &&
+         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
+         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
+ 
+     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
+     {
+         // Closed native bodies cannot observe a function namespace or suspend.
+-        // Nested and class-cell scopes keep their lexical machinery.
+-        if (_codeObject.NativeBody is null || Closure.ParentContext is not null
+-            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.ClassCell is not null
++        // Compiler capture facts, not lexical nesting alone, establish closure.
++        // Class/annotation contexts keep their existing lexical machinery.
++        if (_codeObject.NativeBody is null
++            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
+             || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
+         {
+             result = PyNone.Instance;
+             return false;
+         }
+-        return LythonRuntime.TryExecuteNativeModuleFunction(_codeObject, Closure, arguments, Name, span, out result);
++        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result);
+     }
+ 
+     protected override object ExecuteBody(
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+index 39bf3976..61f6e2e3 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+@@ -7,6 +7,11 @@ public sealed class NativeReturnFunctionTests
+     // Goldens independently captured with isolated CPython 3.13.
+     public static TheoryData<string, string, string> Cases => new()
+     {
++        { "closed-nested-global-and-shadow", "offset=7\ndef outer():\n offset=99\n def convert(value):return int(value)+global_offset\n return convert\nglobal_offset=3\nconvert=outer()\nprint(convert('7'))\nglobal_offset=8\nprint(convert('7'),convert.__qualname__)\n", "10\n15 outer.<locals>.convert\n" },
++        { "closed-nested-locals-promotion", "value=100\ndef outer():\n value=99\n def work(value):\n  value+=3\n  if value<0:return None\n  return value,locals()['value'],globals()['value']\n return work\nprint(outer()(4))\n", "(7, 7, 100)\n" },
++        { "real-capture-live-cell", "def outer():\n offset=3\n def add(value):return value+offset\n print(add(2))\n offset=9\n return add\nprint(outer()(2))\n", "5\n11\n" },
++        { "closed-nested-unbound", "def outer():\n value=100\n def work(flag):\n  if flag:value=3\n  return value+1\n return work\nf=outer()\nprint(f(True))\ntry:f(False)\nexcept UnboundLocalError:print('unbound')\n", "4\nunbound\n" },
++        { "closed-nested-class-control", "def outer():\n class Base:\n  def value(self):return 3\n class Child(Base):\n  def value(self):return super().value()+4\n return Child\nprint(outer()().value())\n", "7\n" },
+         { "primitive-numeric-mixed-return-shapes", "def numeric0(a,b):return a + b\ndef numeric1(a,b):return a - b\ndef numeric2(a,b):return a * b\ndef numeric3(a,b):return a // b\ndef numeric4(a,b):return a % b\ndef numeric5(a,b):return a | b\ndef numeric6(a,b):return a ^ b\ndef numeric7(a,b):return a & b\ndef numeric8(a,b):return a << b\ndef numeric9(a,b):return a >> b\ndef numeric10(a,b):return a / b\ndef numeric11(a,b):return a == b\ndef numeric12(a,b):return a != b\ndef numeric13(a,b):return a < b\ndef numeric14(a,b):return a <= b\ndef numeric15(a,b):return a > b\ndef numeric16(a,b):return a >= b\nprint(numeric0(1.5,2),numeric1(1.5,2),numeric2(1.5,2),numeric3(1.5,2),numeric4(1.5,2),numeric10(1.5,2),numeric11(1.5,2),numeric12(1.5,2),numeric13(1.5,2),numeric14(1.5,2),numeric15(1.5,2),numeric16(1.5,2))\nprint(numeric0(-7.5,2.5),numeric1(-7.5,2.5),numeric2(-7.5,2.5),numeric3(-7.5,2.5),numeric4(-7.5,2.5),numeric10(-7.5,2.5),numeric11(-7.5,2.5),numeric12(-7.5,2.5),numeric13(-7.5,2.5),numeric14(-7.5,2.5),numeric15(-7.5,2.5),numeric16(-7.5,2.5))\nprint(numeric0(0.0,-3.0),numeric1(0.0,-3.0),numeric2(0.0,-3.0),numeric3(0.0,-3.0),numeric4(0.0,-3.0),numeric10(0.0,-3.0),numeric11(0.0,-3.0),numeric12(0.0,-3.0),numeric13(0.0,-3.0),numeric14(0.0,-3.0),numeric15(0.0,-3.0),numeric16(0.0,-3.0))\nprint(numeric0(True,True),numeric1(True,True),numeric2(True,True),numeric3(True,True),numeric4(True,True),numeric5(True,True),numeric6(True,True),numeric7(True,True),numeric8(True,True),numeric9(True,True),numeric10(True,True),numeric11(True,True),numeric12(True,True),numeric13(True,True),numeric14(True,True),numeric15(True,True),numeric16(True,True))\nprint(numeric0(False,True),numeric1(False,True),numeric2(False,True),numeric3(False,True),numeric4(False,True),numeric5(False,True),numeric6(False,True),numeric7(False,True),numeric8(False,True),numeric9(False,True),numeric10(False,True),numeric11(False,True),numeric12(False,True),numeric13(False,True),numeric14(False,True),numeric15(False,True),numeric16(False,True))\nprint(numeric0(True,3),numeric1(True,3),numeric2(True,3),numeric3(True,3),numeric4(True,3),numeric5(True,3),numeric6(True,3),numeric7(True,3),numeric8(True,3),numeric9(True,3),numeric10(True,3),numeric11(True,3),numeric12(True,3),numeric13(True,3),numeric14(True,3),numeric15(True,3),numeric16(True,3))\nprint(numeric0(2**70+7,1.25),numeric1(2**70+7,1.25),numeric2(2**70+7,1.25),numeric3(2**70+7,1.25),numeric4(2**70+7,1.25),numeric10(2**70+7,1.25),numeric11(2**70+7,1.25),numeric12(2**70+7,1.25),numeric13(2**70+7,1.25),numeric14(2**70+7,1.25),numeric15(2**70+7,1.25),numeric16(2**70+7,1.25))\ndef bits(a,b):return (a&b)^(a|b)\nfor a,b in [(True,True),(False,True),(True,3)]:\n value=bits(a,b)\n print(value,type(value).__name__)\ndef amount(quantity,cents,discount=10):return quantity*cents*(100-discount)//100\nprint(amount(1.5,199),amount(True,199),amount(-3.5,199,15))\n", "3.5 -0.5 3.0 0.0 1.5 0.75 False True True True False False\n-5.0 -10.0 -18.75 -3.0 0.0 -3.0 False True True True False False\n-3.0 3.0 -0.0 -0.0 -0.0 -0.0 False True False False True True\n2 0 1 1 0 True False True 2 0 1.0 True False False True False True\n1 -1 0 0 0 True True False 0 0 0.0 False True True True False False\n4 -2 3 0 1 3 2 1 8 0 0.3333333333333333 False True True True False False\n1.1805916207174113e+21 1.1805916207174113e+21 1.475739525896764e+21 9.444732965739291e+20 0.25 9.444732965739291e+20 False True False False True True\nFalse bool\nTrue bool\n2 int\n268.0 179 -593.0\n" },
+         { "primitive-binary-protocols-and-declined-operators", "from decimal import Decimal\ndef multiply(value):return value*3\nclass Left:\n def __mul__(self,other):\n  print('left once')\n  return other+7\nclass Right:\n def __rmul__(self,other):\n  print('right once')\n  return other+8\ndef reflected(value):return 3*value\nprint(multiply(Left()),reflected(Right()))\nprint(multiply(1+2j),multiply(Decimal('1.25')))\ndef power(a,b):return a**b\ndef identity(a,b):return a is b\ndef contains(a,b):return a in b\nitems=[]\nprint(power(2,-3),identity(items,items),contains(2,[1,2]))\n", "left once\nright once\n10 11\n(3+6j) 3.75\n0.125 True True\n" },
+         { "integer-binary-family-and-dynamic-mixed", "def op0(a,b):return a + b\ndef op1(a,b):return a - b\ndef op2(a,b):return a * b\ndef op3(a,b):return a // b\ndef op4(a,b):return a % b\ndef op5(a,b):return a | b\ndef op6(a,b):return a ^ b\ndef op7(a,b):return a & b\ndef op8(a,b):return a << b\ndef op9(a,b):return a >> b\ndef op10(a,b):return a / b\ndef op11(a,b):return a == b\ndef op12(a,b):return a != b\ndef op13(a,b):return a < b\ndef op14(a,b):return a <= b\ndef op15(a,b):return a > b\ndef op16(a,b):return a >= b\nprint(op0(19,3),op1(19,3),op2(19,3),op3(19,3),op4(19,3),op5(19,3),op6(19,3),op7(19,3),op8(19,3),op9(19,3),op10(19,3),op11(19,3),op12(19,3),op13(19,3),op14(19,3),op15(19,3),op16(19,3))\nprint(op0(-19,3),op1(-19,3),op2(-19,3),op3(-19,3),op4(-19,3),op5(-19,3),op6(-19,3),op7(-19,3),op8(-19,3),op9(-19,3),op10(-19,3),op11(-19,3),op12(-19,3),op13(-19,3),op14(-19,3),op15(-19,3),op16(-19,3))\nprint(op0(19,-3),op1(19,-3),op2(19,-3),op3(19,-3),op4(19,-3),op5(19,-3),op6(19,-3),op7(19,-3),op10(19,-3),op11(19,-3),op12(19,-3),op13(19,-3),op14(19,-3),op15(19,-3),op16(19,-3))\nprint(op0(1237940039285380274899124231,3),op1(1237940039285380274899124231,3),op2(1237940039285380274899124231,3),op3(1237940039285380274899124231,3),op4(1237940039285380274899124231,3),op5(1237940039285380274899124231,3),op6(1237940039285380274899124231,3),op7(1237940039285380274899124231,3),op8(1237940039285380274899124231,3),op9(1237940039285380274899124231,3),op10(1237940039285380274899124231,3),op11(1237940039285380274899124231,3),op12(1237940039285380274899124231,3),op13(1237940039285380274899124231,3),op14(1237940039285380274899124231,3),op15(1237940039285380274899124231,3),op16(1237940039285380274899124231,3))\nprint(op2(True,3),op2(1.5,3),op0(\"a\",\"b\"),op2(\"x\",3))\n", "22 16 57 6 1 19 16 3 152 2 6.333333333333333 False True False False True True\n-16 -22 -57 -7 2 -17 -18 1 -152 -3 -6.333333333333333 False True True True False False\n16 22 -57 -7 -2 -1 -18 17 -6.333333333333333 False True False False True True\n1237940039285380274899124234 1237940039285380274899124228 3713820117856140824697372693 412646679761793424966374743 2 1237940039285380274899124231 1237940039285380274899124228 3 9903520314283042199192993848 154742504910672534362390528 4.126466797617934e+26 False True False False True True\n3 4.5 ab xxx\n" },
+@@ -105,12 +110,15 @@ public sealed class NativeReturnFunctionTests
+         }
+     }
+ 
+-    [Fact]
+-    public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup()
++    [Theory]
++    [InlineData(false)] [InlineData(true)]
++    public async Task CompoundReturnKeepsSuspendingReboundBuiltinAndCleanup(bool nested)
+     {
+-        const string source = "def count(value):\n result=len(value.lower().split())\n return result\n" +
++        var source = "def count(value):\n result=len(value.lower().split())\n return result\n" +
+             "def length(value):\n with open('/pause') as file:\n  return int(file.read())\n" +
+             "len=length\nprint(count('A B'))\nprint('late')\n";
++        if (nested) source = source.Replace("def count(value):\n result=len(value.lower().split())\n return result\n",
++            "def outer():\n def count(value):\n  result=len(value.lower().split())\n  return result\n return count\ncount=outer()\n", StringComparison.Ordinal);
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         using (var script = new LythonEngine().Compile(source, budget))
+         {
+diff --git a/tests/Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs b/tests/Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs
+index d6f50729..fb354e38 100644
+--- a/tests/Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs
++++ b/tests/Lokad.Lython.Tests/CompletedHelperCallOwnershipTests.cs
+@@ -8,20 +8,25 @@ namespace Lokad.Lython.Tests;
+ public sealed class CompletedHelperCallOwnershipTests
+ {
+     [Theory]
+-    [InlineData(false, 0), InlineData(true, 0)]
+-    [InlineData(false, 1), InlineData(true, 1)]
+-    [InlineData(false, 2), InlineData(true, 2)]
+-    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind)
++    [InlineData(false, 0, false), InlineData(true, 0, false)]
++    [InlineData(false, 0, true), InlineData(true, 0, true)]
++    [InlineData(false, 1, false), InlineData(true, 1, false)]
++    [InlineData(false, 1, true), InlineData(true, 1, true)]
++    [InlineData(false, 2, false), InlineData(true, 2, false)]
++    [InlineData(false, 2, true), InlineData(true, 2, true)]
++    public async Task CompletedHelpersKeepInputFundingAndUnwindBeforeFollowingEffects(bool asynchronous, int failureKind, bool nested)
+     {
+         // The two-statement caller also exercises a deferred lexical context.
+-        var frontend = LythonFrontend.Compile("""
++        var source = """
+ def lower(value):
+     return value.lower()
+ def through(value):
+     result = lower(value)
+     return result
+ effects.append(through(input))
+-""");
++""";
++        if (nested) source = "def main():\n" + string.Join('\n', source.Split('\n').Select(line => " " + line)) + "\nmain()\n";
++        var frontend = LythonFrontend.Compile(source);
+         Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
+         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;
+         var budget = new LythonMemoryBudget(1024 * 1024);
