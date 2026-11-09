@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="D:/code/Lython/Directory.Build.props" />
+  <PropertyGroup>
+    <BaseOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/out/$(MSBuildProjectName)/</BaseOutputPath>
+    <BaseIntermediateOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**</DefaultItemExcludes>
+    <NuGetLockFilePath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/locks/$(MSBuildProjectName).json</NuGetLockFilePath>
+    <RestoreFallbackFolders>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev48/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter44/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter40/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter29/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter26/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter20/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter10/packages;D:/code/Lython/.git/agent-notes/review-20261031/adapter05/packages;C:/Users/JoannesVermorel/.nuget/packages</RestoreFallbackFolders>
+    <RestorePackagesPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/packages/</RestorePackagesPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.Utf8Regex'">
+    <DefaultItemExcludes>$(DefaultItemExcludes);Utf8RegexProvider.cs</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.Utf8Regex'">
+    <Compile Include="D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/Utf8RegexProvider.cs" Link="Utf8RegexProvider.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.PublicApi.Tests'">
+    <Compile Include="D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/CursorAdmissionTests.cs" Link="CursorAdmissionTests.cs" />
+  </ItemGroup>
+</Project>

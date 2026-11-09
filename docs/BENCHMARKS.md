@@ -2,41 +2,36 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 5,120 records / 68,625 B | 5.068–5.237 ms | 4.470 ms | 1.13–1.17× | `65ed` | Variable; 3.32% /2.18% |
+| CSV validation/helper calls | 5,120 records / 68,625 B | 4.975–4.976 ms | 4.497–4.550 ms | 1.09–1.11× | `4335` | Diagnostic; L0.02%, P1.19% / 1.88% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
-| Text summary/helpers | 3,072 lines / 35,840 B | 1.952–1.973 ms | 1.307 ms | 1.49–1.51× | `65ed` | Diagnostic; 1.04% /1.70% |
+| Text summary/helpers | 3,072 lines / 35,840 B | 1.966–2.008 ms | 1.270–1.276 ms | 1.54–1.58× | `4335` | Variable; L2.10%, P0.45% / 0.91% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 3.877–4.084 ms | 4.261 ms | 0.91–0.96× | `6f76` | Variable; 5.36% / 0.56% |
-| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.361–3.366 ms | 2.490 ms | 1.35–1.35× | `65ed` | Variable; 0.17% /4.81% |
-| Config edit | 181 B / one JSON file | 138.7–139.6 µs | 124.9–125.1 µs | 1.11–1.12× | `7c10` | Diagnostic; L0.67%, P0.18% /2.98% |
-| Protected file search | 2,049 lines /42,010 B; stop after 1,025 | 0.288–0.291 ms | 0.215 ms | 1.34–1.35× | `65ed` | Variable; 0.90% /3.57% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.494–3.567 ms | 2.478–2.489 ms | 1.40–1.44× | `4335` | Variable; L2.05%, P0.47% / 3.16% |
+| Config edit | 181 B / one JSON file | 140.6–141.3 µs | 125.8–126.6 µs | 1.11–1.12× | `4335` | Diagnostic; L0.52%, P0.64% / 2.30% |
+| Protected file search | 2,049 lines / 42,010 B; stop after 1,025 | 0.288–0.291 ms | 0.212–0.212 ms | 1.36–1.37× | `4335` | Variable; L0.72%, P0.06% / 5.92% |
 | Copy/checksum/manifest | two files /4,107 B | 0.384–0.384 ms | 0.260 ms | 1.47–1.48× | `4598` | Diagnostic; 0.14% /1.39% |
 
-**Sources: `7c10` = `7c10322c`-equivalent source, 2026-11-09; `65ed` = `65ed6cf7`, 2026-11-09; `4598` = `459813a3`, 2026-11-09;
-`6f76` = `6f76f99d`, 2026-11-08.** All use CPython 3.13.16 and .NET 11 RC3 on the same reference VM.
-The table measures **compilation plus one execution in an already-running host**,
-including mediated RAM-file I/O, complete output validation and prior-result
-cleanup. Worker/engine startup and fixture staging/reset are excluded.
-**Ratio = Lython elapsed / CPython elapsed; above one means slower.** Ranges span
-two independent Lython medians; the `7c10` config row also spans two CPython medians.
-Its ratio range includes all four process pairings, not confidence intervals.
-Control is the absolute process-median difference (Lython; config also reports
-Python as `P`). Max IQR includes both engines. Diagnostic/Variable describe short
-observations, not design acceptance thresholds. Inconclusive rows remain visible.
+The table measures **compilation plus one execution in an already-running host**.
+**Ratio = Lython elapsed / CPython elapsed; above one means slower.** It includes
+mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
+fixture staging/reset, protocol and final cache teardown are excluded.
 
-Each row describes its named source, not arbitrary later HEAD. The `7c10` config
-measurement reuses the verified nonincremental `cfeb99b0` freeze created before
-commit; every production source byte matches `7c10322c` and documentation-only
-`038f7fb4`. This is not a new post-commit binary. Its [three-phase config
-checkpoint](../benchmarks/results/2026-11-09-config-boundary/README.md) finishes
-three jobs/88.416s with two independent processes per engine and all output,
-ownership, quiet and cleanup gates. Performance and delivery qualification are
-separate; exact binaries and limits belong in the evidence.
+**Measured sources:** `4335` = `43350e4f`-equivalent production source, 2026-11-09;
+`6f76` = `6f76f99d`, 2026-11-08; `4598` = `459813a3`, 2026-11-09. All compare with
+stock CPython 3.13.16 on the same reference VM. The three older rows are historical;
+none describes arbitrary later HEAD.
 
-The [four-workload checkpoint](../benchmarks/results/2026-11-09-cpython-callable-checkpoint/README.md)
-measures `65ed`, before the later `58d3` scope correction: twelve jobs/250.847s.
-Other rows retain `4598`/`6f76`. Prior tables, adverse observations and qualification
-history are preserved behind those links. These ratios cannot attribute a gain
-to one optimization.
+The [current five-workload checkpoint](../benchmarks/results/2026-11-09-current-cpython-checkpoint/README.md)
+uses the freshly nonincremental R167 precommit freeze: every production source
+byte matches `43350e4f` and documentation-only `220732b7`. This is not a fresh
+postcommit binary. Exact cores, sources, workers and observations are linked there.
+
+Current ranges span two independent process medians **per engine**; ratio ranges
+include all four pairings, not confidence intervals. Controls report the absolute
+process-median difference for Lython (`L`) and CPython (`P`); max IQR covers both.
+Older rows report Lython control spread. Diagnostic/Variable describe observed
+stability, not design acceptance thresholds. Adverse and inconclusive cases remain
+visible. Separate checkpoints cannot attribute a gain to one optimization.
 
 ## Warm execution, compilation and startup
 
@@ -44,26 +39,26 @@ Warm execution reuses the compiled script and excludes compilation:
 
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 4.926–5.007 ms | 4.289 ms | 1.15–1.17× | `65ed` | Diagnostic; 1.65% /1.98% |
+| CSV validation/helper calls | 4.712–4.771 ms | 4.305–4.328 ms | 1.09–1.11× | `4335` | Diagnostic; L1.24%, P0.55% / 1.25% |
 | CSV summary/helpers | 3.282–3.302 ms | 3.201 ms | 1.03–1.03× | `6f76` | Diagnostic; 0.60% / 0.68% |
-| Text summary/helpers | 1.832–1.878 ms | 1.176 ms | 1.56–1.60× | `65ed` | Variable; 2.50% /2.26% |
+| Text summary/helpers | 1.897–1.945 ms | 1.159–1.164 ms | 1.63–1.68× | `4335` | Variable; L2.47%, P0.43% / 0.98% |
 | JSON-lines/helpers | 3.795–3.948 ms | 4.059 ms | 0.93–0.97× | `6f76` | Variable; 4.02% / 0.60% |
-| JSON-to-Markdown report | 3.199–3.222 ms | 2.338 ms | 1.37–1.38× | `65ed` | Diagnostic; 0.71% /2.17% |
-| Config edit | 78.7–79.0 µs | 61.6–62.1 µs | 1.27–1.28× | `7c10` | Diagnostic; L0.36%, P0.76% /1.45% |
-| Protected file search | 0.220–0.223 ms | 0.137 ms | 1.61–1.63× | `65ed` | Diagnostic; 1.36% /1.64% |
+| JSON-to-Markdown report | 3.204–3.274 ms | 2.328–2.571 ms | 1.25–1.41× | `4335` | Variable; L2.15%, P10.43% / 4.16% |
+| Config edit | 78.2–78.3 µs | 61.3–62.3 µs | 1.26–1.28× | `4335` | Diagnostic; L0.11%, P1.64% / 1.58% |
+| Protected file search | 0.220–0.226 ms | 0.137–0.139 ms | 1.59–1.65× | `4335` | Variable; L2.59%, P1.42% / 3.94% |
 | Copy/checksum/manifest | 0.243–0.247 ms | 0.155 ms | 1.56–1.59× | `4598` | Diagnostic; 1.72% /2.72% |
 
 Compilation alone includes code construction and disposal under the shared allowance:
 
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 70.4–71.0 µs | 65.8 µs | 1.07–1.08× | `65ed` | Variable; 0.75% /3.95% |
+| CSV validation/helper calls | 70.6–71.0 µs | 65.8–65.9 µs | 1.07–1.08× | `4335` | Variable; L0.54%, P0.08% / 3.88% |
 | CSV summary/helpers | 61.3–62.2 µs | 59.1 µs | 1.04–1.05× | `6f76` | Diagnostic; 1.46% / 0.89% |
-| Text summary/helpers | 44.0–44.1 µs | 41.7 µs | 1.05–1.06× | `65ed` | Diagnostic; 0.33% /1.82% |
+| Text summary/helpers | 44.1–44.7 µs | 41.3–41.4 µs | 1.07–1.08× | `4335` | Diagnostic; L1.52%, P0.23% / 1.02% |
 | JSON-lines/helpers | 52.9–53.0 µs | 50.9 µs | 1.04–1.04× | `6f76` | Diagnostic; 0.30% / 1.88% |
-| JSON-to-Markdown report | 40.7–41.1 µs | 37.9 µs | 1.07–1.09× | `65ed` | Diagnostic; 1.14% /1.70% |
-| Config edit | 36.5–36.7 µs | 34.4 µs | 1.06–1.07× | `7c10` | Diagnostic; L0.68%, P0.00% /2.14% |
-| Protected file search | 29.2–29.2 µs | 30.9 µs | 0.95–0.95× | `65ed` | Diagnostic; 0.18% /2.40% |
+| JSON-to-Markdown report | 41.2–41.8 µs | 37.6–37.8 µs | 1.09–1.11× | `4335` | Diagnostic; L1.35%, P0.58% / 2.87% |
+| Config edit | 36.8–37.1 µs | 34.1–34.3 µs | 1.07–1.09× | `4335` | Diagnostic; L0.96%, P0.40% / 0.56% |
+| Protected file search | 28.8–29.4 µs | 30.8–31.0 µs | 0.93–0.95× | `4335` | Variable; L2.04%, P0.70% / 1.41% |
 | Copy/checksum/manifest | 70.9–71.9 µs | 56.7 µs | 1.25–1.27× | `4598` | Diagnostic; 1.33% /0.62% |
 
 Startup, RSS/heap peaks, genuinely pending I/O and impact on other embedding work
@@ -71,40 +66,38 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 
 ## Measurement boundary and fairness
 
-Dedicated Azure F4as_v7, Ubuntu24.04.4, four AMD EPYC9V45vCPUs,16GiB/no swap.
+Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering; five-second
-warmup per role/job and seven rotated 150ms rounds. The config row uses core `cfeb`/worker `fec79`; `65ed` rows use core `082a`/worker
-`22331`. Optional adapter0.4 and the existing protocol remain unchanged; older rows
-retain their own frozen images. Source, fixtures, complete goldens and timing
-boundaries are identical between engines within each row. No newer regex producer
-is qualified by these timings.
+warmup per role/job and seven rotated 150 ms rounds. Current core `cc596abc`, common
+worker `fec79afd`, optional adapter 0.4 and the existing protocol. Older rows retain
+their frozen images. These timings do not qualify a newer regex producer.
 
-Identical scripts/fixtures run on both engines, with full stdout/file digests
-checked every invocation. Lython uses efficient mediated filesystem overrides;
-CPython uses builtin open. Lython opens include capability/path-component checks.
-RAM fixtures include guest reads/writes; fixture staging/reset and protocol are
-outside clocks. Warm includes invocation/prior-result cleanup. Compilation includes
-construction/disposal; compile-to-result adds it to execution. Final cached teardown
-is excluded. CPython retains imported modules; Lython isolates execution imports.
-This is an embedding comparison, not an isolated CPU kernel. Tables use synchronous
-Run; completed-I/O async diagnostics do not establish pending-I/O latency.
+Identical scripts and fixtures run on both engines, with complete stdout/file
+digests checked every invocation. Lython uses efficient mediated filesystem
+overrides; CPython uses builtin open. Lython opens include capability and path
+component checks. CPython retains imported modules; Lython isolates execution
+imports. Warm includes invocation and prior-result cleanup; compilation includes
+construction/disposal. Independent phase medians need not add up. External process
+CPU also includes reset/protocol and cannot establish an internal CPU cost.
+Tables use synchronous Run; completed-I/O async diagnostics do not establish
+pending-I/O latency. This is an embedding comparison, not an isolated CPU kernel.
 
 ## Coverage and uncertainty
 
-Four of eight rows use `65ed`; config uses `7c10`, CSV summary/JSON-lines remain
-`6f76`, and the manifest remains `4598`. Search has 2,049 physical input lines but exits at line 1,025; both engines
-run that same early exit. The manifest has two small files. These inputs do not
-establish large-tree/file throughput. Search warm execution remains 1.61–1.63×;
-the host-mediated whole-script ratio alone does not identify removable interpreter
-cost. Startup, genuinely pending I/O and impact on other embedding work remain
-unmeasured. R145's class-callable source-pair improvements below do not describe
-these unchanged main scripts or settle earlier report regression attribution.
-Guarded text and eager/streamed JSON normalization remain historical: warm
-1.76–1.78×,1.23–1.25× and0.61–0.62×, with compilation/startup unmeasured for these
-variants. [Prior guide and evidence](../benchmarks/results/2026-11-08-json-conditional-checkpoint/README.md)
-retain exact sources, adverse controls and boundaries. Inconclusive rows remain
-visible; separate checkpoints cannot attribute individual changes or settle all
-earlier regression debts.
+The five current workloads complete 15 jobs in 410.313 seconds with all identity,
+output, ownership, quiet, joined-worker and archived-evidence checks passing.
+Text warm/complete and search timings remain variable. JSON report warm CPython
+controls differ by 10.43%; that 1.25–1.41× range needs this qualification. Config
+and CSV execution are more stable. These observations do not settle earlier
+single-change regression debts or establish statistical significance.
+
+CSV summary/JSON-lines retain `6f76`; the two-small-file manifest retains `4598`.
+Search exits at line 1,025 of 2,049. Large-tree throughput and pending I/O remain
+unqualified. Earlier guarded-text and eager/streamed-JSON warm measurements
+(1.76–1.78×, 1.23–1.25× and 0.61–0.62×) are historical, with compilation/startup
+unmeasured. [Prior guide and evidence](../benchmarks/results/2026-11-08-json-conditional-checkpoint/README.md)
+and the [replaced checkpoint guide](../benchmarks/results/2026-11-09-current-cpython-checkpoint/prior-BENCHMARKS.md)
+preserve their exact sources and adverse controls.
 
 ## Improvements within Lython
 

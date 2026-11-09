@@ -6,12 +6,32 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R169 representative CPython checkpoint](results/2026-11-09-current-cpython-checkpoint/README.md)
+refreshes five complete scripts at43350e4f-equivalent production source, separately
+compile/warm/compile-to-result. Fifteen jobs410.313s, two independent processes per
+engine and all output/ownership/quiet/join/archive checks pass. Text and report
+controls remain variable; no individual-change gain follows. Three older main-guide
+rows remain historical. Offline catalog-path correction reruns analysis only.
+
+The [R170 immutable dev.59 adapter qualification](results/2026-11-09-regex-dev59/README.md)
+passes86internal/524public eachactual11/10 with the unchanged isolated dev55 bridge.
+Normal pins remain0.4; no core dependency, producer publication, safety or backend
+performance claim. Remaining preparation-owner/name-enumeration/creation-token
+bridges defer only affected final adapter qualification, never core development.
+
+The [R171 concurrent cancellation fixture correction](results/2026-11-09-comparison-cancellation-fixture/README.md)
+preserves the failed Windows10 Stress condition: comparison finished before any
+request. Controlled original2fail/corrected2pass snapshots reproduce the scheduler
+assumption without runtime changes. Normal focused7each11/10 pass; original sizes,
+timeouts, joined workers and exact ownership assertions remain. Full delivery retries
+separately; no performance retiming for this fixture-only change.
+
 The [R168 native-return source gate](results/2026-11-09-native-return-source-gate/README.md)
 retains the borrowed-input/no-workspace optimization: ordinary calls already defer
 contexts but need array-backed value storage. Primitive semantics/facts are shared.
 Unification needs a real storage redesign; no new accessor/arena/prototype or CPU
 claim follows. Prior slower arena/control work remains evidence, not a permanent
-veto. Next: representative external-baseline delivery checkpoint.
+veto. The representative external-baseline checkpoint is now recorded as R169.
 
 The [R167 native text-construction milestone](results/2026-11-09-native-text-construction/README.md)
 removes per-fragment accounting/payload-result plumbing and commits complete native
@@ -19,7 +39,9 @@ split/ordinary CSV results together.386internal/824public eachactual11/10 pass;
 three corrected cancellation regressions fail frozen old balances. Quiet4job115.748s
 accepts possible CSV+0.76–4.23% elapsed cost for rollback correctness; text overlaps
 controls, adverse async controls do not reproduce. Allocation flat; no CPU/equivalence
-claim. Original source/timing/fixture/space failures remain. Full delivery pending.
+claim. Original source/timing/fixture/space failures remain. Full delivery42661297753
+passed Ubuntu and ordinary/package Windows checks; Windows10 Stress exposed the
+separate R171 fixture race. Full corrected-fixture delivery retries independently.
 
 The [R166 current whole-text attribution](results/2026-11-09-current-text-runtime/README.md)
 reuses the96e-equivalent freeze, one5.856s capture/5.77guestCPU/1147guest samples.

@@ -1,0 +1,5 @@
+{
+  "error": "Offline summarizer expected a local representative.json; payload used a verified persistent catalog link.",
+  "correction": "Copy the SHA-verified catalog from the already locally verified archive; no timed data or collection changes.",
+  "rerunCollection": false
+}
