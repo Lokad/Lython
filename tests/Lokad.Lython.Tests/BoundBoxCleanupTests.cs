@@ -61,7 +61,7 @@ public sealed class BoundBoxCleanupTests
         };
         var fun = new PyFunction(
             "f",
-            new FunctionParameterLayout(parameters),
+            FunctionParameterLayout.Create(parameters),
             [],
             closure,
             new Dictionary<string, object>(),

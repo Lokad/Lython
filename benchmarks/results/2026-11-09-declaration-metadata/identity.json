@@ -1,0 +1,28 @@
+{
+  "baseline": "Fully qualified9f2e/core85e, cachedCI42538659198success; never requery",
+  "candidate": "R127 canonical declaration metadata working prototype afterca6; docs-only delivery commit leaves production source unchanged",
+  "coreSHA256": {
+    "before": "85e68bf6d06297ecf8cac1a50f1150ef6be59f431bd9e0c18ea3fc4dcc625e71",
+    "candidate": "ac6bda6e26430beb475bacfc9abed4e560a55929dac26e7c95eb99b151479699"
+  },
+  "changedSources": {
+    "src/Lokad.Lython/Frontend/AbstractValue.cs": "13ec8e17864c04bd0c1ca9f32f6724cde0f03a87c5d5c63944e67bc5247c219d",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Comprehensions.cs": "779280c1c865cdd78e81a620a9181b4e8c4eb78ebb6f3a632ab2557ab13ead2b",
+    "src/Lokad.Lython/Frontend/FunctionParameterLayout.cs": "c4265c7cd001f5cc02f26df4c3548af6ac75985f850c3dc66ca748eaa3046c82",
+    "src/Lokad.Lython/Frontend/LoweredExpression.cs": "c714dfe9a002749e56566ed7e3472dffeff004d25d6ed3471119eb40ef3a907a",
+    "src/Lokad.Lython/Frontend/LoweredStatement.cs": "08801c37c817d2d0a40dba68a4f0e072a626264e9fa76cd0772478326fd57fe1",
+    "src/Lokad.Lython/Frontend/ScopeDirectiveFacts.cs": "8a1123021bc3f7c7fb2c89f3dbdb8cc4e4a94959d47541bbd87d892396401a00",
+    "src/Lokad.Lython/Frontend/StaticBindingEngine.CallResolution.cs": "d800ff01350536e3b01c1d2ab9a22c77662029a036f7d41c2bb4548067744fac",
+    "src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs": "df8dfbb0959d05cb6e4f2186ffb4c8d48de831978255653d0c714ac2f9eed5a5",
+    "src/Lokad.Lython/Frontend/Syntax.cs": "68328c555f135f74be07c89c3e80fa4fe764a940afca32dcb5b359941e10d72a",
+    "src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs": "04ccd1a6b23db573c558ad29385b4c6967e80748f01d9e9d43dc655ac7d9b501",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "010e8a8aed5d96f747decdf23d6bb49f66cd73bbb3f0841e465aeca543170092",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs": "344c0e07f5dcc261e4b10dd572fbb3b47b2927bfb710d0d7c2de4817c2236cc7",
+    "src/Lokad.Lython/Runtime/PyFunctionBinding.cs": "0c32f32a4b613d5060b72d3d7aa777567991aeb42b320ce6c90994fff80a7ab2",
+    "tests/Lokad.Lython.Tests/BoundBoxCleanupTests.cs": "e4e147e96f165231d866d1af5acd8e9ffc86d2b2d98f302b9be4c2680bbc2652",
+    "tests/Lokad.Lython.Tests/FunctionAttributeAccountingTests.cs": "5828eae98b91e8b64b37e86dff6d4fd73a58f779b58d80a8eb065602eeaf6299"
+  },
+  "patchBase": "ca6e89e4/9f2e production; all unlisted tracked production paths unchanged",
+  "qualification": "41internal/360public eachactual11/10 pass; full candidate delivery pending",
+  "contract": "No public API or allocator policy change; coarse compilation/dynamic signature estimates unchanged. Actual allocation reduction need not reduce admitted allowance."
+}

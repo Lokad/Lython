@@ -4959,3 +4959,26 @@ observed Nov9 00:35:33UTC, Windows/Ubuntu actual11/10 fullRelease/originalStress
 installedcore. [Receipt](results/2026-11-09-dispatch-liveness/delivery-ci.json).
 Terminal cached, never requery. Later R127 declaration-layout prototype remains
 independent; performance uncertainty/debts survive. Publication postponed.
+
+
+## Shared function-declaration metadata (2026-11-09 Paris)
+
+[R127/B487](results/2026-11-09-declaration-metadata/README.md), qualified9f2e/core85e
+versus prototypeac6b. One declaration-owned flat signature replaces redundant role
+arrays/lowered-parameter retention, per-shape keyword maps, repeated inferred-call
+generator scans and synthetic lowered parameters used only for lexical names.
+Captured flow states, mutable defaults/annotations, general binding and existing
+admission/cleanup remain distinct. No registry, guard, owner, carrier or public API.
+41internal/360public plus23internal/149public focused cases peractual11/10 pass.
+Compilation allocation−0.10..−0.32%, warm allocation neutral within0.066%; no admitted
+allowance reduction. Original desktop sync CSV+13..15%/text+21..22% preserved.
+B487 six quiet jobs168.433s/allgates/archive/localpass: validated CSV+0.36..+1.06%,
+CSVsummary−0.25..+1.61%, text−3.50..−0.91%, JSON−1.79..+1.43%, report−3.02..−0.05%,
+async text−3.22..−1.00%. Coarse CPU mixed except supporting async text−2.70%.
+Large desktop adverse timings do not reproduce; possible small CSV debt remains.
+Retain coherent metadata simplification, no universal speedup/neutrality claim or
+unchanged retiming selected. Full candidate delivery pending; broader objective open.
+Space plan preceded exact-byte links for eight singleton compiler-library aliases,
+56,131,584B recovered with historical paths/bytes/metadata preserved. Original
+Windows argument-length launch failure and corrected stdin transport retained.
+All users joined/RAM removed/archive verified locally; terminal cached. Publication postponed.

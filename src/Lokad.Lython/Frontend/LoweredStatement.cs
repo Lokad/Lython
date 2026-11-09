@@ -52,7 +52,7 @@ internal sealed record LoweredFunctionDefinitionStatement(
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
     private readonly (FunctionParameterLayout Layout, ExecutableCodeObject? Generator) _preparedParameters =
-        PrepareParameters(Syntax, Parameters, Body, ScopeFacts);
+        PrepareParameters(Syntax, Body, ScopeFacts);
     public FunctionParameterLayout ParameterLayout => _preparedParameters.Layout;
     // Class suites still execute lowered; their ordinary method bodies are
     // prepared once, without retaining an unused second lowered body.
@@ -62,11 +62,11 @@ internal sealed record LoweredFunctionDefinitionStatement(
     public ExecutableCodeObject? GeneratorCode => _preparedParameters.Generator;
 
     private static (FunctionParameterLayout, ExecutableCodeObject?) PrepareParameters(
-        FunctionDefinitionStatementSyntax syntax, IReadOnlyList<LoweredFunctionParameter> parameters,
+        FunctionDefinitionStatementSyntax syntax,
         IReadOnlyList<LoweredStatement> body, ScopeDirectiveFacts facts)
     {
-        var layout = new FunctionParameterLayout(parameters);
-        return (layout, GeneratorSyntaxFacts.IsGenerator(syntax.Body)
+        var layout = syntax.ParameterLayout;
+        return (layout, syntax.IsGenerator
             ? ExecutableScript.CompileGenerator(layout, body, facts) : null);
     }
 }

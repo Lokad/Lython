@@ -10,7 +10,8 @@ internal static partial class StaticBindingEngine
         [MaybeNullWhen(false)] out AbstractFunctionSummary summary)
     {
         if (functionDefinition.Decorators.Count != 0 ||
-            functionDefinition.Parameters.Any(static parameter => parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary) ||
+            functionDefinition.ParameterLayout.VariadicListIndex >= 0 ||
+            functionDefinition.ParameterLayout.VariadicDictionaryIndex >= 0 ||
             ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body) ||
             !IsStraightLineSummaryBody(functionDefinition.Body))
         {
@@ -24,7 +25,7 @@ internal static partial class StaticBindingEngine
         // a same-named value inferred in the defining module or outer function.
         if (functionDefinition.TypeParameters is { } typeParameters)
             foreach (var typeParameter in typeParameters) capturedBindings.Remove(typeParameter.Name);
-        summary = new AbstractFunctionSummary(functionDefinition.Parameters, functionDefinition.Body, capturedBindings, functionDefinition.Span);
+        summary = new AbstractFunctionSummary(functionDefinition, capturedBindings);
         return true;
     }
 
@@ -88,13 +89,15 @@ internal static partial class StaticBindingEngine
     }
 
     private static bool TryGetParameterCallShapeFailure(
-        IReadOnlyList<FunctionParameterSyntax> parameters,
+        AbstractFunctionSummary summary,
         int firstParameterIndex,
         ConcreteCallArguments arguments,
         out string reason,
         out ExpressionSyntax? offendingExpression)
     {
-        if (parameters.Any(static parameter => parameter.Kind is FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary))
+        var parameters = summary.Parameters;
+        var layout = summary.ParameterLayout;
+        if (layout.VariadicListIndex >= 0 || layout.VariadicDictionaryIndex >= 0)
         {
             reason = string.Empty;
             offendingExpression = null;
@@ -112,29 +115,7 @@ internal static partial class StaticBindingEngine
         Span<bool> assigned = effectiveParameterCount <= 128
             ? stackalloc bool[effectiveParameterCount]
             : new bool[effectiveParameterCount];
-        Dictionary<string, int>? parameterIndices = arguments.Keywords.Count == 0
-            ? null
-            : new Dictionary<string, int>(effectiveParameterCount, StringComparer.Ordinal);
-
-        var positionalParameterCount = 0;
-        for (var parameterIndex = firstParameterIndex; parameterIndex < parameters.Count; parameterIndex++)
-        {
-            var effectiveIndex = parameterIndex - firstParameterIndex;
-            var parameter = parameters[parameterIndex];
-            if (parameter.Kind != FunctionParameterKind.PositionalOnly) parameterIndices?.Add(parameter.Name, effectiveIndex);
-            if (parameter.Kind is not (FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly))
-            {
-                continue;
-            }
-
-            if (positionalParameterCount < arguments.Positional.Count)
-            {
-                assigned[effectiveIndex] = true;
-            }
-
-            positionalParameterCount++;
-        }
-
+        var positionalParameterCount = Math.Max(0, layout.PositionalCount - firstParameterIndex);
         if (arguments.Positional.Count > positionalParameterCount)
         {
             reason = "too many positional arguments";
@@ -142,15 +123,19 @@ internal static partial class StaticBindingEngine
             return true;
         }
 
+        assigned[..arguments.Positional.Count].Fill(true);
         foreach (var (keyword, expression) in arguments.Keywords)
         {
-            if (parameterIndices is null || !parameterIndices.TryGetValue(keyword, out var effectiveIndex))
+            if (!layout.LayoutParameterIndex.TryGetValue(keyword, out var parameterIndex) ||
+                parameterIndex < firstParameterIndex || parameterIndex < layout.PositionalOnlyCount ||
+                parameterIndex >= layout.NamedLayoutCount)
             {
                 reason = $"unexpected keyword '{keyword}'";
                 offendingExpression = expression;
                 return true;
             }
 
+            var effectiveIndex = parameterIndex - firstParameterIndex;
             if (assigned[effectiveIndex])
             {
                 reason = $"duplicate binding for '{keyword}'";

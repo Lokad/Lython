@@ -183,9 +183,11 @@ name sets only when introducing bindings; unchanged scopes share their read-only
 inherited set. Lexical scope preparation
 follows parsing/name rewriting; analysis, lowering and class creation reuse those
 immutable function/class/lambda facts. They belong to the compiled program,
-without a cross-script cache. Parameter classifications, argument layout arrays
-and name-to-slot maps also belong to the prepared definition and are shared by its
-created functions. Executable local slots use that same prepared parameter order,
+without a cross-script cache. A function declaration also owns one flat parameter
+name/slot table, role counts and generator classification, shared by analysis,
+lowering and its created functions. Flow-dependent abstract bindings stay separate;
+no per-call keyword-shape map or repeated generator-body scan is needed.
+Executable local slots use that same prepared parameter order,
 then append body locals. Mutable defaults, keyword-name values, attributes and closures
 remain function-owned. Native generated definitions admit their layout before
 allocation and keep its construction overlap funded through default creation.

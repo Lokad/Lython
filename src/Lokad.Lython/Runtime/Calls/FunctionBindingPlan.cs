@@ -18,29 +18,29 @@ internal sealed class FunctionBindingPlan
         CallableName = callableName;
         CallableKind = callableKind;
         var governor = context?.MemoryGovernor;
-        var nameStorageBytes = KeywordOnlyParameters.Count == 0 ? 0 : 32L + 8L * KeywordOnlyParameters.Count;
+        var nameStorageBytes = KeywordOnlyCount == 0 ? 0 : 32L + 8L * KeywordOnlyCount;
         governor?.Reserve(nameStorageBytes, null);
-        try { KeywordDefaultNames = KeywordOnlyParameters.Count == 0 ? [] : new PyString[KeywordOnlyParameters.Count]; }
+        try { KeywordDefaultNames = KeywordOnlyCount == 0 ? [] : new PyString[KeywordOnlyCount]; }
         catch { governor?.ReleaseReserved(nameStorageBytes); throw; }
         governor?.Commit(nameStorageBytes);
         try
         {
             for (var i = 0; i < KeywordDefaultNames.Length; i++)
                 KeywordDefaultNames[i] = context is null
-                    ? PyString.FromString(KeywordOnlyParameters[i].Name)
-                    : PyString.FromString(KeywordOnlyParameters[i].Name, context.MemoryGovernor, null);
+                    ? PyString.FromString(NameAt(PositionalCount + i))
+                    : PyString.FromString(NameAt(PositionalCount + i), context.MemoryGovernor, null);
 
-            var firstDefault = PositionalParameters.Count;
-            while (firstDefault > 0 && defaultValues.ContainsKey(PositionalParameters[firstDefault - 1].Name)) firstDefault--;
-            var count = PositionalParameters.Count - firstDefault;
+            var firstDefault = PositionalCount;
+            while (firstDefault > 0 && defaultValues.ContainsKey(NameAt(firstDefault - 1))) firstDefault--;
+            var count = PositionalCount - firstDefault;
             if (count != 0)
                 PositionalDefaults = context is null
-                    ? new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[PositionalParameters[i].Name]))
-                    : new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[PositionalParameters[i].Name]), context.MemoryGovernor);
+                    ? new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[NameAt(i)]))
+                    : new PyTuple(Enumerable.Range(firstDefault, count).Select(i => defaultValues[NameAt(i)]), context.MemoryGovernor);
 
-            for (var i = 0; i < KeywordOnlyParameters.Count; i++)
+            for (var i = 0; i < KeywordOnlyCount; i++)
             {
-                if (!defaultValues.TryGetValue(KeywordOnlyParameters[i].Name, out var value)) continue;
+                if (!defaultValues.TryGetValue(NameAt(PositionalCount + i), out var value)) continue;
                 var dictionary = KeywordDefaultStorage;
                 if (dictionary is null)
                 {
@@ -75,7 +75,7 @@ internal sealed class FunctionBindingPlan
         var bytes = FunctionParameterLayout.EstimateBytes(parameters.Count);
         using var storage = context?.MemoryGovernor.ReserveTemporary(bytes, null);
         var result = new FunctionBindingPlan(callableName, callableKind,
-            new FunctionParameterLayout(parameters), defaultValues, context);
+            FunctionParameterLayout.Create(parameters), defaultValues, context);
         storage?.Commit(bytes);
         return result;
     }
@@ -84,9 +84,13 @@ internal sealed class FunctionBindingPlan
 
     public PythonCallableKind CallableKind { get; }
 
-    public IReadOnlyList<LoweredFunctionParameter> PositionalParameters => _layout.PositionalParameters;
+    public int PositionalCount => _layout.PositionalCount;
 
-    public IReadOnlyList<LoweredFunctionParameter> KeywordOnlyParameters => _layout.KeywordOnlyParameters;
+    public int ParameterCount => _layout.ParameterCount;
+
+    public string NameAt(int index) => _layout.NameAt(index);
+
+    public int KeywordOnlyCount => _layout.KeywordOnlyCount;
 
     // Flat call-time layout: positional, then keyword-only, then variadic
     // names. Prepared once per definition and shared across functions; per-call
@@ -104,9 +108,9 @@ internal sealed class FunctionBindingPlan
 
     public int PositionalOnlyCount => _layout.PositionalOnlyCount;
 
-    public LoweredFunctionParameter? VariadicList => _layout.VariadicList;
+    public int VariadicListIndex => _layout.VariadicListIndex;
 
-    public LoweredFunctionParameter? VariadicDictionary => _layout.VariadicDictionary;
+    public int VariadicDictionaryIndex => _layout.VariadicDictionaryIndex;
 
     public object? PositionalDefaults { get; private set; }
     public object? KeywordDefaults { get; private set; }
@@ -124,7 +128,7 @@ internal sealed class FunctionBindingPlan
     {
         if (PositionalDefaults is { } defaults && PyTupleLike.TryGetItems(defaults, out var items))
         {
-            var index = parameterIndex - (PositionalParameters.Count - items.Count);
+            var index = parameterIndex - (PositionalCount - items.Count);
             if (index >= 0 && index < items.Count)
             {
                 value = items[index];

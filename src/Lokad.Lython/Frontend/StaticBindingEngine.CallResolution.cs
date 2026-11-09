@@ -9,7 +9,7 @@ internal static partial class StaticBindingEngine
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (GeneratorSyntaxFacts.IsGenerator(summary.Body) ||
+        if (summary.IsGenerator ||
             !TryBindFunctionArguments(summary, arguments, callBindings, out var functionBindings) ||
             !TryInferStraightLineReturn(summary.Body, functionBindings, out var returnValue))
         {
@@ -116,7 +116,7 @@ internal static partial class StaticBindingEngine
     {
         var instance = instanceValue.RequireInstanceSummary();
         if (!instance.Class.Methods.TryGetValue(methodName, out var methodSummary) ||
-            GeneratorSyntaxFacts.IsGenerator(methodSummary.Body) ||
+            methodSummary.IsGenerator ||
             !TryBindInstanceMethodArguments(methodSummary, instanceValue, arguments, callBindings, out var methodBindings) ||
             !TryInferStraightLineReturn(methodSummary.Body, methodBindings, out value))
         {
@@ -134,7 +134,7 @@ internal static partial class StaticBindingEngine
         out string reason,
         out ExpressionSyntax? offendingExpression)
         => TryGetParameterCallShapeFailure(
-            summary.Parameters,
+            summary,
             firstParameterIndex: 0,
             arguments,
             out reason,
@@ -156,7 +156,7 @@ internal static partial class StaticBindingEngine
         }
 
         return TryGetParameterCallShapeFailure(
-            methodSummary.Parameters,
+            methodSummary,
             firstParameterIndex: 1,
             arguments,
             out reason,

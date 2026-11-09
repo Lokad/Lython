@@ -54,14 +54,18 @@ internal static class ScopeDirectiveFactsCollector
         IReadOnlyList<LoweredFunctionParameter> parameters,
         IReadOnlyList<StatementSyntax> body,
         bool includeClassCellRequirement = true)
+        => CollectFunctionBindings(parameters.Select(parameter => parameter.Name), body, includeClassCellRequirement);
+
+    private static ScopeDirectiveFacts CollectFunctionBindings(IEnumerable<string> parameterNames,
+        IReadOnlyList<StatementSyntax> body, bool includeClassCellRequirement = true)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
 
         var bindings = new List<string>();
-        foreach (var parameter in parameters)
+        foreach (var name in parameterNames)
         {
-            bindings.Add(parameter.Name);
+            bindings.Add(name);
         }
 
         var containsAnnotations = CollectScopeBindings(body, bindings, globalNames, nonlocalNames);
@@ -84,17 +88,13 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
     {
-        return functionDefinition.PreparedScopeFacts ??= ForFunction(
-            functionDefinition.Parameters.Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                Annotation: null,
-                DefaultValue: null)).ToArray(),
+        return functionDefinition.PreparedScopeFacts ??= CollectFunctionBindings(
+            functionDefinition.Parameters.Select(parameter => parameter.Name),
             functionDefinition.Body);
     }
 
     internal static ScopeDirectiveFacts ForFunctionBindings(FunctionDefinitionStatementSyntax definition)
-        => definition.PreparedScopeFacts ?? ForFunction(definition.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(),
+        => definition.PreparedScopeFacts ?? CollectFunctionBindings(definition.Parameters.Select(p => p.Name),
             definition.Body, includeClassCellRequirement: false);
 
     public static HashSet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
@@ -107,8 +107,11 @@ internal static class ScopeDirectiveFactsCollector
     }
 
     public static ScopeDirectiveFacts ForLambda(IReadOnlyList<LoweredFunctionParameter> parameters, ExpressionSyntax body)
+        => CollectLambdaBindings(parameters.Select(parameter => parameter.Name), body);
+
+    private static ScopeDirectiveFacts CollectLambdaBindings(IEnumerable<string> parameterNames, ExpressionSyntax body)
     {
-        var bindings = parameters.Select(p => p.Name).ToList();
+        var bindings = parameterNames.ToList();
         CollectExpressionBindings(body, bindings);
         var locals = new HashSet<string>(bindings, StringComparer.Ordinal);
         return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals,
@@ -120,8 +123,8 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
     {
-        return lambda.PreparedScopeFacts ??= ForLambda(
-            lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(), lambda.Body);
+        return lambda.PreparedScopeFacts ??= CollectLambdaBindings(
+            lambda.Parameters.Select(parameter => parameter.Name), lambda.Body);
     }
 
     private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);

@@ -44,8 +44,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _nameValue = callableKind == PythonCallableKind.Lambda
             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
         _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaultValues, closure);
-        SupportsPositionalBinding = _bindingPlan.KeywordOnlyParameters.Count == 0 &&
-            _bindingPlan.VariadicList is null && _bindingPlan.VariadicDictionary is null;
+        SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
+            _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
         _scopeFacts = scopeFacts;
     }
 
@@ -99,7 +99,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     // No defaults, receiver insertion or dynamic binding during the borrow.
     internal bool CanBorrowPositionalArguments(int count, object? receiver)
-        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalParameters.Count;
+        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalCount;
 
     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
     protected abstract bool RequiresArgumentMirroring { get; }

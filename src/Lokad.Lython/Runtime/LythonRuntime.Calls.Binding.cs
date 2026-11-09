@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
     private static BoundCallArguments RentFunctionArgumentStorage(
         FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor governor, int? storageCapacity)
     {
-        var parameterCount = plan.LayoutParameterNames.Count;
+        var parameterCount = plan.ParameterCount;
         var capacity = storageCapacity ?? parameterCount;
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, parameterCount);
         // One execution-owned cleared workspace covers final capacity, metadata
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
         try
         {
             var offset = receiver is null ? 0 : 1;
-            if (arguments.Length > plan.PositionalParameters.Count - offset)
+            if (arguments.Length > plan.PositionalCount - offset)
                 throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
             var assigned = storage.Assigned;
             if (receiver is not null)
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
             for (var i = arguments.Length + offset; i < assigned.Length; i++)
             {
                 if (!plan.TryGetPositionalDefault(i, out var value))
-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.PositionalParameters[i].Name, span);
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
                 values[i] = value;
             }
             return storage with { Assigned = assigned };
@@ -129,16 +129,16 @@ internal sealed partial class LythonRuntime
         var values = bound.Values;
         try
         {
-            for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
+            for (var k = 0; k < plan.KeywordOnlyCount; k++)
             {
-                var index = plan.PositionalParameters.Count + k;
+                var index = plan.PositionalCount + k;
                 if (bound.Assigned[index]) continue;
                 var defaults = plan.KeywordDefaultStorage;
                 if (defaults is null)
-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(plan.PositionalCount + k), span);
                 var value = await defaults.TryGetKeyAsync(plan.KeywordDefaultNames[k], context, span).ConfigureAwait(false);
                 if (!value.Found)
-                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.KeywordOnlyParameters[k].Name, span);
+                    throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(plan.PositionalCount + k), span);
                 values[index] = value.Value;
             }
             return bound;
@@ -184,9 +184,9 @@ internal sealed partial class LythonRuntime
                 : CreateExecutableCallArgument(callSite.Arguments[argumentIndex], operands[argumentIndex].RequireNotNull());
             if (argument.IsPositional)
             {
-                if (positionalIndex >= plan.PositionalParameters.Count)
+                if (positionalIndex >= plan.PositionalCount)
                 {
-                    if (plan.VariadicList is null)
+                    if (plan.VariadicListIndex < 0)
                     {
                         throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
                     }
@@ -210,7 +210,7 @@ internal sealed partial class LythonRuntime
             if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
                 keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
             {
-                if (plan.VariadicDictionary is null)
+                if (plan.VariadicDictionaryIndex < 0)
                 {
                     throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
                 }
@@ -233,14 +233,14 @@ internal sealed partial class LythonRuntime
             assigned[keywordIndex] = true;
         }
 
-        for (var i = 0; i < plan.PositionalParameters.Count; i++)
+        for (var i = 0; i < plan.PositionalCount; i++)
         {
             if (assigned[i])
             {
                 continue;
             }
 
-            var parameterName = plan.PositionalParameters[i].Name;
+            var parameterName = plan.NameAt(i);
             if (plan.TryGetPositionalDefault(i, out var defaultValue))
             {
                 values[i] = defaultValue;
@@ -250,15 +250,15 @@ internal sealed partial class LythonRuntime
             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
-        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyParameters.Count; k++)
+        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyCount; k++)
         {
-            var i = plan.PositionalParameters.Count + k;
+            var i = plan.PositionalCount + k;
             if (assigned[i])
             {
                 continue;
             }
 
-            var parameterName = plan.KeywordOnlyParameters[k].Name;
+            var parameterName = plan.NameAt(plan.PositionalCount + k);
             var keywordDefaults = plan.KeywordDefaultStorage;
             if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
             {
@@ -269,9 +269,9 @@ internal sealed partial class LythonRuntime
             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
-        if (plan.VariadicList is not null)
+        if (plan.VariadicListIndex >= 0)
         {
-            var variadicIndex = plan.LayoutParameterIndex[plan.VariadicList.Name];
+            var variadicIndex = plan.VariadicListIndex;
             var overflow = extraPositional;
             if (overflow is null || overflow.Count == 0)
             {
@@ -286,7 +286,7 @@ internal sealed partial class LythonRuntime
             assigned[variadicIndex] = true;
         }
 
-        if (plan.VariadicDictionary is not null)
+        if (plan.VariadicDictionaryIndex >= 0)
         {
             var keywordDict = new PyDict(context.MemoryGovernor, span);
             if (extraKeywords is not null)
@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
                     keywordDict.SetItem(keyword, pair.Value);
                 }
             }
-            var keywordDictIndex = plan.LayoutParameterIndex[plan.VariadicDictionary.Name];
+            var keywordDictIndex = plan.VariadicDictionaryIndex;
             values[keywordDictIndex] = keywordDict;
             assigned[keywordDictIndex] = true;
         }

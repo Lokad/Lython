@@ -1,0 +1,15 @@
+{
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "eachTarget": {
+    "internalInitial": 41,
+    "publicInitial": 360,
+    "internalAdditional": 23,
+    "publicAdditional": 149
+  },
+  "testChanges": "Four internal fixture constructor calls only; no assertions removed or relaxed",
+  "fullDelivery": "Pending coherent delivery checkpoint; R126 CI qualifies9f2e/core85e only",
+  "decision": "Retain declaration metadata consolidation; small compilation allocation reduction, no general CPU gain claim; possible CSV elapsed debt remains"
+}

@@ -16,8 +16,8 @@ internal static class PyFunctionBinding
     {
         var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
         frame.FunctionName = bindingPlan.CallableName;
-        frame.FirstPositionalParameterName = bindingPlan.PositionalParameters.Count == 0
-            ? null : bindingPlan.PositionalParameters[0].Name;
+        frame.FirstPositionalParameterName = bindingPlan.PositionalCount == 0
+            ? null : bindingPlan.NameAt(0);
         if (mirrorBoundArguments)
         {
             var layoutNames = bindingPlan.LayoutParameterNames;

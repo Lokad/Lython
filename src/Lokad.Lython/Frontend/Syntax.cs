@@ -340,6 +340,13 @@ internal sealed record FunctionDefinitionStatementSyntax(
     internal ScopeDirectiveFacts? PreparedScopeFacts { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
+
+    // Parsing and name rewriting finish before declaration facts are consumed.
+    // Flow-dependent captured values remain with each abstract/runtime function.
+    private FunctionParameterLayout? _parameterLayout;
+    private bool? _isGenerator;
+    internal FunctionParameterLayout ParameterLayout => _parameterLayout ??= FunctionParameterLayout.FromSyntax(Parameters);
+    internal bool IsGenerator => _isGenerator ??= GeneratorSyntaxFacts.IsGenerator(Body);
 }
 
 internal sealed record ClassDefinitionStatementSyntax(

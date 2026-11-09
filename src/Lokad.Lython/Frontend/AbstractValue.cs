@@ -111,10 +111,15 @@ internal enum AbstractTextFileMode
 }
 
 internal sealed record AbstractFunctionSummary(
-    IReadOnlyList<FunctionParameterSyntax> Parameters,
-    IReadOnlyList<StatementSyntax> Body,
-    AbstractState CapturedBindings,
-    LythonSourceSpan Span);
+    FunctionDefinitionStatementSyntax Declaration,
+    AbstractState CapturedBindings)
+{
+    public IReadOnlyList<FunctionParameterSyntax> Parameters => Declaration.Parameters;
+    public IReadOnlyList<StatementSyntax> Body => Declaration.Body;
+    public LythonSourceSpan Span => Declaration.Span;
+    public FunctionParameterLayout ParameterLayout => Declaration.ParameterLayout;
+    public bool IsGenerator => Declaration.IsGenerator;
+}
 
 internal sealed record AbstractRegexPatternSummary(
     string? PatternText,
