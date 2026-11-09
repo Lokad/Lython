@@ -77,6 +77,12 @@ four failures, then 31 focused checks pass per actual .NET11/10. No runtime chan
 retiming. Later .NET10/package/Stress stages await corrected delivery qualification.
 [Failed delivery](failed-delivery-ci.json), [original logs and focused correction](mirroring-cleanup.tar.xz).
 
+Corrected delivery CI42579357509/source27353cfb is cached terminal success:
+Windows and Ubuntu, actual .NET11/10, original Stress on both platforms and
+installed Release core-package consumers all pass. This source changes only the
+obsolete assertions above; production remains081052fa. Qualification is complete;
+no timing replay or final-binary performance claim. [Successful delivery](delivery-ci.json).
+
 [Quiet summary](summary.json), [raw observations and exact cores/tooling](observations.tgz),
 [desktop adversity](local-summary.json), [compile allocation](compile-allocation.json),
 [delivery source differences and focused checks](delivery-source.json),

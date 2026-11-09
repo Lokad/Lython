@@ -5288,6 +5288,10 @@ Test-only27353cfb removes that expectation and unused flags, keeping every sourc
 operand/mutation/alias/admission/cleanup assertion. Four failures reproduced;31
 focused pass peractual11/10. Originalfailure/logs preserved; corrected delivery batches.
 
+Corrected delivery42579357509/source27353cfb is cached terminal success on Windows/
+Ubuntu, actual11/10, original Stress both and installed Release core consumers.
+Production remains081052fa; R142 is fully qualified, without repeated timing.
+
 ## Current file-search call and frame attribution (2026-11-09 Paris)
 
 [R143/B501](results/2026-11-09-search-runtime-attribution/README.md), fresh081052fa/
