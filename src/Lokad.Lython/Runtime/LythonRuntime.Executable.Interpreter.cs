@@ -80,7 +80,6 @@ internal sealed partial class LythonRuntime
             _entryActiveException = null;
             _caller = null;
             _boundStorageOwner = null;
-            _boundStorageBytes = 0;
             _pendingCallSite = null;
             _pendingFunction = null;
             _pendingReceiver = null;

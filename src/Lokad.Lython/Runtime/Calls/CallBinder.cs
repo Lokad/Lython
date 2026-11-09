@@ -3,8 +3,7 @@ namespace Lokad.Lython.Runtime;
 internal readonly record struct BoundCallArguments(
     object[] Values,
     ArgumentPresence Assigned,
-    MemoryGovernor? StorageOwner = null,
-    long StorageBytes = 0);
+    MemoryGovernor? StorageOwner = null);
 
 internal struct ArgumentPresence
 {

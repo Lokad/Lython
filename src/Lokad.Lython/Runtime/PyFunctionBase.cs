@@ -156,7 +156,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundArguments(boundArguments);
+            LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.Assigned.Length);
         }
     }
 
@@ -216,7 +216,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundArguments(boundArguments);
+            LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.Assigned.Length);
         }
     }
 

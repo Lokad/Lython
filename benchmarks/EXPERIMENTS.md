@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R154 function-workspace capacity milestone](results/2026-11-09-workspace-capacity/README.md)
+removes two byte ledgers and exact-size eviction from the existing execution-owned
+idle cache. Actual capacity stays funded through smaller logical loans; no new
+pool or ownership layer. A deferred-prefix reference-retirement regression failed
+in both APIs before correction; original source/failures are retained. Focused
+actual11/10 pass832 internal/3184 public per framework. Nested-constructor CSV
+allocation−0.81%; ordinary/compile unchanged. Original async-text adversity and
+corrected identical-control spread26.43% prevent a CPU claim. Both frozen source
+pairs and raw results survive; full qualification is batched with the next fix.
+
 The [R27 execution source gate](results/2026-11-07-execution-source-gate/README.md)
 records existing operand/call/storage mechanisms and a bounded3,000-job Windows
 JIT inspection of R26. All text goldens/cleanup pass; mixed inlined semantics keep

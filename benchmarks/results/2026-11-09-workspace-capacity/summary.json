@@ -1,0 +1,384 @@
+{
+  "warm-sync": [
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 14.649625,
+          "bytes": 2441304.0
+        },
+        "before-control": {
+          "milliseconds": 18.52145,
+          "bytes": 2441220.0
+        },
+        "candidate": {
+          "milliseconds": 16.838925,
+          "bytes": 2441288.0
+        }
+      },
+      "allocationPercent": [
+        -0.000655387448678102,
+        0.002785492499657316
+      ],
+      "elapsedPercent": [
+        14.94440983984231,
+        -9.084196971619408
+      ],
+      "referenceSpreadPercent": 26.429516113893705
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 9.327725,
+          "bytes": 1496718.0
+        },
+        "before-control": {
+          "milliseconds": 9.6664,
+          "bytes": 1496544.0
+        },
+        "candidate": {
+          "milliseconds": 9.7164,
+          "bytes": 1496592.0
+        }
+      },
+      "allocationPercent": [
+        -0.008418419501865504,
+        0.0032073898261542055
+      ],
+      "elapsedPercent": [
+        4.166878847736188,
+        0.5172556484316804
+      ],
+      "referenceSpreadPercent": 3.630842461586292
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "milliseconds": 13.628175,
+          "bytes": 3441878.0
+        },
+        "before-control": {
+          "milliseconds": 13.97,
+          "bytes": 3441858.0
+        },
+        "candidate": {
+          "milliseconds": 14.14295,
+          "bytes": 3441736.0
+        }
+      },
+      "allocationPercent": [
+        -0.0041256546571388775,
+        -0.0035445971332870307
+      ],
+      "elapsedPercent": [
+        3.777284926264901,
+        1.2380100214745893
+      ],
+      "referenceSpreadPercent": 2.5082228544907936
+    },
+    {
+      "case": "scripts.csv-validated-records.constructor-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": 22.94115,
+          "bytes": 10165148.0
+        },
+        "before-control": {
+          "milliseconds": 21.490225,
+          "bytes": 10164974.0
+        },
+        "candidate": {
+          "milliseconds": 15.92035,
+          "bytes": 10083022.0
+        }
+      },
+      "allocationPercent": [
+        -0.8079174056295102,
+        -0.8062194748358453
+      ],
+      "elapsedPercent": [
+        -30.603522491243908,
+        -25.91817907909294
+      ],
+      "referenceSpreadPercent": -6.324552169355069
+    },
+    {
+      "case": "scripts.csv-validated-records.wide-then-small-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": 13.22995,
+          "bytes": 3451510.0
+        },
+        "before-control": {
+          "milliseconds": 13.102675,
+          "bytes": 3451510.0
+        },
+        "candidate": {
+          "milliseconds": 12.256625,
+          "bytes": 3451384.0
+        }
+      },
+      "allocationPercent": [
+        -0.0036505761246474755,
+        -0.0036505761246474755
+      ],
+      "elapsedPercent": [
+        -7.356981696831822,
+        -6.457078421009454
+      ],
+      "referenceSpreadPercent": -0.9620217763483652
+    }
+  ],
+  "warm-async": [
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 18.066275,
+          "bytes": 2441664.0
+        },
+        "before-control": {
+          "milliseconds": 17.15155,
+          "bytes": 2441510.0
+        },
+        "candidate": {
+          "milliseconds": 18.01035,
+          "bytes": 2441648.0
+        }
+      },
+      "allocationPercent": [
+        -0.0006552908180634809,
+        0.005652239802422798
+      ],
+      "elapsedPercent": [
+        -0.30955468130536845,
+        5.00712763569473
+      ],
+      "referenceSpreadPercent": -5.063163269683435
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": 9.060125,
+          "bytes": 1497384.0
+        },
+        "before-control": {
+          "milliseconds": 8.747375,
+          "bytes": 1497216.0
+        },
+        "candidate": {
+          "milliseconds": 8.871,
+          "bytes": 1497208.0
+        }
+      },
+      "allocationPercent": [
+        -0.011753832016370147,
+        -0.0005343250406131261
+      ],
+      "elapsedPercent": [
+        -2.0874436059104995,
+        1.4132811271952983
+      ],
+      "referenceSpreadPercent": -3.4519391288751478
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "milliseconds": 14.3119,
+          "bytes": 3442956.0
+        },
+        "before-control": {
+          "milliseconds": 14.989825,
+          "bytes": 3442914.0
+        },
+        "candidate": {
+          "milliseconds": 16.323325,
+          "bytes": 3442744.0
+        }
+      },
+      "allocationPercent": [
+        -0.006157499544001688,
+        -0.004937677792704598
+      ],
+      "elapsedPercent": [
+        14.054213626422785,
+        8.89603447672005
+      ],
+      "referenceSpreadPercent": 4.73679245942189
+    },
+    {
+      "case": "scripts.csv-validated-records.constructor-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": 26.044475,
+          "bytes": 10166174.0
+        },
+        "before-control": {
+          "milliseconds": 29.1643,
+          "bytes": 10165982.0
+        },
+        "candidate": {
+          "milliseconds": 29.1015,
+          "bytes": 10084030.0
+        }
+      },
+      "allocationPercent": [
+        -0.8080129260034319,
+        -0.8061395347739198
+      ],
+      "elapsedPercent": [
+        11.737710205331474,
+        -0.21533175834839158
+      ],
+      "referenceSpreadPercent": 11.978836202303956
+    },
+    {
+      "case": "scripts.csv-validated-records.wide-then-small-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": 15.414975,
+          "bytes": 3452582.0
+        },
+        "before-control": {
+          "milliseconds": 17.361325,
+          "bytes": 3452518.0
+        },
+        "candidate": {
+          "milliseconds": 15.779175,
+          "bytes": 3452280.0
+        }
+      },
+      "allocationPercent": [
+        -0.008747076825399436,
+        -0.0068935194544983425
+      ],
+      "elapsedPercent": [
+        2.362637629966957,
+        -9.113071726956324
+      ],
+      "referenceSpreadPercent": 12.626358459874254
+    }
+  ],
+  "compile-sync": [
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": null,
+          "bytes": 135698.0
+        },
+        "before-control": {
+          "milliseconds": null,
+          "bytes": 135698.0
+        },
+        "candidate": {
+          "milliseconds": null,
+          "bytes": 135698.0
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": null,
+      "referenceSpreadPercent": null
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "milliseconds": null,
+          "bytes": 125906.0
+        },
+        "before-control": {
+          "milliseconds": null,
+          "bytes": 125906.0
+        },
+        "candidate": {
+          "milliseconds": null,
+          "bytes": 125906.0
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": null,
+      "referenceSpreadPercent": null
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "milliseconds": null,
+          "bytes": 171266.0
+        },
+        "before-control": {
+          "milliseconds": null,
+          "bytes": 171266.0
+        },
+        "candidate": {
+          "milliseconds": null,
+          "bytes": 171266.0
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": null,
+      "referenceSpreadPercent": null
+    },
+    {
+      "case": "scripts.csv-validated-records.constructor-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": null,
+          "bytes": 192386.0
+        },
+        "before-control": {
+          "milliseconds": null,
+          "bytes": 192386.0
+        },
+        "candidate": {
+          "milliseconds": null,
+          "bytes": 192386.0
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": null,
+      "referenceSpreadPercent": null
+    },
+    {
+      "case": "scripts.csv-validated-records.wide-then-small-control.large",
+      "roles": {
+        "before": {
+          "milliseconds": null,
+          "bytes": 2893418.0
+        },
+        "before-control": {
+          "milliseconds": null,
+          "bytes": 2893418.0
+        },
+        "candidate": {
+          "milliseconds": null,
+          "bytes": 2893418.0
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": null,
+      "referenceSpreadPercent": null
+    }
+  ],
+  "limitations": "Same-process isolated ALCs; actual allocation, diagnostic elapsed. Same whole script/fixture pair; not a CPython timing or machine-independent CPU claim. Pending-I/O latency/startup not measured. Includes mediated I/O, output validation and prior-result cleanup; compilation separate, fixture reset/protocol/final cache teardown excluded."
+}

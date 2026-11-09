@@ -19,16 +19,16 @@ internal sealed class MemoryGovernor
     internal object[] RentFunctionWorkspace(int capacity, LythonSourceSpan span)
     {
         ThrowIfAdmissionFailed();
+        if (capacity == 0) return [];
         var cached = _functionWorkspace;
         _functionWorkspace = null;
         if (cached is not null)
         {
-            if (cached.Length == capacity) return cached;
+            if (cached.Length >= capacity) return cached;
             // End idle ownership before a different allocation. This is normal
             // eviction, never recovery/retry after an admission refusal.
             Release(FunctionWorkspaceBytes(cached.Length));
         }
-        if (capacity == 0) return [];
         var bytes = FunctionWorkspaceBytes(capacity);
         Reserve(bytes, span);
         try
@@ -40,12 +40,20 @@ internal sealed class MemoryGovernor
         catch { ReleaseReserved(bytes); throw; }
     }
 
-    internal void ReturnFunctionWorkspace(object[] values, long bytes)
+    internal void ReturnFunctionWorkspace(object[] values, int usedLength)
     {
-        Array.Clear(values);
-        if (!_functionWorkspaceReuseEnded && _functionWorkspace is null && values.Length != 0)
+        // Every prior loan cleared its logical extent. Unused capacity remains
+        // empty without repeatedly scanning a larger retained backing array.
+        Array.Clear(values, 0, usedLength);
+        var cached = _functionWorkspace;
+        if (!_functionWorkspaceReuseEnded && values.Length != 0 &&
+            (cached is null || cached.Length < values.Length))
+        {
+            // Publish the surviving owner before a host refund can reenter.
             _functionWorkspace = values;
-        else Release(bytes);
+            if (cached is not null) Release(FunctionWorkspaceBytes(cached.Length));
+        }
+        else Release(FunctionWorkspaceBytes(values.Length));
     }
 
     internal void EndFunctionWorkspaceReuse()

@@ -11,7 +11,6 @@ internal sealed partial class LythonRuntime
         // until the child and its cleanup finish; locals reuse admitted bound storage.
         private ExecutionContext? _caller;
         private MemoryGovernor? _boundStorageOwner;
-        private long _boundStorageBytes;
         private ExecutableCallSite? _pendingCallSite;
         private PyExecutableFunction? _pendingFunction;
         private object? _pendingReceiver;
@@ -322,7 +321,6 @@ internal sealed partial class LythonRuntime
                 frame.EnterExecutableSlots();
                 frame._caller = this;
                 frame._boundStorageOwner = bound.StorageOwner;
-                frame._boundStorageBytes = bound.StorageBytes;
                 transferred = true;
                 return frame;
             }
@@ -346,7 +344,11 @@ internal sealed partial class LythonRuntime
                         finally
                         {
                             if (functionEntered) State.LeaveFunctionCall();
-                            if (bound.Values is not null) ReturnBoundArguments(bound);
+                            // A deferred prefix can write locals without ever
+                            // creating a frame. Clear the compiler workspace,
+                            // not only its parameter prefix, before caching it.
+                            if (bound.Values is not null) ReturnBoundArguments(bound,
+                                function.ArgumentsAreLocals ? function.CodeObject.ValueStorageCapacity : bound.Assigned.Length);
                             frame?.DetachExecutableExecution();
                         }
                     }
@@ -370,7 +372,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     LeaveFunctionCall();
-                    ReturnBoundArguments(_execution.Locals, _boundStorageOwner, _boundStorageBytes);
+                    ReturnBoundArguments(_execution.Locals, _boundStorageOwner, _execution.Code.ValueStorageCapacity);
                 }
                 finally
                 {

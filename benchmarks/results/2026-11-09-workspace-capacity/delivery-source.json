@@ -1,0 +1,20 @@
+{
+  "baseline": "4175fe6c, production99844959 fully qualified42605184549",
+  "measuredCoreSHA256": "85b9bcebf2da77fb0a0ae754bd4626caeacd73b26c16d151fe632cf4e23745d0",
+  "productionSourceMatchesFreeze": true,
+  "focused": {
+    "net11.0": {
+      "internal": 832,
+      "public": 3184
+    },
+    "net10.0": {
+      "internal": 832,
+      "public": 3184
+    }
+  },
+  "retained": "One existing funded execution-owned idle array; actual-capacity refunds; logical binding and clearing extents; active/pending borrows; terminal first refusal; independent retained values.",
+  "removed": "BoundCallArguments.StorageBytes and ExecutionContext._boundStorageBytes plus their transfers/resets; exact-size eviction and first-return retention choices. No new pool, budget, framework or public option.",
+  "correction": "Both APIs failed a new reference-retirement regression in the original logical-clear prototype; deferred context-free prefixes now clear all compiler workspace slots before returning storage.",
+  "measurements": "Constructor-control warm allocation -0.81% in both APIs, ordinary/compile essentially unchanged. Desktop elapsed inconclusive: original async text +7.7 to11.35%; corrected identical JSON controls26.43% apart. No CPU claim. Both original and corrected raw results retained.",
+  "qualification": "Focused actual11/10 only here; full platform/original Stress/installed package batch at delivery with next bounded correctness fix. No publication."
+}

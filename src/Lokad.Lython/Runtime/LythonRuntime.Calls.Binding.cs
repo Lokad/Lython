@@ -13,11 +13,14 @@ internal sealed partial class LythonRuntime
     // The function invocation owns this buffer through default lookup and body
     // completion. Values/cells/snapshots have their own retained ownership.
     internal static void ReturnBoundArguments(BoundCallArguments bound)
-        => ReturnBoundArguments(bound.Values, bound.StorageOwner, bound.StorageBytes);
+        => ReturnBoundArguments(bound, bound.Assigned.Length);
 
-    private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, long storageBytes)
+    internal static void ReturnBoundArguments(BoundCallArguments bound, int usedLength)
+        => ReturnBoundArguments(bound.Values, bound.StorageOwner, usedLength);
+
+    private static void ReturnBoundArguments(object[] values, MemoryGovernor? storageOwner, int usedLength)
     {
-        if (storageOwner is not null) storageOwner.ReturnFunctionWorkspace(values, storageBytes);
+        if (storageOwner is not null) storageOwner.ReturnFunctionWorkspace(values, usedLength);
         else Array.Clear(values);
     }
 
@@ -31,14 +34,13 @@ internal sealed partial class LythonRuntime
         // and presence overflow. Active callers retain it through real cleanup;
         // only returned idle storage can be reused, including after suspension.
         var values = governor.RentFunctionWorkspace(capacity, span);
-        var bytes = MemoryGovernor.FunctionWorkspaceBytes(capacity);
         try
         {
-            return new BoundCallArguments(values, new ArgumentPresence(parameterCount), governor, bytes);
+            return new BoundCallArguments(values, new ArgumentPresence(parameterCount), governor);
         }
         catch
         {
-            governor.ReturnFunctionWorkspace(values, bytes);
+            governor.ReturnFunctionWorkspace(values, parameterCount);
             throw;
         }
     }

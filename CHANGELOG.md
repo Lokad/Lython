@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse sufficient function-workspace capacity under its existing execution owner.
+  Remove duplicate byte ledgers and preserve logical bindings, cleared references,
+  suspended borrows and actual-capacity funding.
+
 - Unify borrowed arguments on the existing callable contract and remove the
   executable-call argument pool and callback type switches. Preserve owned
   constructor inputs, suspended binding and deterministic packet cleanup.

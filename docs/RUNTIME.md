@@ -460,11 +460,13 @@ tighter allowances earlier, including capacity needed only by an unused branch.
 Large native-call argument packets acquire separate working admission before
 allocation, even when the operand buffer already has capacity. Their reservation
 lasts through the awaited call and cleanup; construction observes cancellation.
-Function binding uses one execution-owned idle workspace. Returned arrays are
-cleared and remain charged while cached; an exact-capacity hit reuses that funded
-storage. Nested or suspended calls keep distinct active arrays until their users
-and cleanup finish. A capacity mismatch relinquishes idle storage before one new
-admission, with no retry after refusal. Resource cleanup ends idle reuse and refunds
+Function binding uses one execution-owned idle workspace, retaining the largest
+returned array. A call reuses sufficient capacity while reading and clearing only
+its logical parameter or compiler workspace extent. Actual backing capacity stays
+charged through smaller loans; unused slots contain no prior guest references.
+Nested or suspended calls keep distinct active arrays until their users and cleanup
+finish. Insufficient idle capacity is relinquished before one new admission, with
+no retry after refusal. Resource cleanup ends idle reuse and refunds
 the cache; later active returns release their own charge. All nonempty function
 buffers, including small calls and generated dataclass methods, use this admission.
 Idle retention can reject tight shared allowances earlier. No workspace crosses
