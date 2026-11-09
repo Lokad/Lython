@@ -28,6 +28,13 @@ internal sealed partial class LythonRuntime
             _ => value
         };
 
+    // Native truth results keep the CLR bool representation and borrow its two
+    // immutable boxes. The typed entry avoids allocating a box before normalizing;
+    // arbitrary guest protocol results still use the object entry above.
+    private static readonly object TrueBoolean = true;
+    private static readonly object FalseBoolean = false;
+    internal static object RuntimeValue(bool value) => value ? TrueBoolean : FalseBoolean;
+
     private static bool AreIdentical(object left, object right)
         => ReferenceEquals(left, right) || left is bool leftBoolean && right is bool rightBoolean && leftBoolean == rightBoolean;
 

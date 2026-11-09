@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "isinstance(value, type) expects two arguments.", span);
         }
 
-        return IsInstanceOf(arguments[0], arguments[1], span, context);
+        return RuntimeValue(IsInstanceOf(arguments[0], arguments[1], span, context));
     }
 
     private static object IsSubclass(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -260,7 +260,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects two arguments.", span);
         }
 
-        return IsSubclassOf(arguments[0], arguments[1], span, context);
+        return RuntimeValue(IsSubclassOf(arguments[0], arguments[1], span, context));
     }
 
     private static bool IsInstanceOf(object value, object typeSpec, LythonSourceSpan span, ExecutionContext context)
@@ -830,8 +830,8 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length != 2) throw new LythonRuntimeException("TypeError", "hasattr expects two arguments", span);
         var name = ExpectAttributeName(arguments[1], span);
-        try { return (await TryResolveRuntimeMemberAsync(arguments[0], name, context, span).ConfigureAwait(false)).Found; }
-        catch (LythonRuntimeException exception) when (exception.ExceptionType == "AttributeError") { return false; }
+        try { return RuntimeValue((await TryResolveRuntimeMemberAsync(arguments[0], name, context, span).ConfigureAwait(false)).Found); }
+        catch (LythonRuntimeException exception) when (exception.ExceptionType == "AttributeError") { return RuntimeValue(false); }
     }
 
     private static object GetAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -872,15 +872,15 @@ internal sealed partial class LythonRuntime
         var name = ExpectAttributeName(arguments[1], span);
         if (arguments[0] is PyException && name == "message")
         {
-            return false;
+            return RuntimeValue(false);
         }
         try
         {
-            return PyMemberAccess.TryResolve(arguments[0], name, context, span, out _);
+            return RuntimeValue(PyMemberAccess.TryResolve(arguments[0], name, context, span, out _));
         }
         catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
         {
-            return false;
+            return RuntimeValue(false);
         }
     }
 

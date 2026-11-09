@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
-            return leftBoolean | rightBoolean;
+            return RuntimeValue(leftBoolean | rightBoolean);
         }
 
         // R13b: mapping merges below observe ambient provenance.
@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
-            return leftBoolean ^ rightBoolean;
+            return RuntimeValue(leftBoolean ^ rightBoolean);
         }
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
@@ -387,7 +387,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
         {
-            return leftBoolean & rightBoolean;
+            return RuntimeValue(leftBoolean & rightBoolean);
         }
 
         // R13b: set/counter regions below observe ambient provenance.

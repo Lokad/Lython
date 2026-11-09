@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(span);
         try
         {
-            return StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.ByteLength, true, isStart, span);
+            return RuntimeValue(StringMembers.StartsOrEndsWith(receiver, prefix, 0, receiver.ByteLength, true, isStart, span));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
@@ -2175,11 +2175,11 @@ internal sealed partial class LythonRuntime
     {
         // IntFromBytes always returns the BigInteger magnitude.
         var number = (BigInteger)IntFromBytes(arguments, span, context);
-        return !number.IsZero;
+        return RuntimeValue(!number.IsZero);
     }
 
     private static async ValueTask<object> BoolFromBytesAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-        => !((BigInteger)await IntFromBytesAsync(arguments, span, context).ConfigureAwait(false)).IsZero;
+        => RuntimeValue(!((BigInteger)await IntFromBytesAsync(arguments, span, context).ConfigureAwait(false)).IsZero);
 
     private static object BytesMaketransImpl(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

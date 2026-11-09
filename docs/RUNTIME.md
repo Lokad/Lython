@@ -767,6 +767,12 @@ refunded after materialization; result strings and aliases keep their batch owne
 This can reject earlier than incremental fragment admission. Scans and bounded
 copies observe cancellation; an individual CLR allocation cannot be interrupted.
 
+Native comparison, truth and Boolean bitwise results reuse immutable CLR Boolean
+boxes. Custom comparison methods still return their original objects. Boolean
+`id()` values follow Python singleton identity across literals, module results and
+host inputs, consistently with `is`. Boolean identities remain distinct from equal
+integer values.
+
 Exact integer math uses cooperative cancellation and shared memory admission,
 without an iteration quota. Cancellation is checked between arithmetic operations;
 it cannot interrupt an individual CLR `BigInteger` operation. Integer true division

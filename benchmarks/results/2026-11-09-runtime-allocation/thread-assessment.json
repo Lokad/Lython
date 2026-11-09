@@ -1,0 +1,113 @@
+{
+  "observed": {
+    "text": {
+      "allocationThreads": {
+        "119008": {
+          "ticks": 7168,
+          "top": [
+            [
+              "Lokad.Lython.Runtime.Text.PyString",
+              2519
+            ],
+            [
+              "System.Numerics.BigInteger",
+              1766
+            ],
+            [
+              "System.Byte[]",
+              970
+            ],
+            [
+              "Lokad.Lython.Runtime.PyList",
+              864
+            ],
+            [
+              "TemporaryMemoryReservation",
+              632
+            ],
+            [
+              "System.Object[]",
+              417
+            ]
+          ]
+        },
+        "43084": {
+          "ticks": 2,
+          "top": [
+            [
+              "System.Byte[]",
+              2
+            ]
+          ]
+        }
+      },
+      "booleanObjectSizes": []
+    },
+    "csv": {
+      "allocationThreads": {
+        "114556": {
+          "ticks": 18175,
+          "top": [
+            [
+              "Lokad.Lython.Runtime.Text.PyString",
+              4828
+            ],
+            [
+              "System.Numerics.BigInteger",
+              4300
+            ],
+            [
+              "Lokad.Lython.Runtime.PyDict",
+              2112
+            ],
+            [
+              "TemporaryMemoryReservation",
+              1912
+            ],
+            [
+              "System.Object[]",
+              1701
+            ],
+            [
+              "System.Boolean",
+              1645
+            ],
+            [
+              "Lokad.Lython.Runtime.PyTuple",
+              713
+            ],
+            [
+              "System.Byte[]",
+              512
+            ]
+          ]
+        },
+        "60480": {
+          "ticks": 3,
+          "top": [
+            [
+              "System.Byte[]",
+              1
+            ],
+            [
+              "System.String",
+              1
+            ],
+            [
+              "System.Object",
+              1
+            ]
+          ]
+        }
+      },
+      "booleanObjectSizes": [
+        {
+          "thread": 114556,
+          "bytes": 24,
+          "ticks": 1645
+        }
+      ]
+    }
+  },
+  "limits": "GCAllocationTick OS-thread IDs only; guest-specific PyString type identifies guest activity, not thread naming/CPU dominance. Threshold association is statistical, all threads and raw events retained."
+}

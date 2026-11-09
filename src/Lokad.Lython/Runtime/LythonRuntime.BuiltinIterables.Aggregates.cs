@@ -17,17 +17,17 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "any() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
-        if (arguments[0] is PyBytes bytes) return ReduceBytesTruth(bytes, false, span, context);
+        if (arguments[0] is PyBytes bytes) return RuntimeValue(ReduceBytesTruth(bytes, false, span, context));
 
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (IsTruthy(item, context, span))
             {
-                return true;
+                return RuntimeValue(true);
             }
         }
 
-        return false;
+        return RuntimeValue(false);
     }
 
     private static ValueTask<object> AnyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -48,8 +48,8 @@ internal sealed partial class LythonRuntime
             while (true)
             {
                 var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-                if (!item.HasValue) return false;
-                if (await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return true;
+                if (!item.HasValue) return RuntimeValue(false);
+                if (await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return RuntimeValue(true);
             }
         }
     }
@@ -61,17 +61,17 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "all() takes exactly one argument (" + arguments.Length + " given)", span);
         }
 
-        if (arguments[0] is PyBytes bytes) return ReduceBytesTruth(bytes, true, span, context);
+        if (arguments[0] is PyBytes bytes) return RuntimeValue(ReduceBytesTruth(bytes, true, span, context));
 
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             if (!IsTruthy(item, context, span))
             {
-                return false;
+                return RuntimeValue(false);
             }
         }
 
-        return true;
+        return RuntimeValue(true);
     }
 
     private static ValueTask<object> AllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -92,8 +92,8 @@ internal sealed partial class LythonRuntime
             while (true)
             {
                 var item = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-                if (!item.HasValue) return true;
-                if (!await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return false;
+                if (!item.HasValue) return RuntimeValue(true);
+                if (!await IsTruthyAsync(item.Value, context, span).ConfigureAwait(false)) return RuntimeValue(false);
             }
         }
     }

@@ -235,7 +235,9 @@ internal sealed partial class ExecutionState
 
     public BigInteger GetObjectId(object? value)
     {
-        var key = value ?? PyNone.Instance;
+        // Python booleans have singleton identity even when a host or a native
+        // module supplies a different CLR box. Keep id() consistent with is.
+        var key = value is bool boolean ? LythonRuntime.RuntimeValue(boolean) : value ?? PyNone.Instance;
         if (_objectIds.TryGetValue(key, out var existing))
         {
             return new BigInteger(existing.Value);

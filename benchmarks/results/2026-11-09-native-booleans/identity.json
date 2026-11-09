@@ -1,0 +1,22 @@
+{
+  "beforeRevision": "committed9db554b3/core36fd; focused/measurements qualified, full delivery batching with R135",
+  "patchBase": "9db554b38206bde7423bec477156cc57a5adf2da",
+  "coreSHA256": {
+    "before": "36fd515a6bb50f39589dc5d3524acdd0bf7d60952c97d2fa90dd91f1ef36f6a7",
+    "candidate": "76d99682469c328c38faec5e6795c9d3990e7ff78e622740150dbcb7605d9722"
+  },
+  "changedSources": {
+    "src/Lokad.Lython/Runtime/ExecutionState.cs": "0aab1f60f3302e6ab1c122ae380faf0d8a9e55f90a1e59e143b0ba97ded7f52c",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinIterables.Aggregates.cs": "20a6639011813c7298990ded24b24c46e6717afa042f51dd8183bb2971d6fd68",
+    "src/Lokad.Lython/Runtime/LythonRuntime.BuiltinObjects.cs": "f6eaafd256d59f0ff66a2eea1733ff1c54a324ff45cab50c453def4b8926c9e7",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Builtins.cs": "8727040fc809c025b452a46ff81e472d2b117f486c83f5442a2c42dd1ba23cc0",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs": "6c5cac5b19d8d0e5393e8ab92d18fc536591a8c751b692b5c7f6995ecacf7a82",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "1cf69a3de271aee6ad915ea6bd9dd1b4e6b0a89eca8680a47d093229c26c2b77",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Operations.cs": "b61ec8d10af7e54abf9ff2ba918e2cbc69a3dc9b36bf885c2606f284bf52b675",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OperatorDispatch.cs": "22679fc5fa700fd3d8f5793ee77bb6be331ffa869cb61671ef4213366adc54b8",
+    "src/Lokad.Lython/Runtime/LythonRuntime.cs": "5192cdc37594d5137c577d761381bdabfdd51614ac09bc9bfb925a9b8877303a",
+    "tests/Lokad.Lython.PublicApi.Tests/BooleanIdentityTests.cs": "c96ded125496493bb6cdf35267a0fb4fb9723e7bd9e1baf57a87c27443d4dfaa"
+  },
+  "qualification": "97internal/385public eachactual11/10; new2API Boolean id/is regression and CPython golden. Original red identity tests retained.",
+  "contract": "Typed native Boolean results use two immutable CLR bool boxes; arbitrary rich protocol results unchanged. Boolean identity keys canonical across host/module/literal boxes, fixing id versus is. Preflights/current tokens/managed stacks/alias ownership unchanged; no new owner/representation hierarchy/public API."
+}

@@ -1,0 +1,7 @@
+{
+  "originalCondition": "Six-case catalog rejected by existing five-case driver before image/user construction; no actual comparison started",
+  "correction": "Keep two affected CSV/search scripts and three text/JSON/report controls, reuse existing driver unchanged",
+  "productionSourceChanged": false,
+  "originalFailurePreserved": "failed-six-case-compile",
+  "originalCatalog": "catalog-six-initial.json"
+}

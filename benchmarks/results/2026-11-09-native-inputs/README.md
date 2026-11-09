@@ -71,3 +71,10 @@ CI42545629905 qualifies459/core1be2 only. Publication postponed.
 [B492 raw](before-prefix-observations.tgz), [B493 results](assessment.json),
 [B493 receipt](archive-receipt.json), [B493 raw](observations.tgz),
 [all source variants/binaries/diagnostics](source-and-diagnostics.tar.xz).
+
+
+R132/c343/core95fc full qualification complete: cachedCI42552506089success, observed
+2026-11-09T03:17:40UTC. Windows/Ubuntu full actual.NET11/10, originalstressboth and
+installed-core consumers pass; terminalcached, never query again. Later9db/R133
+qualifies independently.
+[Receipt](delivery-ci.json).

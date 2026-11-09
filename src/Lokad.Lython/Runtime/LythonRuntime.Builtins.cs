@@ -325,7 +325,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
         }
 
-        return arguments.Length == 1 && IsTruthy(arguments[0], context, span);
+        return RuntimeValue(arguments.Length == 1 && IsTruthy(arguments[0], context, span));
     }
 
     private static async ValueTask<object> BoolAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
         }
 
-        return arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false);
+        return RuntimeValue(arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false));
     }
 
     private static readonly Func<object, LythonSourceSpan, ExecutionContext, object> IntegerTextOperation
@@ -674,7 +674,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "callable(object) expects one argument.", span);
         }
 
-        return IsCallable(arguments[0]);
+        return RuntimeValue(IsCallable(arguments[0]));
     }
 
     // Python's tp_call presence depends on the type's slot. No ordinary

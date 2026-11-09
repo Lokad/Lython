@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse native Boolean results and keep `id()` consistent with Python Boolean
+  singleton identity across literals, module results and host inputs. Preserve
+  arbitrary custom comparison results and cooperative cleanup.
+
 - Share direct constant/local operand sources with closed native helpers, removing
   consumed read nodes and their recursive dispatch. Prepare the fixed local prefix
   once while preserving guard-before-effects, cancellation, ownership and fallback.

@@ -5105,3 +5105,45 @@ debt, warmcontrol mixed. Retain construction/allocation removal; no generalCPUcl
 or unchanged retiming selected. Original evidence/space proofs preserved, allusers
 joined/RAMremoved/terminalcached. Candidate full qualification batches later;
 publication postponed and performance objective remains open.
+
+
+R132/c343/core95fc full qualification complete: cachedCI42552506089success, observed
+2026-11-09T03:17:40UTC. Windows/Ubuntu full actual.NET11/10, originalstressboth and
+installed-core consumers pass; terminalcached, never query again. Later9db/R133
+qualifies independently.
+[Receipt](results/2026-11-09-native-inputs/delivery-ci.json).
+
+
+## Current scalar/storage allocation attribution (2026-11-09 Paris)
+
+[R134](results/2026-11-09-runtime-allocation/README.md),9db/core36fd. ExistingD36
+allocation-tick collector unchanged, original complete text/validatedCSV,256warmups/
+512capture jobs per script,120s ownership, normalGC/tiering/Windows11RC3.7170/18178
+ticks/zero lost/allgoldens/Closed/joins/fixtures pass. Threshold-type associations,
+not exact typebytes or CPU: textPyString35.13/BigInteger24.63%; CSVPyString26.56/
+BigInteger23.66/Boolean9.05%. Boolean samples24B on the thread also allocating guest
+PyString; all threads/raw/timestamp limits retained. No forcedGC/rundown/heapdump.
+R135 selects native Boolean result construction before universal integer/value/VM
+redesign; arbitrary rich protocol return objects and ownership/cancellation remain.
+No production or elapsed/CPU claim for attribution.
+
+
+## Native Boolean result storage and identity (2026-11-09 Paris)
+
+[R135/B495](results/2026-11-09-native-booleans/README.md),9db/core36fd versus76d.
+Typed RuntimeValue/two immutable CLRboolboxes replace66sourceconversions at core
+comparison/truth/bitwise/predicate exits; validated567trees, emitted65fewerboxsites
+(475→410 incl two one-timeboxes). Raw rich protocol returns remain. Canonical bool
+identity keys fix is/id inconsistency across literals/host/module boxes; independent
+CPython golden and original red tests retained.97internal/385public eachactual11/10,
+new2APIcases, existingassertions unchanged. ActualwarmallocationCSV−9.09%,search
+−11.54..−11.66%, controlswithin.022%, compileallocationneutral. Desktop report
++8..12.6/search+6..13.5/asynctext+14..33.7%adverse/controldrift preserved. Sixquiet
+jobs169.328s/allgates/archive/localpass: CSV−.40..+1.79/search−1.79..+2.01/text
+−2.23..+2.55/JSON−4.03..+1.65/report+.11..+2.44/asyncCSV−3.03..+.57%elapsed.
+No generalCPUgain/neutrality; reportpossibledebt and variablecontrols remain.
+Retain construction/allocation/correctness; no unchanged retiming selected, not
+permanentclosure. No space recovery/floorrelaxation; allusersjoined/RAMremoved/
+terminalcached. Six-case local catalog initially refused before users; condition
+preserved, corrected to unchanged five-case driver. Candidate full qualification
+batches now; publication postponed, performance objective open.

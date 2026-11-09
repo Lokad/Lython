@@ -1,0 +1,31 @@
+{
+  "actualFrameworks": {
+    "net11.0": {
+      "internal": 97,
+      "public": 385
+    },
+    "net10.0": {
+      "internal": 97,
+      "public": 385
+    }
+  },
+  "newBooleanIdentityCases": 2,
+  "oldAssertionsChanged": 0,
+  "originalIdentityFailure": "identity-before-key-normalization.log: two API failures with the original reference-key behavior, not a full original-source baseline replay",
+  "independentCPython": {
+    "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "source": "import json\npositive=[True,host_true,bool(1),1==1,1<2,[1]==[1],any([1]),all([1]),isinstance(1,int),issubclass(bool,int),hasattr([],'append'),callable(len),True|False,json.loads('true')]\nnegative=[False,host_false,bool(0),1!=1,1>2,[1]==[2],any([]),all([0]),isinstance(1,str),issubclass(int,bool),hasattr([],'missing'),callable(1),True^True,json.loads('false')]\nprint(all(value is True for value in positive),all(value is False for value in negative))\nprint(len({id(value) for value in positive})==1,len({id(value) for value in negative})==1)\nnumber=1\nprint(True is number,id(True)!=id(number),hash(True)==hash(number))\ntoken=[]\nclass Equal:\n def __eq__(self,other):return token\nanswer=Equal()==Equal()\nprint(answer is token,(not answer) is True)\nprint(type(True|False).__name__,True+True,hash(False))",
+    "expected": "True True\nTrue True\nFalse True True\nTrue True\nbool 2 0\n",
+    "actual": "True True\nTrue True\nFalse True True\nTrue True\nbool 2 0\n",
+    "matches": true
+  },
+  "semanticProof": {
+    "beforeILBoxSites": 475,
+    "candidateILBoxSites": 410,
+    "netRemoved": 65,
+    "typedSourceSitesRemoved": 66,
+    "typedSourceSitesRemaining": 0,
+    "scope": "Emitted entire core IL incl nested types; cold module Boolean exits remain. Net static sites are not runtime object counts. Two static immutable boxes and old object-normalizer overload preserve current CLRbool representation."
+  },
+  "semantics": "Raw/custom/reflected/NotImplemented results, genuine async truth, first refusal/cancellation, aliases/budget reuse retained"
+}

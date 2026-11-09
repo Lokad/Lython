@@ -1,0 +1,8 @@
+{
+  "beforeILBoxSites": 475,
+  "candidateILBoxSites": 410,
+  "netRemoved": 65,
+  "typedSourceSitesRemoved": 66,
+  "typedSourceSitesRemaining": 0,
+  "scope": "Emitted entire core IL incl nested types; cold module Boolean exits remain. Net static sites are not runtime object counts. Two static immutable boxes and old object-normalizer overload preserve current CLRbool representation."
+}

@@ -509,7 +509,7 @@ internal sealed partial class LythonRuntime
                 case PyNone:
                     return PyNone.Instance;
                 case bool boolean:
-                    return boolean;
+                    return RuntimeValue(boolean);
                 case BigInteger:
                     return OwnFreshInteger(value!, context.MemoryGovernor, null);
                 case sbyte integer:
