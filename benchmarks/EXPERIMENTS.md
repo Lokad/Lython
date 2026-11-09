@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R176 contract-preserving small-integer assessment](results/2026-11-09-private-small-integers/README.md)
+preserves public BigInteger/CLR ingress and reproduces6.91% text allocation savings.
+Both wrapper and numeric-view refinement are withdrawn:58production files change,
+without a simpler execution architecture or established CPU benefit. Desktop
+adverse/control-limited observations and original failures remain.824focused
+internal checks pass each variant; affected public checks are labelled by source.
+Keep five public semantic cases; exact qualified production restored and48retained
+checks pass eachactual11/10 after forced builds. No quiet/CPU or repeat platform
+qualification claim. Machine integers remain a possible future coherent design.
+
 The [R175 ordinary call-input batch](results/2026-11-09-call-input-preparation/README.md)
 removes14CSV/9text/8report module dispatches in two private variants, but retains
 reads/copies in a new loop. Shared prepared metadata removes a duplicate field.

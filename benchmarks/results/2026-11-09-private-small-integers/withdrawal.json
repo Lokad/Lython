@@ -1,0 +1,8 @@
+{
+  "productionMatchesQualifiedRevision": "cac4acf8",
+  "changedProductionFiles": 58,
+  "changedWhiteboxFixtures": 16,
+  "preservedPublicCases": 5,
+  "decision": "Withdraw both representations; allocation benefit established, CPU uncertain and source complexity not justified for this milestone. No permanent representation veto.",
+  "fullCrossPlatformQualification": "Not run for discarded prototypes; qualified production restored. Fresh builds and retained checks follow."
+}

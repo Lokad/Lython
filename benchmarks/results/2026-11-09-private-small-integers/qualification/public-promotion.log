@@ -1,0 +1,28 @@
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)
+[xUnit.net 00:00:00.14]   Discovering: Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.60]   Discovered:  Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.64]   Starting:    Lokad.Lython.PublicApi.Tests
+[xUnit.net 00:00:01.81]     Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.IntegerAliasesAndMixedNumericKeysKeepPythonSemantics [FAIL]
+[xUnit.net 00:00:01.81]       int has no member '__pos__'.
+[xUnit.net 00:00:01.81]       Stack Trace:
+[xUnit.net 00:00:01.81]         D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\GuestIntegerRepresentationTests.cs(50,0): at Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.IntegerAliasesAndMixedNumericKeysKeepPythonSemantics()
+[xUnit.net 00:00:01.81]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:01.81]   Finished:    Lokad.Lython.PublicApi.Tests
+  Passed Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.ArithmeticPromotesExactlyAndProjectsGuestIntegers(expression: "(2147483647 + 1) - 1", expected: "2147483647") [74 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.ArithmeticPromotesExactlyAndProjectsGuestIntegers(expression: "(-2147483648 - 1) + 1", expected: "-2147483648") [2 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.ArithmeticPromotesExactlyAndProjectsGuestIntegers(expression: "-2147483648 - 1", expected: "-2147483649") [< 1 ms]
+  Passed Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.ArithmeticPromotesExactlyAndProjectsGuestIntegers(expression: "2147483647 + 1", expected: "2147483648") [< 1 ms]
+  Failed Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.IntegerAliasesAndMixedNumericKeysKeepPythonSemantics [64 ms]
+  Error Message:
+   int has no member '__pos__'.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.GuestIntegerRepresentationTests.IntegerAliasesAndMixedNumericKeysKeepPythonSemantics() in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\GuestIntegerRepresentationTests.cs:line 50
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 5
+     Passed: 4
+     Failed: 1
+ Total time: 2.0918 Seconds

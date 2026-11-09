@@ -24,6 +24,10 @@ check original failure spans beyond the fourth argument. Numeric ingress checks
 also preserve BigInteger projection for guest arithmetic and CLR types for unchanged
 host integers.
 
+[Guest integer regressions](Lokad.Lython.PublicApi.Tests/GuestIntegerRepresentationTests.cs)
+cover exact promotion, identity-returning methods, mixed numeric keys and public
+BigInteger results through both APIs, with shared-budget cleanup and reuse.
+
 [String storage publication](Lokad.Lython.Tests/StringStoragePublicationTests.cs)
 checks stable UTF-8 borrows before and after indexing, cache publication during
 admission reentry, retained owner funding and refund of duplicate unpublished work.

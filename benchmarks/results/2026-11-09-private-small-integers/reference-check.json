@@ -1,0 +1,29 @@
+{
+  "python": "Python 3.13.2",
+  "sourceSHA256": "bcf8d719859622d40d17574ded414bb290832ba49510a22c023799d507ad2a52",
+  "cases": [
+    {
+      "source": "2147483647 + 1",
+      "stdout": "2147483648\n"
+    },
+    {
+      "source": "-2147483648 - 1",
+      "stdout": "-2147483649\n"
+    },
+    {
+      "source": "(2147483647 + 1) - 1",
+      "stdout": "2147483647\n"
+    },
+    {
+      "source": "(-2147483648 - 1) + 1",
+      "stdout": "-2147483648\n"
+    },
+    {
+      "source": "value = int('123456789')\naliases = [int(value), +value, abs(value), round(value),\n           value.__int__(), value.__index__(),\n           value.numerator, value.real, value.conjugate()]\nprint(all(item is value for item in aliases))\nvalues = {value: 'integer', 123456789.0: 'float'}\nprint(len(values), values[value], value == 123456789.0,\n      hash(value) == hash(123456789.0))\nreturn value",
+      "adaptation": "Wrap guest top-level return in one ordinary function; print its result.",
+      "stdout": "True\n1 float True True\n123456789\n"
+    }
+  ],
+  "boundary": "Independent Python values/stdout only; public CLR BigInteger types and memory ownership are checked in both .NET target suites.",
+  "frozenTestSource": "qualification/GuestIntegerRepresentationTests.cs.txt"
+}
