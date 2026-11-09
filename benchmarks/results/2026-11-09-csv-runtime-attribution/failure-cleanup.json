@@ -1,0 +1,17 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "failedWorkerExitCode": -9,
+  "warmupTimedOutBeforeCapture": true,
+  "originalFailedConditionPreserved": true,
+  "allRamRegularBytesAndTemporaryMapsArchivedBeforeRetirement": true,
+  "guestFixturesRemoved": true,
+  "archiveVerifiedUnderLease": true,
+  "temporaryMaps": [
+    {
+      "path": "/tmp/perf-3469435.map",
+      "sha256": "77a84608e3f180da6d137fb6ad3a3976afc04a15a5355cef68b23f28240daab6"
+    }
+  ],
+  "archiveSHA256": "9c6e5cc26e0d37ef557b8370b2ef0aed9c491e37cc81e9e72b614a9ca68b1047"
+}

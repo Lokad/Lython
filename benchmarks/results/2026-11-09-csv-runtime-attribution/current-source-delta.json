@@ -1,0 +1,14 @@
+{
+  "measured": "7c10322c-equivalent/corecfeb, not the subsequent argparse fix",
+  "delta": {
+    "src/Lokad.Lython/Frontend/StaticArgparseContractFamily.cs": {
+      "measured": "4ee7857722d7d227212849de3e6ba89fc6c1964d44f428a0ff08c614ae2a6603",
+      "current": "efb84643acee60f4c0c798ec02488651076784d6efc032e5b4285ebbffb2c555"
+    },
+    "src/Lokad.Lython/Runtime/LythonRuntime.ArgparseParser.Invocation.cs": {
+      "measured": "3b0e254caa5c65eb2f6a56eee53a38b896681dc3a804e2b706a634d87ee0f3af",
+      "current": "3d48d3284311079e3ed7ad8761121237672ed29f1b98c5b562b5bef75db671af"
+    }
+  },
+  "reason": "Only default argparse inputs differ; this maintained CSV script imports no argparse. Retain exact old freeze identity, do not call it current HEAD."
+}

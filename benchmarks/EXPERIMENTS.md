@@ -5533,3 +5533,18 @@ Eight new cases cover both APIs; four independent CPython3.13.2 scenarios agree.
 The empty-argv control supplies prog explicitly, isolating argument parsing from
 CPython's constructor indexing argv[0]. Initial frontend rejection and old fixture
 failures preserved privately. No performance claim; full qualification is batched.
+
+
+## R162 — validated-CSV CPU/source gate
+
+[One usable capture](results/2026-11-09-csv-runtime-attribution/README.md) retains
+1,210guest samples, parser16.03%, scalar7.11%, binding4.21%, setup3.97%, actual
+array adoption1.74%; prefix includes useful work. Existing slot/array/frame/UTF-8
+mechanisms confirmed, no new binder/cache/arena or header-proof deletion. R163
+comparison consolidation selected before prototyping; gains unmeasured.
+Original oversized warmup failed before sampling, killed/joined worker and temporary
+maps/RAM archived under owned cleanup/localSHA. Bounded128/64-request correction
+preserves20s guard/6s targets and all gates; no design-failure inference. Unused stale
+original catalog label preserved, corrected exact identity independently verified.
+R161 ordinary Windows/Ubuntu net11/package CI42634762709 is cached GREEN; focused
+actualnet10 also passes. Full manual net10/originalStress remains batched.

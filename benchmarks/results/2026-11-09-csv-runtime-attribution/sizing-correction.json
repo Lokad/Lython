@@ -1,0 +1,11 @@
+{
+  "originalWarmupBatch": 4096,
+  "correctedWarmupBatch": 128,
+  "originalCaptureBatch": 256,
+  "correctedCaptureBatch": 64,
+  "frameGuardSeconds": 20,
+  "guardUnchanged": true,
+  "originalUnusedCatalogSHA": "4f71fbab9acdddba396f7d4f28d6eeafb1d755f385ecbbc2b65d2fa338f340aa",
+  "actualCatalogSHA": "add04b116b033974cd941536ba07b8d0ff9410dadf8f670ba9fabd7666d2ed3b",
+  "originalFailedEvidence": "../failed-attempt.tgz"
+}

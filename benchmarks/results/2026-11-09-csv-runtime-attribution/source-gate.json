@@ -1,0 +1,15 @@
+{
+  "unchangedAssessedSources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "808c45e1a017e27cfc9cb727ab45078edd2b1977513face6a74ca9aa1f8cf48b",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "13684438a3a724aea396a960b6cf30580f71832b4b3d45418dc5e13d58613dc1",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "1e3d1268f741d10ef079c98b9c5f9b40cc820fec64ad3b93316f721275abd90d",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs": "d5b1e14d99c32bc83475ff54ddf73ba8be5f960af5e662579c545a6f564d3026",
+    "src/Lokad.Lython/Runtime/Calls/CallBinder.cs": "53383926db6b6fe30b9afdded2fdb5380ddfccdd266e0bc016e5446a12f0dee9",
+    "src/Lokad.Lython/Runtime/ExecutionFrame.cs": "5dbc4671f7eca3df8cb869ec09b1eea4ea240bb5d4eb3917d5fc8b2b0bfcda0a",
+    "src/Lokad.Lython/Runtime/PyExecutableFunction.cs": "5803735d8e48c79c57244d41d3ec14f8b1441627c74ae3f9f62bab6c7c873faf",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "94fa6dd3a5d3678c912cc3c2abea9ca7f4c2cde9429b87f68b723bad17d4a82e",
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "5be0f2dda953d059cea5cc9653dc7b4eb0d42b6d127c7051a7f0dec1b8732f62"
+  },
+  "decision": "No new keyword binder, frame arena, presumed row copy or admission-proof deletion. Existing values already bind into final slots; presence inline, workspace reused, contexts deferred. Header proof brackets reentrant admission. Native integer parsing already UTF-8.",
+  "selected": "R163: extend existing exact numeric comparison entry to strings and delete executable string detour through generic operator/protocol/truth machinery. Numeric/NaN, custom/reflected raw protocols, cancellation and ownership acceptance stated before prototype; gains unmeasured."
+}
