@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Native text-key cancellation](Lokad.Lython.Tests/NativeTextKeyCancellationTests.cs)
+checks explicit comparer provenance and first-refusal priority. Stress probes warm
+both key hashes before concurrent dictionary reads/writes, preserve correct early
+completion, and join both workers before retiring input. Cancelled writes preserve
+the stored value; native/context-free comparer behavior remains distinct.
+
 [Native text construction](Lokad.Lython.Tests/NativeTextConstructionRollbackTests.cs)
 checks that cancellation refunds unpublished split/CSV fragments while input stays
 funded. Its 64 MiB cases are Stress only, with a joined canceller after output

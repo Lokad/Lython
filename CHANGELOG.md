@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Forward the current execution context through native dictionary text-key equality,
+  including probes whose key hashes were already cached.
+
 - Commit native split/CSV ordinary-string storage when the complete result is
   ready, refunding unpublished fragments on cancellation while keeping input funded.
 

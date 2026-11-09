@@ -8,6 +8,16 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
 {
     public static readonly PyValueComparer Instance = new();
 
+    // Native table probes already carry their caller. Keep CLR comparer callbacks
+    // context-free while forwarding explicit cancellation through long text scans.
+    internal bool Equals(object? x, object? y, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        // Identity never scans storage; preserve the original table shortcut.
+        if (ReferenceEquals(x, y)) return x is not null;
+        return context is not null && x is PyString leftText && y is PyString rightText
+            ? leftText.Equals(rightText, context, span) : Equals(x, y);
+    }
+
     public new bool Equals(object? x, object? y)
     {
         // Key probing accepts identity even for non-reflexive values such as

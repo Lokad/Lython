@@ -167,7 +167,8 @@ internal sealed partial class PyDict
         while (index >= 0)
         {
             ref var entry = ref items[index];
-            if (IsNativeLive(index) && entry.Hash == hash && PyValueComparer.Instance.Equals(entry.Key, key)) return index;
+            if (IsNativeLive(index) && entry.Hash == hash && PyValueComparer.Instance.Equals(entry.Key, key,
+                context ?? PyStructuralGuard.AmbientContext, span ?? _allocationSpan)) return index;
             PyStructuralGuard.NoteWork(context, span ?? _allocationSpan);
             index = entry.Next - 1;
         }

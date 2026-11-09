@@ -55,9 +55,10 @@ returns its working allowance while retaining the input's charge.
 
 Exact number and string operators share scalar dispatch. UTF-8 equality and
 ordering primitives accept the current execution context for bounded cooperative
-checks. String methods, contextual structural comparisons and native sorting use
-these primitives without retaining caller tokens. Custom comparison and truth
-protocols keep their ordinary synchronous/async behavior. Context-free native
+checks. String methods, contextual structural comparisons, native sorting and
+contextual dictionary text-key probes use these primitives without retaining caller
+tokens. Cached key hashes do not bypass cancellation during equality. Custom
+comparison and truth protocols keep their ordinary synchronous/async behavior. Context-free native
 comparers have no token and retain their whole-span operations; cancellation is
 then observed by the enclosing execution.
 

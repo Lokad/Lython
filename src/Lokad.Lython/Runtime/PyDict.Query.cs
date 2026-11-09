@@ -126,7 +126,7 @@ internal sealed partial class PyDict
                 if (CurrentNativeIndex(candidate, context, span) < 0) continue;
                 var matches = ReferenceEquals(candidate.Key, key) || (candidate.Protocol || protocol
                     ? LythonRuntime.ElementEquals(candidate.Key!, key, context, span)
-                    : PyValueComparer.Instance.Equals(candidate.Key, key));
+                    : PyValueComparer.Instance.Equals(candidate.Key, key, context, span));
                 context.CheckExecution(span);
                 var index = matches ? CurrentNativeIndex(candidate, context, span) : -1;
                 if (index >= 0) return index;
@@ -157,7 +157,7 @@ internal sealed partial class PyDict
                 if (CurrentNativeIndex(candidate, context, span) < 0) continue;
                 var matches = ReferenceEquals(candidate.Key, key) || (candidate.Protocol || protocol
                     ? await LythonRuntime.ElementEqualsAsync(candidate.Key!, key, context, span).ConfigureAwait(false)
-                    : PyValueComparer.Instance.Equals(candidate.Key, key));
+                    : PyValueComparer.Instance.Equals(candidate.Key, key, context, span));
                 context.CheckExecution(span);
                 var index = matches ? CurrentNativeIndex(candidate, context, span) : -1;
                 if (index >= 0) return index;

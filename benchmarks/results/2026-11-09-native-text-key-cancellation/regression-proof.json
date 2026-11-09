@@ -1,0 +1,9 @@
+{
+  "baselineRevision": "43350e4f-equivalent final R167 precommit freeze",
+  "coreSHA256": "cc596abce910ea0890eaad484c52897f7617c4617e4e3b3ef5f128af46134252",
+  "testAssemblySHA256": "23b975bb6cca8b76154959c4cbd66c7d1396108e2718fe5474571769bdff179b",
+  "failed": 1,
+  "passed": 1,
+  "condition": "Same new assembly, existing native dictionary read/write entry points, cached equal-key hashes, no ambient context.",
+  "proofCorrection": "Original analysis incorrectly required both concurrent cases to fail. One observed old read completed after requested cancellation and proves the gap; the write legally cancelled. Retain original log/script/assertion, no rerun. Current27 focused pass including both stress cases."
+}

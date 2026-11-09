@@ -1,0 +1,19 @@
+{
+  "focused-Lokad.Lython.PublicApi.Tests-net10.0.log": {
+    "passed": 825,
+    "sha256": "fc395bd316c46260a2d483497b73e81f384d46a0756c4a4705bea5b133be519d"
+  },
+  "focused-Lokad.Lython.PublicApi.Tests-net11.0.log": {
+    "passed": 825,
+    "sha256": "ab149c4f09122d1e31e4736a0e6ced095cdc36f87da2b329b7036ac612ce6466"
+  },
+  "focused-Lokad.Lython.Tests-net10.0.log": {
+    "passed": 27,
+    "sha256": "83bd874ae1cb83a8254eabe01af1918abbcd296eb1893bbfbd25dde64dca40a4"
+  },
+  "focused-Lokad.Lython.Tests-net11.0.log": {
+    "passed": 27,
+    "sha256": "2e396dfe8b3a3d28780e858ad4234a146df5b740e5a278bf43d751fa8bc7fdc8"
+  },
+  "limits": "Final public excludes Stress explicitly; initial837 per framework included the existing long CSV stress cases. Internal27 includes the2new long-key cases. Prototype frozen-old proof and final focused checks use identical test source, different rebuilt test binary identities; no repeat of unchanged frozen-old proof."
+}
