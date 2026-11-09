@@ -1,0 +1,31 @@
+{
+  "reference": "Python 3.13.2",
+  "records": [
+    {
+      "case": "keywords",
+      "sourceSHA256": "7ae17a64678305eca4c5f80a551368af6134be8410b25c4dec31f73d74d3cf83",
+      "expectedOutput": "['target', 'argument'] ((1, 2), {'last': 3})\nTrue\n",
+      "files": {},
+      "wrapper": null
+    },
+    {
+      "case": "function",
+      "sourceSHA256": "ae4daad61d58ed5c9f424d140eb64b00b70909f21fae7b4c17b267e16debf688",
+      "expectedOutput": "True\n",
+      "files": {
+        "events.txt": "beforecalled"
+      },
+      "wrapper": "Top-level guest return wrapped in a Python function; return list asserted separately."
+    },
+    {
+      "case": "constructor",
+      "sourceSHA256": "6beecf4aae2a147dce778962d43405f9e55565828d727db78c2f0580b725348c",
+      "expectedOutput": "True\n",
+      "files": {
+        "events.txt": "beforecalled"
+      },
+      "wrapper": "Top-level guest return wrapped in a Python function; return list asserted separately."
+    }
+  ],
+  "purpose": "Independent semantic goldens only, not timing or cancellation. Windows physical stdout CRLF normalized to logical LF."
+}

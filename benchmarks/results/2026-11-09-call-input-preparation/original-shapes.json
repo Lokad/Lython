@@ -1,0 +1,243 @@
+[
+  {
+    "caseId": "scripts.csv-validated-records.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 79,
+        "opcodes": {
+          "Import": 1,
+          "DefineFunction": 1,
+          "MakeDict": 1,
+          "StoreLocal": 15,
+          "LoadName": 4,
+          "Call": 10,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 7,
+          "LoadCallMember": 5,
+          "GetIter": 2,
+          "ForNext": 2,
+          "LoadLocal": 5,
+          "Binary": 2,
+          "JumpIfFalse": 1,
+          "AbruptJump": 1,
+          "UnpackValues": 1,
+          "StoreSubscript": 1,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "LoadConst": 2,
+          "MakeList": 2,
+          "PopTop": 3,
+          "Subscript": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      },
+      {
+        "name": "validated_record",
+        "mirrored": false,
+        "instructions": 13,
+        "opcodes": {
+          "LoadGlobal": 1,
+          "Subscript": 3,
+          "Call": 1,
+          "StoreLocal": 1,
+          "CompareJumpIfFalse": 2,
+          "Return": 3,
+          "LoadLocal": 1,
+          "MakeTuple": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.text-summary-helpers.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 65,
+        "opcodes": {
+          "DefineFunction": 1,
+          "MakeDict": 1,
+          "StoreLocal": 12,
+          "LoadName": 5,
+          "Call": 8,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 7,
+          "GetIter": 3,
+          "ForNext": 3,
+          "LoadLocal": 3,
+          "LoadCallMember": 2,
+          "Binary": 4,
+          "StoreSubscript": 1,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "Subscript": 1,
+          "PopTop": 2,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 18,
+            "count": 1,
+            "span": {
+              "Start": 170,
+              "Length": 21,
+              "Line": 8,
+              "Column": 21
+            }
+          }
+        ]
+      },
+      {
+        "name": "words_from_line",
+        "mirrored": false,
+        "instructions": 5,
+        "opcodes": {
+          "LoadCallMember": 2,
+          "Call": 2,
+          "Return": 1
+        },
+        "nativeBody": true,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.report-render.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 50,
+        "opcodes": {
+          "Import": 1,
+          "DefineFunction": 1,
+          "LoadName": 3,
+          "Call": 7,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "StoreLocal": 10,
+          "EnterContextManager": 2,
+          "Jump": 5,
+          "LoadCallMember": 3,
+          "LoadLocal": 3,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "PopTop": 3,
+          "GetIter": 1,
+          "ForNext": 1,
+          "Augmented": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 37,
+            "count": 1,
+            "span": {
+              "Start": 402,
+              "Length": 14,
+              "Line": 14,
+              "Column": 22
+            }
+          }
+        ]
+      },
+      {
+        "name": "render",
+        "mirrored": false,
+        "instructions": 13,
+        "opcodes": {
+          "StartFormattedString": 1,
+          "AppendFormattedText": 4,
+          "Subscript": 3,
+          "FormatField": 3,
+          "FinishFormattedString": 1,
+          "Return": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.unicode-index-report.control",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 56,
+        "opcodes": {
+          "StoreLocal": 9,
+          "LoadName": 8,
+          "Call": 9,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 5,
+          "GetIter": 1,
+          "ForNext": 1,
+          "LoadLocal": 3,
+          "Subscript": 2,
+          "Binary": 3,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "LoadCallMember": 1,
+          "PopTop": 2,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.config-edit.small",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 60,
+        "opcodes": {
+          "Import": 1,
+          "LoadName": 4,
+          "Call": 8,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "StoreLocal": 7,
+          "EnterContextManager": 2,
+          "Jump": 4,
+          "LoadCallMember": 4,
+          "LoadLocal": 5,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "StoreSubscript": 1,
+          "LoadConst": 5,
+          "ReadRetainedSubscript": 1,
+          "Augmented": 1,
+          "StoreSubscriptLast": 1,
+          "Subscript": 2,
+          "PopTop": 4,
+          "MakeTuple": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  }
+]

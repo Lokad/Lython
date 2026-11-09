@@ -1,0 +1,539 @@
+[
+  {
+    "caseId": "scripts.csv-validated-records.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 93,
+        "opcodes": {
+          "Import": 1,
+          "DefineFunction": 1,
+          "MakeDict": 1,
+          "StoreLocal": 15,
+          "LoadName": 4,
+          "LoadConst": 10,
+          "Call": 10,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 7,
+          "LoadCallMember": 5,
+          "LoadLocal": 11,
+          "GetIter": 2,
+          "ForNext": 2,
+          "Binary": 2,
+          "JumpIfFalse": 1,
+          "AbruptJump": 1,
+          "UnpackValues": 1,
+          "StoreSubscript": 1,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "MakeList": 2,
+          "PopTop": 3,
+          "Subscript": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 8,
+            "count": 2,
+            "span": {
+              "Start": 262,
+              "Length": 29,
+              "Line": 15,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 18,
+            "count": 1,
+            "span": {
+              "Start": 318,
+              "Length": 22,
+              "Line": 16,
+              "Column": 16
+            }
+          },
+          {
+            "instruction": 26,
+            "count": 2,
+            "span": {
+              "Start": 357,
+              "Length": 32,
+              "Line": 17,
+              "Column": 16
+            }
+          },
+          {
+            "instruction": 39,
+            "count": 2,
+            "span": {
+              "Start": 487,
+              "Length": 19,
+              "Line": 21,
+              "Column": 24
+            }
+          },
+          {
+            "instruction": 52,
+            "count": 3,
+            "span": {
+              "Start": 543,
+              "Length": 35,
+              "Line": 23,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 63,
+            "count": 2,
+            "span": {
+              "Start": 603,
+              "Length": 39,
+              "Line": 24,
+              "Column": 14
+            }
+          },
+          {
+            "instruction": 73,
+            "count": 1,
+            "span": {
+              "Start": 698,
+              "Length": 14,
+              "Line": 26,
+              "Column": 17
+            }
+          },
+          {
+            "instruction": 90,
+            "count": 1,
+            "span": {
+              "Start": 760,
+              "Length": 15,
+              "Line": 28,
+              "Column": 1
+            }
+          }
+        ]
+      },
+      {
+        "name": "validated_record",
+        "mirrored": false,
+        "instructions": 13,
+        "opcodes": {
+          "LoadGlobal": 1,
+          "Subscript": 3,
+          "Call": 1,
+          "StoreLocal": 1,
+          "CompareJumpIfFalse": 2,
+          "Return": 3,
+          "LoadLocal": 1,
+          "MakeTuple": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.text-summary-helpers.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 74,
+        "opcodes": {
+          "DefineFunction": 1,
+          "MakeDict": 1,
+          "StoreLocal": 12,
+          "LoadName": 5,
+          "LoadConst": 5,
+          "Call": 8,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 7,
+          "GetIter": 3,
+          "ForNext": 3,
+          "LoadLocal": 7,
+          "LoadCallMember": 2,
+          "Binary": 4,
+          "StoreSubscript": 1,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "Subscript": 1,
+          "PopTop": 2,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 6,
+            "count": 1,
+            "span": {
+              "Start": 97,
+              "Length": 17,
+              "Line": 6,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 20,
+            "count": 1,
+            "span": {
+              "Start": 170,
+              "Length": 21,
+              "Line": 8,
+              "Column": 21
+            }
+          },
+          {
+            "instruction": 28,
+            "count": 2,
+            "span": {
+              "Start": 220,
+              "Length": 19,
+              "Line": 9,
+              "Column": 28
+            }
+          },
+          {
+            "instruction": 41,
+            "count": 3,
+            "span": {
+              "Start": 272,
+              "Length": 35,
+              "Line": 11,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 51,
+            "count": 1,
+            "span": {
+              "Start": 335,
+              "Length": 14,
+              "Line": 12,
+              "Column": 17
+            }
+          },
+          {
+            "instruction": 71,
+            "count": 1,
+            "span": {
+              "Start": 411,
+              "Length": 12,
+              "Line": 14,
+              "Column": 1
+            }
+          }
+        ]
+      },
+      {
+        "name": "words_from_line",
+        "mirrored": false,
+        "instructions": 5,
+        "opcodes": {
+          "LoadCallMember": 2,
+          "Call": 2,
+          "Return": 1
+        },
+        "nativeBody": true,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.report-render.large",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 58,
+        "opcodes": {
+          "Import": 1,
+          "DefineFunction": 1,
+          "LoadName": 3,
+          "LoadConst": 5,
+          "Call": 7,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "StoreLocal": 10,
+          "EnterContextManager": 2,
+          "Jump": 5,
+          "LoadCallMember": 3,
+          "LoadLocal": 6,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "PopTop": 3,
+          "GetIter": 1,
+          "ForNext": 1,
+          "Augmented": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 4,
+            "count": 1,
+            "span": {
+              "Start": 136,
+              "Length": 20,
+              "Line": 8,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 14,
+            "count": 1,
+            "span": {
+              "Start": 182,
+              "Length": 17,
+              "Line": 9,
+              "Column": 15
+            }
+          },
+          {
+            "instruction": 25,
+            "count": 3,
+            "span": {
+              "Start": 217,
+              "Length": 34,
+              "Line": 11,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 35,
+            "count": 1,
+            "span": {
+              "Start": 267,
+              "Length": 86,
+              "Line": 12,
+              "Column": 5
+            }
+          },
+          {
+            "instruction": 44,
+            "count": 1,
+            "span": {
+              "Start": 402,
+              "Length": 14,
+              "Line": 14,
+              "Column": 22
+            }
+          },
+          {
+            "instruction": 55,
+            "count": 1,
+            "span": {
+              "Start": 439,
+              "Length": 14,
+              "Line": 16,
+              "Column": 1
+            }
+          }
+        ]
+      },
+      {
+        "name": "render",
+        "mirrored": false,
+        "instructions": 13,
+        "opcodes": {
+          "StartFormattedString": 1,
+          "AppendFormattedText": 4,
+          "Subscript": 3,
+          "FormatField": 3,
+          "FinishFormattedString": 1,
+          "Return": 1
+        },
+        "nativeBody": false,
+        "candidates": []
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.unicode-index-report.control",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 64,
+        "opcodes": {
+          "StoreLocal": 9,
+          "LoadName": 8,
+          "LoadConst": 5,
+          "Call": 9,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "EnterContextManager": 2,
+          "Jump": 5,
+          "GetIter": 1,
+          "ForNext": 1,
+          "LoadLocal": 6,
+          "Subscript": 2,
+          "Binary": 3,
+          "Augmented": 1,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "LoadCallMember": 1,
+          "PopTop": 2,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 3,
+            "count": 1,
+            "span": {
+              "Start": 15,
+              "Length": 17,
+              "Line": 2,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 25,
+            "count": 1,
+            "span": {
+              "Start": 115,
+              "Length": 9,
+              "Line": 4,
+              "Column": 48
+            }
+          },
+          {
+            "instruction": 37,
+            "count": 3,
+            "span": {
+              "Start": 130,
+              "Length": 35,
+              "Line": 5,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 48,
+            "count": 1,
+            "span": {
+              "Start": 194,
+              "Length": 10,
+              "Line": 6,
+              "Column": 18
+            }
+          },
+          {
+            "instruction": 51,
+            "count": 1,
+            "span": {
+              "Start": 207,
+              "Length": 7,
+              "Line": 6,
+              "Column": 31
+            }
+          },
+          {
+            "instruction": 61,
+            "count": 1,
+            "span": {
+              "Start": 216,
+              "Length": 12,
+              "Line": 7,
+              "Column": 1
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "caseId": "scripts.config-edit.small",
+    "code": [
+      {
+        "name": "\u003Cmodule\u003E",
+        "mirrored": false,
+        "instructions": 67,
+        "opcodes": {
+          "Import": 1,
+          "LoadName": 4,
+          "LoadConst": 11,
+          "Call": 8,
+          "ResolveContextManager": 2,
+          "Dup": 2,
+          "StoreLocal": 7,
+          "EnterContextManager": 2,
+          "Jump": 4,
+          "LoadCallMember": 4,
+          "LoadLocal": 6,
+          "ExitContextManager": 2,
+          "EndFinally": 2,
+          "StoreSubscript": 1,
+          "ReadRetainedSubscript": 1,
+          "Augmented": 1,
+          "StoreSubscriptLast": 1,
+          "Subscript": 2,
+          "PopTop": 4,
+          "MakeTuple": 1,
+          "Complete": 1
+        },
+        "nativeBody": false,
+        "candidates": [
+          {
+            "instruction": 3,
+            "count": 1,
+            "span": {
+              "Start": 18,
+              "Length": 19,
+              "Line": 3,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 13,
+            "count": 1,
+            "span": {
+              "Start": 62,
+              "Length": 17,
+              "Line": 4,
+              "Column": 14
+            }
+          },
+          {
+            "instruction": 28,
+            "count": 1,
+            "span": {
+              "Start": 128,
+              "Length": 35,
+              "Line": 7,
+              "Column": 1
+            }
+          },
+          {
+            "instruction": 34,
+            "count": 3,
+            "span": {
+              "Start": 169,
+              "Length": 36,
+              "Line": 8,
+              "Column": 6
+            }
+          },
+          {
+            "instruction": 54,
+            "count": 1,
+            "span": {
+              "Start": 310,
+              "Length": 18,
+              "Line": 10,
+              "Column": 5
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

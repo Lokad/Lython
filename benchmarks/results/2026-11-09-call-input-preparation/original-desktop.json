@@ -1,0 +1,400 @@
+{
+  "warm-sync": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 3318846.5,
+          "elapsedMs": 16.684434375
+        },
+        "before-control": {
+          "bytes": 3318802.0,
+          "elapsedMs": 13.26443125
+        },
+        "candidate": {
+          "bytes": 3318784.0,
+          "elapsedMs": 13.3368375
+        }
+      },
+      "allocationPercent": [
+        -0.0018831844136202314,
+        -0.0005423643832935809
+      ],
+      "elapsedPercent": [
+        -20.064191567776767,
+        0.5458677317958793
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 1422149.75,
+          "elapsedMs": 9.53165625
+        },
+        "before-control": {
+          "bytes": 1422176.75,
+          "elapsedMs": 9.39199375
+        },
+        "candidate": {
+          "bytes": 1422168.0,
+          "elapsedMs": 9.182290625
+        }
+      },
+      "allocationPercent": [
+        0.0012832685165609092,
+        -0.0006152540463100209
+      ],
+      "elapsedPercent": [
+        -3.6653191831167775,
+        -2.2327860365111363
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 3200977.0,
+          "elapsedMs": 11.85763125
+        },
+        "before-control": {
+          "bytes": 3201267.25,
+          "elapsedMs": 12.905303125
+        },
+        "candidate": {
+          "bytes": 3200971.25,
+          "elapsedMs": 12.120415625
+        }
+      },
+      "allocationPercent": [
+        -0.00017963265590559274,
+        -0.009246338305557433
+      ],
+      "elapsedPercent": [
+        2.2161624818616277,
+        -6.081898986777967
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 648774.75,
+          "elapsedMs": 5.884234375
+        },
+        "before-control": {
+          "bytes": 648773.75,
+          "elapsedMs": 6.497390625
+        },
+        "candidate": {
+          "bytes": 648802.5,
+          "elapsedMs": 6.71275
+        }
+      },
+      "allocationPercent": [
+        0.004277293467414012,
+        0.004431436999419169
+      ],
+      "elapsedPercent": [
+        14.080262141155785,
+        3.3145517551516956
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 39001.25,
+          "elapsedMs": 1.120365625
+        },
+        "before-control": {
+          "bytes": 38609.25,
+          "elapsedMs": 1.190528125
+        },
+        "candidate": {
+          "bytes": 39001.25,
+          "elapsedMs": 1.18653125
+        }
+      },
+      "allocationPercent": [
+        0.0,
+        1.015300737517566
+      ],
+      "elapsedPercent": [
+        5.905717162645008,
+        -0.3357228540904811
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    }
+  ],
+  "warm-async": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 3319888.5,
+          "elapsedMs": 14.149496875
+        },
+        "before-control": {
+          "bytes": 3319853.75,
+          "elapsedMs": 14.59201875
+        },
+        "candidate": {
+          "bytes": 3319712.75,
+          "elapsedMs": 12.9362875
+        }
+      },
+      "allocationPercent": [
+        -0.0052938524893186845,
+        -0.004247175044980178
+      ],
+      "elapsedPercent": [
+        -8.574222714191027,
+        -11.346827867802723
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 1423095.25,
+          "elapsedMs": 9.9751125
+        },
+        "before-control": {
+          "bytes": 1423136.75,
+          "elapsedMs": 10.14603125
+        },
+        "candidate": {
+          "bytes": 1423106.25,
+          "elapsedMs": 9.254425
+        }
+      },
+      "allocationPercent": [
+        0.0007729630184583058,
+        -0.0021431531439297657
+      ],
+      "elapsedPercent": [
+        -7.224855860021629,
+        -8.787734120176305
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 3203123.25,
+          "elapsedMs": 13.424634375
+        },
+        "before-control": {
+          "bytes": 3203114.0,
+          "elapsedMs": 12.560203125
+        },
+        "candidate": {
+          "bytes": 3203394.5,
+          "elapsedMs": 12.938365625
+        }
+      },
+      "allocationPercent": [
+        0.00846829730951626,
+        0.008757103243905995
+      ],
+      "elapsedPercent": [
+        -3.622212243676104,
+        3.0107992381691595
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 649575.5,
+          "elapsedMs": 8.52360625
+        },
+        "before-control": {
+          "bytes": 649566.75,
+          "elapsedMs": 8.027590625
+        },
+        "candidate": {
+          "bytes": 649601.0,
+          "elapsedMs": 8.07870625
+        }
+      },
+      "allocationPercent": [
+        0.003925640668400732,
+        0.005272745256745814
+      ],
+      "elapsedPercent": [
+        -5.219621683017095,
+        0.6367492736963021
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 39367.75,
+          "elapsedMs": 1.182603125
+        },
+        "before-control": {
+          "bytes": 39205.5,
+          "elapsedMs": 1.025646875
+        },
+        "candidate": {
+          "bytes": 39364.25,
+          "elapsedMs": 1.16403125
+        }
+      },
+      "allocationPercent": [
+        -0.00889052587460526,
+        0.4049176773667007
+      ],
+      "elapsedPercent": [
+        -1.5704232981795907,
+        13.492399613658446
+      ],
+      "boundary": "Warm mediated I/O, full goldens and prior-result cleanup; startup/reset/protocol/final caches excluded."
+    }
+  ],
+  "compile-sync": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 171081.25,
+          "elapsedMs": 0.615484375
+        },
+        "before-control": {
+          "bytes": 171081.25,
+          "elapsedMs": 0.620428125
+        },
+        "candidate": {
+          "bytes": 171889.25,
+          "elapsedMs": 0.630403125
+        }
+      },
+      "allocationPercent": [
+        0.47229021298360596,
+        0.47229021298360596
+      ],
+      "elapsedPercent": [
+        2.4239039374476468,
+        1.6077607700327734
+      ],
+      "boundary": "Compile construction/disposal plus driver/reflection overhead; no execution or I/O."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 125953.25,
+          "elapsedMs": 0.55040625
+        },
+        "before-control": {
+          "bytes": 125953.25,
+          "elapsedMs": 0.5289625
+        },
+        "candidate": {
+          "bytes": 126465.25,
+          "elapsedMs": 0.5520875
+        }
+      },
+      "allocationPercent": [
+        0.40650003076538876,
+        0.40650003076538876
+      ],
+      "elapsedPercent": [
+        0.3054561971271186,
+        4.371765484320722
+      ],
+      "boundary": "Compile construction/disposal plus driver/reflection overhead; no execution or I/O."
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 112689.25,
+          "elapsedMs": 0.677903125
+        },
+        "before-control": {
+          "bytes": 112689.25,
+          "elapsedMs": 0.610634375
+        },
+        "candidate": {
+          "bytes": 113353.25,
+          "elapsedMs": 0.6145125
+        }
+      },
+      "allocationPercent": [
+        0.5892310047320493,
+        0.5892310047320493
+      ],
+      "elapsedPercent": [
+        -9.350985806415924,
+        0.6350977211199593
+      ],
+      "boundary": "Compile construction/disposal plus driver/reflection overhead; no execution or I/O."
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 80649.25,
+          "elapsedMs": 0.4555375
+        },
+        "before-control": {
+          "bytes": 80649.25,
+          "elapsedMs": 0.421859375
+        },
+        "candidate": {
+          "bytes": 81345.25,
+          "elapsedMs": 0.4537875
+        }
+      },
+      "allocationPercent": [
+        0.8629962460903196,
+        0.8629962460903196
+      ],
+      "elapsedPercent": [
+        -0.38416156737919316,
+        7.568428460313359
+      ],
+      "boundary": "Compile construction/disposal plus driver/reflection overhead; no execution or I/O."
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 99945.25,
+          "elapsedMs": 0.450475
+        },
+        "before-control": {
+          "bytes": 99945.25,
+          "elapsedMs": 0.4647625
+        },
+        "candidate": {
+          "bytes": 100473.25,
+          "elapsedMs": 0.42463125
+        }
+      },
+      "allocationPercent": [
+        0.5282892383579929,
+        0.5282892383579929
+      ],
+      "elapsedPercent": [
+        -5.736999833509071,
+        -8.634786584545873
+      ],
+      "boundary": "Compile construction/disposal plus driver/reflection overhead; no execution or I/O."
+    }
+  ],
+  "analysisCorrection": "Original summary attempted to divide zero guest execution time in compile-only lane. All three existing raw lane measurements/gates completed; only offline analysis corrected. No retiming.",
+  "limitations": "Desktop isolated ALCs share process JIT/GC; elapsed is diagnostic, no CPU or equivalence claim. Changes are relative to two identical qualified production roles, not CPython."
+}

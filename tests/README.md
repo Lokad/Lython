@@ -17,6 +17,13 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Call input lifetimes](Lokad.Lython.PublicApi.Tests/CallInputLifetimeTests.cs) check
+target/argument order, keyword and positional aliases, function/constructor host
+suspension, cancellation, retained results and joined cleanup. Operand-read cases
+check original failure spans beyond the fourth argument. Numeric ingress checks
+also preserve BigInteger projection for guest arithmetic and CLR types for unchanged
+host integers.
+
 [String storage publication](Lokad.Lython.Tests/StringStoragePublicationTests.cs)
 checks stable UTF-8 borrows before and after indexing, cache publication during
 admission reentry, retained owner funding and refund of duplicate unpublished work.

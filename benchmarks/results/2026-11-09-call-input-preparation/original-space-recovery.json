@@ -1,0 +1,156 @@
+{
+  "requiredFreeBytes": 270856192,
+  "freshIdleLease": true,
+  "beforeFreeBytes": 260268032,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109/observations.tgz",
+      "sha256": "e60d3c24f961d024399a79027834c7efc78edb563a09e2c8a5637ef46477a57e",
+      "size": 4050731,
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-09-optional-string-index-metadata/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 339781,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109/observations.tgz"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/dispatch-liveness-b486-20261109/observations.tgz",
+      "sha256": "cb290981cdddeb718fcfeb44c9a2d67b6c7ed4603ab747692d695c411d4b48b0",
+      "size": 3796206,
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-09-dispatch-liveness/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 803271,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/dispatch-liveness-b486-20261109",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/dispatch-liveness-b486-20261109/observations.tgz"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-read-lifetime-b485-20261108/observations.tgz",
+      "sha256": "0937d726f8127cdf8727e083e42f7b35af5b2cd56d50152b6f0a2fb4adbeed3c",
+      "size": 3795048,
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-09-text-read-lifetimes/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 803235,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/text-read-lifetime-b485-20261108",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/text-read-lifetime-b485-20261108/observations.tgz"
+      ]
+    }
+  ],
+  "unavailable": [],
+  "operation": "Remove only redundant remote compressed archives. Their raw trees, receipts, frozen workers and byte-identical tracked local archives survive.",
+  "afterFreeBytes": 271912960
+}

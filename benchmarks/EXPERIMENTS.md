@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R175 ordinary call-input batch](results/2026-11-09-call-input-preparation/README.md)
+removes14CSV/9text/8report module dispatches in two private variants, but retains
+reads/copies in a new loop. Shared prepared metadata removes a duplicate field.
+Both quiet5job141s batches pass all gates; original async text+2.71..5.14%, refined
+controls overlap with possible Unicode cost. Runtime allocation flat, compilation
++0.29..0.66%. Withdraw both variants completely, retain seven semantic cases and
+all adverse/raw evidence. Exact qualified production restored;42retained checks
+per actual11/10 pass. Initial full16931public11 and refined576/3886each target are
+labelled by source. No CPU/equivalence claim or permanent design veto; objective open.
+
 The [R174 private integer transport prototype](results/2026-11-09-machine-integer-transport/README.md)
 demonstrates about6.91% less complete-text allocation, but violates the existing
 BigInteger projection contract. Original and refined timings remain mixed/adverse;
