@@ -71,3 +71,9 @@ stages were skipped; corrected delivery remains pending. Measured source65ed is
 unchanged historical evidence, not a timing claim for the correction.
 [Failed CI](failed-delivery-ci.json), [correction/source status](delivery-correction.json),
 [independent goldens](lazy-super-goldens.json), [original failure and focused checks](delivery-correction.tar.xz).
+
+Corrected delivery42588611410/source58d3ec0f is cached terminal success: Windows/
+Ubuntu actual.NET11/10, original Stress both and installed Release core-package
+consumers all pass. R145 qualification is complete. The original failed condition
+and measured65ed source remain separate; no unchanged retiming or timing claim for
+the correction. [Successful delivery](delivery-ci.json). Publication remains postponed.

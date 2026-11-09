@@ -27,8 +27,8 @@ the unchanged R136 worker/adapter and external source/fixtures/goldens. Focused
 semantic, cancellation and ownership checks pass on actual .NET 11/10; its full
 delivery found a lazy-type/module-super classification regression and 109 raw-module
 fixture cases per OS. Corrected `58d3ec0f` passes 200 internal/752 public focused checks
-per actual framework; its full Windows/Ubuntu, original Stress and installed-package
-delivery checks are pending. These timings still describe `65ed`, not that correction.
+per actual framework; its full Windows/Ubuntu .NET 11/10, original Stress and
+installed-package delivery checks pass. These timings still describe `65ed`, not that correction.
 Earlier `4598` and `6f76` sources are fully qualified. The later generator source
 `081052fa`, with test correction `27353cfb`, passes those full delivery gates.
 Qualification and performance evidence are separate; comparing these checkpoint

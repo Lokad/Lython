@@ -36,7 +36,8 @@ embedding tails and large-file/tree throughput remain unmeasured.
 Source65ed's full delivery42586293361 found one real lazy-type/module-super
 classification regression and109 raw-module fixture cases per OS; later10/Stress/
 package gates were skipped. Corrected58d3ec0f passes200 internal/752 public focused
-checks on each actual framework; full corrected delivery42588611410 is pending.
+checks on each actual framework; corrected delivery42588611410 is cached success
+on Windows/Ubuntu actual11/10, original Stress both and installed Release consumers.
 The changed compiler fact and fixture setup do not relabel these recorded timings
 as58d3. [Correction evidence](../2026-11-09-callable-consolidation/README.md).
 
