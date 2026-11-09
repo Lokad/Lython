@@ -71,26 +71,29 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (_function is PyFunctionBase function)
-            return function.Invoke(arguments, span, context, _self);
-
-        // Other wrapped callables can retain their arguments: keep an owned copy.
-        var bound = new CallArgumentValue[arguments.Length + 1];
-        bound[0] = CallArgumentValue.Positional(_self);
-        Array.Copy(arguments, 0, bound, 1, arguments.Length);
-        return _function.Invoke(bound, span, context);
-    }
+        => InvokeBorrowed(arguments, span, context);
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        if (_function is PyFunctionBase function)
-            return function.InvokeAsync(arguments, span, context, _self);
+        => InvokeBorrowedAsync(arguments, span, context);
 
+    public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (_function is PyFunctionBase function) return function.Invoke(arguments, span, context, _self);
+        return _function.Invoke(PrependReceiver(arguments), span, context);
+    }
+
+    public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (_function is PyFunctionBase function) return function.InvokeAsync(arguments, span, context, _self);
+        return _function.InvokeAsync(PrependReceiver(arguments), span, context);
+    }
+
+    private CallArgumentValue[] PrependReceiver(ReadOnlySpan<CallArgumentValue> arguments)
+    {
         var bound = new CallArgumentValue[arguments.Length + 1];
         bound[0] = CallArgumentValue.Positional(_self);
-        Array.Copy(arguments, 0, bound, 1, arguments.Length);
-        return _function.InvokeAsync(bound, span, context);
+        arguments.CopyTo(bound.AsSpan(1));
+        return bound;
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString(DisplayText(context));

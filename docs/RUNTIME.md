@@ -568,12 +568,15 @@ table needs neither capacity growth nor key protocols. Growth creates the contex
 before admission. Operand storage retains shared execution services rather than
 lexical identity; cancellation, nesting admission and cleanup remain unchanged.
 Mirrored/lowered functions and native/protocol callbacks use their general
-invocation routes. The shared unary/binary/ternary callback helpers and ordinary
-`map` calls pass managed stack arguments directly to the existing function/builtin binders. Binding copies
-values into invocation-owned storage before any default lookup or body can
-suspend. Bound receivers follow the same rules. Wider `map` calls retain admitted
-argument arrays; other callable implementations receive owned arrays because they
-may retain them. These callback helpers have no thread-local argument pool. A bound
+invocation routes. Short executable calls and shared native callback helpers pass
+managed stack arguments through the same borrowed entry on the callable contract.
+Function, builtin and JSON binding consume values into invocation-owned storage
+before any default lookup or body can suspend. Bound receivers follow the same
+rules. Constructors and wide calls retain owned packets through their actual
+cleanup; other callable implementations receive invocation-private arrays whose
+references are cleared after completion. Escaping guest values use their ordinary
+retained owners. There are no thread-local argument pools or callable-type switches
+in the shared callback helpers. A bound
 function body reuses its call admission rather than adding a second logical
 nesting charge. Raw protocols retain function-depth and managed-stack protection;
 module entries own interpreter admission. Managed stack checks, large-stack

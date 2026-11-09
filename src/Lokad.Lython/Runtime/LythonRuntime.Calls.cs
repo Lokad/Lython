@@ -417,6 +417,44 @@ internal sealed partial class LythonRuntime
             new PreparedCallArguments(arguments));
     }
 
+    private static object InvokeBorrowedCallableTarget(object target, ExecutableCallSite call,
+        ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context)
+    {
+        if (target is not ICallable callable) throw RuntimeErrors.NotCallable(call.TargetSpan);
+        context.EnterInterpreterFrame(call.CallSpan);
+        try { return RuntimeValue(callable.InvokeBorrowed(arguments, call.CallSpan, context)); }
+        catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    private static ValueTask<object> InvokeBorrowedCallableTargetAsync(object target, ExecutableCallSite call,
+        ReadOnlySpan<CallArgumentValue> arguments, ExecutionContext context)
+    {
+        try
+        {
+            if (target is not ICallable callable) throw RuntimeErrors.NotCallable(call.TargetSpan);
+            context.EnterInterpreterFrame(call.CallSpan);
+            var pendingFrame = false;
+            try
+            {
+                var pending = callable.InvokeBorrowedAsync(arguments, call.CallSpan, context);
+                if (pending.IsCompletedSuccessfully) return new(RuntimeValue(pending.Result));
+                pendingFrame = true;
+                return AwaitBorrowedCall(pending, call.CallSpan, context);
+            }
+            catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated)) { throw translated; }
+            finally { if (!pendingFrame) context.LeaveInterpreterFrame(); }
+        }
+        catch (Exception error) { return ValueTask.FromException<object>(error); }
+    }
+
+    private static async ValueTask<object> AwaitBorrowedCall(ValueTask<object> pending, LythonSourceSpan span, ExecutionContext context)
+    {
+        try { return RuntimeValue(await pending.ConfigureAwait(false)); }
+        catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
     private interface ICallArguments
     {
         /// <summary>Supplies arguments after the target has been confirmed callable and its interpreter frame entered.</summary>
@@ -450,9 +488,39 @@ internal sealed partial class LythonRuntime
 
         ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ValueTask.FromResult(Invoke(arguments, span, context));
+
+        // Consume borrowed inputs before returning pending work. A callable may
+        // borrow its invocation-private packet through completion, never after it.
+        // Escaping guest values need their ordinary retained storage, not this packet.
+        object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var owned = arguments.ToArray();
+            try { return Invoke(owned, span, context); }
+            finally { Array.Clear(owned); }
+        }
+
+        ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var owned = arguments.ToArray();
+            var pendingOwner = false;
+            try
+            {
+                var pending = InvokeAsync(owned, span, context);
+                if (pending.IsCompletedSuccessfully) return new(pending.Result);
+                pendingOwner = true;
+                return CompleteOwnedArguments(pending, owned);
+            }
+            finally { if (!pendingOwner) Array.Clear(owned); }
+        }
+
+        private static async ValueTask<object> CompleteOwnedArguments(ValueTask<object> pending, CallArgumentValue[] owned)
+        {
+            try { return await pending.ConfigureAwait(false); }
+            finally { Array.Clear(owned); }
+        }
     }
 
-    internal abstract class BoundArgumentsCallable : ICallable
+    private abstract class BoundArgumentsCallable : ICallable
     {
         private readonly PythonCallableKind _callableKind;
 
@@ -467,9 +535,9 @@ internal sealed partial class LythonRuntime
         protected LythonCallableSignature Signature { get; }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Invoke(arguments.AsSpan(), span, context);
+            => InvokeBorrowed(arguments, span, context);
 
-        internal object Invoke(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
+        public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
             return PreservePresence
@@ -478,9 +546,9 @@ internal sealed partial class LythonRuntime
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => InvokeAsync(arguments.AsSpan(), span, context);
+            => InvokeBorrowedAsync(arguments, span, context);
 
-        internal ValueTask<object> InvokeAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
+        public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
             return PreservePresence

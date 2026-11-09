@@ -13,31 +13,20 @@ public sealed class DirectStringStartsWithTests
     [InlineData(true, "startswith")]
     [InlineData(false, "endswith")]
     [InlineData(true, "endswith")]
-    public async Task OrdinaryCallsLeaveTheArgumentPoolUntouched(bool asynchronous, string method)
+    public async Task OrdinaryCallsPreserveValuesAndCleanup(bool asynchronous, string method)
     {
         var (code, context) = Prepare("return text.startswith(prefix)", method: method);
         context.Variables["text"] = PyString.FromString("alpha", context.MemoryGovernor, null);
         context.Variables["prefix"] = PyString.FromString("a", context.MemoryGovernor, null);
-        var pool = typeof(LythonRuntime).GetField("_pooledOneCallArgument", BindingFlags.Static | BindingFlags.NonPublic)!;
-        var previous = pool.GetValue(null);
-        var marker = new object();
-        var sentinel = new[] { CallArgumentValue.Positional(marker) };
-        pool.SetValue(null, sentinel);
-        try
+        if (asynchronous)
         {
-            if (asynchronous)
-            {
-                var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
-                Assert.True(pending.IsCompleted);
-                Assert.Equal(true, await pending);
-            }
-            else Assert.Equal(true, LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-            Assert.Same(sentinel, pool.GetValue(null));
-            Assert.Same(marker, sentinel[0].Value);
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+            Assert.True(pending.IsCompleted);
+            Assert.Equal(true, await pending);
         }
-        finally { pool.SetValue(null, previous); }
+        else Assert.Equal(true, LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]

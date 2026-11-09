@@ -63,6 +63,9 @@ internal sealed partial class LythonRuntime
             }
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeBorrowed(arguments, span, context);
+
+            public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
                 if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
@@ -79,35 +82,37 @@ internal sealed partial class LythonRuntime
                 return result;
             }
 
-            public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => InvokeBorrowedAsync(arguments, span, context);
+
+            public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecution(span);
                 if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonLoads))
                 {
-                    return await Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
+                    return Instance.LoadsDefault(arguments[0].Value, span, context, asynchronous: true);
                 }
                 if (IsDefaultCall(arguments, LythonKnownCallableSignatures.JsonDumps))
                 {
-                    return await Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true).ConfigureAwait(false);
+                    return Instance.DumpsDefault(arguments[0].Value, span, context, asynchronous: true);
                 }
                 var extras = CollectExtraArguments(arguments);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
-                var result = _asyncImplementation is null
-                    ? _implementation(bound, extras, span, context)
-                    : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
-                return result;
+                return _asyncImplementation is null
+                    ? new(_implementation(bound, extras, span, context))
+                    : _asyncImplementation(bound, extras, span, context);
             }
 
             // This complete call shape has no keyword/default slots to bind.
             // Other signatures and every explicit option retain general binding.
-            private bool IsDefaultCall(CallArgumentValue[] arguments, LythonCallableSignature signature)
+            private bool IsDefaultCall(ReadOnlySpan<CallArgumentValue> arguments, LythonCallableSignature signature)
                 => ReferenceEquals(_signature, signature) &&
                     arguments.Length == 1 && arguments[0].IsPositional;
 
             // All four signatures allow extra keywords. The ordinary binder
             // snapshots known values before any suspension; only constructor
             // forwarding needs a separate collection of unknown keywords.
-            private IReadOnlyList<KeyValuePair<string, object>> CollectExtraArguments(CallArgumentValue[] arguments)
+            private IReadOnlyList<KeyValuePair<string, object>> CollectExtraArguments(ReadOnlySpan<CallArgumentValue> arguments)
             {
                 var known = (NamedCallableParameterLayout)_signature.Parameters;
                 List<KeyValuePair<string, object>>? extras = null;

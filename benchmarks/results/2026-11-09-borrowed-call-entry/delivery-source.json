@@ -1,0 +1,20 @@
+{
+  "productionSourceMatchesMeasuredFreeze": true,
+  "baselineRevision": "c89d6914dae1edd50fe03995ce37d715fd796dad",
+  "baselineProduction": "afb11d97 fully qualified42598266368",
+  "measuredCoreSHA256": "21cf11182d92c1a5e73a15b89862221c24ccc7e9307d05cf75a79bc8f8fe22b1",
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "focusedPerFramework": {
+    "internal": 706,
+    "public": 1614
+  },
+  "newFrameworkOrPublicApi": false,
+  "independentWholeScriptPythonGoldens": 5,
+  "removed": "Three executable-call thread-local packet pools and rent/return/clear lifecycle, two callback callable-type switches, completed general/JSON async forwarding; private builtin hierarchy no longer exposed to callback selection. Six pool-sentinel fixture regions removed, independent semantic/lifetime assertions preserved.",
+  "preserved": "Existing array entry for genuine owned callers, dynamic/constructor/wide packets through completion, owned binding before actual suspension, current cancellation and first terminal refusal, managed nesting, retained aliases and awaited cleanup. Original five packet-release failures fixed in code with original release assertions unchanged.",
+  "limitations": "Constructor control allocation plus2.5percent, ordinary script allocation unchanged. Desktop controls vary up to7.4percent and async JSON adversity retained. No universal/startup/pending-I/O/CPython speedup claim. Full platform/package/Stress batch after retention decision.",
+  "space": "Initial setup refused before any service/root/fixture creation. Fresh idle lease/single-alias hashes/ownership/parents/pre-mutation plan verified two redundant remote archives, both still immutable Git-tracked locally with raw trees/receipts retained. Removed those copies only; same floor/headroom/staged source/payload, no timed work restarted."
+}

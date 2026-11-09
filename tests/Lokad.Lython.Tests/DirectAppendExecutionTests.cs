@@ -11,7 +11,7 @@ public sealed class DirectAppendExecutionTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DifferentReceiversDoNotPackageArgumentsOrConstructBoundMethods(bool asynchronous)
+    public async Task DifferentReceiversPreserveArgumentsAndCleanup(bool asynchronous)
     {
         var (code, context) = Prepare("for items in [left,right]: items.append(argument())\n");
         var left = new PyList();
@@ -20,31 +20,20 @@ public sealed class DirectAppendExecutionTests
         context.Variables["left"] = left;
         context.Variables["right"] = right;
         context.Variables["argument"] = argument;
-        var pool = typeof(LythonRuntime).GetField("_pooledOneCallArgument", BindingFlags.Static | BindingFlags.NonPublic)!;
-        var previous = pool.GetValue(null);
-        var marker = new object();
-        var sentinel = new[] { CallArgumentValue.Positional(marker) };
-        pool.SetValue(null, sentinel);
-        try
+        if (asynchronous)
         {
-            if (asynchronous)
-            {
-                var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
-                Assert.True(pending.IsCompleted);
-                await pending;
-            }
-            else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
-            Assert.Same(sentinel, pool.GetValue(null));
-            Assert.Same(marker, sentinel[0].Value);
-            Assert.Equal(2, argument.Calls);
-            Assert.Same(argument.Value, Assert.Single(left));
-            Assert.Same(argument.Value, Assert.Single(right));
-
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+            Assert.True(pending.IsCompleted);
+            await pending;
         }
-        finally { pool.SetValue(null, previous); }
+        else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+        Assert.Equal(2, argument.Calls);
+        Assert.Same(argument.Value, Assert.Single(left));
+        Assert.Same(argument.Value, Assert.Single(right));
+
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]

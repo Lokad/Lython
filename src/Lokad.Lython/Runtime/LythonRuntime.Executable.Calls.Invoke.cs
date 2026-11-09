@@ -149,14 +149,29 @@ internal sealed partial class LythonRuntime
             catch { _execution.Stack.RetireTo(start); throw; }
         }
 
-        private async ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
+        private ValueTask<object> InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
         {
             if (target is ReceiverMethod method)
                 target = method.Bind(_execution.Stack[start]);
+            // Constructors can consume the same packet across __new__/__init__
+            // suspension. Other short calls bind a managed stack borrow before
+            // returning any pending work; retain no per-thread packet lifecycle.
+            if (call.ArgumentCount > 3 || _preparedCallValue is PyInstance)
+                return InvokeOwnedExecutableTargetAsync(call, start, target, asynchronous);
+            CallableInvocation.Arguments arguments = default;
+            PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments[..call.ArgumentCount], this);
+            return asynchronous
+                ? InvokeBorrowedCallableTargetAsync(target, call, arguments[..call.ArgumentCount], this)
+                : new(InvokeBorrowedCallableTarget(target, call, arguments[..call.ArgumentCount], this));
+        }
+
+        private async ValueTask<object> InvokeOwnedExecutableTargetAsync(ExecutableCallSite call, int start, object target, bool asynchronous)
+        {
             using var storage = ReserveExecutableCallArguments(call, this);
-            var arguments = PrepareExecutableCallArguments(call, ref _execution.Stack, start, this);
+            var arguments = new CallArgumentValue[call.ArgumentCount];
             try
             {
+                PrepareExecutableCallArguments(call, ref _execution.Stack, start, arguments, this);
                 if (_preparedCallValue is PyInstance instance)
                 {
                     _preparedCallValue = null;
@@ -166,7 +181,7 @@ internal sealed partial class LythonRuntime
                     ? await InvokeCallableTargetAsync(target, call.TargetSpan, call.CallSpan, this, arguments).ConfigureAwait(false)
                     : InvokeCallableTarget(target, call.TargetSpan, call.CallSpan, this, arguments);
             }
-            finally { ReturnCallArguments(arguments); }
+            finally { Array.Clear(arguments); }
         }
     }
 }

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Unify borrowed arguments on the existing callable contract and remove the
+  executable-call argument pool and callback type switches. Preserve owned
+  constructor inputs, suspended binding and deterministic packet cleanup.
+
 - Pass short native callback and `map` arguments directly into existing owned
   binders. Remove thread-local argument pools while preserving asynchronous
   default lookup, reentrancy, retained arguments and shared-memory admission.

@@ -346,108 +346,19 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Pooled per-call argument boxes for the common arities, confined per
-    // thread: tests run test classes in parallel, so a process-wide box
-    // could be taken twice at once. The retention audit shows no live
-    // caller-provided array reaches a retainer (the only storing callable,
-    // PyMethodCaller, is built from a range slice), so take-null with
-    // keep-first stays safe under recursion and suspension: each live use
-    // exclusively owns its array. Boxes are scrubbed before caching so
-    // reuse never leaks values.
-    [ThreadStatic]
-    private static CallArgumentValue[]? _pooledOneCallArgument;
-    [ThreadStatic]
-    private static CallArgumentValue[]? _pooledTwoCallArguments;
-    [ThreadStatic]
-    private static CallArgumentValue[]? _pooledThreeCallArguments;
-
-    private static CallArgumentValue[] RentCallArguments(int count)
+    private static void PrepareExecutableCallArguments(
+        ExecutableCallSite callSite, ref ExecutableValueStorage stack, int start,
+        Span<CallArgumentValue> arguments, ExecutionContext context)
     {
-        if (count == 1)
+        for (var i = 0; i < callSite.ArgumentCount; i++)
         {
-            var rented = _pooledOneCallArgument;
-            if (rented is not null)
-            {
-                _pooledOneCallArgument = null;
-                return rented;
-            }
-            return new CallArgumentValue[1];
-        }
-        if (count == 2)
-        {
-            var rented = _pooledTwoCallArguments;
-            if (rented is not null)
-            {
-                _pooledTwoCallArguments = null;
-                return rented;
-            }
-            return new CallArgumentValue[2];
-        }
-        if (count == 3)
-        {
-            var rentedThree = _pooledThreeCallArguments;
-            if (rentedThree is not null)
-            {
-                _pooledThreeCallArguments = null;
-                return rentedThree;
-            }
-            return new CallArgumentValue[3];
-        }
-        return count == 0 ? Array.Empty<CallArgumentValue>() : new CallArgumentValue[count];
-    }
-
-    private static void ReturnCallArguments(CallArgumentValue[] arguments)
-    {
-        if (arguments.Length == 1)
-        {
-            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-            _pooledOneCallArgument ??= arguments;
-        }
-        else if (arguments.Length == 2)
-        {
-            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-            arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
-            _pooledTwoCallArguments ??= arguments;
-        }
-        else if (arguments.Length == 3)
-        {
-            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
-            arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
-            arguments[2] = CallArgumentValue.Positional(PyNone.Instance);
-            _pooledThreeCallArguments ??= arguments;
-        }
-        else if (arguments.Length > 3)
-        {
-            // These buffers are not pooled, but the completed call helper can
-            // still hold the array until handing off its result. Withdraw every
-            // input reference at the same boundary as the small pooled arities.
-            arguments.AsSpan().Fill(CallArgumentValue.Positional(PyNone.Instance));
+            if ((i & 1023) == 0) context.CheckExecution(callSite.CallSpan);
+            arguments[i] = CreateExecutableCallArgument(callSite.Arguments[i], stack[start + i + callSite.ArgumentOffset]);
         }
     }
 
-    private static CallArgumentValue[] PrepareExecutableCallArguments(
-        ExecutableCallSite callSite, ref ExecutableValueStorage stack, int start, ExecutionContext context)
-    {
-        var arguments = RentCallArguments(callSite.ArgumentCount);
-        try
-        {
-            for (var i = 0; i < callSite.ArgumentCount; i++)
-            {
-                if ((i & 1023) == 0) context.CheckExecution(callSite.CallSpan);
-                arguments[i] = CreateExecutableCallArgument(callSite.Arguments[i], stack[start + i + callSite.ArgumentOffset]);
-            }
-            return arguments;
-        }
-        catch
-        {
-            ReturnCallArguments(arguments);
-            throw;
-        }
-    }
-
-    // Tiny cleared pools are control headroom. Larger native-call packets are
-    // substantial private storage, distinct from the already-owned operands.
-    // Keep their admission through the callable's actual completion and cleanup.
+    // Short owned constructor packets use minor control headroom. Wider packets
+    // are admitted through completion, independently of their existing operands.
     private static MemoryGovernor.TemporaryMemoryReservation? ReserveExecutableCallArguments(
         ExecutableCallSite callSite, ExecutionContext context)
         => callSite.ArgumentCount <= 3 ? null : context.MemoryGovernor.ReserveTemporary(

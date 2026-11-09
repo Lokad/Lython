@@ -5424,3 +5424,29 @@ R148/R149 delivery42598266368/sourceafb11d97 is cached terminal success: Windows
 and Ubuntu actual.NET11/10, original Stress both and installed Release core consumers.
 Qualification complete; retain measured source pairs and JSON/control uncertainty.
 No unchanged retiming. Publication postponed; broader performance roadmap continues.
+
+## One borrowed callable entry (2026-11-09 Paris)
+
+[R151/B506](results/2026-11-09-borrowed-call-entry/README.md), qualifiedafb11d97/core6417
+versus sourcefreeze21CF1118. Extend existing ICallable with consume-before-suspension
+borrows; invocation-private fallback arrays clear after actual completion. Constructors/
+wide calls retain owned storage. Remove three executable packet pools/lifecycles,
+two callback type switches, completed general/JSON async forwarding and six pool-only
+fixture regions; retain semantic/lifetime assertions and private builtin hierarchy.
+No new interface/framework/public option/dependency. Five packet-release failures
+uncovered/fixed in code; original assertions unchanged. 706internal/1614public each
+actual11/10, five independent whole-script Python goldens, all ownership/cleanup pass.
+
+Five quiet jobs141.919s: JSONsync−1.0–1.8%elapsed, async−5.7–10.6% with supporting
+CPU. Ordinary allocation/compile unchanged. Constructor control allocation+2.5%,
+elapsed−0.9–+0.7%; accept owned-array cost without another pool/redesign. Text/map
+controls mixed, current process spreads5.0/6.8%; regression uncertainty remains for
+next substantial checkpoint, not neutrality. Retain desktop async adversity/controls;
+no universal/pending-I/O/CPython claim, unchanged second campaign or percentage veto.
+
+Initial setup rejected headroom before any root/service/fixture/timing. Fresh idle
+lease/hash/single-alias/owner/parent checks and persisted pre-mutation plan precede
+removing only two redundant remote compressed archives, both byte-identical in Git,
+raw trees/receipts retained. Identical staged source/payload/floors on retry; no timed
+work restarted. All quiet/identity/output/join/RAM/archive/localSHA gates pass,
+terminal cached/no users. Full delivery next; broader performance/regex work active.

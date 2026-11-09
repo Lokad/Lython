@@ -1,4 +1,3 @@
-using System.Reflection;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
@@ -13,7 +12,7 @@ public sealed class DirectDictionarySetDefaultTests
     [InlineData(2, false)]
     [InlineData(1, true)]
     [InlineData(2, true)]
-    public async Task DistinctReceiversUseOperandsWithoutArgumentPackaging(int width, bool asynchronous)
+    public async Task DistinctReceiversPreserveDefaultsAndCleanup(int width, bool asynchronous)
     {
         var syntax = LythonFrontend.Compile($"for items in [left,right]: result=items.setdefault(key(){(width == 2 ? ",fallback" : "")})\nreturn result");
         Assert.NotNull(syntax.Script);
@@ -30,27 +29,17 @@ public sealed class DirectDictionarySetDefaultTests
         context.Variables["right"] = right;
         context.Variables["key"] = key;
         context.Variables["fallback"] = marker;
-        var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneCallArgument" : "_pooledTwoCallArguments", BindingFlags.Static | BindingFlags.NonPublic)!;
-        var previous = field.GetValue(null);
-        var sentinel = Enumerable.Repeat(CallArgumentValue.Positional(marker), width).ToArray();
-        field.SetValue(null, sentinel);
-        try
-        {
-            var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : default;
-            if (asynchronous) Assert.True(pending.IsCompleted);
-            var result = asynchronous ? await pending : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
-            Assert.Same(width == 1 ? PyNone.Instance : marker, result);
-            Assert.Equal(2, key.Calls);
-            Assert.Same(sentinel, field.GetValue(null));
-            Assert.All(sentinel, value => Assert.Same(marker, value.Value));
+        var pending = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : default;
+        if (asynchronous) Assert.True(pending.IsCompleted);
+        var result = asynchronous ? await pending : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+        Assert.Same(width == 1 ? PyNone.Instance : marker, result);
+        Assert.Equal(2, key.Calls);
 
-            Assert.Same(marker, left.GetItem(key.Value));
-            Assert.Same(result, right.GetItem(key.Value));
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        }
-        finally { field.SetValue(null, previous); }
+        Assert.Same(marker, left.GetItem(key.Value));
+        Assert.Same(result, right.GetItem(key.Value));
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, root.ReservedBytes);
     }

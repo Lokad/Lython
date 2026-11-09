@@ -105,7 +105,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     protected abstract bool RequiresArgumentMirroring { get; }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => Invoke(arguments.AsSpan(), span, context);
+        => InvokeBorrowed(arguments, span, context);
+
+    public object InvokeBorrowed(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => Invoke(arguments, span, context);
 
     // A separate receiver entry keeps the existing invocation depth and guards;
     // the binder consumes self first without materializing a prefixed array.
@@ -158,7 +161,10 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     }
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => InvokeAsync(arguments.AsSpan(), span, context);
+        => InvokeBorrowedAsync(arguments, span, context);
+
+    public ValueTask<object> InvokeBorrowedAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => InvokeAsync(arguments, span, context);
 
     internal ValueTask<object> InvokeAsync(ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null)

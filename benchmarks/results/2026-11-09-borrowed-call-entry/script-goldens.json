@@ -1,0 +1,37 @@
+[
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "source": "def record_amount(record:dict)->int:\n    return record['amount']\n\nimport json\n\ntotals = {}\naccepted = 0\nwith open('input.jsonl') as source:\n    for line in source:\n        if line.strip():\n            record = json.loads(line)\n            amount = record_amount(record)\n            if amount >= 0:\n                kind = record['kind']\n                totals[kind] = totals.get(kind, 0) + amount\n                accepted += 1\nwith open('report.json', 'w', newline='') as target:\n    json.dump(totals, target, sort_keys=True, ensure_ascii=False, separators=(',', ':'))\n    target.write('\\n')\nprint(accepted)\n",
+    "sourceSHA256": "beea66dfa7ab6333419678181ea8a6d5a5b030eb01ac35b993bb6d801e0c29a7",
+    "stdout": "3072\n",
+    "allOutputFilesEqual": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "source": "def words_from_line(line:str)->list:\n    return line.lower().split()\n\ncounts = {}\ntotal = 0\nwith open('input.txt') as source:\n    for line in source:\n        for word in words_from_line(line):\n            counts[word] = counts.get(word, 0) + 1\n            total += 1\nwith open('report.txt', 'w', newline='') as target:\n    for word in sorted(counts):\n        target.write(word + '=' + str(counts[word]) + '\\n')\nprint(total)\n",
+    "sourceSHA256": "18a323a60c3fe7a91da1b8df69e09b968d4affa5b7e7e515a4ea3bb765aaf0c3",
+    "stdout": "6144\n",
+    "allOutputFilesEqual": true
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "source": "import csv\n\n\ndef validated_record(record: dict, *, minimum=0):\n    amount = int(record['amount'])\n    if amount < minimum:\n        return None\n    if record['note'] == 'skip':\n        return None\n    return record['kind'], amount\n\n\ntotals = {}\naccepted = 0\nwith open('input.csv', newline='') as source:\n    for row in csv.DictReader(source):\n        item = validated_record(row, minimum=0)\n        if item is None:\n            continue\n        kind, amount = item\n        totals[kind] = totals.get(kind, 0) + amount\n        accepted += 1\nwith open('report.csv', 'w', newline='') as target:\n    writer = csv.writer(target, lineterminator='\\n')\n    writer.writerow(['kind', 'total'])\n    for kind in sorted(totals):\n        writer.writerow([kind, totals[kind]])\nprint(accepted)\n",
+    "sourceSHA256": "1a35af8ed5bdce1e9a294a9663b305a504ddfaed2a44518aa152995b3caef5ee",
+    "stdout": "3072\n",
+    "allOutputFilesEqual": true
+  },
+  {
+    "case": "scripts.text-summary-helpers.map-callback.large",
+    "source": "def words_from_line(line:str)->list:\n    return line.lower().split()\n\ncounts = {}\ntotal = 0\nwith open('input.txt') as source:\n    for words in map(words_from_line, source):\n        for word in words:\n            counts[word] = counts.get(word, 0) + 1\n            total += 1\nwith open('report.txt', 'w', newline='') as target:\n    for word in sorted(counts):\n        target.write(word + '=' + str(counts[word]) + '\\n')\nprint(total)\n",
+    "sourceSHA256": "3a7c4f771072cc9457f66241c377999f38c7df51a371dd791fa7454b78a87ff9",
+    "stdout": "6144\n",
+    "allOutputFilesEqual": true
+  },
+  {
+    "case": "scripts.csv-validated-records.constructor-control.large",
+    "source": "class RecordAmount:\n    def __init__(self, record):\n        self.amount = int(record['amount'])\n\n\nimport csv\n\n\ndef validated_record(record: dict, *, minimum=0):\n    amount = RecordAmount(record).amount\n    if amount < minimum:\n        return None\n    if record['note'] == 'skip':\n        return None\n    return record['kind'], amount\n\n\ntotals = {}\naccepted = 0\nwith open('input.csv', newline='') as source:\n    for row in csv.DictReader(source):\n        item = validated_record(row, minimum=0)\n        if item is None:\n            continue\n        kind, amount = item\n        totals[kind] = totals.get(kind, 0) + amount\n        accepted += 1\nwith open('report.csv', 'w', newline='') as target:\n    writer = csv.writer(target, lineterminator='\\n')\n    writer.writerow(['kind', 'total'])\n    for kind in sorted(totals):\n        writer.writerow([kind, totals[kind]])\nprint(accepted)\n",
+    "sourceSHA256": "5968751ad5e026d845ab661e9d19ee4144a665a3c6d212d443feefd21f4a7bc5",
+    "stdout": "3072\n",
+    "allOutputFilesEqual": true
+  }
+]

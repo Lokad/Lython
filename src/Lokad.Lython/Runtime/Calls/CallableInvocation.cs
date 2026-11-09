@@ -69,28 +69,16 @@ internal static class CallableInvocation
 
     internal static object Invoke(object callable, ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context)
-        => callable switch
-        {
-            PyFunctionBase function => function.Invoke(arguments, span, context),
-            PyBoundMethod { Function: PyFunctionBase function } method => function.Invoke(arguments, span, context, method.Receiver),
-            LythonRuntime.BoundArgumentsCallable builtin => builtin.Invoke(arguments, span, context),
-            LythonRuntime.ICallable other => other.Invoke(arguments.ToArray(), span, context),
-            _ => throw LythonRuntime.NotCallableError(callable, context, span)
-        };
+        => (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span))
+            .InvokeBorrowed(arguments, span, context);
 
     internal static ValueTask<object> InvokeAsync(object callable, ReadOnlySpan<CallArgumentValue> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context)
     {
         try
         {
-            return callable switch
-            {
-                PyFunctionBase function => function.InvokeAsync(arguments, span, context),
-                PyBoundMethod { Function: PyFunctionBase function } method => function.InvokeAsync(arguments, span, context, method.Receiver),
-                LythonRuntime.BoundArgumentsCallable builtin => builtin.InvokeAsync(arguments, span, context),
-                LythonRuntime.ICallable other => other.InvokeAsync(arguments.ToArray(), span, context),
-                _ => throw LythonRuntime.NotCallableError(callable, context, span)
-            };
+            return (callable as LythonRuntime.ICallable ?? throw LythonRuntime.NotCallableError(callable, context, span))
+                .InvokeBorrowedAsync(arguments, span, context);
         }
         catch (Exception error) { return ValueTask.FromException<object>(error); }
     }

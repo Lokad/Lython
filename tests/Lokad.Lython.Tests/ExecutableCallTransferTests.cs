@@ -7,9 +7,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// Post-completion checks inspect returned argument buffers before another
-// execution can rent those thread-local arrays again.
-[Collection("AllocationSensitive")]
+// Invocation-private packets stay live through suspension and release their
+// inputs when the actual call finishes, independently of CLR collection.
 public sealed class ExecutableCallTransferTests
 {
     private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic;

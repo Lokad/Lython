@@ -142,7 +142,7 @@ public sealed class PositionalCallTransportTests
     [InlineData(1, true)]
     [InlineData(2, true)]
     [InlineData(3, true)]
-    public async Task CompiledPositionalCallsDoNotBorrowThePackagedArgumentPool(int width, bool asynchronous)
+    public async Task CompiledPositionalCallsPreserveArgumentsAndCleanup(int width, bool asynchronous)
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var arguments = string.Join(",", Enumerable.Repeat("value", width));
@@ -151,29 +151,18 @@ public sealed class PositionalCallTransportTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions(),regexProvider:Utf8RegexProvider.Instance);
         var marker = new object();
         context.Variables["value"] = marker;
-        var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneCallArgument" : width == 2 ? "_pooledTwoCallArguments" : "_pooledThreeCallArguments",
-            BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        var previous = field.GetValue(null);
-        var sentinel = Enumerable.Repeat(CallArgumentValue.Positional(marker), width).ToArray();
-        field.SetValue(null, sentinel);
-        try
+        object? result;
+        if (asynchronous)
         {
-            object? result;
-            if (asynchronous)
-            {
-                var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context);
-                Assert.True(pending.IsCompleted);
-                result = await pending;
-            }
-            else result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
-            Assert.Same(marker, result);
-            Assert.Same(sentinel, field.GetValue(null));
-            foreach (var argument in sentinel) Assert.Same(marker, argument.Value);
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            var pending = LythonRuntime.ExecuteExecutableCodeObjectAsync(script.EntryPoint, context);
+            Assert.True(pending.IsCompleted);
+            result = await pending;
         }
-        finally { field.SetValue(null, previous); }
+        else result = LythonRuntime.ExecuteExecutableCodeObject(script.EntryPoint, context, default, null);
+        Assert.Same(marker, result);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]
@@ -185,7 +174,7 @@ public sealed class PositionalCallTransportTests
     [InlineData(3, true, false)]
     [InlineData(1, false, true)]
     [InlineData(1, true, true)]
-    public async Task ClassDefinedMethodsPreserveValuesWithoutArgumentPackaging(int width, bool asynchronous, bool keywords)
+    public async Task ClassDefinedMethodsPreserveArgumentsAndCleanup(int width, bool asynchronous, bool keywords)
     {
         var parameters = string.Join(",", Enumerable.Range(0, width).Select(i => "a" + i));
         var definition = LythonFrontend.Compile($"class Box:\n def method(self,{parameters}):return a0\nbox=Box()\nmethod=box.method",regexProvider:Utf8RegexProvider.Instance);
@@ -202,26 +191,14 @@ public sealed class PositionalCallTransportTests
         var arguments = string.Join(",", Enumerable.Range(0, width).Select(i => keywords ? $"a{i}=value" : "value"));
         var call = LythonFrontend.Compile("return method(" + arguments + ")",regexProvider:Utf8RegexProvider.Instance);
         code = ExecutableScript.Compile(LoweredScript.Lower(call.Script.RequireNotNull())).EntryPoint;
-        var field = typeof(LythonRuntime).GetField(width == 1 ? "_pooledOneCallArgument" : width == 2 ? "_pooledTwoCallArguments" : "_pooledThreeCallArguments",
-            BindingFlags.NonPublic | BindingFlags.Static).RequireNotNull();
-        var previous = field.GetValue(null);
-        var sentinel = Enumerable.Repeat(CallArgumentValue.Positional(marker), width).ToArray();
-        field.SetValue(null, sentinel);
-        try
-        {
-            var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
-                : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
-            Assert.Same(marker, result);
-            Assert.Same(sentinel, field.GetValue(null));
-            foreach (var argument in sentinel)
-                Assert.Same(marker, argument.Value);
-            Assert.Same(method, context.Variables["method"]);
-            Assert.Null(context.CurrentExecutableFrame);
-            Assert.Equal(0, context.State.CurrentInterpreterDepth);
-            Assert.Equal(0, context.State.CurrentRecursionDepth);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        }
-        finally { field.SetValue(null, previous); }
+        var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context)
+            : LythonRuntime.ExecuteExecutableCodeObject(code, context, default, null);
+        Assert.Same(marker, result);
+        Assert.Same(method, context.Variables["method"]);
+        Assert.Null(context.CurrentExecutableFrame);
+        Assert.Equal(0, context.State.CurrentInterpreterDepth);
+        Assert.Equal(0, context.State.CurrentRecursionDepth);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         owner.Dispose();
         Assert.Equal(0, budget.ReservedBytes);
     }
