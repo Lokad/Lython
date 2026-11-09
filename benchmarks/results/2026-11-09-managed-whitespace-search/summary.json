@@ -1,0 +1,150 @@
+{
+  "complete": true,
+  "ownedSeconds": 86.82615290209651,
+  "jobs": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.003094937081632653,
+          "cpuSeconds": 0.003061224489795918,
+          "iqrPercent": 0.4099621767392434
+        },
+        "reference-control": {
+          "seconds": 0.0029724550784313727,
+          "cpuSeconds": 0.003137254901960784,
+          "iqrPercent": 0.8307726268578789
+        },
+        "candidate": {
+          "seconds": 0.0029979796078431374,
+          "cpuSeconds": 0.003137254901960784,
+          "iqrPercent": 0.682739212081139
+        },
+        "candidate-control": {
+          "seconds": 0.002940455269230769,
+          "cpuSeconds": 0.003076923076923077,
+          "iqrPercent": 0.15858252039123022
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          -3.1327768943971046,
+          0.8587019395843942
+        ],
+        "candidate-control": [
+          -4.991436282135709,
+          -1.0765447536213224
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          2.4836601307189454,
+          0.0
+        ],
+        "candidate-control": [
+          0.512820512820511,
+          -1.9230769230769162
+        ]
+      },
+      "baselineSpreadPercent": -3.9574957412920497,
+      "candidateSpreadPercent": -1.9187701764840748
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm-async",
+      "roles": {
+        "reference": {
+          "seconds": 0.0032788893404255316,
+          "cpuSeconds": 0.003404255319148936,
+          "iqrPercent": 0.7252407128337489
+        },
+        "reference-control": {
+          "seconds": 0.0033552146304347825,
+          "cpuSeconds": 0.0034782608695652175,
+          "iqrPercent": 0.8494136832677159
+        },
+        "candidate": {
+          "seconds": 0.0033100860652173912,
+          "cpuSeconds": 0.0034782608695652175,
+          "iqrPercent": 0.6473580527352539
+        },
+        "candidate-control": {
+          "seconds": 0.0032247821702127656,
+          "cpuSeconds": 0.003404255319148936,
+          "iqrPercent": 0.19685413420833164
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          0.951441831452926,
+          -1.3450276714948473
+        ],
+        "candidate-control": [
+          -1.650167620653642,
+          -3.887455039057064
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          2.1739130434782705,
+          0.0
+        ],
+        "candidate-control": [
+          0.0,
+          -2.127659574468088
+        ]
+      },
+      "baselineSpreadPercent": 2.327778771556388,
+      "candidateSpreadPercent": -2.57708994037964
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "warm",
+      "roles": {
+        "reference": {
+          "seconds": 0.004761973375,
+          "cpuSeconds": 0.005,
+          "iqrPercent": 0.3985483355416574
+        },
+        "reference-control": {
+          "seconds": 0.004832292375,
+          "cpuSeconds": 0.005,
+          "iqrPercent": 0.2595765948454229
+        },
+        "candidate": {
+          "seconds": 0.00481624909375,
+          "cpuSeconds": 0.005,
+          "iqrPercent": 0.5431032036724185
+        },
+        "candidate-control": {
+          "seconds": 0.004846471625,
+          "cpuSeconds": 0.005,
+          "iqrPercent": 0.7059952481409734
+        }
+      },
+      "elapsedPercent": {
+        "candidate": [
+          1.1397736710361261,
+          -0.3320014602800181
+        ],
+        "candidate-control": [
+          1.7744376825710395,
+          0.29342698867635963
+        ]
+      },
+      "cpuPercent": {
+        "candidate": [
+          0.0,
+          0.0
+        ],
+        "candidate-control": [
+          0.0,
+          0.0
+        ]
+      },
+      "baselineSpreadPercent": 1.4766777229198613,
+      "candidateSpreadPercent": 0.6275117972868172
+    }
+  ]
+}

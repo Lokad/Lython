@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R157 managed whitespace-search milestone](results/2026-11-09-managed-whitespace-search/README.md)
+replaces the shared scalar ASCII run loop with managed bulk searches, deriving
+fixed inventories from one classifier. Focused178internal/219public per actual11/10
+and six independent Python boundary scripts pass. Allocation unchanged. One quiet
+three-job B508/86.826s: textsync−4.99to+0.86%, async−3.89to+0.95%elapsed, overlapping
+control spreads; coarse CPU mixed. Retain the bounded implementation without CPU
+gain/equivalence claim. Original desktop adversity/different source and staleFive
+receipt/setup count survive; archived actual3jobs/4roles/28samples qualify directly,
+no capture restart. Full delivery deferred; broader performance objective stays open.
+
 The [R156 same-process prefix attribution](results/2026-11-09-prefix-generated-code/README.md)
 matches the14159-byte Tier1 prefix to246self samples, measured fully qualified
 R151/core21cf, notHEAD78fd. Of1194guest samples, observed loop bounds/switch account

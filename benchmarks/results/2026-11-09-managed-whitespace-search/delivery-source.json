@@ -1,0 +1,21 @@
+{
+  "productionSourceMatchesMeasuredFreeze": true,
+  "baseline": "3fb8025d, production78fd7bb4 fully qualified42615908221",
+  "measuredCoreSHA256": "cfeb99b072f798987e36cfcfbdb660e6f82508f69a8e43692faab3c5724c6ec7",
+  "focused": {
+    "net11.0": {
+      "internal": 178,
+      "public": 219
+    },
+    "net10.0": {
+      "internal": 178,
+      "public": 219
+    }
+  },
+  "independentPythonBoundaryScripts": 6,
+  "removed": "Shared scalar per-byte ASCII category-run loop; no retained old alternative. Forward/reverse managed SearchValues searches use two fixed immutable metadata inventories derived from one existing classifier.",
+  "preserved": "Python29whitespace scalars, Unicode decoding/casing/context, maxsplit/rsplit, original64-byte cancellation windows, terminal refusal, final capacity/overlap funding, aliases and deterministic cleanup. No new pool/cache policy/configuration or runtime dependency.",
+  "decision": "Retain bounded managed bulk implementation without a CPU gain claim. Ordinary/compile allocation unchanged. Quiet elapsed is mostly lower but overlaps process-control spreads; coarse CPU mixed. This milestone does not close broader performance work.",
+  "limitations": "Original desktop async text+5.9to10.1percent remains unexplained/preserved; search controls25.5percent apart. Final metadata-initializer refinement is a different binary from original desktop image15e49. Static metadata startup not timed. Full platform/original Stress/installed consumers of this change deferred to next coherent checkpoint.",
+  "receipt": "Original raw archiver receipt says jobs5 after asserting actual len(jobs)==3. Original setup field also namesFive; exact archived schedule/4roles/28samples per actual3jobs independently verified in receipt-qualification. Initial retrieval failure and assessor template correction retained. No timed work restarted."
+}

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use managed bulk search for ASCII whitespace split boundaries, preserving
+  Unicode handling, bounded cancellation checks and admitted final fragments.
+
 - Read valid DEFLATE ZIP members whose dynamic block declares all nineteen
   code-length entries, preserving Python errors for malformed blocks.
 

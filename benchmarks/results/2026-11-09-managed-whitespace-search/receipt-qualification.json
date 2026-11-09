@@ -1,0 +1,12 @@
+{
+  "originalReceiptPreserved": true,
+  "producerDeclaredJobs": 5,
+  "actualValidatedJobs": 3,
+  "exactScheduleAndFourRolesValidated": true,
+  "quietAndSourceGatesPassed": true,
+  "noCollectionRestart": true,
+  "reusedSetupField": "allFiveJobsValidated names three source-asserted jobs",
+  "correction": "Producer archiver validates actual len(jobs)==3 then copies stale literal jobs=5 into receipt. Original collector/archiver/receipt/setup/failure preserved; actual archived three-job schedule and28samples/four roles per job independently qualified.",
+  "archiveSHA256": "db1091c851b67974b2eef1cb2544f2ed662aa03cdda768ee19cbad9545175f6e",
+  "terminalObservationCached": "observation-20261109T130608Z.json"
+}

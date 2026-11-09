@@ -1410,7 +1410,8 @@ construction returns only private output funding and preserves input aliases.
 Eligible native helper returns combining `lower()` or `upper()` with a default
 whitespace `split()` or `rsplit()` write independently owned words directly. One forward
 word-range planner handles ordinary splitting and conservative case-output
-capacity. Forward/reverse discovery share bounded ASCII category runs, decoding
+capacity. Forward/reverse discovery use managed bulk searches over fixed ASCII
+inventories derived from the same whitespace classifier, decoding
 Unicode scalars at non-ASCII boundaries. The shared casing writer preserves Unicode expansions
 and final-sigma context. Final word capacities are admitted together;
 removing the unobservable cased line can change admission amounts, order and failure

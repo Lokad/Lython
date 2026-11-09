@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 
 namespace Lokad.Lython.Runtime.Text;
@@ -14,18 +15,26 @@ internal static partial class PyStringOps
     private static bool IsAsciiWhitespace(byte value)
         => value is >= 0x09 and <= 0x0D or >= 0x1C and <= 0x20;
 
+    private static readonly SearchValues<byte> AsciiWhitespaceCharacters = CreateAsciiCharacters(whitespace: true);
+    private static readonly SearchValues<byte> AsciiWordCharacters = CreateAsciiCharacters(whitespace: false);
+
+    private static SearchValues<byte> CreateAsciiCharacters(bool whitespace)
+    {
+        Span<byte> characters = stackalloc byte[128];
+        var count = 0;
+        for (var value = 0; value < 128; value++)
+            if (IsAsciiWhitespace((byte)value) == whitespace) characters[count++] = (byte)value;
+        return SearchValues.Create(characters[..count]);
+    }
+
     // The caller has classified the first (or last) ASCII byte. Stop at a
     // category change or any UTF-8 byte, leaving Unicode decoding to the caller.
     private static int AsciiWhitespaceRunLength(ReadOnlySpan<byte> chunk, bool whitespace, bool reverse = false)
     {
-        var width = 1;
-        while (width < chunk.Length)
-        {
-            var value = chunk[reverse ? chunk.Length - width - 1 : width];
-            if (value >= 0x80 || IsAsciiWhitespace(value) != whitespace) break;
-            width++;
-        }
-        return width;
+        var characters = whitespace ? AsciiWhitespaceCharacters : AsciiWordCharacters;
+        if (reverse) return chunk.Length - 1 - chunk[..^1].LastIndexOfAnyExcept(characters);
+        var boundary = chunk[1..].IndexOfAnyExcept(characters);
+        return boundary < 0 ? chunk.Length : boundary + 1;
     }
 
     internal static PyList SplitCasedWhitespace(PyString value, bool upper,
