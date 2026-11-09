@@ -1,0 +1,69 @@
+{
+  "existingTraceReused": true,
+  "visitorsUnchangedSinceR128": [
+    "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs",
+    "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Statements.cs"
+  ],
+  "phases": [
+    {
+      "case": "scripts.config-edit.small",
+      "measuredRevision": "8472935f/R128, not HEAD",
+      "samples": 1172,
+      "phases": [
+        {
+          "phase": "abstract analysis",
+          "samples": 224,
+          "percent": 19.112627986348123
+        },
+        {
+          "phase": "annotation analysis",
+          "samples": 7,
+          "percent": 0.5972696245733788
+        },
+        {
+          "phase": "name diagnostics",
+          "samples": 5,
+          "percent": 0.42662116040955633
+        }
+      ]
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "measuredRevision": "8472935f/R128, not HEAD",
+      "samples": 1199,
+      "phases": [
+        {
+          "phase": "abstract analysis",
+          "samples": 350,
+          "percent": 29.190992493744787
+        },
+        {
+          "phase": "name diagnostics",
+          "samples": 21,
+          "percent": 1.7514595496246872
+        },
+        {
+          "phase": "scope diagnostics",
+          "samples": 10,
+          "percent": 0.8340283569641368
+        },
+        {
+          "phase": "annotation analysis",
+          "samples": 4,
+          "percent": 0.3336113427856547
+        }
+      ]
+    }
+  ],
+  "source": "Name diagnostics tracks maybe-assigned locals separately. Abstract state stores only resolvable values, treats parameters as unknown/removes them, and skips directive-sensitive deferred bodies. These states cannot simply be substituted without preserving their different facts.",
+  "limitation": "Unchanged visitors justify source comparison, not current whole-compile CPU shares after parser/other frontend improvements. No new capture or runtime prototype.",
+  "assessedRevision": "7c10322c6c2a186710b4854d228478050c850e6b",
+  "currentSourceSHA256": {
+    "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs": "65c62cfd7034dafc3b9cfaa503477f98f2a54564503c671e618a5dfb49477f66",
+    "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Statements.cs": "4c2d8b7546404ebf9d9e61d776b4018b2bf90c688a8f8306c0d0437dce809045"
+  },
+  "decision": "No visitor merger selected: distinct facts/directive traversal paths would need additional shared state rather than removing a proven duplicate. Old name-pass sample shares0.43/1.75percent do not identify a dominant removable phase. Not a permanent design ban.",
+  "builtinState": "AbstractState starts with empty value/length maps, not copied builtin inventories. Do not add a builtin overlay/cache for a nonexistent copy.",
+  "referenceBoundary": "Current benchmarks/cpython-worker.py compile_case directly compiles source; no AST rewrite or second parser stage. No correction required.",
+  "next": "Target current complete config editing using existing source/fixtures/goldens and comparison protocol: compile/warm/compile-run separately, CPython primary, controls. Current source/timing boundary before selecting runtime setup work; no cache/redesign from old54guest sample capture."
+}

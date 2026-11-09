@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R158 frontend-flow source gate](results/2026-11-09-frontend-flow-gate/README.md)
+reuses R128 traces; current name/abstract statement visitors are unchanged. Name
+diagnostics account for0.43/1.75% of old config/CSV compile samples, distinct from
+the19–29% abstract share. Their maybe-assigned/unknown/directive semantics differ;
+no merger, new shared state or builtin cache is selected. CPython directly compiles
+source. No new measurement/current CPU share or permanent design veto. Next material
+gap: current config compilation/warm/complete boundary through existing tools.
+
 The [R157 managed whitespace-search milestone](results/2026-11-09-managed-whitespace-search/README.md)
 replaces the shared scalar ASCII run loop with managed bulk searches, deriving
 fixed inventories from one classifier. Focused178internal/219public per actual11/10
