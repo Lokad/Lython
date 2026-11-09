@@ -30,6 +30,10 @@ and bound/default expressions against independent Python results. Both APIs retu
 the shared allowance to baseline after cleanup. Genuinely pending reads exercise
 completion and cancellation through class and module lambda bodies.
 
+[Filename filtering](Lokad.Lython.PublicApi.Tests/FnmatchSuspendedIterationTests.cs)
+checks genuine suspension in generators and user iteration, cancellation through
+awaited file cleanup, retained name identity, terminal refusal and allowance reuse.
+
 [Native hashing](Lokad.Lython.Tests/NativeHashCancellationTests.cs) keeps small
 current-token, cache, refusal and value checks in the ordinary suite. Its timed
 256 MiB cancellation scans are Stress cases: an already-started dedicated

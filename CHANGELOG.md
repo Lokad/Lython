@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Let `fnmatch.filter` await file-backed generators and user iteration protocols
+  under `RunAsync`, preserving cancellation, retained names and awaited cleanup.
+
 - Compile lambdas once, including class callables and lazy type metadata, and use
   the shared executable function engine. Remove runtime lambda compilation and
   the duplicate interpreted-function dispatcher while preserving lexical scopes,

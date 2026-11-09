@@ -1577,6 +1577,10 @@ no whole-string rune arrays or per-character string cache. `?` and character
 ranges operate on Unicode scalars. Iterative star backtracking and class scans
 observe cancellation; pathological patterns can still require substantial work.
 Input storage and selected-result lists keep their ordinary owners and admission.
+`fnmatch.filter` drives names through the active execution API. `RunAsync` awaits
+generator pulls and user `__iter__`/`__next__` protocols, including host I/O, and
+finishes cursor cleanup before returning. Selected names retain their identity;
+an invalid item stops consumption there without closing a borrowed guest iterator.
 `fnmatch.translate` and `glob.translate` return scoped-DOTALL patterns with strict
 end anchors (`\Z`). Use `match` or `fullmatch` for whole-name matching; `search`
 can find a suffix, as with Python's translated patterns. Glob translation respects

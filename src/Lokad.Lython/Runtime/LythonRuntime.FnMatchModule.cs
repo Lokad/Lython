@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
             {
                 "fnmatch" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatch, Match),
                 "fnmatchcase" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchCase, MatchCase),
-                "filter" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchFilter, Filter),
+                "filter" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchFilter, Filter, FilterAsync),
                 "translate" => BuiltinCallable.Create(LythonKnownCallableSignatures.FnMatchTranslate, Translate),
                 _ => MissingMemberValue.Instance,
             };
@@ -52,6 +52,13 @@ internal sealed partial class LythonRuntime
         }
 
         private object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => FilterCore(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private ValueTask<object> FilterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => FilterCore(arguments, span, context, true);
+
+        private static async ValueTask<object> FilterCore(object[] arguments, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 2 || !PyStringOps.TryAsString(arguments[1], out var pattern))
             {
@@ -59,17 +66,26 @@ internal sealed partial class LythonRuntime
             }
 
             var result = new PyList([], context.MemoryGovernor, span);
-            foreach (var item in ToSequence(arguments[0], span, context))
+            var cursor = asynchronous
+                ? await PyIteration.Cursor.CreateAsync(arguments[0], span, context).ConfigureAwait(false)
+                : PyIteration.Cursor.Create(arguments[0], span, context);
+            try
             {
-                if (!PyStringOps.TryAsString(item, out var name))
+                while (true)
                 {
-                    throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable of strings.", span);
-                }
+                    var next = asynchronous ? await cursor.TryMoveNextAsync().ConfigureAwait(false)
+                        : cursor.TryMoveNext(out var value) ? PyIterationResult.Yield(value) : PyIterationResult.End;
+                    if (!next.HasValue) break;
+                    if (!PyStringOps.TryAsString(next.Value, out var name))
+                        throw new LythonRuntimeException("TypeError", "fnmatch.filter(names, pattern) expects an iterable of strings.", span);
 
-                if (MatchSimple(name, pattern, context.State.CancellationToken))
-                {
-                    result.Add(name);
+                    if (MatchSimple(name, pattern, context.State.CancellationToken)) result.Add(name);
                 }
+            }
+            finally
+            {
+                if (asynchronous) await cursor.DisposeAsync().ConfigureAwait(false);
+                else cursor.Dispose();
             }
 
             return result;

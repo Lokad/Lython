@@ -1,0 +1,26 @@
+[
+  {
+    "originalLythonSource": "import fnmatch\ndef names():\n    with open('/names') as source:\n        for line in source:\n            yield line.strip()\nreturn fnmatch.filter(names(), '*.txt')\n",
+    "pythonSource": "import fnmatch\ndef names():\n    with open('C:/Users/JOANNE~1/AppData/Local/Temp/lython-fnmatch-r148-g0mgh7ru/names') as source:\n        for line in source:\n            yield line.strip()\nprint(fnmatch.filter(names(), '*.txt'))\n",
+    "stdout": "['alpha.txt', 'é😀.txt']\n",
+    "transformation": "Top-level Lython return displayed with print; virtual input path mapped to owned fixture. Other source unchanged."
+  },
+  {
+    "originalLythonSource": "import fnmatch\nclass Names:\n    def __iter__(self):\n        with open('/names') as source:\n            return iter(source.read().splitlines())\nreturn fnmatch.filter(Names(), '*.txt')\n",
+    "pythonSource": "import fnmatch\nclass Names:\n    def __iter__(self):\n        with open('C:/Users/JOANNE~1/AppData/Local/Temp/lython-fnmatch-r148-k56o9nnn/names') as source:\n            return iter(source.read().splitlines())\nprint(fnmatch.filter(Names(), '*.txt'))\n",
+    "stdout": "['alpha.txt', 'é😀.txt']\n",
+    "transformation": "Top-level Lython return displayed with print; virtual input path mapped to owned fixture. Other source unchanged."
+  },
+  {
+    "originalLythonSource": "import fnmatch\nclass Names:\n    def __init__(self):\n        self.values=None\n        self.index=0\n    def __iter__(self):return self\n    def __next__(self):\n        if self.values is None:\n            with open('/names') as source:\n                self.values=source.read().splitlines()\n        if self.index==len(self.values):raise StopIteration\n        value=self.values[self.index]\n        self.index+=1\n        return value\nreturn fnmatch.filter(Names(), '*.txt')\n",
+    "pythonSource": "import fnmatch\nclass Names:\n    def __init__(self):\n        self.values=None\n        self.index=0\n    def __iter__(self):return self\n    def __next__(self):\n        if self.values is None:\n            with open('C:/Users/JOANNE~1/AppData/Local/Temp/lython-fnmatch-r148-i0s3sedh/names') as source:\n                self.values=source.read().splitlines()\n        if self.index==len(self.values):raise StopIteration\n        value=self.values[self.index]\n        self.index+=1\n        return value\nprint(fnmatch.filter(Names(), '*.txt'))\n",
+    "stdout": "['alpha.txt', 'é😀.txt']\n",
+    "transformation": "Top-level Lython return displayed with print; virtual input path mapped to owned fixture. Other source unchanged."
+  },
+  {
+    "originalLythonSource": "import fnmatch\nevents=[]\ndef names():\n    events.append('a')\n    yield 'alpha.txt'\n    events.append('bad')\n    yield 7\n    events.append('later')\n    yield 'later.txt'\nvalues=names()\ntry:fnmatch.filter(values,'*.txt')\nexcept TypeError:events.append('type')\nprint(events[:],next(values))\nname='é😀.txt'\nmatched=fnmatch.filter((value for value in [name]),'*.txt')\nprint(matched[0] is name)\n",
+    "pythonSource": "import fnmatch\nevents=[]\ndef names():\n    events.append('a')\n    yield 'alpha.txt'\n    events.append('bad')\n    yield 7\n    events.append('later')\n    yield 'later.txt'\nvalues=names()\ntry:fnmatch.filter(values,'*.txt')\nexcept TypeError:events.append('type')\nprint(events[:],next(values))\nname='é😀.txt'\nmatched=fnmatch.filter((value for value in [name]),'*.txt')\nprint(matched[0] is name)\n",
+    "stdout": "['a', 'bad', 'type'] later.txt\nTrue\n",
+    "transformation": "Top-level Lython return displayed with print; virtual input path mapped to owned fixture. Other source unchanged."
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "baselineSource": "7af1c86b",
+  "baseline": "RunAsync fails with open_file cannot run synchronously while fnmatch.filter consumes a file-backed generator.",
+  "implementation": "One existing cursor loop: use active API for acquisition/pulls/disposal. Remove sync-only ToSequence consumer; keep native UTF8 matching, no regex producer or new dispatch infrastructure.",
+  "focusedPerFramework": 305,
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "newCases": 10,
+  "independentPythonGoldens": 4,
+  "validated": "Generator/user __iter__/__next__ suspension; cancellation waits for gated native cleanup without refunding active storage; first invalid item/retained iterator/name identity; terminal admission refusal prevents output despite handler; same shared allowance reusable after cleanup.",
+  "qualification": "Focused Release complete. Full platform/Stress/installed-package checks batch at next coherent delivery; prior R145 fully qualified on58d3. Publication postponed.",
+  "performance": "No speedup claim. This fixes capability dispatch; before/after includes failing async case, passing synchronous control, successful genuine suspension and unwind. No new benchmark framework or producer replay.",
+  "productionSources": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.FnMatchModule.cs": "efbfffbee92b1643591c18876bd84d285c1efe020bdaaa4957156fb463054818"
+  }
+}
