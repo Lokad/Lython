@@ -22,6 +22,6 @@
       "logSHA256": "d2f3470e4fb9185ad49146223f29735a7e9d6c72a45dcbf0a2756e5d63ca26c9"
     }
   },
-  "delivery": "Pending one full Windows/Ubuntu actual11/10, original Stress both and installed consumers checkpoint.",
+  "delivery": "Windows/Ubuntu actual11/10, original Stress both and installed consumers pass in cached CI42651978111/source96e534f9. Excludes subsequent R167 prototype.",
   "limitations": "Existing native JSON custom-key subset, synchronous comparator/three-way sort; no general rich/async key guarantee. No CPython refresh or performance-objective completion."
 }

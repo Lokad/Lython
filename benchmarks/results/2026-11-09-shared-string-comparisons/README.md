@@ -46,3 +46,6 @@ the green f6861aa5 delivery receipt qualifies only the predecessor. Publication 
 Subsequent [R165 controlled confirmation/debt decision](../2026-11-09-json-item-comparisons/README.md)
 retains the consolidation: sync CSV adversity did not reproduce; async controls
 remain inconclusive. The original provisional decision and observations above stay.
+
+R164/R165 full Windows/Ubuntu actual11/10, original Stress and installed-consumer
+qualification passes in [source96e534f9 delivery](../2026-11-09-json-item-comparisons/delivery-ci.json).

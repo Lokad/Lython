@@ -740,7 +740,8 @@ internal sealed partial class LythonRuntime
             // old capacities remain funded. The private array includes headroom
             // for adoption by csv.reader; each value keeps independent funding.
             var rowBytes = PyList.EstimateCapacityBytes(_fields.Count);
-            using var storage = _context.MemoryGovernor.ReserveTemporary(checked(_stringBytes + rowBytes), _span);
+            var resultBytes = checked(_stringBytes + rowBytes);
+            using var storage = _context.MemoryGovernor.ReserveTemporary(resultBytes, _span);
             _context.CheckExecution(_span);
             var row = _fields.Count == 0 ? Array.Empty<object>() : new object[_fields.Count];
             var index = 0;
@@ -761,13 +762,14 @@ internal sealed partial class LythonRuntime
                         _record.WrittenSpan.Slice(field.Start + offset, count).CopyTo(bytes.Slice(offset, count));
                         offset += count;
                     }
-                    cell = text.CompleteReservedUtf8(field.Length, storage);
+                    text.CompleteUnpublishedUtf8(field.Length);
+                    cell = text;
                 }
                 row[index++] = cell;
             }
             _context.CheckExecution(_span);
+            storage.Commit(resultBytes);
             _readyRecord = row;
-            storage.Commit(rowBytes);
             _fields.Clear();
             _record.Truncate(0);
             _fieldStart = 0;

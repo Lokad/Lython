@@ -52,8 +52,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public PyList(PyList other) : this(other, other._memoryGovernor, other._allocationSpan) { }
 
-    // The caller relinquishes this exact array and its already committed
-    // capacity charge. No storage is copied or refunded during adoption.
+    // The caller funds this exact array and commits its capacity before
+    // publishing the result. Adoption copies no storage and refunds nothing.
     internal static PyList FromTransferredArray(object[] items, MemoryGovernor? governor, LythonSourceSpan? span)
         => new()
         {

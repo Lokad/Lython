@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Commit native split/CSV ordinary-string storage when the complete result is
+  ready, refunding unpublished fragments on cancellation while keeping input funded.
+
 - Compare original JSON item pairs before skipping unsupported keys, preserving
   equality effects and value ordering when keys become equal.
 

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R167 native text-construction milestone](results/2026-11-09-native-text-construction/README.md)
+removes per-fragment accounting/payload-result plumbing and commits complete native
+split/ordinary CSV results together.386internal/824public eachactual11/10 pass;
+three corrected cancellation regressions fail frozen old balances. Quiet4job115.748s
+accepts possible CSV+0.76–4.23% elapsed cost for rollback correctness; text overlaps
+controls, adverse async controls do not reproduce. Allocation flat; no CPU/equivalence
+claim. Original source/timing/fixture/space failures remain. Full delivery pending.
+
 The [R166 current whole-text attribution](results/2026-11-09-current-text-runtime/README.md)
 reuses the96e-equivalent freeze, one5.856s capture/5.77guestCPU/1147guest samples.
 Text23.37%, dictionary8.37%, scalar6.36%; VM prefix38.71% contains useful inlining.

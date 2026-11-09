@@ -17,6 +17,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Native text construction](Lokad.Lython.Tests/NativeTextConstructionRollbackTests.cs)
+checks that cancellation refunds unpublished split/CSV fragments while input stays
+funded. Its 64 MiB cases are Stress only, with a joined canceller after output
+admission. They observe concurrent cancellation without test-only checkpoints.
+
 [Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
 current tokens, bound-method reuse, nested native comparisons, terminal admission
 refusal and allowance reuse. Their long-string equality and ordering

@@ -82,7 +82,8 @@ internal static partial class PyStringOps
             if (reuseWhole && ranges[0].Capacity != 0)
                 outputBytes -= PyString.EstimateApproximateBytes(ranges[0].Capacity);
             var listBytes = PyList.EstimateCapacityBytes(count);
-            using var output = governor?.ReserveTemporary(checked(outputBytes + listBytes), span);
+            var resultBytes = checked(outputBytes + listBytes);
+            using var output = governor?.ReserveTemporary(resultBytes, span);
             context?.CheckExecution(span);
             var parts = count == 0 ? Array.Empty<object>() : new object[count];
             for (var index = 0; index < count; index++)
@@ -108,11 +109,13 @@ internal static partial class PyStringOps
                         source.Slice(range.Start + copied, chunk).CopyTo(bytes.Slice(copied, chunk));
                         copied += chunk;
                     }
-                parts[index] = fragment.CompleteReservedUtf8(written, output);
+                fragment.CompleteUnpublishedUtf8(written);
+                parts[index] = fragment;
             }
+            var result = PyList.FromTransferredArray(parts, governor, span);
             context?.CheckExecution(span);
-            output?.Commit(listBytes);
-            return PyList.FromTransferredArray(parts, governor, span);
+            output?.Commit(resultBytes);
+            return result;
         }
         finally { scratch?.Dispose(); }
     }

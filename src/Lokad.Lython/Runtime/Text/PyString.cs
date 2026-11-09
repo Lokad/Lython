@@ -71,21 +71,13 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     internal Span<byte> UnpublishedUtf8 => _inlineCapacity != 0
         ? InlineBytes[.._inlineCapacity] : _utf8.AsSpan();
 
-    internal PyString CompleteReservedUtf8(int byteLength,
-        MemoryGovernor.TemporaryMemoryReservation? storage = null)
+    // Native writers handle empty values before allocation. Completion neither
+    // publishes nor transfers funding: its caller still owns the reservation.
+    internal void CompleteUnpublishedUtf8(int byteLength)
     {
         var capacity = _inlineCapacity != 0 ? _inlineCapacity : _utf8!.Length;
-        if ((uint)byteLength > (uint)capacity) throw new ArgumentOutOfRangeException(nameof(byteLength));
-        var charge = EstimateApproximateBytes(capacity);
-        if (byteLength == 0)
-        {
-            if (storage is null) _memoryGovernor?.ReleaseReserved(charge);
-            return Empty;
-        }
+        if (byteLength <= 0 || byteLength > capacity) throw new ArgumentOutOfRangeException(nameof(byteLength));
         _byteLength = byteLength;
-        if (storage is not null) storage.Commit(charge);
-        else _memoryGovernor?.Commit(charge);
-        return this;
     }
 
     public static PyString Empty { get; } = new([]);

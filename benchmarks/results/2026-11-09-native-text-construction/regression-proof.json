@@ -1,0 +1,9 @@
+{
+  "failedBefore": 3,
+  "passedBefore": 0,
+  "currentPassed": 3,
+  "baselineCoreSHA256": "80a3540d915f3f8c0623a50bf215627815a80574e3506b7d18e97c54d18a14bd",
+  "testAssemblySHA256": "d4e1cf2b555cf5135f59a157f2c818350299d528cf206de111bf9fd443eccb4f",
+  "sourceRestored": false,
+  "limits": "Concurrent cancellation observation after admission; not a deterministic scheduling or per-checkpoint proof. Same assembly/current sources pass, old balance assertions fail."
+}

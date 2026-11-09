@@ -995,6 +995,10 @@ Byte and string tab expansion check cancellation between bounded output chunks;
 casing, replacement, translation and hexadecimal rendering also check while scanning.
 Casing checks cancellation after funding its final UTF-8 output. A cancelled,
 unpublished result is refunded; retained inputs and aliases keep their funding.
+Native split results and ordinary CSV field payloads stay reserved until their
+complete result is ready, then transfer funding together. Cancellation during
+construction refunds those private fragments without waiting for execution cleanup.
+Earlier numeric conversions retain their existing execution ownership.
 Byte searches use managed bulk operations over bounded candidate ranges; owned
 predicate and splitting loops also check cancellation while scanning. Individual
 BCL calls remain atomic, so cancellation provides no hard deadline. Explicit-separator

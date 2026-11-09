@@ -50,7 +50,8 @@ the persisted file list proves three. No wider cleanup or lowered floor.
 
 All identity/output/quiet/owner/Closed/join/unmount/archive-under-lease/localSHA gates
 pass. No VM users or RAM fixtures remain; terminal state cached. Full platform,
-original Stress and installed-consumer delivery qualification is pending. Publication
+original Stress and installed-consumer delivery qualification passes in cached
+[CI42651978111](delivery-ci.json), source96e534f9; subsequent R167 is separate. Publication
 postponed. Original failed conditions and exact source/cores/raw remain linked.
 
 [Summary](summary.json), [decision/checks](decision.json), [source](source.json),

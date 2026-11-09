@@ -105,10 +105,11 @@ internal static partial class PyStringOps
             context?.CheckExecution(span);
             var output = PyString.CreateReservedUtf8(capacity, governor);
             var written = WriteCaseUtf8(source, output.UnpublishedUtf8, mapping, context, span);
+            output.CompleteUnpublishedUtf8(written);
             context?.CheckExecution(span);
-            var result = output.CompleteReservedUtf8(written);
+            governor?.Commit(uncommittedBytes);
             uncommittedBytes = 0;
-            return CompleteOwnedString(result, context, span);
+            return output;
         }
         finally { if (uncommittedBytes != 0) governor?.ReleaseReserved(uncommittedBytes); }
     }

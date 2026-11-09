@@ -1,0 +1,33 @@
+{
+  "decision": "Retain bulk construction ownership and cancellation rollback. Accept possible CSV elapsed cost0.76to4.23% across quiet roles, with opposite/mixed coarse CPU; no speedup/equivalence claim. Text overlaps controls, original adverse async controls do not reproduce. This closes the retention/debt decision, not the performance objective.",
+  "removed": [
+    "Optional reservation/accounting branches in string payload completion",
+    "Per-fragment commit/estimate work in native split and ordinary CSV result publication",
+    "Empty-value and returned-object plumbing from private nonempty payload completion"
+  ],
+  "preserved": [
+    "Single-result casing reservation balance avoids introducing an allocation",
+    "Earlier CSV numeric-conversion ownership/order",
+    "Shared budgets, input aliases, retained results, preflights and current cancellation",
+    "Useful CompleteOwnedString helper still serves real callers"
+  ],
+  "focused": {
+    "internal/net11.0": {
+      "passed": 386,
+      "logSHA256": "d65ab9198baee8bbca3fb00b24ed58ceab388d29b0d28920765d4dd73670bc3d"
+    },
+    "public/net11.0": {
+      "passed": 824,
+      "logSHA256": "d9eb7682559b78e62846b14ee2f5431dd0cab5fa4afa02cf56c8a1373e2c2a75"
+    },
+    "internal/net10.0": {
+      "passed": 386,
+      "logSHA256": "d548ade372565a579c99125849ce8585ff70a795ff441491dd596c36108ac86e"
+    },
+    "public/net10.0": {
+      "passed": 824,
+      "logSHA256": "050c945bb06a1182728ce64211f96d277bcf9b702c8244152f7b5df296c67662"
+    }
+  },
+  "delivery": "R167 focused checks complete; full Windows/Ubuntu actual11/10, original Stress both and installed consumers pending next coherent checkpoint. R164/R165 are fully qualified by CI42651978111/source96e534f9."
+}
