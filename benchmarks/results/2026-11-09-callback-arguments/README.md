@@ -39,8 +39,10 @@ five new public cases and two independent callback Python goldens. Five complete
 scripts also match CPython stdout/file goldens. Covers defaults, variadics, bound
 receivers, wide/dynamic/reentrant calls, genuinely pending default lookup, cancellation
 through gated cleanup, retained result funding and shared allowance reuse. Existing
-refusal/side-effect assertions remain. Full platform/Stress/installed-package checks
-batch at this delivery; focused checks do not claim that qualification is complete.
+refusal/side-effect assertions remain. [Delivery42598266368](delivery-ci.json),
+sourceafb11d97, is cached terminal success: Windows/Ubuntu actual.NET11/10, original
+Stress both and installed Release core consumers. Qualification complete; original
+source-pair timing and JSON/control uncertainty remain unchanged.
 
 All identity/output/quiet/join/RAM/archive/localSHA gates pass. Finite lease, no
 remaining VM users/fixtures, no space recovery/floor changes. Original invalid CSV

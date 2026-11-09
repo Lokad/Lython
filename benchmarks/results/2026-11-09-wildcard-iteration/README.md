@@ -16,9 +16,10 @@ iterator continuation after an invalid item, name identity and terminal admissio
 refusal despite guest suppression. Cleanup permits the same allowance's next run.
 
 This is a correctness/capability fix, not a measured speedup. No elapsed or allocation
-gain claim and no repeated producer/performance campaign. Full platform/Stress/
-installed-package checks batch at the next coherent delivery. R145's full successful
-qualification describes58d3, not this later change. Publication remains postponed.
+gain claim and no repeated producer/performance campaign. Later
+[delivery42598266368](../2026-11-09-callback-arguments/delivery-ci.json), sourceafb11d97,
+qualifies this fix with R149: Windows/Ubuntu actual11/10, original Stress both and
+installed Release core consumers all pass. Publication remains postponed.
 
 [Validation/source status](validation.json), [independent Python goldens](python-goldens.json),
 [original failure, source patch and focused logs](evidence.tar.xz).

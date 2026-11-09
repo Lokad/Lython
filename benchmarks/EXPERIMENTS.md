@@ -5419,3 +5419,8 @@ second capture/new dispatcher/arena/cache or permanent design veto. Original off
 classifier omitted JSON method names; preserve it and corrected owner classification
 of the same raw stacks. All quiet/identity/golden/Closed/join/maps/RAM/archive/localSHA
 gates pass, no space/floor change, terminal cached/no users. Broader roadmap remains.
+
+R148/R149 delivery42598266368/sourceafb11d97 is cached terminal success: Windows
+and Ubuntu actual.NET11/10, original Stress both and installed Release core consumers.
+Qualification complete; retain measured source pairs and JSON/control uncertainty.
+No unchanged retiming. Publication postponed; broader performance roadmap continues.
