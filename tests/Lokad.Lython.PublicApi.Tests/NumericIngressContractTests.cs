@@ -6,6 +6,31 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class NumericIngressContractTests
 {
+    [Theory]
+    [InlineData("return 40 + 2")]
+    [InlineData("value = 40\nvalue += 2\nreturn value")]
+    public async Task GuestIntegerArithmeticProjectsBigInteger(string source)
+    {
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            foreach (var asynchronous in new[] { false, true })
+            {
+                using (var result = asynchronous
+                    ? await script.RunAsync(new MockLythonHost())
+                    : script.Run(new MockLythonHost()))
+                {
+                    Assert.True(result.Success, result.Failure?.Message);
+                    Assert.Equal(new BigInteger(42), Assert.IsType<BigInteger>(result.ReturnValue));
+                }
+                Assert.Equal(baseline, budget.ReservedBytes);
+            }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static (string Source, string Output) Reference(string name)
     {
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "NumericIngress", "host-scalars.json");

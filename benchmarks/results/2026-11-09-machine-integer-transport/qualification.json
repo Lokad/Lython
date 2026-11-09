@@ -1,0 +1,28 @@
+{
+  "restore-build-net11.0": {
+    "exitCode": 0,
+    "tail": "\nC:\\Users\\JoannesVermorel\\.dotnet11\\sdk\\11.0.100-rc.3.26522.148\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\\code\\Lython\\src\\Lokad.Lython\\Lokad.Lython.csproj::TargetFramework=net11.0]\n  Lokad.Lython -> D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net11.0\\Lokad.Lython.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:16.15\n"
+  },
+  "retained-contract-net11.0": {
+    "exitCode": 0,
+    "tail": "okad.Lython.WorkerFixture.dll\n  Lokad.Lython.PublicApi.Tests -> D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net11.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    20, Skipped:     0, Total:    20, Duration: 285 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)\n"
+  },
+  "restore-build-net10.0": {
+    "exitCode": 0,
+    "tail": "\nC:\\Users\\JoannesVermorel\\.dotnet11\\sdk\\11.0.100-rc.3.26522.148\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\\code\\Lython\\src\\Lokad.Lython\\Lokad.Lython.csproj::TargetFramework=net10.0]\n  Lokad.Lython -> D:\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net10.0\\Lokad.Lython.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:13.34\n"
+  },
+  "retained-contract-net10.0": {
+    "exitCode": 0,
+    "tail": "okad.Lython.WorkerFixture.dll\n  Lokad.Lython.PublicApi.Tests -> D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll\nTest run for D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n\nPassed!  - Failed:     0, Passed:    20, Skipped:     0, Total:    20, Duration: 628 ms - Lokad.Lython.PublicApi.Tests.dll (net10.0)\n"
+  },
+  "prototypeNumericPublicPassed": 136,
+  "prototypeAdditionAdmissionPassed": 42,
+  "prototypePublicProjectionFailed": 2,
+  "testsRelaxed": 0,
+  "finalTestSourceSHA256": "84ea60cb9868c8a0b80491d51a459cb8339b451c01948888e4484f4dc37d9256",
+  "prototypeTestAssemblySHA256": "e113dbd7b013aede1f3a40a20b8e5a8653f6a0d38dc03e9b62e6da0446308166",
+  "restoredTestAssemblySHA256": "3710086df6118fc784da304af86c5becbd26533029af4b5b65a69bbcfef0dcf7",
+  "productionRestoredExactly": true,
+  "sourceRestoreUsedFreshTimestamps": true,
+  "limitations": "No promoted runtime change. Full platforms/Stress/packages not repeated for discarded private prototypes. New tests check the existing documented public projection contract, not a storage architecture."
+}

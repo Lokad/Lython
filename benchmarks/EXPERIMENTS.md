@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R174 private integer transport prototype](results/2026-11-09-machine-integer-transport/README.md)
+demonstrates about6.91% less complete-text allocation, but violates the existing
+BigInteger projection contract. Original and refined timings remain mixed/adverse;
+no CPU claim.136numeric/protocol and42admission cases pass; two added public
+projection cases fail the prototype and pass restored production on actual11/10.
+Both runtime variants removed completely; exact evidence retained. This does not
+close the performance objective or permanently veto a wider scalar design.
+
 Combined delivery42684724223/source6d852edc is GREEN for R172/R173: Windows/Ubuntu,
 actual11/10, original Stress and installed consumers, all eight gates. The
 [cached terminal](results/2026-11-09-optional-string-index-metadata/ci-terminal.json)
