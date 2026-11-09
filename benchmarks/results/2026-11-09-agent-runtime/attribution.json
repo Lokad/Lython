@@ -1,0 +1,600 @@
+[
+  {
+    "case": "scripts.config-edit.small",
+    "groups": {
+      "guest": {
+        "samples": 549,
+        "unknownLeaf": 27,
+        "observedPhase": [
+          [
+            "host/filesystem",
+            281
+          ],
+          [
+            "VM prefix",
+            129
+          ],
+          [
+            "unassigned",
+            60
+          ],
+          [
+            "memory admission",
+            20
+          ],
+          [
+            "JSON",
+            19
+          ],
+          [
+            "text reader",
+            17
+          ],
+          [
+            "builtin initialization",
+            13
+          ],
+          [
+            "context initialization",
+            9
+          ],
+          [
+            "native call preparation",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "_raw_spin_unlock_irqrestore",
+            28
+          ],
+          [
+            "[unknown]",
+            27
+          ],
+          [
+            "link_path_walk",
+            14
+          ],
+          [
+            "finish_task_switch.isra.0",
+            14
+          ],
+          [
+            "do_syscall_64",
+            14
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+            12
+          ],
+          [
+            "walk_component",
+            10
+          ],
+          [
+            "step_into",
+            10
+          ],
+          [
+            "string [System.Private.CoreLib] System.IO.PathInternal::RemoveRelativeSegments(string,int32)[OptimizedTier1]",
+            10
+          ],
+          [
+            "srso_safe_ret",
+            9
+          ],
+          [
+            "instance valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<valuetype [System.Runtime]System.ValueTuple`2<bool,bool>> [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+JsonEncodeIterator::AdvanceAsync(class Lokad.Lython.Runtime.Text.GovernedByteBuilder,bool)[OptimizedTier1]",
+            8
+          ],
+          [
+            "__tls_get_addr",
+            8
+          ],
+          [
+            "inode_permission",
+            8
+          ],
+          [
+            "instance bool [System.Private.CoreLib] System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]::TryInsert(!0,!1,valuetype System.Collections.Generic.InsertionBehavior)[OptimizedTier1]",
+            7
+          ],
+          [
+            "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Reserve(int64,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            6
+          ],
+          [
+            "hash_name",
+            6
+          ]
+        ]
+      },
+      "caller/other": {
+        "samples": 561,
+        "unknownLeaf": 17,
+        "observedPhase": [
+          [
+            "fixture reset",
+            355
+          ],
+          [
+            "host/filesystem",
+            142
+          ],
+          [
+            "protocol",
+            63
+          ],
+          [
+            "unassigned",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "_raw_spin_unlock_irqrestore",
+            21
+          ],
+          [
+            "[unknown]",
+            17
+          ],
+          [
+            "finish_task_switch.isra.0",
+            16
+          ],
+          [
+            "srso_safe_ret",
+            13
+          ],
+          [
+            "do_syscall_64",
+            12
+          ],
+          [
+            "kmem_cache_alloc_noprof",
+            12
+          ],
+          [
+            "inode_permission",
+            12
+          ],
+          [
+            "walk_component",
+            10
+          ],
+          [
+            "link_path_walk",
+            9
+          ],
+          [
+            "string [System.Private.CoreLib] System.IO.PathInternal::RemoveRelativeSegments(string,int32)[OptimizedTier1]",
+            8
+          ],
+          [
+            "dput",
+            8
+          ],
+          [
+            "__d_lookup_rcu",
+            8
+          ],
+          [
+            "do_dentry_open",
+            6
+          ],
+          [
+            "__check_object_size.part.0",
+            6
+          ],
+          [
+            "vfs_statx",
+            5
+          ],
+          [
+            "__cond_resched",
+            5
+          ]
+        ]
+      },
+      "tiering": {
+        "samples": 23,
+        "unknownLeaf": 22,
+        "observedPhase": [
+          [
+            "unassigned",
+            23
+          ]
+        ],
+        "topLeaf": [
+          [
+            "[unknown]",
+            22
+          ],
+          [
+            "cfree",
+            1
+          ]
+        ]
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "3447773",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447774",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447775",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447776",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447777",
+        "name": ".NET Finalizer",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447778",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.13000000000000012
+      },
+      {
+        "tid": "3447779",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447780",
+        "name": ".NET TP Worker",
+        "seconds": 0.44999999999999996
+      },
+      {
+        "tid": "3447781",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447782",
+        "name": ".NET TP Worker",
+        "seconds": 1.1300000000000001
+      },
+      {
+        "tid": "3447783",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447784",
+        "name": ".NET TP Worker",
+        "seconds": 1.12
+      },
+      {
+        "tid": "3447785",
+        "name": "Lython executio",
+        "seconds": 2.9000000000000004
+      },
+      {
+        "tid": "3447786",
+        "name": ".NET TP Worker",
+        "seconds": 0.21999999999999997
+      }
+    ],
+    "correction": "Initial >.25s active-worker classifier included a .NET Tiered JIT thread for search. Corrected offline from original raw samples using actual names; original classifier and raw output retained, no capture rerun.",
+    "limits": "Whole-batch sampling is wider than execution clocks and includes reset/protocol/validation. Phase shares overlap parent work only through assignment to innermost observed category; inlining/truncation/unknown IPs limit attribution. Native guard/evaluation includes useful work, not a removable tax."
+  },
+  {
+    "case": "scripts.file-search.large",
+    "groups": {
+      "guest": {
+        "samples": 875,
+        "unknownLeaf": 40,
+        "observedPhase": [
+          [
+            "VM prefix",
+            326
+          ],
+          [
+            "host/filesystem",
+            121
+          ],
+          [
+            "native call preparation",
+            109
+          ],
+          [
+            "native evaluation",
+            104
+          ],
+          [
+            "native guard",
+            74
+          ],
+          [
+            "memory admission",
+            63
+          ],
+          [
+            "text reader",
+            33
+          ],
+          [
+            "unassigned",
+            25
+          ],
+          [
+            "builtin initialization",
+            11
+          ],
+          [
+            "context initialization",
+            9
+          ]
+        ],
+        "topLeaf": [
+          [
+            "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+            142
+          ],
+          [
+            "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::EvaluateNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,valuetype Lokad.Lython.Frontend.NativeReturnValue[],valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.PyException)[OptimizedTier1]",
+            72
+          ],
+          [
+            "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::GuardNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,valuetype Lokad.Lython.Frontend.NativeReturnValue[],valuetype [System.Runtime]System.ReadOnlySpan`1<object>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.LythonRuntime/NativeReturnShape&)[OptimizedTier1]",
+            64
+          ],
+          [
+            "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::TryExecuteNativeCall(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,object)[OptimizedTier1]",
+            49
+          ],
+          [
+            "[unknown]",
+            40
+          ],
+          [
+            "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInputInstruction(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Frontend.ExecutableInstruction&,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+            29
+          ],
+          [
+            "object [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            27
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Exit(object)[OptimizedTier1]",
+            27
+          ],
+          [
+            "void [System.Private.CoreLib] System.Threading.Monitor::Enter(object)[OptimizedTier1]",
+            25
+          ],
+          [
+            "uint8* [System.Private.CoreLib] System.Text.Unicode.Utf8Utility::GetPointerToFirstInvalidByte(uint8*,int32,int32&,int32&)[OptimizedTier1]",
+            18
+          ],
+          [
+            "void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnsureInterpreterStack(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            16
+          ],
+          [
+            "__tls_get_addr",
+            16
+          ],
+          [
+            "instance void [Lokad.Lython] Lokad.Lython.Runtime.ExecutionState::EnterInterpreterFrame(class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            15
+          ],
+          [
+            "instance void [Lokad.Lython] Lokad.Lython.Runtime.MemoryGovernor::Reserve(int64,class Lokad.Lython.LythonSourceSpan)[OptimizedTier1]",
+            15
+          ],
+          [
+            "bool [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime::TryExecuteNativeModuleFunction(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype [System.Runtime]System.ReadOnlySpan`1<object>,string,class Lokad.Lython.LythonSourceSpan,object&)[OptimizedTier1]",
+            12
+          ],
+          [
+            "stub InitThreadManagerPerfMapData<JIT_CopiedWriteBarriers>",
+            12
+          ]
+        ]
+      },
+      "caller/other": {
+        "samples": 300,
+        "unknownLeaf": 7,
+        "observedPhase": [
+          [
+            "fixture reset",
+            205
+          ],
+          [
+            "host/filesystem",
+            69
+          ],
+          [
+            "protocol",
+            25
+          ],
+          [
+            "unassigned",
+            1
+          ]
+        ],
+        "topLeaf": [
+          [
+            "_raw_spin_unlock_irqrestore",
+            15
+          ],
+          [
+            "shmem_add_to_page_cache",
+            13
+          ],
+          [
+            "filemap_remove_folio",
+            12
+          ],
+          [
+            "copy_folio_from_iter_atomic",
+            8
+          ],
+          [
+            "inode_permission",
+            7
+          ],
+          [
+            "[unknown]",
+            7
+          ],
+          [
+            "link_path_walk",
+            6
+          ],
+          [
+            "do_syscall_64",
+            6
+          ],
+          [
+            "__cond_resched",
+            6
+          ],
+          [
+            "string [System.Private.CoreLib] System.IO.PathInternal::RemoveRelativeSegments(string,int32)[OptimizedTier1]",
+            5
+          ],
+          [
+            "walk_component",
+            5
+          ],
+          [
+            "finish_task_switch.isra.0",
+            5
+          ],
+          [
+            "srso_safe_ret",
+            5
+          ],
+          [
+            "kmem_cache_alloc_noprof",
+            5
+          ],
+          [
+            "security_inode_permission",
+            4
+          ],
+          [
+            "check_heap_object",
+            4
+          ]
+        ]
+      },
+      "tiering": {
+        "samples": 55,
+        "unknownLeaf": 53,
+        "observedPhase": [
+          [
+            "unassigned",
+            55
+          ]
+        ],
+        "topLeaf": [
+          [
+            "[unknown]",
+            53
+          ],
+          [
+            "inode_add_bytes",
+            1
+          ],
+          [
+            "hyperv_flush_tlb_multi",
+            1
+          ]
+        ]
+      }
+    },
+    "threadCpuSeconds": [
+      {
+        "tid": "3447748",
+        "name": "dotnet",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447749",
+        "name": ".NET EventPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447750",
+        "name": ".NET DebugPipe",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447751",
+        "name": ".NET Debugger",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447752",
+        "name": ".NET Finalizer",
+        "seconds": 0.01
+      },
+      {
+        "tid": "3447753",
+        "name": ".NET Tiered JIT",
+        "seconds": 0.2899999999999999
+      },
+      {
+        "tid": "3447754",
+        "name": ".NET BGC",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447755",
+        "name": ".NET TP Worker",
+        "seconds": 0.20999999999999996
+      },
+      {
+        "tid": "3447756",
+        "name": ".NET TP Gate",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447757",
+        "name": ".NET TP Worker",
+        "seconds": 0.13
+      },
+      {
+        "tid": "3447758",
+        "name": ".NET SigHandler",
+        "seconds": 0.0
+      },
+      {
+        "tid": "3447759",
+        "name": ".NET TP Worker",
+        "seconds": 0.67
+      },
+      {
+        "tid": "3447760",
+        "name": "Lython executio",
+        "seconds": 4.44
+      },
+      {
+        "tid": "3447761",
+        "name": ".NET TP Worker",
+        "seconds": 0.5499999999999999
+      }
+    ],
+    "correction": "Initial >.25s active-worker classifier included a .NET Tiered JIT thread for search. Corrected offline from original raw samples using actual names; original classifier and raw output retained, no capture rerun.",
+    "limits": "Whole-batch sampling is wider than execution clocks and includes reset/protocol/validation. Phase shares overlap parent work only through assignment to innermost observed category; inlining/truncation/unknown IPs limit attribution. Native guard/evaluation includes useful work, not a removable tax."
+  }
+]

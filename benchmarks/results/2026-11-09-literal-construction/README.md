@@ -17,8 +17,9 @@ Focused Release actual .NET11/.NET10 each: 42 internal and 529 public cases pass
 Coverage includes raw/triple/escaped/adjacent/u/f/bytes pieces, scalar rejection,
 source diagnostics, annotation/pattern constants, active parser cancellation and
 first refusal, retained literal aliases and budget reuse/cleanup. No tests, assertions
-or timeouts changed. Full candidate platform/stress/installed-core delivery is pending;
-prior CI qualifies source847/coreac6b separately.
+or timeouts changed. Full Windows/Ubuntu Release actual11/10, original stress both and installed-core
+consumers pass [cached CI42545629905](delivery-ci.json). The receipt records its
+terminal observation; it qualifies459/core1be2, separately from laterR132.
 
 Five existing complete scripts/config, unchanged worker/auxiliaries/normal GC/tiering.
 Desktop isolated images share CoreLib/process GC. Actual compilation allocation:

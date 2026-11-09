@@ -5036,3 +5036,29 @@ R127/847/coreac6b full delivery complete:cached CI42543394041success observed
 Nov9 01:37:39UTC, Windows/Ubuntu full actual11/10, originalstressboth/installedcore.
 [Receipt](results/2026-11-09-declaration-metadata/delivery-ci.json). Never requery.
 LaterR129/459/core1be2 remains independent; measured uncertainty/debts survive.
+
+
+## Current config/search runtime attribution (2026-11-09 Paris)
+
+[R131/B491](results/2026-11-09-agent-runtime/README.md), source459/core1be2 afterB490.
+Two6s whole-batch samples, not elapsed evidence. Actual guestconfig549/search875
+samples, caller561/300, tiering23/55; raw all-thread CPU retained. Initial active
+>.25s filter included searchTieredJIT; corrected offline using actual thread names,
+original classifier/raw unchanged, no capture rerun. Sampling includes untimed
+fixture reset/protocol and timed validation, separated from guest work. Guestconfig
+host281/prefix129/builtininit13 samples; no dominant builtin redesign. Guestsearch
+prefix326/nativecallprep109/eval104/guard74/host121/admission63; inner observed phase
+shares include useful work and inlining, not removable taxes. Native guard/eval
+leaf136/875=15.54%, phase178/875=20.34%. Source: consumed bound-local/constant leaves
+remain full native Read nodes, visited recursively in proof and evaluation despite
+ordinary engine's direct operand convention. R132 separately selects coherent native
+input transport consolidation, retaining guard-before-effects/mutable reads/root
+spans/cancellation and existing managed depth/owners. Allsource/quiet/golden/Closed/
+zero-budget/join/RAM/archive/local gates pass; terminalcached. No new elapsed claim,
+builtin global sharing, backend, arena, owner or general profiling campaign.
+
+
+R129/459/core1be2 full delivery complete:cachedCI42545629905success,
+Windows/Ubuntu fullactual11/10/originalstressboth/installedcore, terminal observation
+in [receipt](results/2026-11-09-literal-construction/delivery-ci.json). Never requery.
+Source-qualified R130 measurements name459; laterR132 is a separate prototype.

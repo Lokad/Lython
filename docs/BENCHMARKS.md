@@ -29,7 +29,8 @@ For `6f76`, frozen core `c6172fec` matches the production inventory. Test-only c
 Source qualification and performance evidence are separate; later prototypes are
 outside this named-source checkpoint. Source `459813a3`/core `1be2a325` has
 focused both-target semantic/cancellation/ownership checks and controlled performance
-evidence; its full platform/stress/package qualification is independently pending.
+evidence; [full platform/stress/package qualification](../benchmarks/results/2026-11-09-literal-construction/delivery-ci.json)
+also passes independently. Later working prototypes are outside these source rows.
 
 The [R122 checkpoint](../benchmarks/results/2026-11-08-function-cpython-checkpoint/README.md)
 reuses five unchanged scripts, catalog/goldens and workers: 15 jobs / 311.685s.
@@ -111,7 +112,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Literal construction / compilation | Allocation −2.94–9.89%; config compile elapsed −3.66–4.79%, complete config −1.08–3.35%, supporting CPU | Warm text +0.36–1.01% possible debt; original adverse desktop compile results preserved. Full candidate qualification pending. [R129](../benchmarks/results/2026-11-09-literal-construction/README.md) |
+| Literal construction / compilation | Allocation −2.94–9.89%; config compile elapsed −3.66–4.79%, complete config −1.08–3.35%, supporting CPU | Warm text +0.36–1.01% possible debt; original adverse desktop compile results preserved. Source459 fully qualified. [R129](../benchmarks/results/2026-11-09-literal-construction/README.md) |
 | Execution-owned function lookup facts / report and CSV helpers | Controlled report elapsed −6.09–6.66%; validated CSV −3.30–5.45%, supporting CPU; allocation neutral | Separate R121 source pair; inline control ±0.60%, async float variable. Combined earlier pair retains possible +1–2% async-float debt. [R121](../benchmarks/results/2026-11-08-function-lookup-lifetimes/README.md) |
 | Flat lookup storage / shared record fields | Complete CSV/JSON elapsed roughly −5–10%; custom CSV −3–6%, supporting CPU | R119 source pair; text uncertain, report CPU +1.53–6.25% possible debt. Subsequent exclusion cleanup reduces custom allocation 1.71%, without a CPU claim. [R119](../benchmarks/results/2026-11-08-record-field-resolution/README.md), [R120](../benchmarks/results/2026-11-08-cache-eligibility/README.md) |
 | Primitive helper proof / complete accounting | Integer CSV/JSON elapsed −3.5–5.2%; float CSV −1.8–6.2% across APIs, supporting CPU; incremental warm allocation neutral | Metadata/ordinary forwarding consolidated. Compiler allocation +1.4–1.5%accounting; custom async +1.3–3.4%elapsed/+6.7%CPU debt, text/report uncertain. Sourceb1e17b64 fully qualified. [R113–R115](../benchmarks/results/2026-11-08-primitive-helper-delivery/README.md) |

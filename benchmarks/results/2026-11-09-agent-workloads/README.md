@@ -27,9 +27,9 @@ Lython isolates run imports. These are embedding comparisons, not isolated CPU
 kernels. Two small manifest files do not establish large-tree throughput.
 
 Source459 has42internal/529public focused Release cases peractual11/10 and the
-separate R129 controlled source comparison. Full Windows/Ubuntu/actual11+10/stress/
-installed-core qualification remains independently pending; prior CI cannot qualify
-later code. No backend/producer qualification or publication follows from this run.
+separate R129 controlled source comparison. Full Windows/Ubuntu actual11/10, original stress both and installed-core
+qualification now passes [cached CI42545629905](../2026-11-09-literal-construction/delivery-ci.json);
+later working prototypes remain separate. No backend/producer qualification or publication follows from this run.
 
 All identities/core/auxiliary hashes, independent goldens, budget balances,
 quiet-before/after, Closed, joined users, RAM removal, archive-under-lease and local
