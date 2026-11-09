@@ -44,8 +44,8 @@ internal sealed partial class LythonRuntime
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
-        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison))
-            return RuntimeValue(numericComparison);
+        if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison))
+            return RuntimeValue(scalarComparison);
 
         if (op == BinaryOperatorSyntax.MatrixMultiply) return EvaluateMatrixMultiplyAsync(left, right, context, span, false).GetAwaiter().GetResult();
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
@@ -78,8 +78,8 @@ internal sealed partial class LythonRuntime
         if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
             return AddExactIntegers(leftInteger, rightInteger, context.MemoryGovernor, span);
 
-        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison))
-            return RuntimeValue(numericComparison);
+        if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison))
+            return RuntimeValue(scalarComparison);
 
         if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
@@ -1355,7 +1355,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison)) return RuntimeValue(numericComparison);
+        if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison)) return RuntimeValue(scalarComparison);
         var methods = OrderedComparisonMethods(op);
         var method = methods.Left;
         var reflectedMethod = methods.Right;
@@ -1533,7 +1533,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (TryEvaluateNumericComparison(op, left, right, context, span, out var numericComparison)) return RuntimeValue(numericComparison);
+        if (TryEvaluateScalarComparison(op, left, right, context, span, out var scalarComparison)) return RuntimeValue(scalarComparison);
         var methods = OrderedComparisonMethods(op);
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {

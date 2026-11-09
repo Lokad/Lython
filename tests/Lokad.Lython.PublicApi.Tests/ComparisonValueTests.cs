@@ -79,6 +79,32 @@ public sealed class ComparisonValueTests
     // Expected output checked independently with isolated CPython 3.13.
     public static TheoryData<string, string, string> Programs => new()
     {
+        { "native_utf8_boundaries", """
+            pairs=[('', ''),('', 'a'),('a',''),('a','b'),('abcdefg','abcdefgh'),('abcdefgh','abcdefg'),('é','ê'),('\ue000','\U00010000'),('a\0b','a\0c'),('a'*4095+'é','a'*4095+'ê'),('a'*4096+'😀','a'*4096+'😀'),('a'*4097+'😀','a'*4097+'😁')]
+            for left,right in pairs:
+                values=[left==right,left!=right,left<right,left<=right,left>right,left>=right]
+                branches=[]
+                if left==right:branches.append('eq')
+                if left!=right:branches.append('ne')
+                if left<right:branches.append('lt')
+                if left<=right:branches.append('le')
+                if left>right:branches.append('gt')
+                if left>=right:branches.append('ge')
+                print(values,branches)
+            """, """
+            [True, False, False, True, False, True] ['eq', 'le', 'ge']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, False, False, True, True] ['ne', 'gt', 'ge']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, False, False, True, True] ['ne', 'gt', 'ge']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            [True, False, False, True, False, True] ['eq', 'le', 'ge']
+            [False, True, True, True, False, False] ['ne', 'lt', 'le']
+            """.ReplaceLineEndings("\n") + "\n" },
         { "unary_bool", "import operator\nfor value in (True,False):\n for answer in (+value,operator.pos(value)):\n  print(answer,type(answer).__name__)", "1 int\n1 int\n0 int\n0 int\n" },
         { "last_list", "class N:\n def __lt__(self,other):return result\n def __gt__(self,other):return result\nresult=[1]\nprint(0<1<N())", "[1]\n" },
         { "first_empty", "class N:\n def __lt__(self,other):return result\n def __gt__(self,other):return result\nresult=[]\ndef tail():\n print(\"unexpected\")\n return 2\nprint(N()<1<tail())", "[]\n" },

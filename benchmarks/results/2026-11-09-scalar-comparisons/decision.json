@@ -1,0 +1,27 @@
+{
+  "decision": "Retain the single exact scalar entry and deleted executable string detour, with bounded UTF-8 cancellation. CSV async elapsed/CPU supports improvement on this source pair; sync CPU mixed and report elapsed control-limited. Original desktop adversity remains unexplained. No universal CPU, final-binary allocation or CPython-ratio claim.",
+  "focused": {
+    "internal/net11.0": {
+      "passed": 65,
+      "newActiveComparisonStressIncluded": true,
+      "logSHA256": "9dcb976b32ade045d8fe993fe775d9b49a81baa029edb39432be6869b3337700"
+    },
+    "public/net11.0": {
+      "passed": 306,
+      "newActiveComparisonStressIncluded": false,
+      "logSHA256": "3f39310fc0c7863ed6eb333454b81186d2aa87bdf794b479dfc13a31392e9faa"
+    },
+    "internal/net10.0": {
+      "passed": 65,
+      "newActiveComparisonStressIncluded": true,
+      "logSHA256": "65ab959d90056164e57af28581efa023bec4397f10391d0a7d93667674f68130"
+    },
+    "public/net10.0": {
+      "passed": 306,
+      "newActiveComparisonStressIncluded": false,
+      "logSHA256": "84c03278ac8d5019a357a0bc82494ba89fe4c896f1791c3550e74fdc0dd7707d"
+    }
+  },
+  "delivery": "Full Windows/Ubuntu actual11/10, originalStress and installed consumers pending one coherent checkpoint.",
+  "limitations": "Structural equality/order still uses separate unbounded span primitives. R164 will consolidate the existing PyString kernels with explicit current context, preserving interfaces and protocol/owner semantics. No blanket comparison preemption claim."
+}

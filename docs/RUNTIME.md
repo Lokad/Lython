@@ -53,6 +53,12 @@ Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.
 
+Exact number and string operators share scalar dispatch. Long UTF-8 comparisons
+on this path check the current token between bounded byte chunks; custom
+comparison and truth protocols retain their ordinary synchronous/async behavior.
+Some structural string comparisons still use whole-span primitives and observe
+cancellation around the enclosing operation.
+
 Run requires host capabilities advertising synchronous completion. If such a host
 returns pending work anyway, Lython waits for that operation to settle before
 reporting the contract failure and releasing its borrowed storage. Text/binary

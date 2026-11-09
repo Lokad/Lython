@@ -1,5 +1,4 @@
 using Lokad.Lython.Frontend;
-using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -17,15 +16,8 @@ internal sealed partial class LythonRuntime
             var second = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
             try
             {
-                if (TryEvaluateNumericComparison(instruction.BinaryOperator, first, second!, scope, instruction.Span, out var truth))
+                if (TryEvaluateScalarComparison(instruction.BinaryOperator, first, second!, scope, instruction.Span, out var truth))
                     pending = new(CompleteComparisonBranch(ref execution, scope, instruction, truth));
-                else if (first is PyString && second is PyString)
-                {
-                    // Exact strings already complete synchronously under
-                    // either API, without a lexical-context promotion.
-                    var result = EvaluateBinaryOperator(instruction.BinaryOperator, first, second!, scope, instruction.Span);
-                    pending = new(CompleteComparisonBranch(ref execution, scope, instruction, IsTruthy(result, scope, instruction.Span)));
-                }
                 else if (invocation is null) return InstructionPause.ContextRequired;
                 else if (!asynchronous)
                 {

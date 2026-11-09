@@ -5548,3 +5548,21 @@ preserves20s guard/6s targets and all gates; no design-failure inference. Unused
 original catalog label preserved, corrected exact identity independently verified.
 R161 ordinary Windows/Ubuntu net11/package CI42634762709 is cached GREEN; focused
 actualnet10 also passes. Full manual net10/originalStress remains batched.
+
+
+## R163 — exact scalar comparison consolidation
+
+[Source pair and original adversity](results/2026-11-09-scalar-comparisons/README.md)
+retain the shared exact number/string entry and remove executable string detour.
+Native UTF-8 operators now check current token in bounded chunks; custom/raw/async
+protocols retained. Final65internal/306public eachactual11/10 pass, including new
+active-cancellationStress, first refusal and cleanup; twelve Python string pairs agree.
+One quiet4job115.042s: CSVsync elapsed−2.10to3.74% but CPU mixed; asyncCSV elapsed
+−4.53to6.08%, coarseCPU−6.90% supports retention. Search control favorable, report
+baseline spread5.37% inconclusive; no universal claim. Original monolithic desktop
+allocation flat, control spread27.87% and adverse asyncsearch/report retained.
+Source refinement before quiet timing is distinct, not an established JIT explanation
+or final allocation result. Proven space deficit recovered two exact redundant
+remote compressed copies only; canonical/raw/core evidence survives. All quiet/
+identity/golden/ownership/join/RAM/archive/localSHA gates pass. Full delivery pending,
+publication postponed. R164 addresses separate structural whole-span string kernels.

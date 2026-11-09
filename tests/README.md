@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
+current tokens, terminal admission refusal and allowance reuse. Their long-string
+cancellation observation runs only as Stress, with both workers joined before
+retiring input. Public comparison values cover independently captured Python
+UTF-8 ordering and branches alongside genuine suspended custom protocols.
+
 [Generator storage](Lokad.Lython.PublicApi.Tests/GeneratorStorageSemanticsTests.cs)
 checks independently captured Python results for suspended live/deleted cells,
 retained arguments, defaults, transitive captures and class barriers under both

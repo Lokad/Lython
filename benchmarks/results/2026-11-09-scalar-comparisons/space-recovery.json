@@ -1,0 +1,107 @@
+{
+  "requiredFreeBytes": 276938752,
+  "freshIdleLease": true,
+  "beforeFreeBytes": 273760256,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/observations.tgz",
+      "sha256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "size": 2176892,
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-09-config-runtime-attribution/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804198,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/observations.tgz"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-boundary-b509-20261109/observations.tgz",
+      "sha256": "b58f4f55bf3f72092fb1d27f46ab36b04553c153547d779afc3b19590dca2ebf",
+      "size": 1941193,
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-09-config-boundary/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804146,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/config-boundary-b509-20261109",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/config-boundary-b509-20261109/observations.tgz"
+      ]
+    }
+  ],
+  "operation": "Remove only redundant remote compressed archives. Their raw trees, receipts, frozen workers and byte-identical tracked local archives survive.",
+  "afterFreeBytes": 277876736
+}

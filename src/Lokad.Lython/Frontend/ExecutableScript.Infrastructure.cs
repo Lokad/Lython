@@ -68,7 +68,7 @@ internal sealed partial class ExecutableScript
             var instructions = _blocks[blockIndex].Instructions;
             if (instruction.OpCode == ExecutableOpCode.JumpIfFalse && instructions.Count != 0
                 && instructions[^1] is { OpCode: ExecutableOpCode.Binary } previous
-                && LythonRuntime.IsNumericComparison(previous.BinaryOperator) && previous.Span == instruction.Span)
+                && LythonRuntime.IsScalarComparison(previous.BinaryOperator) && previous.Span == instruction.Span)
             {
                 // The value is consumed only as truth, in the same protected
                 // block/span. No escaping comparison result needs a guest box.

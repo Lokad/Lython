@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share exact number/string comparison dispatch and remove the executable
+  string detour through general operators. Long UTF-8 comparisons observe
+  cooperative cancellation between bounded chunks.
+
 - Make default and `None` argparse inputs follow `sys.argv[1:]`, including
   changes to the exposed argument list. Explicit argument lists retain every
   supplied element; host `Args` continues to include the program name.
