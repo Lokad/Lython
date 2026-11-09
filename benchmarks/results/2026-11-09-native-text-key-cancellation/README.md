@@ -52,7 +52,10 @@ milestone does not complete the whole-script performance objective. General
 context-free CLR operations still have no token; this does not promise cancellation
 inside every native type comparison. Full platform/stress/package qualification
 batches at the next delivery boundary; R167/R171 CI does not qualify this source.
-Publication remains postponed.
+Run42672245421/source230a0572 passed all Ubuntu framework/stress/package stages,
+but ended in overall failure with no Windows job/check and no failed-job log.
+[Cached partial qualification](ci-terminal.json) is not an all-platform pass;
+Windows remains pending. Publication remains postponed.
 
 [Final source identity](identity.json), [final diagnostic](desktop.json),
 [original identity](original-identity.json), [original adversity](original-desktop.json),
