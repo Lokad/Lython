@@ -1,0 +1,17 @@
+{
+  "decision": "No complete runtime redesign selected from this capture; advance the bounded frontend source gate rather than promoting a narrow guess.",
+  "established": [
+    "Calls use existing native helper entry for this script, not a complete per-word frame.",
+    "Cased split admits every eventual fragment before the first loop effect; the sizing scan is semantically required by current ownership/admission ordering.",
+    "The consumption scan avoids eager PyList/object-array/range-array storage. Restoring it would reverse measured R203 and must not be treated as an unimplemented improvement.",
+    "String payloads up to eight bytes already live inline; a shared backing per line would add slice ownership/representation changes with little evidence of benefit here.",
+    "Instructions already overlay operand fields and forward pure local inputs; a new map/packet/sidecar is not demonstrated duplicate removal.",
+    "Native dictionary accumulation already shares one probe, and PyString hashes are cached. Useful hashing/casing are not redundant conversion overhead."
+  ],
+  "uncertainties": [
+    "Instruction-prefix samples include inlined useful work; no specific removable dispatch phase has been attributed.",
+    "Monitor caller attribution and unmapped frames remain unresolved; do not assign all locking to memory admission.",
+    "This script does not establish call/frame costs for all helper shapes or compilation bottlenecks."
+  ],
+  "next": "P2: inspect actual remaining repeated analysis/representations and their consumers; reuse existing frontend attribution. Preserve independent regex development. No new timed source pair without a selected coherent migration."
+}

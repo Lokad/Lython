@@ -1,0 +1,29 @@
+{
+  "assessedRuntime": "e543bf159d1d037348c95083b6f511a8339e822b",
+  "evidenceHEAD": "6ca794bef3d0c5624aa387de8f3c23893cf6e1e9",
+  "currentSources": {
+    "src/Lokad.Lython/Frontend/StaticNameBindingDiagnostics.cs": {
+      "committedBytesIdenticalToR158": true,
+      "gitContentSHA256": "19640cf0eb13a5b3278da7887d44e29c67bf56aeaa7b239ba9ab33427927964c",
+      "physicalSHA256": "65c62cfd7034dafc3b9cfaa503477f98f2a54564503c671e618a5dfb49477f66"
+    },
+    "src/Lokad.Lython/Frontend/StaticAbstractInterpreter.Statements.cs": {
+      "committedBytesIdenticalToR158": true,
+      "gitContentSHA256": "4c2d8b7546404ebf9d9e61d776b4018b2bf90c688a8f8306c0d0437dce809045",
+      "physicalSHA256": "4c2d8b7546404ebf9d9e61d776b4018b2bf90c688a8f8306c0d0437dce809045"
+    }
+  },
+  "existingEvidence": "R158 source gate, R128 historical compile attribution; no new capture or current whole-compilation shares.",
+  "findings": [
+    "Name diagnostics and abstract interpretation retain distinct facts and traversal contracts. The exact visitor source is unchanged from R158.",
+    "Name diagnostics reads shared scope facts but copies a read-only LocalNames set. This is a real small redundancy, not a complete new analysis architecture or demonstrated dominant cost.",
+    "Annotation analysis retains independent dead/deferred binding behavior required for regex capability diagnostics. B187 original contract failures and corrected mixed/adverse results remain relevant.",
+    "Precedence climbing, shared syntax-child enumeration, scope facts, executable import code and declaration-only executable-function metadata are already delivered.",
+    "Current declaration binding contains no original function body/syntax graph. Prepared function creation still constructs captured expression wrappers and clones declaration inputs before the shared definition builder.",
+    "Both runtime entry APIs already share ExecutionThreads; genuine suspension releases startup workers. No new per-invocation-thread correction is needed.",
+    "R213 consumer gate: CompileSuspendingFunction selects captured declaration reconstruction only when the containing scope is a generator and direct declaration expressions contain yield. Ordinary annotated/decorated functions use DefineFunction and the existing builder directly. Not a representative ordinary-helper optimization.",
+    "Current native unbound exact-positional calls borrow caller operands; a non-null bound receiver forces the native argument buffer/binder even when the full positional shape is exact. The target slot is immediately before argument storage; a borrowed contiguous receiver-prefixed window may be possible without a new argument representation."
+  ],
+  "decision": "No blind flow merger, eligibility-state revival, scope-set-only micro-optimization, syntax-retirement rewrite or startup worker redesign selected.",
+  "next": "R214: use the existing complete class-renderer report source and current-source cost evidence to assess ordinary bound helper argument construction. No automatic promotion: prove exact-count/no-keyword eligibility, target/input restoration, synchronous native completion and ownership through callbacks. Retain the general binder for genuine dynamic/default cases."
+}

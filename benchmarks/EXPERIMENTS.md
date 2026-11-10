@@ -6,6 +6,20 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R211 current text cost gate](results/2026-11-10-current-text-construction-cost/README.md)
+captures1151execution-thread samples/5.91%unmapped on qualified e543/0e, after the
+material split/loop/tuple changes. All gates/join/SHA pass. Dispatch/text/dictionary
+work remains material but includes useful work; no complete redesign is selected
+from shares alone. Before-effect sizing and array-free private consumption both
+serve real contracts. No elapsed comparison or unchanged qualification replay.
+
+The [R212 frontend/invocation source refresh](results/2026-11-10-frontend-source-refresh/README.md)
+confirms exact visitor equality to R158 and existing semantic distinctions. Parser,
+scope facts, declaration-only metadata and async worker reuse are already delivered.
+No blind merger or repeated setup redesign. R213 narrows captured-declaration reconstruction to yielding generator headers,
+so ordinary helpers need no such correction. Bound native argument construction
+receives the next bounded gate, without a predicted speedup.
+
 The [R209 committed construction checkpoint](results/2026-11-10-construction-cpython-checkpoint/README.md)
 refreshes CSV/text against CPython at fully qualified e543bf15, with compilation,
 warm and compile-to-result separated. Six jobs / 164.735 s; all evidence gates pass.
