@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R204 call-source prototype](results/2026-11-10-call-source-transport/README.md)
+is withdrawn completely. Original sync text slows5–6% with supporting CPU; one
+source-guided native-consumption refinement leaves sync/CSV uncertain and async
+elapsed favorable. Warm allocation is flat; compile allocation+0.72–1.01% remains.
+Mapped-source/captured-packet complexity is not justified here. All favorable and
+adverse observations, two failed zero-job staging conditions and source variants
+survive. Both experimental core aliases and the clean worktree are retired.
+This is a debt/design decision, not a fixed threshold or permanent design veto.
+
 The [R203 private split iteration](results/2026-11-10-transient-split-iteration/README.md)
 retains the complete direct/helper producer-consumer change. Transient list/value
 arrays disappear; allocation falls about5.2% and quiet sync text elapsed1–3%,

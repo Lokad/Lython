@@ -1,0 +1,9 @@
+{
+  "target": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\call-operands-r204\\tree",
+  "all568ProductionRestoredAndEqualMain": true,
+  "canonicalArchive": "benchmarks/results/2026-11-10-call-source-transport/refinement-evidence.tar.xz",
+  "canonicalSHA256": "dc6f315c10aa66f2f2e9958b2ab56cd5ffe76d72b37fc20e1f1e93b1c35b3e82",
+  "allSourcePatchesAndVariantsPreserved": true,
+  "next": "Remove clean isolated worktree; no testing or image freezing of restored outputs.",
+  "removed": true
+}

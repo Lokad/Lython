@@ -1,0 +1,30 @@
+{
+  "freshIdleLease": true,
+  "allUsersJoined": true,
+  "allHardlinkAliasesVerified": [
+    "call-operands-b557-20261110/current-core.dll",
+    "call-operands-b557-20261110/candidate/Lokad.Lython.dll"
+  ],
+  "coreSHA256": "e7f365b51297df824dc5a2cf6651fee3c4d8b86007045a092a55d00ceccc9263",
+  "canonicalArchiveCopies": [
+    {
+      "path": "call-operands-b557-20261110/observations.tgz",
+      "bytes": 3812627,
+      "sha256": "b402a6845cf46349e0fbb957c5a93c3606cc44de83b60ba681ceff1f8ede5b38",
+      "canonical": "benchmarks/results/2026-11-10-call-source-transport/refined/observations.tgz"
+    }
+  ],
+  "protected039AndE294Preserved": true,
+  "beforeFreeBytes": 260448256,
+  "afterFreeBytes": 269930496,
+  "osFloorMiB": 240,
+  "remainingExperimentalCoreAliases": false,
+  "localCanonicalProofs": [
+    {
+      "canonical": "benchmarks/results/2026-11-10-call-source-transport/refined/observations.tgz",
+      "archiveSHA256": "b402a6845cf46349e0fbb957c5a93c3606cc44de83b60ba681ceff1f8ede5b38",
+      "coreSHA256": "e7f365b51297df824dc5a2cf6651fee3c4d8b86007045a092a55d00ceccc9263",
+      "correctedBaselinePreserved": "101ba9d3"
+    }
+  ]
+}

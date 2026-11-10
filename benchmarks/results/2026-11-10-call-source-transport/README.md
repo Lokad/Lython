@@ -103,3 +103,9 @@ copies and old source metadata were retired for confirmation; qualified039/E294/
 current101 survive. Final e7/local prototype retirement is recorded separately.
 The next source gate examines actual per-invocation setup on small complete scripts,
 recognizing that immutable builtin functions/signatures are already shared.
+
+Cleanup complete: [local retirement](local-retirement.json) restores/verifies all568
+production files before removing the isolated worktree. [VM retirement](vm-retirement.json)
+verifies both e7 inode aliases and committed archive bytes before removal.
+Qualified039/E294/current101 survive; latest proven free269930496B. No user or RAM
+remains. Production stays fully qualified dba779a5; no unchanged full replay.
