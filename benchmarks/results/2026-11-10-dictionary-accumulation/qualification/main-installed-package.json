@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "e57314046a89f929a40d0b09cc05acab29e6c9d2",
+  "forcedMainBuild": true,
+  "actualTargets": [
+    ".NET 11.0.0-rc.3.26522.148",
+    ".NET 10.0.8"
+  ],
+  "bothConsumersPassed": true,
+  "archiveSHA256": "6b4db8e491df175b5909dd87f874bef279b57775396faefbf37ff39708a9e974",
+  "publication": "Postponed; local Release package only."
+}

@@ -30,7 +30,11 @@ and [JIT diagnostic](jit-diagnostic.tar.xz) separate source proof from CPU measu
 Focused530public/146internal checks pass peractual.NET11/10. Twelve independent
 CPython goldens include aliases, iteration, rebindings, protocols and overflow;
 actual suspension/cancellation, terminal refusal and retained funding/budget reuse
-are covered. Full delivery qualification is tracked separately. No unchanged
+are covered. Full ordinary Release passes16988public/4473internal peractual11/10 after forced
+solution build. [Local ordinary checks](qualification/local-ordinary.json) and
+[main installed consumers](qualification/main-installed-package.json) retain their
+logs separately. Windows/Ubuntu ordinary and package checks pass; original Stress
+in run42783134761 is pending separately. No unchanged
 historical CPython or platform results are re-run/claimed for this source.
 
 The [recovery receipt](raw-space-recovery.json) preserves exact canonical-copy/
