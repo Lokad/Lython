@@ -1,0 +1,43 @@
+{
+  "consumerRevision": "62e945a9a14c183e0a8495718c454f92573e648f",
+  "consumerRuntime": "3a413c59-equivalent fullyqualifiedCI42761050500; later62e945a9 docs/evidence only",
+  "producerVersion": "0.5.0-dev.64",
+  "producerSourceHead": "56831cdf3dfef5c51ee10f8bcc5c7e2e31b21ce7",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.64.nupkg": {
+      "sha256": "b71f49f7fa00d7bad7e08ae6952a4f7e925c3998e9e648f8564931e563e97030",
+      "repositoryCommit": "9af7141f0ee7195553c17b70ad50064038be9897",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.64.nupkg": {
+      "sha256": "cad8a941bb3aeb52fd417335b34211efaf7c0fd02ea8f1192ed363b25d712564",
+      "repositoryCommit": "9af7141f0ee7195553c17b70ad50064038be9897",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.64]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.64]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Exact dev59/dev55 provider and cursor-admission bridge; isolated feed/assets/locks/outputs/cache. Normal0.4 pin unchanged.",
+  "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+  "cursorTestSourceSHA256": "72e3743bdeebc1baef226e61654c0589cfaf2eb9d67df54290824bc943ad8dff",
+  "releaseObservation": {
+    "url": "https://api.nuget.org/v3-flatcontainer/lokad.utf8regex.pythonre/index.json",
+    "observedUTC": "2026-11-10T05:36Z",
+    "publishedVersions": [
+      "0.1.0",
+      "0.2.0",
+      "0.3.0",
+      "0.4.0"
+    ]
+  },
+  "limitations": "Development contract/semantic compatibility only; no released-adapter/safety/backend-performance certification. No sibling edit/build or republishing."
+}

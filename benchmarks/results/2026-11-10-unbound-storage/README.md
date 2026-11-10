@@ -49,7 +49,7 @@ closures/generators/classes/super/annotations, cancellation, terminal refusal,
 retained results and shared-budget cleanup/reuse. Three additional None-versus-
 deleted-cell cases match isolatedCPython3.13.2 and also pass against unchanged
 R184 runtime(42public cases eachtarget). These are independent semantic coverage,
-not tests requiring a particular internal architecture. Full delivery is pending.
+not tests requiring a particular internal architecture. Full delivery of commit3a413c59 is GREEN: Windows/Ubuntu, actual.NET11/10, original Stress and installed Release consumers. [Cached terminal result](qualification/delivery-ci-status.json).
 
 All3jobs finish112.706047518s, identity/output/balance/quiet/join/unmount/owned-
 archive/localSHA checks pass. No remaining VM users or RAM fixtures. One exact

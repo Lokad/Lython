@@ -1,0 +1,1 @@
+Refresh3materialcases afterR184/R185; original report/config/manifest and other valid earlier rows remain explicitly historical. Keyword-default search does not relabel original literal-prefix search. No new producer qualification, workload tuning or changed I/O boundary.

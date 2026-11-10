@@ -5809,3 +5809,29 @@ compares B74's exact patch with current source. Its opportunity was revised and
 retained, then extended by row adoption/shared keys. Header revalidation protects
 real admission reentry; adding list-version machinery is not justified by this
 narrow gate. No repeated prototype, timing or permanent record-design veto.
+
+R185 source3a413c59 is fully qualified: Windows/Ubuntu, actual.NET11/10,
+original Stress and installed Release consumers all pass. [Cached GREEN42761050500](results/2026-11-10-unbound-storage/qualification/delivery-ci-status.json).
+This closes delivery without replacing any measured source or adverse observation.
+
+## R186 — combined-source CPython checkpoint
+
+[Nine complete jobs](results/2026-11-10-combined-cpython-checkpoint/README.md)
+finish247.200seconds, all identity/output/balance/quiet/join/unmount/archive/localSHA
+checks pass. Qualified3a413c59-equivalent frozen26d43e66 versusCPython3.13.16;
+all564production sources verified with explicit checkout-EOL normalization.
+Compile/warm/compile-to-result stay separate. Current warm CSV1.09–1.11×,
+text1.64–1.71×, keyword-default search1.51–1.52×. Text/complete-search controls
+remain variable. Keyword-default search is explicitly a different script from
+the older literal-prefix row. No individual-change gain or equivalence claim.
+Unchanged older rows remain historical; publication stays held.
+
+## R187 — immutable dev64 compatibility
+
+[Supplied0.5.0-dev.64](results/2026-11-10-regex-dev64/README.md), package revision
+9af7141f, passes86internal/524public focused checks per actual target on current
+qualified runtime. Actual loaded DLLs match supplied package bytes; exact dev59
+bridge, normal0.4 pin and provider source stay unchanged. The623 documented member
+names are unchanged; three producer API gaps remain. This establishes development
+semantic/contract compatibility, not final adapter safety/performance qualification.
+No sibling edits/builds, producer republishing or speculative pin promotion.

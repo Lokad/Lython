@@ -1,0 +1,7 @@
+{
+  "noVMWork": true,
+  "originalAssumption": "git archive emits blobLFbytes",
+  "failure": "BuiltinObjects archivedCRLF did not match the edited/frozenLFsource under the original unnormalized variant list.",
+  "checked": "git show3a:path matches frozenSHAexactly; archive hasCRLFonly and normalized text is identical.",
+  "correction": "Normalize archived CRLF before comparing exact frozenLF/CRLF variants for every source; no source/observations changed."
+}

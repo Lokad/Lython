@@ -1,0 +1,33 @@
+{
+  "exactSuppliedPackageBytesLoaded": true,
+  "frameworks": {
+    "net11.0": {
+      "Lokad.Utf8Regex": {
+        "sha256": "dce854234b4dd2e40c33a9fb0dbaa7e5e1e49e490b6dff29721227d028afb221",
+        "exactPackageMembers": [
+          "lib/net11.0/Lokad.Utf8Regex.dll"
+        ]
+      },
+      "Lokad.Utf8Regex.PythonRe": {
+        "sha256": "dabdb4df066d86d1f4261adf9c2f8562468525caa2e4966a7b636c4e3086ede1",
+        "exactPackageMembers": [
+          "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll"
+        ]
+      }
+    },
+    "net10.0": {
+      "Lokad.Utf8Regex": {
+        "sha256": "de74ff0ad07450d5116473700268ae8752a9b295ba2626a98ade002f883d9a41",
+        "exactPackageMembers": [
+          "lib/net10.0/Lokad.Utf8Regex.dll"
+        ]
+      },
+      "Lokad.Utf8Regex.PythonRe": {
+        "sha256": "9d46fa7cd427a8c6b33c81d5dd49a7e4634f84148e6349911ff539dc597d8c04",
+        "exactPackageMembers": [
+          "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll"
+        ]
+      }
+    }
+  }
+}
