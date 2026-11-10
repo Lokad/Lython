@@ -1,0 +1,4 @@
+{"freeBytes": 264282112, "coreAndEveryAuxiliaryVerified": true, "allConfiguredJobsValidated": true, "roles": 4, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30, "osFreeFloorMiB": 240, "evidenceHeadroomMiB": 12}
+{"liveUnit": "RuntimeMaxUSec=3min\nMainPID=3499625\nActiveState=active\n"}
+
+Running as unit: lython-b536-native-integer-20261110.service; invocation ID: 949dbe3dd5624b6fbbb55f31b7196865

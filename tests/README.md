@@ -48,6 +48,12 @@ host integers.
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.
 
+[Integer local semantics](Lokad.Lython.PublicApi.Tests/IntegerLocalSemanticsTests.cs)
+keep independent Python goldens for counter aliases, promotion, dynamic values,
+namespaces, deletion and generators. Pending-read cancellation, retained projection,
+terminal wide-update refusal and sequential budget reuse are checked through the
+public API. Cooperative cancellation also covers non-allocating counter conditions.
+
 [String storage publication](Lokad.Lython.Tests/StringStoragePublicationTests.cs)
 checks stable UTF-8 borrows before and after indexing, cache publication during
 admission reentry, retained owner funding and refund of duplicate unpublished work.

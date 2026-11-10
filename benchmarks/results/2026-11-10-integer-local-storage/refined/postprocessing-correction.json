@@ -1,0 +1,5 @@
+{
+  "originalError": "Local summarize.py retained len(jobs)==3 after adding fourth report job; assertion stopped local postprocessing only.",
+  "correction": "Changed local summary assertion to4. Raw archive/terminal receipt unchanged, no measurement or VM probe repeated.",
+  "terminal": true
+}

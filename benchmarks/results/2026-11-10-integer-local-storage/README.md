@@ -1,7 +1,7 @@
 # Deferred integer-local storage — R188
 
-Active isolated prototype above `50a4dd75`; production runtime remains qualified
-`3a413c59`. This record does not claim source promotion or general CPU improvement.
+Both isolated variants are withdrawn; production runtime remains qualified
+`3a413c59`. [Decision and final ranges](decision.md). There is no general CPU improvement claim.
 Publication remains postponed.
 
 The existing executable engine can keep uncaptured signed-64-bit local arithmetic
@@ -62,8 +62,12 @@ invalid fixture-directory prefix, failed before Ready and was joined; corrected
 launch uses the existing supervisor prefix, completes/validates1000invocations and
 joins. Original errors/trace/receipt remain in original/jit-diagnostic.tar.xz.
 
-Focused150public checks pass per actual target for the refinement. A bounded
-five-script warm/compile comparison is active. Only affected confirmation and a
-coherent retained delivery checkpoint are planned; no automatic promotion or
-permanent design veto follows from these observations. The broader performance
-roadmap remains active independently of this experiment.
+Focused150public/189internal checks pass per actual target for the refinement.
+The second quiet collection completes four jobs in148.225seconds with all gates;
+[raw archive](refined/observations.tgz) and [summary](refined/summary.json) retain
+CSV/report adversity, slight search gains and text uncertainty. Separate refined
+five-script desktop compile/warm measurements remain under refined/desktop/.
+Both variants are withdrawn for the [explicit architectural/regression decision](decision.md).
+Only useful semantic/cancellation tests remain;98focused checks per target pass on
+the unchanged qualified main runtime after forced builds. The broader performance
+roadmap stays active. No unchanged CPython/full-platform qualification is repeated.

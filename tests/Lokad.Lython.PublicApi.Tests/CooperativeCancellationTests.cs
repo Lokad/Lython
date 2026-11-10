@@ -18,6 +18,10 @@ public sealed class CooperativeCancellationTests
         { true, "try:\n    while True:\n        pass\nfinally:\n    pass" },
         { false, "for i in range(2147483647):\n    pass" },
         { true, "for i in range(2147483647):\n    pass" },
+        { false, "value = 1\nwhile value:\n    value += 1" },
+        { true, "value = 1\nwhile value:\n    value += 1" },
+        { false, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
+        { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
     };
 
     [Theory]

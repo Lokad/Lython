@@ -10,8 +10,11 @@ The [R188 deferred integer-local prototype](results/2026-11-10-integer-local-sto
 removes per-update boxing for eligible local counters. The original complete-script
 allocation falls about14%text/18%search, but B535's112.766second quiet comparison
 leaves CPU near neutral/uncertain. Original adversity and all controls survive.
-Source remains isolated; a generated-code-supported cold-read refinement is active.
-This is not source promotion, final qualification or completion of the roadmap.
+A generated-code-supported cold-read refinement completes B536fourjobs148.225s:
+small search gains, CSV/report debt and uncertain text. Both local-only sidecars
+are withdrawn; useful semantic/cancellation tests remain,98focused cases peractual
+target pass on unchanged qualified runtime. The allocation evidence informs future
+end-to-end transport work; the broader performance roadmap remains active.
 
 The [R176 contract-preserving small-integer assessment](results/2026-11-09-private-small-integers/README.md)
 preserves public BigInteger/CLR ingress and reproduces6.91% text allocation savings.

@@ -1,0 +1,31 @@
+{
+  "requiredFreeBytes": 271757312,
+  "candidates": [
+    {
+      "path": "/home/lokad/lython-bench-checks/native-integer-b535-20261110/current-core.dll",
+      "size": 5659136,
+      "sha256": "76c646d9a7423e835c39face7666a51414a2a74a3b63314baa9404c0b39248f7",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-integer-local-storage\\original\\observations.tgz",
+      "archiveSHA256": "f0fc91850e5f856fb41787461b959d0cfa2ef02477642fbe706ee3a8bbd8b6b2",
+      "archiveMember": "current-core.dll",
+      "tracked": true,
+      "kind": "core"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/native-integer-b535-20261110/observations.tgz",
+      "size": 5033356,
+      "sha256": "f0fc91850e5f856fb41787461b959d0cfa2ef02477642fbe706ee3a8bbd8b6b2",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-integer-local-storage\\original\\observations.tgz",
+      "tracked": true,
+      "kind": "archive"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/combined-cpython-b534-20261110/observations.tgz",
+      "size": 2042157,
+      "sha256": "98d6c083934b7309472f8de5c5f39b767ca55de33fd36b5dfa967e86b4f619b4",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-combined-cpython-checkpoint\\observations.tgz",
+      "tracked": true,
+      "kind": "archive"
+    }
+  ]
+}

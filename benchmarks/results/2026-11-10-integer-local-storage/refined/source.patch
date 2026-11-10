@@ -1,0 +1,668 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.IntegerLocals.cs b/src/Lokad.Lython/Frontend/ExecutableScript.IntegerLocals.cs
+new file mode 100644
+index 00000000..f4db0d76
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.IntegerLocals.cs
+@@ -0,0 +1,28 @@
++using Lokad.Lython.Runtime;
++
++namespace Lokad.Lython.Frontend;
++
++internal sealed partial class ExecutableCodeObject
++{
++    // Only final local stores can defer boxing. Captures and mirrored namespaces
++    // retain ordinary object storage; dynamic values still use normal operations.
++    private bool[] PrepareNativeIntegerLocals()
++    {
++        if (RequiresLocalVariableMirroring) return [];
++        bool[]? slots = null;
++        for (var index = 0; index + 1 < Instructions.Length; index++)
++        {
++            ref readonly var instruction = ref Instructions[index];
++            if (!instruction.HasLocalResult || LythonRuntime.NativeIntegerOperation(instruction) is null
++                || instruction.InputStart >= FirstTemporarySlot || instruction.SecondInput >= FirstTemporarySlot)
++                continue;
++            ref readonly var store = ref Instructions[index + 1];
++            if (store.OpCode != ExecutableOpCode.StoreLocal || LocalNames[store.LocalSlot].StartsWith('<')) continue;
++            slots ??= new bool[LocalNames.Count];
++            slots[store.LocalSlot] = true;
++        }
++        if (slots is null) return [];
++        foreach (var captured in CapturedLocalSlots) slots[captured] = false;
++        return slots.Any(static slot => slot) ? slots : [];
++    }
++}
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 95c1f048..2d2662da 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -545,6 +545,7 @@ internal sealed partial class ExecutableCodeObject
+         OperandCapacity = operandLayout.MaximumDepth;
+         LastOwnedTemporarySlot = operandLayout.LastOwnedTemporarySlot;
+         Instructions = ExecutableStackLayout.Linearize(blocks, operandLayout, out var offsets);
++        NativeIntegerLocals = PrepareNativeIntegerLocals();
+         _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
+             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
+         EntryIndex = offsets[entryBlockIndex];
+@@ -611,4 +612,5 @@ internal sealed partial class ExecutableCodeObject
+     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
+ 
+     public ExecutableNativeBody? NativeBody { get; }
++    internal bool[] NativeIntegerLocals { get; }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index b42f8e1c..b62657f8 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -7,9 +7,9 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
+-    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
++    private static object LoadLocal(ExecutableCodeObject codeObject, ref ExecutableValueStorage storage, int slot, LythonSourceSpan span, ExecutionContext context)
+     {
+-        var value = locals[slot];
++        var value = storage.ReadLocalValue(slot);
+         if (value is null)
+         {
+             if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
+index 35e5a528..3b151672 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
+@@ -12,6 +12,11 @@ internal sealed partial class LythonRuntime
+         {
+             pending = default;
+             pendingSpan = null;
++            if (TryCompareNativeIntegers(ref execution, instruction, out var nativeTruth))
++            {
++                pending = new(CompleteComparisonBranch(ref execution, scope, instruction, nativeTruth));
++                return InstructionPause.Continue;
++            }
+             var first = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+             var second = ReadOperand(ref execution, instruction.SecondInput, scope, 1);
+             try
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+index f79e0cbb..80e2de8c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
+         {
+             pending = default;
+             pendingSpan = null;
++            if (TryExecuteNativeIntegerLocal(ref execution, invocation, instruction)) return InstructionPause.Continue;
+             // A failed leaf read precedes operation cleanup/routing, just as the
+             // separate load did. No protocol or admission has run at this point.
+             // Descriptor resumption uses the original receiver/key retained in
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerLocals.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerLocals.cs
+new file mode 100644
+index 00000000..fef59eeb
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.IntegerLocals.cs
+@@ -0,0 +1,179 @@
++using System.Numerics;
++using System.Runtime.CompilerServices;
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    // A deferred value in an existing local slot, never a guest-visible object.
++    // Reads replace it once with the ordinary immutable BigInteger box. Copies
++    // then share that box; later arithmetic cannot change a retained alias.
++    private static readonly object NativeIntegerLocal = new();
++
++    internal static BinaryOperatorSyntax? NativeIntegerOperation(in ExecutableInstruction instruction)
++    {
++        var operation = instruction.OpCode switch
++        {
++            ExecutableOpCode.Binary => instruction.BinaryOperator,
++            ExecutableOpCode.Augmented => instruction.AugmentedOperator switch
++            {
++                AugmentedAssignmentOperatorSyntax.Add => BinaryOperatorSyntax.Add,
++                AugmentedAssignmentOperatorSyntax.Subtract => BinaryOperatorSyntax.Subtract,
++                AugmentedAssignmentOperatorSyntax.Multiply => BinaryOperatorSyntax.Multiply,
++                AugmentedAssignmentOperatorSyntax.BitwiseAnd => BinaryOperatorSyntax.BitwiseAnd,
++                AugmentedAssignmentOperatorSyntax.BitwiseOr => BinaryOperatorSyntax.BitwiseOr,
++                AugmentedAssignmentOperatorSyntax.BitwiseXor => BinaryOperatorSyntax.BitwiseXor,
++                AugmentedAssignmentOperatorSyntax.LeftShift => BinaryOperatorSyntax.LeftShift,
++                AugmentedAssignmentOperatorSyntax.RightShift => BinaryOperatorSyntax.RightShift,
++                _ => BinaryOperatorSyntax.Or,
++            },
++            _ => BinaryOperatorSyntax.Or,
++        };
++        return operation is BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
++            or BinaryOperatorSyntax.BitwiseAnd or BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseXor
++            or BinaryOperatorSyntax.LeftShift or BinaryOperatorSyntax.RightShift ? operation : null;
++    }
++
++    internal partial struct ExecutableValueStorage
++    {
++        internal bool HasNativeIntegerLocals => _integerLocals is not null;
++
++        internal object? ReadLocalValue(int slot)
++        {
++            var value = _items[slot];
++            return ReferenceEquals(value, NativeIntegerLocal) ? MaterializeNativeIntegerLocal(slot) : value;
++        }
++
++        // Keep the ordinary object read small even when its caller is inlined
++        // into the instruction loop. Only an observed deferred integer boxes.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        private object MaterializeNativeIntegerLocal(int slot)
++        {
++            object boxed = new BigInteger(_integerLocals![slot]);
++            _items[slot] = boxed;
++            return boxed;
++        }
++
++        internal bool TryReadNativeIntegerLocal(int slot, out long value)
++        {
++            if (ReferenceEquals(_items[slot], NativeIntegerLocal))
++            {
++                value = _integerLocals![slot];
++                return true;
++            }
++            value = 0;
++            return false;
++        }
++
++        internal void StoreNativeIntegerLocal(int slot, long value)
++        {
++            _integerLocals![slot] = value;
++            _items[slot] = NativeIntegerLocal;
++        }
++    }
++
++    internal sealed partial class ExecutionContext
++    {
++        private static bool TryReadNativeIntegerInput(ref ExecutableWorkState execution, int source, out long value)
++        {
++            object? input;
++            if (source < 0) input = execution.Code.Constants[~source];
++            else
++            {
++                if (source >= execution.Code.FirstTemporarySlot) { value = 0; return false; }
++                if (execution.Stack.TryReadNativeIntegerLocal(source, out value)) return true;
++                input = execution.Locals[source];
++            }
++            if (input is BigInteger integer && integer.GetByteCount() <= sizeof(long))
++            {
++                value = (long)integer;
++                return true;
++            }
++            value = 0;
++            return false;
++        }
++
++        private static bool TryExecuteNativeIntegerLocal(ref ExecutableWorkState execution, ExecutionContext? invocation,
++            in ExecutableInstruction instruction)
++        {
++            if (!instruction.HasLocalResult || !execution.Stack.HasNativeIntegerLocals
++                || invocation?.MirrorLocalStores == true || invocation?.GlobalNamespace is not null)
++                return false;
++            var operation = NativeIntegerOperation(instruction);
++            if (operation is null) return false;
++            ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 1];
++            if (!execution.Code.NativeIntegerLocals[store.LocalSlot]
++                || !TryReadNativeIntegerInput(ref execution, instruction.InputStart, out var left)
++                || !TryReadNativeIntegerInput(ref execution, instruction.SecondInput, out var right)
++                || !TryComputeNativeInteger(operation.Value, left, right, out var result)) return false;
++
++            // Pure eligibility/arithmetic above has neither admitted storage nor
++            // invoked Python. Oversized results take the existing exact-number
++            // operation and preflight before any actual integer allocation.
++            if (instruction.LiveExtent < execution.Stack.LiveExtent) execution.Stack.RetireTo(instruction.LiveExtent);
++            if (execution.Stack.HasPendingDisposals)
++            {
++                execution.Stack.PublishValue(instruction.ResultSlot, instruction.LiveExtent, new BigInteger(result));
++                return true;
++            }
++            execution.Stack.ForgetResultInput(instruction.ResultSlot);
++            execution.Stack.CheckExecution(store.Span);
++            // Retirement can run native cleanup. If that exposed the namespace,
++            // obey the same store policy as every ordinary local assignment.
++            if (invocation?.MirrorLocalStores == true || invocation?.GlobalNamespace is not null)
++                StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation,
++                    store.LocalSlot, new BigInteger(result), store.Span);
++            else execution.Stack.StoreNativeIntegerLocal(store.LocalSlot, result);
++            execution.InstructionIndex++;
++            return true;
++        }
++
++        private static bool TryComputeNativeInteger(BinaryOperatorSyntax operation, long left, long right, out long result)
++        {
++            unchecked
++            {
++                switch (operation)
++                {
++                    case BinaryOperatorSyntax.Add:
++                        result = left + right;
++                        return ((left ^ result) & (right ^ result)) >= 0;
++                    case BinaryOperatorSyntax.Subtract:
++                        result = left - right;
++                        return ((left ^ right) & (left ^ result)) >= 0;
++                    case BinaryOperatorSyntax.BitwiseAnd: result = left & right; return true;
++                    case BinaryOperatorSyntax.BitwiseOr: result = left | right; return true;
++                    case BinaryOperatorSyntax.BitwiseXor: result = left ^ right; return true;
++                    case BinaryOperatorSyntax.RightShift when right >= 0:
++                        result = right < 64 ? left >> (int)right : left < 0 ? -1 : 0;
++                        return true;
++                }
++                Int128 wide;
++                if (operation == BinaryOperatorSyntax.Multiply) wide = (Int128)left * right;
++                else if (operation == BinaryOperatorSyntax.LeftShift && right is >= 0 and < 64) wide = (Int128)left << (int)right;
++                else { result = 0; return operation == BinaryOperatorSyntax.LeftShift && right >= 64 && left == 0; }
++                if (wide < long.MinValue || wide > long.MaxValue) { result = 0; return false; }
++                result = (long)wide;
++                return true;
++            }
++        }
++
++        private static bool TryCompareNativeIntegers(ref ExecutableWorkState execution, in ExecutableInstruction instruction, out bool truth)
++        {
++            truth = false;
++            if (!execution.Stack.HasNativeIntegerLocals
++                || !TryReadNativeIntegerInput(ref execution, instruction.InputStart, out var left)
++                || !TryReadNativeIntegerInput(ref execution, instruction.SecondInput, out var right)) return false;
++            switch (instruction.BinaryOperator)
++            {
++                case BinaryOperatorSyntax.Equal: truth = left == right; return true;
++                case BinaryOperatorSyntax.NotEqual: truth = left != right; return true;
++                case BinaryOperatorSyntax.Less: truth = left < right; return true;
++                case BinaryOperatorSyntax.LessEqual: truth = left <= right; return true;
++                case BinaryOperatorSyntax.Greater: truth = left > right; return true;
++                case BinaryOperatorSyntax.GreaterEqual: truth = left >= right; return true;
++                default: return false;
++            }
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 95a39ae0..5f85f6b9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
+                             return InstructionPause.Boundary;
+                         case ExecutableOpCode.LoadLocal:
+                             PublishInstructionResult(ref execution, invocation, instruction,
+-                                LoadLocal(execution.Code, execution.Locals, instruction.LocalSlot, instruction.Span, scope));
++                                LoadLocal(execution.Code, ref execution.Stack, instruction.LocalSlot, instruction.Span, scope));
+                             break;
+                         case ExecutableOpCode.LoadClosure:
+                             if (!TryLoadClosure(in execution, invocation, instruction.ClosureSlot, instruction.Span, out var captured))
+@@ -236,6 +236,14 @@ internal sealed partial class LythonRuntime
+                             invocation!.ExecuteValueOperation(instruction);
+                             break;
+                         case ExecutableOpCode.JumpIfFalse:
++                            if (execution.Stack.HasNativeIntegerLocals
++                                && TryReadNativeIntegerInput(ref execution, instruction.InputStart, out var integerCondition))
++                            {
++                                execution.Stack.RetireTo(instruction.LiveExtent);
++                                jumped = integerCondition == 0;
++                                if (jumped) execution.InstructionIndex = instruction.TargetIndex;
++                                break;
++                            }
+                             var condition = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+                             if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
+                                 return InstructionPause.ContextRequired;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index f27c065d..3b88aaf3 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -266,9 +266,10 @@ internal sealed partial class LythonRuntime
+             if (source < 0) return RuntimeValue(execution.Code.Constants[~source]);
+             // Unbound locals raise Python errors before the temporary-value
+             // invariant rejects an empty operand slot.
+-            var value = execution.Stack.Values[source];
++            var value = source < execution.Code.FirstTemporarySlot
++                ? execution.Stack.ReadLocalValue(source) : execution.Stack.Values[source];
+             if (source < execution.Code.FirstTemporarySlot && value is null)
+-                return LoadLocal(execution.Code, execution.Locals, source,
++                return LoadLocal(execution.Code, ref execution.Stack, source,
+                     execution.Code.OperandReadSpan(execution.InstructionIndex, input), scope);
+             return value.RequireNotNull();
+         }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index 845a164b..6aa9c818 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
+         {
+             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var slot))
+             {
+-                value = _execution.LocalCells?[slot] is { } cell ? cell.Value : _execution.Locals[slot];
++                value = _execution.LocalCells?[slot] is { } cell ? cell.Value : _execution.Stack.ReadLocalValue(slot);
+                 if (value is not null) return true;
+             }
+ 
+@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
+         {
+             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
+             {
+-                var local = _execution.Locals[localSlot];
++                var local = _execution.Stack.ReadLocalValue(localSlot);
+                 if (local is not null)
+                 {
+                     value = local;
+@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
+             foreach (var pair in _execution.Code.LocalNameToSlot)
+             {
+                 if (pair.Key.StartsWith('<')) continue;
+-                var value = _execution.Locals[pair.Value];
++                var value = _execution.Stack.ReadLocalValue(pair.Value);
+                 if (value is not null)
+                 {
+                     yield return new KeyValuePair<string, object>(pair.Key, value);
+@@ -264,9 +264,10 @@ internal sealed partial class LythonRuntime
+ 
+     internal static long LookupCacheBytes(int count) => checked(32L + 64L * count);
+ 
+-    internal struct ExecutableValueStorage
++    internal partial struct ExecutableValueStorage
+     {
+         private object[] _items;
++        private long[]? _integerLocals;
+         private int[]? _nativeIterationPositions;
+         // One reference holds private invocation storage or the existing
+         // function definition that owns shared facts. Do not widen every frame
+@@ -282,17 +283,24 @@ internal sealed partial class LythonRuntime
+ 
+         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
+             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues,
+-            PyExecutableFunction? lookupOwner)
++            PyExecutableFunction? lookupOwner, int integerLocalCount = 0)
+         {
+             _state = context.State;
+             _firstTemporarySlot = firstTemporarySlot;
+             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
+             _nativeIterationPositions = null;
++            _integerLocals = null;
+             _lookupStorage = lookupOwner;
+-            var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
++            var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0)
++                + (integerLocalCount == 0 ? 0 : 32L + 8L * integerLocalCount));
+             var governor = context.MemoryGovernor;
+             governor.Reserve(bytes, allocationSpan);
+-            try { _items = borrowedValues ?? new object[capacity]; governor.Commit(bytes); }
++            try
++            {
++                _items = borrowedValues ?? new object[capacity];
++                _integerLocals = integerLocalCount == 0 ? null : new long[integerLocalCount];
++                governor.Commit(bytes);
++            }
+             catch { governor.ReleaseReserved(bytes); throw; }
+             _ownedStorageBytes = bytes;
+             LiveExtent = firstTemporarySlot;
+@@ -306,6 +314,7 @@ internal sealed partial class LythonRuntime
+         {
+             _items = [];
+             _nativeIterationPositions = null;
++            _integerLocals = null;
+             _lookupStorage = null;
+             var bytes = _ownedStorageBytes;
+             _ownedStorageBytes = 0;
+@@ -611,7 +620,8 @@ internal sealed partial class LythonRuntime
+         // The compiler-sized operand lifetime funds private frame arrays before any
+         // are allocated. Escaping cells acquire their separate retained charge.
+         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
+-            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner);
++            context, span, bytes, argumentsAreLocals ? boundArguments.Values : null, lookupOwner,
++            codeObject.NativeIntegerLocals.Length);
+         try
+         {
+             var locals = stack.Values;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+index e355a7c6..cddd0844 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+@@ -18,6 +18,10 @@ public sealed class CooperativeCancellationTests
+         { true, "try:\n    while True:\n        pass\nfinally:\n    pass" },
+         { false, "for i in range(2147483647):\n    pass" },
+         { true, "for i in range(2147483647):\n    pass" },
++        { false, "value = 1\nwhile value:\n    value += 1" },
++        { true, "value = 1\nwhile value:\n    value += 1" },
++        { false, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
++        { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
+     };
+ 
+     [Theory]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/IntegerLocalSemanticsTests.cs b/tests/Lokad.Lython.PublicApi.Tests/IntegerLocalSemanticsTests.cs
+new file mode 100644
+index 00000000..b9cf1f59
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/IntegerLocalSemanticsTests.cs
+@@ -0,0 +1,232 @@
++using System.Numerics;
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class IntegerLocalSemanticsTests
++{
++    // Outputs captured independently with CPython 3.13.2.
++    public static TheoryData<string, string> Programs => new()
++    {
++        {
++            """
++            value = 1000
++            for i in range(3):
++                value += 1
++            alias = value
++            retained = [value]
++            print(value is value, alias is value, retained[0] is value)
++            value += 7
++            print(alias, retained[0], value)
++            value = True
++            value += 2
++            print(type(value).__name__, value)
++            value = 1.5
++            value += 2
++            print(type(value).__name__, value)
++            value = 'a'
++            value += 'b'
++            print(type(value).__name__, value)
++            """,
++            "True True True\n1003 1003 1010\nint 3\nfloat 3.5\nstr ab\n"
++        },
++        {
++            """
++            for seed in [9223372036854775807, -9223372036854775808, 7, -7]:
++                value = seed
++                value += 1
++                print(value)
++                value -= 2
++                print(value)
++                value *= -3
++                print(value)
++                value = seed
++                value <<= 63
++                print(value)
++                value >>= 64
++                print(value)
++                value = seed
++                value ^= -1
++                value &= 15
++                value |= 32
++                print(value)
++            """,
++            "9223372036854775808\n9223372036854775806\n-27670116110564327418\n85070591730234615856620279821087277056\n4611686018427387903\n32\n-9223372036854775807\n-9223372036854775809\n27670116110564327427\n-85070591730234615865843651857942052864\n-4611686018427387904\n47\n8\n6\n-18\n64563604257983430656\n3\n40\n-6\n-8\n24\n-64563604257983430656\n-4\n38\n"
++        },
++        {
++            """
++            count = 12
++            while count:
++                count -= 1
++            print(count, count == 0, count != 1, count < 1, count <= 0, count > -1, count >= 0)
++            del count
++            try:
++                print(count)
++            except NameError:
++                print('missing')
++            count = None
++            print(count)
++            count = 1
++            count += 2
++            print(count)
++            """,
++            "0 True True True True True True\nmissing\nNone\n3\n"
++        },
++        {
++            """
++            value = 1000
++            value += 1
++            namespace = globals()
++            print(namespace['value'], namespace['value'] is value)
++            namespace['value'] = 4
++            value += 2
++            print(value, namespace['value'])
++            del namespace['value']
++            try:
++                print(value)
++            except NameError:
++                print('missing')
++            value = 9
++            value += 1
++            print(value, namespace['value'])
++            """,
++            "1001 True\n6 6\nmissing\n10 10\n"
++        },
++        {
++            """
++            def generate():
++                value = 1000
++                value += 1
++                yield value
++                value += 2
++                yield value
++                if True:
++                    del value
++                try:
++                    yield value
++                except UnboundLocalError:
++                    yield 'missing'
++            iterator = generate()
++            first = next(iterator)
++            second = next(iterator)
++            print(first, second, first is first, next(iterator))
++            """,
++            "1001 1003 True missing\n"
++        },
++    };
++
++    [Theory, MemberData(nameof(Programs))]
++    public async Task UpdatesPreserveValuesAliasesAndNamespaces(string source, string expected)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using (var script = new LythonEngine().Compile(source, budget))
++        {
++            Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
++            var baseline = budget.ReservedBytes;
++            foreach (var asynchronous in new[] { false, true })
++            {
++                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++                {
++                    Assert.True(result.Success, result.Failure?.Message);
++                    Assert.Equal(expected, result.StandardOutput);
++                }
++                Assert.Equal(baseline, budget.ReservedBytes);
++            }
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task SuspendedReadCancellationRefundsCountersAndPreservesRerunAliases(bool asynchronousRerun)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            value = 1000
++            value += 1
++            retained = [value]
++            with open('/gate.txt') as source:
++                source.read()
++            value += 2
++            return [retained[0], value]
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var host = new DelayedLythonHost();
++        host.SeedFile("/gate.txt", "data");
++        using var cancellation = new CancellationTokenSource();
++        var entered = host.PauseReadUntilCancellation("/gate.txt");
++        var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
++        LythonExecutionResult? result = null;
++        try
++        {
++            await entered.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(pending.IsCompleted);
++            Assert.True(budget.ReservedBytes > baseline);
++            cancellation.Cancel();
++            result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(result.Success);
++            Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
++        }
++        finally
++        {
++            cancellation.Cancel();
++            result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            result.Dispose();
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        // A fresh run uses the same allowance, and retained projection remains
++        // charged until the caller disposes it.
++        var immediate = new MockLythonHost();
++        immediate.SeedFile("/gate.txt", "data");
++        using (var completed = asynchronousRerun ? await script.RunAsync(immediate) : script.Run(immediate))
++        {
++            Assert.True(completed.Success, completed.Failure?.Message);
++            var values = Assert.IsType<List<object?>>(completed.ReturnValue);
++            Assert.Equal(new BigInteger(1001), Assert.IsType<BigInteger>(values[0]));
++            Assert.Equal(new BigInteger(1003), Assert.IsType<BigInteger>(values[1]));
++            Assert.True(budget.ReservedBytes > baseline);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(false, true)]
++    [InlineData(true, false)]
++    [InlineData(true, true)]
++    public async Task RefusedWideUpdateCannotBeSuppressedAndAllowanceRemainsReusable(bool asynchronous, bool finallyReturn)
++    {
++        var tail = finallyReturn ? "finally:\n return 0" : "except MemoryError:\n print('caught')";
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var script = new LythonEngine().Compile(
++            "value = 1\nvalue += 2\nprint('ready')\ntry:\n value <<= 524288\n" + tail + "\nprint('after')\nreturn value", budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var host = new MockLythonHost();
++        ILythonMemoryReservation? padding = null;
++        host.OnStandardOutputWrite = () =>
++        {
++            if (padding is null) Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes - 4096, out padding));
++        };
++        try
++        {
++            using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
++            Assert.False(result.Success);
++            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
++            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++            Assert.True(result.FailureAttribution?.Requested >= 65536);
++            Assert.Equal("ready\n", result.StandardOutput);
++            Assert.NotNull(padding);
++        }
++        finally { padding?.Dispose(); }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++        {
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(finallyReturn ? BigInteger.Zero : new BigInteger(3) << 524288, Assert.IsType<BigInteger>(result.ReturnValue));
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++    }
++}
