@@ -286,3 +286,5 @@ benchmarks/results/2026-11-10-regex-dev64/** -text whitespace=cr-at-eol
 # Preserve frozen integer-local source/evidence, including unified-diff context.
 benchmarks/results/2026-11-10-integer-local-storage/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-integer-local-storage/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-10-current-call-transport-attribution/** -text whitespace=cr-at-eol

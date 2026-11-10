@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R189 current-qualified attribution](results/2026-11-10-current-call-transport-attribution/README.md)
+refreshes exactly CSV/text after R184/R185,11.888captured seconds, all identity/
+output/quiet/join/archive checks pass. Text binding/frame samples are absent;
+VM transport, text and dictionary/subscript paths remain material. Keep all unknown/
+thread/raw data; shares are not removable taxes. The next source gate is one native
+dictionary accumulation pipeline, preserving actual dynamic fallbacks and ownership.
+
 The [R188 deferred integer-local prototype](results/2026-11-10-integer-local-storage/README.md)
 removes per-update boxing for eligible local counters. The original complete-script
 allocation falls about14%text/18%search, but B535's112.766second quiet comparison

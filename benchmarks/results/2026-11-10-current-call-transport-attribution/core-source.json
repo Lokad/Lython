@@ -1,0 +1,5 @@
+{
+  "coreSHA256": "26d43e660d9acb78406504b52bfff4ac463df85f6e980f32d628725f560fbb7a",
+  "sourceRevision": "3a413c59 qualified",
+  "sourceProof": "source-equivalence.json and frozen-core-source.json, exact EOL-normalized proof from R186; current src diff against3a413c59 empty."
+}

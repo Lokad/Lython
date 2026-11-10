@@ -1,0 +1,7 @@
+{"freeBytes": 268345344, "coreAndAuxiliaryImagesVerified": true, "ownerSeconds": 120, "stopSeconds": 30, "observationMarginSeconds": 30, "osFloorMiB": 240, "traceArchiveHeadroomMiB": 12}
+RuntimeMaxUSec=2min
+MainPID=3500602
+ActiveState=active
+
+
+Running as unit: lython-b537-current-work-20261110.service; invocation ID: e0ed131206544f6da8021573fe346e8f
