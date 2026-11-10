@@ -1,9 +1,8 @@
-# R204 — call-source transport (active prototype)
+# R204 — call-source transport (withdrawn)
 
 2026-11-10. Baseline immutable101ba9d3 has all568 normalized sources equal to
 fully qualified dba779a5. Original candidate4de5dd92, first refinement41a76b3f,
-selection-corrected refinemente7f365b5 remain isolated. **No source promotion or
-speedup claim.** Publication remains held. [Preparation, all source patches/images,
+selection-corrected refinemente7f365b5 remain preserved. **Complete prototype withdrawn; no source promotion.** Publication remains held. [Preparation, all source patches/images,
 census, staged tests and original failures](preparation-and-variants.tar.xz).
 
 The existing forwarding pass removes48 pure argument-load instructions across
@@ -65,3 +64,42 @@ fixture/golden; original full catalog and failed commands remain. The fixed
 240MiBfloor/12MiBheadroom stays unchanged. Only all-alias/UID/path/SHA verified
 old1ac/B555 canonical copies were retired; qualified039/priorE294/current101 survive.
 No remaining B556 users/RAM; terminal cached. Independent development continues.
+
+## Corrected confirmation and decision
+
+B557 completes three jobs111.726s with all identity/golden/ownership/quiet/join/
+RAM/archive/localSHA gates. Same reference VM, normal GC/tiering and independent
+four-role protocol. Selection-corrected e7 eliminates introduced duplicate general
+reads; native dictionary/unary operations use existing C# locals. Function/general
+calls retain the funded packet. Focused52internal/267public plus106native scalar
+lifetime/admission/cancellation cases pass each actualNET11/10.
+
+| Complete script / warm phase | Elapsed change | Wider process CPU change |
+| --- | ---: | ---: |
+| CSV | −1.57..+0.80% | −1.25..+0.06% |
+| Text helpers | −5.07..+2.19% | −5.16..+0.41% |
+| Text helpers, async API | −5.00..−2.48% | −4.22..+0.26% |
+
+Sync text is inconclusive: reference/candidate spreads4.61/2.68%. Async elapsed
+is favorable; wider CPU remains mixed. CSV is uncertain. These ranges are not
+confidence intervals and do not erase original stable sync adversity. Compilation
+allocation debt remains+0.72–1.01%; compiler source is unchanged by the runtime
+refinements, so no unchanged compile qualification was repeated or relabelled.
+[Raw confirmation](refined/observations.tgz), [medians/controls](refined/summary.json),
+[receipt](refined/archive-receipt.json), [refined source/tooling/gates](refinement-evidence.tar.xz).
+
+Decision: withdraw the complete design, including preparatory logical-edge move.
+Removing48 instructions and native packet stores is real, but warm allocation is
+flat, general CPU benefit remains unresolved and compilation allocation grows.
+Additional mapped inputs, packet-extent interpretation and two paths for native/
+general consumption are not justified by the complete evidence here. The favorable
+async observations remain; this is a complexity/regression-debt decision, not a
+fixed improvement veto or permanent ban. A larger design eliminating the remaining
+transport could justify future work with new evidence. No standalone graph cleanup,
+dormant reader, packet layer or exact-architecture test is retained.
+
+All workers joined and RAM retired. Only exact Git-archived4de aliases/raw/archive
+copies and old source metadata were retired for confirmation; qualified039/E294/
+current101 survive. Final e7/local prototype retirement is recorded separately.
+The next source gate examines actual per-invocation setup on small complete scripts,
+recognizing that immutable builtin functions/signatures are already shared.

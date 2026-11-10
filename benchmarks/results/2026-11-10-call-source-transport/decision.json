@@ -1,0 +1,7 @@
+{
+  "status": "Withdraw complete call-source prototype, including preparatory native graph move; retain no dormant input map or packet layer.",
+  "evidence": "Original B556 text+5.28..6.07%/CPU+2.71..6.06%; corrected B557 CSV -1.57..+.80%, sync text -5.07..+2.19%, async text -5.00..-2.48%; widerCPU mixed. Warm allocation flat, compile allocation+.72..1.01%.",
+  "interpretation": "Favorable async elapsed preserved; no fixed percentage veto/permanent ban. Corrected variant avoids introduced duplicate reads and unnecessary native packets, but stable general CPU benefit is unresolved while source mapping/captured extent/compiler debt remain. Those costs do not justify retaining this design now.",
+  "checks": "Original52/464 plus104 namespace cases per target; refinements52/267 plus106 native lifetimes each actualNET11/10 all pass. No new architecture-only tests retained.",
+  "next": "Archive confirmation/refinement/failures, restore all production source against base, remove isolated worktree and VM experimental aliases only under exact committed archive proofs. Resume bounded setup source gate; no broad audit or unchanged full-source qualification."
+}
