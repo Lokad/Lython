@@ -272,3 +272,6 @@ benchmarks/results/2026-11-10-shared-prefix-assessment/** -text whitespace=cr-at
 benchmarks/results/2026-11-10-shared-prefix-assessment/**/*.patch -text -whitespace
 
 benchmarks/results/2026-11-10-ordinary-runtime-attribution/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-10-invocation-routing/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-invocation-routing/**/*.patch -text -whitespace

@@ -1,0 +1,16 @@
+{
+  "originalDescriptorsPreserved": true,
+  "issue": "setup-contract.json and sizing.json were copied from a prior five-job run. They are stale descriptive files; collection and launcher use the actual six jobs/240s owner.",
+  "authoritativeActual": {
+    "jobs": 6,
+    "roles": 4,
+    "ownerSeconds": 240,
+    "stopSeconds": 30,
+    "marginSeconds": 30,
+    "collectionGuardSeconds": 210,
+    "referenceCoreReuse": "/home/lokad/lython-bench-checks/handler-native-entry-b522-20261110/current-core.dll",
+    "expectedCollectionSeconds": 180
+  },
+  "proof": "collect.py, launch-command.py, setup.json, live-unit.txt, identity/source gates and six-job raw results are authoritative. No source/image/sample changes or timing repeat.",
+  "preparationFixForFuture": "Generate descriptors from the actual selected matrix; do not copy stale five-job sizing/reference labels."
+}

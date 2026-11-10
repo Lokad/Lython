@@ -5756,3 +5756,13 @@ iteration cap before capture. Original/recovery failures and verified cleanup
 survive; no repeated samples. Consolidating existing instruction-loop routing
 is selected for bounded source implementation; another context-allocation
 project is not justified by this evidence. Publication stays postponed.
+
+## R183 — invocation-only routing consolidation
+
+[The isolated implementation](results/2026-11-10-invocation-routing/README.md)
+retains direct synchronous completion and native shortcuts while consolidating
+existing context operations.1381focused public cases eachactual11/10 pass.
+Warm/compile allocation flat; quiet B530 source858c4ac9 supports modest text/search
+CPU improvement but Unicode/report controls remain adverse/inconclusive. One
+larger-batch confirmation follows. Original desktop adversity/setup mistakes
+and all raw data survive. No promotion, universal speedup or final qualification.

@@ -1,0 +1,71 @@
+{
+  "beforeFreeBytes": 259043328,
+  "requiredFreeBytes": 271159296,
+  "freshIdleLease": true,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-operand-b528-20261110/current-core.dll",
+      "size": 5650944,
+      "sha256": "c39dcffc77c9336ae21a1a1578dd460b8e3930ccb2cc5c88c2c91f7f33cc5642",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\fixed-facts\\observations.tgz",
+      "preservedMember": "current-core.dll",
+      "archiveSHA256": "0095337e44ac698f6ff5ea0b0cb74964ee9540d1bedec901f1ba3ee500783507",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804441,
+      "links": 2,
+      "allocatedBytes": 5656576,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/shared-operand-b528-20261110/current-core.dll",
+        "/home/lokad/lython-bench-checks/shared-operand-b528-20261110/candidate/Lokad.Lython.dll"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/baseline-core.dll",
+      "size": 5655552,
+      "sha256": "e833f03ce220fe7569b6cc2db89bb3a93504773b3b5e33a9e1b92a4d4d4c55ba",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-framed-native-entry\\quiet\\observations.tgz",
+      "preservedMember": "baseline-core.dll",
+      "archiveSHA256": "82b084b6b0a815eca609fc21a4fc4124c0eacf4d596910218f08118b855714a0",
+      "tracked": true,
+      "device": 66305,
+      "inode": 339760,
+      "links": 14,
+      "allocatedBytes": 5660672,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/ordinary-controls-b524-20261110/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/ordinary-controls-b524-20261110/reference/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/reference/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/ordinary-controls-b523-20261110/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/ordinary-controls-b523-20261110/reference/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109/current-core.dll",
+        "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109/candidate/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/call-inputs-b520-20261109/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/call-inputs-b520-20261109/reference/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/call-inputs-b519-20261109/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/call-inputs-b519-20261109/reference/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/handler-native-entry-b522-20261110/baseline-core.dll",
+        "/home/lokad/lython-bench-checks/handler-native-entry-b522-20261110/reference/Lokad.Lython.dll"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/ordinary-work-b529-20261110/partial-observations.tgz",
+      "size": 2156969,
+      "sha256": "a9ab7985d95b04ff48344ee00e2056f2ab2c7df6837a3f311c0e2fa9195c6790",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-ordinary-runtime-attribution\\partial-observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804527,
+      "links": 1,
+      "allocatedBytes": 2158592,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/ordinary-work-b529-20261110/partial-observations.tgz"
+      ]
+    }
+  ],
+  "operation": "Retire only exact redundant remote copies of superseded frozen cores/optional compressed archive, every alias verified. All original core/raw bytes survive in tracked immutable canonical evidence; current production baseline and active images survive.",
+  "afterFreeBytes": 272515072
+}

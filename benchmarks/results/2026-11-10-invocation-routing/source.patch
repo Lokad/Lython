@@ -1,0 +1,243 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 95a39ae0..94c9695f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -42,45 +42,10 @@ internal sealed partial class LythonRuntime
+                         case ExecutableOpCode.StoreLocal:
+                             StoreExecutableLocal(ref execution, scope, invocation, instruction);
+                             break;
+-                        case ExecutableOpCode.StoreMember:
+-                        case ExecutableOpCode.StoreMemberLast
+-                            or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
+-                            or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
+-                            or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
+-                            or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
+-                            or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) invocation!.ExecuteTargetInstruction(instruction, false).GetAwaiter().GetResult();
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation!.ExecuteTargetInstruction(instruction, true));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+                         case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
+                             or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
+                             if (TryExecuteFormattedInstruction(ref execution, invocation, instruction, invocation ?? scope)) break;
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) invocation.ExecuteFormattedValueAsync(instruction, false).GetAwaiter().GetResult();
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation.ExecuteFormattedValueAsync(instruction, true));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+-                        case ExecutableOpCode.ApplyOperation:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous)
+-                                invocation!.ExecutePreparedOperationAsync(instruction, false).GetAwaiter().GetResult();
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation!.ExecutePreparedOperationAsync(instruction, true));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
++                            goto case ExecutableOpCode.ApplyOperation;
+                         case ExecutableOpCode.Yield:
+                             if (invocation is null) return InstructionPause.ContextRequired;
+                             invocation!.YieldValue = execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot);
+@@ -107,16 +72,6 @@ internal sealed partial class LythonRuntime
+                             }
+                             if (invocation!.HasYield) return InstructionPause.Boundary;
+                             break;
+-                        case ExecutableOpCode.Import or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) invocation!.ExecuteDefinitionOrFallback(instruction);
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation!.ExecuteDefinitionOrFallbackAsync(instruction));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+                         case ExecutableOpCode.LoadMember or ExecutableOpCode.LoadCallMember:
+                             if (invocation is null)
+                             {
+@@ -147,20 +102,6 @@ internal sealed partial class LythonRuntime
+                             PublishInstructionResult(ref execution, invocation, instruction,
+                                 CreateTupleFromStack(ref execution.Stack, instruction.InputStart, instruction.ItemCount, instruction.Span, scope));
+                             break;
+-                        case ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            jumped = invocation!.ExecuteStructure(instruction);
+-                            break;
+-                        case ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or ExecutableOpCode.ExitContextManager:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) jumped = invocation!.ExecuteStructure(instruction);
+-                            else
+-                            {
+-                                pending = invocation!.ExecuteContextManagerAsync(instruction);
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                jumped = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+                         case ExecutableOpCode.CompareJumpIfFalse:
+                             var comparisonPause = ExecuteComparisonInstruction(ref execution, scope, invocation, instruction, asynchronous,
+                                 out pending, out pendingSpan);
+@@ -184,14 +125,7 @@ internal sealed partial class LythonRuntime
+                                     jumped = true;
+                                 }
+                             }
+-                            else if (invocation is null) return InstructionPause.ContextRequired;
+-                            else if (!asynchronous) jumped = invocation!.ExecuteForNext(instruction);
+-                            else
+-                            {
+-                                pending = invocation!.ExecuteForNextAsync(instruction);
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                jumped = ConsumeOperation(ref pending);
+-                            }
++                            else goto case ExecutableOpCode.ApplyOperation;
+                             break;
+                         case ExecutableOpCode.Call:
+                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
+@@ -212,29 +146,7 @@ internal sealed partial class LythonRuntime
+                             if (execution.Stack.TryPrepareNativeIteration(
+                                 ReadOperand(ref execution, instruction.InputStart, scope, 0),
+                                 instruction.ResultSlot, instruction.LiveExtent, instruction.Span)) break;
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation!.ExecuteGetIteratorAsync(instruction));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+-                        case ExecutableOpCode.Slice:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
+-                            else
+-                            {
+-                                pending = WithoutJump(invocation!.ExecuteSliceValueOperationAsync(instruction));
+-                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                _ = ConsumeOperation(ref pending);
+-                            }
+-                            break;
+-                        case ExecutableOpCode.MakeSlice:
+-                            if (invocation is null) return InstructionPause.ContextRequired;
+-                            invocation!.ExecuteValueOperation(instruction);
+-                            break;
++                            goto case ExecutableOpCode.ApplyOperation;
+                         case ExecutableOpCode.JumpIfFalse:
+                             var condition = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+                             if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
+@@ -266,6 +178,31 @@ internal sealed partial class LythonRuntime
+                                 return InstructionPause.Boundary;
+                             }
+                             break;
++                        case ExecutableOpCode.StoreMember:
++                        case ExecutableOpCode.StoreMemberLast
++                            or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
++                            or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
++                            or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
++                            or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
++                            or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice:
++                        case ExecutableOpCode.ApplyOperation:
++                        case ExecutableOpCode.Import
++                            or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement
++                            or ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase
++                            or ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or ExecutableOpCode.ExitContextManager
++                            or ExecutableOpCode.Slice or ExecutableOpCode.MakeSlice:
++                            // Native format/iteration attempts above reach this same
++                            // boundary only when an invocation context is required.
++                            if (invocation is null) return InstructionPause.ContextRequired;
++                            jumped = invocation.ExecuteInvocationInstruction(instruction, asynchronous, out pending);
++                            if (asynchronous)
++                            {
++                                if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
++                                // The handler either completed a branch directly or
++                                // supplied an operation; always consume exceptions.
++                                jumped |= ConsumeOperation(ref pending);
++                            }
++                            break;
+                         default:
+                             throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
+                     }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Invocation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Invocation.cs
+new file mode 100644
+index 00000000..6a2cb27d
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Invocation.cs
+@@ -0,0 +1,69 @@
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    internal sealed partial class ExecutionContext
++    {
++        // Completed branch decisions stay synchronous. Only asynchronous work
++        // uses pending; the prefix joins it through its existing pause boundary.
++        // Native operations still execute before requesting this context.
++        private bool ExecuteInvocationInstruction(in ExecutableInstruction instruction, bool asynchronous,
++            out ValueTask<bool> pending)
++        {
++            pending = default;
++            ValueTask operation;
++            switch (instruction.OpCode)
++            {
++                case ExecutableOpCode.StoreMember or ExecutableOpCode.StoreMemberLast
++                    or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
++                    or ExecutableOpCode.ReadRetainedSubscript or ExecutableOpCode.ReadRetainedSlice
++                    or ExecutableOpCode.UnpackValues or ExecutableOpCode.FailAssertion or ExecutableOpCode.Raise
++                    or ExecutableOpCode.DeleteName or ExecutableOpCode.DeleteMember
++                    or ExecutableOpCode.DeleteSubscript or ExecutableOpCode.DeleteSlice:
++                    operation = ExecuteTargetInstruction(instruction, asynchronous);
++                    break;
++                case ExecutableOpCode.ApplyOperation:
++                    operation = ExecutePreparedOperationAsync(instruction, asynchronous);
++                    break;
++                case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
++                    or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
++                    operation = ExecuteFormattedValueAsync(instruction, asynchronous);
++                    break;
++                case ExecutableOpCode.Import or ExecutableOpCode.DefineFunction or ExecutableOpCode.ExecuteFallbackStatement:
++                    if (!asynchronous)
++                    {
++                        ExecuteDefinitionOrFallback(instruction);
++                        return false;
++                    }
++                    operation = ExecuteDefinitionOrFallbackAsync(instruction);
++                    break;
++                case ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase:
++                    return ExecuteStructure(instruction);
++                case ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or ExecutableOpCode.ExitContextManager:
++                    if (!asynchronous) return ExecuteStructure(instruction);
++                    pending = ExecuteContextManagerAsync(instruction);
++                    return false;
++                case ExecutableOpCode.ForNext:
++                    if (!asynchronous) return ExecuteForNext(instruction);
++                    pending = ExecuteForNextAsync(instruction);
++                    return false;
++                case ExecutableOpCode.GetIter or ExecutableOpCode.Slice or ExecutableOpCode.MakeSlice:
++                    if (!asynchronous || instruction.OpCode == ExecutableOpCode.MakeSlice)
++                    {
++                        ExecuteValueOperation(instruction);
++                        return false;
++                    }
++                    operation = instruction.OpCode == ExecutableOpCode.GetIter
++                        ? ExecuteGetIteratorAsync(instruction) : ExecuteSliceValueOperationAsync(instruction);
++                    break;
++                default:
++                    throw new InvalidOperationException($"Unexpected invocation instruction: {instruction.OpCode}");
++            }
++            if (asynchronous) pending = WithoutJump(operation);
++            else operation.GetAwaiter().GetResult();
++            return false;
++        }
++    }
++}
