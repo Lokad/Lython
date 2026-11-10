@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R202 coarse host-grant prototype](results/2026-11-10-coarse-admission/README.md)
+is withdrawn. Quiet synchronous workloads improve roughly2–4%, with supporting
+report/JSON CPU, flat allocation and uncertain async controls. Cached capacity,
+two estimate levels and broad contract migration outweigh retaining this policy;
+the favorable evidence and228unclassified native failures remain. The independent
+wide-enumerate preflight correction and useful ownership regressions are retained.
+
 The [R201 bounded JSON string scan](results/2026-11-10-json-string-scan/README.md)
 is withdrawn after an original six-job comparison and a justified two-job
 confirmation. JSON-lines elapsed benefits narrow, CPU remains mixed, report

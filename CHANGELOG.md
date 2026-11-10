@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Admit wide `enumerate` index increments before allocation and keep the retained
+  next index funded. Remove duplicate late charging of the returned index while
+  preserving source order, exhaustion and asynchronous iteration.
+
 - Let ordinary methods use the existing deferred function context when scope facts
   permit it, avoiding eager frame construction while preserving class cells,
   later namespace observation, suspension and cleanup.

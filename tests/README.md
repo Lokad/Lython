@@ -54,6 +54,11 @@ host integers.
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.
 
+[Enumerate indices](Lokad.Lython.Tests/EnumerateIndexAdmissionTests.cs) check refusal
+before wide increment allocation, retained index aliases and exhaustion under a
+full allowance. Public boundary values include real asynchronous source I/O and
+independent Python goldens; cleanup makes the shared allowance reusable.
+
 [Integer local semantics](Lokad.Lython.PublicApi.Tests/IntegerLocalSemanticsTests.cs)
 keep independent Python goldens for counter aliases, promotion, dynamic values,
 namespaces, deletion and generators. Pending-read cancellation, retained projection,

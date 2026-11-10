@@ -1006,6 +1006,11 @@ against the shared root. Failed admission or callback failure returns only the
 unallocated pending charge; retained callback results keep their funding. Native
 refund/cleanup remains available, and callback suppression cannot erase first refusal.
 
+`enumerate` admits a wide next-index magnitude before incrementing it. Its tuples
+fund their exposed old indices while the iterator retains the funded next index.
+Source pulling precedes index construction; exhausted pulls need no unused
+increment. Both execution APIs preserve this order, including suspended sources.
+
 Dynamic `**kwargs` names admit their CLR representation before decoding. Native
 callees can retain these labels, so their allowance conservatively remains with
 the execution after argument scratch is released.

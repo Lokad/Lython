@@ -242,6 +242,37 @@ public sealed class ReentrantAdmissionOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Fact]
+    public void RefundCallbackExceptionDoesNotAuthorizeUsingTheOldCapacity()
+    {
+        var budget = new LythonMemoryBudget(8192);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new ResizeHook(owner);
+            var governor = new MemoryGovernor(hook);
+            var outer = PyString.FromString(new string('o', 6000), governor, Span);
+            var retained = PyString.FromString(new string('r', 1000), governor, Span);
+            var failure = new InvalidOperationException("controlled failure after refund publication");
+            hook.AfterResize = () => { hook.AfterResize = null; throw failure; };
+            // The fresh outer storage has no users; the other value stays live.
+            Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => governor.RefundUnpublishedValue(outer)));
+            Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out var blocker));
+            using (blocker)
+            {
+                var refused = Assert.Throws<LythonRuntimeException>(() =>
+                    PyString.FromString(new string('n', 4000), governor, Span));
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, refused.Attribution?.Reason);
+                Assert.Same(refused, governor.AdmissionFailure);
+                Assert.Equal(0, governor.CurrentReservedBytes);
+            }
+            Assert.Equal(new string('r', 1000), retained.AsString());
+            Assert.True(budget.ReservedBytes >= retained.Utf8Bytes.Length);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        Assert.True(budget.TryReserve(budget.LimitBytes!.Value, out var later));
+        later.Dispose();
+    }
+
     private sealed class ResizeHook(ILythonMemoryBudget parent) : ILythonMemoryBudget
     {
         internal Action? BeforeResize, AfterResize;

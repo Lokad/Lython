@@ -242,9 +242,8 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         object indexBox = _index;
         // The item has been consumed. Advance before tuple admission so a
         // refused result cannot reuse its index for the following item.
-        _index++;
+        AdvanceIndex();
         var produced = new PyTuple([indexBox, item], _governor, _span);
-        LythonRuntime.OwnFreshInteger(indexBox, _governor, _span);
         value = produced;
         return true;
     }
@@ -259,10 +258,17 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
 
         // Same fresh-tuple ownership as the sync path above.
         object indexBox = _index;
-        _index++;
+        AdvanceIndex();
         var produced = new PyTuple([indexBox, item], _governor, _span);
-        LythonRuntime.OwnFreshInteger(indexBox, _governor, _span);
         return PyIterationResult.Yield(produced);
+    }
+
+    private void AdvanceIndex()
+    {
+        // The tuple owns its exposed old index. Fund the next retained magnitude
+        // before addition allocates; ordinary counters need no extra result box.
+        if (_index.GetByteCount() < 8) _index++;
+        else _index = (BigInteger)LythonRuntime.AddExactIntegers(_index, BigInteger.One, _governor, _span);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");

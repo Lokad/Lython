@@ -62,4 +62,26 @@ public sealed class MemoryGovernorInvariantTests
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
+
+    [Fact]
+    public void LargeEstimatesPreserveFundingAndCheckedTotals()
+    {
+        var budget = new LythonMemoryBudget();
+        using (var owner = budget.CreateScope())
+        {
+            var governor = new MemoryGovernor(owner);
+            using (var first = governor.ReserveTemporary(long.MaxValue - 1, null))
+            using (var second = governor.ReserveTemporary(1, null))
+            {
+                Assert.Equal(long.MaxValue, governor.CurrentAccountedBytes);
+                Assert.Equal(long.MaxValue, budget.ReservedBytes);
+                var failure = Assert.Throws<LythonRuntimeException>(() => governor.Reserve(1, null));
+                Assert.Equal(LythonFailureReason.ByteBufferCapacityLimit, failure.Attribution?.Reason);
+                Assert.Same(governor.AdmissionFailure, failure);
+            }
+            Assert.Equal(0, governor.CurrentAccountedBytes);
+            Assert.Equal(0, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
 }

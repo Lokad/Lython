@@ -68,3 +68,12 @@ The VM run is terminal-cached with no users/RAM. Staging retired only four exact
 Git-archived raw catalog/confirmation copies from B551/B552 under idle-lease,
 path/UID/link/SHA checks. Qualified039 and priorE294 survive. Publication stays held;
 remaining runtime performance and independent regex work continue.
+
+Cleanup complete: [local retirement](local-retirement.json) restores/verifies all568
+production files before deleting the isolated worktree. [VM retirement](vm-retirement.json)
+verifies both fedd hardlink aliases and the exact committed archive copy before
+removal. Corrected ed5 baseline, qualified039 and priorE294 survive. Private frozen
+diagnostics remain outside project inputs; no grant mode or quantum fixture edits
+remain in the product. The [retained source checks](retained-validation.json) pass
+1491 native storage and241 public workload/lifetime cases on each actual runtime;
+full platform delivery is tracked separately.
