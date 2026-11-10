@@ -581,6 +581,7 @@ internal sealed partial class ExecutableScript
         private readonly record struct LoopContext(
             int ContinueBlockIndex,
             int BreakBlockIndex,
-            bool HasIterator);
+            bool HasIterator,
+            int ProtectedDepth);
     }
 }

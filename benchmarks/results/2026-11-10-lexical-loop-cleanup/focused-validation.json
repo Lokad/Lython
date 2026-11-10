@@ -1,0 +1,70 @@
+[
+  {
+    "kind": "internal",
+    "target": "net11.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~ProtectedLoopCompilationTests|FullyQualifiedName~ExecutableCompilationLifetimeTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~SynchronousGeneratorAdvanceTests|FullyQualifiedName~MethodBodyControlBoundaryTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "target": "net11.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~ProtectedLoopControlTests|FullyQualifiedName~CooperativeCancellationTests|FullyQualifiedName~ExceptionStateTests|FullyQualifiedName~ExceptionHandlerValueTests|FullyQualifiedName~ExceptionHeaderExpressionTests|FullyQualifiedName~ControlFlowScenarioTests|FullyQualifiedName~GeneratorCleanupCompositionTests|FullyQualifiedName~GeneratorStatementCompositionTests|FullyQualifiedName~MethodBodyControlFlowBoundaryTests|FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~ExceptionOwnershipTests|FullyQualifiedName~GovernedMemoryContractTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "internal",
+    "target": "net10.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~ProtectedLoopCompilationTests|FullyQualifiedName~ExecutableCompilationLifetimeTests|FullyQualifiedName~ExecutableStackAdmissionTests|FullyQualifiedName~SynchronousGeneratorAdvanceTests|FullyQualifiedName~MethodBodyControlBoundaryTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "target": "net10.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~ProtectedLoopControlTests|FullyQualifiedName~CooperativeCancellationTests|FullyQualifiedName~ExceptionStateTests|FullyQualifiedName~ExceptionHandlerValueTests|FullyQualifiedName~ExceptionHeaderExpressionTests|FullyQualifiedName~ControlFlowScenarioTests|FullyQualifiedName~GeneratorCleanupCompositionTests|FullyQualifiedName~GeneratorStatementCompositionTests|FullyQualifiedName~MethodBodyControlFlowBoundaryTests|FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~ExceptionOwnershipTests|FullyQualifiedName~GovernedMemoryContractTests)"
+    ],
+    "exitCode": 0
+  }
+]

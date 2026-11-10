@@ -277,7 +277,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
             var targetExit = CompileLoopTarget(statement.Syntax.Target, statement.Span, headBlock);
 
-            _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));
+            _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true, _protectedDepth));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, targetExit);
@@ -581,7 +581,7 @@ internal sealed partial class ExecutableScript
             conditionBlock = CompileExpression(statement.Condition, conditionBlock);
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
 
-            _loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false));
+            _loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false, _protectedDepth));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, conditionBlock);
@@ -614,7 +614,10 @@ internal sealed partial class ExecutableScript
                 throw new InvalidOperationException("Executable IR lowering cannot emit break outside a loop.");
             }
 
-            if (_protectedDepth > 0)
+            // A loop wholly inside the current protected suite leaves no
+            // handler or cleanup behind. Only crossing its boundary needs the
+            // runtime's pending transfer and unwind machinery.
+            if (_protectedDepth != loop.ProtectedDepth)
             {
                 AddInstruction(currentBlock, ExecutableInstruction.AbruptJump(loop.BreakBlockIndex, loop.HasIterator, statement.Span));
                 return null;
@@ -636,7 +639,7 @@ internal sealed partial class ExecutableScript
                 throw new InvalidOperationException("Executable IR lowering cannot emit continue outside a loop.");
             }
 
-            AddInstruction(currentBlock, _protectedDepth > 0
+            AddInstruction(currentBlock, _protectedDepth != loop.ProtectedDepth
                 ? ExecutableInstruction.AbruptJump(loop.ContinueBlockIndex, false, statement.Span)
                 : ExecutableInstruction.Jump(loop.ContinueBlockIndex, statement.Span));
             return null;

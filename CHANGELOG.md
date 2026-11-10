@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Compile loop transfers within one protected suite as ordinary jumps, avoiding
+  pending transfer objects and unwind scans. Transfers across cleanup boundaries
+  retain their existing exception, iterator and asynchronous cleanup behavior.
+
 - Consume eligible immediate cased-split results through native iteration, removing
   transient lists and value arrays across direct and closed-helper calls. Admit
   all word storage before loop effects; escaping results keep ordinary list behavior.

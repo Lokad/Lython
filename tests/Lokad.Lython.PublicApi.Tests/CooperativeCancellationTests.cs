@@ -16,6 +16,8 @@ public sealed class CooperativeCancellationTests
         { true, "while True:\n    try:\n        while True:\n            pass\n    except BaseException:\n        pass" },
         { false, "try:\n    while True:\n        pass\nfinally:\n    pass" },
         { true, "try:\n    while True:\n        pass\nfinally:\n    pass" },
+        { false, "try:\n    while True:\n        continue\nfinally:\n    pass" },
+        { true, "try:\n    while True:\n        continue\nfinally:\n    pass" },
         { false, "for i in range(2147483647):\n    pass" },
         { true, "for i in range(2147483647):\n    pass" },
         { false, "value = 1\nwhile value:\n    value += 1" },

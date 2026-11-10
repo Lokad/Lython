@@ -1,0 +1,6 @@
+{
+  "status": "Retain complete two-file lexical-loop compiler classification, pending full delivery qualification.",
+  "reason": "Same-region control removes pending jump allocation and runtime unwind scans with no new runtime mechanism. CSV allocation -2.47% both APIs, other controls flat. Quiet sync CPU/elapsed inconclusive; async CPU -0.89..-1.28%, elapsed -1.45..+.54%. No general CPU/speedup claim. Static depth metadata and all crossing cleanup semantics retained.",
+  "limits": "Original desktop CSV +2.24..9.29%sync/+7.55..14.93%async and adverse text/config controls remain. Quiet sync reference spread3.74% CSV/4.36%text. R206 allocation associations were selection evidence, not removable CPU shares.",
+  "qualification": "Forced Release solution0warnings/errors;54internal/254public each actualtarget. Full ordinary/platform/stress/package qualification tracked separately."
+}

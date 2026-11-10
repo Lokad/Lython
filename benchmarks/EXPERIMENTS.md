@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R207 lexical loop classification](results/2026-11-10-lexical-loop-cleanup/README.md)
+retains a two-file compiler change: same-protected-suite transfers use ordinary
+jumps, removing pending jump construction and runtime unwind scans; actual cleanup
+exits keep existing routing. CSV allocation falls about 2.47% on both APIs. Quiet
+sync elapsed/CPU is inconclusive; async CPU slightly lower, elapsed straddles zero.
+Original desktop adversity remains. No new runtime machinery or general speedup;
+full retained delivery qualification is tracked separately.
+
 The [R206 qualified-source allocation refresh](results/2026-11-10-current-allocation/README.md)
 uses two existing complete scripts and the unchanged collector against qualified
 runtime dba779a5. Strings/integers, CSV records/reservations and the private text

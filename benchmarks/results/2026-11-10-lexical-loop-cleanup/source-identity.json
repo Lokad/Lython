@@ -1,0 +1,12 @@
+{
+  "cores": {
+    "before": "101ba9d3e5237b8d0da09689a94abf9b7dbbe276634becedac61e859e84ac897",
+    "candidate": "dbe94d4dfdcdc8f86de537ad904ee789664d749f60282713d7ac30c0d0467334"
+  },
+  "sourceDifferences": [
+    "src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs",
+    "src/Lokad.Lython/Frontend/ExecutableScript.Statements.cs"
+  ],
+  "sourceProofSHA256": "8f654d1be52df73141cf0b056e699d6bc675fac763234eab974124a4db9f83e7",
+  "freeze": "Candidate root solution forced nonincremental Release build0warnings/errors before focused checks. Baseline original R203 forced freeze reused after current source equivalence and qualified dba CI. Auxiliaries identical."
+}

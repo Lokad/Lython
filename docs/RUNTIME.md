@@ -258,7 +258,9 @@ operand projections and control-flow retargeting keep explicit validity checks.
 Ordinary jump chains resolve once with iterative cycle handling. Dense block IDs
 drive reachability and target remapping; each cycle entry keeps its identity.
 Protected abrupt jumps retain their original target so iterator and exception
-cleanup run in the correct region.
+cleanup run in the correct region. Loop transfers within the same protected
+suite use ordinary jumps; only transfers across a suite boundary need runtime
+unwind routing.
 Assignment, augmented-target reads, deletion, unpacking, assertions and explicit
 raises use ordinary instructions. Store metadata keeps its target span separate
 from the instruction's guard/routing span. A shared synchronous prefix completes
