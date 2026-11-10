@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "original": {
+      "lines": {
+        "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": 659,
+        "src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs": 205
+      },
+      "baseDeserializerLines": 753,
+      "netProductionLines": 111
+    },
+    "refined": {
+      "lines": {
+        "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": 646,
+        "src/Lokad.Lython/Runtime/LythonRuntime.Json.Construction.cs": 209
+      },
+      "baseDeserializerLines": 753,
+      "netProductionLines": 102
+    }
+  },
+  "correction": "Earlier105line claim was approximate; use actual source line counts here. Original plans/conditions preserved, not rewritten in raw archives."
+}
