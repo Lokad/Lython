@@ -68,3 +68,7 @@ receiving/verifying the new qualified-source baseline and matching all inode
 aliases, UID/path and committed Git archive bytes. [Replacement proof](vm-baseline-replacement.json).
 Qualified039/priorE294 survive; fixed240MiBfloor/12MiBsetupheadroom remain.
 No remaining VM users or RAM fixtures. Publication/tagging remain postponed.
+
+Retained runtime dba779a5 subsequently passes complete Windows/Ubuntu delivery:
+both actual target frameworks, original Stress and installed Release consumers.
+[Cached terminal proof](delivery-ci.json); no repeated qualification.
