@@ -1,0 +1,16 @@
+{
+  "removedOnly": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\continuous-prefix-r194\\tree",
+  "allDeltasPreserved": [
+    {
+      "path": "src/Lokad.Lython/Runtime/ExecutionState.Guards.cs",
+      "sha256": "1d2778e9c85b52143e549635d9f3df7650a5a06f66419893cddfaf980ae5ebba",
+      "preservedAs": "refined-source/ExecutionState.Guards.cs"
+    },
+    {
+      "path": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs",
+      "sha256": "3cdfb5ed48d0ea88104ad4febd0999e6f68659012354565e4d26d61fab57f34a",
+      "preservedAs": "refined-source/LythonRuntime.Executable.Interpreter.Dispatch.cs"
+    }
+  ],
+  "mainRuntimeUnchanged": true
+}

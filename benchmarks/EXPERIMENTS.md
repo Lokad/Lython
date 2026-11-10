@@ -5880,3 +5880,19 @@ bridge, normal0.4 pin and provider source stay unchanged. The623 documented memb
 names are unchanged; three producer API gaps remain. This establishes development
 semantic/contract compatibility, not final adapter safety/performance qualification.
 No sibling edits/builds, producer republishing or speculative pin promotion.
+
+## R194 — continuous instruction run with cold exception routing
+
+[Both isolated variants](results/2026-11-10-continuous-prefix/README.md) are
+withdrawn; the qualified runtime remains unchanged. Focused semantics,
+cancellation and ownership checks pass on actual .NET 11/10. The jumped
+stack-home disappears, but generated code/frame size grows and allocation stays
+flat. The four-process quiet confirmation retains affected-script regressions,
+unstable identical controls and early tiering activity. It does not establish a
+general CPU gain or a permanent veto on dispatch redesigns.
+
+Original/refined source, binaries, JIT output, desktop adversity and raw VM
+observations are preserved. Run-only clocks and the reset/validation/disposal
+envelope are reported separately; wider process CPU includes shared JIT/GC.
+Workers are joined, fixtures removed and archives SHA-verified. The private
+worktree was removed after all source deltas were verified against that evidence.
