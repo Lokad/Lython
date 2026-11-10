@@ -132,3 +132,14 @@ No new semantic tests or public options need removal. No full platform/package
 replay for withdrawn code. Next source assessment targets actual hot operand/result
 work rather than moving cold bodies; broader performance/independent regex tracks
 remain active. Publication stays postponed.
+
+
+## Withdrawal cleanup completed
+
+All568 refined production files were verified against the committed source archive
+before removing the private worktree. Main production/test sources equal qualified
+66ebdb4b; the extracted helper is absent. [Local retirement](local-retirement.json).
+An idle VM lease, no-user check, exact archive/core SHA, ownership/path and all-hardlink
+proofs permitted removal of both experimental core images and every alias. Qualified
+039 and priorE294 references survive. [VM retirement](vm-retirement.json). All original
+evidence remains; no dormant runtime route or new policy-only tests survive.
