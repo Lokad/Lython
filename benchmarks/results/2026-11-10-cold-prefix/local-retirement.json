@@ -2,5 +2,7 @@
   "removedWorktree": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\cold-prefix-r200\\tree",
   "all568ProductionFilesVerifiedAgainstCommittedArchive": true,
   "mainRuntimeUnchanged": "66ebdb4b",
-  "remainingRuntimeCopy": false
+  "remainingLinkedWorktreeImplementation": false,
+  "historicalFrozenDiagnosticEvidenceRetainedPrivately": true,
+  "productionRuntimeRoutesUnchanged": true
 }
