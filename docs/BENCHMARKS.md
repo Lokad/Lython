@@ -25,7 +25,7 @@ All use stock CPython 3.13.16 on the same reference VM. Rows from earlier source
 are historical and do not describe arbitrary later HEAD. Keyword-default search
 is a distinct script; the original literal-prefix search remains visible.
 
-The [current report/text/JSON-lines checkpoint](../benchmarks/results/2026-11-10-json-cpython-checkpoint/README.md)
+The [report/text/JSON-lines checkpoint](../benchmarks/results/2026-11-10-json-cpython-checkpoint/README.md)
 uses fresh postcommit core `e294fad1`, actual assembly0.11.0, all568 source hashes
 and fully qualified `8d44bd4e`. Frozen binaries, scripts and observations survive.
 Other rows retain their recorded earlier sources: [CSV/search checkpoint](../benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/README.md)
@@ -75,9 +75,11 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering; five-second
-warmup per role/job and seven rotated 150 ms rounds. Current core `e364e4d9`, common
-worker `fec79afd`, optional adapter 0.4 and the existing protocol. Older rows retain
-their frozen images. These timings do not qualify a newer regex producer.
+warmup per role/job and seven rotated 150 ms rounds. The report/text/JSON-lines
+rows use core `e294fad1` (`8d44bd4e`); CSV/search
+rows use core `e364e4d9` (`e5731404`). Both use common worker `fec79afd`, optional
+adapter 0.4 and the existing protocol. Other rows retain their recorded images.
+These timings do not describe current HEAD or qualify a newer regex producer.
 
 Identical scripts and fixtures run on both engines, with complete stdout/file
 digests checked every invocation. Lython uses efficient mediated filesystem

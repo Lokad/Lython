@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R206 qualified-source allocation refresh](results/2026-11-10-current-allocation/README.md)
+uses two existing complete scripts and the unchanged collector against qualified
+runtime dba779a5. Strings/integers, CSV records/reservations and the private text
+cursor remain material sample associations. All identities, goldens, zero-loss,
+stop/join and fixture cleanup pass. These are not exact per-type bytes or CPU costs;
+no new runtime redesign is selected from allocation shares alone. Existing row
+adoption and shared setup metadata are confirmed, not reimplemented.
+
 The [R204 call-source prototype](results/2026-11-10-call-source-transport/README.md)
 is withdrawn completely. Original sync text slows5–6% with supporting CPU; one
 source-guided native-consumption refinement leaves sync/CSV uncertain and async

@@ -1,0 +1,181 @@
+[
+  {
+    "label": "text",
+    "threads": [
+      {
+        "threadId": 52748,
+        "ticks": 6433
+      },
+      {
+        "threadId": 19224,
+        "ticks": 47
+      }
+    ],
+    "objectSizesByType": {
+      "<>c__DisplayClass6_0": [
+        40
+      ],
+      "BuiltinCallable": [
+        96
+      ],
+      "CasedWhitespaceIteration": [
+        64
+      ],
+      "DelegateEnumerator[System.String]": [
+        128
+      ],
+      "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]": [
+        152
+      ],
+      "Entry[System.String,System.Object][]": [
+        96,
+        3168
+      ],
+      "ExceptionTypeValue": [
+        48
+      ],
+      "Lokad.Lython.Runtime.ExecutionState": [
+        400
+      ],
+      "Lokad.Lython.Runtime.PyTuple": [
+        48
+      ],
+      "Lokad.Lython.Runtime.Text.GovernedByteBuilder": [
+        56
+      ],
+      "Lokad.Lython.Runtime.Text.PyString": [
+        56
+      ],
+      "ObjectSetAttrMethod": [
+        24
+      ],
+      "RuntimeTypeCache": [
+        168
+      ],
+      "System.Byte[]": [
+        32,
+        40,
+        48,
+        72,
+        16416
+      ],
+      "System.Collections.Generic.Dictionary`2[System.String,System.Byte[]]": [
+        80
+      ],
+      "System.Collections.Generic.Dictionary`2[System.String,System.Object]": [
+        80
+      ],
+      "System.IO.Enumeration.FileSystemEnumerable`1[System.String]": [
+        72
+      ],
+      "System.Int32[]": [
+        56,
+        552
+      ],
+      "System.Numerics.BigInteger": [
+        32
+      ],
+      "System.String": [
+        32,
+        48,
+        80,
+        208,
+        264,
+        272,
+        280,
+        288,
+        296
+      ],
+      "System.String[]": [
+        48
+      ],
+      "TemporaryMemoryReservation": [
+        32
+      ],
+      "TextFileWriteState": [
+        104
+      ],
+      "ZipCallable": [
+        32
+      ]
+    }
+  },
+  {
+    "label": "csv",
+    "threads": [
+      {
+        "threadId": 65132,
+        "ticks": 15872
+      },
+      {
+        "threadId": 70624,
+        "ticks": 73
+      }
+    ],
+    "objectSizesByType": {
+      "<>c__DisplayClass10_0": [
+        40
+      ],
+      "DelegateEnumerator[System.String]": [
+        128
+      ],
+      "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]": [
+        152
+      ],
+      "Lokad.Lython.Runtime.PyDict": [
+        96
+      ],
+      "Lokad.Lython.Runtime.PyTuple": [
+        48
+      ],
+      "Lokad.Lython.Runtime.Text.GovernedByteBuilder": [
+        56
+      ],
+      "Lokad.Lython.Runtime.Text.PyString": [
+        56
+      ],
+      "NativeKey[]": [
+        152
+      ],
+      "PendingJump": [
+        40
+      ],
+      "RecordKeys": [
+        48
+      ],
+      "System.Byte[]": [
+        40,
+        16416
+      ],
+      "System.Collections.Generic.Dictionary`2[System.String,System.Byte[]]": [
+        80
+      ],
+      "System.Int32[]": [
+        40
+      ],
+      "System.Numerics.BigInteger": [
+        32
+      ],
+      "System.Object": [
+        24
+      ],
+      "System.Object[]": [
+        40,
+        48
+      ],
+      "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]": [
+        40
+      ],
+      "System.String": [
+        272,
+        296
+      ],
+      "System.String[]": [
+        32
+      ],
+      "TemporaryMemoryReservation": [
+        32
+      ]
+    }
+  }
+]

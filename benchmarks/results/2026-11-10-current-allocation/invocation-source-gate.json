@@ -1,0 +1,21 @@
+{
+  "revision": "dba779a5 production; current evidence-only commits preserve that runtime.",
+  "status": "Bounded source gate complete; no initialization redesign/prototype/new timing selected.",
+  "facts": [
+    "Fixed plain functions and immutable constructor signatures already shared; R22 removed repeated construction.",
+    "CreateModuleVariables creates only __name__/optional __file__, not a second builtin inventory.",
+    "Remaining object/metatype/exception graphs are intentionally per-run mutable, preserving isolation and relationships.",
+    "R160 current-config capture attributes12/545builtin samples and23context samples; host/filesystem282/545. These include useful work and are not removable shares."
+  ],
+  "history": [
+    "benchmarks/results/2026-11-09-config-runtime-attribution/README.md",
+    "benchmarks/results/2026-11-07-invocation-setup/README.md",
+    "benchmarks/results/2026-11-06-builtin-initialization/README.md"
+  ],
+  "decision": "No new lazy builtin namespace, type graph cache or sharing framework justified. Preserve completed metadata/context simplifications and distinct I/O capability boundary. Do not replay unchanged profiling.",
+  "next": "Assess current allocation traffic in complete text/CSV scripts using existing evidence/tooling. One short managed allocation capture only if needed to identify a dominant removed storage/lifetime; no boxing-only attribution or tagged-value commitment.",
+  "sourceHashes": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.cs": "8b8432162e90638284b37ac8e2162c918330ed6a7702bf2309ad0134c79a126f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ExecutionContext.Builtins.cs": "0253c68b5303e05d0c5769a149328afd3ec266c843ab86cb61db89f21a5ea01b"
+  }
+}
