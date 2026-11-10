@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 3201866.5,
+        "runOnlyMs": 10.946884375,
+        "fullEnvelopeMs": 27.848165625
+      },
+      "before-control": {
+        "bytes": 3202171.0,
+        "runOnlyMs": 11.294659375,
+        "fullEnvelopeMs": 29.220684375
+      },
+      "candidate": {
+        "bytes": 3202103.75,
+        "runOnlyMs": 10.472221875,
+        "fullEnvelopeMs": 27.48718125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0074097405372786085,
+        "runOnlyMs": -4.336051096730431,
+        "fullEnvelopeMs": -1.2962590781057992
+      },
+      "before-control": {
+        "bytes": -0.0021001376878326816,
+        "runOnlyMs": -7.281649429998849,
+        "fullEnvelopeMs": -5.93245217241768
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 2333624.75,
+        "runOnlyMs": 17.00473125,
+        "fullEnvelopeMs": 18.58011875
+      },
+      "before-control": {
+        "bytes": 2333596.0,
+        "runOnlyMs": 16.4172375,
+        "fullEnvelopeMs": 17.94888125
+      },
+      "candidate": {
+        "bytes": 2333624.75,
+        "runOnlyMs": 16.80930625,
+        "fullEnvelopeMs": 18.533084375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": -1.1492389801808889,
+        "fullEnvelopeMs": -0.2531435650808156
+      },
+      "before-control": {
+        "bytes": 0.0012320041686830763,
+        "runOnlyMs": 2.388153000771287,
+        "fullEnvelopeMs": 3.254816369126079
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 3318516.5,
+        "runOnlyMs": 10.709978125,
+        "fullEnvelopeMs": 12.174346875
+      },
+      "before-control": {
+        "bytes": 3318509.5,
+        "runOnlyMs": 10.4280875,
+        "fullEnvelopeMs": 11.9286375
+      },
+      "candidate": {
+        "bytes": 3318509.5,
+        "runOnlyMs": 10.88033125,
+        "fullEnvelopeMs": 12.436909375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": -0.00021093762830881602,
+        "runOnlyMs": 1.590601988274365,
+        "fullEnvelopeMs": 2.156686536829122
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 4.336785148762878,
+        "fullEnvelopeMs": 4.26093822534217
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 1422159.25,
+        "runOnlyMs": 8.268496875,
+        "fullEnvelopeMs": 9.858940625
+      },
+      "before-control": {
+        "bytes": 1422159.25,
+        "runOnlyMs": 8.15075,
+        "fullEnvelopeMs": 9.575625
+      },
+      "candidate": {
+        "bytes": 1422168.0,
+        "runOnlyMs": 8.15005625,
+        "fullEnvelopeMs": 9.63039375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0006152616171428704,
+        "runOnlyMs": -1.4324323609301692,
+        "fullEnvelopeMs": -2.3181686926936007
+      },
+      "before-control": {
+        "bytes": 0.0006152616171428704,
+        "runOnlyMs": -0.008511486673001833,
+        "fullEnvelopeMs": 0.5719600548266923
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "before": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.8611375,
+        "fullEnvelopeMs": 2.2263625
+      },
+      "before-control": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.85679375,
+        "fullEnvelopeMs": 2.07553125
+      },
+      "candidate": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.967075,
+        "fullEnvelopeMs": 2.370440625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": 12.302042356766485,
+        "fullEnvelopeMs": 6.47145848890287
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 12.871388242502935,
+        "fullEnvelopeMs": 14.208862188897431
+      }
+    }
+  }
+]
