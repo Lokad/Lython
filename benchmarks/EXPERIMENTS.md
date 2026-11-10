@@ -5734,5 +5734,6 @@ recursive evaluation. A shared-record cache admission/reentry defect was reprodu
 and corrected before quiet timing. Useful CSV-helper allocation−42.95% contrasts
 with quiet CSV elapsed+1.29–2.23%/coarseCPU flat and text elapsed/CPU roughly+38–52%.
 All adverse controls/original sources remain. No runtime promotion or CPU claim;
-attribute proof replay versus shared execution before selecting bounded refinement.
+B527 attributes substantial work to both proof and prefix; a bounded fixed-fact/
+branch-storage refinement is isolated, with no new CPU claim.
 The main runtime stays qualified; independent record semantic cases survive.

@@ -62,8 +62,11 @@ The delivered runtime remains qualified by cached GREEN42727417102; that run doe
 not qualify this prototype. Two independent record semantic cases are retained on
 the delivered runtime. Publication remains postponed.
 
-Next: attribute the adverse text cost to proof replay versus operand/execution
-transport, then refine the coherent design or explicitly decide its remaining
-debt. A slow measured prototype is evidence, not a permanent design veto. No
-promotion or speedup claim follows from removing code alone. [Development archive](development.tar.xz)
-retains original/refined sources, cores, commands, validation and all observations.
+[The six-second B527 profile](profile/README.md) records substantial work in
+both the runtime proof and shared prefix. It supports a bounded fixed-method-fact
+and branch-storage refinement, whose desktop observations remain diagnostic.
+The refinement is isolated and unqualified; B526's adverse result still applies
+to its original source. A slow measured prototype is evidence, not a permanent
+design veto. No promotion or speedup follows from removing code alone.
+[Development archive](development.tar.xz) retains original/refined sources,
+cores, commands, validation and all original observations.
