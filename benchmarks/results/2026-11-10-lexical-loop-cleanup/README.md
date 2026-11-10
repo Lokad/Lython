@@ -74,3 +74,7 @@ run is retrieved with no restart or measurement change. Original condition retai
 sources, build/test logs and original guard condition are in
 [preparation evidence](preparation.tar.xz).
 Publication and tagging remain postponed.
+
+Retained439e91d9 subsequently passes full Windows/Ubuntu delivery: ordinary actual
+NET11/10, original Stress and installed Release consumers. [Cached terminal proof](delivery-ci.json);
+do not query completed42888642699 or repeat unchanged qualification.
