@@ -1,0 +1,19 @@
+{
+  "observedPackage": "0.5.0-dev.65",
+  "sourceRevision": "998c630f360198db91e5ee8a1f976d5ac976ae0c",
+  "qualifiedDevelopmentReference": "0.5.0-dev.64 /9af7141f",
+  "changedCoreOrPythonReProductionPaths": [
+    "src/Lokad.Utf8Regex.PythonRe/README.md"
+  ],
+  "xmlUnchanged": true,
+  "productionCSharpUnchanged": true,
+  "sourceOnlyGate": true,
+  "qualificationRepeated": false,
+  "normalAdapterPinUnchanged": "0.4",
+  "gaps": [
+    "separate single-match working owner",
+    "native UTF8 group-name enumeration",
+    "token-independent cursor creation"
+  ],
+  "conclusion": "No newly supplied capability changes Lython contract/adapter development. Do not infer new-byte safety/performance certification or pin promotion."
+}
