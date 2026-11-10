@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 3203538.25,
+        "runOnlyMs": 9.170365625,
+        "fullEnvelopeMs": 23.600978125
+      },
+      "before-control": {
+        "bytes": 3203629.25,
+        "runOnlyMs": 10.080796875,
+        "fullEnvelopeMs": 25.48836875
+      },
+      "candidate": {
+        "bytes": 3203662.75,
+        "runOnlyMs": 9.219484375,
+        "fullEnvelopeMs": 23.53043125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.003886327875113338,
+        "runOnlyMs": 0.5356247723219854,
+        "fullEnvelopeMs": -0.2989150476152225
+      },
+      "before-control": {
+        "bytes": 0.0010456890415788678,
+        "runOnlyMs": -8.54409141142426,
+        "fullEnvelopeMs": -7.681690104236272
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 2334769.75,
+        "runOnlyMs": 14.595996875,
+        "fullEnvelopeMs": 16.108753125
+      },
+      "before-control": {
+        "bytes": 2334769.75,
+        "runOnlyMs": 15.82394375,
+        "fullEnvelopeMs": 17.322165625
+      },
+      "candidate": {
+        "bytes": 2334755.0,
+        "runOnlyMs": 14.026353125,
+        "fullEnvelopeMs": 15.45436875
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": -0.0006317539449018916,
+        "runOnlyMs": -3.9027395996205305,
+        "fullEnvelopeMs": -4.062290668446755
+      },
+      "before-control": {
+        "bytes": -0.0006317539449018916,
+        "runOnlyMs": -11.359940691144077,
+        "fullEnvelopeMs": -10.78269839600382
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 3319693.5,
+        "runOnlyMs": 10.79215,
+        "fullEnvelopeMs": 12.086759375
+      },
+      "before-control": {
+        "bytes": 3319693.5,
+        "runOnlyMs": 10.13609375,
+        "fullEnvelopeMs": 11.490071875
+      },
+      "candidate": {
+        "bytes": 3319693.5,
+        "runOnlyMs": 9.649334375,
+        "fullEnvelopeMs": 10.9404
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": -10.589323026459041,
+        "fullEnvelopeMs": -9.484422908022028
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": -4.802238288295236,
+        "fullEnvelopeMs": -4.7838854358776555
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 1349391.25,
+        "runOnlyMs": 7.52900625,
+        "fullEnvelopeMs": 8.893559375
+      },
+      "before-control": {
+        "bytes": 1349391.25,
+        "runOnlyMs": 5.905415625,
+        "fullEnvelopeMs": 7.10030625
+      },
+      "candidate": {
+        "bytes": 1349391.25,
+        "runOnlyMs": 7.323203125,
+        "fullEnvelopeMs": 8.647184375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": -2.733469971551694,
+        "fullEnvelopeMs": -2.770263171487519
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 24.008259367857796,
+        "fullEnvelopeMs": 21.786076128758538
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "before": {
+        "bytes": 39361.25,
+        "runOnlyMs": 0.79701875,
+        "fullEnvelopeMs": 2.111928125
+      },
+      "before-control": {
+        "bytes": 39361.25,
+        "runOnlyMs": 0.851553125,
+        "fullEnvelopeMs": 2.040890625
+      },
+      "candidate": {
+        "bytes": 39361.25,
+        "runOnlyMs": 0.8580875,
+        "fullEnvelopeMs": 2.0972125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": 7.662147220501403,
+        "fullEnvelopeMs": -0.6967862601858221
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 0.7673478974080439,
+        "fullEnvelopeMs": 2.7596714057128935
+      }
+    }
+  }
+]

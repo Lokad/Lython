@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 3201997.25,
+        "runOnlyMs": 9.0965125,
+        "fullEnvelopeMs": 24.252965625
+      },
+      "before-control": {
+        "bytes": 3202181.75,
+        "runOnlyMs": 9.266,
+        "fullEnvelopeMs": 24.13794375
+      },
+      "candidate": {
+        "bytes": 3201919.5,
+        "runOnlyMs": 9.575,
+        "fullEnvelopeMs": 23.962834375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": -0.0024281719792185186,
+        "runOnlyMs": 5.260120293354187,
+        "fullEnvelopeMs": -1.1962712292014843
+      },
+      "before-control": {
+        "bytes": -0.008189728768515092,
+        "runOnlyMs": 3.3347722857759443,
+        "fullEnvelopeMs": -0.72545274284187
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 2333596.0,
+        "runOnlyMs": 13.40889375,
+        "fullEnvelopeMs": 14.80645625
+      },
+      "before-control": {
+        "bytes": 2333607.25,
+        "runOnlyMs": 14.819490625,
+        "fullEnvelopeMs": 16.24495
+      },
+      "candidate": {
+        "bytes": 2333624.75,
+        "runOnlyMs": 14.724721875,
+        "fullEnvelopeMs": 16.150040625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0012320041686830763,
+        "runOnlyMs": 9.81309979430629,
+        "fullEnvelopeMs": 9.074314287728358
+      },
+      "before-control": {
+        "bytes": 0.000749911965702843,
+        "runOnlyMs": -0.6394872293392306,
+        "fullEnvelopeMs": -0.5842392558918275
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 3318516.5,
+        "runOnlyMs": 9.42506875,
+        "fullEnvelopeMs": 10.8154375
+      },
+      "before-control": {
+        "bytes": 3318516.5,
+        "runOnlyMs": 9.52919375,
+        "fullEnvelopeMs": 10.910878125
+      },
+      "candidate": {
+        "bytes": 3318509.5,
+        "runOnlyMs": 9.806278125,
+        "fullEnvelopeMs": 11.349853125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": -0.00021093762830881602,
+        "runOnlyMs": 4.044632300427531,
+        "fullEnvelopeMs": 4.941229839292216
+      },
+      "before-control": {
+        "bytes": -0.00021093762830881602,
+        "runOnlyMs": 2.9077420636976825,
+        "fullEnvelopeMs": 4.023278373847661
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 1348431.25,
+        "runOnlyMs": 7.11515,
+        "fullEnvelopeMs": 8.429003125
+      },
+      "before-control": {
+        "bytes": 1348431.25,
+        "runOnlyMs": 6.551615625,
+        "fullEnvelopeMs": 7.86865
+      },
+      "candidate": {
+        "bytes": 1348431.25,
+        "runOnlyMs": 7.14361875,
+        "fullEnvelopeMs": 8.507240625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": 0.4001145443174092,
+        "fullEnvelopeMs": 0.9281939849796972
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 9.035986829584486,
+        "fullEnvelopeMs": 8.115631334472884
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "before": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.7401875,
+        "fullEnvelopeMs": 1.7650875
+      },
+      "before-control": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.69069375,
+        "fullEnvelopeMs": 1.744978125
+      },
+      "candidate": {
+        "bytes": 39001.25,
+        "runOnlyMs": 0.720640625,
+        "fullEnvelopeMs": 1.68910625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": -2.6408004728531553,
+        "fullEnvelopeMs": -4.304673281069626
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": 4.335767480160357,
+        "fullEnvelopeMs": -3.2018667855793326
+      }
+    }
+  }
+]
