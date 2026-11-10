@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R200 cold-body prototype](results/2026-11-10-cold-prefix/README.md) reduces
+the hot method's JIT code/frame while adding a separate helper frame. All focused
+semantic checks pass; six controlled jobs215.904s retain modest report gains,
+small text adversity and14.76%candidate search variation. Allocation stays flat.
+Original is not promoted; a bounded refinement removes duplicate jump transport
+using the existing pending result. All code/measurements/failures remain preserved.
+
 The [R199 current-text attribution](results/2026-11-10-current-text-attribution/README.md)
 captures one six-second warm window,1144samples/6.21%unknown, all gates/join/SHA pass.
 Instruction/operand transport, native dictionary/hash and text kernels remain

@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 171169.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.55124375
+      },
+      "before-control": {
+        "bytes": 171169.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.557234375
+      },
+      "candidate": {
+        "bytes": 171169.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.568040625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": 3.047086701663271
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": 1.9392647842301658
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 125945.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.5122
+      },
+      "before-control": {
+        "bytes": 125945.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.448328125
+      },
+      "candidate": {
+        "bytes": 125945.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.45255
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": -11.645841468176489
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": 0.9416930958770386
+      }
+    }
+  },
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 112689.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.49440625
+      },
+      "before-control": {
+        "bytes": 112689.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.4282125
+      },
+      "candidate": {
+        "bytes": 112689.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.4268875
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": -13.656532456861136
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": -0.30942581078320375
+      }
+    }
+  },
+  {
+    "case": "scripts.file-search.large",
+    "roles": {
+      "before": {
+        "bytes": 87313.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.300234375
+      },
+      "before-control": {
+        "bytes": 87313.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.33115625
+      },
+      "candidate": {
+        "bytes": 87313.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.308878125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": 2.8790007806401174
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": -6.7273756723600915
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.generator.large",
+    "roles": {
+      "before": {
+        "bytes": 129281.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.353384375
+      },
+      "before-control": {
+        "bytes": 129281.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.28234375
+      },
+      "candidate": {
+        "bytes": 129281.25,
+        "runOnlyMs": 0.0,
+        "fullEnvelopeMs": 0.351853125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": -0.4333100466029305
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "runOnlyMs": null,
+        "fullEnvelopeMs": 24.61870503597121
+      }
+    }
+  }
+]
