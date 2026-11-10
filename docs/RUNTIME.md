@@ -333,6 +333,11 @@ with the workstate, with one owner throughout. A separate interpreter object is
 unnecessary. Terminal cleanup finishes pending users, then detaches
 operand storage, private caches, handler records and caller references. Closures
 can retain that context's names and cells without retaining refunded workspace.
+Cleared local and cell storage represents an unbound name; guest `None` is the
+distinct `PyNone` value. Reads raise Python's unbound-local or free-variable error
+before enforcing the nonempty temporary-operand invariant. Workspaces are cleared
+on return and need no sentinel fill at invocation entry. Unbound names stay absent
+from exposed namespaces, including across generator suspension and cell deletion.
 Nonlocal ownership comes from immutable scope facts and lexical parent links;
 invocations do not rebuild a separate owner dictionary. Executable reads use
 captured cells, and dynamic reads and writes resolve the same lexical owners.

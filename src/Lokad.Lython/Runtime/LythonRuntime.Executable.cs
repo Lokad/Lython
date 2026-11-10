@@ -7,17 +7,16 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Python None is represented by PyNone; this sentinel is the only non-value
-    // stored in executable local slots and keeps the slot arrays non-nullable.
-    private static readonly object UninitializedLocal = new();
+    // Null is internal unbound storage; every guest None is PyNone.
+    // Cleared workspaces need no separate sentinel initialization.
 
     internal sealed class ExecutableCell
     {
-        private object _value;
+        private object? _value;
         private readonly ExecutionContext? _owner;
         private readonly string? _name;
 
-        public ExecutableCell(object value, ExecutionContext? owner = null, string? name = null)
+        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null)
         {
             _value = value;
             _owner = owner;
@@ -26,16 +25,16 @@ internal sealed partial class LythonRuntime
 
         // Tree-walk methods and executable siblings share the defining frame's
         // mirrored namespace even after its executable slots have been released.
-        public object Value
+        public object? Value
         {
             get => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true
-                ? _owner!.Variables.GetValueOrDefault(_name!, UninitializedLocal) : _value;
+                ? _owner!.Variables.GetValueOrDefault(_name!) : _value;
             set
             {
                 _value = value;
                 if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
                 {
-                    if (ReferenceEquals(value, UninitializedLocal)) _owner!.Variables.Remove(_name!);
+                    if (value is null) _owner!.Variables.Remove(_name!);
                     else _owner!.Variables[_name!] = value;
                 }
             }
@@ -93,7 +92,7 @@ internal sealed partial class LythonRuntime
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var slot))
             {
                 value = _execution.LocalCells?[slot] is { } cell ? cell.Value : _execution.Locals[slot];
-                if (!ReferenceEquals(value, UninitializedLocal)) return true;
+                if (value is not null) return true;
             }
 
             value = null;
@@ -105,7 +104,7 @@ internal sealed partial class LythonRuntime
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
                 var local = _execution.Locals[localSlot];
-                if (!ReferenceEquals(local, UninitializedLocal))
+                if (local is not null)
                 {
                     value = local;
                     return true;
@@ -115,7 +114,7 @@ internal sealed partial class LythonRuntime
             if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
                 var closure = _execution.ClosureCells[closureSlot].Value;
-                if (!ReferenceEquals(closure, UninitializedLocal))
+                if (closure is not null)
                 {
                     value = closure;
                     return true;
@@ -132,7 +131,7 @@ internal sealed partial class LythonRuntime
             {
                 if (pair.Key.StartsWith('<')) continue;
                 var value = _execution.Locals[pair.Value];
-                if (!ReferenceEquals(value, UninitializedLocal))
+                if (value is not null)
                 {
                     yield return new KeyValuePair<string, object>(pair.Key, value);
                 }
@@ -151,7 +150,7 @@ internal sealed partial class LythonRuntime
             for (var i = 0; i < _execution.Code.ClosureNames.Count; i++)
             {
                 var value = _execution.ClosureCells[i].Value;
-                if (!ReferenceEquals(value, UninitializedLocal))
+                if (value is not null)
                     yield return new(_execution.Code.ClosureNames[i], value);
             }
         }
@@ -215,12 +214,12 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                var removed = !ReferenceEquals(_execution.Locals[localSlot], UninitializedLocal);
-                _execution.Locals[localSlot] = UninitializedLocal;
+                var removed = _execution.Locals[localSlot] is not null;
+                _execution.Locals[localSlot] = null!;
                 if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
                 {
-                    removed |= !ReferenceEquals(localCell.Value, UninitializedLocal);
-                    localCell.Value = UninitializedLocal;
+                    removed |= localCell.Value is not null;
+                    localCell.Value = null;
                 }
 
                 return removed;
@@ -229,8 +228,8 @@ internal sealed partial class LythonRuntime
             if (_execution.ClosureCells is not null && _execution.Code.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
                 var cell = _execution.ClosureCells[closureSlot];
-                var removed = !ReferenceEquals(cell.Value, UninitializedLocal);
-                cell.Value = UninitializedLocal;
+                var removed = cell.Value is not null;
+                cell.Value = null;
                 return removed;
             }
 
@@ -616,8 +615,6 @@ internal sealed partial class LythonRuntime
         try
         {
             var locals = stack.Values;
-            Array.Fill(locals, UninitializedLocal, argumentsAreLocals ? boundArguments.Assigned.Length : 0,
-                codeObject.LocalNames.Count - (argumentsAreLocals ? boundArguments.Assigned.Length : 0));
             var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
             ExecutableCell?[]? localCells = null;
             if (needsLocalCells)
@@ -626,7 +623,7 @@ internal sealed partial class LythonRuntime
                 for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
                 {
                     var slot = codeObject.CapturedLocalSlots[i];
-                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : UninitializedLocal, context, codeObject.LocalNames[slot]);
+                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot]);
                 }
             }
 

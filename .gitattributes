@@ -277,3 +277,6 @@ benchmarks/results/2026-11-10-invocation-routing/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-invocation-routing/**/*.patch -text -whitespace
 benchmarks/results/2026-11-10-shared-call-binding/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-shared-call-binding/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-unbound-storage/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-unbound-storage/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-record-construction-assessment/** -text whitespace=cr-at-eol

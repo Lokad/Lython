@@ -140,8 +140,7 @@ internal sealed partial class LythonRuntime
                 ClosureRetentionCharged = true,
                 ClosureChargedVariableCount = 1
             };
-            cellScope.Variables["__class__"] = UninitializedLocal;
-            cellScope.ClassCell = new ExecutableCell(UninitializedLocal, cellScope, "__class__") { RetentionCharged = true };
+            cellScope.ClassCell = new ExecutableCell(null, cellScope, "__class__") { RetentionCharged = true };
             context.ClassCell = cellScope.ClassCell;
             context.FunctionClosureContext = cellScope;
             return context;
@@ -270,7 +269,7 @@ internal sealed partial class LythonRuntime
             if (TryGetNonlocalTarget(name, out var target))
             {
                 if (target.CurrentExecutableFrame is { } frame && frame.TryResolveLocalOrClosure(name, out value)) return true;
-                if (target.Frame.TryGetVariable(name, out value) && !ReferenceEquals(value, UninitializedLocal)) return true;
+                if (target.Frame.TryGetVariable(name, out value)) return true;
             }
             value = null;
             return false;
@@ -295,7 +294,7 @@ internal sealed partial class LythonRuntime
             return CurrentExecutableFrame is { } frame ? frame.TryReadExecutableLocal(name, out value) : Frame.TryGetVariable(name, out value);
         }
 
-        internal bool TryResolveImplicitClassValue([MaybeNullWhen(false)] out object value)
+        internal bool TryResolveImplicitClassValue(out object? value)
         {
             if (ScopeFacts.RequiresClassCell)
             {
@@ -315,7 +314,7 @@ internal sealed partial class LythonRuntime
                     if (parent.ScopeFacts.IsGlobal("__class__")) break;
                     if (parent.ScopeFacts.LocalNames.Contains("__class__"))
                     {
-                        value = parent.TryResolveOwnLocal("__class__", out var local) ? local : UninitializedLocal;
+                        value = parent.TryResolveOwnLocal("__class__", out var local) ? local : null;
                         return true;
                     }
                     if (parent.FunctionName is not null && parent.Frame.ContainsVariable("__class__")) break;

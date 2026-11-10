@@ -29,6 +29,10 @@ values and genuinely suspending default protocols through both APIs. The white-b
 native-helper boundary also executes an actual runtime-defined keyword-default
 helper with further admission denied, checking that existing inputs stay funded.
 
+[Unbound-name checks](Lokad.Lython.PublicApi.Tests/UnboundLocalVariableTests.cs)
+distinguish guest `None` from absent locals and deleted closure/generator cells,
+preserving Python error types and exposed namespace contents through both APIs.
+
 [JSON string admission](Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs)
 checks refusal before publication and funding for an adopted buffer's entire
 capacity, with cleanup returning the shared allowance to baseline.

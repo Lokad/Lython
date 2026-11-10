@@ -1,0 +1,20 @@
+{
+  "reference": "CPython3.13.2 isolated; semantic goldens, no performance measurements",
+  "cases": [
+    {
+      "source": "def f():\n if False: missing = 1\n value = None\n return value is None, locals()['value'] is None, 'missing' not in locals()\nreturn str(f())",
+      "expected": "(True, True, True)",
+      "actualStdout": "(True, True, True)\n"
+    },
+    {
+      "source": "def outer():\n value = None\n def read(): return value\n def forget():\n  nonlocal value\n  del value\n return read, forget\nread, forget = outer()\nassert read() is None\nforget()\ntry: read()\nexcept NameError: return 'deleted'\nreturn 'incorrect'",
+      "expected": "deleted",
+      "actualStdout": "deleted\n"
+    },
+    {
+      "source": "def produce(value):\n def read(): return value\n yield read\n del value\n yield read\ng = produce(None)\nread = next(g)\nassert read() is None\nassert next(g) is read\ntry: read()\nexcept NameError: return 'deleted'\nreturn 'incorrect'",
+      "expected": "deleted",
+      "actualStdout": "deleted\n"
+    }
+  ]
+}

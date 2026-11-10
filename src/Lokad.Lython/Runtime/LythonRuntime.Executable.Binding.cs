@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
     private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = locals[slot];
-        if (ReferenceEquals(value, UninitializedLocal))
+        if (value is null)
         {
             if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
             {
@@ -46,12 +46,13 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
-        value = cells[slot].Value;
-        if (ReferenceEquals(value, UninitializedLocal))
+        var captured = cells[slot].Value;
+        if (captured is null)
         {
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
+        value = captured;
         return true;
     }
 
@@ -420,7 +421,7 @@ internal sealed partial class LythonRuntime
             {
                 var name = codeObject.ClosureNames[i];
                 cells[i] = context.TryGetInlinedBinding(name, out var binding)
-                    ? new ExecutableCell(UninitializedLocal, binding, name) : Resolve(name);
+                    ? new ExecutableCell(null, binding, name) : Resolve(name);
             }
             // Lookups above have no callbacks or mutation. Publish only after
             // every allocation succeeds. Namespace-backed cells observe later
@@ -459,7 +460,7 @@ internal sealed partial class LythonRuntime
             {
                 if (frame.TryGetCell(pair.Key, out var cell) &&
                     cell is not null &&
-                    !ReferenceEquals(cell.Value, UninitializedLocal))
+                    cell.Value is not null)
                 {
                     current.Variables[pair.Key] = cell.Value;
                 }
@@ -484,10 +485,10 @@ internal sealed partial class LythonRuntime
             if (codeObject.LocalNames[i].StartsWith('<')) continue;
             if (!context.Variables.TryGetValue(codeObject.LocalNames[i], out var value))
             {
-                locals[i] = UninitializedLocal;
+                locals[i] = null!;
                 if (localCells?[i] is ExecutableCell localCell)
                 {
-                    localCell.Value = UninitializedLocal;
+                    localCell.Value = null;
                 }
 
                 continue;

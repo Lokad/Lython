@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
             for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
             {
                 var slot = _execution.Code.CapturedLocalSlots[index];
-                _execution.Locals[slot] = _execution.LocalCells![slot]!.Value;
+                _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
             }
             HasYield = false;
             _sentValue = sent;
@@ -264,11 +264,13 @@ internal sealed partial class LythonRuntime
         private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
         {
             if (source < 0) return RuntimeValue(execution.Code.Constants[~source]);
-            var value = execution.Stack[source];
-            if (source < execution.Code.FirstTemporarySlot && ReferenceEquals(value, UninitializedLocal))
+            // Unbound locals raise Python errors before the temporary-value
+            // invariant rejects an empty operand slot.
+            var value = execution.Stack.Values[source];
+            if (source < execution.Code.FirstTemporarySlot && value is null)
                 return LoadLocal(execution.Code, execution.Locals, source,
                     execution.Code.OperandReadSpan(execution.InstructionIndex, input), scope);
-            return value;
+            return value.RequireNotNull();
         }
 
         private static object TakeOperand(ref ExecutableWorkState execution, in ExecutableInstruction instruction, ExecutionContext scope)

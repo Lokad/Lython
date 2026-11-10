@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "super(): arg[0] deleted", span);
             if (!context.TryResolveImplicitClassValue(out var anchor))
                 throw new LythonRuntimeException("RuntimeError", "super(): __class__ cell not found", span);
-            if (ReferenceEquals(anchor, UninitializedLocal))
+            if (anchor is null)
                 throw new LythonRuntimeException("RuntimeError", "super(): empty __class__ cell", span);
             if (anchor is not PyType)
                 throw new LythonRuntimeException("RuntimeError", "super(): __class__ is not a supported type", span);
@@ -1005,7 +1005,7 @@ internal sealed partial class LythonRuntime
         if (includeFrameLocals && context.CurrentExecutableFrame is null && !context.IsClassBody &&
             context.ScopeFacts.RequiresClassCell && !context.ScopeFacts.IsGlobal("__class__") &&
             !context.ScopeFacts.LocalNames.Contains("__class__") &&
-            context.TryResolveImplicitClassValue(out var owner) && !ReferenceEquals(owner, UninitializedLocal))
+            context.TryResolveImplicitClassValue(out var owner) && owner is not null)
             scope.SetItem(PyString.FromString("__class__", context.MemoryGovernor, span), owner);
 
         if (includeFrameLocals)

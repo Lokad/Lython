@@ -61,6 +61,9 @@ public sealed class UnboundLocalVariableTests
     [InlineData("math = 99\ndef f():\n if False:\n  from math import pi\n return math\nreturn str(f())", "99")]
     [InlineData("math = 99\nclass C:\n from math import pi\n result = math\nreturn str(C.result)", "99")]
     [InlineData("def f():\n from math import pi as value\n return ['math' in locals(), 'value' in locals()]\nreturn str(f())", "[False, True]")]
+    [InlineData("def f():\n if False: missing = 1\n value = None\n return value is None, locals()['value'] is None, 'missing' not in locals()\nreturn str(f())", "(True, True, True)")]
+    [InlineData("def outer():\n value = None\n def read(): return value\n def forget():\n  nonlocal value\n  del value\n return read, forget\nread, forget = outer()\nassert read() is None\nforget()\ntry: read()\nexcept NameError: return 'deleted'\nreturn 'incorrect'", "deleted")]
+    [InlineData("def produce(value):\n def read(): return value\n yield read\n del value\n yield read\ng = produce(None)\nread = next(g)\nassert read() is None\nassert next(g) is read\ntry: read()\nexcept NameError: return 'deleted'\nreturn 'incorrect'", "deleted")]
     public async Task OtherNamespacesAndBoundArgumentsKeepTheirBehavior(string source, string expected)
         => await Check(source, expected);
 

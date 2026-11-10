@@ -1,0 +1,6 @@
+{
+  "noMutation": true,
+  "noUnitStarted": true,
+  "reason": "Whole-script pathname substitution also renamed a canonical B532 archive candidate to the new B533 directory; insufficient-copy assertion aborted.",
+  "correction": "Restore exact candidate configuration after changing only owner/root names; unchanged source/payload/floors."
+}

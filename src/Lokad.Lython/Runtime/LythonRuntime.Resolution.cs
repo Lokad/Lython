@@ -69,8 +69,6 @@ internal sealed partial class LythonRuntime
                 : current.Frame.TryGetVariable(name, out value);
             if (found)
             {
-                if (name == "__class__" && ReferenceEquals(value, UninitializedLocal))
-                    throw RuntimeErrors.FreeVariableNotAssociated(name, span);
                 return value!;
             }
             if (current.FunctionName is not null && current.ScopeFacts.LocalNames.Contains(name))
@@ -83,7 +81,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.FreeVariableNotAssociated(name, span);
             if (context.IsAnnotationScope && current.IsClassBody && current.ClassCell is { } classCell && name == "__class__")
             {
-                if (ReferenceEquals(classCell.Value, UninitializedLocal))
+                if (classCell.Value is null)
                     throw RuntimeErrors.FreeVariableNotAssociated(name, span);
                 return classCell.Value;
             }
@@ -115,8 +113,8 @@ internal sealed partial class LythonRuntime
         if (context.ScopeFacts.IsNonlocal(name) && context.CurrentExecutableFrame is { } frame &&
             frame.TryGetCell(name, out var cell))
         {
-            removed = !ReferenceEquals(cell.Value, UninitializedLocal);
-            cell.Value = UninitializedLocal;
+            removed = cell.Value is not null;
+            cell.Value = null;
         }
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)

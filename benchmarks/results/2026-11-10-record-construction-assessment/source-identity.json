@@ -1,0 +1,13 @@
+{
+  "revision": "32d1ea1a",
+  "date": "2026-11-10",
+  "scope": "Read-only source/historical assessment. No new measurements/runtime changes.",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs": "e4f400139fca2bd5f127b8a48271e6890ff64effa2ebb83f5d3a0656d8903a25",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs": "9f4f2f5b7f51802765b4058513b702506947bf69c0e50bb6d0c63864326468b3",
+    "src/Lokad.Lython/Runtime/PyDict.Records.cs": "48335d5a71e005f2e05a2750e96b246c07aaaaa3da6d19cc8df3352e4fc30cf3",
+    "src/Lokad.Lython/Runtime/PyList.cs": "31bb83baa54ff4b88a7f67dcdd90c97cb7a61f703117a80da33ab282505d7e58"
+  },
+  "earlierRejected": "2026-11-01-csv-records-rejected B74",
+  "subsequentRetained": "c23d1a10, fully qualified8f07764a; later private-row/shared-key milestones"
+}

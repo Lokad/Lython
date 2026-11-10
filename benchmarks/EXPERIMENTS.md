@@ -5790,3 +5790,22 @@ is effectively flat. Text/CSV controls remain inconclusive with possible small
 debt. Desktop search +5.46–8.31% and compilation uncertainty survive. This is not
 a new CPython row or completion of the broader performance objective. Full
 retained-source delivery checks follow; publication remains postponed.
+
+## R185 — cleared storage for unbound locals and cells
+
+[The retained migration](results/2026-11-10-unbound-storage/README.md) removes the
+UninitializedLocal object, per-call Array.Fill and synthetic empty class-name entry.
+Guest None remains PyNone. The first 15 unbound-name failures and read-order
+correction are preserved. Corrected focused checks pass 3124 public / 432 internal
+per actual target; three independent Python goldens also pass against the prior
+runtime. Main promotion passes 123 selected public checks per target after fresh
+nonincremental builds. B533 finishes 112.706 seconds with all ownership/output/
+quiet/join/archive checks passing: affected CSV CPU −1.22–4.71%, elapsed −0.28–4.91%.
+Search/text controls overlap zero; desktop search +9–19% remains unexplained.
+Allocation is flat, no general CPU gain/equivalence claim. Full delivery pending.
+
+[Bulk CSV reassessment](results/2026-11-10-record-construction-assessment/README.md)
+compares B74's exact patch with current source. Its opportunity was revised and
+retained, then extended by row adoption/shared keys. Header revalidation protects
+real admission reentry; adding list-version machinery is not justified by this
+narrow gate. No repeated prototype, timing or permanent record-design veto.

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Use cleared storage for unbound locals and cells, removing per-invocation
+  sentinel initialization while preserving Python name errors and `None` values.
+
 - Share function argument binding across owned workspaces and managed inline
   storage for eligible closed helpers with named or default arguments. Preserve
   live defaults, wide signatures, protocol suspension and existing positional calls.

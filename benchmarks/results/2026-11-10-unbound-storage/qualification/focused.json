@@ -1,0 +1,13 @@
+{
+  "status": "Retained main source, full delivery pending",
+  "isolatedEachActualTarget": {
+    "public": 3124,
+    "internal": 432
+  },
+  "mainPromotedEachActualTarget": {
+    "public": 123,
+    "nonincrementalBuild": true
+  },
+  "previousRuntimeNoneRegressionChecksEachActualTarget": 42,
+  "sourceEquivalentToFrozenPrototype": true
+}
