@@ -1,0 +1,1359 @@
+diff --git a/src/Directory.Build.props b/src/Directory.Build.props
+index 71e19a47..8887c01b 100644
+--- a/src/Directory.Build.props
++++ b/src/Directory.Build.props
+@@ -13,7 +13,7 @@
+     <Authors>Lokad</Authors>
+     <Company>Lokad</Company>
+     <!-- Common release version; adapters pin this exact Core. -->
+-    <Version>0.5.0-dev.66</Version>
++    <Version>0.5.0-dev.67</Version>
+     <AssemblyVersion>0.5.0</AssemblyVersion>
+     <FileVersion>0.5.0</FileVersion>
+     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+diff --git a/src/Lokad.Utf8Regex.Pcre2/README.md b/src/Lokad.Utf8Regex.Pcre2/README.md
+index fca426e8..f4b25d75 100644
+--- a/src/Lokad.Utf8Regex.Pcre2/README.md
++++ b/src/Lokad.Utf8Regex.Pcre2/README.md
+@@ -114,9 +114,9 @@ still takes precedence. Return-value rules for valid callbacks are unchanged.
+ ## Delivery evidence
+ 
+ Core, PythonRe and PCRE2 0.4.0 are published. The last frozen development boundary
+-is the [four-package dev65 candidate](../../bench/Experiments/DeliveryDev65-20261110/README.md).
+-This page describes subsequent development source; `inputValidation` requires a
+-later candidate. Frozen packages and measurements retain their own identities.
++is the [four-package dev66 candidate](../../bench/Experiments/DeliveryDev66-20261110/README.md).
++The dev66 candidate includes `inputValidation`. Frozen packages and measurements
++retain their own identities.
+ 
+ Use `tools/qualify-package-candidate.ps1 -Profiles Core,PythonRe,Pcre2,Posix` at a
+ coherent boundary with a fresh common version and exact Core pins. It checks
+@@ -234,187 +234,187 @@ Public managed PCRE2 operations over UTF-8, compared with the native PCRE2 NFA t
+ 
+ Times are elapsed microseconds per operation from paired measurements when available. Tables rank `Utf8Pcre2 / PCRE2 NFA` from highest to lowest; lower is better. Status retains paired 95% uncertainty, lane stability and result compatibility. A point ratio is not a winner. Excluded/unqualified rows appear last without a qualified ratio; independently measured discovery values remain observations only.
+ 
+-Snapshot SHA-256: `591BFFA48A46875415CAF7AA196BCB374B3D62E20C4A63224DD4BCE19DA21E8C`.
++Snapshot SHA-256: `E75C395A8F8107C34CCB62FD9A446538AC3A4D1E81DA5DD4855013AB90D7918E`.
+ 
+-Comparator Status: `80` managed faster, `1` equivalent, `5` native faster, `15` inconclusive, `0` unqualified, `25` excluded.
++Comparator Status: `82` managed faster, `0` equivalent, `9` native faster, `10` inconclusive, `0` unqualified, `25` excluded.
+ 
+-Measured source `998c630f3601`: .NET 11.0.0-rc.3.26522.148. Selective updates retain each row's identity.
++Measured source `b478f853f722`: .NET 11.0.0-rc.3.26522.148. Selective updates retain each row's identity.
+ 
+ ### Compatible IsMatch
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `common/one-node-backtracking` | 0.173 us | 0.075 us | Native faster | 2.39x |
+-| `simple/httpclient-caseless` | 0.121 us | 0.122 us | Inconclusive | 0.98x |
+-| `simple/foo-dense` | 0.067 us | 0.087 us | Managed faster | 0.78x |
+-| `industry/boostdocs-float-match` | 0.071 us | 0.125 us | Inconclusive | 0.57x |
+-| `common/date-miss` | 0.241 us | 0.598 us | Managed faster | 0.40x |
+-| `simple/loglevel-multiline` | 0.077 us | 0.209 us | Managed faster | 0.37x |
+-| `common/email-match` | 0.099 us | 0.294 us | Managed faster | 0.34x |
+-| `industry/boostdocs-ftp-line-match` | 0.084 us | 0.283 us | Managed faster | 0.30x |
+-| `common/email-miss` | 0.106 us | 0.357 us | Managed faster | 0.30x |
+-| `common/ip-match` | 0.078 us | 0.294 us | Managed faster | 0.27x |
+-| `backtracking/assertion-capture` | 0.602 us | 2.292 us | Inconclusive | 0.26x |
+-| `common/ip-miss` | 0.080 us | 0.319 us | Managed faster | 0.25x |
++| `common/one-node-backtracking` | 0.207 us | 0.080 us | Native faster | 2.59x |
++| `simple/httpclient-caseless` | 0.151 us | 0.127 us | Native faster | 1.20x |
++| `simple/foo-dense` | 0.091 us | 0.085 us | Native faster | 1.07x |
++| `simple/loglevel-multiline` | 0.105 us | 0.210 us | Managed faster | 0.50x |
++| `industry/boostdocs-float-match` | 0.057 us | 0.119 us | Managed faster | 0.48x |
++| `common/date-miss` | 0.234 us | 0.576 us | Managed faster | 0.40x |
++| `common/email-match` | 0.100 us | 0.294 us | Managed faster | 0.34x |
++| `industry/boostdocs-ftp-line-match` | 0.085 us | 0.282 us | Managed faster | 0.30x |
++| `common/email-miss` | 0.104 us | 0.357 us | Managed faster | 0.29x |
++| `backtracking/assertion-capture` | 0.643 us | 2.224 us | Inconclusive | 0.29x |
++| `common/ip-match` | 0.078 us | 0.290 us | Managed faster | 0.27x |
++| `common/ip-miss` | 0.078 us | 0.314 us | Managed faster | 0.25x |
+ | `industry/boostdocs-credit-card-match` | 0.034 us | 0.157 us | Managed faster | 0.22x |
+-| `industry/boostdocs-postcode-match` | 0.025 us | 0.115 us | Managed faster | 0.22x |
+-| `industry/boostdocs-date-match` | 0.020 us | 0.113 us | Managed faster | 0.18x |
+-| `common/uri-match` | 0.034 us | 0.204 us | Managed faster | 0.17x |
+-| `common/date-match` | 0.026 us | 0.164 us | Managed faster | 0.16x |
+-| `simple/foo-optional-bar` | 0.014 us | 0.109 us | Managed faster | 0.13x |
+-| `common/uri-miss` | 0.061 us | 0.633 us | Managed faster | 0.10x |
+-| `simple/ab-plus` | 0.009 us | 0.100 us | Managed faster | 0.09x |
+-| `literal/missing` | 0.152 us | 2.102 us | Inconclusive | 0.07x |
+-| `literal/late` | 0.159 us | 2.224 us | Inconclusive | 0.07x |
+-| `literal/absolute-anchored` | 0.117 us | 1.938 us | Inconclusive | 0.06x |
+-| `literal/early` | 0.124 us | 2.054 us | Inconclusive | 0.06x |
+-| `backtracking/capture-backreference` | 0.742 us | 12.544 us | Inconclusive | 0.06x |
+-| `common/backtracking` | 0.011 us | 1.218 us | Managed faster | 0.01x |
++| `industry/boostdocs-postcode-match` | 0.024 us | 0.116 us | Managed faster | 0.21x |
++| `industry/boostdocs-date-match` | 0.021 us | 0.114 us | Managed faster | 0.19x |
++| `common/uri-match` | 0.035 us | 0.197 us | Managed faster | 0.18x |
++| `common/date-match` | 0.029 us | 0.166 us | Managed faster | 0.17x |
++| `simple/foo-optional-bar` | 0.015 us | 0.108 us | Managed faster | 0.14x |
++| `simple/ab-plus` | 0.010 us | 0.100 us | Managed faster | 0.10x |
++| `common/uri-miss` | 0.063 us | 0.613 us | Managed faster | 0.10x |
++| `literal/late` | 0.168 us | 1.900 us | Inconclusive | 0.09x |
++| `literal/missing` | 0.174 us | 1.957 us | Inconclusive | 0.09x |
++| `literal/early` | 0.145 us | 1.887 us | Inconclusive | 0.08x |
++| `literal/absolute-anchored` | 0.137 us | 1.841 us | Inconclusive | 0.08x |
++| `backtracking/capture-backreference` | 0.709 us | 9.643 us | Inconclusive | 0.07x |
++| `common/backtracking` | 0.012 us | 1.223 us | Managed faster | 0.01x |
+ 
+ ### Compatible Count
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `industry/rust-sherlock-ing-count` | 12,516.433 us | 13,411.500 us | Managed faster | 0.93x |
+-| `simple/httpclient-caseless` | 0.927 us | 1.131 us | Managed faster | 0.82x |
+-| `simple/foo-dense` | 0.482 us | 0.827 us | Managed faster | 0.58x |
+-| `backtracking/alternation-repeat` | 77.997 us | 159.999 us | Managed faster | 0.49x |
+-| `industry/leipzig-twain-count` | 5,393.867 us | 12,457.450 us | Inconclusive | 0.44x |
+-| `simple/foo-optional-bar` | 0.310 us | 1.179 us | Managed faster | 0.26x |
+-| `industry/mariomka-ip-count` | 4,974.243 us | 21,926.000 us | Inconclusive | 0.23x |
+-| `simple/loglevel-multiline` | 0.161 us | 0.855 us | Managed faster | 0.19x |
+-| `industry/mariomka-uri-count` | 22,491.050 us | 134,244.700 us | Managed faster | 0.17x |
+-| `industry/leipzig-name-family-count` | 4,181.938 us | 28,958.100 us | Managed faster | 0.14x |
+-| `common/matches-word` | 3.415 us | 23.906 us | Managed faster | 0.14x |
+-| `character/unicode-class-dense` | 39.760 us | 282.762 us | Managed faster | 0.14x |
+-| `industry/rust-sherlock-holmes-window-count` | 139.560 us | 1,014.688 us | Inconclusive | 0.14x |
+-| `industry/mariomka-email-count` | 18,993.650 us | 145,452.700 us | Managed faster | 0.13x |
+-| `simple/ab-plus` | 0.140 us | 1.133 us | Managed faster | 0.12x |
+-| `common/matches-words` | 9.693 us | 81.598 us | Managed faster | 0.12x |
+-| `common/matches-set` | 25.086 us | 270.542 us | Managed faster | 0.09x |
+-| `industry/rust-sherlock-word-holmes-count` | 1,570.938 us | 20,112.200 us | Managed faster | 0.08x |
+-| `industry/rust-sherlock-nonnewline-count` | 187.312 us | 2,781.857 us | Managed faster | 0.07x |
+-| `industry/leipzig-river-window-count` | 3,336.892 us | 54,994.700 us | Inconclusive | 0.06x |
+-| `common/matches-boundary` | 9.458 us | 209.988 us | Managed faster | 0.05x |
+-| `industry/rust-sherlock-letter-count` | 2,915.021 us | 98,640.400 us | Managed faster | 0.03x |
+-| `industry/leipzig-symbol-count` | 1,936.690 us | 496,823.700 us | Inconclusive | 0.00x |
++| `industry/rust-sherlock-ing-count` | 11,284.250 us | 13,442.000 us | Managed faster | 0.84x |
++| `simple/httpclient-caseless` | 0.900 us | 1.146 us | Managed faster | 0.79x |
++| `simple/foo-dense` | 0.506 us | 0.826 us | Managed faster | 0.61x |
++| `backtracking/alternation-repeat` | 80.315 us | 160.055 us | Managed faster | 0.50x |
++| `industry/leipzig-twain-count` | 5,379.133 us | 11,671.300 us | Inconclusive | 0.46x |
++| `simple/foo-optional-bar` | 0.324 us | 1.180 us | Managed faster | 0.27x |
++| `industry/mariomka-ip-count` | 4,954.800 us | 21,994.300 us | Managed faster | 0.23x |
++| `simple/loglevel-multiline` | 0.177 us | 0.858 us | Managed faster | 0.21x |
++| `industry/mariomka-uri-count` | 22,382.400 us | 134,302.400 us | Managed faster | 0.17x |
++| `common/matches-word` | 3.406 us | 22.710 us | Managed faster | 0.15x |
++| `simple/ab-plus` | 0.164 us | 1.097 us | Managed faster | 0.15x |
++| `industry/leipzig-name-family-count` | 4,232.325 us | 28,776.100 us | Managed faster | 0.15x |
++| `industry/rust-sherlock-holmes-window-count` | 140.843 us | 995.649 us | Managed faster | 0.14x |
++| `character/unicode-class-dense` | 39.696 us | 285.668 us | Managed faster | 0.14x |
++| `industry/mariomka-email-count` | 18,995.400 us | 145,877.200 us | Managed faster | 0.13x |
++| `common/matches-words` | 9.604 us | 81.380 us | Managed faster | 0.12x |
++| `common/matches-set` | 25.126 us | 218.981 us | Managed faster | 0.11x |
++| `industry/rust-sherlock-word-holmes-count` | 1,615.500 us | 20,015.500 us | Managed faster | 0.08x |
++| `industry/rust-sherlock-nonnewline-count` | 189.459 us | 2,776.393 us | Managed faster | 0.07x |
++| `industry/leipzig-river-window-count` | 3,381.650 us | 54,907.900 us | Inconclusive | 0.06x |
++| `common/matches-boundary` | 10.583 us | 209.952 us | Managed faster | 0.05x |
++| `industry/rust-sherlock-letter-count` | 2,834.057 us | 98,943.600 us | Managed faster | 0.03x |
++| `industry/leipzig-symbol-count` | 1,940.181 us | 486,795.000 us | Inconclusive | 0.00x |
+ 
+ ### Compatible EnumerateMatches
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `simple/httpclient-caseless` | 1.289 us | 1.132 us | Native faster | 1.13x |
+-| `simple/loglevel-multiline` | 0.819 us | 0.857 us | Managed faster | 0.95x |
+-| `simple/foo-dense` | 0.797 us | 0.836 us | Managed faster | 0.95x |
+-| `simple/foo-optional-bar` | 1.010 us | 1.196 us | Managed faster | 0.84x |
+-| `simple/ab-plus` | 0.951 us | 1.142 us | Managed faster | 0.83x |
++| `simple/foo-dense` | 0.899 us | 0.831 us | Native faster | 1.08x |
++| `simple/httpclient-caseless` | 1.223 us | 1.143 us | Native faster | 1.07x |
++| `simple/loglevel-multiline` | 0.801 us | 0.860 us | Managed faster | 0.93x |
++| `simple/foo-optional-bar` | 0.999 us | 1.188 us | Managed faster | 0.84x |
++| `simple/ab-plus` | 0.899 us | 1.131 us | Managed faster | 0.79x |
+ 
+ ### Compatible MatchMany
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `simple/httpclient-caseless` | 0.922 us | 1.134 us | Managed faster | 0.82x |
+-| `simple/foo-optional-bar` | 0.711 us | 1.192 us | Managed faster | 0.60x |
+-| `simple/foo-dense` | 0.495 us | 0.837 us | Managed faster | 0.59x |
+-| `simple/loglevel-multiline` | 0.503 us | 0.857 us | Managed faster | 0.59x |
+-| `simple/ab-plus` | 0.596 us | 1.140 us | Managed faster | 0.52x |
++| `simple/httpclient-caseless` | 0.913 us | 1.139 us | Managed faster | 0.80x |
++| `simple/foo-dense` | 0.512 us | 0.831 us | Managed faster | 0.61x |
++| `simple/foo-optional-bar` | 0.674 us | 1.187 us | Managed faster | 0.57x |
++| `simple/loglevel-multiline` | 0.487 us | 0.860 us | Managed faster | 0.57x |
++| `simple/ab-plus` | 0.588 us | 1.132 us | Managed faster | 0.52x |
+ 
+ ### Compatible Replace
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `common/replace-words` | 61.119 us | — | Excluded | — |
+-| `simple/ab-plus` | 3.512 us | — | Excluded | — |
+-| `simple/foo-dense` | 1.067 us | — | Excluded | — |
+-| `simple/foo-optional-bar` | 1.225 us | — | Excluded | — |
+-| `simple/httpclient-caseless` | 1.592 us | — | Excluded | — |
+-| `simple/loglevel-multiline` | 2.891 us | — | Excluded | — |
++| `common/replace-words` | 60.521 us | — | Excluded | — |
++| `simple/ab-plus` | 3.349 us | — | Excluded | — |
++| `simple/foo-dense` | 1.118 us | — | Excluded | — |
++| `simple/foo-optional-bar` | 1.262 us | — | Excluded | — |
++| `simple/httpclient-caseless` | 1.604 us | — | Excluded | — |
++| `simple/loglevel-multiline` | 2.758 us | — | Excluded | — |
+ 
+ ### PCRE2-only IsMatch
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `pcre2/grapheme-cluster` | 0.766 us | 0.348 us | Native faster | 2.21x |
+-| `pcre2/backslash-c-literal` | 0.087 us | 0.083 us | Native faster | 1.04x |
+-| `pcre2/branch-reset-backref` | 0.026 us | 0.120 us | Inconclusive | 0.22x |
+-| `pcre2/subroutine-prefix-digits` | 0.013 us | 0.111 us | Managed faster | 0.12x |
+-| `pcre2/conditional-negative-lookahead` | 0.011 us | 0.105 us | Managed faster | 0.10x |
+-| `pcre2/conditional-accept-negative-lookahead` | 0.011 us | 0.105 us | Managed faster | 0.10x |
+-| `pcre2/conditional-lookahead` | 0.010 us | 0.119 us | Managed faster | 0.09x |
+-| `pcre2/recursive-palindrome` | 0.012 us | 0.540 us | Managed faster | 0.02x |
+-| `pcre2/recursive-optional` | 0.012 us | 0.632 us | Managed faster | 0.02x |
++| `pcre2/backslash-c-literal` | 0.114 us | 0.089 us | Native faster | 1.28x |
++| `pcre2/grapheme-cluster` | 0.383 us | 0.349 us | Native faster | 1.10x |
++| `pcre2/subroutine-prefix-digits` | 0.015 us | 0.111 us | Managed faster | 0.14x |
++| `pcre2/conditional-accept-negative-lookahead` | 0.014 us | 0.104 us | Managed faster | 0.13x |
++| `pcre2/conditional-negative-lookahead` | 0.013 us | 0.103 us | Managed faster | 0.12x |
++| `pcre2/branch-reset-backref` | 0.014 us | 0.118 us | Managed faster | 0.12x |
++| `pcre2/conditional-lookahead` | 0.013 us | 0.115 us | Managed faster | 0.11x |
++| `pcre2/recursive-palindrome` | 0.013 us | 0.510 us | Managed faster | 0.02x |
++| `pcre2/recursive-optional` | 0.012 us | 0.630 us | Managed faster | 0.02x |
+ 
+ ### PCRE2-only Count
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `pcre2/kreset-atomic-alt` | 0.294 us | 0.308 us | Managed faster | 0.95x |
+-| `literal/empty-unicode` | 8.374 us | 10.631 us | Managed faster | 0.79x |
+-| `pcre2/same-start-global` | 0.523 us | 0.676 us | Managed faster | 0.78x |
+-| `pcre2/duplicate-names` | 0.293 us | 0.379 us | Managed faster | 0.77x |
+-| `pcre2/kreset-bar-or-baz` | 0.284 us | 0.399 us | Managed faster | 0.71x |
+-| `pcre2/branch-reset-basic` | 0.327 us | 0.464 us | Managed faster | 0.70x |
+-| `pcre2/kreset-global` | 0.193 us | 0.287 us | Managed faster | 0.67x |
+-| `pcre2/branch-reset-followup` | 0.304 us | 0.480 us | Inconclusive | 0.63x |
+-| `pcre2/grapheme-cluster` | 5.378 us | 8.855 us | Managed faster | 0.61x |
+-| `pcre2/branch-reset-nested` | 0.303 us | 0.595 us | Managed faster | 0.51x |
+-| `pcre2/branch-reset-backref` | 0.299 us | 1.052 us | Managed faster | 0.28x |
+-| `pcre2/kreset-captured-repeat` | 3.879 us | — | Excluded | — |
+-| `pcre2/kreset-repeat` | 3.777 us | — | Excluded | — |
++| `pcre2/kreset-atomic-alt` | 0.295 us | 0.318 us | Managed faster | 0.93x |
++| `pcre2/duplicate-names` | 0.322 us | 0.372 us | Managed faster | 0.87x |
++| `pcre2/same-start-global` | 0.565 us | 0.680 us | Managed faster | 0.83x |
++| `literal/empty-unicode` | 8.571 us | 10.429 us | Managed faster | 0.82x |
++| `pcre2/kreset-bar-or-baz` | 0.326 us | 0.400 us | Managed faster | 0.82x |
++| `pcre2/branch-reset-basic` | 0.338 us | 0.470 us | Managed faster | 0.72x |
++| `pcre2/kreset-global` | 0.211 us | 0.293 us | Managed faster | 0.72x |
++| `pcre2/branch-reset-followup` | 0.320 us | 0.467 us | Managed faster | 0.69x |
++| `pcre2/grapheme-cluster` | 5.041 us | 8.805 us | Managed faster | 0.57x |
++| `pcre2/branch-reset-nested` | 0.335 us | 0.589 us | Managed faster | 0.57x |
++| `pcre2/branch-reset-backref` | 0.325 us | 1.073 us | Managed faster | 0.30x |
++| `pcre2/kreset-captured-repeat` | 3.784 us | — | Excluded | — |
++| `pcre2/kreset-repeat` | 3.628 us | — | Excluded | — |
+ 
+ ### PCRE2-only EnumerateMatches
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `pcre2/kreset-atomic-alt` | 0.914 us | 0.891 us | Native faster | 1.03x |
+-| `pcre2/duplicate-names` | 0.943 us | 0.944 us | Equivalent | 1.00x |
+-| `pcre2/kreset-global` | 0.836 us | 0.868 us | Managed faster | 0.96x |
+-| `pcre2/kreset-bar-or-baz` | 0.923 us | 0.969 us | Managed faster | 0.95x |
+-| `pcre2/branch-reset-followup` | 0.948 us | 1.039 us | Managed faster | 0.91x |
+-| `pcre2/branch-reset-backref` | 0.945 us | 1.055 us | Managed faster | 0.89x |
+-| `pcre2/branch-reset-basic` | 1.054 us | 1.193 us | Managed faster | 0.88x |
+-| `pcre2/branch-reset-nested` | 0.983 us | 1.173 us | Managed faster | 0.84x |
+-| `pcre2/same-start-global` | 0.924 us | 1.261 us | Managed faster | 0.73x |
+-| `pcre2/grapheme-cluster` | 5.726 us | 8.884 us | Managed faster | 0.64x |
+-| `literal/empty-unicode` | 9.966 us | 29.020 us | Managed faster | 0.34x |
+-| `pcre2/kreset-captured-repeat` | 5.182 us | — | Excluded | — |
+-| `pcre2/kreset-repeat` | 5.021 us | — | Excluded | — |
++| `pcre2/kreset-atomic-alt` | 0.936 us | 0.891 us | Native faster | 1.05x |
++| `pcre2/duplicate-names` | 1.006 us | 0.969 us | Native faster | 1.04x |
++| `pcre2/kreset-bar-or-baz` | 0.944 us | 0.963 us | Inconclusive | 0.98x |
++| `pcre2/kreset-global` | 0.842 us | 0.865 us | Managed faster | 0.97x |
++| `pcre2/branch-reset-followup` | 0.958 us | 1.027 us | Managed faster | 0.93x |
++| `pcre2/branch-reset-backref` | 0.988 us | 1.077 us | Managed faster | 0.92x |
++| `pcre2/branch-reset-basic` | 1.062 us | 1.192 us | Managed faster | 0.89x |
++| `pcre2/branch-reset-nested` | 1.026 us | 1.173 us | Managed faster | 0.87x |
++| `pcre2/same-start-global` | 0.889 us | 1.253 us | Managed faster | 0.71x |
++| `pcre2/grapheme-cluster` | 5.693 us | 8.867 us | Managed faster | 0.64x |
++| `literal/empty-unicode` | 10.005 us | 29.066 us | Managed faster | 0.34x |
++| `pcre2/kreset-captured-repeat` | 5.048 us | — | Excluded | — |
++| `pcre2/kreset-repeat` | 4.894 us | — | Excluded | — |
+ 
+ ### PCRE2-only MatchMany
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `pcre2/grapheme-cluster` | 2.023 us | 2.203 us | Managed faster | 0.92x |
+-| `pcre2/duplicate-names` | 0.652 us | 0.942 us | Managed faster | 0.69x |
+-| `pcre2/kreset-bar-or-baz` | 0.667 us | 0.967 us | Managed faster | 0.69x |
+-| `pcre2/kreset-atomic-alt` | 0.608 us | 0.887 us | Managed faster | 0.69x |
+-| `pcre2/branch-reset-backref` | 0.681 us | 1.058 us | Managed faster | 0.65x |
+-| `literal/empty-unicode` | 1.474 us | 2.285 us | Managed faster | 0.64x |
+-| `pcre2/branch-reset-followup` | 0.638 us | 1.031 us | Managed faster | 0.62x |
+-| `pcre2/kreset-global` | 0.515 us | 0.869 us | Managed faster | 0.59x |
+-| `pcre2/branch-reset-basic` | 0.674 us | 1.196 us | Managed faster | 0.56x |
+-| `pcre2/branch-reset-nested` | 0.627 us | 1.171 us | Managed faster | 0.54x |
+-| `pcre2/same-start-global` | 0.556 us | 1.258 us | Managed faster | 0.44x |
+-| `pcre2/kreset-captured-repeat` | 4.990 us | — | Excluded | — |
+-| `pcre2/kreset-repeat` | 4.835 us | — | Excluded | — |
++| `pcre2/grapheme-cluster` | 2.050 us | 2.193 us | Managed faster | 0.94x |
++| `pcre2/kreset-atomic-alt` | 0.649 us | 0.885 us | Managed faster | 0.73x |
++| `literal/empty-unicode` | 1.508 us | 2.298 us | Managed faster | 0.66x |
++| `pcre2/duplicate-names` | 0.629 us | 0.969 us | Managed faster | 0.65x |
++| `pcre2/kreset-bar-or-baz` | 0.621 us | 0.966 us | Managed faster | 0.64x |
++| `pcre2/branch-reset-followup` | 0.623 us | 1.025 us | Managed faster | 0.61x |
++| `pcre2/kreset-global` | 0.516 us | 0.867 us | Managed faster | 0.60x |
++| `pcre2/branch-reset-backref` | 0.636 us | 1.074 us | Managed faster | 0.59x |
++| `pcre2/branch-reset-basic` | 0.681 us | 1.195 us | Managed faster | 0.57x |
++| `pcre2/branch-reset-nested` | 0.641 us | 1.169 us | Managed faster | 0.55x |
++| `pcre2/same-start-global` | 0.531 us | 1.252 us | Managed faster | 0.42x |
++| `pcre2/kreset-captured-repeat` | 4.791 us | — | Excluded | — |
++| `pcre2/kreset-repeat` | 4.613 us | — | Excluded | — |
+ 
+ ### PCRE2-only Replace
+ 
+ | Case | Utf8Pcre2 elapsed | PCRE2 NFA elapsed | Status | Ratio (lower is better) |
+ | --- | ---: | ---: | --- | ---: |
+-| `literal/empty-unicode` | 17.619 us | — | Excluded | — |
+-| `pcre2/branch-reset-backref` | 1.142 us | — | Excluded | — |
+-| `pcre2/branch-reset-basic` | 1.233 us | — | Excluded | — |
+-| `pcre2/branch-reset-followup` | 1.127 us | — | Excluded | — |
+-| `pcre2/branch-reset-nested` | 1.141 us | — | Excluded | — |
+-| `pcre2/duplicate-names` | 1.121 us | — | Excluded | — |
+-| `pcre2/grapheme-cluster` | 6.984 us | — | Excluded | — |
+-| `pcre2/kreset-atomic-alt` | 1.145 us | — | Excluded | — |
+-| `pcre2/kreset-bar-or-baz` | 1.147 us | — | Excluded | — |
+-| `pcre2/kreset-captured-repeat` | 22.788 us | — | Excluded | — |
+-| `pcre2/kreset-global` | 1.068 us | — | Excluded | — |
+-| `pcre2/kreset-repeat` | 17.023 us | — | Excluded | — |
+-| `pcre2/same-start-global` | 4.339 us | — | Excluded | — |
++| `literal/empty-unicode` | 17.152 us | — | Excluded | — |
++| `pcre2/branch-reset-backref` | 1.179 us | — | Excluded | — |
++| `pcre2/branch-reset-basic` | 1.277 us | — | Excluded | — |
++| `pcre2/branch-reset-followup` | 1.174 us | — | Excluded | — |
++| `pcre2/branch-reset-nested` | 1.184 us | — | Excluded | — |
++| `pcre2/duplicate-names` | 1.170 us | — | Excluded | — |
++| `pcre2/grapheme-cluster` | 6.880 us | — | Excluded | — |
++| `pcre2/kreset-atomic-alt` | 1.178 us | — | Excluded | — |
++| `pcre2/kreset-bar-or-baz` | 1.181 us | — | Excluded | — |
++| `pcre2/kreset-captured-repeat` | 21.977 us | — | Excluded | — |
++| `pcre2/kreset-global` | 1.120 us | — | Excluded | — |
++| `pcre2/kreset-repeat` | 16.403 us | — | Excluded | — |
++| `pcre2/same-start-global` | 4.200 us | — | Excluded | — |
+ 
+ <details>
+ <summary>Qualification, allocations and scaling evidence</summary>
+diff --git a/src/Lokad.Utf8Regex.Posix/README.md b/src/Lokad.Utf8Regex.Posix/README.md
+index ca6d608d..5772edba 100644
+--- a/src/Lokad.Utf8Regex.Posix/README.md
++++ b/src/Lokad.Utf8Regex.Posix/README.md
+@@ -2,10 +2,10 @@
+ 
+ The optional POSIX ERE adapter for .NET 10/11 matches Unicode scalars over strict
+ UTF-8, with leftmost-longest selection and hierarchical capture priority.
+-It is included in the qualified [four-package 0.5.0-dev.65 candidate](../../bench/Experiments/DeliveryDev65-20261110/README.md),
++It is included in the qualified [four-package 0.5.0-dev.66 candidate](../../bench/Experiments/DeliveryDev66-20261110/README.md),
+ and is not available in the published 0.4.0 release. See the [supported ERE contract](../../docs/SPEC-POSIX.md).
+-This page describes later development source; `inputValidation` requires a
+-subsequent candidate. Frozen dev65 keeps its original APIs and package bytes.
++The dev66 candidate includes `inputValidation`; earlier frozen candidates retain
++their original APIs and package bytes.
+ 
+ The adapter depends only on Core. Execution is fully managed and checked,
+ without a native or BCL regex fallback.
+@@ -53,6 +53,11 @@ cooperative cancellation/deadlines and admission remain. Required coordinate or
+ output work may still inspect input. See the [shared contract](../../docs/SPEC.md#subject-input-validation).
+ Existing benchmark tables use Validate unless explicitly labeled otherwise.
+ 
++Use `--measure-posix-case capture/sku007 9 AssumeValid` for a focused trusted-input
++comparison, including its finite/live/funded lanes. Omit the final argument for
++`Validate`. The command prints labeled raw evidence without changing these tables;
++the native comparator keeps UTF validation enabled.
++
+ <!-- BEGIN GENERATED POSIX BENCHMARKS -->
+ ## Benchmarks
+ 
+@@ -60,14 +65,18 @@ Warm .NET 11 public operations over prepared UTF-8; compilation and input prepar
+ 
+ | Case | Operation | Utf8Regex (µs) | Native NFA (µs) | Managed B/op | Status | Ratio (lower is better) |
+ |---|---|---:|---:|---:|---|---:|
+-| `capture/empty` | Captures | 0.62 | 0.17 | 64 | Native faster | 3.62 |
+-| `capture/absent` | Captures | 0.44 | 0.16 | 48 | Inconclusive | 2.76 |
+-| `capture/nullable` | Captures | 0.58 | 0.22 | 56 | Native faster | 2.62 |
+-| `capture/ambiguous` | Captures | 1.00 | — | 56 | Excluded | — |
+-| `capture/nested` | Captures | 2.90 | — | 64 | Excluded | — |
+-| `capture/unicode-longest` | Captures | 1.14 | — | 56 | Excluded | — |
++| `capture/empty` | Captures | 0.61 | 0.16 | 64 | Native faster | 3.83 |
++| `capture/nullable` | Captures | 0.59 | 0.20 | 56 | Native faster | 2.99 |
++| `capture/absent` | Captures | 0.43 | 0.15 | 48 | Native faster | 2.88 |
++| `projection/short-1` | Captures | 0.20 | 0.12 | 32 | Native faster | 1.72 |
++| `projection/short-4` | Captures | 0.29 | 0.22 | 56 | Native faster | 1.31 |
++| `projection/unicode-prefix-1` | Captures | 271.67 | 271.80 | 32 | Equivalent | 1.00 |
++| `projection/unicode-prefix-4` | Captures | 271.76 | 678.71 | 56 | Managed faster | 0.40 |
++| `capture/ambiguous` | Captures | 1.01 | — | 56 | Excluded | — |
++| `capture/nested` | Captures | 2.92 | — | 64 | Excluded | — |
++| `capture/unicode-longest` | Captures | 1.13 | — | 56 | Excluded | — |
+ | `count/ambiguous` | Count | 0.30 | — | 0 | Excluded | — |
+-| `cursor/ambiguous` | Cursor | 0.98 | — | 328 | Excluded | — |
++| `cursor/ambiguous` | Cursor | 0.94 | — | 336 | Excluded | — |
+ 
+ The ratio is the median paired managed/native time; raw samples retain 95% bootstrap intervals and lane-order observations. Excluded rows have different native ranges/captures and no ratio. All rows retain ordinary costs, even when no equivalent native result exists.
+ 
+@@ -77,9 +86,9 @@ The same `(a|aa)*` capture operation at three lengths exposes ambiguity cost. Ea
+ 
+ | Case | Input bytes | Utf8Regex (µs) | Managed B/op | Peak working B |
+ |---|---:|---:|---:|---:|
+-| `history/length-4` | 4 | 2.04 | 48 | 960 |
+-| `history/length-8` | 8 | 13.90 | 48 | 1952 |
+-| `history/length-12` | 12 | 105.61 | 48 | 1952 |
++| `history/length-4` | 4 | 2.05 | 48 | 960 |
++| `history/length-8` | 8 | 14.04 | 48 | 1952 |
++| `history/length-12` | 12 | 105.59 | 48 | 1952 |
+ 
+ ### Historical adapter control
+ 
+@@ -87,17 +96,17 @@ SKU is an unambiguous consumer control, not a POSIX selection claim. One timed b
+ 
+ | Case | Utf8Regex / call (µs) | Native NFA / call (µs) | Managed B/call | Ratio (lower is better) |
+ |---|---:|---:|---:|---:|
+-| `capture/sku007` | 0.78 | 0.17 | 96 | 4.56 |
++| `capture/sku007` | 0.66 | 0.16 | 96 | 4.11 |
+ 
+ ### Representative policy costs
+ 
+ | Case | Finite + live token | Funded finite + live token | Finite + deadline + live token | Funded / unlimited |
+ |---|---:|---:|---:|---:|
+-| `cursor/ambiguous` | 1.42 µs | 1.53 µs | 1.96 µs | 1.56 |
+-| `capture/empty` | 0.82 µs | 0.95 µs | 1.07 µs | 1.54 |
+-| `capture/sku007` | 4241.99 µs | 4721.14 µs | 5372.68 µs | 1.48 |
++| `capture/sku007` | 3673.33 µs | 4183.01 µs | 4634.22 µs | 1.54 |
++| `cursor/ambiguous` | 1.31 µs | 1.43 µs | 1.75 µs | 1.53 |
++| `capture/empty` | 0.78 µs | 0.90 µs | 1.01 µs | 1.46 |
+ 
+ Only the empty-capture, longest-cursor and SKU control rows time all policy lanes; SKU costs here remain per 4,096-call batch. Finite lanes enforce work/depth/working limits and a positive result limit under an original live token. Funded lanes add a thread-safe 16 MiB host allowance; the deadline lane adds a 30-second invocation timeout. Values/caller-owned capture destinations create no producer result payload. These are absolute public-operation costs, including useful metering; the unlimited native comparator has no corresponding host policy.
+ 
+-[Compact summary](../../bench/Snapshots/Posix.json). Snapshot SHA-256: `8811387238ED7F4DDA63A7E85A308A2E561A5EEE7BB8502DB4CBDEA1E76EDCEA`.
++[Compact summary](../../bench/Snapshots/Posix.json). Snapshot SHA-256: `8D8477721671750152A47754ED97676C15FBEC8957DB1076FED8E0F9D6E81268`.
+ <!-- END GENERATED POSIX BENCHMARKS -->
+diff --git a/src/Lokad.Utf8Regex.PythonRe/PythonReParser.cs b/src/Lokad.Utf8Regex.PythonRe/PythonReParser.cs
+index 7bd166c6..68424589 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/PythonReParser.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/PythonReParser.cs
+@@ -8,12 +8,12 @@ internal sealed partial class PythonReParser
+ {
+     private const string PatternBadEscapeLetters = "ceghijklmopqyCEFGHIJKLMNOPQRTVXYz";
+     private const string CharacterClassBadEscapeLetters = "ceghijklmopqyzABCEFGHIJKLMOPQRTVXYZ";
+-    private const string AsciiWordClass = "[A-Za-z0-9_]";
+-    private const string AsciiNonWordClass = "(?:(?![A-Za-z0-9_])" + UnicodeScalarPattern + ")";
+-    private const string AsciiDigitClass = "[0-9]";
+-    private const string AsciiNonDigitClass = "(?:(?![0-9])" + UnicodeScalarPattern + ")";
+-    private const string AsciiSpaceClass = @"[\t\n\r\f\v ]";
+-    private const string AsciiNonSpaceClass = @"(?:(?![\t\n\r\f\v ])" + UnicodeScalarPattern + ")";
++    internal const string AsciiWordClass = "[A-Za-z0-9_]";
++    internal const string AsciiNonWordClass = "(?:(?![A-Za-z0-9_])" + UnicodeScalarPattern + ")";
++    internal const string AsciiDigitClass = "[0-9]";
++    internal const string AsciiNonDigitClass = "(?:(?![0-9])" + UnicodeScalarPattern + ")";
++    internal const string AsciiSpaceClass = @"[\t\n\r\f\v ]";
++    internal const string AsciiNonSpaceClass = @"(?:(?![\t\n\r\f\v ])" + UnicodeScalarPattern + ")";
+     internal const string AsciiWordBoundary = @"(?:(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])|(?<=[A-Za-z0-9_])(?![A-Za-z0-9_]))";
+     // `\B` fails on an empty range in CPython (beginning == end rejects both boundary kinds) while .NET matches empty. The guard fails only when the subject itself is empty, which coincides with an empty range because this API has no endpos parameter.
+     internal const string AsciiNonWordBoundary = @"(?:(?!\A\z)(?:(?<=[A-Za-z0-9_])(?=[A-Za-z0-9_])|(?<![A-Za-z0-9_])(?![A-Za-z0-9_])))";
+diff --git a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarCompiler.Classes.cs b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarCompiler.Classes.cs
+index fd31656a..703e4bbb 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarCompiler.Classes.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarCompiler.Classes.cs
+@@ -13,6 +13,25 @@ internal static partial class PythonReScalarCompiler
+     {
+         switch (text)
+         {
++            case PythonReParser.AsciiWordClass:
++            case PythonReParser.AsciiNonWordClass:
++            case PythonReParser.AsciiDigitClass:
++            case PythonReParser.AsciiNonDigitClass:
++            case PythonReParser.AsciiSpaceClass:
++            case PythonReParser.AsciiNonSpaceClass:
++                var word = text is PythonReParser.AsciiWordClass or PythonReParser.AsciiNonWordClass;
++                var digit = text is PythonReParser.AsciiDigitClass or PythonReParser.AsciiNonDigitClass;
++                var source = word ? PythonReScalarClassData.WordAscii
++                    : digit ? PythonReScalarClassData.DigitAscii : PythonReScalarClassData.SpaceAscii;
++                var mask = arena.Allocate<byte>(16, true);
++                arena.Budget.ChargeWork(16);
++                source.AsSpan().CopyTo(mask);
++                // Python ASCII whitespace excludes U+001C..U+001F, which are
++                // members of the Unicode predicate's ASCII projection.
++                if (!word && !digit) mask[3] &= 0x0F;
++                return PythonReScalarNodeFactory.AsciiClass(mask,
++                    text is PythonReParser.AsciiNonWordClass or PythonReParser.AsciiNonDigitClass
++                        or PythonReParser.AsciiNonSpaceClass);
+             case PythonReParser.AsciiWordBoundary:
+                 return PythonReScalarNodeFactory.AsciiBoundary(true);
+             case PythonReParser.AsciiNonWordBoundary:
+@@ -53,6 +72,7 @@ internal static partial class PythonReScalarCompiler
+     private static Utf8SliceNode? ConvertBracket(PythonReCharacterClassNode characterClass,
+         RegexOptions options, Utf8ConstructionArena arena)
+     {
++        if (ConvertAsciiBracket(characterClass, arena) is { } ascii) return ascii;
+         var firstPredefined = 0;
+         for (; firstPredefined < characterClass.Items.Count; firstPredefined++)
+         {
+@@ -60,8 +80,8 @@ internal static partial class PythonReScalarCompiler
+             if (characterClass.Items[firstPredefined] is PythonReCharacterClassPredefinedItem item
+                 && PythonReParser.IsUnicodePredefinedFragment(item.RegexClassFragment)) break;
+         }
+-        // Ordinary literal/ASCII classes retain their original leaf preparation;
+-        // do not acquire staging arrays merely to discover no profile predicate.
++        // Other ordinary classes retain their original leaf preparation; do not
++        // acquire staging arrays merely to discover no profile predicate.
+         if (firstPredefined == characterClass.Items.Count) return null;
+         using var literals = new Utf8ConstructionBuffer<PythonReCharacterClassItem>(arena.Budget);
+         using var branches = new Utf8ConstructionBuffer<Utf8SliceNode>(arena.Budget);
+@@ -99,6 +119,35 @@ internal static partial class PythonReScalarCompiler
+             : positive;
+     }
+ 
++    private static Utf8SliceNode? ConvertAsciiBracket(PythonReCharacterClassNode characterClass,
++        Utf8ConstructionArena arena)
++    {
++        // Parsing has resolved lexical folding. Only literal/range operands in
++        // ASCII fit this mask; Unicode and predefined operands keep their own
++        // existing lowering. In particular, do not refold a negated class.
++        for (var index = 0; index < characterClass.Items.Count; index++)
++        {
++            arena.Budget.ChargeWork(1);
++            var item = characterClass.Items[index];
++            if (item is not PythonReCharacterClassLiteralItem { Scalar: >= 0 and < 128 } and
++                not PythonReCharacterClassRangeItem { StartScalar: >= 0, EndScalar: < 128 }) return null;
++        }
++        var mask = arena.Allocate<byte>(16, true);
++        for (var index = 0; index < characterClass.Items.Count; index++)
++        {
++            var item = characterClass.Items[index];
++            var low = item is PythonReCharacterClassLiteralItem literal ? literal.Scalar
++                : ((PythonReCharacterClassRangeItem)item).StartScalar;
++            var high = item is PythonReCharacterClassRangeItem range ? range.EndScalar : low;
++            arena.Budget.ChargeWork((ulong)(high - low + 1));
++            for (var value = low; value <= high; value++)
++            {
++                mask[value >> 3] |= (byte)(1 << (value & 7));
++            }
++        }
++        return PythonReScalarNodeFactory.AsciiClass(mask, characterClass.IsNegated);
++    }
++
+     private static Utf8SliceNode? TryCombineClassUnion(ReadOnlySpan<Utf8SliceNode> branches,
+         bool negated, Utf8ConstructionArena arena)
+     {
+diff --git a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs
+index e82d3e66..3d43cc4b 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs
+@@ -27,7 +27,7 @@ internal struct PythonReScalarMatchState
+     private Utf8InvocationResultLedger _results;
+     private Utf8SliceSlots _slots;
+     private Utf8SliceRunner.AttemptWorkspace _workspace;
+-    private Utf8ValidationResult _validation;
++    private Utf8ValidationResult? _validation;
+     private Utf8BoundaryMap _map;
+     private ulong _mapReservation;
+     private bool _hasMap;
+@@ -51,11 +51,22 @@ internal struct PythonReScalarMatchState
+         _invocation = invocation;
+         try
+         {
+-            _validation = Utf8Validation.Subject(input, ref _invocation);
+-            // An unconditional Fail or an absent necessary literal can finish
+-            // before scalar scratch. Strict validation and final publication
+-            // still use this invocation; other programs retain their verifier.
++            // Strict input is validated once before any early exit. Trusted
++            // byte discovery needs no whole-subject coordinate description.
++            if (_invocation.InputValidation == Utf8InputValidation.Validate)
++                _validation = Utf8Validation.Subject(input, ref _invocation);
++            else
++                Utf8Validation.CheckSubject(input, ref _invocation);
++            // Anchored calls cannot skip a rejected starting byte. Reuse the
++            // bounded necessary-start proof before scanning for a required
++            // literal elsewhere; possible starts keep that useful screen.
++            // Strict validation and final publication still use this invocation.
+             if (program.Instructions[0].Kind == Utf8SliceInstructionKind.Fail ||
++                !prepareSearch && candidateRegex is not null &&
++                (uint)startOffsetInBytes <= (uint)input.Length &&
++                TryGetLeadingAsciiRange(program, false, out var startLow, out var startHigh) &&
++                (startOffsetInBytes == input.Length ||
++                 (uint)(input[startOffsetInBytes] - startLow) > (uint)(startHigh - startLow)) ||
+                 !program.CanMatchEmpty && !program.IgnoreCase && candidateRegex is { } required &&
+                 required.RejectMissingExactRequiredLiteral(input, ref _invocation))
+             {
+@@ -68,7 +79,9 @@ internal struct PythonReScalarMatchState
+             if (prepareSearch)
+             {
+                 if (CanUseCandidateRegex(program, candidateRegex)) _candidateRegex = candidateRegex;
+-                if (_candidateRegex is null && TryGetLeadingAsciiRange(program, _validation.IsAscii, out var low, out var high))
++                if (_candidateRegex is null &&
++                    (TryGetLeadingAsciiRange(program, _validation?.IsAscii == true, out var low, out var high) ||
++                     _validation is null && TryGetLeadingAsciiRange(program, true, out low, out high) && DescribeInput(input).IsAscii))
+                 {
+                     _leadingAsciiLow = low;
+                     _leadingAsciiHigh = high;
+@@ -107,7 +120,7 @@ internal struct PythonReScalarMatchState
+     internal readonly ulong ReservedBytes => _invocation.Ledger.ReservedBytes;
+     internal readonly ulong ResultReservation => _results.ReservedBytes;
+     internal readonly bool HasCoordinateMap => _hasMap;
+-    internal readonly bool IsAscii => _validation.IsAscii;
++    internal bool IsAscii(ReadOnlySpan<byte> input) => (_validation ?? DescribeInput(input)).IsAscii;
+     [UnscopedRef] internal ref Utf8SliceInvocation WorkingInvocation => ref _invocation;
+ 
+     internal T[] AllocateResultArray<T>(ReadOnlySpan<byte> input, int count)
+@@ -566,11 +579,14 @@ internal struct PythonReScalarMatchState
+             var end = EndOffsetInBytes;
+             // Collections that publish coordinates reuse their single map. A
+             // one-shot fixed value still needs no whole-subject map allocation.
+-            // Entry validation already supplies coordinates at both subject ends.
+-            var startUtf16 = _validation.IsAscii || start == 0 ? start : start == input.Length ? _validation.Utf16Length
++            // Strict validation supplies the subject ends. Without a description,
++            // count only the prefix/range actually requested by this value.
++            var ascii = _validation?.IsAscii == true;
++            var length = _validation?.Utf16Length;
++            var startUtf16 = ascii || start == 0 ? start : start == input.Length && length.HasValue ? length.Value
+                 : _hasMap ? _map.GetUtf16OffsetForByteOffset(start)
+                 : Utf8SliceBufferWork.CountUtf16(input[..start], ref _invocation);
+-            var endUtf16 = _validation.IsAscii ? end : end == input.Length ? _validation.Utf16Length
++            var endUtf16 = ascii ? end : end == input.Length && length.HasValue ? length.Value
+                 : _hasMap ? _map.GetUtf16OffsetForByteOffset(end)
+                 : startUtf16 + Utf8SliceBufferWork.CountUtf16(input[start..end], ref _invocation);
+             var value = new PythonReGroupData
+@@ -642,7 +658,7 @@ internal struct PythonReScalarMatchState
+         {
+             try
+             {
+-                _map = Utf8BoundaryMap.Create(input, _validation, ref _invocation, out _mapReservation);
++                _map = Utf8BoundaryMap.Create(input, DescribeInput(input), ref _invocation, out _mapReservation);
+                 _hasMap = true;
+             }
+             catch (InvalidOperationException error) when (error is not Utf8ResourceLimitExceededException && _invocation.Budget.LimitBreach != Utf8ExecutionLimitKind.None)
+@@ -741,10 +757,13 @@ internal struct PythonReScalarMatchState
+             // String-only results need the selected scalar range's char count,
+             // not a coordinate map for the complete subject. Detailed results
+             // already project coordinates and can supply their character count.
+-            // Original whole-subject validation proves these scalar ranges.
++            // Validation or the caller's trusted-input contract proves these ranges.
+             // Unknown lengths need bounded character counting, not validation.
+-            var count = characterCount ?? (_validation.IsAscii ? end - start
+-                : start == 0 && end == input.Length ? _validation.Utf16Length : _hasMap
++            // Cache a real description when string projection first needs it;
++            // dense output reuses the same ASCII/whole-subject facts thereafter.
++            var validation = characterCount.HasValue ? default : _validation ?? DescribeInput(input);
++            var count = characterCount ?? (validation.IsAscii ? end - start
++                : start == 0 && end == input.Length ? validation.Utf16Length : _hasMap
+                 ? _map.GetUtf16OffsetForByteOffset(end) - _map.GetUtf16OffsetForByteOffset(start)
+                 : Utf8SliceBufferWork.CountUtf16(input[start..end], ref _invocation));
+             var text = _results.DecodeUtf8(input[start..end], count, ref _invocation);
+@@ -759,6 +778,14 @@ internal struct PythonReScalarMatchState
+         }
+     }
+ 
++    private Utf8ValidationResult DescribeInput(ReadOnlySpan<byte> input)
++    {
++        try { return _validation ??= Utf8Validation.Subject(input, ref _invocation); }
++        catch (InvalidOperationException error) when (error is not Utf8ResourceLimitExceededException && _invocation.Budget.LimitBreach != Utf8ExecutionLimitKind.None)
++        { throw ResourceFailure(); }
++        catch (Utf8ExecutionDeadlineExpiredException) { throw TimeoutFailure(input); }
++    }
++
+     internal byte[] GetBytes(ReadOnlySpan<byte> input, int start, int end)
+     {
+         Checkpoint(input);
+diff --git a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarNodeFactory.cs b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarNodeFactory.cs
+index fead2b94..7cee3184 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/PythonReScalarNodeFactory.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/PythonReScalarNodeFactory.cs
+@@ -85,6 +85,9 @@ internal static class PythonReScalarNodeFactory
+         Create((ascii, negated, members),
+             static state => new Utf8SliceNode.CategorySetNode(state.ascii, state.negated, Array.Empty<Utf8SliceShorthand>(), state.members, false));
+ 
++    internal static Utf8SliceNode.SetNode AsciiClass(byte[] mask, bool negated) =>
++        Create((mask, negated), static state => new Utf8SliceNode.SetNode(state.mask, state.negated, [], false));
++
+     private static TNode Create<TState, TNode>(TState state, Func<TState, TNode> factory) where TNode : class =>
+         Utf8ConstructionScope.CurrentBudget.AllocateObject(state, factory);
+ }
+diff --git a/src/Lokad.Utf8Regex.PythonRe/README.md b/src/Lokad.Utf8Regex.PythonRe/README.md
+index e123cf25..8ba74246 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/README.md
++++ b/src/Lokad.Utf8Regex.PythonRe/README.md
+@@ -187,6 +187,10 @@ reference aliases share position/disposal. No finalizer-based lease is required.
+ Read [release notes](../../CHANGELOG.md). Benchmark observations below retain their
+ recorded source/runtime and qualification scope.
+ 
++Use `--measure-pythonre-paired-case findall/many-capture-strings 9 AssumeValid`
++for a focused trusted-input comparison. Omit the final argument for `Validate`.
++The command prints labeled raw paired evidence without changing the recorded tables.
++
+ <!-- BEGIN GENERATED PYTHONRE BENCHMARKS -->
+ ## Benchmarks
+ 
+@@ -194,142 +198,141 @@ Public PythonRe operations over strict UTF-8, compared with official CPython `re
+ 
+ Tables rank the paired `PythonRe / CPython re` ratio from highest to lowest within each operation group; lower is better. Both displayed times come from the same paired evidence when available. Status retains the paired 95% interval and harness-floor qualification: a point ratio alone does not establish a winner. Unqualified observations appear last without a qualified ratio.
+ 
+-Snapshot SHA-256: `7B4645FA7CAED43C64D7B4E8D0D7326C3D5EAD5C3A7326DA99A7E0873CEC0B5E`. Catalog SHA-256: `44F1F6CBA90CD0835980E6D9269CBD95BCF05E4A4043C65C3E71B8681B579666`.
++Snapshot SHA-256: `9F2DEC5B1DC741569E7E83866B74ED4B629B5C3514151B63F16E7090E5AACFA2`. Catalog SHA-256: `1345C0F6C42558E3F64186353C2DCA0A4506DA24155E69336C7945C78D563450`.
+ 
+-Public Status: `43` managed faster, `2` equivalent, `34` CPython faster, `6` inconclusive, `5` unqualified.
++Public Status: `44` managed faster, `1` equivalent, `35` CPython faster, `6` inconclusive, `4` unqualified.
+ 
+-Measured source `998c630f3601`: .NET 11.0.0-rc.3.26522.148; CPython 3.13.2. Selective refreshes retain each row's recorded identity.
++Measured source `b478f853f722`: .NET 11.0.0-rc.3.26522.148; CPython 3.13.2. Selective refreshes retain each row's recorded identity.
+ 
+ ### Direct matching
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `literal/search-early` | `Search` | 0.682 us | 0.235 us | CPython faster | 2.91x |
+-| `common/date-miss` | `IsMatch` | 1.851 us | 0.870 us | CPython faster | 2.13x |
+-| `backreference/named-fullmatch-miss` | `FullMatch` | 0.364 us | 0.198 us | CPython faster | 1.84x |
+-| `leading-inline/search-hit` | `Search` | 0.618 us | 0.337 us | CPython faster | 1.83x |
+-| `atomic/search-miss` | `Search` | 0.456 us | 0.263 us | CPython faster | 1.74x |
+-| `verbose/fullmatch-hit` | `FullMatch` | 0.495 us | 0.295 us | CPython faster | 1.68x |
+-| `backreference/fullmatch-hit` | `FullMatch` | 0.405 us | 0.282 us | CPython faster | 1.43x |
+-| `possessive/search-hit` | `Search` | 0.442 us | 0.309 us | CPython faster | 1.42x |
+-| `anchor/fullmatch-miss` | `FullMatch` | 0.262 us | 0.184 us | CPython faster | 1.42x |
+-| `reluctant/search-hit` | `Search` | 0.491 us | 0.353 us | CPython faster | 1.39x |
+-| `lookbehind/search-miss` | `Search` | 0.308 us | 0.222 us | CPython faster | 1.38x |
+-| `atomic/search-hit` | `Search` | 0.437 us | 0.326 us | CPython faster | 1.34x |
+-| `prefix/match` | `Match` | 0.321 us | 0.274 us | CPython faster | 1.17x |
+-| `scoped-inline/search-hit` | `Search` | 0.323 us | 0.294 us | CPython faster | 1.10x |
+-| `lookahead/search-miss` | `Search` | 0.204 us | 0.197 us | CPython faster | 1.03x |
+-| `unicode-option/search-hit` | `Search` | 0.311 us | 0.301 us | CPython faster | 1.03x |
+-| `unicode/fullmatch` | `FullMatch` | 17.323 us | 19.726 us | Managed faster | 0.88x |
+-| `ignorecase/search-hit` | `Search` | 0.310 us | 0.358 us | Managed faster | 0.87x |
+-| `ascii-option/search-hit` | `Search` | 0.245 us | 0.308 us | Managed faster | 0.80x |
+-| `multiline/search-hit` | `Search` | 0.257 us | 0.336 us | Managed faster | 0.77x |
+-| `ignorecase/search-miss` | `Search` | 0.209 us | 0.291 us | Managed faster | 0.72x |
+-| `greedy/search-miss` | `Search` | 0.135 us | 0.221 us | Managed faster | 0.61x |
+-| `unicode-literal/search-hit` | `Search` | 0.143 us | 0.238 us | Managed faster | 0.60x |
+-| `lookahead/search-hit` | `Search` | 0.181 us | 0.302 us | Managed faster | 0.60x |
+-| `possessive/search-miss` | `Search` | 0.122 us | 0.212 us | Managed faster | 0.57x |
+-| `unicode-literal/search-miss` | `Search` | 0.149 us | 0.292 us | Managed faster | 0.51x |
+-| `dotall/fullmatch-hit` | `FullMatch` | 0.145 us | 0.335 us | Managed faster | 0.43x |
+-| `supplementary/fullmatch-hit` | `FullMatch` | 0.088 us | 0.257 us | Managed faster | 0.34x |
+-| `literal/fullmatch` | `FullMatch` | 0.069 us | 0.348 us | Managed faster | 0.20x |
+-| `common/ip-match` | `IsMatch` | 0.057 us | 0.320 us | Managed faster | 0.18x |
+-| `literal/search` | `Search` | 2.740 us | 22.602 us | Managed faster | 0.12x |
+-| `literal/ismatch` | `IsMatch` | 2.465 us | 22.412 us | Managed faster | 0.11x |
+-| `literal/search-miss` | `Search` | 1.666 us | 22.279 us | Managed faster | 0.07x |
+-| `alternation/search-miss` | `Search` | 0.202 us | 0.237 us | Unqualified | — |
+-| `lookbehind/search-hit` | `Search` | 0.319 us | 0.335 us | Unqualified | — |
+-| `multiline/search-miss` | `Search` | 0.274 us | 0.267 us | Unqualified | — |
+-| `search-offset/literal-hit` | `SearchFromOffset` | 0.204 us | 0.239 us | Unqualified | — |
+-| `unicode-category/search-miss` | `Search` | 0.186 us | 0.213 us | Unqualified | — |
++| `literal/search-early` | `Search` | 0.683 us | 0.235 us | CPython faster | 2.91x |
++| `common/date-miss` | `IsMatch` | 1.864 us | 0.866 us | CPython faster | 2.16x |
++| `backreference/named-fullmatch-miss` | `FullMatch` | 0.368 us | 0.198 us | CPython faster | 1.85x |
++| `leading-inline/search-hit` | `Search` | 0.606 us | 0.336 us | CPython faster | 1.80x |
++| `atomic/search-miss` | `Search` | 0.452 us | 0.262 us | CPython faster | 1.72x |
++| `verbose/fullmatch-hit` | `FullMatch` | 0.484 us | 0.296 us | CPython faster | 1.64x |
++| `lookbehind/search-miss` | `Search` | 0.321 us | 0.219 us | CPython faster | 1.46x |
++| `possessive/search-hit` | `Search` | 0.450 us | 0.308 us | CPython faster | 1.46x |
++| `anchor/fullmatch-miss` | `FullMatch` | 0.263 us | 0.185 us | CPython faster | 1.42x |
++| `backreference/fullmatch-hit` | `FullMatch` | 0.401 us | 0.283 us | CPython faster | 1.42x |
++| `reluctant/search-hit` | `Search` | 0.483 us | 0.352 us | CPython faster | 1.37x |
++| `atomic/search-hit` | `Search` | 0.442 us | 0.326 us | CPython faster | 1.36x |
++| `prefix/match` | `Match` | 0.327 us | 0.274 us | CPython faster | 1.19x |
++| `scoped-inline/search-hit` | `Search` | 0.346 us | 0.293 us | CPython faster | 1.18x |
++| `unicode-option/search-hit` | `Search` | 0.320 us | 0.302 us | CPython faster | 1.06x |
++| `multiline/search-miss` | `Search` | 0.280 us | 0.267 us | CPython faster | 1.05x |
++| `lookbehind/search-hit` | `Search` | 0.344 us | 0.333 us | CPython faster | 1.03x |
++| `unicode/fullmatch` | `FullMatch` | 17.392 us | 19.787 us | Managed faster | 0.88x |
++| `ignorecase/search-hit` | `Search` | 0.313 us | 0.358 us | Managed faster | 0.87x |
++| `ascii-option/search-hit` | `Search` | 0.258 us | 0.307 us | Managed faster | 0.84x |
++| `multiline/search-hit` | `Search` | 0.260 us | 0.335 us | Managed faster | 0.77x |
++| `ignorecase/search-miss` | `Search` | 0.207 us | 0.288 us | Managed faster | 0.72x |
++| `greedy/search-miss` | `Search` | 0.146 us | 0.221 us | Managed faster | 0.66x |
++| `lookahead/search-hit` | `Search` | 0.186 us | 0.301 us | Managed faster | 0.62x |
++| `possessive/search-miss` | `Search` | 0.128 us | 0.213 us | Managed faster | 0.60x |
++| `unicode-literal/search-hit` | `Search` | 0.130 us | 0.237 us | Managed faster | 0.55x |
++| `unicode-literal/search-miss` | `Search` | 0.144 us | 0.292 us | Managed faster | 0.49x |
++| `dotall/fullmatch-hit` | `FullMatch` | 0.148 us | 0.338 us | Managed faster | 0.44x |
++| `supplementary/fullmatch-hit` | `FullMatch` | 0.099 us | 0.257 us | Managed faster | 0.38x |
++| `literal/fullmatch` | `FullMatch` | 0.084 us | 0.350 us | Managed faster | 0.24x |
++| `common/ip-match` | `IsMatch` | 0.058 us | 0.321 us | Managed faster | 0.18x |
++| `literal/search` | `Search` | 2.732 us | 22.757 us | Managed faster | 0.12x |
++| `literal/ismatch` | `IsMatch` | 2.484 us | 22.395 us | Managed faster | 0.11x |
++| `literal/search-miss` | `Search` | 1.676 us | 22.340 us | Managed faster | 0.07x |
++| `alternation/search-miss` | `Search` | 0.208 us | 0.238 us | Unqualified | — |
++| `lookahead/search-miss` | `Search` | 0.202 us | 0.197 us | Unqualified | — |
++| `search-offset/literal-hit` | `SearchFromOffset` | 0.208 us | 0.239 us | Unqualified | — |
++| `unicode-category/search-miss` | `Search` | 0.181 us | 0.213 us | Unqualified | — |
+ 
+ ### Detailed and scalar projections
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `capture/search-detailed` | `SearchDetailed` | 1.050 us | 1.329 us | Managed faster | 0.79x |
++| `capture/search-detailed` | `SearchDetailed` | 1.042 us | 1.311 us | Managed faster | 0.80x |
+ 
+ ### Count, FindAll, and FindIter
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `findall/many-capture-strings` | `FindAllStrings` | 794.189 us | 349.912 us | CPython faster | 2.27x |
+-| `findall/one-capture-strings` | `FindAllStrings` | 476.764 us | 215.060 us | CPython faster | 2.22x |
+-| `findall/named-capture-strings` | `FindAllStrings` | 167.648 us | 94.685 us | CPython faster | 1.77x |
+-| `findall/unicode-full-utf8` | `FindAllUtf8` | 102.157 us | 62.318 us | CPython faster | 1.64x |
+-| `findall/empty-progression-strings` | `FindAllStrings` | 67.884 us | 43.863 us | CPython faster | 1.55x |
+-| `findall/unicode-full-strings` | `FindAllStrings` | 39.040 us | 27.449 us | CPython faster | 1.42x |
+-| `findall/full-strings` | `FindAllStrings` | 512.974 us | 369.855 us | CPython faster | 1.39x |
+-| `findall/optional-capture-strings` | `FindAllStrings` | 61.042 us | 56.595 us | CPython faster | 1.08x |
+-| `findall/full-utf8` | `FindAllUtf8` | 558.603 us | 521.400 us | CPython faster | 1.07x |
+-| `findall/from-offset-strings` | `FindAllStringsFromOffset` | 16.548 us | 16.060 us | CPython faster | 1.03x |
+-| `findall/unicode-capture-utf8` | `FindAllUtf8` | 573.977 us | 619.960 us | Managed faster | 0.93x |
+-| `findall/structural-many` | `FindAllStructural` | 177.395 us | 202.139 us | Managed faster | 0.88x |
+-| `findall/many-capture-utf8` | `FindAllUtf8` | 865.120 us | 1,258.840 us | Managed faster | 0.69x |
+-| `zero-width/count` | `Count` | 623.213 us | 1,118.082 us | Managed faster | 0.56x |
+-| `iteration/finditer-detailed` | `FindIterDetailed` | 275.074 us | 541.708 us | Managed faster | 0.51x |
+-| `count/empty-progression` | `Count` | 187.967 us | 378.741 us | Managed faster | 0.50x |
+-| `family/count` | `Count` | 719.122 us | 2,465.438 us | Managed faster | 0.29x |
+-| `count/from-offset` | `CountFromOffset` | 14.745 us | 50.515 us | Managed faster | 0.29x |
+-| `count/one` | `Count` | 0.282 us | 2.015 us | Managed faster | 0.14x |
+-| `unicode/count` | `Count` | 58.121 us | 434.894 us | Managed faster | 0.13x |
+-| `class-run/count` | `Count` | 287.286 us | 2,579.485 us | Managed faster | 0.11x |
+-| `findall/one-strings` | `FindAllStrings` | 0.762 us | 38.896 us | Managed faster | 0.02x |
+-| `findall/zero-strings` | `FindAllStrings` | 0.508 us | 90.865 us | Managed faster | 0.01x |
+-| `count/zero` | `Count` | 0.386 us | 91.960 us | Managed faster | 0.00x |
+-| `finditer/zero-detailed` | `FindIterDetailed` | 0.262 us | 142.655 us | Managed faster | 0.00x |
++| `findall/many-capture-strings` | `FindAllStrings` | 778.585 us | 349.767 us | CPython faster | 2.23x |
++| `findall/one-capture-strings` | `FindAllStrings` | 474.299 us | 213.981 us | CPython faster | 2.22x |
++| `findall/named-capture-strings` | `FindAllStrings` | 169.995 us | 96.107 us | CPython faster | 1.77x |
++| `findall/unicode-full-utf8` | `FindAllUtf8` | 97.680 us | 62.455 us | CPython faster | 1.56x |
++| `findall/empty-progression-strings` | `FindAllStrings` | 66.029 us | 43.741 us | CPython faster | 1.51x |
++| `findall/full-strings` | `FindAllStrings` | 530.781 us | 370.538 us | CPython faster | 1.43x |
++| `findall/unicode-full-strings` | `FindAllStrings` | 38.923 us | 27.515 us | CPython faster | 1.42x |
++| `findall/from-offset-strings` | `FindAllStringsFromOffset` | 17.983 us | 16.172 us | CPython faster | 1.11x |
++| `findall/optional-capture-strings` | `FindAllStrings` | 59.120 us | 55.455 us | CPython faster | 1.07x |
++| `findall/full-utf8` | `FindAllUtf8` | 551.423 us | 519.708 us | CPython faster | 1.06x |
++| `findall/unicode-capture-utf8` | `FindAllUtf8` | 549.989 us | 620.407 us | Managed faster | 0.89x |
++| `findall/structural-many` | `FindAllStructural` | 177.846 us | 202.740 us | Managed faster | 0.88x |
++| `findall/many-capture-utf8` | `FindAllUtf8` | 863.612 us | 1,249.218 us | Managed faster | 0.69x |
++| `zero-width/count` | `Count` | 584.486 us | 1,118.633 us | Managed faster | 0.52x |
++| `iteration/finditer-detailed` | `FindIterDetailed` | 274.866 us | 541.495 us | Managed faster | 0.51x |
++| `count/empty-progression` | `Count` | 179.155 us | 380.373 us | Managed faster | 0.47x |
++| `count/from-offset` | `CountFromOffset` | 14.782 us | 50.230 us | Managed faster | 0.29x |
++| `family/count` | `Count` | 651.949 us | 2,473.242 us | Managed faster | 0.26x |
++| `count/one` | `Count` | 0.284 us | 2.018 us | Managed faster | 0.14x |
++| `unicode/count` | `Count` | 58.042 us | 436.905 us | Managed faster | 0.13x |
++| `class-run/count` | `Count` | 276.963 us | 2,577.560 us | Managed faster | 0.11x |
++| `findall/one-strings` | `FindAllStrings` | 0.783 us | 38.894 us | Managed faster | 0.02x |
++| `findall/zero-strings` | `FindAllStrings` | 0.549 us | 90.761 us | Managed faster | 0.01x |
++| `count/zero` | `Count` | 0.398 us | 91.227 us | Managed faster | 0.00x |
++| `finditer/zero-detailed` | `FindIterDetailed` | 0.260 us | 142.470 us | Managed faster | 0.00x |
+ 
+ ### Replace and Subn
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `replacement/limited-string` | `ReplaceStringLimited` | 1.150 us | 0.452 us | Inconclusive | 2.51x |
+-| `replacement/empty-progression-string` | `ReplaceString` | 36.795 us | 23.729 us | CPython faster | 1.55x |
+-| `replacement/named-template-string` | `ReplaceString` | 1.271 us | 0.923 us | CPython faster | 1.38x |
+-| `replacement/fixed-string` | `ReplaceString` | 187.732 us | 178.570 us | CPython faster | 1.05x |
+-| `replacement/subn-string` | `SubnString` | 94.091 us | 91.570 us | CPython faster | 1.03x |
+-| `replacement/unmatched-template-string` | `ReplaceString` | 50.733 us | 51.040 us | Equivalent | 0.99x |
+-| `replacement/fixed-utf8` | `ReplaceUtf8` | 178.573 us | 180.277 us | Equivalent | 0.99x |
+-| `replacement/subn-utf8` | `SubnUtf8` | 89.391 us | 92.204 us | Managed faster | 0.97x |
+-| `replacement/no-match-string` | `ReplaceString` | 1.324 us | 2.419 us | Inconclusive | 0.55x |
+-| `replacement/evaluator-replace-string` | `ReplaceEvaluatorString` | 158.848 us | 4,296.068 us | Managed faster | 0.04x |
+-| `replacement/evaluator-string` | `SubnEvaluatorString` | 620.433 us | 17,263.040 us | Managed faster | 0.04x |
+-| `replacement/evaluator-utf8` | `SubnEvaluatorUtf8` | 618.816 us | 17,330.964 us | Managed faster | 0.04x |
+-| `replacement/one-template-string` | `ReplaceString` | 1.980 us | 16,496.497 us | Inconclusive | 0.00x |
++| `replacement/limited-string` | `ReplaceStringLimited` | 1.178 us | 0.464 us | Inconclusive | 2.57x |
++| `replacement/empty-progression-string` | `ReplaceString` | 37.486 us | 23.650 us | CPython faster | 1.58x |
++| `replacement/named-template-string` | `ReplaceString` | 1.262 us | 0.908 us | CPython faster | 1.39x |
++| `replacement/fixed-string` | `ReplaceString` | 189.588 us | 177.655 us | CPython faster | 1.07x |
++| `replacement/subn-string` | `SubnString` | 94.159 us | 91.337 us | CPython faster | 1.03x |
++| `replacement/fixed-utf8` | `ReplaceUtf8` | 179.631 us | 179.656 us | Equivalent | 1.00x |
++| `replacement/subn-utf8` | `SubnUtf8` | 89.629 us | 92.213 us | Managed faster | 0.97x |
++| `replacement/unmatched-template-string` | `ReplaceString` | 48.670 us | 51.225 us | Managed faster | 0.95x |
++| `replacement/no-match-string` | `ReplaceString` | 1.229 us | 2.421 us | Inconclusive | 0.51x |
++| `replacement/evaluator-replace-string` | `ReplaceEvaluatorString` | 158.990 us | 4,343.207 us | Managed faster | 0.04x |
++| `replacement/evaluator-string` | `SubnEvaluatorString` | 620.232 us | 17,333.859 us | Managed faster | 0.04x |
++| `replacement/evaluator-utf8` | `SubnEvaluatorUtf8` | 596.460 us | 17,240.424 us | Managed faster | 0.03x |
++| `replacement/one-template-string` | `ReplaceString` | 2.103 us | 16,554.525 us | Inconclusive | 0.00x |
+ 
+ ### Split
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `split/limited` | `SplitStringsLimited` | 1.407 us | 0.546 us | Inconclusive | 2.53x |
+-| `split/zero-width` | `SplitStrings` | 121.989 us | 67.084 us | CPython faster | 1.82x |
+-| `split/captures` | `SplitStrings` | 436.987 us | 254.863 us | CPython faster | 1.71x |
+-| `split/unicode` | `SplitStrings` | 72.907 us | 44.646 us | CPython faster | 1.63x |
+-| `split/no-captures` | `SplitStrings` | 277.774 us | 224.343 us | CPython faster | 1.24x |
+-| `split/optional-capture` | `SplitStrings` | 76.333 us | 82.801 us | Managed faster | 0.92x |
+-| `split/detailed` | `SplitDetailed` | 115.610 us | 136.367 us | Managed faster | 0.85x |
+-| `split/one-separator` | `SplitStrings` | 1.112 us | 12.071 us | Inconclusive | 0.09x |
+-| `split/no-separator` | `SplitStrings` | 1.203 us | 25.051 us | Inconclusive | 0.05x |
++| `split/limited` | `SplitStringsLimited` | 1.491 us | 0.547 us | Inconclusive | 2.72x |
++| `split/zero-width` | `SplitStrings` | 116.909 us | 67.634 us | CPython faster | 1.74x |
++| `split/captures` | `SplitStrings` | 440.259 us | 255.708 us | CPython faster | 1.72x |
++| `split/unicode` | `SplitStrings` | 70.458 us | 44.696 us | CPython faster | 1.58x |
++| `split/no-captures` | `SplitStrings` | 278.129 us | 225.171 us | CPython faster | 1.24x |
++| `split/optional-capture` | `SplitStrings` | 75.479 us | 82.477 us | Managed faster | 0.92x |
++| `split/detailed` | `SplitDetailed` | 113.302 us | 136.648 us | Managed faster | 0.83x |
++| `split/one-separator` | `SplitStrings` | 1.220 us | 12.057 us | Inconclusive | 0.10x |
++| `split/no-separator` | `SplitStrings` | 1.291 us | 25.059 us | Inconclusive | 0.05x |
+ 
+ ### Real-corpus workloads
+ 
+ | Case | Operation | PythonRe elapsed | CPython re elapsed | Status | Ratio (lower is better) |
+ | --- | --- | ---: | ---: | --- | ---: |
+-| `corpus/sherlock-ru` | `Count` | 194.858 us | 403.789 us | Managed faster | 0.48x |
+-| `corpus/code-declarations` | `Count` | 85.320 us | 630.995 us | Managed faster | 0.14x |
+-| `corpus/code-log-methods` | `Count` | 49.621 us | 582.873 us | Managed faster | 0.09x |
+-| `corpus/mail-email-count` | `Count` | 2,134.700 us | 358,975.268 us | Managed faster | 0.01x |
++| `corpus/sherlock-ru` | `Count` | 190.242 us | 401.647 us | Managed faster | 0.47x |
++| `corpus/code-declarations` | `Count` | 85.062 us | 630.171 us | Managed faster | 0.14x |
++| `corpus/code-log-methods` | `Count` | 48.510 us | 581.600 us | Managed faster | 0.08x |
++| `corpus/mail-email-count` | `Count` | 2,088.258 us | 359,250.660 us | Managed faster | 0.01x |
+ 
+ <details>
+ <summary>Qualification, allocations and lifecycle evidence</summary>
+ 
+ The full snapshot retains per-row confidence intervals, exclusion reasons, exact input/source/binary identities, allocation probes, CPython operation owners and managed routes. Finite limits and retained-output costs are separate from these ordinary rows. Byte-control ratios are representation-neutral engine diagnostics and do not set public Status.
+ 
+-- `alternation/search-miss`: Removable harness floors are 0.20 %/14.24 % of the lanes.
+-- `lookbehind/search-hit`: Removable harness floors are 0.13 %/10.23 % of the lanes.
+-- `multiline/search-miss`: Removable harness floors are 0.16 %/12.66 % of the lanes.
+-- `search-offset/literal-hit`: Removable harness floors are 0.20 %/14.31 % of the lanes.
+-- `unicode-category/search-miss`: Removable harness floors are 0.22 %/15.89 % of the lanes.
++- `alternation/search-miss`: Removable harness floors are 0.23 %/14.31 % of the lanes.
++- `lookahead/search-miss`: Removable harness floors are 0.20 %/17.12 % of the lanes.
++- `search-offset/literal-hit`: Removable harness floors are 0.20 %/14.28 % of the lanes.
++- `unicode-category/search-miss`: Removable harness floors are 0.22 %/16.06 % of the lanes.
+ 
+ ### Construction and first call
+ 
+@@ -337,10 +340,10 @@ Contextual uncached-construction throughput, separate from warm Status. Values i
+ 
+ | Family | PythonRe construction | CPython compile | PythonRe first search | CPython first search |
+ | --- | ---: | ---: | ---: | ---: |
+-| `captured` | 191.044 us / 71,617 B | 60.201 us | 190.153 us / 71,641 B | 60.555 us |
+-| `fallback` | 248.175 us / 83,561 B | 42.442 us | 267.669 us / 83,529 B | 42.632 us |
+-| `literal` | 475.666 us / 50,369 B | 24.813 us | 241.812 us / 50,337 B | 24.747 us |
+-| `unicode` | 54.913 us / 48,313 B | 36.150 us | 58.916 us / 48,281 B | 36.146 us |
++| `captured` | 196.200 us / 71,633 B | 59.990 us | 189.056 us / 71,657 B | 60.709 us |
++| `fallback` | 275.872 us / 83,577 B | 42.471 us | 263.172 us / 83,545 B | 42.546 us |
++| `literal` | 416.041 us / 50,385 B | 24.721 us | 319.616 us / 50,353 B | 24.801 us |
++| `unicode` | 54.975 us / 48,329 B | 36.223 us | 58.131 us / 48,297 B | 36.214 us |
+ 
+ ### Scaling evidence
+ 
+@@ -352,7 +355,7 @@ Bounded families vary one dimension with equivalent results. Fit gates describe
+ | `capture-count` | capture group count | 4 | Reject |
+ | `input-length` | UTF-8 input bytes | 4 | Pass |
+ | `match-count` | discovered match count | 4 | Reject |
+-| `output-growth` | replacement output UTF-8 bytes | 4 | Reject |
++| `output-growth` | replacement output UTF-8 bytes | 4 | Pass |
+ | `unicode-coordinate-density` | UTF-8 bytes per scalar | 4 | Reject |
+ | `zero-width-progression` | zero-width-aware result count | 4 | Reject |
+ 
+diff --git a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs
+index 2ccc55f1..47f3e5e0 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs
+@@ -66,7 +66,7 @@ public sealed partial class Utf8PythonMatchCursor
+             var input = _input.Span;
+             _discovery.Checkpoint(input);
+             if (!_discovery.TryGetCaptureByteRange(groupNumber, out var byteStart, out var byteEnd)) return false;
+-            if (_discovery.IsAscii) { start = byteStart; end = byteEnd; }
++            if (_discovery.IsAscii(input)) { start = byteStart; end = byteEnd; }
+             else
+             {
+                 EnsureScalarPrefixes(input);
+diff --git a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.cs b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.cs
+index e1677550..518835a6 100644
+--- a/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.cs
++++ b/src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.cs
+@@ -245,7 +245,9 @@ public sealed partial class Utf8PythonRegex
+         _asciiDotAllFullMatchPrefix = asciiDotAllFullMatchPrefix;
+         _asciiDotAllFullMatchSuffix = asciiDotAllFullMatchSuffix;
+         var isExactLiteral = PythonReTranslator.IsExactLiteral(parseResult.Root);
+-        var prepareCore = !_canMatchEmpty || _canUseUtf8IterationFastPath;
++        // Nullable iteration always uses the Python scalar program. Only the
++        // exact empty literal has a separate Core value-operation consumer.
++        var prepareCore = !_canMatchEmpty || isExactLiteral;
+         var translation = PythonReTranslator.Translate(parseResult, prepareCore);
+         _scalarProgram = PythonReScalarCompiler.Compile(parseResult);
+         // Failed preparation is retryable: a caller's cancellation must not
+@@ -265,9 +267,9 @@ public sealed partial class Utf8PythonRegex
+         // lookup without retaining the rest of the parse tree.
+         _namedGroups = parseResult.NamedGroups;
+ 
+-        // Nullable programs do not use Core start hints or nonempty literal
+-        // result lanes. If iteration eligibility also declines Core, every
+-        // operation already uses the owned Python program or independent kernels.
++        // Other nullable programs use neither Core start hints nor its result
++        // lanes. Their operations use Python scalar execution or independent
++        // kernels, so avoid rendering/constructing an unused Core program.
+         if (prepareCore)
+         {
+             try
+diff --git a/src/Lokad.Utf8Regex/Internal/Execution/PreparedRuntimeLiteralFamilies.Construction.cs b/src/Lokad.Utf8Regex/Internal/Execution/PreparedRuntimeLiteralFamilies.Construction.cs
+index da534e2d..cb09d235 100644
+--- a/src/Lokad.Utf8Regex/Internal/Execution/PreparedRuntimeLiteralFamilies.Construction.cs
++++ b/src/Lokad.Utf8Regex/Internal/Execution/PreparedRuntimeLiteralFamilies.Construction.cs
+@@ -81,6 +81,9 @@ internal readonly partial struct PreparedShortAsciiLiteralFamilyCounter
+             foreach (var literal in literals)
+             {
+                 budget.ChargeWork(1);
++                // This is a search-strategy gate, not the comparator's safety
++                // limit. Wider mixed-length families can give this counter a
++                // much weaker primary filter than prepared first-byte search.
+                 if (literal.Length is < 3 or > 8) { scope.Complete(); return false; }
+                 budget.ChargeWork((ulong)literal.Length);
+                 if (!Utf8InputAnalyzer.IsAscii(literal)) { scope.Complete(); return false; }
+diff --git a/src/Lokad.Utf8Regex/Internal/Execution/Utf8ExactStatePool.cs b/src/Lokad.Utf8Regex/Internal/Execution/Utf8ExactStatePool.cs
+index 5d917d64..90dd47f8 100644
+--- a/src/Lokad.Utf8Regex/Internal/Execution/Utf8ExactStatePool.cs
++++ b/src/Lokad.Utf8Regex/Internal/Execution/Utf8ExactStatePool.cs
+@@ -23,6 +23,7 @@ internal static class Utf8ExactStatePool
+     private static SpinLock s_gate = new(enableThreadOwnerTracking: false);
+     private static Entry[]? s_items;
+     private static int s_retainedBytes;
++    private static int s_count;
+     private static int s_nextVictim;
+ 
+     internal static int TableBytes => checked((int)Utf8ConstructionBudget.ArrayBytes<Entry>(MaximumEntries));
+@@ -45,8 +46,8 @@ internal static class Utf8ExactStatePool
+             s_gate.Enter(ref taken);
+             var bytes = 0;
+             if (s_items is { } cache)
+-                foreach (var entry in cache)
+-                    if (entry.Value?.GetType() == typeof(T[])) bytes += entry.Bytes;
++                for (var index = 0; index < s_count; index++)
++                    if (cache[index].Value?.GetType() == typeof(T[])) bytes += cache[index].Bytes;
+             return bytes;
+         }
+         finally { if (taken) s_gate.Exit(); }
+@@ -71,11 +72,10 @@ internal static class Utf8ExactStatePool
+                     catch { s_retainedBytes = 0; throw; }
+                 }
+                 if (taken && s_items is { } cache)
+-                    for (var index = 0; index < cache.Length; index++)
++                    for (var index = 0; index < s_count; index++)
+                         if (cache[index].Value is T[] items && items.GetType() == typeof(T[]) && items.Length == capacity)
+                         {
+-                            s_retainedBytes -= cache[index].Bytes;
+-                            cache[index] = default;
++                            RemoveAt(cache, index);
+                             return items;
+                         }
+             }
+@@ -102,33 +102,38 @@ internal static class Utf8ExactStatePool
+             s_gate.TryEnter(0, ref taken);
+             if (!taken) return;
+             if (s_items is not { } cache) return;
+-            var empty = -1;
+             var typeBytes = 0;
+             // Identical capacities can belong to distinct simultaneous loans.
+             // Every returned leaf contributes to both retention bounds.
+-            for (var index = 0; index < cache.Length; index++)
++            for (var index = 0; index < s_count; index++)
+             {
+                 var entry = cache[index];
+-                if (entry.Value is null) { if (empty < 0) empty = index; }
+-                else if (ReferenceEquals(entry.Value, items)) return;
+-                else if (entry.Value.GetType() == typeof(T[])) typeBytes += entry.Bytes;
++                if (ReferenceEquals(entry.Value, items)) return;
++                if (entry.Value!.GetType() == typeof(T[])) typeBytes += entry.Bytes;
+             }
+             if (bytes > Utf8ExactStatePool<T>.MaximumRetainedBytes - typeBytes) return;
+-            while (empty < 0 || bytes > MaximumRetainedBytes - s_retainedBytes)
++            while (s_count == cache.Length || bytes > MaximumRetainedBytes - s_retainedBytes)
+             {
+-                var victim = s_nextVictim;
++                var victim = s_nextVictim % s_count;
+                 s_nextVictim = (s_nextVictim + 1) % cache.Length;
+-                if (cache[victim].Value is null) continue;
+-                s_retainedBytes -= cache[victim].Bytes;
+-                cache[victim] = default;
+-                if (empty < 0) empty = victim;
++                RemoveAt(cache, victim);
+             }
+             s_retainedBytes += bytes; // Admit the physical leaf before adoption.
+-            cache[empty] = new(items, bytes);
++            cache[s_count++] = new(items, bytes);
+         }
+         finally { if (taken) s_gate.Exit(); }
+     }
+ 
++    // Under the gate, keep all retained leaves in one dense prefix. Vacated
++    // suffix slots release their roots; several same-type/capacity loans remain
++    // independent entries. Optional eviction order is not an ownership contract.
++    private static void RemoveAt(Entry[] cache, int index)
++    {
++        s_retainedBytes -= cache[index].Bytes;
++        cache[index] = cache[--s_count];
++        cache[s_count] = default;
++    }
++
+     // Explicit release of the shared owner. Active working loans are independent
+     // and may return later; finite calls still cannot initialize a new table.
+     internal static void Clear()
+@@ -139,6 +144,7 @@ internal static class Utf8ExactStatePool
+             s_gate.Enter(ref taken);
+             s_items = null;
+             s_retainedBytes = 0;
++            s_count = 0;
+             s_nextVictim = 0;
+         }
+         finally { if (taken) s_gate.Exit(); }
+diff --git a/src/Lokad.Utf8Regex/Internal/Execution/Utf8SearchExecutor.FamilyInvocation.cs b/src/Lokad.Utf8Regex/Internal/Execution/Utf8SearchExecutor.FamilyInvocation.cs
+index 95d879c2..6b5c58a0 100644
+--- a/src/Lokad.Utf8Regex/Internal/Execution/Utf8SearchExecutor.FamilyInvocation.cs
++++ b/src/Lokad.Utf8Regex/Internal/Execution/Utf8SearchExecutor.FamilyInvocation.cs
+@@ -1,6 +1,9 @@
+ using Lokad.Utf8Regex.Internal.Diagnostics;
+ using Lokad.Utf8Regex.Internal.Planning;
+ using Lokad.Utf8Regex.Internal.Search;
++using System.Numerics;
++using System.Runtime.InteropServices;
++using System.Runtime.Intrinsics;
+ 
+ namespace Lokad.Utf8Regex.Internal.Execution;
+ 
+@@ -229,9 +232,12 @@ internal static partial class Utf8SearchExecutor
+                         var pairBlock = input.Slice(blockStart, Math.Min(count + longest - 1, end - blockStart));
+                         breach = invocation.TryChargeInputStep();
+                         if (breach != Utf8ExecutionLimitKind.None) return breach;
+-                        var relative = pairBlock.IndexOf(literals[0]);
++                        var shared = Vector512.IsHardwareAccelerated && count >= Vector512<byte>.Count &&
++                            longest <= 16 && Math.Min(literals[0].Length, literals[1].Length) >= 3;
++                        var relative = shared ? IndexOfShortExactPair(pairBlock, count, literals[0], literals[1])
++                            : pairBlock.IndexOf(literals[0]);
+                         if (relative >= count) relative = -1;
+-                        if (relative != 0)
++                        if (!shared && relative != 0)
+                         {
+                             breach = invocation.TryChargeInputStep();
+                             if (breach != Utf8ExecutionLimitKind.None) return breach;
+@@ -321,4 +327,44 @@ internal static partial class Utf8SearchExecutor
+         invocation.Budget.ThrowIfCancellationRequested();
+         return Utf8ExecutionLimitKind.None;
+     }
++
++    private static int IndexOfShortExactPair(ReadOnlySpan<byte> input, int starts,
++        ReadOnlySpan<byte> first, ReadOnlySpan<byte> second)
++    {
++        // Dense early matches keep their short comparisons. Long scans share
++        // input loads while retaining each literal's own correlated anchors.
++        if (input.StartsWith(first) || input.StartsWith(second)) return 0;
++        var anchor = Math.Min(first.Length, second.Length) - 1;
++        var head0 = Vector512.Create(first[0]);
++        var head1 = Vector512.Create(second[0]);
++        var tail0 = Vector512.Create(first[anchor]);
++        var tail1 = Vector512.Create(second[anchor]);
++        var limit = Math.Min(starts, input.Length - anchor) - Vector512<byte>.Count;
++        var position = 0;
++        while (position <= limit)
++        {
++            var heads = MemoryMarshal.Read<Vector512<byte>>(input[position..]);
++            var tails = MemoryMarshal.Read<Vector512<byte>>(input[(position + anchor)..]);
++            var candidates = ((Vector512.Equals(heads, head0) & Vector512.Equals(tails, tail0)) |
++                (Vector512.Equals(heads, head1) & Vector512.Equals(tails, tail1))).ExtractMostSignificantBits();
++            while (candidates != 0)
++            {
++                var lane = BitOperations.TrailingZeroCount(candidates);
++                var candidate = position + lane;
++                // Both needles are <=16 bytes; verification stays inside this
++                // already admitted primitive, with no false-candidate replay.
++                if (first.Length <= input.Length - candidate &&
++                    input.Slice(candidate, first.Length).SequenceEqual(first) ||
++                    second.Length <= input.Length - candidate &&
++                    input.Slice(candidate, second.Length).SequenceEqual(second)) return candidate;
++                candidates &= candidates - 1;
++            }
++            position += Vector512<byte>.Count;
++        }
++        var remaining = input[position..];
++        var a = remaining.IndexOf(first);
++        var b = remaining.IndexOf(second);
++        var found = a < 0 ? b : b < 0 ? a : Math.Min(a, b);
++        return found < 0 || found >= starts - position ? -1 : position + found;
++    }
+ }
+diff --git a/src/Lokad.Utf8Regex/Internal/Execution/Utf8SliceRunner.TerminalClassRepeat.cs b/src/Lokad.Utf8Regex/Internal/Execution/Utf8SliceRunner.TerminalClassRepeat.cs
+index bc2d5012..20e2ae14 100644
+--- a/src/Lokad.Utf8Regex/Internal/Execution/Utf8SliceRunner.TerminalClassRepeat.cs
++++ b/src/Lokad.Utf8Regex/Internal/Execution/Utf8SliceRunner.TerminalClassRepeat.cs
+@@ -465,20 +465,26 @@ internal static partial class Utf8SliceRunner
+         var position = start;
+         var count = 0;
+         var dot = atom.Kind == Utf8SliceInstructionKind.Dot;
++        var unbounded = minimum <= 1 && maximum == long.MaxValue;
++        byte asciiLast = 0;
++        var asciiFirst = unbounded && atom is { Kind: Utf8SliceInstructionKind.Set, B: 0, C: 0 }
++            ? GetUnfoldedAsciiRange(program, atom, out asciiLast) : -1;
+         byte first = (byte)'\n', second = (byte)'\n';
+-        if (minimum <= 1 && maximum == long.MaxValue &&
+-            (dot || atom is { Kind: Utf8SliceInstructionKind.Set, B: 1, C: 0 } &&
++        if (unbounded &&
++            (dot || asciiFirst >= 0 || atom is { Kind: Utf8SliceInstructionKind.Set, B: 1, C: 0 } &&
+                 TryGetAsciiMaskPair(program.SetMasks[atom.A], out first, out second)))
+         {
+-            // Whole-subject validity is established by the caller. ASCII
+-            // stops cannot occur inside wider scalars; intermediate blocks
+-            // may split a scalar, but the selected endpoint never does.
++            // The caller establishes validity. An ASCII interval stops before
++            // a wider scalar. Other fused atoms may cross a block boundary
++            // inside one, but their ASCII stops keep the endpoint aligned.
+             while (position < input.Length)
+             {
+                 var breach = invocation.TryChargeInputStep();
+                 if (breach != Utf8ExecutionLimitKind.None) return new(false, -1, breach, null, null);
+                 var block = input.Slice(position, Math.Min(2048, input.Length - position));
+-                var stop = dot ? atom.A == 0 ? block.IndexOf((byte)'\n') : -1 : block.IndexOfAny(first, second);
++                var stop = dot ? atom.A == 0 ? block.IndexOf((byte)'\n') : -1
++                    : asciiFirst >= 0 ? block.IndexOfAnyExceptInRange((byte)asciiFirst, asciiLast)
++                    : block.IndexOfAny(first, second);
+                 if (stop >= 0) { position += stop; break; }
+                 position += block.Length;
+             }
+diff --git a/src/Lokad.Utf8Regex/Internal/FrontEnd/Utf8PreparedByteSearchFactory.cs b/src/Lokad.Utf8Regex/Internal/FrontEnd/Utf8PreparedByteSearchFactory.cs
+index f8674968..c92aab6a 100644
+--- a/src/Lokad.Utf8Regex/Internal/FrontEnd/Utf8PreparedByteSearchFactory.cs
++++ b/src/Lokad.Utf8Regex/Internal/FrontEnd/Utf8PreparedByteSearchFactory.cs
+@@ -15,7 +15,7 @@ internal static class Utf8PreparedByteSearchFactory
+             // The class producer owns this exact admitted array. Arbitrary
+             // caller arrays use Create's independent copy instead.
+             var values = charClass.GetPositiveMatchBytes();
+-            var result = PreparedByteSearch.FromOwnedValues(values, values.Length > 3 ? CreateSet(charClass) : null);
++            var result = PreparedByteSearch.FromOwnedValues(values, values.Length > 5 ? CreateSet(charClass) : null);
+             scope.Complete();
+             return result;
+         }
+diff --git a/src/Lokad.Utf8Regex/Internal/Search/PreparedSearchPrimitives.cs b/src/Lokad.Utf8Regex/Internal/Search/PreparedSearchPrimitives.cs
+index eb0c7b5a..fe39ab3a 100644
+--- a/src/Lokad.Utf8Regex/Internal/Search/PreparedSearchPrimitives.cs
++++ b/src/Lokad.Utf8Regex/Internal/Search/PreparedSearchPrimitives.cs
+@@ -53,7 +53,7 @@ internal readonly struct PreparedByteSearch
+             var owned = budget.AllocateArray<byte>(values.Length, false);
+             budget.ChargeWork((ulong)values.Length);
+             values.CopyTo(owned);
+-            var result = FromOwnedValues(owned, owned.Length > 3 ? PreparedByteSet.CreateOwned(owned) : null);
++            var result = FromOwnedValues(owned, owned.Length > 5 ? PreparedByteSet.CreateOwned(owned) : null);
+             scope.Complete();
+             return result;
+         }
+@@ -72,6 +72,7 @@ internal readonly struct PreparedByteSearch
+             1 => input.IndexOf(_values[0]),
+             2 => input.IndexOfAny(_values[0], _values[1]),
+             3 => input.IndexOfAny(_values[0], _values[1], _values[2]),
++            4 or 5 => input.IndexOfAny(_values),
+             _ => GetRequiredByteSet().IndexOf(input),
+         };
+     }
+@@ -84,6 +85,7 @@ internal readonly struct PreparedByteSearch
+             1 => input.LastIndexOf(_values[0]),
+             2 => input.LastIndexOfAny(_values[0], _values[1]),
+             3 => input.LastIndexOfAny(_values[0], _values[1], _values[2]),
++            4 or 5 => input.LastIndexOfAny(_values),
+             _ => GetRequiredByteSet().LastIndexOf(input),
+         };
+     }
+diff --git a/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralEnumeration.cs b/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralEnumeration.cs
+index 267ff946..b3f4d931 100644
+--- a/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralEnumeration.cs
++++ b/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralEnumeration.cs
+@@ -17,7 +17,9 @@ public sealed partial class Utf8Regex
+         {
+             // The unlimited family cursor replaces BCL global discovery as well.
+             // Values retain their existing cheap unmetered kernels.
+-            if (!TryStartNativeStructuralInvocation(input, token, family, out var invocation, out var validation)) return false;
++            if (!TryStartNativeStructuralInvocation(token, family, out var invocation)) return false;
++            // Mapped fallback consumes the complete coordinate description.
++            var validation = Utf8Validation.Subject(input, ref invocation);
+             // Mixed subjects require scalar gap widths and Unicode separator
+             // semantics. Preserve the same invocation through the scalar VM.
+             var native = validation.IsAscii && (!family ||
+diff --git a/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralInvocation.cs b/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralInvocation.cs
+index 77c9d5e6..1c9044a0 100644
+--- a/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralInvocation.cs
++++ b/src/Lokad.Utf8Regex/Utf8Regex.NativeStructuralInvocation.cs
+@@ -1,18 +1,16 @@
+ using Lokad.Utf8Regex.Internal.Diagnostics;
+ using Lokad.Utf8Regex.Internal.Execution;
+-using Lokad.Utf8Regex.Internal.Input;
+ using Lokad.Utf8Regex.Internal.Planning;
+ 
+ namespace Lokad.Utf8Regex;
+ 
+-/// <summary>Supplies the caller invocation to native structural values and cursors.</summary>
++/// <summary>Admits native structural execution; callers request only their needed subject facts.</summary>
+ public sealed partial class Utf8Regex
+ {
+-    private bool TryStartNativeStructuralInvocation(ReadOnlySpan<byte> input, CancellationToken token, bool allowUnmetered,
+-        out Utf8SliceInvocation invocation, out Utf8ValidationResult validation)
++    private bool TryStartNativeStructuralInvocation(CancellationToken token, bool allowUnmetered,
++        out Utf8SliceInvocation invocation)
+     {
+         invocation = default;
+-        validation = default;
+         if (!allowUnmetered && MatchTimeout == System.Text.RegularExpressions.Regex.InfiniteMatchTimeout && !token.CanBeCanceled &&
+             Utf8SearchDiagnosticsSession.Current?.SliceCheckpointHook is null)
+             return false;
+@@ -27,7 +25,6 @@ public sealed partial class Utf8Regex
+                 { HasSharedCaptureDeclarations: true } or { HasExplicitCaptureNumbers: true })
+             return false;
+         invocation = new Utf8SliceInvocation(Utf8ExecutionLimits.Unlimited, MatchTimeout, token) { InputValidation = InputValidation };
+-        validation = Utf8Validation.Subject(input, ref invocation);
+         return true;
+     }
+ }
+diff --git a/src/Lokad.Utf8Regex/Utf8Regex.cs b/src/Lokad.Utf8Regex/Utf8Regex.cs
+index 37edd30d..e5682c9b 100644
+--- a/src/Lokad.Utf8Regex/Utf8Regex.cs
++++ b/src/Lokad.Utf8Regex/Utf8Regex.cs
+@@ -697,11 +697,12 @@ public sealed partial class Utf8Regex
+             }
+         }
+         if (HasFiniteExecutionLimits) return OwnedSliceIsMatch(input, _ownedSliceProgram, cancellationToken);
+-        if (TryStartNativeStructuralInvocation(input, cancellationToken, false, out var structuralInvocation, out var structuralValidation))
++        if (TryStartNativeStructuralInvocation(cancellationToken, false, out var structuralInvocation))
+         {
++            var structuralIsAscii = Utf8Validation.SubjectIsAscii(input, ref structuralInvocation);
+             // Mixed subjects and overlapping prefixes use shared scalar
+             // verification under the same invocation.
+-            if (!structuralValidation.IsAscii || _preparedRegex.StructuralIdentifierFamilyPlan.HasUnresolvedPrefixOverlap ||
++            if (!structuralIsAscii || _preparedRegex.StructuralIdentifierFamilyPlan.HasUnresolvedPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralProperStartOverlap)
+                 return OwnedSliceIsMatchFromByte(input, _ownedSliceProgram,
+@@ -1142,9 +1143,14 @@ public sealed partial class Utf8Regex
+         var scalarWindowCount = !_hasCaptures && !_ownedSliceProgram.HasUnicodePatternAtoms &&
+             _preparedRegex.ExecutionKind == NativeExecutionKind.AsciiOrderedLiteralWindow &&
+             _preparedRegex.StructuralLinearProgram.OrderedLiteralWindowPlan.SupportsValidatedUtf8Input;
+-        if (TryStartNativeStructuralInvocation(input, cancellationToken, scalarWindowCount, out var structuralInvocation, out var structuralValidation))
+-        {
+-            if (!structuralValidation.IsAscii && !scalarWindowCount || _preparedRegex.StructuralIdentifierFamilyPlan.HasUnresolvedPrefixOverlap ||
++        if (TryStartNativeStructuralInvocation(cancellationToken, scalarWindowCount, out var structuralInvocation))
++        {
++            // Scalar-aware Count needs validity authority, without coordinate
++            // totals or whole-input ASCII eligibility. Other kernels need ASCII.
++            var structuralSubjectEligible = scalarWindowCount;
++            if (scalarWindowCount) Utf8Validation.CheckSubject(input, ref structuralInvocation);
++            else structuralSubjectEligible = Utf8Validation.SubjectIsAscii(input, ref structuralInvocation);
++            if (!structuralSubjectEligible || _preparedRegex.StructuralIdentifierFamilyPlan.HasUnresolvedPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralProperStartOverlap)
+                 return OwnedSliceCountFromByte(input, _ownedSliceProgram,
+@@ -1719,8 +1725,9 @@ public sealed partial class Utf8Regex
+     private Utf8ValueMatch MatchCore(ReadOnlySpan<byte> input, CancellationToken cancellationToken)
+     {
+         if (HasFiniteExecutionLimits) return OwnedSliceMatch(input, _ownedSliceProgram, cancellationToken);
+-        if (TryStartNativeStructuralInvocation(input, cancellationToken, false, out var structuralInvocation, out var structuralValidation))
++        if (TryStartNativeStructuralInvocation(cancellationToken, false, out var structuralInvocation))
+         {
++            var structuralValidation = Utf8Validation.Subject(input, ref structuralInvocation);
+             if (!structuralValidation.IsAscii || _preparedRegex.StructuralIdentifierFamilyPlan.HasUnresolvedPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralPrefixOverlap ||
+                 _preparedRegex.SearchPlan.HasAlternateLiteralProperStartOverlap)

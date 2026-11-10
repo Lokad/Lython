@@ -1,0 +1,43 @@
+{
+  "reference": "3.13.2",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "strictDecode": [
+    {
+      "hex": "ff",
+      "encoding": "utf-8",
+      "start": 0,
+      "end": 1,
+      "reason": "invalid start byte"
+    },
+    {
+      "hex": "61ff",
+      "encoding": "utf-8",
+      "start": 1,
+      "end": 2,
+      "reason": "invalid start byte"
+    },
+    {
+      "hex": "e282",
+      "encoding": "utf-8",
+      "start": 0,
+      "end": 2,
+      "reason": "unexpected end of data"
+    },
+    {
+      "hex": "eda080",
+      "encoding": "utf-8",
+      "start": 0,
+      "end": 1,
+      "reason": "invalid continuation byte"
+    },
+    {
+      "hex": "f4908080",
+      "encoding": "utf-8",
+      "start": 0,
+      "end": 1,
+      "reason": "invalid continuation byte"
+    }
+  ],
+  "filesystemValidRoundtrip": true,
+  "limitation": "Strict byte-codec goldens are platform independent; malformed fsdecode behavior is platform specific. Lython excludes surrogateescape strings."
+}

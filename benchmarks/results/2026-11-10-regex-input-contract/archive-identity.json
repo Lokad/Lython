@@ -1,0 +1,6 @@
+{
+  "archive": "qualification-and-diagnostics.tar.xz",
+  "sha256": "5d69b59906837a531e11fa7636369ba3d5828b45fad86f5317c45cc5c27a1266",
+  "bytes": 4085588,
+  "scope": "Original immutable dev67 Validate and current-contract AssumeValid qualification, exact loaded binaries, original and longer-warmup diagnostic sources/data. No producer packages republished."
+}

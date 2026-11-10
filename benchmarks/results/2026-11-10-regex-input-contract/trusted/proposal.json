@@ -1,0 +1,7 @@
+{
+  "hypothesis": "Eliminate repeated whole-subject validation where immutable guest storage already guarantees valid UTF-8; preserve native needed matching scans.",
+  "sourceChanges": "Only development adapter compilation inputValidation; core contract/strict fsdecode separately committed.",
+  "acceptance": "Existing focused semantic/current-token/refusal/ownership/cursor tests on both real TFMs, new construction/rebinding tests included; normal source/pin/locks/output identity unchanged by qualification.",
+  "comparison": "One short existing complete-script driver comparison against Validate using identical dev67/core. Include unchanged non-regex and necessary-scan controls. Desktop clocks diagnostic; no general backend or whole-script gain claim.",
+  "limits": "No released pin promotion, producer safety certification, missing-capability claim or new core buffer/owner/switch. Preserve original Validate qualification."
+}

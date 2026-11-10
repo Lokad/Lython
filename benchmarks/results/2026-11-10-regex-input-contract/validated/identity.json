@@ -1,0 +1,33 @@
+{
+  "consumerRevision": "5be440912cf408e920d63435ec392a7b1af24e69",
+  "consumerRuntime": "All568 production sources equal fully qualified e543bf15, cachedGREEN42898279287; R214 semantic/retained-owner test additions included.",
+  "producerVersion": "0.5.0-dev.67",
+  "producerSourceHead": "Immutable package d8eb14a5; never substitute moving sibling HEAD",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.67.nupkg": {
+      "sha256": "bbaafb1efad7756a694316810de691195a747adba5a1891db23e82c3ccb64b6a",
+      "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.67.nupkg": {
+      "sha256": "8664817c619f5d6459ad1995dbec1e8c5c0979f89d3f108e3e8185da28b2c502",
+      "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.67]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.67]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Exact unchanged dev66/development source and cursor-admission controls, Validate default; isolated feed/assets/locks/outputs/cache.",
+  "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+  "cursorTestSourceSHA256": "72e3743bdeebc1baef226e61654c0589cfaf2eb9d67df54290824bc943ad8dff",
+  "limitations": "Development contract/semantic/cancellation/ownership checks only, no release pin promotion, whole-backend performance or safety certification."
+}

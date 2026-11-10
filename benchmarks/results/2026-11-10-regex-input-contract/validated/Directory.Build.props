@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="D:/code/Lython/Directory.Build.props" />
+  <PropertyGroup>
+    <BaseOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/out/$(MSBuildProjectName)/</BaseOutputPath>
+    <BaseIntermediateOutputPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**</DefaultItemExcludes>
+    <NuGetLockFilePath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/locks/$(MSBuildProjectName).json</NuGetLockFilePath>
+    <RestoreFallbackFolders>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev59-r170/packages;C:/Users/JoannesVermorel/.nuget/packages</RestoreFallbackFolders>
+    <RestorePackagesPath>D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/packages/</RestorePackagesPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.Utf8Regex'">
+    <DefaultItemExcludes>$(DefaultItemExcludes);Utf8RegexProvider.cs</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.Utf8Regex'">
+    <Compile Include="D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/Utf8RegexProvider.cs" Link="Utf8RegexProvider.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.PublicApi.Tests'">
+    <Compile Include="D:/code/Lython/.git/agent-notes/review-20261031/regex-dev67-r215/CursorAdmissionTests.cs" Link="CursorAdmissionTests.cs" />
+  </ItemGroup>
+</Project>

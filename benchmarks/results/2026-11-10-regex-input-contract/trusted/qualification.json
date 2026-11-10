@@ -1,0 +1,68 @@
+{
+  "identity": {
+    "consumerRevision": "69644713392320a82691c39b2c9494ec8591e725",
+    "consumerRuntime": "69644713 strict fsdecode/valid stable UTF-8 contract; normal 0.4 unchanged; delivery CI independent.",
+    "producerVersion": "0.5.0-dev.67",
+    "producerSourceHead": "Immutable package d8eb14a5; never substitute moving sibling HEAD",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.67.nupkg": {
+        "sha256": "bbaafb1efad7756a694316810de691195a747adba5a1891db23e82c3ccb64b6a",
+        "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+        "dependencies": []
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.67.nupkg": {
+        "sha256": "8664817c619f5d6459ad1995dbec1e8c5c0979f89d3f108e3e8185da28b2c502",
+        "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+        "dependencies": [
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.67]",
+            "exclude": "Build,Analyzers"
+          },
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.67]",
+            "exclude": "Build,Analyzers"
+          }
+        ]
+      }
+    },
+    "bridge": "Dev67 bridge with sole compilation inputValidation change to AssumeValid, using explicit Lython valid/stable subject precondition. Direct callers uphold the same contract.",
+    "providerSourceSHA256": "b67287099ceb6b56a00b291efe53bb6f7e1d9eb94f0824f0c74cf86cb7549c0b",
+    "cursorTestSourceSHA256": "72e3743bdeebc1baef226e61654c0589cfaf2eb9d67df54290824bc943ad8dff",
+    "limitations": "Development contract/semantic/cancellation/ownership checks only, no release pin promotion, whole-backend performance or safety certification."
+  },
+  "checks": {
+    "build-Lokad.Lython.Tests": {
+      "exitCode": 0
+    },
+    "build-Lokad.Lython.PublicApi.Tests": {
+      "exitCode": 0
+    },
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 528
+    },
+    "net11.0-loadedFiles": {
+      "Lokad.Lython": "21aaf1f5617bd206845b4f66db3278eda94d9edca2c1513da5d111c975b6c5fa",
+      "Lokad.Lython.Utf8Regex": "69ef89546f322303e935e046ae42fbd51230663b0ada03b9e357d048192b81fd",
+      "Lokad.Utf8Regex": "7edb924e7c718423be59b0e4916e9ec5563e02ca69efa4d2a374600d598e433e",
+      "Lokad.Utf8Regex.PythonRe": "b206002e7298f6349bad4bc72a8c5124cc7f0e3e0fa2ea20840c6788bcb47749"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 528
+    },
+    "net10.0-loadedFiles": {
+      "Lokad.Lython": "e6bb7b09c48e7034402ae512f5e4b410c412d5bd33fb63561f6142670e25a244",
+      "Lokad.Lython.Utf8Regex": "27ea9288e8df7bb577a1c11de4862f2c3e9baa73086bc138e4d9e18f2067aede",
+      "Lokad.Utf8Regex": "10b6a0a930cb0fef4ce3a7a81cf37be8dddfe499cf847ebb7e10f9ea28549c4e",
+      "Lokad.Utf8Regex.PythonRe": "c1738935cd1a743f453d0dc98bafe043ac7cb8790eba85189d75d26b6961bfdb"
+    }
+  },
+  "limitations": "Private immutable development adapter only; normal pin/source unchanged; final producer/safety qualification separate"
+}

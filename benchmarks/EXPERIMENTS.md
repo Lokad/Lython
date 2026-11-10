@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R215 UTF-8 contract milestone](results/2026-11-10-regex-input-contract/README.md)
+corrects malformed filesystem decoding and defines valid, stable provider borrows.
+Immutable dev67 passes focused Validate and development-only AssumeValid checks
+on both targets; normal0.4 stays unchanged. Allocation is flat; original Unicode
+prefix adversity reverses after longer warmup and controls remain variable. Both
+conditions survive; no general CPU gain or final adapter certification follows.
+
 The [R214 bound native argument variant](results/2026-11-10-bound-native-arguments/README.md)
 is fully withdrawn. Quiet bound-text elapsed−0.80..−1.58%/supporting CPU is useful,
 but allocation flat, ordinary-text CPU+0.42..+1.68%possible debt and target-mutation/

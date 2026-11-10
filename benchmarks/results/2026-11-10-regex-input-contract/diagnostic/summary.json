@@ -1,0 +1,152 @@
+[
+  {
+    "id": "diagnostic.utf8.ascii-prefix",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 1.399075,
+        "executionMilliseconds": 0.972225,
+        "allocatedBytes": 144026.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 1.385275,
+        "executionMilliseconds": 0.963725,
+        "allocatedBytes": 144026.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 1.55485,
+        "executionMilliseconds": 1.010125,
+        "allocatedBytes": 144026.0
+      }
+    },
+    "elapsedChangePct": [
+      -0.9863659918160184,
+      -10.906196739235297
+    ],
+    "referenceControlSpreadPct": 11.134142201097163
+  },
+  {
+    "id": "diagnostic.utf8.unicode-prefix",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 5.4542,
+        "executionMilliseconds": 4.904275,
+        "allocatedBytes": 4494090.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 8.192475,
+        "executionMilliseconds": 7.634825,
+        "allocatedBytes": 4494090.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 5.673525,
+        "executionMilliseconds": 4.810725,
+        "allocatedBytes": 4494090.0
+      }
+    },
+    "elapsedChangePct": [
+      50.204887976238496,
+      44.39832379340886
+    ],
+    "referenceControlSpreadPct": 4.0212130101572985
+  },
+  {
+    "id": "diagnostic.utf8.ascii-prefix-miss",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 1.122875,
+        "executionMilliseconds": 0.6897,
+        "allocatedBytes": 112250.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 1.070525,
+        "executionMilliseconds": 0.643075,
+        "allocatedBytes": 112250.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 1.121625,
+        "executionMilliseconds": 0.679175,
+        "allocatedBytes": 112250.0
+      }
+    },
+    "elapsedChangePct": [
+      -4.662139597016601,
+      -4.555889891897924
+    ],
+    "referenceControlSpreadPct": 0.11144544745347318
+  },
+  {
+    "id": "diagnostic.utf8.unicode-lookbehind",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 9.1284,
+        "executionMilliseconds": 8.59455,
+        "allocatedBytes": 1960242.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 7.800725,
+        "executionMilliseconds": 7.2794,
+        "allocatedBytes": 1960242.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 9.0639,
+        "executionMilliseconds": 8.50395,
+        "allocatedBytes": 1960186.0
+      }
+    },
+    "elapsedChangePct": [
+      -14.544443714122945,
+      -13.936329835942585
+    ],
+    "referenceControlSpreadPct": 0.7116142058054331
+  },
+  {
+    "id": "diagnostic.utf8.unicode-forward",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 14.8163,
+        "executionMilliseconds": 14.1274,
+        "allocatedBytes": 1158370.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 11.737075,
+        "executionMilliseconds": 11.18025,
+        "allocatedBytes": 1158314.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 12.576025,
+        "executionMilliseconds": 11.862,
+        "allocatedBytes": 1158314.0
+      }
+    },
+    "elapsedChangePct": [
+      -20.782685285800095,
+      -6.671026814911696
+    ],
+    "referenceControlSpreadPct": 17.813856127035365
+  },
+  {
+    "id": "diagnostic.utf8.non-regex-control",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 2.768875,
+        "executionMilliseconds": 2.274525,
+        "allocatedBytes": 461922.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 2.84135,
+        "executionMilliseconds": 2.331675,
+        "allocatedBytes": 461922.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 2.85675,
+        "executionMilliseconds": 2.37155,
+        "allocatedBytes": 461922.0
+      }
+    },
+    "elapsedChangePct": [
+      2.617489052412969,
+      -0.5390741226918738
+    ],
+    "referenceControlSpreadPct": 3.1736716175341906
+  }
+]

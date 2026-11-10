@@ -1,0 +1,24 @@
+{
+  "Lokad.Utf8Regex": {
+    "newSHA256": "bbaafb1efad7756a694316810de691195a747adba5a1891db23e82c3ccb64b6a",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Lokad/Utf8Regex.git",
+      "branch": "refs/heads/master",
+      "commit": "d8eb14a52b2c044f4345af03469356992be58861"
+    },
+    "addedDocumentedMembers": [],
+    "removedDocumentedMembers": []
+  },
+  "Lokad.Utf8Regex.PythonRe": {
+    "newSHA256": "8664817c619f5d6459ad1995dbec1e8c5c0979f89d3f108e3e8185da28b2c502",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Lokad/Utf8Regex.git",
+      "branch": "refs/heads/master",
+      "commit": "d8eb14a52b2c044f4345af03469356992be58861"
+    },
+    "addedDocumentedMembers": [],
+    "removedDocumentedMembers": []
+  }
+}

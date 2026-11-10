@@ -1,0 +1,6 @@
+{
+  "source": "import os\ntry:\n text=os.fsdecode(bytes.fromhex('ff'))\n print('accepted',text.encode('utf-8')==bytes.fromhex('ff'))\nexcept UnicodeDecodeError as error:\n print(type(error).__name__,error.encoding,error.start,error.end)\n",
+  "exitCode": 1,
+  "stdout": "{\"Index\":0,\"Lython\":{\"Success\":true,\"StandardOutput\":\"accepted True\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":1678,\"PeakProjectionMemoryBytes\":60,\"DeniedReservationBytes\":0,\"Failure\":null},\"CPython\":{\"Success\":true,\"StandardOutput\":\"UnicodeDecodeError utf-8 0 1\\n\",\"StandardError\":\"\",\"ExitCode\":null,\"Diagnostics\":[],\"PeakExecutionMemoryBytes\":null,\"PeakProjectionMemoryBytes\":null,\"DeniedReservationBytes\":null,\"Failure\":null},\"Matches\":false,\"Note\":null,\"Compared\":true,\"Options\":{\"MaxMemoryBytes\":null,\"Async\":false}}\n",
+  "stderr": ""
+}

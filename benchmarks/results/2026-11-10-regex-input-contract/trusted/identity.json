@@ -1,0 +1,33 @@
+{
+  "consumerRevision": "69644713392320a82691c39b2c9494ec8591e725",
+  "consumerRuntime": "69644713 strict fsdecode/valid stable UTF-8 contract; normal 0.4 unchanged; delivery CI independent.",
+  "producerVersion": "0.5.0-dev.67",
+  "producerSourceHead": "Immutable package d8eb14a5; never substitute moving sibling HEAD",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.67.nupkg": {
+      "sha256": "bbaafb1efad7756a694316810de691195a747adba5a1891db23e82c3ccb64b6a",
+      "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.67.nupkg": {
+      "sha256": "8664817c619f5d6459ad1995dbec1e8c5c0979f89d3f108e3e8185da28b2c502",
+      "repositoryCommit": "d8eb14a52b2c044f4345af03469356992be58861",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.67]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.67]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Dev67 bridge with sole compilation inputValidation change to AssumeValid, using explicit Lython valid/stable subject precondition. Direct callers uphold the same contract.",
+  "providerSourceSHA256": "b67287099ceb6b56a00b291efe53bb6f7e1d9eb94f0824f0c74cf86cb7549c0b",
+  "cursorTestSourceSHA256": "72e3743bdeebc1baef226e61654c0589cfaf2eb9d67df54290824bc943ad8dff",
+  "limitations": "Development contract/semantic/cancellation/ownership checks only, no release pin promotion, whole-backend performance or safety certification."
+}

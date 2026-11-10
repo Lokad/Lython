@@ -5,7 +5,9 @@
 - Decode `os.fsdecode` bytes through the strict UTF-8 codec, preserving BOMs and
   newlines while rejecting malformed filesystem bytes. Surrogateescape paths
   remain unsupported. Clarify that regex providers borrow valid, stable UTF-8
-  input, with subject storage funded until all users finish.
+  input, with subject storage funded until all users finish. Direct callers of
+  provider interfaces must uphold these input preconditions; providers may omit
+  redundant validation.
 
 - Construct completed tuples from managed spans, removing temporary literal arrays
   and the executable tuple builder's reservation carrier and late scalar admission.
