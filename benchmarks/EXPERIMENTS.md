@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R191 CPython refresh](results/2026-11-10-dictionary-cpython-checkpoint/README.md)
+measures committed e5731404-equivalent frozen e364 on the same three complete
+scripts across compile/warm/compile-to-result. Nine jobs246.994s, all gates pass;
+warm CSV about1.07×CPython, text1.45–1.48×, keyword-default search1.50–1.52×.
+Text/search variability and previous adverse/control observations remain. This
+is not a single-change attribution; delivery CI is recorded separately.
+
 The [R190 native dictionary accumulation](results/2026-11-10-dictionary-accumulation/README.md)
 removes the eligible get/add/store region's second table probe and intermediate
 transport in the existing engine. B538threejobs110.923s: text elapsed−10.9..14.9%,

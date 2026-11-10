@@ -1,0 +1,4 @@
+{"freeBytes": 264396800, "coreAndEveryAuxiliaryVerified": true, "allConfiguredJobsValidated": true, "ownerSeconds": 360, "stopSeconds": 30, "marginSeconds": 30, "osFreeFloorMiB": 240, "totalEvidenceAllowanceBytes": 12582912, "payloadRoundedBytes": 880640}
+{"liveUnit": "RuntimeMaxUSec=6min\nMainPID=3502654\nActiveState=active\n"}
+
+Running as unit: lython-b539-dictionary-cpython-20261110.service; invocation ID: 668994ee368c4435b076f18f9ccc1438

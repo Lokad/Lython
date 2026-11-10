@@ -1,0 +1,6 @@
+{
+  "beforeFreeBytes": 259448832,
+  "requiredFreeBytes": 265187328,
+  "mutation": false,
+  "reason": "Committed compressed evidence alone was short of required floor/headroom; no collection launched."
+}

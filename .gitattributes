@@ -291,3 +291,5 @@ benchmarks/results/2026-11-10-current-call-transport-attribution/** -text whites
 
 benchmarks/results/2026-11-10-dictionary-accumulation/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-dictionary-accumulation/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/** -text whitespace=cr-at-eol
