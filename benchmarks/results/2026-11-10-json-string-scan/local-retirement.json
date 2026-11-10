@@ -1,0 +1,8 @@
+{
+  "removedWorktree": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\json-string-scan-r201\\tree",
+  "all568ProductionFilesVerifiedAgainstCommittedSource": true,
+  "remainingLinkedImplementation": false,
+  "historicalFrozenDiagnosticImagesRetainedPrivately": true,
+  "mainRuntimeUnchanged": "66ebdb4b",
+  "retainedIndependentTests": "14public boundary cases pass each actual11/10 against existing parser."
+}

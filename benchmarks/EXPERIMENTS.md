@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R201 bounded JSON string scan](results/2026-11-10-json-string-scan/README.md)
+is withdrawn after an original six-job comparison and a justified two-job
+confirmation. JSON-lines elapsed benefits narrow, CPU remains mixed, report
+inconclusive and text controls variable/adverse; allocation is flat. The extra
+token search removes no parsing/storage machinery. Both variants of the evidence
+and the corrected offline caller attribution survive. Useful public UTF-8/control/
+error-position and budget-reuse regressions remain against the existing parser.
+
 The [R200 cold-body variants](results/2026-11-10-cold-prefix/README.md) are withdrawn.
 Original/refined code and focused semantic gates pass; hot code/frame shrink while
 an extra helper frame remains. Original/refined six-job comparisons preserve

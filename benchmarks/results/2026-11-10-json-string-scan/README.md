@@ -72,6 +72,15 @@ and all adverse data survive. The independent new UTF-8/control/error-position
 and budget-reuse regressions are useful against the existing parser and are retained.
 
 Runtime source and qualified039/66eb reference remain unchanged. The next bounded
-source assessment concerns repeated execution checks, preserving cooperative
-cancellation, terminal admission and cleanup rather than adding another dispatcher.
+source assessment concerns coarse admission through the existing host reservation,
+preserving cooperative cancellation, terminal refusal and cleanup. Current guards
+are already inlined and remain required; no guard deletion is selected.
 Broader performance and independent regex work continue; publication stays postponed.
+
+Cleanup is complete: [local retirement](local-retirement.json) verifies the restored
+568 production files before removing the isolated worktree. [VM retirement](vm-retirement.json)
+proves all fourb6d0 hardlink aliases and two canonical compressed duplicates before
+removal; qualified039/priorE294 survive. Private frozen diagnostics remain outside
+project inputs. The [retained public tests](retained-test-validation.txt) pass14cases
+on each actual runtime against main's original parser. No unchanged full runtime
+qualification is repeated, and no CPython row is relabeled as current HEAD.

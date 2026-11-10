@@ -1,0 +1,42 @@
+{
+  "freshIdleLease": true,
+  "allUsersJoined": true,
+  "allHardlinkAliasesVerified": [
+    "json-string-scan-b552-20261110/current-core.dll",
+    "json-string-scan-b552-20261110/candidate/Lokad.Lython.dll",
+    "json-string-scan-b553-20261110/current-core.dll",
+    "json-string-scan-b553-20261110/candidate/Lokad.Lython.dll"
+  ],
+  "coreSHA256": "b6d0c7ef07706ed5ea616a2f23aefca97969de13223e2c64cd6600d3021b241d",
+  "canonicalArchiveCopies": [
+    {
+      "path": "json-string-scan-b552-20261110/observations.tgz",
+      "bytes": 3850883,
+      "sha256": "a92916ed03dd474fddf9eaa59082390de8d03f4b73cdb4348deeea866ab299ea",
+      "canonical": "benchmarks/results/2026-11-10-json-string-scan/original/observations.tgz"
+    },
+    {
+      "path": "json-string-scan-b553-20261110/observations.tgz",
+      "bytes": 3831268,
+      "sha256": "218aa6d27c0cdb4cd1dded405c034de7c62a3bbe2a6337192a70c488d8f3511c",
+      "canonical": "benchmarks/results/2026-11-10-json-string-scan/confirmation/observations.tgz"
+    }
+  ],
+  "protected039AndE294Preserved": true,
+  "beforeFreeBytes": 261300224,
+  "afterFreeBytes": 274649088,
+  "osFloorMiB": 240,
+  "remainingExperimentalCoreAliases": false,
+  "localCanonicalProofs": [
+    {
+      "canonical": "benchmarks/results/2026-11-10-json-string-scan/original/observations.tgz",
+      "sha256": "a92916ed03dd474fddf9eaa59082390de8d03f4b73cdb4348deeea866ab299ea",
+      "coreSHA256": "b6d0c7ef07706ed5ea616a2f23aefca97969de13223e2c64cd6600d3021b241d"
+    },
+    {
+      "canonical": "benchmarks/results/2026-11-10-json-string-scan/confirmation/observations.tgz",
+      "sha256": "218aa6d27c0cdb4cd1dded405c034de7c62a3bbe2a6337192a70c488d8f3511c",
+      "coreSHA256": "b6d0c7ef07706ed5ea616a2f23aefca97969de13223e2c64cd6600d3021b241d"
+    }
+  ]
+}
