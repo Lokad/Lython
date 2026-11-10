@@ -1,0 +1,15 @@
+{
+  "complete": false,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "archiveSHA256": "a0fbe5b14af35062769f52936315817a32d1a9fde7f2335942a6e128825454ae",
+  "archivedAndVerifiedUnderLease": true,
+  "performanceQualified": false,
+  "missing": [
+    "config-warm",
+    "config-compile",
+    "normal compile-worker close/post-verification",
+    "final quiet gate"
+  ],
+  "freeBytesAfterArchive": 264101888
+}

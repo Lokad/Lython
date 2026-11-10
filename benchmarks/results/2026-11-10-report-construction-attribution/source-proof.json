@@ -1,0 +1,12 @@
+{
+  "qualifiedRevision": "1a83c64f",
+  "recordedMain": "795bd907",
+  "productionDelta": "",
+  "measuredCoreSHA256": "ac6edb6fc361dba9195d973830a5ca02caac10b62cc6d041f134ce31ef9a10d3",
+  "normalizationEvidence": "../2026-11-10-receiver-native-entry/final-source.json",
+  "sourceGate": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs": "7b01709a128152503734e8a10f814b514ef0d20aa103dc51fc273268c7df6510",
+    "src/Lokad.Lython/Frontend/ExpressionSyntaxTraversal.cs": "62bfcb84bedea5fc64a3ba83ba5164badaf567ba728a821bf28dfac752910134",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "6e391cd9e16e469b74192581867cf712b38105030f6a91eb8b98c5f238b71e05"
+  }
+}

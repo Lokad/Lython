@@ -5896,3 +5896,14 @@ observations are preserved. Run-only clocks and the reset/validation/disposal
 envelope are reported separately; wider process CPU includes shared JIT/GC.
 Workers are joined, fixtures removed and archives SHA-verified. The private
 worktree was removed after all source deltas were verified against that evidence.
+
+## R195 — report construction and compilation attribution
+
+[Partial attribution](results/2026-11-10-report-construction-attribution/README.md)
+preserves a completed report-runtime capture and a compilation capture whose
+collector misidentified the active threads. Compilation continued on three
+thread-pool threads; offline selection uses their recorded CPU deltas. Original
+failure, killed-worker exit and unknown/malformed samples remain visible.
+Configuration captures and final qualification gates are missing. No elapsed or
+ownership-delivery claim follows. All users are joined and raw evidence survives
+the owned RAM cleanup. Source remains the qualified runtime.
