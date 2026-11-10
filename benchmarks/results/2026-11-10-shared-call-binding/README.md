@@ -48,8 +48,8 @@ cases per actual .NET 11/10. The actual runtime-defined keyword-default prefix
 helper runs with further admission denied, without extra reservation and with
 existing inputs funded. Default alias/replacement, argument diagnostics, wide
 calls, protocol suspension, cancellation, terminal refusal, retained results,
-stack admission, cleanup and budget reuse remain covered. Full delivery checks
-follow the retained commit; this evidence does not predeclare their result.
+stack admission, cleanup and budget reuse remain covered. Full delivery of commit32d1ea1a is GREEN: Windows/Ubuntu, actual.NET11/10,
+original Stress and installed Release consumers. [Cached terminal result](qualification/delivery-ci-status.json); no unchanged qualification replay.
 
 All three jobs finish in 112.098581092 seconds. Identity/output/balance/quiet/
 worker-join/unmount/archive-under-owner/local-SHA gates pass. No VM users or RAM
