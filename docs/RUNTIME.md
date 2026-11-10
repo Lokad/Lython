@@ -1133,10 +1133,13 @@ Default floating tokens use native UTF-8 conversion after the prefix lexer has
 validated their grammar, preserving binary64 rounding and signed zero. Conversion
 is atomic; token scanning and surrounding operations check cooperative cancellation.
 
-Arrays, dictionaries and pairs-hook output share one recursive container grammar.
-Completed parsing runs in an ordinary loop for both APIs. An incomplete child or
-hook enters an await helper and resumes that same loop after completion; pending
-input, keys and containers retain their execution ownership throughout.
+Arrays, dictionaries and pairs-hook output share one iterative construction loop.
+One managed decoding admission remains live through parsing and awaited hooks;
+continuations check the current managed stack before resuming. Calls near the
+existing managed nesting bound can reject before parsing begins. Deeper frame
+backing is admitted before allocation, including replacement overlap, and stays
+funded through pending hooks. Input, keys and containers retain their execution
+ownership throughout.
 Final containers retain their ordinary storage and admission; callbacks use the
 same awaited path, including reentrant parsing and preserved property-name snapshots.
 Default objects admit their shell and first native table together when the initial

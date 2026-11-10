@@ -1,0 +1,248 @@
+{
+  "complete": true,
+  "jobs": 6,
+  "elapsedSeconds": 214.22121669817716,
+  "sourceRevision": "R196 decoder-admission refinement above3da4c742, measured678; qualified1a83c64f/ac6 reference; no source promotion.",
+  "coreSHA256": {
+    "reference": "ac6edb6fc361dba9195d973830a5ca02caac10b62cc6d041f134ce31ef9a10d3",
+    "reference-control": "ac6edb6fc361dba9195d973830a5ca02caac10b62cc6d041f134ce31ef9a10d3",
+    "candidate": "678fc7df05e93fd542f6fb9fa48bcbbc923bc6cc655ed1d814bb50bdc4bdfc37",
+    "candidate-control": "678fc7df05e93fd542f6fb9fa48bcbbc923bc6cc655ed1d814bb50bdc4bdfc37"
+  },
+  "timing": [
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 3.201774144,
+        "candidate": 3.1749761544715445,
+        "reference-control": 3.281165327868852,
+        "candidate-control": 3.146851899224806
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 3.44,
+        "candidate": 3.4959349593495936,
+        "reference-control": 3.5245901639344264,
+        "candidate-control": 3.4108527131782944
+      },
+      "iqrPercent": {
+        "reference": 0.8304523306188679,
+        "candidate": 2.6991532337659296,
+        "reference-control": 1.5013153688374956,
+        "candidate-control": 1.2341003428565072
+      },
+      "controlSpreadPercent": {
+        "reference": 2.479599756204798,
+        "candidate": 0.885809967647444
+      },
+      "changePercent": {
+        "candidate/reference": -0.836973138116992,
+        "candidate/reference-control": -3.2363249878139655,
+        "candidate-control/reference": -1.7153691142804628,
+        "candidate-control/reference-control": -4.093467266133888
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": 1.6260162601626105,
+        "candidate/reference-control": -0.8130081300813052,
+        "candidate-control/reference": -0.847304849468189,
+        "candidate-control/reference-control": -3.226969533080948
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 3.5767698839285713,
+        "candidate": 3.5819061964285717,
+        "reference-control": 3.6228001545454545,
+        "candidate-control": 3.648966090909091
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 3.6607142857142856,
+        "candidate": 3.75,
+        "reference-control": 3.727272727272727,
+        "candidate-control": 3.727272727272727
+      },
+      "iqrPercent": {
+        "reference": 0.399149295286327,
+        "candidate": 0.7135316871159054,
+        "reference-control": 0.7496865489659543,
+        "candidate-control": 0.7803121915455609
+      },
+      "controlSpreadPercent": {
+        "reference": 1.2869228972126612,
+        "candidate": 1.8721845521075586
+      },
+      "changePercent": {
+        "candidate/reference": 0.1436019835404867,
+        "candidate/reference-control": -1.128794202616279,
+        "candidate-control/reference": 2.018475029800415,
+        "candidate-control/reference-control": 0.7222572388048132
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": 2.4390243902439046,
+        "candidate/reference-control": 0.6097560975609762,
+        "candidate-control/reference": 1.8181818181818077,
+        "candidate-control/reference-control": 0.0
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "candidate-control": 3.153994112,
+        "reference-control": 3.338710243697479,
+        "candidate": 3.2014396611570244,
+        "reference": 3.2582464960000004
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 3.44,
+        "reference-control": 3.697478991596639,
+        "candidate": 3.553719008264463,
+        "reference": 3.6
+      },
+      "iqrPercent": {
+        "candidate-control": 1.053617946639978,
+        "reference-control": 2.8926072063770896,
+        "candidate": 1.450179958939391,
+        "reference": 2.0421953980979572
+      },
+      "controlSpreadPercent": {
+        "reference": 2.4695414480230493,
+        "candidate": 1.4820066650850894
+      },
+      "changePercent": {
+        "candidate/reference": -1.7434787365754878,
+        "candidate/reference-control": -4.111485349756894,
+        "candidate-control/reference": -3.199646930580191,
+        "candidate-control/reference-control": -5.532559527924585
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": -1.2855831037649201,
+        "candidate/reference-control": -3.8880540946656605,
+        "candidate-control/reference": -4.444444444444451,
+        "candidate-control/reference-control": -6.963636363636372
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "lane": "warm-async",
+      "medianMilliseconds": {
+        "candidate-control": 3.6457343333333334,
+        "reference-control": 3.827757057142857,
+        "candidate": 3.786116113207547,
+        "reference": 3.6593774814814815
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 3.873873873873874,
+        "reference-control": 4.0,
+        "candidate": 3.9622641509433962,
+        "reference": 3.888888888888889
+      },
+      "iqrPercent": {
+        "candidate-control": 0.4541086398760662,
+        "reference-control": 0.23688695514090533,
+        "candidate": 0.5855054211625618,
+        "reference": 2.4008877668648596
+      },
+      "controlSpreadPercent": {
+        "reference": 4.601317478545774,
+        "candidate": 3.7078044010458
+      },
+      "changePercent": {
+        "candidate/reference": 3.4633932237774,
+        "candidate/reference-control": -1.0878679945898084,
+        "candidate-control/reference": -0.3728270236451392,
+        "candidate-control/reference-control": -4.755336378254649
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": 1.8867924528301883,
+        "candidate/reference-control": -0.9433962264150941,
+        "candidate-control/reference": -0.38610038610038533,
+        "candidate-control/reference-control": -3.1531531531531543
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "candidate-control": 0.04047240239084186,
+        "reference-control": 0.04057823619067103,
+        "candidate": 0.040820050950179765,
+        "reference": 0.040975247133497136
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 0.040522743389727486,
+        "reference-control": 0.04091653027823241,
+        "candidate": 0.04108885464817668,
+        "reference": 0.041973791973791974
+      },
+      "iqrPercent": {
+        "candidate-control": 0.43892001594660324,
+        "reference-control": 0.3657530120716573,
+        "candidate": 0.3537019215075119,
+        "reference": 1.17519737488384
+      },
+      "controlSpreadPercent": {
+        "reference": 0.9689043278559017,
+        "candidate": 0.8516612577534555
+      },
+      "changePercent": {
+        "candidate/reference": -0.37875594212218866,
+        "candidate/reference-control": 0.5959223027153904,
+        "candidate-control/reference": -1.227191482255141,
+        "candidate-control/reference-control": -0.26081419441661424
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": -2.1083092186854113,
+        "candidate/reference-control": 0.42116076014380166,
+        "candidate-control/reference": -3.4570347729614426,
+        "candidate-control/reference-control": -0.9624151555060356
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.7736402133333333,
+        "reference-control": 1.7050069234042553,
+        "candidate": 1.6962924085106383,
+        "reference": 1.6790477890295359
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.8666666666666667,
+        "reference-control": 1.7872340425531914,
+        "candidate": 1.7872340425531914,
+        "reference": 1.7721518987341771
+      },
+      "iqrPercent": {
+        "candidate-control": 1.1954763276955602,
+        "reference-control": 1.37625572055143,
+        "candidate": 0.6755025144751493,
+        "reference": 1.1425787379799914
+      },
+      "controlSpreadPercent": {
+        "reference": 1.5460628663656717,
+        "candidate": 4.559815538560774
+      },
+      "changePercent": {
+        "candidate/reference": 1.0270475678997526,
+        "candidate/reference-control": -0.5111131675769043,
+        "candidate-control/reference": 5.6336945810500305,
+        "candidate-control/reference-control": 4.025396553349081
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": 0.8510638297872353,
+        "candidate/reference-control": 0.0,
+        "candidate-control/reference": 5.3333333333333455,
+        "candidate-control/reference-control": 4.444444444444451
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    }
+  ]
+}

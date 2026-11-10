@@ -9,6 +9,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 [Collection("RuntimeStress")]
 public sealed class StackGuardScenarioTests
 {
+    [Fact]
+    public void JsonDecoderCallbacksRecoverAfterGenuineSuspension()
+        => YieldedDeepWorkUnwindsAndRecoversInAnIsolatedProcess("json-decoder-hook");
+
     [Theory]
     [InlineData("exception-cause-cycle")]
     [InlineData("exception-context-cycle")]

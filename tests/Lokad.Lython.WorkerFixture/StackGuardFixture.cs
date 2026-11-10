@@ -25,6 +25,26 @@ internal static class StackGuardFixture
             "dataclass-hash-cycle" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nfailures=0\nfor _ in range(3):\n node=Node(0)\n node.value=node\n try:hash(node)\n except RecursionError:failures+=1\n node.value=7\n assert hash(node)==hash(Node(7))\nreturn failures\n",
             "dataclass-hash-depth" => "from dataclasses import dataclass\n@dataclass(unsafe_hash=True)\nclass Node:\n value:object\nnode=Node(0)\nfor _ in range(1024):node=Node(node)\nfailures=0\nfor _ in range(3):\n try:hash(node)\n except (RecursionError,RuntimeError):failures+=1\n assert hash(Node(7))==hash(Node(7))\nreturn failures\n",
             "function" => "def loop():return loop()\nfailures=0\nfor _ in range(3):\n try:loop()\n except RuntimeError:failures+=1\n assert len([1])==1\nreturn failures\n",
+            "json-decoder-hook" => """
+                import json
+                yielded = False
+                def decode(value):
+                    global yielded
+                    if not yielded:
+                        yielded = True
+                        with open('/ready') as stream:
+                            stream.read()
+                    return json.loads('{"x":1}', object_hook=decode)
+                failures = 0
+                try: json.loads('{"x":1}', object_hook=decode)
+                except (RuntimeError, RecursionError): failures += 1
+                assert failures == 1
+                recovered = 0
+                for _ in range(3):
+                    assert json.loads('{"ok":true}', object_hook=lambda value: value)['ok']
+                    recovered += 1
+                return recovered
+                """,
             "formatted-helper" => """
                 def render(record):
                     return f"prefix:{record['s']:>8s}:{record['n']:>8d}:suffix"

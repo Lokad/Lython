@@ -135,6 +135,12 @@ and key order, with genuinely asynchronous hooks and retained shared-budget resu
 The JSON continuation checks also cover paused wide-record hooks, cancellation,
 refused admission, awaited cleanup and allowance reuse.
 
+[Decoder admission](Lokad.Lython.Tests/JsonDecodeAdmissionTests.cs) checks rejection
+before construction at the managed nesting bound and subsequent reuse. Nested
+hook tests retain funding through real suspension, cancellation and refusal.
+The owned stack fixture checks one deep decoder-hook rejection after suspension,
+then three real callback recoveries within its existing deadline.
+
 [Prepared consumer protocols](Lokad.Lython.PublicApi.Tests/PreparedConsumerProtocolTests.cs)
 checks genuinely suspended truth, member and iterator callbacks, in-flight
 cancellation, awaited cleanup and return of the shared memory allowance.

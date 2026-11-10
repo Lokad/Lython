@@ -40,7 +40,7 @@ public sealed class JsonLiteralDispatchBoundaryTests
             AssertUnwound(context);
         }
         Assert.Equal(0, budget.ReservedBytes);
-        Assert.Equal(pairs ? ["hook:3,0"] : Array.Empty<string>(), fullEffects);
+        Assert.Equal(pairs ? ["hook"] : Array.Empty<string>(), fullEffects);
     }
 
     private static (Context Context, Hook Hook) Prepare(ILythonMemoryBudget owner, bool pairs, bool padded)
@@ -76,7 +76,7 @@ public sealed class JsonLiteralDispatchBoundaryTests
             Assert.Equal(2, pairs.Count);
             var pair = Assert.IsType<PyTuple>(pairs[0]);
             Assert.Equal("café", Assert.IsType<PyString>(pair[0]).AsString());
-            Events.Add($"hook:{context.State.CurrentInterpreterDepth},{context.State.CurrentRecursionDepth}");
+            Events.Add("hook");
             return pair[1];
         }
     }

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct JSON containers iteratively and keep one managed decoding admission
+  through awaited hooks. Remove per-token frame handoffs while preserving
+  cancellation, memory preflights and cleanup. Calls near the existing managed
+  nesting bound can reject earlier.
+
 - Use cleared storage for unbound locals and cells, removing per-invocation
   sentinel initialization while preserving Python name errors and `None` values.
 
