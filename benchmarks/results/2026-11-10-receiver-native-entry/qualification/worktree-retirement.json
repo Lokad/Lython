@@ -1,0 +1,44 @@
+{
+  "tree": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\receiver-native-entry-r192\\tree",
+  "allDirtyFilesPreservedInMain": true,
+  "files": [
+    {
+      "file": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs",
+      "privateSHA256": "6352bc79d098b31b76c09ec8045c96b3cd7315917c47ca6065942b233f50679b",
+      "mainSHA256": "6352bc79d098b31b76c09ec8045c96b3cd7315917c47ca6065942b233f50679b",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Runtime/PyExecutableFunction.cs",
+      "privateSHA256": "179a5e37a98e12d4eadc66fe6ff7c2465323a543adb7bc96c3f2224c8606b3ef",
+      "mainSHA256": "179a5e37a98e12d4eadc66fe6ff7c2465323a543adb7bc96c3f2224c8606b3ef",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs",
+      "privateSHA256": "4cc0a1796fdb36f38633e4b3e42ff17a2ec590a7991f32ed2c61daf253c86d6b",
+      "mainSHA256": "4cc0a1796fdb36f38633e4b3e42ff17a2ec590a7991f32ed2c61daf253c86d6b",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionEntryTests.cs",
+      "privateSHA256": "c6abe2543f51dab6122688d48d6966b0c4ad8489ce68e92a22f5dffc81974d44",
+      "mainSHA256": "c6abe2543f51dab6122688d48d6966b0c4ad8489ce68e92a22f5dffc81974d44",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionLifetimeTests.cs",
+      "privateSHA256": "3ca2e315a6f34b039c1d962d874828613d0d9bd4f7f1aea38c32ecaccecec35e",
+      "mainSHA256": "3ca2e315a6f34b039c1d962d874828613d0d9bd4f7f1aea38c32ecaccecec35e",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs",
+      "privateSHA256": "9ff8157d1ffc28740547b60ff5de74cb669a2b9b88f825ccaec1e6329eb3b207",
+      "mainSHA256": "9ff8157d1ffc28740547b60ff5de74cb669a2b9b88f825ccaec1e6329eb3b207",
+      "equalAfterEOLNormalization": true
+    }
+  ],
+  "archiveSHA256": "5489bade781a6fde18298afa018fcd8b00a1f55dbb14fb508b085c0eed1445d4",
+  "retirement": "Removed isolated worktree after GREEN platform/Stress/installed consumers; full frozen core/source/checks remain in canonical observations."
+}

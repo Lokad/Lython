@@ -1,7 +1,8 @@
 # Executable-prefix instruction attribution — R193
 
 2026-11-10, committed1a83c64f-equivalent frozenac6edb6f; R192 focused/quiet gates
-pass, full deliveryCI42792541280 is pending separately. Same complete maintained
+pass, full deliveryCI42792541280 was pending during collection and is now separately
+[cachedGREEN](../2026-11-10-receiver-native-entry/qualification/delivery-ci.json). Same complete maintained
 CSV/text scripts, worker/adapter0.4/dependencies/goldens. F4as_v7 Ubuntu24.04.4,
 actual.NET11RC3, ordinaryGC/tiering plus explicit perf-map/JIT-output diagnostics.
 Two6second warmups/captures;12.033execution seconds, no elapsed comparison.

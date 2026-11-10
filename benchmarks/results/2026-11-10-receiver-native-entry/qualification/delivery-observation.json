@@ -1,0 +1,13 @@
+{
+  "sourceRevision": "1a83c64f63ff5b5849ed4f1b9cd5f7b9a78f7c7c",
+  "dispatchAcknowledged": true,
+  "recordedUTC": "2026-11-10T09:39:28.333795+00:00",
+  "doNotQueryBeforeUTC": "2026-11-10T10:20:25.492770+00:00",
+  "status": "Terminal cached; never requery.",
+  "dispatchOutput": "https://github.com/Lokad/Lython/actions/runs/42792541280\n",
+  "runId": 42792541280,
+  "url": "https://github.com/Lokad/Lython/actions/runs/42792541280",
+  "lastQueryUTC": "2026-11-10T10:15:25.492770+00:00",
+  "lastObservedStatus": "completed",
+  "lastConclusion": "success"
+}

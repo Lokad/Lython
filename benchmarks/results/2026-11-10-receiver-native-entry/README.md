@@ -1,6 +1,6 @@
 # Receiver-aware native method entry — R192
 
-Source retained for delivery; fully-qualified e5731404/coree364 reference versus
+Committed1a83c64f is fully qualified; e5731404/coree364 reference versus
 frozen ac6edb6f aboveb57bfa47. The same16-slot managed destination and shared Span
 binder now take the already-evaluated receiver separately for eligible ordinary
 methods and bound aliases. This removes workspace rental/return and pending-call
@@ -45,9 +45,10 @@ closures, wide/dynamic protocols and evaluation order. Retained results across t
 shared-budget executions, active pure-loop cancellation, genuine suspended host
 protocol cleanup, terminal admission despite except/finally and budget reuse pass.
 Temporary architecture probe was removed. Main forced solution build and53focused
-public checks peractualtarget pass ([record](qualification/main-focused.json)). Full platform/Stress/installed-package
-qualification follows at the retained boundary; no full local ordinary replay or
-unchanged historical qualification. Publication remains postponed.
+public checks peractualtarget pass ([record](qualification/main-focused.json)). Windows/Ubuntu, actual.NET11/10, original Stress and installed Release consumers
+pass [cachedGREEN42792541280](qualification/delivery-ci.json). Source worktree
+retirement preserves all six deltas. No full local ordinary replay or unchanged
+historical qualification. Publication remains postponed.
 
 All three quiet jobs complete110.836seconds, all identity/output/owner/quiet/join/
 RAM removal/archive-under-lease/localSHA checks pass. TerminalB540 cached. Initial
