@@ -29,6 +29,12 @@ values and genuinely suspending default protocols through both APIs. The white-b
 native-helper boundary also executes an actual runtime-defined keyword-default
 helper with further admission denied, checking that existing inputs stay funded.
 
+[Receiver entry](Lokad.Lython.PublicApi.Tests/ReceiverFunctionEntryTests.cs) keeps
+ordinary/saved methods, live defaults, descriptors, class/static methods and
+evaluation order against independent Python outputs. Its lifetime suite covers
+shared-budget retained results, genuinely pending protocol cancellation, terminal
+admission and reuse; pure bound-method loops retain active cancellation coverage.
+
 [Unbound-name checks](Lokad.Lython.PublicApi.Tests/UnboundLocalVariableTests.cs)
 distinguish guest `None` from absent locals and deleted closure/generator cells,
 preserving Python error types and exposed namespace contents through both APIs.

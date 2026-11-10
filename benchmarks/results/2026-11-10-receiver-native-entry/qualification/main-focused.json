@@ -1,0 +1,11 @@
+{
+  "forcedMainSolutionBuild": true,
+  "publicCasesPerActualTarget": 53,
+  "actualTargets": [
+    ".NET11RC3",
+    ".NET10.0.8"
+  ],
+  "sameProductionSourceAfterEOLNormalization": true,
+  "archiveSHA256": "a2ea61e2e38c824c6f73384b044cda1556cbecf98ae39e1b6f57bec648a69517",
+  "fullPlatformStressInstalledPackage": "Coherent checkpoint dispatched after source commit; focused checks do not imply full qualification."
+}

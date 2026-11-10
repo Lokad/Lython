@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R192 receiver-aware native entry](results/2026-11-10-receiver-native-entry/README.md)
+completes the shared inline binding convention for eligible methods/bound aliases,
+removing workspace rental/return and pending-call transport. Allocation is flat;
+existing complete bound-method text improves5.2–8.5%quiet elapsed with supporting
+CPU. Ordinary text/report controls and all desktop/setup adversity remain; full
+delivery qualification follows separately. This does not close the larger roadmap.
+
 The [R191 CPython refresh](results/2026-11-10-dictionary-cpython-checkpoint/README.md)
 measures committed e5731404-equivalent frozen e364 on the same three complete
 scripts across compile/warm/compile-to-result. Nine jobs246.994s, all gates pass;

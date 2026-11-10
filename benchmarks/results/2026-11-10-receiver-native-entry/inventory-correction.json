@@ -1,0 +1,23 @@
+{
+  "differences": {
+    "Lokad.Lython.Benchmarks.exe": {
+      "localDiagnostic": "deaf9f5fb4127923f7c20e0839dca4bea780eca630903d69c19f4900717c28e5",
+      "quietRuntime": null
+    },
+    "Lokad.Lython.Benchmarks.pdb": {
+      "localDiagnostic": "fc1b36fefbac8b70d1ea36759de1aa725ca4b86a20003164adc0abf13a43fd25",
+      "quietRuntime": null
+    },
+    "Lokad.Lython.Utf8Regex.pdb": {
+      "localDiagnostic": "4fd3027b84eeba6463a927ae3747cd4cf35faa981dc7b203f8b2268bf00639a6",
+      "quietRuntime": null
+    },
+    "Lokad.Lython.pdb": {
+      "localDiagnostic": "393ea347c8608faab7ae35ecb4546cb48ba3dc6ece48758c57fc4b89f78f36ac",
+      "quietRuntime": null
+    }
+  },
+  "runtimeFilesChanged": false,
+  "newGuestRunBeforeCorrection": false,
+  "originalPayloadRetained": true
+}

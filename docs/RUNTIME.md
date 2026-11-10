@@ -309,8 +309,10 @@ aliases. They share current exception state and global lookup, without binding o
 unwinding the caller's aliases. Class/annotation contexts retain their lexical
 machinery; custom protocols still promote to ordinary execution before effects.
 Named and default arguments use the same binding fill as ordinary calls. Small
-closed native helpers can fill managed inline slots without renting function
-workspace or creating an activation. This path accepts only native default storage
+closed native helpers and methods can fill managed inline slots without renting
+function workspace or creating an activation. Direct method calls and saved bound
+methods pass the evaluated receiver separately through this same binder; exposing
+a method as a value still produces its normal Python bound-method object. This path accepts only native default storage
 that cannot invoke a protocol; values remain funded by their caller and definition
 owners through completion. Wide signatures and dynamic defaults keep owned binding,
 including across suspension. The inline capacity is an optimization threshold,

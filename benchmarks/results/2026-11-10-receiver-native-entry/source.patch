@@ -1,0 +1,269 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 2a194afc..31df8a44 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -15,11 +15,18 @@ internal sealed partial class LythonRuntime
+             // Closed helpers complete here just like native builtins. Borrow the
+             // evaluated arguments without manufacturing a pending call/resume.
+             // Other function calls still use the existing binding/frame runner.
+-            if (target is PyExecutableFunction function && function.CodeObject.NativeBody is not null
+-                && (!call.HasReceiver || execution.Stack[start] is PyNone))
++            var function = target as PyExecutableFunction;
++            object? functionReceiver = call.HasReceiver && execution.Stack[start] is not PyNone
++                ? execution.Stack[start] : null;
++            if (target is PyBoundMethod { Function: PyExecutableFunction boundFunction } bound)
++            {
++                function = boundFunction;
++                functionReceiver = bound.Receiver;
++            }
++            if (function is not null && function.CodeObject.NativeBody is not null)
+             {
+                 var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
+-                    && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null);
++                    && function.CanBorrowPositionalArguments(call.ArgumentCount, functionReceiver);
+                 if (!borrow && !function.CanBindNativeArguments) return false;
+                 try
+                 {
+@@ -31,7 +38,7 @@ internal sealed partial class LythonRuntime
+                         var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                         var completed = borrow
+                             ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, out value)
+-                            : function.TryExecuteNativeCall(call, arguments, scope, call.CallSpan, out value);
++                            : function.TryExecuteNativeCall(call, arguments, functionReceiver, scope, call.CallSpan, out value);
+                         if (!completed) return false;
+                     }
+                     catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index 58cb5a08..44884a85 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -100,7 +100,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+     // admit storage or invoke default/key protocols. Arguments/defaults remain
+     // funded by their existing caller/definition owners through completion.
+     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+-    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments,
++    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
+         LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object result)
+     {
+         NativeParameters buffer = default;
+@@ -110,7 +110,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         {
+             var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
+             LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
+-                context, callSite: call, operands: arguments);
++                context, receiver: receiver, callSite: call, operands: arguments);
+             return TryExecuteWithoutFrame(values, span, out result);
+         }
+         finally { values.Clear(); }
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+index b100ad5a..e3b1bea7 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+@@ -24,6 +24,8 @@ public sealed class CooperativeCancellationTests
+         { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
+         { false, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
+         { true, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
++        { false, "class Counter:\n def step(self,value):return value+1\nstep=Counter().step\nvalue=0\nwhile True:value=step(value)" },
++        { true, "class Counter:\n def step(self,value):return value+1\nstep=Counter().step\nvalue=0\nwhile True:value=step(value)" },
+     };
+ 
+     [Theory]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionEntryTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionEntryTests.cs
+new file mode 100644
+index 00000000..65317cb4
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionEntryTests.cs
+@@ -0,0 +1,41 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class ReceiverFunctionEntryTests
++{
++    public static TheoryData<string, string, string> Cases => new()
++    {
++        { "direct-alias-and-receiver", "class Reader:\n    def identity(self): return self\n    def words(self,line): return line.lower().split()\nvalue=Reader()\nsaved=value.words\nprint(value.identity() is value,saved.__self__ is value,saved is value.words)\nprint(value.words('A Café'),saved('B TEST'))\n", "True True False\n['a', 'café'] ['b', 'test']\n" },
++        { "live-defaults-and-keywords", "class Reader:\n    def wanted(self,value,/,prefix='A',*,suffix='!'):\n        return value.startswith(prefix) and value.endswith(suffix)\nvalue=Reader();saved=value.wanted\nprint(saved('ABC!'),value.wanted('ABC!',suffix='?'))\nReader.wanted.__defaults__=('B',)\nReader.wanted.__kwdefaults__['suffix']='?'\nprint(saved('BCD?'),value.wanted('AX!',prefix='A',suffix='!'))\nfor bad in [lambda:saved(value='x'),lambda:saved('x',prefix='A',self=value),lambda:saved()]:\n    try:bad()\n    except TypeError:print('TypeError')\n", "True False\nTrue True\nTypeError\nTypeError\nTypeError\n" },
++        { "evaluated-target-survives-rebinding", "class Reader:\n    def old(self,value): return value.lower()\n    def new(self,value): return value.upper()\n    read=old\nvalue=Reader();saved=value.read\ndef argument():\n    Reader.read=Reader.new\n    return 'aB'\nprint(value.read(argument()),saved('Cd'),value.read('eF'))\n", "ab cd EF\n" },
++        { "class-static-and-explicit-receiver", "class Reader:\n    @classmethod\n    def wanted(cls,value,*,prefix='A'): return value.startswith(prefix)\n    @staticmethod\n    def trim(value): return value.strip()\n    def identity(self,value): return value\nvalue=Reader();saved=Reader.wanted\nprint(Reader.wanted('ABC'),value.wanted('ABC',prefix='B'),saved('BCD',prefix='B'))\nprint(Reader.trim(' x '),value.trim(' y '),Reader.identity(value,'z'))\n", "True False True\nx y z\n" },
++        { "bound-dunder-and-descriptor", "class Reader:\n    def words(self,line): return line.lower().split()\nclass Descriptor:\n    def __get__(self,instance,owner):return Reader().words\nclass Box:read=Descriptor()\nprint(Box().read('A B'))\nclass More:\n    def __call__(self,value,*,prefix='A'):return value.startswith(prefix)\ntarget=More();saved=target.__call__\nprint(target('AB'),saved('CD',prefix='C'))\n", "['a', 'b']\nTrue True\n" },
++        { "dynamic-body-preserves-order", "events=[]\nclass Value:\n    def __add__(self,other):events.append(other);return 'custom'\nclass Reader:\n    def add(self,value):return value+'!'\ntarget=Reader();saved=target.add\nprint(saved(Value()),target.add('text'),events)\n", "custom text! ['!']\n" },
++        { "closure-class-cell-and-late-names", "prefix='A'\nclass Parent:\n    def read(self,value):return value.lower()\nclass Child(Parent):\n    def read(self,value):return super().read(value)\n    def wanted(self,value):return value.startswith(prefix)\nchild=Child();saved=child.wanted\nprint(child.read('AB'),saved('AB'))\nprefix='B'\nprint(saved('AB'),saved('BC'))\n", "ab True\nFalse True\n" },
++        { "wide-and-variadic-binding", "class Reader:\n    def wide(self,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p):return p\n    def variadic(self,*args,**kwargs):return args,kwargs\nvalue=Reader()\nprint(value.wide(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))\nprint(value.variadic(2,3,key=4))\n", "16\n((2, 3), {'key': 4})\n" },
++    };
++
++    [Theory]
++    [MemberData(nameof(Cases))]
++    public async Task MethodEntryPreservesPythonBehaviorAndOwnership(string name, string source, string expected)
++    {
++        _ = name;
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using (var script = new LythonEngine().Compile(source, budget))
++        {
++            Assert.True(script.IsValid, string.Join(';', script.Diagnostics.Select(d => d.Message)));
++            var baseline = budget.ReservedBytes;
++            foreach (var asynchronous in new[] { false, true })
++            {
++                using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++                {
++                    Assert.True(result.Success, result.Failure?.Message);
++                    Assert.Equal(expected, result.StandardOutput);
++                }
++                Assert.Equal(baseline, budget.ReservedBytes);
++            }
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++}
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionLifetimeTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionLifetimeTests.cs
+new file mode 100644
+index 00000000..732d2c1b
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/ReceiverFunctionLifetimeTests.cs
+@@ -0,0 +1,133 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class ReceiverFunctionLifetimeTests
++{
++    [Fact]
++    public async Task EscapingMethodArgumentStaysFundedAcrossAnotherExecution()
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            class Reader:
++                def keep(self,value,*,unused=None):return value
++            keep=Reader().keep
++            return keep('x'*8192)
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        using (var first = script.Run(new MockLythonHost()))
++        {
++            Assert.True(first.Success, first.Failure?.Message);
++            var retained = budget.ReservedBytes;
++            Assert.True(retained > baseline);
++            using (var second = await script.RunAsync(new MockLythonHost()))
++            {
++                Assert.True(second.Success, second.Failure?.Message);
++                Assert.Equal(new string('x', 8192), second.ReturnValue);
++                Assert.Equal(new string('x', 8192), first.ReturnValue);
++                Assert.True(budget.ReservedBytes > retained);
++            }
++            Assert.Equal(retained, budget.ReservedBytes);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task DynamicMethodOperandAwaitsCancellationAndReusesBudget(bool asynchronousRerun)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            class Value:
++                def __add__(self,suffix):
++                    with open('/gate.txt') as source:return source.read()+suffix
++            class Reader:
++                def convert(self,value):return value+'!'
++            convert=Reader().convert
++            return convert(Value())
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var host = new DelayedLythonHost();
++        host.SeedFile("/gate.txt", "kept");
++        using var cancellation = new CancellationTokenSource();
++        var entered = host.PauseReadUntilCancellation("/gate.txt");
++        var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
++        LythonExecutionResult? result = null;
++        try
++        {
++            await entered.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(pending.IsCompleted);
++            Assert.True(budget.ReservedBytes > baseline);
++            cancellation.Cancel();
++            result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(result.Success);
++            Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
++        }
++        finally
++        {
++            cancellation.Cancel();
++            result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            result.Dispose();
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        var immediate = new MockLythonHost();
++        immediate.SeedFile("/gate.txt", "kept");
++        using (var completed = asynchronousRerun ? await script.RunAsync(immediate) : script.Run(immediate))
++        {
++            Assert.True(completed.Success, completed.Failure?.Message);
++            Assert.Equal("kept!", completed.ReturnValue);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(false, true)]
++    [InlineData(true, false)]
++    [InlineData(true, true)]
++    public async Task MethodAdmissionRefusalRemainsTerminal(bool asynchronous, bool finallyReturn)
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        var source = "class Reader:\n def convert(self,value):return value.lower()\nconvert=Reader().convert\n" +
++            "value='A'*65536\nprint('ready')\ntry:\n result=convert(value)\nexcept MemoryError:\n print('caught')\n" +
++            (finallyReturn ? "finally:\n return 'suppressed'\n" : "") + "print('after')\nreturn result";
++        using var script = new LythonEngine().Compile(source, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        ILythonMemoryReservation? padding = null;
++        var host = new MockLythonHost
++        {
++            OnStandardOutputWrite = () =>
++            {
++                if (padding is null) Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes - 4096, out padding));
++            }
++        };
++        try
++        {
++            using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
++            Assert.False(result.Success);
++            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
++            Assert.True(result.FailureAttribution?.Requested >= 65536);
++            Assert.Equal("ready\n", result.StandardOutput);
++            Assert.NotNull(padding);
++        }
++        finally { padding?.Dispose(); }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++        {
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(finallyReturn ? "suppressed" : new string('a', 65536), result.ReturnValue);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++}
+diff --git a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+index 5ae5b427..9e2ef100 100644
+--- a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+@@ -662,7 +662,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+                 context.EnterInterpreterFrame(CallSpan);
+                 try
+                 {
+-                    Assert.True(function.TryExecuteNativeCall(call, [line], context, CallSpan, out var result));
++                    Assert.True(function.TryExecuteNativeCall(call, [line], null, context, CallSpan, out var result));
+                     Assert.True(Assert.IsType<bool>(result));
+                     Assert.Null(context.MemoryGovernor.AdmissionFailure);
+                     Assert.Equal(baseline, budget.ReservedBytes);

@@ -293,3 +293,6 @@ benchmarks/results/2026-11-10-dictionary-accumulation/** -text whitespace=cr-at-
 benchmarks/results/2026-11-10-dictionary-accumulation/**/*.patch -text -whitespace
 
 benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-10-receiver-native-entry/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-receiver-native-entry/**/*.patch -text -whitespace

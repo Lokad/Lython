@@ -1,0 +1,11 @@
+{
+  "publicPerActualTarget": 206,
+  "internalPerActualTarget": 128,
+  "actualTargets": [
+    "NET11RC3",
+    "NET10.0.8"
+  ],
+  "temporarySourceFactProbePassedThenRemoved": true,
+  "fullPlatformStressPackage": "Deferred to a retained delivery boundary; prototype not promoted.",
+  "initialTestCompileFailure": "new() options was ambiguous; corrected to explicit LythonRunOptions. Original log retained."
+}

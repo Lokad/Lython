@@ -1,0 +1,50 @@
+[
+  {
+    "name": "direct-alias-and-receiver",
+    "source": "class Reader:\n    def identity(self): return self\n    def words(self,line): return line.lower().split()\nvalue=Reader()\nsaved=value.words\nprint(value.identity() is value,saved.__self__ is value,saved is value.words)\nprint(value.words('A Café'),saved('B TEST'))\n",
+    "stdout": "True True False\n['a', 'café'] ['b', 'test']\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "live-defaults-and-keywords",
+    "source": "class Reader:\n    def wanted(self,value,/,prefix='A',*,suffix='!'):\n        return value.startswith(prefix) and value.endswith(suffix)\nvalue=Reader();saved=value.wanted\nprint(saved('ABC!'),value.wanted('ABC!',suffix='?'))\nReader.wanted.__defaults__=('B',)\nReader.wanted.__kwdefaults__['suffix']='?'\nprint(saved('BCD?'),value.wanted('AX!',prefix='A',suffix='!'))\nfor bad in [lambda:saved(value='x'),lambda:saved('x',prefix='A',self=value),lambda:saved()]:\n    try:bad()\n    except TypeError:print('TypeError')\n",
+    "stdout": "True False\nTrue True\nTypeError\nTypeError\nTypeError\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "evaluated-target-survives-rebinding",
+    "source": "class Reader:\n    def old(self,value): return value.lower()\n    def new(self,value): return value.upper()\n    read=old\nvalue=Reader();saved=value.read\ndef argument():\n    Reader.read=Reader.new\n    return 'aB'\nprint(value.read(argument()),saved('Cd'),value.read('eF'))\n",
+    "stdout": "ab cd EF\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "class-static-and-explicit-receiver",
+    "source": "class Reader:\n    @classmethod\n    def wanted(cls,value,*,prefix='A'): return value.startswith(prefix)\n    @staticmethod\n    def trim(value): return value.strip()\n    def identity(self,value): return value\nvalue=Reader();saved=Reader.wanted\nprint(Reader.wanted('ABC'),value.wanted('ABC',prefix='B'),saved('BCD',prefix='B'))\nprint(Reader.trim(' x '),value.trim(' y '),Reader.identity(value,'z'))\n",
+    "stdout": "True False True\nx y z\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "bound-dunder-and-descriptor",
+    "source": "class Reader:\n    def words(self,line): return line.lower().split()\nclass Descriptor:\n    def __get__(self,instance,owner):return Reader().words\nclass Box:read=Descriptor()\nprint(Box().read('A B'))\nclass More:\n    def __call__(self,value,*,prefix='A'):return value.startswith(prefix)\ntarget=More();saved=target.__call__\nprint(target('AB'),saved('CD',prefix='C'))\n",
+    "stdout": "['a', 'b']\nTrue True\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "dynamic-body-preserves-order",
+    "source": "events=[]\nclass Value:\n    def __add__(self,other):events.append(other);return 'custom'\nclass Reader:\n    def add(self,value):return value+'!'\ntarget=Reader();saved=target.add\nprint(saved(Value()),target.add('text'),events)\n",
+    "stdout": "custom text! ['!']\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "closure-class-cell-and-late-names",
+    "source": "prefix='A'\nclass Parent:\n    def read(self,value):return value.lower()\nclass Child(Parent):\n    def read(self,value):return super().read(value)\n    def wanted(self,value):return value.startswith(prefix)\nchild=Child();saved=child.wanted\nprint(child.read('AB'),saved('AB'))\nprefix='B'\nprint(saved('AB'),saved('BC'))\n",
+    "stdout": "ab True\nFalse True\n",
+    "reference": "CPython3.13.2"
+  },
+  {
+    "name": "wide-and-variadic-binding",
+    "source": "class Reader:\n    def wide(self,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p):return p\n    def variadic(self,*args,**kwargs):return args,kwargs\nvalue=Reader()\nprint(value.wide(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))\nprint(value.variadic(2,3,key=4))\n",
+    "stdout": "16\n((2, 3), {'key': 4})\n",
+    "reference": "CPython3.13.2"
+  }
+]

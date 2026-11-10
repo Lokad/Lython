@@ -100,7 +100,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // admit storage or invoke default/key protocols. Arguments/defaults remain
     // funded by their existing caller/definition owners through completion.
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments,
+    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object result)
     {
         NativeParameters buffer = default;
@@ -110,7 +110,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         {
             var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
             LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
-                context, callSite: call, operands: arguments);
+                context, receiver: receiver, callSite: call, operands: arguments);
             return TryExecuteWithoutFrame(values, span, out result);
         }
         finally { values.Clear(); }

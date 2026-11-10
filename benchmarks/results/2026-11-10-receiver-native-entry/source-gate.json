@@ -1,0 +1,12 @@
+﻿{
+  "source": "class Words:\n from_line=lambda self,line:line.lower().split()\nwords_from_line=Words().from_line",
+  "nativeBody": true,
+  "canBindNative": true,
+  "receiverType": "Lokad.Lython.Runtime.PyInstance",
+  "parameters": {
+    "self": 0,
+    "line": 1
+  },
+  "closureIsClass": false,
+  "conclusion": "Current bound method is native-eligible after owned binding; opcode excludes it before binding."
+}
