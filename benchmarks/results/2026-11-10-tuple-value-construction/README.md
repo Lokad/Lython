@@ -1,6 +1,6 @@
 # Completed tuple values — R208
 
-**Retain the direct-constructor refinement67b28bba**, pending full delivery.
+**Retain the direct-constructor refinement67b28bba**, committed as e543bf15.
 It removes the experimental factory, replaces array-only copy inputs with managed
 spans and copies completed references once into canonical funded tuple storage.
 Native MakeTuple loses a temporary reservation carrier/manual fill/late scalar
@@ -22,7 +22,8 @@ adoption sites remain. Full local4521internal/17105public cases pass per actual
 NET11/10; focused276/406, forced Release0warnings/errors. New copy independence,
 terminal refusal-before-final-array, cancelled-admission rollback, retained alias
 funding and budget reuse pass. Only duplicate factory-architecture cases are removed.
-Full platform/stress/installed-package delivery remains pending.
+Full Windows/Ubuntu, both actual targets, original stress and installed Release
+consumer delivery is GREEN [42898279287](constructor/delivery-ci.json).
 
 The last source change after freeze is comment-only and explicitly recorded;
 measured original source/hashes/binaries remain in the archive. Native total admission
@@ -67,8 +68,9 @@ fixture/output/ownership/quiet/Closed/join/RAM/archive-under-lease/localSHA gate
 CSVsync reference spread0.074%, candidate1.58%; asyncreference2.83%, textreference
 3.99%. Ranges are all pairings, not confidence intervals. Sync CPU is adverse;
 async/text uncertain. Allocation reduction is distinct, no CPU gain or equivalence.
-Warm boundary includes mediated RAM I/O, capture/projection and prior-result cleanup;
-excludes compile/reset/verification/protocol. Wider CPU includes surrounds/coarse
+Warm boundary includes mediated RAM I/O, capture/projection, full per-invocation
+output checks and prior-result cleanup; excludes compile/reset, separate verification
+requests and protocol. Wider CPU includes surrounds/coarse
 ticks. No pending-I/O, embedding-tail, startup or CPython comparison here.
 
 Next bounded refinement: remove the introduced factory layer by moving the shared

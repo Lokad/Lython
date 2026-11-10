@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R209 committed construction checkpoint](results/2026-11-10-construction-cpython-checkpoint/README.md)
+refreshes CSV/text against CPython at fully qualified e543bf15, with compilation,
+warm and compile-to-result separated. Six jobs / 164.735 s; all evidence gates pass.
+CSV warm 1.04–1.07× and text 1.36–1.47× retain 3.11% / 5.42% Lython control spread.
+Original zero-job 24 KiB headroom refusal and its exact correction survive. This
+does not attribute one change or resolve tuple CPU uncertainty.
+
+The [R210 immutable dev66 bridge gate](results/2026-11-10-regex-development-66/README.md)
+passes 86 internal / 524 public focused checks per target. Normal pin/source/output
+identities remain unchanged. New validated-input options retain their Validate
+default; no implicit whole-subject guarantee, final producer promotion, safety or
+performance certification. Three missing native capabilities stay precise.
+
 The [R208 completed tuple construction](results/2026-11-10-tuple-value-construction/README.md)
 retains direct span constructors, removing native temporary reservations/late scalar
 admission and discarded fresh-literal copies. The added factory and array-only
@@ -13,8 +26,8 @@ copy overloads disappear; canonical storage and real adoption/materialization re
 CSV allocation−3.04%both APIs, compilation flat. Final quiet sync/control CPU is
 inconclusive; async elapsed slightly lower with mixedCPU. Original stable syncCPU
 adversity and all desktop samples survive. Possible small regression debt explicit;
-no general speedup. Full local semantic/ownership/cancellation checks pass; delivery
-qualification is separate. This does not close the whole-script objective.
+no general speedup. Full Windows/Ubuntu, both targets, original stress and installed
+Release consumer qualification is GREEN42898279287; local regressions also pass. This does not close the whole-script objective.
 
 The [R207 lexical loop classification](results/2026-11-10-lexical-loop-cleanup/README.md)
 retains a two-file compiler change: same-protected-suite transfers use ordinary

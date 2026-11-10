@@ -1,0 +1,44 @@
+{
+  "consumerRevision": "e543bf159d1d037348c95083b6f511a8339e822b",
+  "consumerRuntime": "e543bf15 tuple/control current; full local ordinary both actualtargets, deliveryCI42898279287 pending.",
+  "producerVersion": "0.5.0-dev.66",
+  "producerSourceHead": "Immutable package b478f853; do not substitute moving sibling HEAD",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.66.nupkg": {
+      "sha256": "1f8637aefdf5c42dbe56742e2dfb892f0a5273beb3a1e4a262404c12c4761a3e",
+      "repositoryCommit": "b478f853f722b7c34de83bdcd14693ee594ca053",
+      "dependencies": []
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.66.nupkg": {
+      "sha256": "e208d443b5a28b854d44ef285bf6904ae7751d62dfebb5225623ee289f02f155",
+      "repositoryCommit": "b478f853f722b7c34de83bdcd14693ee594ca053",
+      "dependencies": [
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.66]",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Lokad.Utf8Regex",
+          "version": "[0.5.0-dev.66]",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  },
+  "bridge": "Exact unchanged dev59/dev64 source and cursor-admission controls; isolated feed/assets/locks/outputs/cache. Keep Validate default; do not assume arbitrary borrowed subjects meet new AssumeValid precondition.",
+  "providerSourceSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491",
+  "cursorTestSourceSHA256": "72e3743bdeebc1baef226e61654c0589cfaf2eb9d67df54290824bc943ad8dff",
+  "releaseObservation": {
+    "url": "https://api.nuget.org/v3-flatcontainer/lokad.utf8regex.pythonre/index.json",
+    "observedUTC": "2026-11-10T05:36Z",
+    "publishedVersions": [
+      "0.1.0",
+      "0.2.0",
+      "0.3.0",
+      "0.4.0"
+    ]
+  },
+  "limitations": "Development contract/semantic compatibility only; no released-adapter/safety/backend-performance certification. No sibling edit/build or republishing.",
+  "bridgeSHA256": "121005f07ef8e527adf92b4837a607d838295c1282e1e6ba5f90a3fdce145491"
+}

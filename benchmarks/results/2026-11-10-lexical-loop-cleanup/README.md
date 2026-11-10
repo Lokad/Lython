@@ -41,7 +41,8 @@ Ranges compare both candidates with both references, not confidence intervals.
 Synchronous effects are inconclusive; async wider CPU offers modest support,
 while elapsed straddles zero. **No general CPU improvement is established.**
 Warm clocks include mediated RAM I/O, capture/projection and prior-result cleanup;
-exclude compilation, reset, validation/protocol and final-cache teardown. Wider
+include full per-invocation output checks; compilation, fixture reset, separate
+verification requests/protocol and final-cache teardown are excluded. Wider
 CPU includes surrounds/coarse ticks. No startup, pending-I/O latency or new CPython
 ratio. Historical CPython rows retain their exact sources.
 
