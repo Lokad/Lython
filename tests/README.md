@@ -17,6 +17,16 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Framed functions](Lokad.Lython.PublicApi.Tests/FramedFunctionExecutionTests.cs)
+preserve handler aliases, builtin shadowing, exception context, class cells,
+annotations and retained results through both APIs against Python goldens.
+Native-return protocol checks also suspend inside active handlers and join
+cancellation before retiring their allowance.
+
+[JSON string admission](Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs)
+checks refusal before publication and funding for an adopted buffer's entire
+capacity, with cleanup returning the shared allowance to baseline.
+
 [Call input lifetimes](Lokad.Lython.PublicApi.Tests/CallInputLifetimeTests.cs) check
 target/argument order, keyword and positional aliases, function/constructor host
 suspension, cancellation, retained results and joined cleanup. Operand-read cases

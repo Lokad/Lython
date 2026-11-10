@@ -1,0 +1,35 @@
+{
+  "version": "3.13.2",
+  "cases": [
+    {
+      "name": "handler-global-and-parameter",
+      "source": "def current(): return outer\ndef identity(outer): return outer\ntry: raise ValueError('outer')\nexcept ValueError as outer:\n    print(current() is outer, identity('local'))\n    saved = current()\nprint(type(saved).__name__, 'outer' in globals())\nreturn ['retained']",
+      "stdout": "True local\nValueError False\n"
+    },
+    {
+      "name": "handler-builtin-shadow",
+      "source": "def parse(text): return int(text)\ntry: raise ValueError('shadow')\nexcept ValueError as int:\n    try: parse('12')\n    except TypeError as failure: print(failure.__context__ is int)\nprint(parse('9'))\nreturn ['retained']",
+      "stdout": "True\n9\n"
+    },
+    {
+      "name": "nested-handler-context",
+      "source": "def parse(text): return int(text)\ntry: raise LookupError('outer')\nexcept LookupError as outer:\n    try: raise KeyError('inner')\n    except KeyError as inner:\n        try: parse('bad')\n        except ValueError as failure: print(failure.__context__ is inner)\n    try: parse('bad')\n    except ValueError as failure: print(failure.__context__ is outer)\n    print(parse('11'))\nreturn ['retained']",
+      "stdout": "True\nTrue\n11\n"
+    },
+    {
+      "name": "handler",
+      "source": "def parse(text): return int(text)\ndef fresh(): return []\ntry:\n    raise LookupError('outer')\nexcept LookupError as outer:\n    print(parse('12'))\n    result = fresh()\n    result.append('retained')\n    try: parse('bad')\n    except ValueError as failure: print(failure.__context__ is outer)\n    print(result)\nprint('outer' in locals())\nreturn result",
+      "stdout": "12\nTrue\n['retained']\nFalse\n"
+    },
+    {
+      "name": "class-cell",
+      "source": "class Base:\n    def label(self): return 'base'\nclass Parser(Base):\n    def label(self): return super().label()\n    def parse(self, text): return int(text)\nparser = Parser()\nprint(parser.label(), parser.parse('23'))\nreturn ['retained']",
+      "stdout": "base 23\n"
+    },
+    {
+      "name": "annotation",
+      "source": "type Converter = lambda value: int(value)\nconvert = Converter.__value__\nprint(convert('31'))\nreturn ['retained']",
+      "stdout": "31\n"
+    }
+  ]
+}

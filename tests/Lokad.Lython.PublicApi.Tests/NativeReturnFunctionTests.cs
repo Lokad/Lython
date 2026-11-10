@@ -234,11 +234,11 @@ public sealed class NativeReturnFunctionTests
     }
 
     [Theory]
-    [InlineData("mapping")]
-    [InlineData("conversion")]
-    [InlineData("multiply")]
-    [InlineData("reflected-multiply")]
-    public async Task ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(string shape)
+    [InlineData("mapping", false)] [InlineData("mapping", true)]
+    [InlineData("conversion", false)] [InlineData("conversion", true)]
+    [InlineData("multiply", false)] [InlineData("multiply", true)]
+    [InlineData("reflected-multiply", false)] [InlineData("reflected-multiply", true)]
+    public async Task ProtocolReturnRetainsItsOwnerUntilSuspendedInputCancels(string shape, bool insideHandler)
     {
         var definition = shape switch
         {
@@ -247,8 +247,11 @@ public sealed class NativeReturnFunctionTests
             "reflected-multiply" => "def helper(value):return 3*value\nclass Value:\n def __rmul__(self,other):\n",
             _ => "def helper(value):return int(value)\nclass Value:\n def __int__(self):\n",
         };
+        var invocation = insideHandler
+            ? "try:raise LookupError('outer')\nexcept LookupError as outer:\n print(helper(Value()))\n print('late')\n"
+            : "print(helper(Value()))\nprint('late')\n";
         var source = definition + "  with open('/pause') as file:\n   value=file.read()\n" +
-            (shape == "mapping" ? "  return value\n" : "  return int(value)\n") + "print(helper(Value()))\nprint('late')\n";
+            (shape == "mapping" ? "  return value\n" : "  return int(value)\n") + invocation;
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {
@@ -259,15 +262,21 @@ public sealed class NativeReturnFunctionTests
             var reached = host.PauseReadUntilCancellation("/pause");
             using var cancellation = new CancellationTokenSource();
             var pending = script.RunAsync(host, new LythonRunOptions { MemoryBudget = budget, CancellationToken = cancellation.Token });
-            await reached.WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.False(pending.IsCompleted);
-            Assert.True(budget.ReservedBytes > baseline);
-            cancellation.Cancel();
-            using (var result = await pending)
+            try
             {
+                await reached.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.False(pending.IsCompleted);
+                Assert.True(budget.ReservedBytes > baseline);
+                cancellation.Cancel();
+                using var result = await pending.WaitAsync(TimeSpan.FromSeconds(10));
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
                 Assert.DoesNotContain("late", result.StandardOutput);
+            }
+            finally
+            {
+                cancellation.Cancel();
+                using var drained = await pending.WaitAsync(TimeSpan.FromSeconds(10));
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }

@@ -1,0 +1,9 @@
+{
+  "restoredProduction": "cac4acf8-equivalent",
+  "removedLines": 23,
+  "affectedFiles": 3,
+  "retainedPublicCases": 3,
+  "reason": "Stable affected-handler CPU cost confirms the post-frame shortcut is useful. Keep it until a broader shared kernel preserves its behavior/performance; not a permanent veto on consolidation.",
+  "nativePrimaryEntry": "Unchanged throughout",
+  "fullQualification": "Not repeated for withdrawn code. Fresh nonincremental build follows before new source qualification."
+}

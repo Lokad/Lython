@@ -1,0 +1,6 @@
+{
+  "jobs": 5,
+  "expectedSeconds": 150,
+  "maximumOwnerSeconds": 210,
+  "cleanupReserveSeconds": 30
+}

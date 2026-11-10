@@ -5684,3 +5684,34 @@ or final allocation result. Proven space deficit recovered two exact redundant
 remote compressed copies only; canonical/raw/core evidence survives. All quiet/
 identity/golden/ownership/join/RAM/archive/localSHA gates pass. Full delivery pending,
 publication postponed. R164 addresses separate structural whole-span string kernels.
+
+## R177A — post-frame native entry remains useful
+
+[The deleted shortcut assessment](results/2026-11-10-framed-native-entry/README.md)
+was withdrawn after quiet B521: affected complete-handler text CPU +5.08–8.62%
+sync/+13.46% async, allocation flat. Original contrary desktop observations and
+rejected six-case setup remain visible. 369 internal/96 public cases pass on each
+actual target; three Python semantic regressions remain. All three production
+files were restored exactly. No unchanged platform/package qualification repeat
+or permanent veto on a materially different shared-kernel design follows.
+
+## R178 — consume completed JSON storage
+
+[Terminal JSON transfer](results/2026-11-10-json-terminal-storage/README.md) removes
+two final copies using existing ownership. A complete 3,072-record JSONL manifest
+allocates 3.04%/3.03% less through sync/async APIs. Adverse async desktop elapsed
+remains inconclusive with moving controls; no CPU claim. Public peak checks show
+both reduced overlap and increased retained spare capacity. Reused iterator chunks
+still copy. 193 internal/861 public cases pass each actual target; full combined
+delivery qualification remains pending. Original fixture/setup errors survive.
+
+## R179 — remove the closed-helper handler cliff
+
+[Caller-handler eligibility](results/2026-11-10-handler-native-calls/README.md)
+removes needless binding/frame construction from existing closed helper calls.
+Affected complete text allocation−47.31% sync/−47.29% async; quiet B522 elapsed/CPU
+roughly18–22% lower. Ordinary calls already use this path; no universal gain claim.
+Report/Unicode controls are adverse and unresolved, justifying bounded confirmation.
+79 focused public cases each actual target and six Python controls pass, including
+real pending protocols under handlers/cancellation/joined cleanup. Full combined
+delivery qualification remains pending; all adverse/raw evidence is retained.

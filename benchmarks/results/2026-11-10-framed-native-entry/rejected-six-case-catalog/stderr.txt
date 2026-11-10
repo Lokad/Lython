@@ -1,0 +1,2 @@
+Unhandled exception. System.IO.InvalidDataException: Require one affected text script and four maintained controls.
+   at Program.<Main>$(String[] args) in D:\code\Lython\.git\agent-notes\review-20261031\bulk-whitespace-r157\tool\Program.cs:line 22

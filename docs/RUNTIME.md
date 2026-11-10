@@ -49,6 +49,12 @@ including a tiny cache funded by the original metadata allowance when necessary.
 Factories write into reserved final capacity and publish only completed immutable
 values. Native data views remain available to cleanup after command refusal.
 
+Terminal JSON serialization adopts its completed UTF-8 buffer. The full backing
+capacity remains charged, including its unused tail; avoiding a final copy can
+reduce construction overlap while retaining more spare capacity. Reused
+`iterencode` chunk builders still produce independent copies. Returned values and
+aliases keep their owner funded until their users relinquish it.
+
 Unicode indexing caches use the active caller's cancellation context during
 construction and remain unpublished until completion. Cancelled construction
 returns its working allowance while retaining the input's charge.
@@ -298,6 +304,10 @@ Failable reads retain their source spans; evaluated call and protocol packets
 retain snapshots across callbacks. Ordinary instructions carry no native-return
 provenance. Eligible helpers own compact prepared native operations, referring
 to original instruction spans and shared call metadata without copying them.
+Closed native helpers can run while their caller owns active exception-handler
+aliases. They share current exception state and global lookup, without binding or
+unwinding the caller's aliases. Class/annotation contexts retain their lexical
+machinery; custom protocols still promote to ordinary execution before effects.
 The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.

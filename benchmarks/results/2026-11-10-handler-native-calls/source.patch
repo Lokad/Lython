@@ -1,0 +1,43 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+index 829acdfd..63bb5058 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
+                         builder.AppendRepeated((byte)' ', count);
+                         remaining -= count;
+                     }
+-                    return builder.ToPyString();
++                    return builder.ToPyStringAndRelease();
+                 }
+                 finally { builder.Release(); }
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index 827ff23e..a9af2c48 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
+                     using var working = context.MemoryGovernor.ReserveTemporary(PyIteratorBase.IteratorValueBytes, span);
+                     var iterator = new JsonEncodeIterator(value, options, context, span, working);
+                     await iterator.WriteToBuilderAsync(builder, asynchronous).ConfigureAwait(false);
+-                    return builder.ToPyString();
++                    return builder.ToPyStringAndRelease();
+                 }
+                 finally { builder.Release(); }
+             }
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index ee3bb68f..5224d581 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -70,9 +70,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         // Closed native bodies cannot observe a function namespace or suspend.
+         // Compiler capture facts, not lexical nesting alone, establish closure.
+         // Class/annotation contexts keep their existing lexical machinery.
++        // Handler aliases belong to the caller: this closed body never binds or
++        // unwinds them, and exception state is shared with the ordinary frame.
+         if (_codeObject.NativeBody is null
+             || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
+-            || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
++            || Closure.InlinedComprehensionLookup is not null)
+         {
+             result = PyNone.Instance;
+             return false;

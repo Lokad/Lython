@@ -1,0 +1,45 @@
+{
+  "source": "fcf018d2 plus two terminal JSON builder-consumption changes; no R179 guard change in these images",
+  "cores": {
+    "before": "e833f03ce220fe7569b6cc2db89bb3a93504773b3b5e33a9e1b92a4d4d4c55ba",
+    "candidate": "65de59c2233f5ef25fa209bfb1369946409aa3e1dbf7ae2eb4f9aa437136e175"
+  },
+  "jsonl": {
+    "warm-sync": {
+      "allocationPercent": [
+        -3.0437059968891234,
+        -3.0440303343722386
+      ],
+      "elapsedPercent": [
+        1.2363948769674726,
+        -4.964129443116261
+      ]
+    },
+    "warm-async": {
+      "allocationPercent": [
+        -3.028188795864395,
+        -3.026976853572938
+      ],
+      "elapsedPercent": [
+        11.594360578314845,
+        8.645562714255561
+      ]
+    },
+    "compile-sync": {
+      "allocationPercent": [
+        0.0,
+        0.0
+      ],
+      "elapsedPercent": [
+        -0.07374547599867665,
+        -1.5377047897463858
+      ]
+    }
+  },
+  "qualification": {
+    "internalEachTarget": 193,
+    "publicEachTarget": 861,
+    "fullCheckpoint": "Pending combined retained delivery"
+  },
+  "archiveSHA256": "2bc99444c9d2ae164aa3250a0648fc04f258c591e6de7d668ab3b49cc8770ba5"
+}

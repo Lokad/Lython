@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
                         builder.AppendRepeated((byte)' ', count);
                         remaining -= count;
                     }
-                    return builder.ToPyString();
+                    return builder.ToPyStringAndRelease();
                 }
                 finally { builder.Release(); }
             }

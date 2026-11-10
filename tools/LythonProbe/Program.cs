@@ -275,6 +275,7 @@ static async Task<ProbeResult> RunLythonAsync(LythonEngine engine, ILythonHost h
                 null));
     }
 
+    using var resultLifetime = result;
     return new ProbeResult(
         result.Success,
         result.StandardOutput,

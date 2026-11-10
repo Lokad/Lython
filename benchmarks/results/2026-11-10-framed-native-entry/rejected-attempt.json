@@ -1,0 +1,10 @@
+{
+  "reason": "Existing driver requires exactly one text case plus four maintained controls. Six-case catalog rejected before measurements/worker creation.",
+  "evidence": [
+    "catalog-affected.json",
+    "identity.json",
+    "warm-sync/stderr.txt",
+    "warm-sync/measurements.json"
+  ],
+  "correction": "Replace only canonical text source with active-handler variant; keep5cases/canonicalIDs, independent unchanged fixture/goldens and explicit new sourceSHA. This is a diagnostic, not the maintained published text row."
+}

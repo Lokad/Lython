@@ -1,0 +1,6 @@
+{
+  "requiredFreeBytes": 270868480,
+  "payloadBytes": 1963392,
+  "persistentBaselineReused": true,
+  "extraSetupHeadroomBytes": 65536
+}

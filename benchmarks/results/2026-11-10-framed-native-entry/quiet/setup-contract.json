@@ -1,0 +1,11 @@
+{
+  "jobs": 5,
+  "roles": 4,
+  "ownerSeconds": 210,
+  "stopSeconds": 30,
+  "marginSeconds": 30,
+  "osFreeFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "referenceReuse": "/home/lokad/lython-bench-checks/string-index-storage-b518-20261109/current-core.dll",
+  "protocolSHA256": "02ca606af6b937a5bec8da744da36e6dbea45ef14ee7207732f34da052ad32f1"
+}

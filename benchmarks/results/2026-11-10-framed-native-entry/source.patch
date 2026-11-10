@@ -1,0 +1,63 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index e69ae45a..7e6a5fd8 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -310,11 +310,6 @@ internal sealed partial class LythonRuntime
+                 {
+                     frame = function.EnterInvocationFrame(bound, span);
+                     functionEntered = true;
+-                    if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value))
+-                    {
+-                        CompletePendingCall(value, null);
+-                        return this;
+-                    }
+                     InitializeExecutableFrame(function.CodeObject, frame, bound,
+                         function.ClosureCells, argumentsAreLocals: true, lookupOwner: function);
+                 }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index 993fb3af..10757242 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -6,19 +6,6 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
+-    internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result)
+-    {
+-        result = PyNone.Instance;
+-        var body = codeObject.NativeBody;
+-        if (body is null || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+-            || context.ActiveHandlerVariables is { Count: > 0 })
+-            return false;
+-        if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
+-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan);
+-        return true;
+-    }
+-
+     internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
+         ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
+     {
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index ee3bb68f..73661658 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -85,8 +85,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         BoundCallArguments boundArguments,
+         LythonSourceSpan span)
+     {
+-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+-            return result;
+         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this)
+             ?? PyNone.Instance;
+     }
+@@ -96,9 +94,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         BoundCallArguments boundArguments,
+         LythonSourceSpan span)
+     {
+-        // Only statically proven bodies without callbacks use this shared shortcut.
+-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+-            return result;
+         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+             _codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this).ConfigureAwait(false)
+             ?? PyNone.Instance;

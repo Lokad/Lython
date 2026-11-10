@@ -254,3 +254,13 @@ benchmarks/results/2026-11-07-text-cost/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-09-private-small-integers/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-09-private-small-integers/**/*.patch -text -whitespace
 benchmarks/results/2026-11-09-private-small-integers/qualification/*.log -text -whitespace
+
+# Preserve framed-call source identities and the original adverse observations.
+benchmarks/results/2026-11-10-framed-native-entry/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-framed-native-entry/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-framed-native-entry/qualification/*.log -text -whitespace
+benchmarks/results/2026-11-10-json-terminal-storage/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-json-terminal-storage/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-handler-native-calls/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-handler-native-calls/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-framed-native-entry/**/*.log -text -whitespace

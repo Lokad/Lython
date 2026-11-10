@@ -70,9 +70,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // Closed native bodies cannot observe a function namespace or suspend.
         // Compiler capture facts, not lexical nesting alone, establish closure.
         // Class/annotation contexts keep their existing lexical machinery.
+        // Handler aliases belong to the caller: this closed body never binds or
+        // unwinds them, and exception state is shared with the ordinary frame.
         if (_codeObject.NativeBody is null
             || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
-            || Closure.InlinedComprehensionLookup is not null || Closure.ActiveHandlerVariables is { Count: > 0 })
+            || Closure.InlinedComprehensionLookup is not null)
         {
             result = PyNone.Instance;
             return false;

@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
                     using var working = context.MemoryGovernor.ReserveTemporary(PyIteratorBase.IteratorValueBytes, span);
                     var iterator = new JsonEncodeIterator(value, options, context, span, working);
                     await iterator.WriteToBuilderAsync(builder, asynchronous).ConfigureAwait(false);
-                    return builder.ToPyString();
+                    return builder.ToPyStringAndRelease();
                 }
                 finally { builder.Release(); }
             }

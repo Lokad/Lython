@@ -1,0 +1,24 @@
+{
+  "python": "Python 3.13.2",
+  "boundary": "Semantic controls only. Wrap guest module return in one function; independently check stdout and returned list.",
+  "cases": [
+    {
+      "name": "handler",
+      "source": "def parse(text): return int(text)\ndef fresh(): return []\ntry:\n    raise LookupError('outer')\nexcept LookupError as outer:\n    print(parse('12'))\n    result = fresh()\n    result.append('retained')\n    try: parse('bad')\n    except ValueError as failure: print(failure.__context__ is outer)\n    print(result)\nprint('outer' in locals())\nreturn result",
+      "expectedOutput": "12\nTrue\n['retained']\nFalse\n",
+      "stdout": "12\nTrue\n['retained']\nFalse\nRESULT:[\"retained\"]\n"
+    },
+    {
+      "name": "class-cell",
+      "source": "class Base:\n    def label(self): return 'base'\nclass Parser(Base):\n    def label(self): return super().label()\n    def parse(self, text): return int(text)\nparser = Parser()\nprint(parser.label(), parser.parse('23'))\nreturn ['retained']",
+      "expectedOutput": "base 23\n",
+      "stdout": "base 23\nRESULT:[\"retained\"]\n"
+    },
+    {
+      "name": "annotation",
+      "source": "type Converter = lambda value: int(value)\nconvert = Converter.__value__\nprint(convert('31'))\nreturn ['retained']",
+      "expectedOutput": "31\n",
+      "stdout": "31\nRESULT:[\"retained\"]\n"
+    }
+  ]
+}

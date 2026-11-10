@@ -1,0 +1,413 @@
+{
+  "warm-sync": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 3318950.75,
+          "elapsedMs": 11.35974375
+        },
+        "before-control": {
+          "bytes": 3318659.25,
+          "elapsedMs": 12.013284375
+        },
+        "candidate": {
+          "bytes": 3318709.75,
+          "elapsedMs": 12.91200625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.00726133100951154,
+          "elapsedMs": 13.664590805580445
+        },
+        "before-control": {
+          "bytes": 0.001521698860762477,
+          "elapsedMs": 7.481067183178203
+        }
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 2701401.5,
+          "elapsedMs": 9.453909375
+        },
+        "before-control": {
+          "bytes": 2701417.25,
+          "elapsedMs": 9.256546875
+        },
+        "candidate": {
+          "bytes": 1423330.75,
+          "elapsedMs": 8.86763125
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -47.31139558484735,
+          "elapsedMs": -6.201435847802383
+        },
+        "before-control": {
+          "bytes": -47.31170277379402,
+          "elapsedMs": -4.201519532628084
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 3201106.5,
+          "elapsedMs": 11.413028125
+        },
+        "before-control": {
+          "bytes": 3201246.5,
+          "elapsedMs": 11.719878125
+        },
+        "candidate": {
+          "bytes": 3200844.0,
+          "elapsedMs": 12.32350625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.008200289493653923,
+          "elapsedMs": 7.977533350729371
+        },
+        "before-control": {
+          "bytes": -0.01257322733504429,
+          "elapsedMs": 5.150464181981418
+        }
+      }
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 648781.0,
+          "elapsedMs": 6.52571875
+        },
+        "before-control": {
+          "bytes": 648802.5,
+          "elapsedMs": 5.501975
+        },
+        "candidate": {
+          "bytes": 648773.75,
+          "elapsedMs": 6.712465625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.001117480320789177,
+          "elapsedMs": 2.861705846578211
+        },
+        "before-control": {
+          "bytes": -0.004431240631774802,
+          "elapsedMs": 22.001020088241052
+        }
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 39001.25,
+          "elapsedMs": 1.169128125
+        },
+        "before-control": {
+          "bytes": 38609.25,
+          "elapsedMs": 1.135115625
+        },
+        "candidate": {
+          "bytes": 38824.5,
+          "elapsedMs": 1.223453125
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.45319060286529433,
+          "elapsedMs": 4.646625022385797
+        },
+        "before-control": {
+          "bytes": 0.5575088871190292,
+          "elapsedMs": 7.7822468526058675
+        }
+      }
+    }
+  ],
+  "warm-async": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 3319713.75,
+          "elapsedMs": 14.531434375
+        },
+        "before-control": {
+          "bytes": 3319724.0,
+          "elapsedMs": 14.639875
+        },
+        "candidate": {
+          "bytes": 3319700.5,
+          "elapsedMs": 13.724175
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.00039913079855624645,
+          "elapsedMs": -5.55526284720258
+        },
+        "before-control": {
+          "bytes": -0.0007078901740009691,
+          "elapsedMs": -6.254834826117017
+        }
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 2702362.5,
+          "elapsedMs": 8.98019375
+        },
+        "before-control": {
+          "bytes": 2702380.75,
+          "elapsedMs": 9.1495
+        },
+        "candidate": {
+          "bytes": 1424292.5,
+          "elapsedMs": 9.1552125
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -47.294543200625384,
+          "elapsedMs": 1.9489418031765737
+        },
+        "before-control": {
+          "bytes": -47.294899136622405,
+          "elapsedMs": 0.062435105743485764
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 3202347.25,
+          "elapsedMs": 13.27044375
+        },
+        "before-control": {
+          "bytes": 3202357.25,
+          "elapsedMs": 11.425921875
+        },
+        "candidate": {
+          "bytes": 3202318.25,
+          "elapsedMs": 12.555890625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": -0.0009055857387085808,
+          "elapsedMs": -5.3845458257565815
+        },
+        "before-control": {
+          "bytes": -0.0012178528800976807,
+          "elapsedMs": 9.889519308480299
+        }
+      }
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 649575.5,
+          "elapsedMs": 7.638003125
+        },
+        "before-control": {
+          "bytes": 649581.5,
+          "elapsedMs": 7.11040625
+        },
+        "candidate": {
+          "bytes": 649575.5,
+          "elapsedMs": 6.677240625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": -12.578713104414973
+        },
+        "before-control": {
+          "bytes": -0.0009236716254967803,
+          "elapsedMs": -6.091995446814313
+        }
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 39332.5,
+          "elapsedMs": 1.435925
+        },
+        "before-control": {
+          "bytes": 39339.0,
+          "elapsedMs": 1.28298125
+        },
+        "candidate": {
+          "bytes": 39346.5,
+          "elapsedMs": 1.364790625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.03559397444861112,
+          "elapsedMs": -4.953906018768384
+        },
+        "before-control": {
+          "bytes": 0.019065049950439672,
+          "elapsedMs": 6.376505892038553
+        }
+      }
+    }
+  ],
+  "compile-sync": [
+    {
+      "case": "scripts.csv-validated-records.large",
+      "roles": {
+        "before": {
+          "bytes": 171081.25,
+          "elapsedMs": 0.4281625
+        },
+        "before-control": {
+          "bytes": 171081.25,
+          "elapsedMs": 0.443409375
+        },
+        "candidate": {
+          "bytes": 171081.25,
+          "elapsedMs": 0.42689375
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": -0.2963244095407713
+        },
+        "before-control": {
+          "bytes": 0.0,
+          "elapsedMs": -3.7246900790043003
+        }
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "roles": {
+        "before": {
+          "bytes": 154137.25,
+          "elapsedMs": 0.52440625
+        },
+        "before-control": {
+          "bytes": 154137.25,
+          "elapsedMs": 0.59335
+        },
+        "candidate": {
+          "bytes": 154137.25,
+          "elapsedMs": 0.518503125
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": -1.125677849949347
+        },
+        "before-control": {
+          "bytes": 0.0,
+          "elapsedMs": -12.614287520013502
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "roles": {
+        "before": {
+          "bytes": 112689.25,
+          "elapsedMs": 0.591678125
+        },
+        "before-control": {
+          "bytes": 112689.25,
+          "elapsedMs": 0.66250625
+        },
+        "candidate": {
+          "bytes": 112689.25,
+          "elapsedMs": 0.583828125
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": -1.326734869571189
+        },
+        "before-control": {
+          "bytes": 0.0,
+          "elapsedMs": -11.875831360081502
+        }
+      }
+    },
+    {
+      "case": "scripts.unicode-index-report.control",
+      "roles": {
+        "before": {
+          "bytes": 80649.25,
+          "elapsedMs": 0.327559375
+        },
+        "before-control": {
+          "bytes": 80649.25,
+          "elapsedMs": 0.301059375
+        },
+        "candidate": {
+          "bytes": 80649.25,
+          "elapsedMs": 0.337909375
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": 3.159732491246814
+        },
+        "before-control": {
+          "bytes": 0.0,
+          "elapsedMs": 12.240110443330309
+        }
+      }
+    },
+    {
+      "case": "scripts.config-edit.small",
+      "roles": {
+        "before": {
+          "bytes": 99945.25,
+          "elapsedMs": 0.37791875
+        },
+        "before-control": {
+          "bytes": 99945.25,
+          "elapsedMs": 0.39198125
+        },
+        "candidate": {
+          "bytes": 99945.25,
+          "elapsedMs": 0.430240625
+        }
+      },
+      "changes": {
+        "before": {
+          "bytes": 0.0,
+          "elapsedMs": 13.844741759968237
+        },
+        "before-control": {
+          "bytes": 0.0,
+          "elapsedMs": 9.7605115040579
+        }
+      }
+    }
+  ]
+}

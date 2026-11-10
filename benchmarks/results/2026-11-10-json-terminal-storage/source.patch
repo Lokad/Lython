@@ -1,0 +1,110 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+index 829acdfd..63bb5058 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+@@ -331,7 +331,7 @@ internal sealed partial class LythonRuntime
+                         builder.AppendRepeated((byte)' ', count);
+                         remaining -= count;
+                     }
+-                    return builder.ToPyString();
++                    return builder.ToPyStringAndRelease();
+                 }
+                 finally { builder.Release(); }
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+index 827ff23e..a9af2c48 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Serialize.cs
+@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
+                     using var working = context.MemoryGovernor.ReserveTemporary(PyIteratorBase.IteratorValueBytes, span);
+                     var iterator = new JsonEncodeIterator(value, options, context, span, working);
+                     await iterator.WriteToBuilderAsync(builder, asynchronous).ConfigureAwait(false);
+-                    return builder.ToPyString();
++                    return builder.ToPyStringAndRelease();
+                 }
+                 finally { builder.Release(); }
+             }
+diff --git a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+index 8fca7856..ca62172f 100644
+--- a/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
++++ b/tests/Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs
+@@ -1,5 +1,6 @@
+ using System.Text.Json;
+ using System.Text;
++using System.Runtime.InteropServices;
+ using Lokad.Lython.Frontend;
+ using Lokad.Lython.Runtime;
+ using Lokad.Lython.Runtime.Text;
+@@ -46,7 +47,7 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+     [InlineData("dumps", false)] [InlineData("dumps", true)]
+     [InlineData("encode", false)] [InlineData("encode", true)]
+     [InlineData("iterator", false)] [InlineData("iterator", true)]
+-    public async Task SmallResultStillRequiresAdmissionForRetainedUtf8(string route, bool asynchronous)
++    public async Task SmallResultRequiresAdmissionBeforePublishingRetainedText(string route, bool asynchronous)
+     {
+         var budget = new LythonMemoryBudget(1024 * 1024);
+         using (var owner = budget.CreateScope())
+@@ -60,9 +61,10 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+             CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+             var iterator = route == "iterator"
+                 ? Assert.IsType<LythonRuntime.JsonEncodeIterator>(callable.Invoke(arguments, Span, context)) : null;
+-            var resultBytes = PyString.EstimateApproximateBytes(3); // "a"
+-            // Refuse retained UTF-8 output independently of temporary working
+-            // storage; exact tiny-budget thresholds are not this contract.
++            // Terminal conversion adopts the already admitted builder capacity;
++            // reused iterator chunks copy it. Both must admit new result metadata
++            // before publishing, independently of temporary encoding storage.
++            var resultBytes = PyString.EstimateApproximateBytes(route == "iterator" ? 3 : 0);
+             hook.RefuseGrowth = bytes => bytes == resultBytes;
+             var committed = governor.CurrentCommittedBytes;
+             object? published = null;
+@@ -87,6 +89,37 @@ public sealed class JsonStringEmissionAdmissionTests(ITestOutputHelper output)
+         Assert.Equal(0, budget.ReservedBytes);
+     }
+ 
++    [Theory]
++    [InlineData("dumps", false)] [InlineData("dumps", true)]
++    [InlineData("encode", false)] [InlineData("encode", true)]
++    public async Task RetainedTextFundsItsEntireBackingCapacity(string route, bool asynchronous)
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using (var owner = budget.CreateScope())
++        {
++            var context = new Context(new MockLythonHost(), new LythonRunOptions
++                { MemoryBudget = owner }, regexProvider: Utf8RegexProvider.Instance);
++            var callable = Load(context, route);
++            var input = PyString.FromString(new string('x', 10000), context.MemoryGovernor, Span);
++            CallArgumentValue[] warmup = [CallArgumentValue.Positional(PyNone.Instance)];
++            _ = asynchronous ? await callable.InvokeAsync(warmup, Span, context) : callable.Invoke(warmup, Span, context);
++            var before = context.MemoryGovernor.CurrentCommittedBytes;
++            CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
++            var result = Assert.IsType<PyString>(asynchronous
++                ? await callable.InvokeAsync(arguments, Span, context) : callable.Invoke(arguments, Span, context));
++            Assert.Equal(10002, result.ByteLength);
++            Assert.True(MemoryMarshal.TryGetArray(result.Utf8Bytes, out var storage));
++            Assert.NotNull(storage.Array);
++            Assert.True(context.MemoryGovernor.CurrentCommittedBytes - before
++                >= storage.Array.Length + PyString.EstimateApproximateBytes(0));
++            Assert.Equal((byte)'"', result.Utf8Span[0]);
++            Assert.Equal((byte)'"', result.Utf8Span[^1]);
++            Assert.True(result.Utf8Span[1..^1].IndexOfAnyExcept((byte)'x') < 0);
++            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     public static IEnumerable<object[]> Refusals()
+     {
+         foreach (var route in new[] { "dumps", "encode", "iterator" })
+diff --git a/tools/LythonProbe/Program.cs b/tools/LythonProbe/Program.cs
+index a71e7eb1..a58c8f11 100644
+--- a/tools/LythonProbe/Program.cs
++++ b/tools/LythonProbe/Program.cs
+@@ -275,6 +275,7 @@ static async Task<ProbeResult> RunLythonAsync(LythonEngine engine, ILythonHost h
+                 null));
+     }
+ 
++    using var resultLifetime = result;
+     return new ProbeResult(
+         result.Success,
+         result.StandardOutput,

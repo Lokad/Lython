@@ -1,0 +1,14 @@
+{
+  "status": "Retained candidate; full delivery and bounded ordinary-control confirmation pending",
+  "focusedPublicEachTarget": 79,
+  "pythonSemanticCases": 6,
+  "quietJobs": 5,
+  "archiveSHA256": "4ac09a7a2b79e0787e8bfcae1d34db39c80d91be853b648161993fd5cc1b9e7e",
+  "terminalCached": true,
+  "remainingWorkersAndFixtures": false,
+  "limitations": [
+    "Specific active-handler call cliff, not ordinary script universal gain",
+    "Adverse report and Unicode controls unresolved",
+    "Desktop isolated allocation comparison uses R178 baseline; quiet comparison qualified R173 baseline with R178+R179 candidate"
+  ]
+}

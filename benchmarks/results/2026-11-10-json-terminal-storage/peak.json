@@ -1,0 +1,166 @@
+{
+  "boundary": "Public probe, execution and public projection peaks, not physical CLR memory or timing; 16 MiB supplied shared allowance. Each result disposed after response snapshot.",
+  "python": "Python 3.13.2",
+  "images": {
+    "before": {
+      "Lokad.Lython.dll": "e833f03ce220fe7569b6cc2db89bb3a93504773b3b5e33a9e1b92a4d4d4c55ba",
+      "Lokad.Lython.pdb": "c414995bb62dd4b822ee975a66d2e09c32fda9d4c1f679a5c89c9a2112d79f56",
+      "Lokad.Lython.Utf8Regex.dll": "cb3c8df4d3d863c0822ca86683ea4b664a8bef183dfe884c5eb7c19402bdd46f",
+      "Lokad.Lython.Utf8Regex.pdb": "2b399d93d59b6cb80c107fcff3d21a870c884a8c71b790ec5db95c1120e4862c",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "LythonProbe.deps.json": "8b115571f2fea95c89dbb425a0576e6f20358dc5b23c64307670a70b77024a91",
+      "LythonProbe.dll": "edb13e7e41cbbd4edf6ea379ddc1b3453baf8e3bae3bac5c3d8358b4c2da7213",
+      "LythonProbe.exe": "b8cb62937c8d7d21fa2dd80662808d6dea46ce3187cffaa82ae4b976a0682c8a",
+      "LythonProbe.pdb": "d69810db9138a5979d0893e6ad3995238f19c8470a592b55c6ade1150042393b",
+      "LythonProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+    },
+    "candidate": {
+      "Lokad.Lython.dll": "65de59c2233f5ef25fa209bfb1369946409aa3e1dbf7ae2eb4f9aa437136e175",
+      "Lokad.Lython.pdb": "c414995bb62dd4b822ee975a66d2e09c32fda9d4c1f679a5c89c9a2112d79f56",
+      "Lokad.Lython.Utf8Regex.dll": "cb3c8df4d3d863c0822ca86683ea4b664a8bef183dfe884c5eb7c19402bdd46f",
+      "Lokad.Lython.Utf8Regex.pdb": "2b399d93d59b6cb80c107fcff3d21a870c884a8c71b790ec5db95c1120e4862c",
+      "Lokad.Utf8Regex.dll": "af5fb1e550cf23559bc7e26ef3d895b45e5ef98d57bcf46b414785a6e24cc857",
+      "Lokad.Utf8Regex.PythonRe.dll": "96e45b20c1db361a9b3b94bd557405b413510801bdb1488ae5b15d6aae7aedfe",
+      "LythonProbe.deps.json": "8b115571f2fea95c89dbb425a0576e6f20358dc5b23c64307670a70b77024a91",
+      "LythonProbe.dll": "edb13e7e41cbbd4edf6ea379ddc1b3453baf8e3bae3bac5c3d8358b4c2da7213",
+      "LythonProbe.exe": "b8cb62937c8d7d21fa2dd80662808d6dea46ce3187cffaa82ae4b976a0682c8a",
+      "LythonProbe.pdb": "d69810db9138a5979d0893e6ad3995238f19c8470a592b55c6ade1150042393b",
+      "LythonProbe.runtimeconfig.json": "c2ecf2430d6785354d9099b35eef9d6ac3d72f2089dc3dc9fd723558265b83d0"
+    }
+  },
+  "sources": {
+    "unicode-result": "import json\nvalue = json.dumps({'name': 'é😀'*4097, 'n':17}, ensure_ascii=False, sort_keys=True)\nprint(len(value))\nreturn value\n",
+    "bounded-records": "import json\nfor i in range(32):\n    value = json.dumps({'name': 'é😀'*65, 'n':i}, ensure_ascii=False, indent=2)\nprint(len(value))\nreturn value\n"
+  },
+  "observations": [
+    {
+      "role": "before",
+      "workload": "unicode-result",
+      "asynchronous": false,
+      "result": {
+        "Success": true,
+        "StandardOutput": "8215\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 84653,
+        "PeakProjectionMemoryBytes": 24698,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "before",
+      "workload": "unicode-result",
+      "asynchronous": true,
+      "result": {
+        "Success": true,
+        "StandardOutput": "8215\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 84653,
+        "PeakProjectionMemoryBytes": 24698,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "before",
+      "workload": "bounded-records",
+      "asynchronous": false,
+      "result": {
+        "Success": true,
+        "StandardOutput": "157\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 60688,
+        "PeakProjectionMemoryBytes": 516,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "before",
+      "workload": "bounded-records",
+      "asynchronous": true,
+      "result": {
+        "Success": true,
+        "StandardOutput": "157\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 60688,
+        "PeakProjectionMemoryBytes": 516,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "candidate",
+      "workload": "unicode-result",
+      "asynchronous": false,
+      "result": {
+        "Success": true,
+        "StandardOutput": "8215\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 76454,
+        "PeakProjectionMemoryBytes": 24698,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "candidate",
+      "workload": "unicode-result",
+      "asynchronous": true,
+      "result": {
+        "Success": true,
+        "StandardOutput": "8215\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 76454,
+        "PeakProjectionMemoryBytes": 24698,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "candidate",
+      "workload": "bounded-records",
+      "asynchronous": false,
+      "result": {
+        "Success": true,
+        "StandardOutput": "157\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 72807,
+        "PeakProjectionMemoryBytes": 516,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    },
+    {
+      "role": "candidate",
+      "workload": "bounded-records",
+      "asynchronous": true,
+      "result": {
+        "Success": true,
+        "StandardOutput": "157\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 72807,
+        "PeakProjectionMemoryBytes": 516,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      }
+    }
+  ]
+}
