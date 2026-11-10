@@ -1,0 +1,5 @@
+{
+  "build": "Initial partial struct split placed instance fields in two declarations (CS0282). Moved the field into the existing declaration; retained build-net11.log.",
+  "test": "Initial generator golden unconditionally deleted then read value, rejected by existing frontend definite-assignment diagnostic before execution. Changed deletion to an if True branch, matching existing deleted-local fixtures. Original source/output and failed focused log retained. No runtime semantic relaxation.",
+  "proof": "Five original and corrected programs independently agree with CPython3.13.2; corrected program goes through the supported dynamic-unbound path."
+}

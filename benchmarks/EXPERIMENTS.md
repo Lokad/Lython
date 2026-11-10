@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R188 deferred integer-local prototype](results/2026-11-10-integer-local-storage/README.md)
+removes per-update boxing for eligible local counters. The original complete-script
+allocation falls about14%text/18%search, but B535's112.766second quiet comparison
+leaves CPU near neutral/uncertain. Original adversity and all controls survive.
+Source remains isolated; a generated-code-supported cold-read refinement is active.
+This is not source promotion, final qualification or completion of the roadmap.
+
 The [R176 contract-preserving small-integer assessment](results/2026-11-09-private-small-integers/README.md)
 preserves public BigInteger/CLR ingress and reproduces6.91% text allocation savings.
 Both wrapper and numeric-view refinement are withdrawn:58production files change,
