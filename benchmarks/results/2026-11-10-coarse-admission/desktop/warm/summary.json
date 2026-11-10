@@ -1,0 +1,162 @@
+[
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 3202138.75,
+        "runOnlyMs": 12.97295625,
+        "fullEnvelopeMs": 31.61645
+      },
+      "before-control": {
+        "bytes": 3202323.0,
+        "runOnlyMs": 12.18340625,
+        "fullEnvelopeMs": 30.183659375
+      },
+      "candidate": {
+        "bytes": 3202318.25,
+        "runOnlyMs": 11.70046875,
+        "fullEnvelopeMs": 29.534278125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.005605628425686682,
+        "runOnlyMs": -9.808770456618154,
+        "fullEnvelopeMs": -6.585723175751868
+      },
+      "before-control": {
+        "bytes": -0.00014832982182522159,
+        "runOnlyMs": -3.9638955649205276,
+        "fullEnvelopeMs": -2.1514331378184703
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 2333624.75,
+        "runOnlyMs": 16.652296875,
+        "fullEnvelopeMs": 18.222834375
+      },
+      "before-control": {
+        "bytes": 2333596.0,
+        "runOnlyMs": 17.271021875,
+        "fullEnvelopeMs": 18.92629375
+      },
+      "candidate": {
+        "bytes": 2333632.75,
+        "runOnlyMs": 16.907646875,
+        "fullEnvelopeMs": 19.14940625
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0003428143277917073,
+        "runOnlyMs": 1.5334220973645785,
+        "fullEnvelopeMs": 5.084674842192305
+      },
+      "before-control": {
+        "bytes": 0.0015748227199630094,
+        "runOnlyMs": -2.103957731221373,
+        "fullEnvelopeMs": 1.1788493983403425
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 3318516.5,
+        "runOnlyMs": 12.439496875,
+        "fullEnvelopeMs": 14.662215625
+      },
+      "before-control": {
+        "bytes": 3318509.5,
+        "runOnlyMs": 12.73136875,
+        "fullEnvelopeMs": 14.9344375
+      },
+      "candidate": {
+        "bytes": 3318517.5,
+        "runOnlyMs": 13.69565,
+        "fullEnvelopeMs": 16.044103125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 3.0133946893329266e-05,
+        "runOnlyMs": 10.098102339850467,
+        "fullEnvelopeMs": 9.42482047286084
+      },
+      "before-control": {
+        "bytes": 0.00024107208371759725,
+        "runOnlyMs": 7.574057973931514,
+        "fullEnvelopeMs": 7.430247205494012
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 1422159.25,
+        "runOnlyMs": 8.278178125,
+        "fullEnvelopeMs": 10.222315625
+      },
+      "before-control": {
+        "bytes": 1422137.5,
+        "runOnlyMs": 8.72415625,
+        "fullEnvelopeMs": 10.5547
+      },
+      "candidate": {
+        "bytes": 1422167.25,
+        "runOnlyMs": 8.4676625,
+        "fullEnvelopeMs": 10.313709375
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.0005625249070995153,
+        "runOnlyMs": 2.288962282990248,
+        "fullEnvelopeMs": 0.8940611242376884
+      },
+      "before-control": {
+        "bytes": 0.0020919214914094653,
+        "runOnlyMs": -2.940040763254337,
+        "fullEnvelopeMs": -2.2832541427042052
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "before": {
+        "bytes": 39001.25,
+        "runOnlyMs": 1.04015,
+        "fullEnvelopeMs": 2.608728125
+      },
+      "before-control": {
+        "bytes": 38665.25,
+        "runOnlyMs": 0.9073125,
+        "fullEnvelopeMs": 2.322425
+      },
+      "candidate": {
+        "bytes": 39009.25,
+        "runOnlyMs": 1.042734375,
+        "fullEnvelopeMs": 2.87283125
+      }
+    },
+    "changePercent": {
+      "before": {
+        "bytes": 0.020512163071706446,
+        "runOnlyMs": 0.24846176032304879,
+        "fullEnvelopeMs": 10.123827104443862
+      },
+      "before-control": {
+        "bytes": 0.8896877687329052,
+        "runOnlyMs": 14.925604463732189,
+        "fullEnvelopeMs": 23.699635079711932
+      }
+    }
+  }
+]
