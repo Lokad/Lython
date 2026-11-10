@@ -1,0 +1,15 @@
+{
+  "status": "Main source promoted; focused actual11/10 pass. Full delivery pending.",
+  "publicPerTarget": 715,
+  "internalPerTarget": 82,
+  "nonincrementalBuild": true,
+  "productionFiles": [
+    "LythonRuntime.Calls.Binding.cs",
+    "LythonRuntime.Executable.Calls.Invoke.cs",
+    "PyDict.Storage.cs",
+    "PyExecutableFunction.cs"
+  ],
+  "coreSHA256": "c1e041d9f79115e543458ba4c7f895aa0fd6f09c74968704be1e550ce533ff65",
+  "measuredCoreSHA256": "f8995f65f149545ff3eb75a68351b51451331e17aa6ef59282f81ff7968b5559",
+  "identityNote": "Postpromotion main rebuild has different source-control metadata; frozen measured image and full source hashes remain in observations."
+}

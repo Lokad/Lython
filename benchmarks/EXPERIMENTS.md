@@ -5774,3 +5774,19 @@ eliminate sufficient actual work.1381public/42internal focused eachtarget pass;
 source/core/all adversity remain, no unchanged full qualification repeat. Next
 source gate removes actual owned binding work for closed named/default helpers
 through the shared binder, retaining native kernels and dynamic async protocols.
+
+## R184 — shared binding destination and closed named/default entry
+
+[The retained source pair](results/2026-11-10-shared-call-binding/README.md)
+uses one Span/presence fill for owned binding and small closed native helpers,
+removing workspace/activation on eligible named/default calls. Existing positional
+borrows, wide signatures and genuinely suspending defaults keep their routes.
+Focused Release checks pass 715 public / 82 internal per actual .NET 11/10.
+An actual runtime-defined helper runs without additional admission and retains
+funded inputs. B532 completes three whole-script jobs in 112.099 seconds, all
+identity/output/ownership/quiet/join/unmount/archive/local-SHA checks passing.
+Keyword-default search elapsed falls 15.7–21.5%, wider CPU 15.4–18.8%; allocation
+is effectively flat. Text/CSV controls remain inconclusive with possible small
+debt. Desktop search +5.46–8.31% and compilation uncertainty survive. This is not
+a new CPython row or completion of the broader performance objective. Full
+retained-source delivery checks follow; publication remains postponed.

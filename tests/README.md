@@ -23,6 +23,12 @@ annotations and retained results through both APIs against Python goldens.
 Native-return protocol checks also suspend inside active handlers and join
 cancellation before retiring their allowance.
 
+[Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
+check live default aliases and replacement, keyword binding, wide calls, retained
+values and genuinely suspending default protocols through both APIs. The white-box
+native-helper boundary also executes an actual runtime-defined keyword-default
+helper with further admission denied, checking that existing inputs stay funded.
+
 [JSON string admission](Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs)
 checks refusal before publication and funding for an adopted buffer's entire
 capacity, with cleanup returning the shared allowance to baseline.

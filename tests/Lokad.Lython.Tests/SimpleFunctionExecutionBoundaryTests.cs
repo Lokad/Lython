@@ -630,6 +630,52 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         }
     }
 
+    [Fact]
+    public void KeywordDefaultPrefixUsesFundedInputsWithoutAdditionalAdmission()
+    {
+        var budget = new LythonMemoryBudget(128 * 1024);
+        using (var inputs = budget.CreateScope())
+        {
+            var inputGovernor = new MemoryGovernor(inputs);
+            var prefix = PyString.FromString("NEEDLE:", inputGovernor, CallSpan);
+            var line = PyString.FromString("NEEDLE: kept", inputGovernor, CallSpan);
+            var inputCharge = budget.ReservedBytes;
+            using (var execution = budget.CreateScope())
+            {
+                var hook = new AdmissionHookMemoryBudget(execution);
+                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+                    new LythonRunOptions { MemoryBudget = hook },regexProvider:Utf8RegexProvider.Instance);
+                context.Variables["storedPrefix"] = prefix;
+                var definition = LythonFrontend.Compile(
+                    "def f(value,*,prefix=storedPrefix):return value.startswith(prefix)",regexProvider:Utf8RegexProvider.Instance);
+                LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(
+                    LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint, context);
+                var function = Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
+                var code = function.CodeObject;
+                var callFrontend = LythonFrontend.Compile("f(value)",regexProvider:Utf8RegexProvider.Instance);
+                var call = Assert.Single(ExecutableScript.Compile(
+                    LoweredScript.Lower(callFrontend.Script.RequireNotNull())).EntryPoint.CallSites);
+                Assert.NotNull(code.NativeBody);
+                Assert.True(function.CanBindNativeArguments);
+                var baseline = budget.ReservedBytes;
+                hook.RefuseGrowth = _ => true;
+                context.EnterInterpreterFrame(CallSpan);
+                try
+                {
+                    Assert.True(function.TryExecuteNativeCall(call, [line], context, CallSpan, out var result));
+                    Assert.True(Assert.IsType<bool>(result));
+                    Assert.Null(context.MemoryGovernor.AdmissionFailure);
+                    Assert.Equal(baseline, budget.ReservedBytes);
+                }
+                finally { context.LeaveInterpreterFrame(); context.State.CloseResources(); }
+                Assert.Equal("NEEDLE: kept", line.AsString());
+                Assert.Equal("NEEDLE:", prefix.AsString());
+            }
+            Assert.Equal(inputCharge, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)
     {
         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Share function argument binding across owned workspaces and managed inline
+  storage for eligible closed helpers with named or default arguments. Preserve
+  live defaults, wide signatures, protocol suspension and existing positional calls.
+
 - Consolidate optional Unicode index metadata, preserving direct UTF-8 storage,
   stable memory borrows and cache funding through reentrant admission.
 

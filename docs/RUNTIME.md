@@ -308,6 +308,13 @@ Closed native helpers can run while their caller owns active exception-handler
 aliases. They share current exception state and global lookup, without binding or
 unwinding the caller's aliases. Class/annotation contexts retain their lexical
 machinery; custom protocols still promote to ordinary execution before effects.
+Named and default arguments use the same binding fill as ordinary calls. Small
+closed native helpers can fill managed inline slots without renting function
+workspace or creating an activation. This path accepts only native default storage
+that cannot invoke a protocol; values remain funded by their caller and definition
+owners through completion. Wide signatures and dynamic defaults keep owned binding,
+including across suspension. The inline capacity is an optimization threshold,
+not a limit on Python arguments. Live default aliases retain their normal behavior.
 The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.

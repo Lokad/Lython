@@ -63,7 +63,10 @@ internal sealed partial class LythonRuntime
         var storage = RentFunctionArgumentStorage(plan, span, context.MemoryGovernor, storageCapacity);
         try
         {
-            return BindInto(storage, arguments, span, plan, context, deferKeywordDefaults, receiver, callSite, operands);
+            var assigned = storage.Assigned;
+            BindFunctionArgumentsInto(storage.Values, ref assigned, arguments, span, plan, context,
+                deferKeywordDefaults, receiver, callSite, operands);
+            return storage with { Assigned = assigned };
         }
         catch
         {
@@ -152,11 +155,12 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Post-rent binding body: every throw inside (too many positionals,
-    // unexpected or duplicated keywords, missing arguments) funnels through
-    // the catch in BindFunctionArguments, which returns the rented box.
-    private static BoundCallArguments BindInto(
-        BoundCallArguments storage,
+    // One binding fill serves an admitted workspace or a synchronous caller's
+    // borrowed destination. The caller owns storage/rollback; this routine
+    // retains ordinary live-default and Python argument/error semantics.
+    internal static void BindFunctionArgumentsInto(
+        Span<object> values,
+        ref ArgumentPresence assigned,
         ReadOnlySpan<CallArgumentValue> arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
@@ -166,8 +170,6 @@ internal sealed partial class LythonRuntime
         ExecutableCallSite? callSite = null,
         ReadOnlySpan<object?> operands = default)
     {
-        var values = storage.Values;
-        var assigned = storage.Assigned;
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill under existing ownership.
         PyList? extraPositional = null;
@@ -304,7 +306,6 @@ internal sealed partial class LythonRuntime
             assigned[keywordDictIndex] = true;
         }
 
-        return storage with { Assigned = assigned };
     }
 
     // Constructed function objects retain a wrapper plus binding plan and

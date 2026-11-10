@@ -1,0 +1,7 @@
+{
+  "reference": "CPython3.13.2 isolated, output correctness only",
+  "sourceSHA256": "1671be99f720346fdb1e4a11da78150dbdd9a713704657edaf01ebfa47f60e24",
+  "fixtureSHA256": "820ad2f52b6fb2a0d91cd10754fe01a9fed8f43c1639f9fa0a0ad09c54d1469a",
+  "stdout": "1025\n",
+  "description": "Complete original file-search script with useful keyword-only prefix default instead of hardcoded literal. Same files/stdout/input, new sourceSHA. Legacy diagnostic canonical ID retained; not published original CPython source."
+}

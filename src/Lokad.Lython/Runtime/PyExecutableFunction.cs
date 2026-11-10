@@ -72,14 +72,48 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         // Class/annotation contexts keep their existing lexical machinery.
         // Handler aliases belong to the caller: this closed body never binds or
         // unwinds them, and exception state is shared with the ordinary frame.
-        if (_codeObject.NativeBody is null
-            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
-            || Closure.InlinedComprehensionLookup is not null)
+        if (!CanExecuteNativeBody)
         {
             result = PyNone.Instance;
             return false;
         }
         return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result);
+    }
+
+    private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
+        && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
+        && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
+
+    // An optimization threshold, never a Python argument/execution limit.
+    // Wide/external-default/protocol calls keep their admitted owned binding.
+    private const int NativeParameterCapacity = 16;
+    internal bool CanBindNativeArguments => CanExecuteNativeBody
+        && BindingPlan.ParameterCount <= NativeParameterCapacity
+        && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
+        && BindingPlan.PositionalDefaults is null or PyTuple
+        && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
+
+    [System.Runtime.CompilerServices.InlineArray(NativeParameterCapacity)]
+    private struct NativeParameters { private object _first; }
+
+    // Eligibility precedes this frame: filling these slots cannot allocate,
+    // admit storage or invoke default/key protocols. Arguments/defaults remain
+    // funded by their existing caller/definition owners through completion.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object result)
+    {
+        NativeParameters buffer = default;
+        Span<object> values = buffer;
+        values = values[..BindingPlan.ParameterCount];
+        try
+        {
+            var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
+            LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
+                context, callSite: call, operands: arguments);
+            return TryExecuteWithoutFrame(values, span, out result);
+        }
+        finally { values.Clear(); }
     }
 
     protected override object ExecuteBody(

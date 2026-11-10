@@ -15,11 +15,12 @@ internal sealed partial class LythonRuntime
             // Closed helpers complete here just like native builtins. Borrow the
             // evaluated arguments without manufacturing a pending call/resume.
             // Other function calls still use the existing binding/frame runner.
-            if (call.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function
-                && function.CodeObject.NativeBody is not null
-                && (!call.HasReceiver || execution.Stack[start] is PyNone)
-                && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null))
+            if (target is PyExecutableFunction function && function.CodeObject.NativeBody is not null
+                && (!call.HasReceiver || execution.Stack[start] is PyNone))
             {
+                var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
+                    && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null);
+                if (!borrow && !function.CanBindNativeArguments) return false;
                 try
                 {
                     object value;
@@ -27,9 +28,11 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         scope.CheckExecution(call.CallSpan);
-                        if (!function.TryExecuteWithoutFrame(
-                            execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
-                            call.CallSpan, out value)) return false;
+                        var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                        var completed = borrow
+                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, out value)
+                            : function.TryExecuteNativeCall(call, arguments, scope, call.CallSpan, out value);
+                        if (!completed) return false;
                     }
                     catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
                     {

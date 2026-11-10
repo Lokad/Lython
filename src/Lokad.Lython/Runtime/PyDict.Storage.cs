@@ -292,11 +292,13 @@ internal sealed partial class PyDict
         last.Protocol = false;
     }
 
+    internal bool SupportsNativeStringReads => _nativeItems is not null && !HasProtocolKeys;
+
     // Native-format proofs cannot enter bridges, decode text or dispatch protocols.
     internal bool TryReadNativeStringValue(Text.PyString key, LythonRuntime.ExecutionContext context,
         LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (_nativeItems is not null && !HasProtocolKeys)
+        if (SupportsNativeStringReads)
         {
             var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
             var index = FindNativeIndex(key, hash, context, span);

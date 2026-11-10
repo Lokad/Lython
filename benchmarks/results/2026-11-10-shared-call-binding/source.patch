@@ -1,0 +1,337 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index e2c8d2de..c2f1e51c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -63,7 +63,10 @@ internal sealed partial class LythonRuntime
+         var storage = RentFunctionArgumentStorage(plan, span, context.MemoryGovernor, storageCapacity);
+         try
+         {
+-            return BindInto(storage, arguments, span, plan, context, deferKeywordDefaults, receiver, callSite, operands);
++            var assigned = storage.Assigned;
++            BindFunctionArgumentsInto(storage.Values, ref assigned, arguments, span, plan, context,
++                deferKeywordDefaults, receiver, callSite, operands);
++            return storage with { Assigned = assigned };
+         }
+         catch
+         {
+@@ -152,11 +155,12 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
+-    // Post-rent binding body: every throw inside (too many positionals,
+-    // unexpected or duplicated keywords, missing arguments) funnels through
+-    // the catch in BindFunctionArguments, which returns the rented box.
+-    private static BoundCallArguments BindInto(
+-        BoundCallArguments storage,
++    // One binding fill serves an admitted workspace or a synchronous caller's
++    // borrowed destination. The caller owns storage/rollback; this routine
++    // retains ordinary live-default and Python argument/error semantics.
++    internal static void BindFunctionArgumentsInto(
++        Span<object> values,
++        ref ArgumentPresence assigned,
+         ReadOnlySpan<CallArgumentValue> arguments,
+         LythonSourceSpan span,
+         FunctionBindingPlan plan,
+@@ -166,8 +170,6 @@ internal sealed partial class LythonRuntime
+         ExecutableCallSite? callSite = null,
+         ReadOnlySpan<object?> operands = default)
+     {
+-        var values = storage.Values;
+-        var assigned = storage.Assigned;
+         // The overflow list is scratch: most calls never spill positionals,
+         // so materialize it only on the first spill under existing ownership.
+         PyList? extraPositional = null;
+@@ -304,7 +306,6 @@ internal sealed partial class LythonRuntime
+             assigned[keywordDictIndex] = true;
+         }
+ 
+-        return storage with { Assigned = assigned };
+     }
+ 
+     // Constructed function objects retain a wrapper plus binding plan and
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 708cea59..76f25a03 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -15,11 +15,12 @@ internal sealed partial class LythonRuntime
+             // Closed helpers complete here just like native builtins. Borrow the
+             // evaluated arguments without manufacturing a pending call/resume.
+             // Other function calls still use the existing binding/frame runner.
+-            if (call.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function
+-                && function.CodeObject.NativeBody is not null
+-                && (!call.HasReceiver || execution.Stack[start] is PyNone)
+-                && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null))
++            if (target is PyExecutableFunction function && function.CodeObject.NativeBody is not null
++                && (!call.HasReceiver || execution.Stack[start] is PyNone))
+             {
++                var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
++                    && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null);
++                if (!borrow && !function.CanBindNativeArguments) return false;
+                 try
+                 {
+                     object value;
+@@ -27,9 +28,11 @@ internal sealed partial class LythonRuntime
+                     try
+                     {
+                         scope.CheckExecution(call.CallSpan);
+-                        if (!function.TryExecuteWithoutFrame(
+-                            execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
+-                            call.CallSpan, out value)) return false;
++                        var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
++                        var completed = borrow
++                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, out value)
++                            : function.TryExecuteNativeCall(call, arguments, scope, call.CallSpan, out value);
++                        if (!completed) return false;
+                     }
+                     catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+                     {
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Storage.cs b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+index c2cdefd3..76f2797d 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Storage.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+@@ -292,11 +292,13 @@ internal sealed partial class PyDict
+         last.Protocol = false;
+     }
+ 
++    internal bool SupportsNativeStringReads => _nativeItems is not null && !HasProtocolKeys;
++
+     // Native-format proofs cannot enter bridges, decode text or dispatch protocols.
+     internal bool TryReadNativeStringValue(Text.PyString key, LythonRuntime.ExecutionContext context,
+         LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+     {
+-        if (_nativeItems is not null && !HasProtocolKeys)
++        if (SupportsNativeStringReads)
+         {
+             var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, span, context));
+             var index = FindNativeIndex(key, hash, context, span);
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index 5224d581..58cb5a08 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -72,9 +72,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         // Class/annotation contexts keep their existing lexical machinery.
+         // Handler aliases belong to the caller: this closed body never binds or
+         // unwinds them, and exception state is shared with the ordinary frame.
+-        if (_codeObject.NativeBody is null
+-            || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
+-            || Closure.InlinedComprehensionLookup is not null)
++        if (!CanExecuteNativeBody)
+         {
+             result = PyNone.Instance;
+             return false;
+@@ -82,6 +80,42 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result);
+     }
+ 
++    private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
++        && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
++        && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
++
++    // An optimization threshold, never a Python argument/execution limit.
++    // Wide/external-default/protocol calls keep their admitted owned binding.
++    private const int NativeParameterCapacity = 16;
++    internal bool CanBindNativeArguments => CanExecuteNativeBody
++        && BindingPlan.ParameterCount <= NativeParameterCapacity
++        && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
++        && BindingPlan.PositionalDefaults is null or PyTuple
++        && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
++
++    [System.Runtime.CompilerServices.InlineArray(NativeParameterCapacity)]
++    private struct NativeParameters { private object _first; }
++
++    // Eligibility precedes this frame: filling these slots cannot allocate,
++    // admit storage or invoke default/key protocols. Arguments/defaults remain
++    // funded by their existing caller/definition owners through completion.
++    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
++    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span, out object result)
++    {
++        NativeParameters buffer = default;
++        Span<object> values = buffer;
++        values = values[..BindingPlan.ParameterCount];
++        try
++        {
++            var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
++            LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
++                context, callSite: call, operands: arguments);
++            return TryExecuteWithoutFrame(values, span, out result);
++        }
++        finally { values.Clear(); }
++    }
++
+     protected override object ExecuteBody(
+         LythonRuntime.ExecutionContext frame,
+         BoundCallArguments boundArguments,
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs b/tests/Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs
+index 66629efd..d49e4d2b 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs
+@@ -7,6 +7,9 @@ public sealed class FunctionDefaultMetadataTests
+ {
+     public static TheoryData<string, string> Programs => new()
+     {
++        { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
++        { "saved=[]\ndef pick(*,value=saved): return value\nprint(pick() is saved,pick(value=saved) is saved)\npick.__kwdefaults__={'value':['changed']}\npicked=pick()\nprint(picked is pick.__kwdefaults__['value'],saved)", "True True\nTrue []\n" },
++        { "def f(a=0,b=1,c=2,d=3,e=4,f=5,g=6,h=7,i=8,j=9,k=10,l=11,m=12,n=13,o=14,p=15,q=16): return q\nprint(f(),f(q=23),f(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))", "16 23 16\n" },
+         { "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)", "(1,) {'b': 2}\nTrue True\n" },
+         { "def f(x=5): return x\nf.__defaults__=(7,)\nprint(f())", "7\n" },
+         { "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)", "9 True\n" },
+@@ -46,14 +49,17 @@ public sealed class FunctionDefaultMetadataTests
+     private const string YieldingLookup = "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())";
+ 
+     [Theory]
+-    [InlineData(false)]
+-    [InlineData(true)]
+-    public async Task KeywordLookupCanYieldAndSubsequentParametersSeeReplacement(bool retainAlias)
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task KeywordLookupCanYieldAndSubsequentParametersSeeReplacement(bool retainAlias, bool singleResult)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         var source = retainAlias
+             ? YieldingLookup.Replace("f.__kwdefaults__={Key():7,'y':8}", "original={Key():7,'y':8}\nf.__kwdefaults__=original")
+             : YieldingLookup;
++        if (singleResult) source = source.Replace("def f(*,x,y): return x,y", "def f(*,x,y): return x");
+         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+         var baseline = budget.ReservedBytes;
+         foreach (var asynchronous in new[] { false, true })
+@@ -65,7 +71,7 @@ public sealed class FunctionDefaultMetadataTests
+             using (var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!))
+             {
+                 Assert.True(result.Success, result.Failure?.Message);
+-                Assert.Equal("(7, 100)\n(99, 100)\n", result.StandardOutput);
++                Assert.Equal(singleResult ? "7\n99\n" : "(7, 100)\n(99, 100)\n", result.StandardOutput);
+                 Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
+                 if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+             }
+@@ -73,11 +79,14 @@ public sealed class FunctionDefaultMetadataTests
+         }
+     }
+ 
+-    [Fact]
+-    public async Task CancelledKeywordLookupDrainsBeforeReturningAllowance()
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task CancelledKeywordLookupDrainsBeforeReturningAllowance(bool singleResult)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingLookup, budget);
++        var source = singleResult ? YieldingLookup.Replace("def f(*,x,y): return x,y", "def f(*,x,y): return x") : YieldingLookup;
++        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+         var baseline = budget.ReservedBytes;
+         var host = new DelayedLythonHost();
+         host.SeedFile("/events.txt", "before");
+@@ -124,9 +133,11 @@ public sealed class FunctionDefaultMetadataTests
+     }
+ 
+     [Theory]
+-    [InlineData(false)]
+-    [InlineData(true)]
+-    public async Task SuspendingDefaultRefusalKeepsArgumentsAndCannotResumeTheCaller(bool asynchronous)
++    [InlineData(false, false)]
++    [InlineData(true, false)]
++    [InlineData(false, true)]
++    [InlineData(true, true)]
++    public async Task SuspendingDefaultRefusalKeepsArgumentsAndCannotResumeTheCaller(bool asynchronous, bool singleResult)
+     {
+         const string source = """
+ class Key:
+@@ -152,7 +163,8 @@ finally:
+  if fail: return 0
+ """;
+         var budget = new LythonMemoryBudget(512 * 1024);
+-        using var script = new LythonEngine().Compile(source, budget);
++        var program = singleResult ? source.Replace("return len(value[0]),x,y", "return len(value[0])") : source;
++        using var script = new LythonEngine().Compile(program, budget);
+         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+         var baseline = budget.ReservedBytes;
+         foreach (var fail in new[] { true, false })
+@@ -170,7 +182,7 @@ finally:
+                     Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
+                     Assert.Empty(result.StandardOutput);
+                 }
+-                else Assert.Equal("(8192, 7, 100)\n", result.StandardOutput);
++                else Assert.Equal(singleResult ? "8192\n" : "(8192, 7, 100)\n", result.StandardOutput);
+                 Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
+                 if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+             }
+@@ -178,11 +190,16 @@ finally:
+         }
+     }
+ 
+-    [Fact]
+-    public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared()
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared(bool callFirst)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]", budget);
++        var source = callFirst
++            ? "def f(value='x'*4096): return value\nsaved=f()\nf.__defaults__=None\nreturn saved"
++            : "def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]";
++        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
+         var baseline = budget.ReservedBytes;
+         foreach (var asynchronous in new[] { false, true })
+         {
+diff --git a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+index b943f33d..5ae5b427 100644
+--- a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+@@ -630,6 +630,52 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+         }
+     }
+ 
++    [Fact]
++    public void KeywordDefaultPrefixUsesFundedInputsWithoutAdditionalAdmission()
++    {
++        var budget = new LythonMemoryBudget(128 * 1024);
++        using (var inputs = budget.CreateScope())
++        {
++            var inputGovernor = new MemoryGovernor(inputs);
++            var prefix = PyString.FromString("NEEDLE:", inputGovernor, CallSpan);
++            var line = PyString.FromString("NEEDLE: kept", inputGovernor, CallSpan);
++            var inputCharge = budget.ReservedBytes;
++            using (var execution = budget.CreateScope())
++            {
++                var hook = new AdmissionHookMemoryBudget(execution);
++                var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
++                    new LythonRunOptions { MemoryBudget = hook },regexProvider:Utf8RegexProvider.Instance);
++                context.Variables["storedPrefix"] = prefix;
++                var definition = LythonFrontend.Compile(
++                    "def f(value,*,prefix=storedPrefix):return value.startswith(prefix)",regexProvider:Utf8RegexProvider.Instance);
++                LythonRuntime.ExecuteExecutableCodeObject(ExecutableScript.Compile(
++                    LoweredScript.Lower(definition.Script.RequireNotNull())).EntryPoint, context);
++                var function = Assert.IsType<PyExecutableFunction>(context.Variables["f"]);
++                var code = function.CodeObject;
++                var callFrontend = LythonFrontend.Compile("f(value)",regexProvider:Utf8RegexProvider.Instance);
++                var call = Assert.Single(ExecutableScript.Compile(
++                    LoweredScript.Lower(callFrontend.Script.RequireNotNull())).EntryPoint.CallSites);
++                Assert.NotNull(code.NativeBody);
++                Assert.True(function.CanBindNativeArguments);
++                var baseline = budget.ReservedBytes;
++                hook.RefuseGrowth = _ => true;
++                context.EnterInterpreterFrame(CallSpan);
++                try
++                {
++                    Assert.True(function.TryExecuteNativeCall(call, [line], context, CallSpan, out var result));
++                    Assert.True(Assert.IsType<bool>(result));
++                    Assert.Null(context.MemoryGovernor.AdmissionFailure);
++                    Assert.Equal(baseline, budget.ReservedBytes);
++                }
++                finally { context.LeaveInterpreterFrame(); context.State.CloseResources(); }
++                Assert.Equal("NEEDLE: kept", line.AsString());
++                Assert.Equal("NEEDLE:", prefix.AsString());
++            }
++            Assert.Equal(inputCharge, budget.ReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     private static (PyExecutableFunction Function, LythonRuntime.ExecutionContext Context, ExecutableCodeObject Code) Function(string source, LythonRunOptions options)
+     {
+         var frontend = LythonFrontend.Compile(source,regexProvider:Utf8RegexProvider.Instance);

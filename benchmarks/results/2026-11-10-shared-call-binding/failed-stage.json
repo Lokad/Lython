@@ -1,0 +1,6 @@
+{
+  "stageOnly": true,
+  "unitNotStarted": true,
+  "reason": "Copied launcher stage path still named B531; exclusive-create assertion refused overwrite before remote collector launch.",
+  "correction": "Unique B532 stage pathname; unchanged payload/source/timing contract."
+}
