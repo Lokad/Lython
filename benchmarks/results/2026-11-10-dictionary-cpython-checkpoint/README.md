@@ -6,7 +6,9 @@ after explicit EOL normalization; no postcommit binary identity or arbitrary lat
 HEAD measurement is implied. [Source proof](source-equivalence.json) and exact
 [image identity](identity.json) preserve this distinction. Local ordinary and
 installed Release consumers pass; CI42783134761 original Stress was pending at
-the collection snapshot. Final delivery qualification is recorded separately.
+the collection snapshot. Final delivery is separately [cached GREEN](../2026-11-10-dictionary-accumulation/qualification/delivery-ci.json)
+on Windows/Ubuntu, actual11/10, original Stress and installed consumers; the
+collection snapshot remains unchanged.
 
 F4as_v7 Ubuntu24.04.4, four AMD EPYC9V45 vCPUs,16GiB/no swap, actual.NET11RC3,
 stock isolated CPython3.13.16. Same workers/adapter0.4/dependencies/scripts/goldens

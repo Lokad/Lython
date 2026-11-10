@@ -1,6 +1,6 @@
 # Native dictionary accumulation — R190
 
-Source retained for delivery qualification; publication postponed. A compiler fact
+Source committed e5731404 and fully qualified; publication postponed. A compiler fact
 and the existing executable engine combine an eligible dictionary get/add/assignment
 into one native table update. The second hash/probe and intermediate result/opcodes
 are removed. Existing exact arithmetic, preflights, table publication, ownership,
@@ -33,8 +33,8 @@ actual suspension/cancellation, terminal refusal and retained funding/budget reu
 are covered. Full ordinary Release passes16988public/4473internal peractual11/10 after forced
 solution build. [Local ordinary checks](qualification/local-ordinary.json) and
 [main installed consumers](qualification/main-installed-package.json) retain their
-logs separately. Windows/Ubuntu ordinary and package checks pass; original Stress
-in run42783134761 is pending separately. No unchanged
+logs separately. Windows/Ubuntu ordinary, actual11/10, original Stress and installed Release
+consumers pass [cached delivery42783134761](qualification/delivery-ci.json). No unchanged
 historical CPython or platform results are re-run/claimed for this source.
 
 The [recovery receipt](raw-space-recovery.json) preserves exact canonical-copy/

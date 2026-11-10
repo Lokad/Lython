@@ -1,0 +1,63 @@
+{
+  "tree": "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\native-dictionary-accumulation-r190\\tree",
+  "allDirtyFilesRetainedInMain": true,
+  "files": [
+    {
+      "file": "src/Lokad.Lython/Frontend/ExecutableScript.DictionaryAccumulation.cs",
+      "privateSHA256": "90924c6b4a6b502c7587d4b5ff928568b96176bf204468f942312fc8c151f3d7",
+      "mainSHA256": "90924c6b4a6b502c7587d4b5ff928568b96176bf204468f942312fc8c151f3d7",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Frontend/ExecutableScript.cs",
+      "privateSHA256": "26f68a18184728224e15e370fcb38e41fc2fac53507f0167864818be49725f2a",
+      "mainSHA256": "26f68a18184728224e15e370fcb38e41fc2fac53507f0167864818be49725f2a",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs",
+      "privateSHA256": "b3316067bc1a779d3e51d46c5d0e7c0aa9ef763b4654d91a8e6b55f63b99ea1b",
+      "mainSHA256": "b3316067bc1a779d3e51d46c5d0e7c0aa9ef763b4654d91a8e6b55f63b99ea1b",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs",
+      "privateSHA256": "99180f6ae1c7e352d5b23922b3172a17cf0f8279ec4f79a90ab1e0390787003c",
+      "mainSHA256": "99180f6ae1c7e352d5b23922b3172a17cf0f8279ec4f79a90ab1e0390787003c",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs",
+      "privateSHA256": "7d087876c3aca345b2f1152f4139144a28ee9d0c983702f6049a79760141bedf",
+      "mainSHA256": "7d087876c3aca345b2f1152f4139144a28ee9d0c983702f6049a79760141bedf",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "src/Lokad.Lython/Runtime/PyDict.Accumulation.cs",
+      "privateSHA256": "1cc0e839b01bc1ba425828c978c5e84e5d1296e3202c131eac8cf7bfba65d004",
+      "mainSHA256": "1cc0e839b01bc1ba425828c978c5e84e5d1296e3202c131eac8cf7bfba65d004",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs",
+      "privateSHA256": "0cc66fcb48b2880d6f606f283f383fa8aa527c9678b96a1e61772ccef979fd31",
+      "mainSHA256": "0cc66fcb48b2880d6f606f283f383fa8aa527c9678b96a1e61772ccef979fd31",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/DictionaryAccumulationLifetimeTests.cs",
+      "privateSHA256": "5b4d9cb41bbd9bbde019fc7b4be38e1216e69b15e8b7b58225cd6c2f6d46d670",
+      "mainSHA256": "5b4d9cb41bbd9bbde019fc7b4be38e1216e69b15e8b7b58225cd6c2f6d46d670",
+      "equalAfterEOLNormalization": true
+    },
+    {
+      "file": "tests/Lokad.Lython.PublicApi.Tests/DictionaryAggregationOrderTests.cs",
+      "privateSHA256": "028372cfa76da915da999427b0b9079b8831f8e1507d3efee41465d6ea396877",
+      "mainSHA256": "028372cfa76da915da999427b0b9079b8831f8e1507d3efee41465d6ea396877",
+      "equalAfterEOLNormalization": true
+    }
+  ],
+  "archiveSHA256": "3ab1cb0c8a1bd371a46eb9b8a8053a8373740987b135170bb2fcdb275ab39024",
+  "fullFrozenImagesAndSources": "../observations.tgz",
+  "retirement": "Removed isolated worktree after verified source/check preservation; main unchanged."
+}
