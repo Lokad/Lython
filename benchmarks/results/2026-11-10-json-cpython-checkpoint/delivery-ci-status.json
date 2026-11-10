@@ -1,0 +1,20 @@
+{
+  "status": "completed",
+  "runId": 42813970365,
+  "url": "https://github.com/Lokad/Lython/actions/runs/42813970365",
+  "headSHA": "8d44bd4ecdb0db96fee7a23113ba28b1e9cff558",
+  "event": "workflow_dispatch",
+  "stress": true,
+  "requestedUTC": "2026-11-10T12:13:52.8995368+00:00",
+  "doNotObserveBeforeUTC": "2026-11-10T12:45:08.342784+00:00",
+  "required": [
+    "Windows/Ubuntu",
+    "actual.NET11/10 ordinary",
+    "originalStress bothframeworks",
+    "installedReleasepackageconsumers"
+  ],
+  "terminal": true,
+  "conclusion": "success",
+  "lastObservedUTC": "2026-11-10T12:40:08.342784+00:00",
+  "allRequiredGatesPassed": true
+}

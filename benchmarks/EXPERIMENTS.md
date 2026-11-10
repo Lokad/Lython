@@ -6,6 +6,19 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R197 committed-source CPython checkpoint](results/2026-11-10-json-cpython-checkpoint/README.md)
+measures postcommit8d44/E294 with complete report/text/JSON-lines across three
+phases,9jobs245.513s, all gates pass. Warm report1.22–1.24×, text1.43–1.46×,
+JSON-lines0.89–0.92×; adverse/control variability stays explicit. No single-change
+attribution or completion of the broader performance objective follows.
+
+The [R196 iterative decoder](results/2026-11-10-iterative-json-construction/README.md)
+replaces recursive container completion and repeated leaf admission with one
+managed decoder lifetime through awaited hooks. Original iteration alone was not
+promoted; refinement retains modest report benefit/flat allocation, with text and
+JSON-lines uncertainty. Full source qualification is GREEN; both variants and
+original failures remain. Conservative admission can deny earlier near stack bounds.
+
 The [R193 instruction attribution](results/2026-11-10-prefix-instruction-attribution/README.md)
 maps all168CSV/269text prefix leaves to validated code-size/tier/native offsets.
 Three common fetch/check/dispatch-entry blocks contain8.22/10.10%guest samples,

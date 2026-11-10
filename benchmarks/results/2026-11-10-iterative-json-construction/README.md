@@ -123,3 +123,14 @@ Exact-canonical original compressed evidence and all originala9VM aliases were
 retired only after archive verification under an idle lease. Currentqualifiedac6
 and refined678 images remain. No workers/RAMfixtures remain; owners are terminal
 and cached. No producer or sibling repository was edited.
+
+
+## Delivery qualification
+
+Committed/pushed runtime `8d44bd4ecdb0db96fee7a23113ba28b1e9cff558` is fully
+qualified by [42813970365](https://github.com/Lokad/Lython/actions/runs/42813970365):
+Windows/Ubuntu, actual .NET 11/.NET 10 ordinary tests, original Stress and installed
+Release consumers all pass. The [cached terminal receipt](delivery-ci.json) does
+not change measured images, uncertainty or source-pair claims. Publication remains
+postponed. The next CPython checkpoint uses a fresh postcommit nonincremental core,
+not an asserted binary identity with the measured precommit image.
