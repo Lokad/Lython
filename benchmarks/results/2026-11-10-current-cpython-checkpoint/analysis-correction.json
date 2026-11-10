@@ -1,0 +1,3 @@
+{
+  "correction": "Existing summarizer expects a local root catalog; materialize its exact archived/hash-verified copy. No measurement or source change, no repeated terminal query."
+}

@@ -13,7 +13,7 @@ Six independently captured CPython 3.13.2 scripts cover aliases, parameter/built
 shadowing, nested exception context, class cells, annotations and retained values.
 Final 79 focused public cases pass on each actual .NET 11/.NET 10 target, including
 genuinely suspended custom protocols inside active handlers, cancellation and
-joined owner cleanup. Full delivery qualification is pending.
+joined owner cleanup. Full delivery qualification is recorded below.
 
 | Complete text script enclosed in an active handler | CLR allocation | Quiet elapsed | Wider process CPU |
 | --- | --- | --- | --- |
@@ -52,5 +52,15 @@ members of tracked local immutable archives; raw trees/frozen binaries remain.
 [Source/check archive](source-checks.tar.xz), [Python goldens](cpython-goldens.json),
 [desktop summary](desktop-summary.json), [owned VM archive](quiet/observations.tgz)
 and [status](status.json) preserve identities, conditions and limitations. Publication
-remains postponed. Ordinary-control confirmation and the combined full platform,
-Stress and installed-consumer checkpoint are separate outstanding work.
+remains postponed. The combined full platform, Stress and installed-consumer checkpoint is separate.
+
+The [bounded ordinary-control confirmation](../2026-11-10-handler-native-call-controls/README.md)
+completed in59.644s: report elapsed+0.14–2.01%, CPU overlapping; Unicode
+elapsed−1.28–2.72%, CPU overlapping. It does not reproduce the original adverse
+magnitudes or prove equivalence. Both original outcomes survive.
+
+Delivery source `ee448715` is fully qualified by
+[42727417102](https://github.com/Lokad/Lython/actions/runs/42727417102): Windows and
+Ubuntu, actual .NET 11/.NET 10, original Stress and installed Release package
+consumers all pass. The [cached terminal receipt](../2026-11-10-handler-native-calls/delivery-ci.json)
+changes no measured source or observations. It does not qualify later prototypes.

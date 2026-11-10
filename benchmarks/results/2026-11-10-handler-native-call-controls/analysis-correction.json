@@ -1,0 +1,3 @@
+{
+  "correction": "Local summary expected five jobs; measured confirmation intentionally has two. Correct assertion only, no retiming, no changed data or repeated terminal query."
+}

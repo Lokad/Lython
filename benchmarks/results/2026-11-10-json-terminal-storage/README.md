@@ -52,10 +52,16 @@ Focused Release checks passed 193 internal and 861 public cases on each actual
 admission before publication, first refusal, rollback, aliases, hook/error order,
 cancellation and cleanup. The public probe now disposes each result after eagerly
 snapshotting its response. Combined platform/Stress/installed-consumer delivery
-qualification is pending and is not implied by these focused results.
+qualification is recorded separately below; these counts are the focused checks.
 
 Original failing refusal fixtures, the subsequent wrong-property compile error
 and the Windows CRLF stdout setup rejection are retained. The corrected stdout
 golden normalizes only process stdout; file bytes remain exact. No observations
 were discarded. The allocation/structural simplification is retained with the
 capacity tradeoff and unresolved elapsed evidence explicitly recorded.
+
+Delivery source `ee448715` is fully qualified by
+[42727417102](https://github.com/Lokad/Lython/actions/runs/42727417102): Windows and
+Ubuntu, actual .NET 11/.NET 10, original Stress and installed Release package
+consumers all pass. The [cached terminal receipt](../2026-11-10-handler-native-calls/delivery-ci.json)
+changes no measured source or observations. It does not qualify later prototypes.

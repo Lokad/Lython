@@ -5715,3 +5715,13 @@ Report/Unicode controls are adverse and unresolved, justifying bounded confirmat
 79 focused public cases each actual target and six Python controls pass, including
 real pending protocols under handlers/cancellation/joined cleanup. Full combined
 delivery qualification remains pending; all adverse/raw evidence is retained.
+
+## R181 — current representative CPython checkpoint
+
+[Fifteen jobs at ee448715-equivalent source](results/2026-11-10-current-cpython-checkpoint/README.md)
+complete in409.135s, with independent compile/warm/compile-to-result lanes and all
+identity/golden/ownership/quiet/join/archive/SHA gates passing. Warm text1.62–1.69×
+and search about1.58× CPython remain material. Variable report/other controls stay
+visible; no single-change speedup or statistical significance follows. Exact frozen
+source/binaries, boundary, prior guide and original local-analysis correction are
+retained. The isolated operand prototype is absent; publication stays postponed.

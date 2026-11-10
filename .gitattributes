@@ -264,3 +264,6 @@ benchmarks/results/2026-11-10-json-terminal-storage/**/*.patch -text -whitespace
 benchmarks/results/2026-11-10-handler-native-calls/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-handler-native-calls/**/*.patch -text -whitespace
 benchmarks/results/2026-11-10-framed-native-entry/**/*.log -text -whitespace
+benchmarks/results/2026-11-10-current-cpython-checkpoint/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-10-current-cpython-checkpoint/**/*.patch -text -whitespace
+benchmarks/results/2026-11-10-handler-native-call-controls/** -text whitespace=cr-at-eol
