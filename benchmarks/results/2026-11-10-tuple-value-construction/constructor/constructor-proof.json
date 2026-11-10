@@ -1,0 +1,43 @@
+{
+  "totalSites": 160,
+  "spanSites": 106,
+  "enumerableSites": 50,
+  "adoptionSites": 4,
+  "nativeAndEnumerate": [
+    {
+      "owner": "Lokad.Lython.Runtime.LythonRuntime",
+      "method": "CreateTupleFromStack",
+      "offset": 37,
+      "parameters": [
+        "System.ReadOnlySpan`1[System.Object]",
+        "Lokad.Lython.Runtime.MemoryGovernor",
+        "Lokad.Lython.LythonSourceSpan",
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext"
+      ]
+    },
+    {
+      "owner": "Lokad.Lython.Runtime.PyEnumerateIterator",
+      "method": "TryMoveNext",
+      "offset": 91,
+      "parameters": [
+        "System.ReadOnlySpan`1[System.Object]",
+        "Lokad.Lython.Runtime.MemoryGovernor",
+        "Lokad.Lython.LythonSourceSpan",
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext"
+      ]
+    },
+    {
+      "owner": "Lokad.Lython.Runtime.PyEnumerateIterator+<TryMoveNextAsync>d__6",
+      "method": "MoveNext",
+      "offset": 227,
+      "parameters": [
+        "System.ReadOnlySpan`1[System.Object]",
+        "Lokad.Lython.Runtime.MemoryGovernor",
+        "Lokad.Lython.LythonSourceSpan",
+        "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext"
+      ]
+    }
+  ],
+  "inputs": "Native MakeTuple.ValueInputCount is0, so stack layout keeps its count-sized operands in private temporary slots. Forwarding concerns its result, not source arguments. Values stay live until successful constructor copy. Fixed literal spans are compiler-owned local references. Actual enumerable/callback construction and true owned arrays remain.",
+  "implementationOnly": "Temporary managed IL inspector is development evidence, not a product test/backend or heap tracing tool."
+}

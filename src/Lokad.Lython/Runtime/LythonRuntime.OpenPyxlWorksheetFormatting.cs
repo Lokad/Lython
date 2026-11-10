@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
             }
 
             return new PyList(_worksheet.ConditionalFormattings
-                .Select(formatting => (object)PyTuple.FromOwnedArray(
+                .Select(formatting => (object)new PyTuple(
                     [
                         PyString.FromString(formatting.Sqref, context.MemoryGovernor, span),
                         new PyList(formatting.Rules.Cast<object>(), context.MemoryGovernor, span),

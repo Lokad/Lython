@@ -38,7 +38,7 @@ internal static partial class PyDataclass
                         var item = await ConvertValue(raw, factory, tuple, asynchronous, context, span).ConfigureAwait(false);
                         var name = PyString.FromString(field.Name.RequireNotNull(), context.MemoryGovernor, span);
                         if (result is not null) result.SetItem(name, item);
-                        else arguments!.Add(tuple ? item : PyTuple.FromOwnedArray([name, item], context.MemoryGovernor, span));
+                        else arguments!.Add(tuple ? item : new PyTuple([name, item], context.MemoryGovernor, span));
                     }
                     if (result is not null) return result;
                     if (factory is not LythonRuntime.ICallable callable) throw RuntimeErrors.Type("dataclass result factory must be callable", span);

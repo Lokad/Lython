@@ -1,0 +1,14 @@
+{
+  "status": "Retain constructor refinement; full platform/stress/installed-package delivery pending.",
+  "removed": [
+    "FromValues experimental factory removed completely",
+    "array-only copying constructor signatures replaced by managed span inputs",
+    "native MakeTuple temporary reservation object/manual fill/late scalar growth",
+    "discarded arrays for36fixed-literal copying sites;33adoption sites preflight final backing"
+  ],
+  "retained": "Canonical object[] tuple storage, actual owned-array adoption, callback/enumerable/suspending materializers, existing conservative estimates and input/result owners.",
+  "measurement": "CSVallocation -3.04% both APIs; compile allocation flat. B560 sync elapsed -2.16..+2.00%,CPU-2.27..+2.33%;asyncelapsed-.42..-1.25%,CPU-1.13..+2.26%. No general CPU gain, neutrality or proof original379adversity resolved.",
+  "debt": "Possible small CSV/text CPU or elapsed regression remains under moving controls. Accept bounded uncertainty for complete storage/admission consolidation without added runtime mechanism; revisit only with relevant new attribution. Original379stable+1.22..2.44%syncCPU and all desktop adversity preserved. No percentage veto or broad performance completion.",
+  "checks": "Zero-warning forced solution;276internal/406public focused and4521internal/17105public full ordinary each actualtarget. Duplicate factory-only matrix cases removed; independent semantic/refusal/cancellation/alias assertions retained.",
+  "compatibility": "No public API or Python syntax removal. Internal array constructors generalize to span constructors. Native tuples admit backing+scalar headroom once, potentially rejecting earlier before final allocation rather than after backing creation. Callback/enumerable order remains separate."
+}

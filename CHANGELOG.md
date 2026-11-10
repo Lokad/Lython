@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Construct completed tuples from managed spans, removing temporary literal arrays
+  and the executable tuple builder's reservation carrier and late scalar admission.
+  Keep canonical tuple storage, aliases, owned-array transfers and suspending
+  materializers, with cooperative checks across long estimates and copies.
+
 - Compile loop transfers within one protected suite as ordinary jumps, avoiding
   pending transfer objects and unwind scans. Transfers across cleanup boundaries
   retain their existing exception, iterator and asynchronous cleanup behavior.

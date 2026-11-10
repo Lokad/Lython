@@ -1,0 +1,32 @@
+{
+  "cores": {
+    "before": "dbe94d4dfdcdc8f86de537ad904ee789664d749f60282713d7ac30c0d0467334",
+    "candidate": "67b28bba41c4f3afe1b10031b1d4fc306a668751089d0ff85f9644d4e379a495"
+  },
+  "sourceDifferences": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.CounterRanking.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.CsvObjects.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.MathModule.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlUtilsModule.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorkbookModels.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.OpenPyxlWorksheetFormatting.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Os.Path.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexErrors.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.StandardModules.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessPopen.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.UrllibParseModule.Query.cs",
+    "src/Lokad.Lython/Runtime/PyDataclass.Conversion.cs",
+    "src/Lokad.Lython/Runtime/PyDateTimeObjects.cs",
+    "src/Lokad.Lython/Runtime/PyDateTimeOps.cs",
+    "src/Lokad.Lython/Runtime/PyDict.cs",
+    "src/Lokad.Lython/Runtime/PyItertools.Grouping.cs",
+    "src/Lokad.Lython/Runtime/PyItertools.Transforms.cs",
+    "src/Lokad.Lython/Runtime/PyNamedTupleAndChainMap.cs",
+    "src/Lokad.Lython/Runtime/PyTuple.cs"
+  ],
+  "sourceProofSHA256": "fc77c8f34cec96e26837eb74ed0987ae0080458116da31d6221b5137ac8922b9",
+  "freeze": "Separately forced constructor-refinement Release solution0warnings/errors then276internal/406public each actualtarget. Source/IL proof; baseline source-equivalent dbe now fully qualified GREEN42888642699. All auxiliaries unchanged."
+}

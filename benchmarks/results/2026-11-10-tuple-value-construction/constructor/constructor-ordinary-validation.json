@@ -1,0 +1,30 @@
+[
+  {
+    "target": "net11.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "Lokad.Lython.slnx",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build"
+    ],
+    "exitCode": 0
+  },
+  {
+    "target": "net10.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "Lokad.Lython.slnx",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build"
+    ],
+    "exitCode": 0
+  }
+]

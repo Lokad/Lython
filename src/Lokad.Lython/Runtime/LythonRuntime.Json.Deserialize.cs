@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             if (result is PyDict dictionary) dictionary.SetRecordItem(key!, value, context, span);
-            else ((PyList)result).Add(key is null ? value : PyTuple.FromOwnedArray([key, value], context.MemoryGovernor, span));
+            else ((PyList)result).Add(key is null ? value : new PyTuple([key, value], context.MemoryGovernor, span));
             context.CheckExecution(span);
         }
 

@@ -1,0 +1,70 @@
+[
+  {
+    "kind": "internal",
+    "target": "net11.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~Tuple|FullyQualifiedName~NativeOperationAllocationTests|FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~NativeScalarDispatchBoundaryTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "target": "net11.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net11.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~Tuple|FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~PrimitiveStorageLifetimeTests|FullyQualifiedName~FunctionDefaultMetadataTests|FullyQualifiedName~FramedFunctionExecutionTests|FullyQualifiedName~CallInputLifetimeTests|FullyQualifiedName~ReceiverFunction|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~JsonDictionaryCallbackLifetimeTests|FullyQualifiedName~CopyOwnerLifetimeTests|FullyQualifiedName~CounterArithmeticLifetimeScenarioTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "internal",
+    "target": "net10.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~Tuple|FullyQualifiedName~NativeOperationAllocationTests|FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~NativeScalarDispatchBoundaryTests)"
+    ],
+    "exitCode": 0
+  },
+  {
+    "kind": "public",
+    "target": "net10.0",
+    "command": [
+      "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+      "test",
+      "tests/Lokad.Lython.PublicApi.Tests/Lokad.Lython.PublicApi.Tests.csproj",
+      "-c",
+      "Release",
+      "-f",
+      "net10.0",
+      "--no-build",
+      "--filter",
+      "Category!=Stress&(FullyQualifiedName~Tuple|FullyQualifiedName~NativeScalarDispatchTests|FullyQualifiedName~PrimitiveStorageLifetimeTests|FullyQualifiedName~FunctionDefaultMetadataTests|FullyQualifiedName~FramedFunctionExecutionTests|FullyQualifiedName~CallInputLifetimeTests|FullyQualifiedName~ReceiverFunction|FullyQualifiedName~GovernedMemoryContractTests|FullyQualifiedName~JsonDictionaryCallbackLifetimeTests|FullyQualifiedName~CopyOwnerLifetimeTests|FullyQualifiedName~CounterArithmeticLifetimeScenarioTests)"
+    ],
+    "exitCode": 0
+  }
+]

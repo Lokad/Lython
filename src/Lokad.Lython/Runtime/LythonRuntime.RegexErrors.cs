@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
     private static PyException PatternErrorValue(PyDict fields, object summary,
         MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        var args = governor is null ? PyTuple.FromOwnedArray([summary]) : new PyTuple([summary], governor, span);
+        var args = governor is null ? new PyTuple([summary]) : new PyTuple([summary], governor, span);
         var identity = ModuleException("re", "PatternError");
         var value = governor is null ? new PyException(identity, string.Empty, null, args)
             : PyException.CreateOwned(identity, string.Empty, null, governor, span, args);

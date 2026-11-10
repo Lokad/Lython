@@ -109,6 +109,51 @@ public sealed class SmallTupleAdoptionTests
         GC.KeepAlive(mixed);
     }
 
+    [Fact]
+    public void CompletedValuesAreCopiedWithoutChangingElementAliases()
+    {
+        var budget = new LythonMemoryBudget();
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        object shared = new BigInteger(7);
+        object[] values = [shared, shared];
+        var tuple = new PyTuple(values.AsSpan(), governor);
+        var funding = budget.ReservedBytes;
+        values[0] = PyNone.Instance;
+        Assert.Same(shared, tuple[0]);
+        Assert.Same(shared, tuple[1]);
+        Assert.Equal(funding, budget.ReservedBytes);
+        GC.KeepAlive(tuple);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void CancelledAdmissionDoesNotPublishTupleOrReleaseInputFunding()
+    {
+        var budget = new LythonMemoryBudget();
+        using var owner = budget.CreateScope();
+        var hook = new AdmissionHookMemoryBudget(owner);
+        using var cancellation = new CancellationTokenSource();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MemoryBudget = hook, CancellationToken = cancellation.Token });
+        var governor = context.MemoryGovernor;
+        var input = new PyTuple(new object[] { new BigInteger(7) }, governor);
+        var baseline = budget.ReservedBytes;
+        var committed = governor.CurrentCommittedBytes;
+        hook.AfterGrowth = _ => cancellation.Cancel();
+        var failure = Assert.Throws<LythonRuntimeException>(() =>
+            new PyTuple([input, input], governor, null, context));
+        Assert.Equal(LythonFailureReason.Cancelled, failure.Attribution?.Reason);
+        Assert.Equal(committed, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(baseline, budget.ReservedBytes);
+        Assert.Equal(new BigInteger(7), input[0]);
+        GC.KeepAlive(input);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     private static PyTuple Make(object[] items, MemoryGovernor governor, int construction) => construction switch
     {
         0 => new PyTuple(items, governor),

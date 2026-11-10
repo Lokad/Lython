@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
                             var value = await DecodeFieldAsync(rawValue).ConfigureAwait(false);
                             { _ = pairs.Count + 1; context.CheckExecution(span); }
                             context.CheckExecution(span);
-                            var pair = PyTuple.FromOwnedArray([name, value], context.MemoryGovernor, span);
+                            var pair = new PyTuple([name, value], context.MemoryGovernor, span);
                             pairs.Add(pair);
                         }
                     }

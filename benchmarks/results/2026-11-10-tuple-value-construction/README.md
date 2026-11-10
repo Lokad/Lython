@@ -1,4 +1,37 @@
-# Completed tuple values — R208, active refinement
+# Completed tuple values — R208
+
+**Retain the direct-constructor refinement67b28bba**, pending full delivery.
+It removes the experimental factory, replaces array-only copy inputs with managed
+spans and copies completed references once into canonical funded tuple storage.
+Native MakeTuple loses a temporary reservation carrier/manual fill/late scalar
+admission.36fresh literal-copy sites lose a discarded array;33prior adoptions
+preflight final backing. Actual owned arrays and suspending materializers remain.
+No inline tuple representation, cache, new owner or compatibility wrapper.
+
+CSV CLR allocation falls about3.04% on both APIs; compilation allocation flat.
+Constructor B560 syncelapsed−2.16..+2.00%, widerCPU−2.27..+2.33%; asyncelapsed
+−1.25..−0.42%, widerCPU−1.13..+2.26%. Synchronous/control effects are inconclusive;
+no general CPU improvement, equivalence or resolution of original adversity is
+proved. Possible small regression debt is accepted explicitly for this complete
+storage/admission consolidation, not hidden behind allocation savings.
+
+B560 completes3jobs/110.272s with all identity/output/quiet/ownership/Closed/join/
+RAM/archive-under-lease/localSHA checks. All106span constructor sites are recorded;
+native and enumerate sync/async explicitly verified.50actual enumerable and4true
+adoption sites remain. Full local4521internal/17105public cases pass per actual
+NET11/10; focused276/406, forced Release0warnings/errors. New copy independence,
+terminal refusal-before-final-array, cancelled-admission rollback, retained alias
+funding and budget reuse pass. Only duplicate factory-architecture cases are removed.
+Full platform/stress/installed-package delivery remains pending.
+
+The last source change after freeze is comment-only and explicitly recorded;
+measured original source/hashes/binaries remain in the archive. Native total admission
+can reject earlier; no public API or supported Python behavior is removed.
+[Decision](constructor/decision.json), [final summary](constructor/summary.json),
+[raw](constructor/observations.tgz), [source/IL/build/test/original conditions](constructor/preparation.tar.xz).
+Publication remains postponed and the broader whole-script objective remains open.
+
+## Original factory variants and adversity
 
 Two initial private sources are preserved: original9cebdd62 and copy-bound-corrected
 379a2d64, both based on committed439e91d9 / source-equivalent dbe94d4d. Neither is

@@ -1125,8 +1125,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         {
             var value = owner.GetSubscript(key, span);
             yield return governor is null
-                ? PyTuple.FromOwnedArray([key, value])
-                : PyTuple.FromOwnedArray([key, value], governor, null);
+                ? new PyTuple([key, value])
+                : new PyTuple([key, value], governor, null);
         }
     }
 
@@ -1574,8 +1574,8 @@ internal sealed class ChainMapItemsView : IReadOnlyCollection<object>, IPyRender
         {
             var value = _owner.GetLiveValue(key);
             yield return governor is null
-                ? PyTuple.FromOwnedArray([key, value])
-                : PyTuple.FromOwnedArray([key, value], governor, null);
+                ? new PyTuple([key, value])
+                : new PyTuple([key, value], governor, null);
         }
     }
 

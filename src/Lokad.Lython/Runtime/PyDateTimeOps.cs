@@ -912,7 +912,7 @@ internal static partial class PyDateTimeOps
     {
         var quotient = FloorDivide(left, right, context, span);
         var remainder = TimedeltaModulo(left, right, span);
-        return PyTuple.FromOwnedArray([quotient, remainder], context.MemoryGovernor, span);
+        return new PyTuple([quotient, remainder], context.MemoryGovernor, span);
     }
 
     private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)

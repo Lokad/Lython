@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = (asynchronous ? await GetSinglePathAsync(arguments, "os.path.split", span, context, pathScratch).ConfigureAwait(false) : GetSinglePath(arguments, "os.path.split", span, context, pathScratch));
         var (head, tail) = SplitPath(path);
-        return PyTuple.FromOwnedArray([PyString.FromString(head, context.MemoryGovernor, span), PyString.FromString(tail, context.MemoryGovernor, span)], context.MemoryGovernor, span);
+        return new PyTuple([PyString.FromString(head, context.MemoryGovernor, span), PyString.FromString(tail, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitExt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -56,7 +56,7 @@ internal sealed partial class LythonRuntime
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = (asynchronous ? await GetSinglePathAsync(arguments, "os.path.splitext", span, context, pathScratch).ConfigureAwait(false) : GetSinglePath(arguments, "os.path.splitext", span, context, pathScratch));
         var (root, extension) = SplitExt(path);
-        return PyTuple.FromOwnedArray([PyString.FromString(root, context.MemoryGovernor, span), PyString.FromString(extension, context.MemoryGovernor, span)], context.MemoryGovernor, span);
+        return new PyTuple([PyString.FromString(root, context.MemoryGovernor, span), PyString.FromString(extension, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathBaseName(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
     {
         using var pathScratch = context.MemoryGovernor.ReserveTemporary(checked(256L + 32L * context.Host.Cwd.Length), span);
         var path = (asynchronous ? await GetSinglePathAsync(arguments, "os.path.splitdrive", span, context, pathScratch).ConfigureAwait(false) : GetSinglePath(arguments, "os.path.splitdrive", span, context, pathScratch));
-        return PyTuple.FromOwnedArray([PyString.Empty, PyString.FromString(path, context.MemoryGovernor, span)], context.MemoryGovernor, span);
+        return new PyTuple([PyString.Empty, PyString.FromString(path, context.MemoryGovernor, span)], context.MemoryGovernor, span);
     }
 
     private static object OsPathSplitRoot(object[] arguments, LythonSourceSpan span, ExecutionContext context)

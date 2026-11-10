@@ -445,7 +445,7 @@ internal sealed partial class LythonRuntime
 
             return new PyList(_worksheet.Tables
                 .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                .Select(pair => (object)PyTuple.FromOwnedArray([PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value], context.MemoryGovernor, span))
+                .Select(pair => (object)new PyTuple([PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value], context.MemoryGovernor, span))
                 .ToArray(), context.MemoryGovernor, span);
         }
     }

@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
             using var plan = isTemplate ? ReMatchMembers.CompileReplacementTemplate(pattern, template!, context, span) : null;
             if (count < 0)
                 return mode == RegexSubstitutionMode.TextAndCount
-                    ? PyTuple.FromOwnedArray([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
+                    ? new PyTuple([range.Original, BigInteger.Zero], context.MemoryGovernor, span) : range.Original;
             var window = Window(range, context, span);
             using var subject = Prepare(pattern, range, window, context, span);
             using var cursor = subject.Find();
@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
             }
             finally { builder.Release(); }
             return mode == RegexSubstitutionMode.TextAndCount
-                ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span) : result;
+                ? new PyTuple([result, new BigInteger(replaced)], context.MemoryGovernor, span) : result;
         }
     }
 }

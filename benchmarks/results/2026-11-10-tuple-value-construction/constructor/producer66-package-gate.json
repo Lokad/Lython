@@ -1,0 +1,91 @@
+{
+  "immutableProducerPackages": [
+    {
+      "version": "0.5.0-dev.65",
+      "file": "D:\\code\\utf8regex\\artifacts\\nuget\\Lokad.Utf8Regex.PythonRe.0.5.0-dev.65.nupkg",
+      "sha256": "c76443e2dc20158ec48fb971191ceb45785ca15743ae0045b142d179ca05d73e",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "998c630f360198db91e5ee8a1f976d5ac976ae0c"
+      },
+      "dlls": {
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "04d8916796c31c11b2fe86a84967ad2a7589c3db37b6ca0a4aa4ddac1d1855dd",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "c3fb8a14df17dcb71855f90214502b1852a3926ff9404821fba529c9445ec1fa"
+      },
+      "xmlSHA256": "647786f37bff6512502d80eade57498730063f95f93152828503db0baffe42bb",
+      "relevantMembers": [
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.GetGroupNames",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)"
+      ],
+      "documentedXmlMembers": 277
+    },
+    {
+      "version": "0.5.0-dev.66",
+      "file": "D:\\code\\utf8regex\\artifacts\\nuget\\Lokad.Utf8Regex.PythonRe.0.5.0-dev.66.nupkg",
+      "sha256": "e208d443b5a28b854d44ef285bf6904ae7751d62dfebb5225623ee289f02f155",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Lokad/Utf8Regex.git",
+        "branch": "refs/heads/master",
+        "commit": "b478f853f722b7c34de83bdcd14693ee594ca053"
+      },
+      "dlls": {
+        "lib/net10.0/Lokad.Utf8Regex.PythonRe.dll": "406983c8b84ef020bb2967cf704b4c91fe7026b3d78fb678d80b111899a8979b",
+        "lib/net11.0/Lokad.Utf8Regex.PythonRe.dll": "49eb8f2273a3e3b0d6a47d440c8d85ba08694ee6a32c089461623849d438b612"
+      },
+      "xmlSHA256": "d9147adaeb61220bcff34836bfb1eaad9b76c46306c3d4e684827ad49cd03479",
+      "relevantMembers": [
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.CreateMatchCursor(System.ReadOnlyMemory{System.Byte},System.Int32,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.FullMatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.GetGroupNames",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailed(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte})",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32)",
+        "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.MatchDetailedData(System.ReadOnlySpan{System.Byte},System.Int32,System.Threading.CancellationToken)"
+      ],
+      "documentedXmlMembers": 284
+    }
+  ],
+  "status": "Read-only package/API source gate; no new pin, performance or adapter qualification. Producer HEADdc1e37fa later than immutable dev66; never substitute moving HEAD.",
+  "addedDocumentedXmlMembers": [
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.#ctor(Lokad.Utf8Regex.Internal.FrontEnd.Utf8ConstructionPattern,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,System.Boolean,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.#ctor(System.ReadOnlySpan{System.Byte},Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.Nullable{System.TimeSpan},Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.#ctor(System.String,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.Nullable{System.TimeSpan},Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.ReadOnlySpan{System.Byte},Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.ReadOnlySpan{System.Byte},Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.String,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.IUtf8MemoryAllowance,Lokad.Utf8Regex.Utf8InputValidation)",
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.Compile(System.String,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,Lokad.Utf8Regex.Utf8ConstructionPolicy,System.TimeSpan,System.Threading.CancellationToken,Lokad.Utf8Regex.Utf8InputValidation)",
+    "P:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.InputValidation"
+  ],
+  "removedDocumentedXmlMembers": [
+    "M:Lokad.Utf8Regex.PythonRe.Utf8PythonRegex.#ctor(Lokad.Utf8Regex.Internal.FrontEnd.Utf8ConstructionPattern,Lokad.Utf8Regex.PythonRe.PythonReCompileOptions,System.TimeSpan,Lokad.Utf8Regex.Utf8ResourcePolicy,System.Boolean)"
+  ],
+  "limitation": "XML includes documented internal members and can omit undocumented APIs; it is a documentation-signature gate, not complete public API reflection or semantic qualification."
+}

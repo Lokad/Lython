@@ -271,6 +271,10 @@ through its users. Mutable inputs and user iterators still take an owned snapsho
 before assignment; starred remainder lists admit their own storage before target
 effects. The same rule serves synchronous and asynchronous assignments, loops and
 annotation unpacking. Cancellation and refused admission still stop publication.
+Completed tuple values copy directly from managed spans into their final backing,
+with capacity and scalar headroom admitted together. Inputs stay funded until the
+copy succeeds; owned arrays and suspending materializers retain their distinct
+ownership transfers. Long estimates and copies observe cooperative cancellation.
 Formatted construction, literal appends, conversions and fields use ordinary
 instructions and shared operand cleanup. Native fields, including evaluated dynamic
 specifiers, need no lexical context solely for formatting. Actual protocol values

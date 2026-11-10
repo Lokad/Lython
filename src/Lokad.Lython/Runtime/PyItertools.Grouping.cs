@@ -49,7 +49,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
     private PyTuple CreateGroup()
     {
         _target = _key; _hasTarget = true;
-        return PyTuple.FromOwnedArray([_key, new PyGroupIterator(this, _groupId, _target)], _memoryGovernor, _span);
+        return new PyTuple([_key, new PyGroupIterator(this, _groupId, _target)], _memoryGovernor, _span);
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)

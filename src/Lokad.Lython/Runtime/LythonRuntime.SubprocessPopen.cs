@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return PyTuple.FromOwnedArray([_communicatedStdout, _communicatedStderr], _context.MemoryGovernor, span);
+            return new PyTuple([_communicatedStdout, _communicatedStderr], _context.MemoryGovernor, span);
         }
 
         private void AddCommunicateInput(object input, LythonSourceSpan span)

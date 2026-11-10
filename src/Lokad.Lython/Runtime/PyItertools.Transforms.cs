@@ -430,7 +430,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         }
         if (!source.TryMoveNext(out var next)) { _source = null; _previous = PyNone.Instance; source.Dispose(); return false; }
         var current = LythonRuntime.RuntimeValue(next);
-        value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        value = new PyTuple([_previous, current], _memoryGovernor, _span);
         _previous = current;
         return true;
     }
@@ -448,7 +448,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         var next = await source.TryMoveNextAsync().ConfigureAwait(false);
         if (!next.HasValue) { _source = null; _previous = PyNone.Instance; await source.DisposeAsync().ConfigureAwait(false); return PyIterationResult.End; }
         var current = LythonRuntime.RuntimeValue(next.Value);
-        var value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        var value = new PyTuple([_previous, current], _memoryGovernor, _span);
         _previous = current;
         return PyIterationResult.Yield(value);
     }

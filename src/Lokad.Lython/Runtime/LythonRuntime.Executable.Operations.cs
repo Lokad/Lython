@@ -117,17 +117,9 @@ internal sealed partial class LythonRuntime
     {
         if (count == 0) return PyTuple.Empty;
 
-        using var storage = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes(count), span);
-        context.CheckExecution(span);
-        var items = new object[count];
-        for (var i = 0; i < count; i++)
-        {
-            items[i] = stack[start + i];
-        }
-
-        // This private array becomes the immutable tuple's final backing. Admit
-        // scalar headroom and establish its ownership before retiring inputs.
-        var tuple = PyTuple.FromReservedOwnedArray(items, context.MemoryGovernor, span, storage);
+        // The existing operand owner survives admission/reentry and copying.
+        // Retire its inputs only after the independent final tuple is funded.
+        var tuple = new PyTuple(stack.Values.AsSpan(start, count), context.MemoryGovernor, span, context);
         stack.RetireTo(start);
         return tuple;
     }

@@ -442,8 +442,8 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             _nextIndex--;
             var governor = _owner.OwnerMemoryGovernor;
             value = governor is null
-                ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
-                : PyTuple.FromOwnedArray([pair.Key, pair.Value], governor, _owner.AllocationSpan);
+                ? new PyTuple([pair.Key, pair.Value])
+                : new PyTuple([pair.Key, pair.Value], governor, _owner.AllocationSpan);
             return true;
         }
 

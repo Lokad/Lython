@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                 var result = new PyList(1, context.MemoryGovernor, span);
                 try
                 {
-                    result.Add(PyTuple.FromOwnedArray([best.Key, best.Value], context.MemoryGovernor, span));
+                    result.Add(new PyTuple([best.Key, best.Value], context.MemoryGovernor, span));
                     return result;
                 }
                 catch { result.DiscardUnpublishedStorage(); throw; }
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
             {
                 context.CheckExecution(span);
                 var entry = ordered[i];
-                output.Add(PyTuple.FromOwnedArray([entry.Value, entry.Key], context.MemoryGovernor, span));
+                output.Add(new PyTuple([entry.Value, entry.Key], context.MemoryGovernor, span));
             }
             return output;
         }

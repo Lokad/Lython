@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R208 completed tuple construction](results/2026-11-10-tuple-value-construction/README.md)
+retains direct span constructors, removing native temporary reservations/late scalar
+admission and discarded fresh-literal copies. The added factory and array-only
+copy overloads disappear; canonical storage and real adoption/materialization remain.
+CSV allocation−3.04%both APIs, compilation flat. Final quiet sync/control CPU is
+inconclusive; async elapsed slightly lower with mixedCPU. Original stable syncCPU
+adversity and all desktop samples survive. Possible small regression debt explicit;
+no general speedup. Full local semantic/ownership/cancellation checks pass; delivery
+qualification is separate. This does not close the whole-script objective.
+
 The [R207 lexical loop classification](results/2026-11-10-lexical-loop-cleanup/README.md)
 retains a two-file compiler change: same-protected-suite transfers use ordinary
 jumps, removing pending jump construction and runtime unwind scans; actual cleanup

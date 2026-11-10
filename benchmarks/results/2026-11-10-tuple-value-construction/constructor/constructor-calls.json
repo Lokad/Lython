@@ -1,0 +1,1648 @@
+[
+  {
+    "owner": "Lokad.Lython.Runtime.FunctionBindingPlan",
+    "method": ".ctor",
+    "offset": 336,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.FunctionBindingPlan",
+    "method": ".ctor",
+    "offset": 368,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "Tuple",
+    "offset": 50,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "PartitionBytes",
+    "offset": 386,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "PartitionBytes",
+    "offset": 455,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "BuildBuiltinTypeHierarchy",
+    "offset": 169,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "BuildBuiltinTypeHierarchy",
+    "offset": 189,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "TryGetObjectBases",
+    "offset": 60,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "TryGetObjectBases",
+    "offset": 114,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "TryGetUnboundTypeMethod",
+    "offset": 454,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "CodecError",
+    "offset": 115,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "ThrowAssertionError",
+    "offset": 27,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "EvaluateAdd",
+    "offset": 490,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "EvaluateAdd",
+    "offset": 505,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "CreateTupleFromStack",
+    "offset": 37,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "BuildCacheKey",
+    "offset": 350,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "CreateStringTuple",
+    "offset": 38,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "CreateTypeScope",
+    "offset": 448,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "TryTypeUnion",
+    "offset": 126,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "RepeatTuple",
+    "offset": 39,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "PatternErrorValue",
+    "offset": 15,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "PatternErrorValue",
+    "offset": 31,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime",
+    "method": "CreateSubprocessTimeoutExpired",
+    "offset": 158,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+    "method": "TryGetMember",
+    "offset": 118,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+    "method": "TryGetMember",
+    "offset": 227,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyEnumerateIterator",
+    "method": "TryMoveNext",
+    "offset": 91,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDataclass",
+    "method": "ApplyCore",
+    "offset": 638,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDataclass",
+    "method": "Fields",
+    "offset": 92,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyIsoCalendarDate",
+    "method": "CreateSlice",
+    "offset": 1,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyIsoCalendarDate",
+    "method": ".ctor",
+    "offset": 73,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDateTimeOps",
+    "method": "DivMod",
+    "offset": 64,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps",
+    "method": "AsTuple",
+    "offset": 42,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps",
+    "method": "AsTuple",
+    "offset": 78,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps",
+    "method": "AsTuple",
+    "offset": 298,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps",
+    "method": "AsTuple",
+    "offset": 311,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps",
+    "method": "AsIntegerRatio",
+    "offset": 119,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalTuple",
+    "method": "CreateSlice",
+    "offset": 1,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyException",
+    "method": "GetArgs",
+    "offset": 156,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 37,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 122,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 230,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 326,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 794,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "Create",
+    "offset": 1251,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "GetSubscript",
+    "offset": 160,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "GetSubscript",
+    "offset": 320,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "GetInspectionArguments",
+    "offset": 41,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": "GetInspectionArguments",
+    "offset": 229,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": ".ctor",
+    "offset": 95,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias",
+    "method": ".ctor",
+    "offset": 117,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGroupByIterator",
+    "method": "CreateGroup",
+    "offset": 90,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyPairwiseIterator",
+    "method": "TryMoveNext",
+    "offset": 170,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyMemberAccess",
+    "method": "TryAssign",
+    "offset": 553,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyUnpackedType",
+    "method": "TryGetMember",
+    "offset": 50,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyNamedTupleObject",
+    "method": "CreateSlice",
+    "offset": 1,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": "FromOwnedArray",
+    "offset": 2,
+    "parameters": [
+      "System.Object[]",
+      "System.Boolean"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": "FromOwnedArray",
+    "offset": 33,
+    "parameters": [
+      "System.Object[]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "System.Int64"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": "FromReservedOwnedArray",
+    "offset": 38,
+    "parameters": [
+      "System.Object[]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "System.Int64"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": "CreateSlice",
+    "offset": 21,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": "CreateSlice",
+    "offset": 28,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTuple",
+    "method": ".cctor",
+    "offset": 6,
+    "parameters": [
+      "System.Object[]",
+      "System.Boolean"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTupleLike",
+    "method": "CreateSlice",
+    "offset": 31,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTyping",
+    "method": "CreateAlias",
+    "offset": 113,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTyping",
+    "method": "CreateAlias",
+    "offset": 777,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTyping",
+    "method": "GetArgs",
+    "offset": 90,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.Text.PyStringOps",
+    "method": "CreateTuple",
+    "offset": 6,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.Text.PyStringOps",
+    "method": "CreateTuple",
+    "offset": 13,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext",
+    "method": "ExecutePreparedOperationAsync",
+    "offset": 731,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext",
+    "method": "\u003CNormalizeRuntimeValue\u003Eg__NormalizePyTuple|317_11",
+    "offset": 96,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext",
+    "method": "\u003CNormalizeRuntimeValue\u003Eg__NormalizeObjectArray|317_13",
+    "offset": 83,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BExceptionTypeValue",
+    "method": "TryGetMember",
+    "offset": 281,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BExceptionTypeValue",
+    "method": "Invoke",
+    "offset": 180,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BCollectionsCallable",
+    "method": "TryGetMember",
+    "offset": 111,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BCollectionsCallable",
+    "method": "TryGetMember",
+    "offset": 192,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BDifflibSequenceMatcherObject",
+    "method": "GroupTuple",
+    "offset": 156,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BGzipFileMetaType",
+    "method": "TryGetMember",
+    "offset": 158,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BStringIOObject",
+    "method": "GetNewlines",
+    "offset": 211,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonModule",
+    "method": "AppendJsonContainerValue",
+    "offset": 77,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BMathModule",
+    "method": "Frexp",
+    "offset": 100,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BMathModule",
+    "method": "Frexp",
+    "offset": 260,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BMathModule",
+    "method": "Modf",
+    "offset": 165,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BFloatMembers",
+    "method": "FloatAsIntegerRatio",
+    "offset": 271,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlUtilsModule",
+    "method": "CoordinateFromString",
+    "offset": 142,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlUtilsModule",
+    "method": "CoordinateToTuple",
+    "offset": 142,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlUtilsModule",
+    "method": "RangeBoundaries",
+    "offset": 275,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlUtilsModule",
+    "method": "RowsFromRange",
+    "offset": 138,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlUtilsModule",
+    "method": "ColsFromRange",
+    "offset": 138,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlWorksheet",
+    "method": "MaterializeGrid",
+    "offset": 90,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlWorksheet",
+    "method": "MaterializeGrid",
+    "offset": 109,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyItemGetter",
+    "method": "Invoke",
+    "offset": 144,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyAttrGetter",
+    "method": "Invoke",
+    "offset": 144,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyWalkIterator",
+    "method": "CreateTuple",
+    "offset": 103,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPathMembers",
+    "method": "GovernedParts",
+    "offset": 83,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BRandomModule",
+    "method": "GetState",
+    "offset": 84,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BSysModule",
+    "method": "ExcInfo",
+    "offset": 125,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BSysModule",
+    "method": "ExcInfo",
+    "offset": 216,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BSysModule",
+    "method": ".ctor",
+    "offset": 303,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BSubprocessCalledProcessErrorType",
+    "method": "Invoke",
+    "offset": 131,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BSubprocessTimeoutExpiredType",
+    "method": "Invoke",
+    "offset": 131,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyPopen",
+    "method": "CommunicationTuple",
+    "offset": 177,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BTimeModule",
+    "method": "TryGetMember",
+    "offset": 271,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BTimeStructTimeType",
+    "method": "TryGetMember",
+    "offset": 125,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BTimeStructTimeType",
+    "method": "TryGetMember",
+    "offset": 196,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BTimeStructTimeValue",
+    "method": "CreateSlice",
+    "offset": 1,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BTimeStructTimeValue",
+    "method": ".ctor",
+    "offset": 34,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyZipInfo",
+    "method": "FromEntry",
+    "offset": 153,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyZipInfo",
+    "method": "RequireZipDateTime",
+    "offset": 243,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BZipInfoCallable",
+    "method": "Invoke",
+    "offset": 240,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CAttachGenericClassMetadataAsync\u003Ed__1207",
+    "method": "MoveNext",
+    "offset": 194,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCompleteSubprocessRunAsync\u003Ed__1957",
+    "method": "MoveNext",
+    "offset": 582,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CConstructTypeParameterAsync\u003Ed__1210",
+    "method": "MoveNext",
+    "offset": 1363,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCounterMostCommonAsync\u003Ed__533",
+    "method": "MoveNext",
+    "offset": 678,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCounterMostCommonAsync\u003Ed__533",
+    "method": "MoveNext",
+    "offset": 1850,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCreateGenericSubscriptAsync\u003Ed__1205",
+    "method": "MoveNext",
+    "offset": 316,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCreateGenericSubscriptAsync\u003Ed__1205",
+    "method": "MoveNext",
+    "offset": 1000,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCreateGenericSubscriptAsync\u003Ed__1205",
+    "method": "MoveNext",
+    "offset": 1075,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CCreateGenericSubscriptAsync\u003Ed__1205",
+    "method": "MoveNext",
+    "offset": 1492,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CDivModCoreAsync\u003Ed__69",
+    "method": "MoveNext",
+    "offset": 550,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CDivModCoreAsync\u003Ed__69",
+    "method": "MoveNext",
+    "offset": 689,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003COsPathSplitCore\u003Ed__1686",
+    "method": "MoveNext",
+    "offset": 386,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003COsPathSplitDriveCore\u003Ed__1739",
+    "method": "MoveNext",
+    "offset": 345,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003COsPathSplitExtCore\u003Ed__1689",
+    "method": "MoveNext",
+    "offset": 386,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003COsPathSplitRootCore\u003Ed__1742",
+    "method": "MoveNext",
+    "offset": 475,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CTupleAsync\u003Ed__116",
+    "method": "MoveNext",
+    "offset": 224,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyEnumerateIterator\u002B\u003CTryMoveNextAsync\u003Ed__6",
+    "method": "MoveNext",
+    "offset": 227,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDataclass\u002B\u003CConvertValue\u003Ed__0",
+    "method": "MoveNext",
+    "offset": 1520,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDecimalOps\u002B\u003CCreateTupleAsync\u003Ed__4",
+    "method": "MoveNext",
+    "offset": 391,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDict\u002BReversedItemsIterator",
+    "method": "TryMoveNext",
+    "offset": 144,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyDict\u002BReversedItemsIterator",
+    "method": "TryMoveNext",
+    "offset": 199,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyGenericAlias\u002B\u003C\u003Ec__DisplayClass32_0",
+    "method": "\u003CGetSubscript\u003Eg__Substitute|1",
+    "offset": 153,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyPairwiseIterator\u002B\u003CTryMoveNextAsync\u003Ed__7",
+    "method": "MoveNext",
+    "offset": 695,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyMemberAccess\u002B\u003CTryAssignAsync\u003Ed__7",
+    "method": "MoveNext",
+    "offset": 1144,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyChainMap\u002B\u003CEnumerateOwnedItems\u003Ed__39",
+    "method": "MoveNext",
+    "offset": 167,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyChainMap\u002B\u003CEnumerateOwnedItems\u003Ed__39",
+    "method": "MoveNext",
+    "offset": 212,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.ChainMapItemsView\u002B\u003CGetEnumerator\u003Ed__6",
+    "method": "MoveNext",
+    "offset": 175,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.ChainMapItemsView\u002B\u003CGetEnumerator\u003Ed__6",
+    "method": "MoveNext",
+    "offset": 220,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PyTyping\u002B\u003C\u003Ec__DisplayClass13_0",
+    "method": "\u003CNamedTupleAsync\u003Eb__1",
+    "offset": 88,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BArgumentParserObject\u002B\u003CParseArgsCoreAsync\u003Ed__82",
+    "method": "MoveNext",
+    "offset": 3197,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BDictItemsView\u002B\u003CEnumerateItems\u003Ed__7",
+    "method": "MoveNext",
+    "offset": 161,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BDictItemsView\u002B\u003CEnumerateItems\u003Ed__7",
+    "method": "MoveNext",
+    "offset": 216,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BCompletedProcessMembers\u002B\u003C\u003Ec",
+    "method": "\u003CTryGetMember\u003Eb__0_0",
+    "offset": 131,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonDecoderObject\u002B\u003CRawDecodeCoreAsync\u003Ed__17",
+    "method": "MoveNext",
+    "offset": 672,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BJsonEncoderObject\u002B\u003CIterEncodeCoreAsync\u003Ed__23",
+    "method": "MoveNext",
+    "offset": 563,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BIntMembers\u002B\u003C\u003Ec__DisplayClass20_0",
+    "method": "\u003CTryGetMember\u003Eb__3",
+    "offset": 131,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BDictMembers\u002B\u003C\u003Ec",
+    "method": "\u003CTryGetMember\u003Eb__23_1",
+    "offset": 92,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BDefaultDictMembers\u002B\u003C\u003Ec",
+    "method": "\u003CTryGetMember\u003Eb__14_5",
+    "offset": 92,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlTableCollection\u002B\u003C\u003Ec__DisplayClass16_0",
+    "method": "\u003CItems\u003Eb__1",
+    "offset": 88,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BOpenPyxlConditionalFormattingCollection\u002B\u003C\u003Ec__DisplayClass13_0",
+    "method": "\u003CItems\u003Eb__0",
+    "offset": 113,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPyItemGetter\u002B\u003CInvokeAsync\u003Ed__3",
+    "method": "MoveNext",
+    "offset": 532,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPathlibModule\u002BPathlibPathType",
+    "method": "TryGetMember",
+    "offset": 109,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BPathlibModule\u002BPathlibPathType",
+    "method": "TryGetMember",
+    "offset": 169,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BRegexMatcher\u002B\u003CSubstituteCoreAsync\u003Ed__15",
+    "method": "MoveNext",
+    "offset": 259,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BRegexMatcher\u002B\u003CSubstituteCoreAsync\u003Ed__15",
+    "method": "MoveNext",
+    "offset": 1285,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002BUrlResultType",
+    "method": ".cctor",
+    "offset": 137,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002BUrlResultType",
+    "method": ".cctor",
+    "offset": 174,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002BUrlResult",
+    "method": "Create",
+    "offset": 38,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002BUrlResult",
+    "method": "GetSlice",
+    "offset": 30,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002BUrlResult",
+    "method": "CreateSlice",
+    "offset": 13,
+    "parameters": [
+      "System.Collections.Generic.IEnumerable\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.LythonRuntime\u002BUrllibParseModule\u002B\u003CParseQueryAsync\u003Ed__46",
+    "method": "MoveNext",
+    "offset": 2707,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  },
+  {
+    "owner": "Lokad.Lython.Runtime.PySlice\u002BSliceIndicesMethod\u002B\u003CInvokeCoreAsync\u003Ed__4",
+    "method": "MoveNext",
+    "offset": 837,
+    "parameters": [
+      "System.ReadOnlySpan\u00601[System.Object]",
+      "Lokad.Lython.Runtime.MemoryGovernor",
+      "Lokad.Lython.LythonSourceSpan",
+      "Lokad.Lython.Runtime.LythonRuntime\u002BExecutionContext"
+    ]
+  }
+]

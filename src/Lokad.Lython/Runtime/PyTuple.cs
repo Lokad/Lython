@@ -26,18 +26,19 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = MaterializeGovernedItems(items, governor, allocationSpan, out _committedBytes);
     }
 
-    public PyTuple(object[] items)
+    public PyTuple(ReadOnlySpan<object> items)
     {
-        _items = [.. items];
+        _items = items.ToArray();
     }
 
-    public PyTuple(object[] items, MemoryGovernor governor) : this(items, governor, null) { }
+    public PyTuple(ReadOnlySpan<object> items, MemoryGovernor governor) : this(items, governor, null) { }
 
-    public PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    public PyTuple(ReadOnlySpan<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan,
+        LythonRuntime.ExecutionContext? context = null)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = CopyGovernedItems(items, governor, allocationSpan, out _committedBytes);
+        _items = CopyGovernedItems(items, governor, allocationSpan, out _committedBytes, context);
     }
 
     private PyTuple(object[] items, bool takeOwnership)
@@ -92,24 +93,39 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         return tuple;
     }
 
-    internal static long EstimateStorageBytes(ReadOnlySpan<object> items)
+    internal static long EstimateStorageBytes(ReadOnlySpan<object> items,
+        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
+        context ??= PyStructuralGuard.AmbientContext;
         var bytes = EstimateApproximateBytes(items.Length);
-        foreach (var item in items) bytes += RuntimeMemoryEstimates.EstimateScalarStorageBytes(item);
+        for (var i = 0; i < items.Length; i++)
+        {
+            if (i != 0 && (i & 1023) == 0) context?.CheckExecution(span);
+            bytes = checked(bytes + RuntimeMemoryEstimates.EstimateScalarStorageBytes(items[i]));
+        }
         return bytes;
     }
 
-    // Known arrays need one admission before copying and no funding helper
+    // Completed references need one admission before copying and no funding helper
     // allocation. Named tuples share this same storage construction rule.
-    internal static object[] CopyGovernedItems(object[] items, MemoryGovernor governor,
-        LythonSourceSpan? span, out long bytes)
+    internal static object[] CopyGovernedItems(ReadOnlySpan<object> items, MemoryGovernor governor,
+        LythonSourceSpan? span, out long bytes, LythonRuntime.ExecutionContext? context = null)
     {
-        bytes = EstimateStorageBytes(items);
+        context ??= PyStructuralGuard.AmbientContext;
+        bytes = EstimateStorageBytes(items, context, span);
         governor.Reserve(bytes, span);
         object[] result;
         try
         {
-            result = [.. items];
+            context?.CheckExecution(span);
+            result = new object[items.Length];
+            for (var offset = 0; offset < items.Length;)
+            {
+                if (offset != 0) context?.CheckExecution(span);
+                var count = Math.Min(4096, items.Length - offset);
+                items.Slice(offset, count).CopyTo(result.AsSpan(offset));
+                offset += count;
+            }
         }
         catch
         {

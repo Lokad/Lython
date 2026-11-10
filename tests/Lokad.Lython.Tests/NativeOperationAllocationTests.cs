@@ -9,6 +9,34 @@ namespace Lokad.Lython.Tests;
 [Collection("AllocationSensitive")]
 public sealed class NativeOperationAllocationTests
 {
+    [Fact]
+    public void CompletedTupleRefusesBeforeAllocatingFinalBackingAndKeepsInputsFunded()
+    {
+        const int count = 131072;
+        var inputBytes = 64L + 16L * count;
+        var budget = new LythonMemoryBudget(inputBytes + 4096);
+        using var owner = budget.CreateScope();
+        var governor = new MemoryGovernor(owner);
+        governor.Reserve(inputBytes, null);
+        var values = new object[count];
+        Array.Fill(values, PyNone.Instance);
+        governor.Commit(inputBytes);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var failure = Assert.Throws<LythonRuntimeException>(() => new PyTuple(values.AsSpan(), governor));
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Same(governor.AdmissionFailure, failure);
+        Assert.Equal(inputBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(inputBytes, budget.ReservedBytes);
+        Assert.Same(failure, Assert.Throws<LythonRuntimeException>(() => new PyTuple([PyNone.Instance], governor)));
+#if !DEBUG
+        Assert.True(allocated < 65536, $"Refused completed tuple allocated {allocated} bytes.");
+#endif
+        GC.KeepAlive(values);
+        owner.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData("d", 262144, false)] [InlineData("d", 262144, true)]
     [InlineData("x", 32768, false)] [InlineData("x", 32768, true)]

@@ -138,7 +138,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({reference})", span);
             }
 
-            return PyTuple.FromOwnedArray(
+            return new PyTuple(
                 [PyString.FromString(ColumnName(part.Column)), new BigInteger(part.Row)],
                 context.MemoryGovernor,
                 span);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ValueError", $"Invalid cell coordinates ({reference})", span);
             }
 
-            return PyTuple.FromOwnedArray(
+            return new PyTuple(
                 [new BigInteger(part.Row), new BigInteger(part.Column)],
                 context.MemoryGovernor,
                 span);
