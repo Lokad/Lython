@@ -1532,6 +1532,8 @@ restkey can leave unused capacity; it remains charged until ownership ends and
 can cause earlier conservative refusal. Dynamic headers retain Python protocols.
 
 Path common-prefix comparison scans immutable UTF-8 at whole-character boundaries.
+`os.fsdecode` decodes bytes as strict UTF-8, preserving newlines and a leading BOM.
+Malformed filesystem bytes raise `UnicodeDecodeError`; surrogateescape paths are unsupported.
 Directory walking reads the canonical mutable dirnames list between children, so
 pruning and list mutations remain visible without repeated decoded snapshots.
 
@@ -1733,6 +1735,12 @@ receive ordinary Python matches and RunAsync awaits their actual callbacks.
 
 Preparation receives the original UTF-8 subject and a `LythonRegexWindow` with
 independently clamped scalar `Pos`/`EndPos` and matching byte `StartByte`/`EndByte`.
+Lython supplies valid UTF-8. Pattern bytes stay unchanged throughout compilation;
+subject bytes stay unchanged and funded until all subject/cursor users finish.
+Providers may rely on these guarantees without another validation scan. Direct
+callers of the provider interfaces must uphold the same contract. Providers never
+mutate input, retain subject borrows past disposal, or retain compilation input
+without copying it into their own funded storage.
 Provider captures use absolute byte coordinates, including lookbehind captures before `Pos`; slicing at `Pos` would
 change anchors and lookbehind. Frontend constant analysis uses the same window;
 unknown bounds remain uncertain. Substitution rewrites the selected window and

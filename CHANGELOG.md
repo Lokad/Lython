@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Decode `os.fsdecode` bytes through the strict UTF-8 codec, preserving BOMs and
+  newlines while rejecting malformed filesystem bytes. Surrogateescape paths
+  remain unsupported. Clarify that regex providers borrow valid, stable UTF-8
+  input, with subject storage funded until all users finish.
+
 - Construct completed tuples from managed spans, removing temporary literal arrays
   and the executable tuple builder's reservation carrier and late scalar admission.
   Keep canonical tuple storage, aliases, owned-array transfers and suspending

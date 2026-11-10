@@ -10,6 +10,91 @@ public sealed class RegexProviderContractTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ConstructedSubjectsStayValidAndStableAfterGuestRebinding(bool asynchronous)
+    {
+        const string payload = "x😀é\r\n\0";
+        string[] expected = [payload, payload, "[" + payload + "]", payload.ToUpperInvariant(), payload, payload];
+        var visited = new List<string>();
+        using var provider = new CooperatingProvider
+        {
+            OnPrepare = (subject, _) => Assert.True(System.Text.Unicode.Utf8.IsValid(subject.Span)),
+            MatchFactory = (subject, _) =>
+            {
+                Assert.True(System.Text.Unicode.Utf8.IsValid(subject.Span));
+                visited.Add(Encoding.UTF8.GetString(subject.Span));
+                return new([new LythonRegexCapture(0, subject.Length)], null);
+            },
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(provider).Compile("""
+            import json, os, re
+            texts = [payload, payload.encode().decode(), f'[{payload}]', payload.upper(),
+                     json.loads(json.dumps(payload)), os.fsdecode(payload.encode())]
+            result = []
+            for text in texts:
+                cursor = re.finditer('.*', text)
+                text = 'rebound'
+                result.extend(match.group() for match in cursor)
+            return result
+            """, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["payload"] = payload } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(expected, Assert.IsAssignableFrom<IList>(result.ReturnValue).Cast<string>());
+                Assert.Equal(expected, visited);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DecodedSubjectsAreValidUtf8AndIndependentOfMutableHostInput(bool asynchronous)
+    {
+        var expected = Encoding.UTF8.GetBytes("x😀\r\n\0é");
+        var input = expected.ToArray();
+        var prepared = false;
+        using var provider = new CooperatingProvider
+        {
+            OnPrepare = (subject, _) =>
+            {
+                Assert.True(System.Text.Unicode.Utf8.IsValid(subject.Span));
+                Assert.True(subject.Span.SequenceEqual(expected));
+                Array.Fill(input, (byte)0xff);
+                Assert.True(subject.Span.SequenceEqual(expected));
+                prepared = true;
+            },
+            MatchFactory = (_, _) => new([new LythonRegexCapture(0, 1)], null),
+        };
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine(provider).Compile(
+            "import os,re\ntext=os.fsdecode(data)\nreturn re.search('x',text).group()", budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["data"] = input } };
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
+                : script.Run(new MockLythonHost(), options))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("x", result.ReturnValue);
+                Assert.True(prepared);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ValidatedProgramsStayFundedAcrossRunsPurgeAndIndependentTokens(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);

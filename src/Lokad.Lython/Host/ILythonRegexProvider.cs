@@ -15,6 +15,9 @@ public interface ILythonRegexProvider
 {
     /// <summary>Validates UTF-8 pattern bytes and transfers a fresh owned Python pattern handle.</summary>
     /// <remarks>
+    /// Lython supplies valid UTF-8, unchanged throughout this call. Direct callers
+    /// must uphold the same input contract. Providers must copy and fund any
+    /// pattern bytes retained after the call; the input itself is only borrowed.
     /// The caller disposes the handle after its operations, prepared subjects,
     /// cursors and metadata borrows end. A provider cache may retain underlying
     /// programs under a separate surviving owner; closing a handle must not refund
@@ -55,6 +58,10 @@ public interface ILythonRegexPattern : IDisposable
 
     /// <summary>Prepares an original UTF-8 subject with Python scalar pos/endpos bounds.</summary>
     /// <remarks>
+    /// The caller supplies valid UTF-8 and keeps its bytes unchanged and funded
+    /// until the subject and all its cursors are disposed. Lython guarantees this
+    /// for guest strings; direct callers must uphold the same contract. Providers
+    /// must not mutate the input or retain its borrow after subject disposal.
     /// Bounds are independently clamped to the subject's scalar length. Preserve
     /// the original prefix for anchors/lookbehind and limit forward work at EndPos.
     /// Pos may exceed EndPos: Python match can still succeed without consuming text.

@@ -94,7 +94,8 @@ internal sealed partial class LythonRuntime
         => OsFsDecodeCore(arguments[0], span, context, true);
     private static async ValueTask<object> OsFsDecodeCore(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
-        if (value is PyBytes bytes) return PyString.CopyFromUtf8(bytes.Bytes, context.MemoryGovernor, span);
+        if (value is PyBytes bytes)
+            return DecodeUtf8Text(bytes.Memory, context, span, TextErrorMode.Strict, TextNewlineMode.PreserveUniversal);
         return asynchronous ? await CoercePathLikeAsync(value, context, span, "os.fsdecode").ConfigureAwait(false) : CoercePathLike(value, context, span, "os.fsdecode");
     }
 
