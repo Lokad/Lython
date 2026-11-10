@@ -1,0 +1,60 @@
+{
+  "beforeFreeBytes": 259964928,
+  "afterRecoveryFreeBytes": 266887168,
+  "requiredFreeBytes": 270176256,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "knownPath": "transient-split-b555-20261110/candidate/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-10-lexical-loop-cleanup/observations.tgz",
+      "member": "baseline-core.dll",
+      "bytes": 5662208,
+      "sha256": "101ba9d3e5237b8d0da09689a94abf9b7dbbe276634becedac61e859e84ac897",
+      "paths": [
+        "lexical-loop-b558-20261110/baseline-core.dll",
+        "lexical-loop-b558-20261110/reference/Lokad.Lython.dll",
+        "call-operands-b556-20261110/baseline-core.dll",
+        "call-operands-b556-20261110/reference/Lokad.Lython.dll",
+        "call-operands-b557-20261110/baseline-core.dll",
+        "call-operands-b557-20261110/reference/Lokad.Lython.dll",
+        "transient-split-b555-20261110/current-core.dll",
+        "transient-split-b555-20261110/candidate/Lokad.Lython.dll"
+      ],
+      "allocatedBytes": 5668864,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "knownPath": "lexical-loop-b558-20261110/candidate/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-10-lexical-loop-cleanup/observations.tgz",
+      "member": "current-core.dll",
+      "bytes": 5662720,
+      "sha256": "dbe94d4dfdcdc8f86de537ad904ee789664d749f60282713d7ac30c0d0467334",
+      "paths": [
+        "lexical-loop-b558-20261110/current-core.dll",
+        "lexical-loop-b558-20261110/candidate/Lokad.Lython.dll",
+        "tuple-constructors-b560-20261110/baseline-core.dll",
+        "tuple-constructors-b560-20261110/reference/Lokad.Lython.dll",
+        "tuple-values-b559-20261110/baseline-core.dll",
+        "tuple-values-b559-20261110/reference/Lokad.Lython.dll"
+      ],
+      "allocatedBytes": 5668864,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "current-text-b562-20261110/profiles/text-warm/perf.map",
+      "canonical": "benchmarks/results/2026-11-10-current-text-construction-cost/observations.tgz",
+      "member": "profiles/text-warm/perf.map",
+      "bytes": 1392625,
+      "sha256": "07b331c49292e2494bd6e9b324394a42f3b20a48e5d6944d8d004d6a1dd0d4f1",
+      "paths": [
+        "current-text-b562-20261110/profiles/text-warm/perf.map"
+      ],
+      "allocatedBytes": 1392640,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "fullyQualified0ePreserved": true
+}

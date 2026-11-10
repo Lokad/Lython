@@ -1,0 +1,92 @@
+{
+  "complete": true,
+  "jobs": 2,
+  "elapsedSeconds": 75.69561863923445,
+  "sourceRevision": "Qualified e543bf15/0e reference; f1c850fb+R214 exact bound native operand borrowing candidate2f9b100e. Focused155internal/224public eachactual11/10 pass; no retained/platform decision yet. Desktop original target adversity preserved, compile/controls move. No allocation gain.",
+  "coreSHA256": {
+    "reference": "0e2bc55bac5ebfafd9d30014e34e2afb3e9776bbe6b5d83a53cc710c0d99c492",
+    "reference-control": "0e2bc55bac5ebfafd9d30014e34e2afb3e9776bbe6b5d83a53cc710c0d99c492",
+    "candidate": "2f9b100e5411f9e0580a65160088b45117593965e3586d0f1dee3ec5492c6561",
+    "candidate-control": "2f9b100e5411f9e0580a65160088b45117593965e3586d0f1dee3ec5492c6561"
+  },
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.class-callable.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 2.2070540446927374,
+        "candidate": 2.183202454054054,
+        "reference-control": 2.200713770491803,
+        "candidate-control": 2.172151383783784
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 2.2905027932960893,
+        "candidate": 2.2162162162162162,
+        "reference-control": 2.2950819672131146,
+        "candidate-control": 2.27027027027027
+      },
+      "iqrPercent": {
+        "reference": 0.8208543133588903,
+        "candidate": 0.9842872677190319,
+        "reference-control": 0.8844003468124613,
+        "candidate-control": 0.623448160148401
+      },
+      "controlSpreadPercent": {
+        "reference": 0.2872731737666556,
+        "candidate": 0.5061862334273748
+      },
+      "changePercent": {
+        "candidate/reference": -1.0806980778761965,
+        "candidate/reference-control": -0.7957107676858755,
+        "candidate-control/reference": -1.5814139664084514,
+        "candidate-control/reference-control": -1.297869222749326
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": -3.2432432432432434,
+        "candidate/reference-control": -3.436293436293436,
+        "candidate-control/reference": -0.8833223467369811,
+        "candidate-control/reference-control": -1.0810810810810811
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 1.6675763099173555,
+        "candidate": 1.680009537815126,
+        "reference-control": 1.6715535726141078,
+        "candidate-control": 1.6681116541666665
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.7355371900826446,
+        "candidate": 1.7647058823529411,
+        "reference-control": 1.7427385892116183,
+        "candidate-control": 1.75
+      },
+      "iqrPercent": {
+        "reference": 1.5067180676705767,
+        "candidate": 1.0025435779963887,
+        "reference-control": 1.1758470195084816,
+        "candidate-control": 0.41610049399245097
+      },
+      "controlSpreadPercent": {
+        "reference": 0.23850558880567085,
+        "candidate": 0.7082033393651432
+      },
+      "changePercent": {
+        "candidate/reference": 0.7455867430970375,
+        "candidate/reference-control": 0.5058746150620852,
+        "candidate-control/reference": 0.03210313351942329,
+        "candidate-control/reference-control": -0.20591134521991128
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": 1.680672268907557,
+        "candidate/reference-control": 1.2605042016806678,
+        "candidate-control/reference": 0.8333333333333304,
+        "candidate-control/reference-control": 0.4166666666666652
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    }
+  ]
+}

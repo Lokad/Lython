@@ -1,0 +1,25 @@
+{
+  "decision": "Withdraw the complete production variant; preserve independent added semantic/retained-owner tests.",
+  "reason": "Small controlled bound-target CPU/elapsed benefit is real evidence, but no allocation saving, possible ordinary-text CPU debt and an extra mutable-target/finally routing invariant with no globally removed binder. Prefer the existing simpler convention over this narrow path; not a fixed-percentage veto or permanent design ban.",
+  "restoredSourceFiles": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs",
+    "src/Lokad.Lython/Runtime/PyFunctionBase.cs"
+  ],
+  "all568SourcesMatchQualifiedE543": true,
+  "candidateCoreSHA256": "2f9b100e5411f9e0580a65160088b45117593965e3586d0f1dee3ec5492c6561",
+  "quietRawSHA256": "47bc3643bbb6ea2d38fd43fdb8d5c7f86b75727396e1a27db67c6eaee5868a3b",
+  "originalAdversityPreserved": true,
+  "fullRuntimeQualification": "Reuse cached GREEN42898279287 for exact restored e543 source; force rebuild and focused checks before --no-build or freezing restored source.",
+  "restoredValidation": {
+    "internal-net11.0": 155,
+    "public-net11.0": 224,
+    "internal-net10.0": 155,
+    "public-net10.0": 224
+  },
+  "restoredCoreSHA256": {
+    "net11.0": "a0ff4ac4bd259d3cfa83e15f0094355a3d14a452265739a81ef31c9ba4b9c987",
+    "net10.0": "a4d8de2bef133e64c73d68e6116fec44f180dbe0d3e614a7fe72c630917badc2"
+  },
+  "restoredBinaryLimit": "Fresh forced-build identities after restoring qualified source; not the timed0e image. Runtime sources match e543, test additions remain."
+}

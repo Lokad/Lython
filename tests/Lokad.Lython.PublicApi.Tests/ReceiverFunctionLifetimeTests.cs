@@ -4,13 +4,15 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ReceiverFunctionLifetimeTests
 {
-    [Fact]
-    public async Task EscapingMethodArgumentStaysFundedAcrossAnotherExecution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EscapingMethodArgumentStaysFundedAcrossAnotherExecution(bool exactPositional)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using var script = new LythonEngine().Compile("""
+        using var script = new LythonEngine().Compile($$"""
             class Reader:
-                def keep(self,value,*,unused=None):return value
+                def keep(self,value{{(exactPositional ? "" : ",*,unused=None")}}):return value
             keep=Reader().keep
             return keep('x'*8192)
             """, budget);

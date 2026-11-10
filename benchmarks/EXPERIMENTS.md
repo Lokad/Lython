@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R214 bound native argument variant](results/2026-11-10-bound-native-arguments/README.md)
+is fully withdrawn. Quiet bound-text elapsed−0.80..−1.58%/supporting CPU is useful,
+but allocation flat, ordinary-text CPU+0.42..+1.68%possible debt and target-mutation/
+finally routing do not simplify the still-required binder. Two jobs75.696s/all gates
+pass. Original desktop adversity, failed four-case setup and initial non-native
+class-report capture survive. All568 production sources restored to qualified e543;
+independent semantic/alias coverage remains,155internal/224public per target pass.
+No unchanged full qualification, current-HEAD speedup or publication claim.
+
 The [R211 current text cost gate](results/2026-11-10-current-text-construction-cost/README.md)
 captures1151execution-thread samples/5.91%unmapped on qualified e543/0e, after the
 material split/loop/tuple changes. All gates/join/SHA pass. Dispatch/text/dictionary

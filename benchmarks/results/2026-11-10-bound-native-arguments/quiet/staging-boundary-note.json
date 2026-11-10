@@ -1,0 +1,12 @@
+{
+  "rawPreserved": true,
+  "fieldMeaning": "The inherited afterRecoveryFreeBytes is measured after payload extraction, despite its name. requiredFreeBytes is a pre-extraction threshold checked before staging. Do not compare those fields as one boundary.",
+  "preExtractionRequiredBytes": 270176256,
+  "beforeRetirementBytes": 259964928,
+  "verifiedReclaimBytes": 12730368,
+  "postExtractionBytes": 266887168,
+  "postSetupBytes": 266838016,
+  "postSetupRequiredBytes": 264241152,
+  "postArchiveBytes": 262758400,
+  "postArchiveFloorBytes": 251658240
+}
