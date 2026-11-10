@@ -1,4 +1,4 @@
-# Invocation-only routing consolidation: qualification in progress
+# Invocation-only routing consolidation: withdrawn
 
 Isolated R183 above567dd53e, not promoted. Qualifiedee448715 source/coreb49 is
 reference. Core858c4ac9 shares one invocation-only completion/suspension boundary,
@@ -45,3 +45,8 @@ All6jobs complete170.753491794s; identity/golden/balance/quiet/join/unmount/
 archive/localSHA gates pass, no remaining VM users/RAM fixtures. Exact redundant
 remote superseded cores/archive copies were retired only after byte/alias proof;
 canonical frozen bytes/raw evidence/current baseline survive. Publication deferred.
+
+[The unchanged-source confirmation](confirmation/README.md) remains inconclusive.
+The routing-only implementation is withdrawn from promotion; exact source delta
+and frozen binaries are retained and its private worktree is retired. Main keeps
+the qualified native shortcuts. No universal speedup or resolved-debt claim.

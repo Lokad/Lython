@@ -1,0 +1,60 @@
+{
+  "requiredFreeBytes": 264622080,
+  "freshIdleLease": true,
+  "beforeFreeBytes": 260780032,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/invocation-routing-b530-20261110/observations.tgz",
+      "size": 4055711,
+      "sha256": "f1a14fbac657c5cd1aa10c98b13b558de3ecad2d48716bab90764e869903254d",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-invocation-routing\\observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804553,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/invocation-routing-b530-20261110",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/invocation-routing-b530-20261110/observations.tgz"
+      ]
+    }
+  ],
+  "unavailable": [],
+  "operation": "Remove only redundant remote compressed archives. Their raw trees, receipts, frozen workers and byte-identical tracked local archives survive.",
+  "afterFreeBytes": 264839168
+}

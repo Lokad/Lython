@@ -1,0 +1,10 @@
+{
+  "status": "Withdrawn from promotion; production unchanged.",
+  "focusedPublicEachTarget": 1381,
+  "internalStackWorkspaceOperandEachTarget": 42,
+  "confirmationElapsedSeconds": 111.35580026125535,
+  "reason": "Controlled confirmation is inconclusive. Routing-only extraction adds a second opcode dispatch and direct/pending completion protocol while removing little underlying work. No demonstrated material CPU/allocation improvement or independent correctness fix justifies this redistribution. Not a fixed-percentage veto or permanent architectural closure.",
+  "originalAdverseEvidenceRetained": true,
+  "fullPlatformPackageQualificationNotRepeated": true,
+  "next": "Shared binder destination: remove owned binding workspace/activation work for closed helpers with named/default arguments while keeping native evaluator and generic async binder."
+}

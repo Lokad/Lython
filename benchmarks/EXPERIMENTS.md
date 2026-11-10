@@ -5766,3 +5766,11 @@ Warm/compile allocation flat; quiet B530 source858c4ac9 supports modest text/sea
 CPU improvement but Unicode/report controls remain adverse/inconclusive. One
 larger-batch confirmation follows. Original desktop adversity/setup mistakes
 and all raw data survive. No promotion, universal speedup or final qualification.
+
+[R183 confirmation](results/2026-11-10-invocation-routing/confirmation/README.md)
+completes111.356s with all gates; larger-batch Unicode/report/text ranges overlap
+zero. Withdraw routing-only code: added dispatch/completion protocol does not
+eliminate sufficient actual work.1381public/42internal focused eachtarget pass;
+source/core/all adversity remain, no unchanged full qualification repeat. Next
+source gate removes actual owned binding work for closed named/default helpers
+through the shared binder, retaining native kernels and dynamic async protocols.
