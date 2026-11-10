@@ -1,0 +1,15 @@
+{
+  "version": "CPython3.13.2",
+  "cases": [
+    {
+      "name": "record-locals-and-retained-aliases",
+      "source": "def parse(row):\n    raw = row['amount']\n    amount = int(raw.strip())\n    return amount, raw, raw\nrow = {'amount': ' 19 '}\namount, first, second = parse(row)\nprint(amount, first is second, second is row['amount'])\n",
+      "stdout": "19 True True\n"
+    },
+    {
+      "name": "record-converter-default-and-rebinding",
+      "source": "def parse(row, convert=int):\n    raw = row['amount']\n    amount = convert(raw)\n    saved = raw\n    return amount, saved, raw\nrow = {'amount': '23'}\nint = lambda value: 42\namount, first, second = parse(row)\nprint(amount, first is second, second is row['amount'])\nprint(parse(row, lambda value: 9)[0])\n",
+      "stdout": "23 True True\n9\n"
+    }
+  ]
+}

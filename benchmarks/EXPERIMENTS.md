@@ -5725,3 +5725,14 @@ and search about1.58× CPython remain material. Variable report/other controls s
 visible; no single-change speedup or statistical significance follows. Exact frozen
 source/binaries, boundary, prior guide and original local-analysis correction are
 retained. The isolated operand prototype is absent; publication stays postponed.
+
+## R180 — shared instruction-prefix assessment remains open
+
+[The isolated prototype](results/2026-11-10-shared-prefix-assessment/README.md)
+removes native expression preparation/value graph, argument-source mutation and
+recursive evaluation. A shared-record cache admission/reentry defect was reproduced
+and corrected before quiet timing. Useful CSV-helper allocation−42.95% contrasts
+with quiet CSV elapsed+1.29–2.23%/coarseCPU flat and text elapsed/CPU roughly+38–52%.
+All adverse controls/original sources remain. No runtime promotion or CPU claim;
+attribute proof replay versus shared execution before selecting bounded refinement.
+The main runtime stays qualified; independent record semantic cases survive.

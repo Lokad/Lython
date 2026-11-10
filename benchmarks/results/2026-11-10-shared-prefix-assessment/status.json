@@ -1,0 +1,26 @@
+{
+  "status": "Active isolated prototype, not promoted. Quiet text CPU regression requires attribution/refinement or an explicit debt/withdrawal decision.",
+  "baseline": "Qualified ee448715-equivalent core; main b3ddd6df remains unchanged",
+  "focused": {
+    "internalReentryEachTarget": 39,
+    "stackAdmissionInternalEachTargetBeforeCacheFix": 69,
+    "stackPublicEachTarget": 60,
+    "public11AfterCacheCorrection": 3625,
+    "public10BeforeCacheCorrection": 3625
+  },
+  "removed": [
+    "NativeReturnValue/ExecutableNativeBody",
+    "native expression preparation",
+    "native argument-source metadata/mutation",
+    "recursive native evaluator"
+  ],
+  "originalFailure": "Shared record lookup cache admission invalidated entry proof; recorded failing regression. Native inline windows now cannot allocate persistent lookup storage.",
+  "quiet": {
+    "jobs": 5,
+    "seconds": 141.4014337430708,
+    "terminalCached": true,
+    "remainingWorkersAndFixtures": false,
+    "archiveSHA256": "201aa4e4a5dd74483dcb1549194d3515d0bc9238a1285687cba5f6d192a4ea33"
+  },
+  "publication": "Postponed"
+}

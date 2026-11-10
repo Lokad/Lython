@@ -1,0 +1,7 @@
+{
+  "reference": "CPython3.13.2 isolated; output only, not timing",
+  "sourceSHA256": "4e57a2f51a558342b9879865f4606955c8caa2d0487ebea7ed942d73d7072c86",
+  "fixtureSHA256": "8220ea9873fe480c18987be2cd6678abafcacc20a7a3e38c15d3538edccdc5d4",
+  "stdout": "3072\n",
+  "description": "Complete validated CSV script with one ordinary conversion helper. Same input/files/stdout as maintained catalog; canonical ID required by reused diagnostic driver. Not the published source."
+}

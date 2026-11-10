@@ -1,0 +1,158 @@
+{
+  "requiredFreeBytes": 271257600,
+  "freshIdleLease": true,
+  "beforeFreeBytes": 262737920,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/ordinary-controls-b524-20261110/observations.tgz",
+      "size": 4032007,
+      "sha256": "8a8afcbb1d92f1adc3a1e50c6f72862d3b36469eaac4737a7948bf36f679c303",
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-10-handler-native-call-controls/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804308,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/ordinary-controls-b524-20261110",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/ordinary-controls-b524-20261110/observations.tgz"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/cpython-checkpoint-b525-20261110/observations.tgz",
+      "size": 2007784,
+      "sha256": "403b1f7444d59afab57490b81aed72eb35ebcaa8c2e56883a3acd64a3bcfa27c",
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-10-current-cpython-checkpoint/observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804342,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/cpython-checkpoint-b525-20261110",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/cpython-checkpoint-b525-20261110/observations.tgz"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/native-method-facts-b450-20261108/observations.tgz",
+      "size": 3915966,
+      "sha256": "6f1f8fd1cade3b1089c99906a6bb19d47ac662d6e00442832b88bc7474d1060b",
+      "preservedLocal": "D:/code/Lython/benchmarks/results/2026-11-08-native-method-facts/observations.tar.xz",
+      "preservedMember": "b450/observations.tgz",
+      "outerSHA256": "99b4647a58f1525f74e76d7d08de3c4d8987dc9000f2ac0ce402855b87b18d7d",
+      "tracked": true,
+      "device": 66305,
+      "inode": 794319,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/native-method-facts-b450-20261108",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/native-method-facts-b450-20261108/observations.tgz"
+      ]
+    }
+  ],
+  "unavailable": [],
+  "operation": "Remove only redundant remote compressed archives. Their raw trees, receipts, frozen workers and byte-identical tracked local archives survive.",
+  "afterFreeBytes": 272699392
+}

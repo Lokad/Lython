@@ -7,6 +7,27 @@ public sealed class NativeReturnFunctionTests
     // Goldens independently captured with isolated CPython 3.13.
     public static TheoryData<string, string, string> Cases => new()
     {
+        { "record-locals-and-retained-aliases", """
+            def parse(row):
+                raw = row['amount']
+                amount = int(raw.strip())
+                return amount, raw, raw
+            row = {'amount': ' 19 '}
+            amount, first, second = parse(row)
+            print(amount, first is second, second is row['amount'])
+            """, "19 True True\n" },
+        { "record-converter-default-and-rebinding", """
+            def parse(row, convert=int):
+                raw = row['amount']
+                amount = convert(raw)
+                saved = raw
+                return amount, saved, raw
+            row = {'amount': '23'}
+            int = lambda value: 42
+            amount, first, second = parse(row)
+            print(amount, first is second, second is row['amount'])
+            print(parse(row, lambda value: 9)[0])
+            """, "23 True True\n9\n" },
         { "captured-read-before-and-after-binding", "def outer():\n def read():return value+1\n try:read()\n except NameError as error:print(type(error).__name__)\n value=3\n print(read())\n del value\n try:read()\n except NameError as error:print(type(error).__name__)\n return read\nread=outer()\ntry:read()\nexcept NameError as error:print(type(error).__name__)\n", "NameError\n4\nNameError\nNameError\n" },
         { "captured-callable-rebinding", "def outer():\n operation=int\n def convert(text):return operation(text)\n print(convert('7'))\n operation=lambda value:'changed'\n print(convert('8'))\n return convert\nprint(outer()('9'))\n", "7\nchanged\nchanged\n" },
         { "captured-read-then-local-introspection", "def outer():\n offset=5\n def work(value):\n  value+=offset\n  return value,locals()['offset'],locals()['value']\n return work\nprint(outer()(3))\n", "(8, 5, 8)\n" },
