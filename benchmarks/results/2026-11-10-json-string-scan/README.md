@@ -1,4 +1,4 @@
-# R201 — bounded bulk JSON string classification (active prototype)
+# R201 — bounded bulk JSON string classification (withdrawn prototype)
 
 2026-11-10. Isolated source on717dfeb3, reference039dc975 matches fully qualified
 66eb runtime; candidateb6d0c7ef is unpromoted. Core remains fully managed. A fixed
@@ -32,10 +32,8 @@ and local SHA checks pass. [Raw observations](original/observations.tgz),
 
 Ranges are source/control comparisons, not confidence intervals. Allocation is
 flat. Text never uses JSON; its adversity remains unexplained, not erased or
-assigned to the scanner. Report/config benefits are inconclusive. Select one
-bounded two-job confirmation of JSON-lines/text with unchanged binaries and
-independent controls before a retain/refine/remove decision. No promotion or
-general CPU improvement is claimed. All original desktop adversity remains under
+assigned to the scanner. Report/config benefits are inconclusive. The bounded unchanged-image confirmation below addresses this uncertainty.
+Neither source promotion nor a general CPU improvement is claimed. All original desktop adversity remains under
 original/desktop; those shared-process timings are diagnostic.
 
 Run clocks include mediated RAM file I/O, capture/projection and per-run cleanup;
@@ -44,11 +42,36 @@ also includes those surrounding operations and coarse clock ticks. These are
 Lython source-pair measurements, not new CPython performance rows.
 
 The preserved offline R199 caller mapping adds no capture:57/58 monitor samples
-have explicit reserve/grow callers, one an immediate string-copy caller. Split
-outputs already have one bulk admission; remaining scratch growth is geometric
-replacement with overlap. Hot instructions already use ref-readonly operands and
-short strings already have inline payloads. No new budget batching or ownership
-architecture is justified by these facts alone.
+have explicit reserve/grow callers, one an immediate string-copy caller. `Grow`
+also runs during reservation construction. The exact text fixture has three words
+per nonempty line and never exceeds the eight stack ranges: these samples concern
+bulk output admission, not scratch replacement. All6144words fit existing inline
+payloads. Hot instructions already use ref-readonly operands. No new budget batching
+or ownership architecture is justified by these facts alone. The original
+preparation archive preserves the initial mistaken scratch attribution; the corrected
+source gate is included with the confirmation evidence.
 
-Main source and its qualified reference remain unchanged. Broader performance and
-independent regex work continue; publication stays postponed.
+B553 confirmation: two jobs,76.006s, text first and reversed initial worker order,
+unchanged binaries/fixtures/clocks/warmup/rounds. All gates pass, workers joined,
+RAM removed, raw archive independently SHA-verified and terminal status cached.
+[Raw confirmation](confirmation/observations.tgz), [summary](confirmation/summary.json),
+[receipt](confirmation/archive-receipt.json), [preparation and corrected source gate](confirmation-preparation.tar.xz).
+JSON elapsed−1.01..−0.04%; widerCPU−3.25..+1.52%. Text elapsed−0.24..+6.03%, CPU
+−0.42..+6.64%, with candidate process spread5.16%. Original B552 text adversity
+is preserved and unexplained; confirmation does not establish a scanner-caused
+text regression or erase it. Stable within-process rounds do not imply stable
+identical processes.
+
+Decision: withdrawb6d0. The bounded bulk search remains semantically valid but
+adds search metadata/an extra token lookup without deleting parsing/validation,
+allocation or ownership machinery. The small JSON elapsed benefit, mixed CPU,
+inconclusive report results and unresolved controls do not justify carrying this
+performance-only path. This is a complexity/debt decision, not a fixed percentage
+veto, permanent design rejection or claim of general failure. Both source/gates
+and all adverse data survive. The independent new UTF-8/control/error-position
+and budget-reuse regressions are useful against the existing parser and are retained.
+
+Runtime source and qualified039/66eb reference remain unchanged. The next bounded
+source assessment concerns repeated execution checks, preserving cooperative
+cancellation, terminal admission and cleanup rather than adding another dispatcher.
+Broader performance and independent regex work continue; publication stays postponed.
