@@ -1,7 +1,7 @@
 # Shared instruction-prefix prototype: adverse CPU result
 
-This is an active isolated R180 prototype above `ee448715`, **not promoted to the
-main runtime**. It replaces native expression preparation, `ExecutableNativeBody`
+This archived R180 prototype above `ee448715` was **withdrawn from promotion**
+after a bounded refinement confirmed material whole-text CPU regression. It replaces native expression preparation, `ExecutableNativeBody`
 and `NativeReturnValue`, argument-source metadata/mutation and recursive native
 evaluation with the finished executable IR, a type proof and one instruction
 prefix. Managed bounded span storage preserves ownership/cancellation; ordinary
