@@ -1,0 +1,60 @@
+{
+  "requiredFreeBytes": 265310208,
+  "freshIdleLease": true,
+  "beforeFreeBytes": 261844992,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-operand-b528-20261110/observations.tgz",
+      "size": 4130945,
+      "sha256": "0095337e44ac698f6ff5ea0b0cb74964ee9540d1bedec901f1ba3ee500783507",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\fixed-facts\\observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804462,
+      "links": 1,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": "0o100644",
+      "parents": [
+        {
+          "path": "/home/lokad/lython-bench-checks/shared-operand-b528-20261110",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad/lython-bench-checks",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40775"
+        },
+        {
+          "path": "/home/lokad",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o40750"
+        },
+        {
+          "path": "/home",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        },
+        {
+          "path": "/",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o40755"
+        }
+      ],
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/shared-operand-b528-20261110/observations.tgz"
+      ]
+    }
+  ],
+  "unavailable": [],
+  "operation": "Remove only redundant remote compressed archives. Their raw trees, receipts, frozen workers and byte-identical tracked local archives survive.",
+  "afterFreeBytes": 265977856
+}

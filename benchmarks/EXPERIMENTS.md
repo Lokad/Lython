@@ -5745,3 +5745,14 @@ and frozen binaries preserved, private worktree retired. CSV allocation-42.95%
 does not justify whole-text regression. Main keeps its qualified native shortcut.
 This is not completion of the whole-script performance objective; R182 will use
 production CSV/search attribution to select a different coherent design.
+
+## R182 — production CSV attribution, search setup gap
+
+[The partial owner](results/2026-11-10-ordinary-runtime-attribution/README.md)
+preserves1221guest CSV samples/6.14CPU-s: VM prefix47.01%, parser14.41%,
+binding4.50%, activation4.42%, context initialization1sample. Useful work is
+included; no removable-cost or speedup estimate. Search warmup hit a fixed
+iteration cap before capture. Original/recovery failures and verified cleanup
+survive; no repeated samples. Consolidating existing instruction-loop routing
+is selected for bounded source implementation; another context-allocation
+project is not justified by this evidence. Publication stays postponed.

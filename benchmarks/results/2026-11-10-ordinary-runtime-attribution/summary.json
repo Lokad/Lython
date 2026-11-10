@@ -1,0 +1,97 @@
+{
+  "status": "Partial failed owner, useful CSV attribution only; search unmeasured.",
+  "coreSHA256": "b49e50a632ce931724077c314f263494a70952d8cdd2030466874e38c489f313",
+  "source": "ee448715 production, source-identical through49d58627",
+  "csvGuestSamples": 1221,
+  "unknownLeaves": 63,
+  "capturedExecutionSeconds": 6.176591535,
+  "guestCpuSeconds": 6.14,
+  "phases": [
+    {
+      "name": "VM prefix",
+      "samples": 574,
+      "percent": 47.01064701064701
+    },
+    {
+      "name": "CSV parser",
+      "samples": 176,
+      "percent": 14.414414414414415
+    },
+    {
+      "name": "memory admission",
+      "samples": 84,
+      "percent": 6.87960687960688
+    },
+    {
+      "name": "call binding",
+      "samples": 55,
+      "percent": 4.504504504504505
+    },
+    {
+      "name": "invocation frame",
+      "samples": 54,
+      "percent": 4.422604422604422
+    },
+    {
+      "name": "native call preparation",
+      "samples": 51,
+      "percent": 4.176904176904177
+    },
+    {
+      "name": "operand/result publication",
+      "samples": 41,
+      "percent": 3.357903357903358
+    },
+    {
+      "name": "unassigned",
+      "samples": 37,
+      "percent": 3.0303030303030303
+    },
+    {
+      "name": "dictionary",
+      "samples": 35,
+      "percent": 2.8665028665028665
+    },
+    {
+      "name": "scalar operators",
+      "samples": 25,
+      "percent": 2.0475020475020473
+    },
+    {
+      "name": "CSV records",
+      "samples": 22,
+      "percent": 1.8018018018018018
+    },
+    {
+      "name": "CSV source",
+      "samples": 21,
+      "percent": 1.71990171990172
+    },
+    {
+      "name": "managed cancellation/stack",
+      "samples": 17,
+      "percent": 1.3923013923013923
+    },
+    {
+      "name": "text kernels",
+      "samples": 17,
+      "percent": 1.3923013923013923
+    },
+    {
+      "name": "host/filesystem",
+      "samples": 9,
+      "percent": 0.7371007371007371
+    },
+    {
+      "name": "text reader",
+      "samples": 2,
+      "percent": 0.1638001638001638
+    },
+    {
+      "name": "context initialization",
+      "samples": 1,
+      "percent": 0.0819000819000819
+    }
+  ],
+  "limits": "Innermost observed phases include useful/inlined work and are not removable overhead. No elapsed comparison or CPU gain. Search fixed warmup cap failed before capture; no samples dropped or repeated. Post-quiet/archive supplied by explicit bounded recovery owner, original failed status preserved."
+}
