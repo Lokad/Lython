@@ -70,3 +70,8 @@ to its original source. A slow measured prototype is evidence, not a permanent
 design veto. No promotion or speedup follows from removing code alone.
 [Development archive](development.tar.xz) retains original/refined sources,
 cores, commands, validation and all original observations.
+
+[The bounded fixed-fact refinement](fixed-facts/README.md) remains materially slower
+on complete text scripts and is withdrawn from promotion. The private source
+worktree was removed after proving its full delta matches the retained patch;
+exact frozen cores/source checks/raw observations survive. No production change.

@@ -1,0 +1,15 @@
+{
+  "status": "Withdrawn from promotion; no production source changes.",
+  "baseRevision": "ee448715",
+  "candidateCoreSHA256": "c39dcffc77c9336ae21a1a1578dd460b8e3930ccb2cc5c88c2c91f7f33cc5642",
+  "focusedInternalEachTarget": 64,
+  "focusedPublicEachTarget": 135,
+  "frameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "fullDeliveryNotRun": true,
+  "originalAdversityPreserved": "../quiet/summary.json",
+  "remainingDebt": "General shared-prefix/IR-proof version keeps material text CPU regression after bounded refinement. Keep qualified native shortcut; future design needs a different proof/execution boundary. Allocation improvement alone is insufficient.",
+  "publication": "postponed"
+}

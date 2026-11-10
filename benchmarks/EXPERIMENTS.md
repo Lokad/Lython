@@ -5726,7 +5726,7 @@ visible; no single-change speedup or statistical significance follows. Exact fro
 source/binaries, boundary, prior guide and original local-analysis correction are
 retained. The isolated operand prototype is absent; publication stays postponed.
 
-## R180 — shared instruction-prefix assessment remains open
+## R180 — shared instruction-prefix implementation withdrawn
 
 [The isolated prototype](results/2026-11-10-shared-prefix-assessment/README.md)
 removes native expression preparation/value graph, argument-source mutation and
@@ -5737,3 +5737,11 @@ All adverse controls/original sources remain. No runtime promotion or CPU claim;
 B527 attributes substantial work to both proof and prefix; a bounded fixed-fact/
 branch-storage refinement is isolated, with no new CPU claim.
 The main runtime stays qualified; independent record semantic cases survive.
+
+[Fixed facts and branch storage](results/2026-11-10-shared-prefix-assessment/fixed-facts/README.md)
+pass64internal/135public per actual target but quiet B528 text CPU remains
++29-37%sync/+37-53%async. The current implementation is withdrawn, source delta
+and frozen binaries preserved, private worktree retired. CSV allocation-42.95%
+does not justify whole-text regression. Main keeps its qualified native shortcut.
+This is not completion of the whole-script performance objective; R182 will use
+production CSV/search attribution to select a different coherent design.

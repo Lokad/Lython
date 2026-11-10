@@ -1,0 +1,137 @@
+[
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 194497.25,
+        "elapsedMs": 0.60444375
+      },
+      "before-control": {
+        "bytes": 194497.25,
+        "elapsedMs": 0.6277875
+      },
+      "candidate": {
+        "bytes": 193017.25,
+        "elapsedMs": 0.583653125
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": -0.7609362086096305,
+        "elapsedMs": -3.439629411338929
+      },
+      "before-control": {
+        "bytes": -0.7609362086096305,
+        "elapsedMs": -7.0301455508432475
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 125953.25,
+        "elapsedMs": 0.475753125
+      },
+      "before-control": {
+        "bytes": 125953.25,
+        "elapsedMs": 0.54078125
+      },
+      "candidate": {
+        "bytes": 125265.25,
+        "elapsedMs": 0.466159375
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": -0.5462344163409849,
+        "elapsedMs": -2.0165395655572405
+      },
+      "before-control": {
+        "bytes": -0.5462344163409849,
+        "elapsedMs": -13.798902051430229
+      }
+    }
+  },
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 112689.25,
+        "elapsedMs": 0.6376125
+      },
+      "before-control": {
+        "bytes": 112689.25,
+        "elapsedMs": 0.68218125
+      },
+      "candidate": {
+        "bytes": 112585.25,
+        "elapsedMs": 0.62051875
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": -0.09228919351225162,
+        "elapsedMs": -2.6808994491168248
+      },
+      "before-control": {
+        "bytes": -0.09228919351225162,
+        "elapsedMs": -9.039020055153957
+      }
+    }
+  },
+  {
+    "case": "scripts.unicode-index-report.control",
+    "roles": {
+      "before": {
+        "bytes": 80649.25,
+        "elapsedMs": 0.322275
+      },
+      "before-control": {
+        "bytes": 80649.25,
+        "elapsedMs": 0.38849375
+      },
+      "candidate": {
+        "bytes": 80649.25,
+        "elapsedMs": 0.328003125
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": 1.7774028391901453
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": -15.570552936823312
+      }
+    }
+  },
+  {
+    "case": "scripts.config-edit.small",
+    "roles": {
+      "before": {
+        "bytes": 99945.25,
+        "elapsedMs": 0.3760875
+      },
+      "before-control": {
+        "bytes": 99945.25,
+        "elapsedMs": 0.380371875
+      },
+      "candidate": {
+        "bytes": 99945.25,
+        "elapsedMs": 0.3912875
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": 4.041612656629101
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": 2.8697245294489804
+      }
+    }
+  }
+]

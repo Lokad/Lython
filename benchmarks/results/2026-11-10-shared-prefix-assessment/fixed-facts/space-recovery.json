@@ -1,0 +1,61 @@
+{
+  "beforeFreeBytes": 260120576,
+  "requiredFreeBytes": 271261696,
+  "freshIdleLease": true,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "files": [
+    {
+      "path": "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/current-core.dll",
+      "size": 5655040,
+      "sha256": "5733cb87ed742bd7df97bfd60fb18d1ef60de5574039fc3de9c02e9f9ff7c0e9",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-framed-native-entry\\quiet\\observations.tgz",
+      "preservedMember": "current-core.dll",
+      "archiveSHA256": "82b084b6b0a815eca609fc21a4fc4124c0eacf4d596910218f08118b855714a0",
+      "tracked": true,
+      "device": 66305,
+      "inode": 339888,
+      "links": 2,
+      "allocatedBytes": 5660672,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/current-core.dll",
+        "/home/lokad/lython-bench-checks/bound-native-entry-b521-20261110/candidate/Lokad.Lython.dll"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/shared-operand-b526-20261110/current-core.dll",
+      "size": 5649920,
+      "sha256": "b8efbea5e00b0154190342af30e97e51f2abf93641c0059c615148201d45ab74",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\quiet\\observations.tgz",
+      "preservedMember": "current-core.dll",
+      "archiveSHA256": "201aa4e4a5dd74483dcb1549194d3515d0bc9238a1285687cba5f6d192a4ea33",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804360,
+      "links": 4,
+      "allocatedBytes": 5656576,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/shared-operand-b526-20261110/current-core.dll",
+        "/home/lokad/lython-bench-checks/shared-operand-b526-20261110/candidate/Lokad.Lython.dll",
+        "/home/lokad/lython-bench-checks/text-proof-b527-20261110/current-core.dll",
+        "/home/lokad/lython-bench-checks/text-proof-b527-20261110/candidate/Lokad.Lython.dll"
+      ]
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/observations.tgz",
+      "size": 2174406,
+      "sha256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "tracked": true,
+      "device": 66305,
+      "inode": 804433,
+      "links": 1,
+      "allocatedBytes": 2174976,
+      "allAliases": [
+        "/home/lokad/lython-bench-checks/text-proof-b527-20261110/observations.tgz"
+      ]
+    }
+  ],
+  "operation": "Retire exact redundant remote copies of two superseded prototype cores and one compressed archive. Every original frozen core/raw observation survives byte-for-byte in tracked immutable canonical evidence; all source/raw trees/receipts and current production baseline remain. No sole evidence or active image removed.",
+  "afterFreeBytes": 273608704
+}

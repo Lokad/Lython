@@ -1,0 +1,2003 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs b/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs
+deleted file mode 100644
+index 5dcf5439..00000000
+--- a/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs
++++ /dev/null
+@@ -1,29 +0,0 @@
+-using Lokad.Lython.Runtime;
+-
+-namespace Lokad.Lython.Frontend;
+-
+-// A closed native body prepares operation structure once. Ordinary code keeps
+-// its own physical operands and source spans; only eligible helpers own nodes.
+-// Inputs use the existing operand domains: negative constant indexes, the local
+-// prefix, then operation indexes offset by that prefix. Consumed local/constant
+-// leaves need no Read node; real roots and mutable name reads retain metadata.
+-internal enum NativeReturnOperation
+-{
+-    Read,
+-    Binary,
+-    Subscript,
+-    BuiltinUnary,
+-    StringMethod, BytesMethod, BooleanMethod, ListMethod,
+-    Split, Replace, StartsWith, EndsWith,
+-    CasedSplit,
+-    ConvertFormat, FormatValue,
+-    Conditional, None, EmptySequence,
+-}
+-
+-internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, ExecutableInstruction Instruction, int First, int Second,
+-    LythonRuntime.ReceiverMethod? Method = null, int Third = -1, LythonSourceSpan? ReturnSpan = null, LythonSourceSpan? MemberSpan = null);
+-
+-internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root)
+-{
+-    internal static readonly ExecutableNativeBody ReturnNone = new([], -1);
+-}
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.ClosedPrefix.cs b/src/Lokad.Lython/Frontend/ExecutableScript.ClosedPrefix.cs
+new file mode 100644
+index 00000000..d2dab8a5
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.ClosedPrefix.cs
+@@ -0,0 +1,101 @@
++using Lokad.Lython.Runtime;
++
++namespace Lokad.Lython.Frontend;
++
++internal sealed partial class ExecutableCodeObject
++{
++    private static (LythonRuntime.ReceiverMethod? Method, LythonRuntime.NativeReturnShape Shape) PrepareClosedStringMethod(string name)
++    {
++        var method = LythonRuntime.StringMembers.GetMethod(name);
++        var shape = LythonRuntime.NativeReturnShape.Other;
++        if (method is not null && method.AcceptsPositional(0)
++            && StaticContracts.TryGetMemberReturnShape(AbstractValueKind.String, name, out var result))
++            shape = result switch
++            {
++                StaticReturnShape.String => LythonRuntime.NativeReturnShape.String,
++                StaticReturnShape.Bytes => LythonRuntime.NativeReturnShape.Bytes,
++                StaticReturnShape.Boolean => LythonRuntime.NativeReturnShape.Boolean,
++                StaticReturnShape.ListOfString => LythonRuntime.NativeReturnShape.Sized,
++                _ => LythonRuntime.NativeReturnShape.Other,
++            };
++        return (method, shape);
++    }
++
++    // Reuse the finished instruction stream. There is no second expression
++    // representation or native argument-source domain to construct or retain.
++    private bool PrepareClosedPrefix(out bool hasBranches)
++    {
++        hasBranches = false;
++        if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
++            || ClosureNames.Count != 0 || ExceptionRegions.Count != 0 || ValueStorageCapacity > ClosedOperandCapacity)
++            return false;
++        var visited = new bool[Instructions.Length];
++        var branches = false;
++        var eligible = Visit(EntryIndex, false, 0);
++        hasBranches = branches;
++        return eligible;
++
++        bool Visit(int position, bool hasEffects, int depth)
++        {
++            // An optimization bound, preserving the existing managed proof depth.
++            // Wider/control-heavy functions continue through ordinary execution.
++            if (depth > 16) return false;
++            while ((uint)position < (uint)Instructions.Length)
++            {
++                if (visited[position]) return false; // cycles or shared joins
++                visited[position] = true;
++                var instruction = Instructions[position];
++                switch (instruction.OpCode)
++                {
++                    case ExecutableOpCode.Jump:
++                        position = instruction.TargetIndex;
++                        continue;
++                    case ExecutableOpCode.CompareJumpIfFalse:
++                        if (!LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
++                            LythonRuntime.NativeReturnShape.Integer,
++                            LythonRuntime.NativeReturnShape.Integer, out _)) return false;
++                        hasEffects = true;
++                        goto case ExecutableOpCode.JumpIfFalse;
++                    case ExecutableOpCode.JumpIfFalse:
++                        branches = true;
++                        return Visit(position + 1, hasEffects, depth + 1)
++                            && Visit(instruction.TargetIndex, hasEffects, depth + 1);
++                    case ExecutableOpCode.Return or ExecutableOpCode.ReturnNone:
++                        return true;
++                    case ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst or ExecutableOpCode.StoreLocal
++                        or ExecutableOpCode.LoadCallMember:
++                        break;
++                    case ExecutableOpCode.LoadGlobal or ExecutableOpCode.Subscript:
++                        // Admission can change a later mutable lookup. A proof
++                        // cannot authorize that lookup before earlier work runs.
++                        if (hasEffects) return false;
++                        break;
++                    case ExecutableOpCode.Call:
++                        var call = CallSites[instruction.CallSiteIndex];
++                        if (!call.IsPositionalOnly || call.ArgumentCount > 3) return false;
++                        hasEffects = true;
++                        break;
++                    case ExecutableOpCode.Binary:
++                        if (!LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
++                            LythonRuntime.NativeReturnShape.Integer,
++                            LythonRuntime.NativeReturnShape.Integer, out _)) return false;
++                        hasEffects = true;
++                        break;
++                    case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple
++                        or ExecutableOpCode.ConvertFormattedValue:
++                        hasEffects = true;
++                        break;
++                    case ExecutableOpCode.FormatField:
++                        if (Constants[instruction.ConstantIndex] is not ExecutableFormatField { DynamicSpecifier: false, Append: false })
++                            return false;
++                        hasEffects = true;
++                        break;
++                    default:
++                        return false;
++                }
++                position++;
++            }
++            return false;
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+deleted file mode 100644
+index 1521c067..00000000
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
++++ /dev/null
+@@ -1,258 +0,0 @@
+-using Lokad.Lython.Runtime;
+-
+-namespace Lokad.Lython.Frontend;
+-
+-internal sealed partial class ExecutableCodeObject
+-{
+-    private ExecutableNativeBody? PrepareNativeBody(IReadOnlyList<ExecutableBasicBlock> blocks,
+-        int entryBlock, int exceptionRegionCount, ExecutableCallSite[] sites)
+-    {
+-        if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
+-            || ClosureNames.Count != 0 || exceptionRegionCount != 0)
+-            return null;
+-        if (blocks.Count == 1 && blocks[0].InstructionArray is [{ OpCode: ExecutableOpCode.ReturnNone }])
+-            return ExecutableNativeBody.ReturnNone;
+-
+-        // Offsets identify visited source operations only during preparation.
+-        // Proof nodes own immutable metadata; ordinary bytecode may forward loads.
+-        var offsets = new int[blocks.Count + 1];
+-        for (var block = 0; block < blocks.Count; block++)
+-        {
+-            var instructions = blocks[block].InstructionArray;
+-            if (instructions.Length == 0 || instructions[^1].OpCode is not
+-                (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
+-                return null;
+-            offsets[block + 1] = checked(offsets[block] + instructions.Length);
+-        }
+-        var visited = new bool[offsets[^1]];
+-        var values = new List<NativeReturnValue>();
+-        var hasConditional = false;
+-        var readsFormatStorage = false;
+-        var proof = Compile(entryBlock, 0, false, null, 0);
+-        if (proof is null || hasConditional && readsFormatStorage) return null;
+-        return new(values.ToArray(), proof.Value.Root - FirstTemporarySlot);
+-
+-        (int Root, int Depth)? Compile(int block, int firstInstruction, bool hasEffects,
+-            HashSet<int>? forwardedLocals, int controlDepth)
+-        {
+-            // Compile/evaluate within the existing native recursion admission.
+-            // Other control flow keeps ordinary executable code, before effects.
+-            if (controlDepth > 16) return null;
+-            var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer, LythonSourceSpan? ReadSpan)>();
+-            var instructions = blocks[block].InstructionArray;
+-            for (var index = firstInstruction; index < instructions.Length; index++)
+-            {
+-                var sourceIndex = offsets[block] + index;
+-                if (visited[sourceIndex]) return null; // cycles or shared joins
+-                visited[sourceIndex] = true;
+-                var instruction = instructions[index];
+-                var operation = NativeReturnOperation.Read;
+-                LythonRuntime.ReceiverMethod? nativeMethod = null;
+-                var first = -1;
+-                var second = -1;
+-                var depth = 1;
+-                LythonSourceSpan? memberSpan = null;
+-                switch (instruction.OpCode)
+-                {
+-                    case ExecutableOpCode.Jump:
+-                        block = instruction.TargetIndex;
+-                        instructions = blocks[block].InstructionArray;
+-                        index = -1;
+-                        continue;
+-                    case ExecutableOpCode.JumpIfFalse:
+-                        if (stack.Count != 1 || stack[0].Member is not null) return null;
+-                        hasConditional = true;
+-                        var condition = stack[0];
+-                        var consequent = Compile(block, index + 1, hasEffects,
+-                            forwardedLocals is null ? null : new(forwardedLocals), controlDepth + 1);
+-                        var alternative = Compile(instruction.TargetIndex, 0, hasEffects,
+-                            forwardedLocals, controlDepth + 1);
+-                        if (consequent is null || alternative is null) return null;
+-                        var conditionalDepth = 1 + Math.Max(condition.Depth,
+-                            Math.Max(consequent.Value.Depth, alternative.Value.Depth));
+-                        if (conditionalDepth > 16) return null;
+-                        values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
+-                            consequent.Value.Root, Third: alternative.Value.Root));
+-                        return (FirstTemporarySlot + values.Count - 1, conditionalDepth);
+-                    case ExecutableOpCode.Return:
+-                        if (stack.Count != 1 || stack[0].Member is not null) return null;
+-                        var root = stack[0];
+-                        if (root.Value < FirstTemporarySlot)
+-                        {
+-                            // A real return keeps its source/exit metadata. Consumed
+-                            // pure leaves need no node in the native operation tree.
+-                            var read = root.Value < 0
+-                                ? ExecutableInstruction.LoadConst(~root.Value, root.ReadSpan!)
+-                                : ExecutableInstruction.LoadLocal(root.Value, root.ReadSpan!);
+-                            values.Add(new(NativeReturnOperation.Read, read, -1, -1,
+-                                ReturnSpan: instruction.Span));
+-                            return (FirstTemporarySlot + values.Count - 1, root.Depth);
+-                        }
+-                        var rootIndex = root.Value - FirstTemporarySlot;
+-                        values[rootIndex] = values[rootIndex] with { ReturnSpan = instruction.Span };
+-                        return (root.Value, root.Depth);
+-                    case ExecutableOpCode.ReturnNone:
+-                        if (stack.Count != 0) return null;
+-                        values.Add(new(NativeReturnOperation.None, instruction, -1, -1,
+-                            ReturnSpan: instruction.Span));
+-                        return (FirstTemporarySlot + values.Count - 1, 1);
+-                    case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple when instruction.ItemCount == 0:
+-                        operation = NativeReturnOperation.EmptySequence;
+-                        break;
+-                    case ExecutableOpCode.LoadLocal:
+-                        // A later read needs the actual binding, not its old input.
+-                        if (forwardedLocals?.Contains(instruction.LocalSlot) == true) return null;
+-                        goto case ExecutableOpCode.LoadConst;
+-                    case ExecutableOpCode.LoadConst:
+-                        var source = instruction.OpCode == ExecutableOpCode.LoadConst
+-                            ? ~instruction.ConstantIndex : instruction.LocalSlot;
+-                        stack.Add((source, null, 1, -1, sourceIndex, instruction.Span));
+-                        continue;
+-                    case ExecutableOpCode.LoadName:
+-                        // Unresolved lexical lookup needs an invocation context.
+-                        // Only explicit globals have the native module semantics.
+-                        return null;
+-                    case ExecutableOpCode.LoadGlobal:
+-                        // Earlier native work can invoke host admission. A later
+-                        // mutable lookup cannot rely on the entry type proof.
+-                        if (hasEffects) return null;
+-                        break;
+-                    case ExecutableOpCode.StoreLocal:
+-                        // Forward the operand only inside this closed native proof.
+-                        // Ordinary bytecode retains both instructions and bindings
+-                        // when protocols, locals inspection or other guards fail.
+-                        if (stack.Count == 0 || stack[^1].Member is not null || index + 1 >= instructions.Length
+-                            || instructions[index + 1].OpCode != ExecutableOpCode.LoadLocal
+-                            || instructions[index + 1].LocalSlot != instruction.LocalSlot)
+-                            return null;
+-                        forwardedLocals ??= new();
+-                        if (!forwardedLocals.Add(instruction.LocalSlot)) return null;
+-                        index++;
+-                        if (visited[offsets[block] + index]) return null;
+-                        visited[offsets[block] + index] = true;
+-                        continue;
+-                    case ExecutableOpCode.LoadCallMember:
+-                        if (stack.Count == 0 || stack[^1].Member is not null) return null;
+-                        // Fold receiver+method into the call; no exposed bound value.
+-                        stack[^1] = (stack[^1].Value, instruction.Span, stack[^1].Depth, instruction.NameIndex, stack[^1].Producer, stack[^1].ReadSpan);
+-                        continue;
+-                    case ExecutableOpCode.Binary when LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
+-                        LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
+-                    case ExecutableOpCode.Subscript:
+-                        if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
+-                        if (stack.Count < 2 || stack[^1].Member is not null || stack[^2].Member is not null) return null;
+-                        operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Binary : NativeReturnOperation.Subscript;
+-                        first = stack[^2].Value;
+-                        second = stack[^1].Value;
+-                        depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);
+-                        stack.RemoveRange(stack.Count - 2, 2);
+-                        break;
+-                    case ExecutableOpCode.ConvertFormattedValue:
+-                    case ExecutableOpCode.FormatField:
+-                        operation = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
+-                            ? NativeReturnOperation.ConvertFormat
+-                            : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
+-                                ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
+-                        if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member is not null) return null;
+-                        first = stack[^1].Value;
+-                        depth = 1 + stack[^1].Depth;
+-                        // Actual dictionary-value queries are not speculated on
+-                        // an unselected branch. Straight-line proofs retain them.
+-                        var formattedInput = first;
+-                        while (formattedInput >= FirstTemporarySlot &&
+-                            values[formattedInput - FirstTemporarySlot].Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+-                            formattedInput = values[formattedInput - FirstTemporarySlot].First;
+-                        if (formattedInput >= FirstTemporarySlot &&
+-                            values[formattedInput - FirstTemporarySlot].Operation == NativeReturnOperation.Subscript) readsFormatStorage = true;
+-                        stack.RemoveAt(stack.Count - 1);
+-                        break;
+-                    case ExecutableOpCode.Call:
+-                        var site = CallSites[instruction.CallSiteIndex];
+-                        if (!site.IsPositionalOnly || site.ArgumentCount > 3 || stack.Count < site.ArgumentCount + 1)
+-                            return null;
+-                        var start = stack.Count - site.ArgumentCount - 1;
+-                        var target = stack[start];
+-                        if (site.HasReceiver && target.Member is null) return null;
+-                        for (var a = start + 1; a < stack.Count; a++)
+-                        {
+-                            if (stack[a].Member is not null) return null;
+-                            depth = Math.Max(depth, stack[a].Depth);
+-                        }
+-                        depth = 1 + Math.Max(depth, target.Depth);
+-                        first = target.Value;
+-                        memberSpan = target.Member;
+-                        if (target.Member is null)
+-                        {
+-                            // These shapes never passed the dynamic builtin proof.
+-                            if (site.ArgumentCount != 1 || first >= FirstTemporarySlot && values[first - FirstTemporarySlot].Operation != NativeReturnOperation.Read) return null;
+-                            operation = NativeReturnOperation.BuiltinUnary;
+-                        }
+-                        else
+-                        {
+-                            var member = Names[target.MemberName];
+-                            if (site.ArgumentCount == 0 && LythonRuntime.StringMembers.GetMethod(member) is { } method
+-                                && method.AcceptsPositional(0)
+-                                && StaticContracts.TryGetMemberReturnShape(AbstractValueKind.String, member, out var shape)
+-                                && shape is StaticReturnShape.String or StaticReturnShape.Bytes or StaticReturnShape.Boolean or StaticReturnShape.ListOfString)
+-                            {
+-                                nativeMethod = method;
+-                                operation = shape switch
+-                                {
+-                                    StaticReturnShape.String => NativeReturnOperation.StringMethod,
+-                                    StaticReturnShape.Bytes => NativeReturnOperation.BytesMethod,
+-                                    StaticReturnShape.Boolean => NativeReturnOperation.BooleanMethod,
+-                                    _ => NativeReturnOperation.ListMethod,
+-                                };
+-                                if (member is "split" or "rsplit"
+-                                    && first >= FirstTemporarySlot && first - FirstTemporarySlot == values.Count - 1 && index > 0
+-                                    && ReferenceEquals(target.Member, instructions[index - 1].Span)
+-                                    && values[first - FirstTemporarySlot].Operation == NativeReturnOperation.StringMethod)
+-                                {
+-                                    var producer = values[first - FirstTemporarySlot];
+-                                    var producerIndex = target.Producer - offsets[block];
+-                                    if (producerIndex > 0 && producerIndex < instructions.Length
+-                                        && ReferenceEquals(producer.MemberSpan, instructions[producerIndex - 1].Span)
+-                                        && PrepareCasedSplit(instructions, producerIndex, index, sites) is not null)
+-                                    {
+-                                        operation = NativeReturnOperation.CasedSplit;
+-                                        first = producer.First;
+-                                        second = -1;
+-                                        nativeMethod = null;
+-                                        values.RemoveAt(values.Count - 1);
+-                                    }
+-                                }
+-                            }
+-                            else
+-                            {
+-                                var selected = member switch
+-                                {
+-                                    "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
+-                                    "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
+-                                    "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
+-                                    "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
+-                                    _ => (NativeReturnOperation?)null
+-                                };
+-                                if (selected is null) return null;
+-                                operation = selected.Value;
+-                            }
+-                        }
+-                        for (var a = 0; a < site.ArgumentCount; a++)
+-                            site.Arguments[a] = site.Arguments[a] with
+-                            {
+-                                NativeInput = stack[start + 1 + a].Value
+-                            };
+-                        stack.RemoveRange(start, site.ArgumentCount + 1);
+-                        break;
+-                    default:
+-                        return null;
+-                }
+-                // Eligibility bound, never a guest syntax/nesting limit.
+-                if (depth > 16) return null;
+-                if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
+-                values.Add(new(operation, instruction, first, second, nativeMethod, MemberSpan: memberSpan));
+-                stack.Add((FirstTemporarySlot + values.Count - 1, null, depth, -1, sourceIndex, null));
+-            }
+-            return null;
+-        }
+-    }
+-}
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 95c1f048..1e21e5cb 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -435,8 +435,7 @@ internal sealed record ExecutableExceptionRegion(
+     int? CleanupId = null,
+     int StackDepth = 0);
+ 
+-// Executable argument forms retain direct native sources for eligible bodies;
+-// ordinary binding uses the same existing form array.
++// Calls retain the original argument forms for ordinary binding.
+ internal readonly record struct ExecutableCallArgument
+ {
+     private readonly string _keywordName;
+@@ -444,12 +443,10 @@ internal readonly record struct ExecutableCallArgument
+     {
+         Kind = form.Kind;
+         _keywordName = form.Kind == CallArgumentKind.Keyword ? form.KeywordName : string.Empty;
+-        NativeInput = int.MaxValue;
+     }
+     public CallArgumentKind Kind { get; }
+     public string KeywordName => Kind == CallArgumentKind.Keyword ? _keywordName
+         : throw new InvalidOperationException("Only a keyword argument has a keyword name.");
+-    public int NativeInput { get; init; }
+ }
+ 
+ internal sealed record ExecutableCallSite(
+@@ -463,8 +460,6 @@ internal sealed record ExecutableCallSite(
+     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+     public int TargetOffset => HasReceiver ? 1 : 0;
+     public int ArgumentOffset => TargetOffset + 1;
+-    public int NativeArgumentSource(int index) => (uint)index < (uint)Arguments.Length
+-        ? Arguments[index].NativeInput : int.MaxValue;
+ }
+ 
+ // Execution retains declaration inputs, not the original syntax/body graph.
+@@ -536,10 +531,8 @@ internal sealed partial class ExecutableCodeObject
+         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
+         IsFunctionScope = isFunctionScope;
+         PrepareCasedSplits(blocks, callSites);
+-        NativeBody = PrepareNativeBody(blocks, entryBlockIndex, exceptionRegions.Count, callSites);
+         var reads = ExecutableStackLayout.ForwardValues(this, blocks);
+-        // Assign physical positions after forwarding. Native proof metadata is
+-        // independent of these positions, including when a runtime guard fails.
++        // Assign the physical positions consumed by execution and closed-call proofs.
+         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
+             exceptionRegions, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
+         OperandCapacity = operandLayout.MaximumDepth;
+@@ -560,6 +553,9 @@ internal sealed partial class ExecutableCodeObject
+             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
+             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
+         }).ToArray();
++        SupportsClosedPrefix = PrepareClosedPrefix(out var branches);
++        HasClosedPrefixBranches = SupportsClosedPrefix && branches;
++        ClosedStringMethods = SupportsClosedPrefix ? Names.Select(PrepareClosedStringMethod).ToArray() : [];
+     }
+ 
+     public string Name { get; }
+@@ -610,5 +606,8 @@ internal sealed partial class ExecutableCodeObject
+     public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
+     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
+ 
+-    public ExecutableNativeBody? NativeBody { get; }
++    internal const int ClosedOperandCapacity = 64;
++    public bool SupportsClosedPrefix { get; }
++    public bool HasClosedPrefixBranches { get; }
++    internal (LythonRuntime.ReceiverMethod? Method, LythonRuntime.NativeReturnShape Shape)[] ClosedStringMethods { get; }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 0b3abefe..5176966e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -7,7 +7,7 @@ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
+-    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
++    private static object LoadLocal(ExecutableCodeObject codeObject, ReadOnlySpan<object> locals, int slot, LythonSourceSpan span, ExecutionContext context)
+     {
+         var value = locals[slot];
+         if (ReferenceEquals(value, UninitializedLocal))
+@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
+         return value;
+     }
+ 
+-    private static bool TryLoadClosure(in ExecutableWorkState execution, ExecutionContext? context,
++    private static bool TryLoadClosure(in ExecutableWorkView execution, ExecutionContext? context,
+         int slot, LythonSourceSpan span, out object value)
+     {
+         var codeObject = execution.Code;
+@@ -503,7 +503,7 @@ internal sealed partial class LythonRuntime
+ 
+     private static void SyncExecutableLocalFromValue(
+         ExecutableCodeObject codeObject,
+-        object[] locals,
++        Span<object> locals,
+         ExecutableCell?[]? localCells,
+         string name,
+         object value)
+@@ -522,7 +522,7 @@ internal sealed partial class LythonRuntime
+ 
+     private static void AssignExecutableBoundName(
+         ExecutableCodeObject codeObject,
+-        object[] locals,
++        Span<object> locals,
+         ExecutableCell?[]? localCells,
+         string name,
+         object value,
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 708cea59..5c6a83c9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -9,14 +9,14 @@ internal sealed partial class LythonRuntime
+     {
+         // The same native selection serves ordinary and not-yet-materialized
+         // invocations. A false result has performed no operation or admission.
+-        private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
++        private static bool TryExecuteNativeCall(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, ExecutableCallSite call, int start, object target)
+         {
+             // Closed helpers complete here just like native builtins. Borrow the
+             // evaluated arguments without manufacturing a pending call/resume.
+             // Other function calls still use the existing binding/frame runner.
+             if (call.IsPositionalOnly && target is PyExecutableFunction { SupportsDirectPositional: true } function
+-                && function.CodeObject.NativeBody is not null
++                && function.CodeObject.SupportsClosedPrefix
+                 && (!call.HasReceiver || execution.Stack[start] is PyNone)
+                 && function.CanBorrowPositionalArguments(call.ArgumentCount, receiver: null))
+             {
+@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
+                     {
+                         scope.CheckExecution(call.CallSpan);
+                         if (!function.TryExecuteWithoutFrame(
+-                            execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span,
++                            execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount),
+                             call.CallSpan, out value)) return false;
+                     }
+                     catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
+@@ -67,6 +67,21 @@ internal sealed partial class LythonRuntime
+                 catch { execution.Stack.RetireTo(start); throw; }
+             }
+ 
++            if (call.HasReceiver && call.IsPositionalOnly && execution.Stack[start] is PyString text)
++            {
++                var inputs = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount);
++                if (TrySelectClosedStringCall(target, inputs, out var operation))
++                {
++                    try
++                    {
++                        var value = InvokeClosedStringCall(operation, text, inputs, call.CallSpan, scope);
++                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
++                        return true;
++                    }
++                    catch { execution.Stack.RetireTo(start); throw; }
++                }
++            }
++
+             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
+             var dictionary = call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is 1 or 2 &&
+                 ReferenceEquals(target, ReceiverMethods.DictionaryGet)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs
+index dafb9ee7..b672c128 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs
+@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
+ 
+     internal sealed partial class ExecutionContext
+     {
+-        private static bool TryExecuteCasedSplit(ref ExecutableWorkState execution, ExecutionContext context,
++        private static bool TryExecuteCasedSplit(ref ExecutableWorkView execution, ExecutionContext context,
+             ExecutionContext? invocation, ExecutableCallSite call, int start, object target)
+         {
+             if (call.CasedSplit is not { } recipe || !ReferenceEquals(target, recipe.CasingMethod)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedPrefix.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedPrefix.cs
+new file mode 100644
+index 00000000..61dbfad2
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedPrefix.cs
+@@ -0,0 +1,112 @@
++using System.Numerics;
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
++        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result)
++    {
++        result = PyNone.Instance;
++        if (!codeObject.SupportsClosedPrefix || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
++            || context.ActiveHandlerVariables is { Count: > 0 }) return false;
++        if (!GuardClosedPrefix(codeObject, arguments, context)) return false;
++        result = ExecuteClosedPrefix(codeObject, context, arguments, entrySpan);
++        return true;
++    }
++
++    internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
++        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
++    {
++        result = PyNone.Instance;
++        if (!code.SupportsClosedPrefix || !GuardClosedPrefix(code, arguments, context)) return false;
++        context.EnterFunctionCall(span);
++        try { result = ExecuteClosedPrefix(code, context, arguments, span); return true; }
++        catch (LythonRuntimeException error)
++        {
++            PyFunctionBinding.AnnotateException(error, context, name, span);
++            throw;
++        }
++        finally { context.LeaveFunctionCall(); }
++    }
++
++    [System.Runtime.CompilerServices.InlineArray(ExecutableCodeObject.ClosedOperandCapacity)]
++    private struct ClosedOperandBuffer { private object _first; }
++
++    private static object ExecuteClosedPrefix(ExecutableCodeObject code,
++        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan)
++    {
++        context.EnterInterpreterFrame(entrySpan);
++        try
++        {
++            ClosedOperandBuffer buffer = default;
++            Span<object> values = buffer;
++            values = values[..code.ValueStorageCapacity];
++            values[..code.FirstTemporarySlot].Fill(UninitializedLocal);
++            for (var i = 0; i < arguments.Length; i++) values[i] = RuntimeValue(arguments[i]);
++            var work = new ExecutableWorkState { Code = code, Stack = new(code, context), InstructionIndex = code.EntryIndex };
++            var view = new ExecutableWorkView(ref work, values);
++            var entryException = context.State.CurrentException;
++            try
++            {
++                ExecutionContext.ExecuteClosedInstructionPrefix(ref view, context);
++                return work.ReturnValue ?? PyNone.Instance;
++            }
++            finally
++            {
++                try { view.Stack.RetireTo(0); }
++                finally { values.Clear(); context.State.SetCurrentException(entryException); }
++            }
++        }
++        finally { context.LeaveInterpreterFrame(); }
++    }
++
++    internal enum NativeReturnShape { Uninitialized, Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized }
++
++    private static NativeReturnShape ReturnShape(object? value) => value switch
++    {
++        null or PyNone => NativeReturnShape.None,
++        BigInteger => NativeReturnShape.Integer,
++        double => NativeReturnShape.Float,
++        bool => NativeReturnShape.Boolean,
++        PyString => NativeReturnShape.String,
++        PyBytes => NativeReturnShape.Bytes,
++        PyDict { HasProtocolKeys: false } => NativeReturnShape.Dictionary,
++        PyList or PyTuple or PyDict or PySet or PyRange or PyDeque => NativeReturnShape.Sized,
++        _ => NativeReturnShape.Other,
++    };
++
++    // One pure fact serves frontend eligibility and the runtime type proof.
++    // It authorizes canonical operations, never evaluates values or protocols.
++    internal static bool TryGetNativeBinaryShape(BinaryOperatorSyntax op, NativeReturnShape left,
++        NativeReturnShape right, out NativeReturnShape result)
++    {
++        result = NativeReturnShape.Other;
++        if (op == BinaryOperatorSyntax.Add && left == NativeReturnShape.String && right == left)
++        {
++            result = left;
++            return true;
++        }
++        if (left is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean)
++            || right is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean)) return false;
++        var integral = left != NativeReturnShape.Float && right != NativeReturnShape.Float;
++        result = op switch
++        {
++            BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
++                or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo
++                => integral ? NativeReturnShape.Integer : NativeReturnShape.Float,
++            BinaryOperatorSyntax.Divide => NativeReturnShape.Float,
++            BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseXor or BinaryOperatorSyntax.BitwiseAnd when integral
++                => left == NativeReturnShape.Boolean && right == left ? NativeReturnShape.Boolean : NativeReturnShape.Integer,
++            BinaryOperatorSyntax.LeftShift or BinaryOperatorSyntax.RightShift when integral => NativeReturnShape.Integer,
++            BinaryOperatorSyntax.Equal or BinaryOperatorSyntax.NotEqual or BinaryOperatorSyntax.Less
++                or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual
++                => NativeReturnShape.Boolean,
++            _ => NativeReturnShape.Other,
++        };
++        return result != NativeReturnShape.Other;
++    }
++
++}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedProof.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedProof.cs
+new file mode 100644
+index 00000000..c962b412
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.ClosedProof.cs
+@@ -0,0 +1,185 @@
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    private struct ClosedProofValue
++    {
++        internal object? Actual;
++        internal PyString? SubscriptKey;
++        internal NativeReturnShape Shape, MethodResult;
++
++        internal ClosedProofValue(object value) { Actual = value; Shape = ReturnShape(value); }
++        internal ClosedProofValue(NativeReturnShape shape) { Shape = shape; }
++        internal readonly bool Valid => Shape != NativeReturnShape.Uninitialized;
++    }
++
++    [System.Runtime.CompilerServices.InlineArray(ExecutableCodeObject.ClosedOperandCapacity)]
++    private struct ClosedProofStorage { private ClosedProofValue _first; }
++
++    // This is a type proof over the finished IR, not another execution route.
++    // It performs no guest operation or admission. Both paths must be closed
++    // before the shared prefix begins; computed values retain shapes only.
++    private static bool GuardClosedPrefix(ExecutableCodeObject code, ReadOnlySpan<object?> arguments, ExecutionContext context)
++    {
++        ClosedProofStorage values = default;
++        for (var i = 0; i < arguments.Length; i++) values[i] = new(RuntimeValue(arguments[i]));
++        return GuardClosedPath(code, context, ref values, code.EntryIndex, 0);
++    }
++
++    private static ClosedProofValue ReadClosedProof(ExecutableCodeObject code, in ClosedProofStorage values, int source)
++        => source < 0 ? new(RuntimeValue(code.Constants[~source])) : values[source];
++
++    private static bool ResolveClosedProof(ExecutableCodeObject code, ref ClosedProofValue value,
++        ExecutionContext context, LythonSourceSpan span)
++    {
++        if (!value.Valid) return false;
++        if (value.SubscriptKey is not { } key) return true;
++        // Keep unselected storage queries out of a conditional proof. The
++        // actual prefix performs its selected lookup with the original span.
++        if (code.HasClosedPrefixBranches || !((PyDict)value.Actual!).TryReadNativeStringValue(key, context, span, out var actual))
++            return false;
++        value = new(actual);
++        return true;
++    }
++
++    private static bool GuardClosedPath(ExecutableCodeObject code, ExecutionContext context,
++        ref ClosedProofStorage values, int position, int depth)
++    {
++        if (depth > 16) return false;
++        var instructions = code.Instructions;
++        while ((uint)position < (uint)instructions.Length)
++        {
++            ref readonly var instruction = ref instructions[position];
++            context.CheckExecution(instruction.Span);
++            ClosedProofValue value;
++            switch (instruction.OpCode)
++            {
++                case ExecutableOpCode.ReturnNone:
++                    return true;
++                case ExecutableOpCode.Return:
++                    return ReadClosedProof(code, in values, instruction.InputStart).Valid;
++                case ExecutableOpCode.Jump:
++                    position = instruction.TargetIndex;
++                    continue;
++                case ExecutableOpCode.JumpIfFalse:
++                    var condition = ReadClosedProof(code, in values, instruction.InputStart);
++                    if (!condition.Valid || condition.Shape == NativeReturnShape.Other) return false;
++                    goto Branch;
++                case ExecutableOpCode.CompareJumpIfFalse:
++                    var left = ReadClosedProof(code, in values, instruction.InputStart);
++                    var right = ReadClosedProof(code, in values, instruction.SecondInput);
++                    if (!left.Valid || !right.Valid || !TryGetNativeBinaryShape(instruction.BinaryOperator, left.Shape, right.Shape, out _)) return false;
++                    goto Branch;
++                case ExecutableOpCode.LoadConst:
++                    value = new(RuntimeValue(code.Constants[instruction.ConstantIndex]));
++                    break;
++                case ExecutableOpCode.LoadLocal:
++                    value = values[instruction.LocalSlot];
++                    if (!value.Valid) return false;
++                    break;
++                case ExecutableOpCode.LoadGlobal:
++                    if (!TryResolveExecutableGlobal(code.Names[instruction.NameIndex], context, out var global)) return false;
++                    value = new(global);
++                    break;
++                case ExecutableOpCode.StoreLocal:
++                    value = ReadClosedProof(code, in values, instruction.InputStart);
++                    if (!value.Valid) return false;
++                    values[instruction.LocalSlot] = value;
++                    position++;
++                    continue;
++                case ExecutableOpCode.LoadCallMember:
++                    var receiver = ReadClosedProof(code, in values, instruction.InputStart);
++                    if (!ResolveClosedProof(code, ref receiver, context, instruction.Span) || receiver.Shape != NativeReturnShape.String) return false;
++                    var method = code.ClosedStringMethods[instruction.NameIndex];
++                    if (method.Method is null) return false;
++                    values[instruction.ResultSlot] = receiver;
++                    value = new(method.Method) { MethodResult = method.Shape };
++                    values[instruction.ResultSlot + 1] = value;
++                    position++;
++                    continue;
++                case ExecutableOpCode.Binary:
++                    var first = ReadClosedProof(code, in values, instruction.InputStart);
++                    var second = ReadClosedProof(code, in values, instruction.SecondInput);
++                    if (!first.Valid || !second.Valid || !TryGetNativeBinaryShape(instruction.BinaryOperator, first.Shape, second.Shape, out var binary)) return false;
++                    value = new(binary);
++                    break;
++                case ExecutableOpCode.Subscript:
++                    var target = ReadClosedProof(code, in values, instruction.InputStart);
++                    var key = ReadClosedProof(code, in values, instruction.SecondInput);
++                    if (target.Actual is not PyDict { HasProtocolKeys: false } dictionary || target.SubscriptKey is not null || key.Actual is not PyString text)
++                        return false;
++                    value = new(NativeReturnShape.Other) { Actual = dictionary, SubscriptKey = text };
++                    break;
++                case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple:
++                    for (var i = 0; i < instruction.ItemCount; i++)
++                        if (!values[instruction.InputStart + i].Valid) return false;
++                    value = new(NativeReturnShape.Sized);
++                    break;
++                case ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
++                    var field = ReadClosedProof(code, in values, instruction.InputStart);
++                    if (!ResolveClosedProof(code, ref field, context, instruction.Span)
++                        || field.Shape is not (NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Float
++                            or NativeReturnShape.Boolean or NativeReturnShape.String or NativeReturnShape.Bytes)) return false;
++                    value = new(NativeReturnShape.String);
++                    break;
++                case ExecutableOpCode.Call:
++                    var call = code.CallSites[instruction.CallSiteIndex];
++                    var start = instruction.InputStart;
++                    var callable = values[start + call.TargetOffset];
++                    if (call.HasReceiver)
++                    {
++                        if (values[start].Shape != NativeReturnShape.String || callable.Actual is not ReceiverMethod operation) return false;
++                        if (call.ArgumentCount == 0)
++                        {
++                            if (callable.MethodResult is NativeReturnShape.Uninitialized or NativeReturnShape.Other) return false;
++                            value = new(callable.MethodResult);
++                            break;
++                        }
++                        var a = values[start + call.ArgumentOffset];
++                        var b = call.ArgumentCount > 1 ? values[start + call.ArgumentOffset + 1] : new ClosedProofValue(NativeReturnShape.None);
++                        var c = call.ArgumentCount > 2 ? values[start + call.ArgumentOffset + 2] : new ClosedProofValue(NativeReturnShape.None);
++                        if (!a.Valid || !b.Valid || !c.Valid || !TryGetClosedStringCallShape(operation, call.ArgumentCount, a.Shape, b.Shape, c.Shape, out var methodShape)) return false;
++                        value = new(methodShape);
++                    }
++                    else
++                    {
++                        if (call.ArgumentCount != 1 || callable.Actual is not BuiltinCallable) return false;
++                        var argument = values[start + call.ArgumentOffset];
++                        if (!ResolveClosedProof(code, ref argument, context, call.CallSpan)
++                            || SelectNativeUnaryOperation(callable.Actual, argument.Actual, argument.Shape, out var unary) is null
++                            || unary == NativeReturnShape.Other) return false;
++                        value = new(unary);
++                    }
++                    break;
++                default:
++                    throw new InvalidOperationException("Unexpected instruction in a closed prefix proof.");
++            }
++            if (instruction.HasLocalResult)
++            {
++                var store = instructions[++position];
++                values[store.LocalSlot] = value;
++            }
++            else values[instruction.ResultSlot] = value;
++            position++;
++            continue;
++
++        Branch:
++            // Compilation excludes joins/cycles, so this visits each reachable
++            // instruction once. Only conditional paths copy the bounded slots.
++            return GuardClosedBranches(code, context, ref values, position, depth);
++        }
++        throw new InvalidOperationException("A closed prefix has no completion instruction.");
++    }
++    // Keep branch-only reference storage out of every straight-line proof frame.
++    private static bool GuardClosedBranches(ExecutableCodeObject code, ExecutionContext context,
++        ref ClosedProofStorage values, int position, int depth)
++    {
++        var alternative = values;
++        return GuardClosedPath(code, context, ref values, position + 1, depth + 1)
++            && GuardClosedPath(code, context, ref alternative, code.Instructions[position].TargetIndex, depth + 1);
++    }
++
++}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
+index 35e5a528..fead58e1 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Comparisons.cs
+@@ -6,7 +6,7 @@ internal sealed partial class LythonRuntime
+ {
+     internal sealed partial class ExecutionContext
+     {
+-        private static InstructionPause ExecuteComparisonInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
++        private static InstructionPause ExecuteComparisonInstruction(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
+             out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+         {
+@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
+             catch { execution.Stack.RetireTo(instruction.LiveExtent); throw; }
+         }
+ 
+-        private static bool CompleteComparisonBranch(ref ExecutableWorkState execution, ExecutionContext context,
++        private static bool CompleteComparisonBranch(ref ExecutableWorkView execution, ExecutionContext context,
+             in ExecutableInstruction instruction, bool truth)
+         {
+             execution.Stack.RetireTo(instruction.LiveExtent);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+index f79e0cbb..cd449de5 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+@@ -10,7 +10,7 @@ internal sealed partial class LythonRuntime
+     {
+         // Genuine async work captures its values; raw type protocols use the
+         // existing stack scratch. Context promotion runs no guest/admission hook.
+-        private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
++        private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
+             out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+         {
+@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
+                     return InstructionPause.Continue;
+                 }
+ 
+-                if (instruction.OpCode == ExecutableOpCode.Subscript && instruction.LookupCacheIndex >= 0 &&
++                if (instruction.OpCode == ExecutableOpCode.Subscript && execution.Stack.SupportsLookupCaching && instruction.LookupCacheIndex >= 0 &&
+                     first is PyDict { HasSharedRecordKeys: true } record && second is PyString field)
+                 {
+                     // Acquire backing before proving the live layout: admission
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+index 28d64f3c..0582cd59 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Async.cs
+@@ -196,7 +196,7 @@ internal sealed partial class LythonRuntime
+         {
+             try
+             {
+-                var (start, end, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, instruction.InputStart + 1);
++                var (start, end, step) = ReadExecutableSliceBounds(_execution.Stack.Values, instruction.SliceParts, instruction.InputStart + 1);
+                 var result = await ReadSliceValueAsync(_execution.Stack[instruction.InputStart], start, end, step, instruction.Span, this).ConfigureAwait(false);
+                 PublishInstructionResult(instruction, result);
+             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 95a39ae0..e6776b55 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -13,7 +13,20 @@ internal sealed partial class LythonRuntime
+         // Both APIs execute completed instructions here, outside an async state
+         // machine. An incomplete operation leaves its instruction/span current.
+         // The async driver owns the pending value and all disposal until resume.
+-        private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
++        internal static void ExecuteClosedInstructionPrefix(ref ExecutableWorkView execution, ExecutionContext scope)
++        {
++            if (ExecuteInstructionPrefix(ref execution, scope, null, false, out _, out _) != InstructionPause.Boundary)
++                throw new InvalidOperationException("Closed helper proof requires unsupported instruction work.");
++        }
++
++        private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState state, ExecutionContext scope,
++            ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            return ExecuteInstructionPrefix(ref view, scope, invocation, asynchronous, out pending, out pendingSpan);
++        }
++
++        private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+         {
+             pending = default;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index 9d81851b..1f880be0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
+     /// </summary>
+     internal sealed partial class ExecutionContext : ExecutionFrame
+     {
+-        private static bool TryLoadDirectCallReceiver(ref ExecutableWorkState execution, ExecutionContext scope,
++        private static bool TryLoadDirectCallReceiver(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, in ExecutableInstruction instruction)
+         {
+             if (instruction.OpCode != ExecutableOpCode.LoadCallMember) return false;
+@@ -231,7 +231,7 @@ internal sealed partial class LythonRuntime
+         // like compiler-issued stores.
+         private static void StoreLocalValue(
+             ExecutableCodeObject codeObject,
+-            object[] locals,
++            Span<object> locals,
+             ExecutableCell?[]? localCells,
+             ExecutionContext? context,
+             int slot,
+@@ -257,11 +257,11 @@ internal sealed partial class LythonRuntime
+             }
+         }
+ 
+-        private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
++        private static void StoreExecutableLocal(ref ExecutableWorkView execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
+             => StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, instruction.LocalSlot,
+                 TakeOperand(ref execution, instruction, scope), instruction.Span);
+ 
+-        private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
++        private static object ReadOperand(ref ExecutableWorkView execution, int source, ExecutionContext scope, int input)
+         {
+             if (source < 0) return RuntimeValue(execution.Code.Constants[~source]);
+             var value = execution.Stack[source];
+@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
+             return value;
+         }
+ 
+-        private static object TakeOperand(ref ExecutableWorkState execution, in ExecutableInstruction instruction, ExecutionContext scope)
++        private static object TakeOperand(ref ExecutableWorkView execution, in ExecutableInstruction instruction, ExecutionContext scope)
+         {
+             if (instruction.InputStart >= execution.Code.FirstTemporarySlot)
+                 return execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+@@ -329,7 +329,7 @@ internal sealed partial class LythonRuntime
+             else _execution.Stack.ClearLookupCache(instruction.LookupCacheIndex);
+         }
+ 
+-        private static void ExecuteStackTransfer(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
++        private static void ExecuteStackTransfer(ref ExecutableWorkView execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
+         {
+             switch (instruction.OpCode)
+             {
+@@ -513,7 +513,7 @@ internal sealed partial class LythonRuntime
+                     break;
+ 
+                 case ExecutableOpCode.MakeSlice:
+-                    var (start, stop, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, instruction.InputStart);
++                    var (start, stop, step) = ReadExecutableSliceBounds(_execution.Stack.Values, instruction.SliceParts, instruction.InputStart);
+                     _execution.Stack.RetireTo(instruction.ResultSlot);
+                     PublishInstructionResult(instruction, CreateSliceValue(start, stop, step, instruction.Span, this));
+                     break;
+@@ -522,7 +522,7 @@ internal sealed partial class LythonRuntime
+ 
+         }
+ 
+-        private static void ExecuteSliceValueOperation(ref ExecutableWorkState execution, ExecutionContext scope,
++        private static void ExecuteSliceValueOperation(ref ExecutableWorkView execution, ExecutionContext scope,
+             ExecutionContext? invocation, in ExecutableInstruction instruction)
+         {
+             try
+@@ -540,10 +540,10 @@ internal sealed partial class LythonRuntime
+         // (and its per-return signal box) entirely. Propagated signals from
+         // nested calls still arrive through the per-instruction catch below,
+         // which stays as the routing backstop.
+-        private static bool DeliverReturn(ref ExecutableWorkState execution, ExecutionContext? invocation, object value, LythonSourceSpan span)
++        private static bool DeliverReturn(ref ExecutableWorkView execution, ExecutionContext? invocation, object value, LythonSourceSpan span)
+         {
+             if (execution.Code.ExceptionRegions.Count != 0 &&
+-                TryHandleAbrupt(execution.Code, invocation!, ref execution.Stack, execution.InstructionIndex, new PendingReturn(value), span, ref invocation!._pendingAbrupt, ref execution.InstructionIndex, out _))
++                TryHandleAbrupt(execution.Code, invocation!, ref execution.Stack.Owner, execution.InstructionIndex, new PendingReturn(value), span, ref invocation!._pendingAbrupt, ref execution.InstructionIndex, out _))
+             {
+                 return true;
+             }
+@@ -565,7 +565,7 @@ internal sealed partial class LythonRuntime
+             return true;
+         }
+ 
+-        private static bool ExecuteControlFlow(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
++        private static bool ExecuteControlFlow(ref ExecutableWorkView execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
+         {
+             switch (instruction.OpCode)
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
+index acd090df..71bd4727 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
+@@ -46,4 +46,50 @@ internal sealed partial class LythonRuntime
+                 return null;
+         }
+     }
++    private static bool TryGetClosedStringCallShape(ReceiverMethod method, int count,
++        NativeReturnShape second, NativeReturnShape third, NativeReturnShape fourth, out NativeReturnShape shape)
++    {
++        shape = NativeReturnShape.Other;
++        if (ReferenceEquals(method, ReceiverMethods.StringSplit) && count is 1 or 2)
++        {
++            shape = NativeReturnShape.Sized;
++            return second is NativeReturnShape.None or NativeReturnShape.String
++                && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
++        }
++        if (ReferenceEquals(method, ReceiverMethods.StringReplace) && count is 2 or 3)
++        {
++            shape = NativeReturnShape.String;
++            return second == NativeReturnShape.String && third == NativeReturnShape.String
++                && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
++        }
++        if ((ReferenceEquals(method, ReceiverMethods.StringStartsWith) || ReferenceEquals(method, ReceiverMethods.StringEndsWith)) && count == 1)
++        {
++            shape = NativeReturnShape.Boolean;
++            return second == NativeReturnShape.String;
++        }
++        return false;
++    }
++
++    private static bool TrySelectClosedStringCall(object target, ReadOnlySpan<object?> arguments, out ReceiverMethod method)
++    {
++        method = target as ReceiverMethod ?? null!;
++        return method is not null && TryGetClosedStringCallShape(method, arguments.Length,
++            arguments.Length > 0 ? ReturnShape(arguments[0]) : NativeReturnShape.None,
++            arguments.Length > 1 ? ReturnShape(arguments[1]) : NativeReturnShape.None,
++            arguments.Length > 2 ? ReturnShape(arguments[2]) : NativeReturnShape.None, out _);
++    }
++
++    private static object InvokeClosedStringCall(ReceiverMethod method, PyString receiver,
++        ReadOnlySpan<object?> arguments, LythonSourceSpan span, ExecutionContext context)
++    {
++        try
++        {
++            if (ReferenceEquals(method, ReceiverMethods.StringSplit))
++                return InvokeStringSplit(receiver, arguments[0], arguments.Length > 1 ? arguments[1] : null, span, context);
++            if (ReferenceEquals(method, ReceiverMethods.StringReplace))
++                return InvokeStringReplace(receiver, arguments[0]!, arguments[1]!, arguments.Length > 2 ? arguments[2] : null, span, context);
++            return InvokeStringAffix(receiver, arguments[0]!, span, context, ReferenceEquals(method, ReceiverMethods.StringStartsWith));
++        }
++        catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
++    }
+ }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+deleted file mode 100644
+index 993fb3af..00000000
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ /dev/null
+@@ -1,382 +0,0 @@
+-using System.Numerics;
+-using Lokad.Lython.Frontend;
+-using Lokad.Lython.Runtime.Text;
+-
+-namespace Lokad.Lython.Runtime;
+-
+-internal sealed partial class LythonRuntime
+-{
+-    internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result)
+-    {
+-        result = PyNone.Instance;
+-        var body = codeObject.NativeBody;
+-        if (body is null || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+-            || context.ActiveHandlerVariables is { Count: > 0 })
+-            return false;
+-        if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
+-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan);
+-        return true;
+-    }
+-
+-    internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
+-    {
+-        result = PyNone.Instance;
+-        var body = code.NativeBody!;
+-        if (!GuardNativeBody(code, body, arguments, context)) return false;
+-        context.EnterFunctionCall(span);
+-        try { result = ExecuteNativeBody(code, body, context, arguments, span); return true; }
+-        catch (LythonRuntimeException error)
+-        {
+-            PyFunctionBinding.AnnotateException(error, context, name, span);
+-            throw;
+-        }
+-        finally { context.LeaveFunctionCall(); }
+-    }
+-
+-    // Dynamic checks precede all effects, including admission. A failed proof
+-    // uses the ordinary executable engine; actual work never falls back/retries.
+-    private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context)
+-        => body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _);
+-
+-    private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+-        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan)
+-    {
+-        context.EnterInterpreterFrame(entrySpan);
+-        try
+-        {
+-            object result = PyNone.Instance;
+-            var entryException = context.State.CurrentException;
+-            if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
+-            else
+-            {
+-                result = EvaluateNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, entryException);
+-                CheckNativeReturnExit(body.Root, body.Values, context);
+-            }
+-            context.State.SetCurrentException(entryException);
+-            return result;
+-        }
+-        finally { context.LeaveInterpreterFrame(); }
+-    }
+-
+-    private static void CheckNativeReturnExit(int root, NativeReturnValue[] values, ExecutionContext context)
+-    {
+-        if (values[root].ReturnSpan is { } span) context.State.CheckExecution(span);
+-    }
+-
+-    internal enum NativeReturnShape { Other, None, Integer, Float, Boolean, String, Bytes, Dictionary, Sized }
+-
+-    private static NativeReturnShape ReturnShape(object? value) => value switch
+-    {
+-        null or PyNone => NativeReturnShape.None,
+-        BigInteger => NativeReturnShape.Integer,
+-        double => NativeReturnShape.Float,
+-        bool => NativeReturnShape.Boolean,
+-        PyString => NativeReturnShape.String,
+-        PyBytes => NativeReturnShape.Bytes,
+-        PyDict { HasProtocolKeys: false } => NativeReturnShape.Dictionary,
+-        PyList or PyTuple or PyDict or PySet or PyRange or PyDeque => NativeReturnShape.Sized,
+-        _ => NativeReturnShape.Other,
+-    };
+-
+-    // One pure fact serves frontend eligibility and the runtime type proof.
+-    // It authorizes canonical operations, never evaluates values or protocols.
+-    internal static bool TryGetNativeBinaryShape(BinaryOperatorSyntax op, NativeReturnShape left,
+-        NativeReturnShape right, out NativeReturnShape result)
+-    {
+-        result = NativeReturnShape.Other;
+-        if (op == BinaryOperatorSyntax.Add && left == NativeReturnShape.String && right == left)
+-        {
+-            result = left;
+-            return true;
+-        }
+-        if (left is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean)
+-            || right is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean)) return false;
+-        var integral = left != NativeReturnShape.Float && right != NativeReturnShape.Float;
+-        result = op switch
+-        {
+-            BinaryOperatorSyntax.Add or BinaryOperatorSyntax.Subtract or BinaryOperatorSyntax.Multiply
+-                or BinaryOperatorSyntax.FloorDivide or BinaryOperatorSyntax.Modulo
+-                => integral ? NativeReturnShape.Integer : NativeReturnShape.Float,
+-            BinaryOperatorSyntax.Divide => NativeReturnShape.Float,
+-            BinaryOperatorSyntax.BitwiseOr or BinaryOperatorSyntax.BitwiseXor or BinaryOperatorSyntax.BitwiseAnd when integral
+-                => left == NativeReturnShape.Boolean && right == left ? NativeReturnShape.Boolean : NativeReturnShape.Integer,
+-            BinaryOperatorSyntax.LeftShift or BinaryOperatorSyntax.RightShift when integral => NativeReturnShape.Integer,
+-            BinaryOperatorSyntax.Equal or BinaryOperatorSyntax.NotEqual or BinaryOperatorSyntax.Less
+-                or BinaryOperatorSyntax.LessEqual or BinaryOperatorSyntax.Greater or BinaryOperatorSyntax.GreaterEqual
+-                => NativeReturnShape.Boolean,
+-            _ => NativeReturnShape.Other,
+-        };
+-        return result != NativeReturnShape.Other;
+-    }
+-
+-    private static bool TryReadNativeInput(int source, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+-    {
+-        if (source < 0) { value = code.Constants[~source]; return true; }
+-        if (source < code.FirstTemporarySlot)
+-        {
+-            var bound = (uint)source < (uint)arguments.Length;
+-            value = bound ? arguments[source] : null;
+-            return bound;
+-        }
+-        return TryReadNativeOperand(code, values[source - code.FirstTemporarySlot].Instruction, arguments, context, out value);
+-    }
+-
+-    private static bool GuardNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out NativeReturnShape shape)
+-    {
+-        shape = NativeReturnShape.Other;
+-        if (index < code.FirstTemporarySlot)
+-        {
+-            if (!TryReadNativeInput(index, code, values, arguments, context, out var inputValue)) return false;
+-            shape = ReturnShape(inputValue);
+-            return true;
+-        }
+-        ref readonly var value = ref values[index - code.FirstTemporarySlot];
+-        switch (value.Operation)
+-        {
+-            case NativeReturnOperation.None:
+-                shape = NativeReturnShape.None;
+-                return true;
+-            case NativeReturnOperation.EmptySequence:
+-                shape = NativeReturnShape.Sized;
+-                return true;
+-            case NativeReturnOperation.Conditional:
+-                context.State.CheckExecution(value.Instruction.Span);
+-                if (!GuardNativeReturn(value.First, code, values, arguments, context, out var condition)
+-                    || condition == NativeReturnShape.Other
+-                    || !GuardNativeReturn(value.Second, code, values, arguments, context, out var consequent)
+-                    || !GuardNativeReturn(value.Third, code, values, arguments, context, out var alternative))
+-                    return false;
+-                shape = consequent == alternative ? consequent : NativeReturnShape.Other;
+-                return true;
+-            case NativeReturnOperation.Read:
+-                if (!TryReadNativeOperand(code, value.Instruction, arguments, context, out var input)) return false;
+-                shape = ReturnShape(input);
+-                return true;
+-            case NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue:
+-                shape = NativeReturnShape.String;
+-                return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+-            case NativeReturnOperation.BuiltinUnary:
+-                if (!TryReadNativeInput(value.First, code, values, arguments, context, out var target)
+-                    || target is not BuiltinCallable) return false;
+-                var call = code.CallSites[value.Instruction.CallSiteIndex];
+-                var argumentIndex = call.NativeArgumentSource(0);
+-                object? actual = null;
+-                var inputShape = NativeReturnShape.Other;
+-                if (argumentIndex < code.FirstTemporarySlot || values[argumentIndex - code.FirstTemporarySlot].Operation == NativeReturnOperation.Read)
+-                {
+-                    if (!TryReadNativeInput(argumentIndex, code, values, arguments, context, out actual)) return false;
+-                }
+-                else if (!GuardNativeReturn(argumentIndex, code, values, arguments, context, out inputShape)) return false;
+-                return SelectNativeUnaryOperation(target, actual, inputShape, out shape) is not null && shape != NativeReturnShape.Other;
+-        }
+-
+-        if (!GuardNativeReturn(value.First, code, values, arguments, context, out var first)) return false;
+-        switch (value.Operation)
+-        {
+-            case NativeReturnOperation.Binary:
+-                if (!GuardNativeReturn(value.Second, code, values, arguments, context, out var right)) return false;
+-                return TryGetNativeBinaryShape(value.Instruction.BinaryOperator, first, right, out shape);
+-            case NativeReturnOperation.Subscript:
+-                return GuardNativeReturn(value.Second, code, values, arguments, context, out var key)
+-                    && first == NativeReturnShape.Dictionary && key == NativeReturnShape.String;
+-            case NativeReturnOperation.StringMethod or NativeReturnOperation.BytesMethod
+-                or NativeReturnOperation.BooleanMethod or NativeReturnOperation.ListMethod:
+-                shape = value.Operation switch
+-                {
+-                    NativeReturnOperation.StringMethod => NativeReturnShape.String,
+-                    NativeReturnOperation.BytesMethod => NativeReturnShape.Bytes,
+-                    NativeReturnOperation.BooleanMethod => NativeReturnShape.Boolean,
+-                    _ => NativeReturnShape.Sized,
+-                };
+-                return first == NativeReturnShape.String;
+-            case NativeReturnOperation.CasedSplit:
+-                shape = NativeReturnShape.Sized;
+-                return first == NativeReturnShape.String;
+-        }
+-
+-        var site = code.CallSites[value.Instruction.CallSiteIndex];
+-        var second = NativeReturnShape.None;
+-        var third = NativeReturnShape.None;
+-        var fourth = NativeReturnShape.None;
+-        if (site.NativeArgumentSource(0) is not int.MaxValue and var secondIndex
+-            && !GuardNativeReturn(secondIndex, code, values, arguments, context, out second)) return false;
+-        if (site.NativeArgumentSource(1) is not int.MaxValue and var thirdIndex
+-            && !GuardNativeReturn(thirdIndex, code, values, arguments, context, out third)) return false;
+-        if (site.NativeArgumentSource(2) is not int.MaxValue and var fourthIndex
+-            && !GuardNativeReturn(fourthIndex, code, values, arguments, context, out fourth)) return false;
+-        if (first != NativeReturnShape.String) return false;
+-        switch (value.Operation)
+-        {
+-            case NativeReturnOperation.Split:
+-                shape = NativeReturnShape.Sized;
+-                return second is NativeReturnShape.None or NativeReturnShape.String
+-                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+-            case NativeReturnOperation.Replace:
+-                shape = NativeReturnShape.String;
+-                return second == NativeReturnShape.String && third == NativeReturnShape.String
+-                    && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+-            case NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith:
+-                shape = NativeReturnShape.Boolean;
+-                return second == NativeReturnShape.String;
+-            default: throw new InvalidOperationException("Unknown prepared native proof.");
+-        }
+-    }
+-
+-    private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
+-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
+-    {
+-        if (index >= code.FirstTemporarySlot)
+-        {
+-            ref readonly var value = ref values[index - code.FirstTemporarySlot];
+-            if (value.Operation is NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue)
+-                return GuardNativeFormattedValue(value.First, code, values, arguments, context);
+-        }
+-        // Only this guard needs the actual field type. Do not reuse its value
+-        // after later admission/effects; execution performs the original read.
+-        var shape = TryReadNativeFormattedValue(index, code, values, arguments, context, out var field)
+-            ? ReturnShape(field)
+-            : GuardNativeReturn(index, code, values, arguments, context, out var computed) ? computed : NativeReturnShape.Other;
+-        return shape is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Float
+-            or NativeReturnShape.Boolean or NativeReturnShape.String or NativeReturnShape.Bytes;
+-    }
+-
+-    private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
+-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? result)
+-    {
+-        if (index < code.FirstTemporarySlot)
+-            return TryReadNativeInput(index, code, values, arguments, context, out result);
+-        ref readonly var value = ref values[index - code.FirstTemporarySlot];
+-        if (value.Operation == NativeReturnOperation.Read)
+-            return TryReadNativeOperand(code, value.Instruction, arguments, context, out result);
+-        if (value.Operation == NativeReturnOperation.Subscript
+-            && TryReadNativeFormattedValue(value.First, code, values, arguments, context, out var target)
+-            && target is PyDict dictionary
+-            && TryReadNativeFormattedValue(value.Second, code, values, arguments, context, out var key)
+-            && key is PyString text)
+-            return dictionary.TryReadNativeStringValue(text, context, value.Instruction.Span, out result);
+-        result = null;
+-        return false;
+-    }
+-
+-    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
+-    {
+-        // Bound direct inputs are pure. Operations and real roots retain their
+-        // cancellation/refusal checks without a recursive leaf dispatch.
+-        if (index < code.FirstTemporarySlot)
+-            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
+-        ref readonly var value = ref values[index - code.FirstTemporarySlot];
+-        var instruction = value.Instruction;
+-        if (value.Operation == NativeReturnOperation.Conditional)
+-        {
+-            var condition = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+-            context.State.CheckExecution(instruction.Span);
+-            var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
+-            var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException);
+-            CheckNativeReturnExit(selected - code.FirstTemporarySlot, values, context);
+-            return result;
+-        }
+-        object? first = null, second = null, third = null, fourth = null;
+-        if (value.Operation is not (NativeReturnOperation.Read or NativeReturnOperation.None or NativeReturnOperation.EmptySequence))
+-        {
+-            first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+-            if (value.Operation == NativeReturnOperation.CasedSplit)
+-            {
+-                try { return ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first, context); }
+-                catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+-            }
+-            if (value.Operation is NativeReturnOperation.Binary or NativeReturnOperation.Subscript)
+-                second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
+-            else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.EndsWith)
+-            {
+-                if (value.MemberSpan is { } memberSpan) context.State.CheckExecution(memberSpan);
+-                var call = code.CallSites[instruction.CallSiteIndex];
+-                if (call.NativeArgumentSource(0) is not int.MaxValue and var a) second = EvaluateNativeReturn(a, code, values, arguments, context, entryException);
+-                if (call.NativeArgumentSource(1) is not int.MaxValue and var b) third = EvaluateNativeReturn(b, code, values, arguments, context, entryException);
+-                if (call.NativeArgumentSource(2) is not int.MaxValue and var c) fourth = EvaluateNativeReturn(c, code, values, arguments, context, entryException);
+-            }
+-        }
+-        context.State.CheckExecution(instruction.Span);
+-        try
+-        {
+-            switch (value.Operation)
+-            {
+-                case NativeReturnOperation.None:
+-                    return PyNone.Instance;
+-                case NativeReturnOperation.EmptySequence:
+-                    return instruction.OpCode == ExecutableOpCode.MakeTuple ? PyTuple.Empty
+-                        : CreateEmptyNativeList(instruction.Span, context);
+-                case NativeReturnOperation.Read:
+-                    TryReadNativeOperand(code, instruction, arguments, context, out var operand);
+-                    return RuntimeValue(operand);
+-                case NativeReturnOperation.Binary:
+-                    return EvaluateBinaryOperator(instruction.BinaryOperator, first!, second!, context, instruction.Span);
+-                case NativeReturnOperation.Subscript:
+-                    return ReadSubscriptValue(first!, second!, instruction.Span, context);
+-                case NativeReturnOperation.ConvertFormat:
+-                    return FormatInterpolatedStringPart(first!, instruction.FormattedConversion, null, context, instruction.Span);
+-                case NativeReturnOperation.FormatValue:
+-                    var format = (ExecutableFormatField)code.Constants[instruction.ConstantIndex]!;
+-                    return FormatInterpolatedStringPart(first!, null, format.FormatSpecifier, context, instruction.Span, format.PreparedFormat);
+-            }
+-            var site = code.CallSites[instruction.CallSiteIndex];
+-            if (value.Operation == NativeReturnOperation.BuiltinUnary)
+-                return InvokeSingleInput(second!, SelectNativeUnaryOperation(first, second, NativeReturnShape.Other, out _)!, site.CallSpan, context);
+-            var receiver = (PyString)first!;
+-            if (value.Method is { } method)
+-                return InvokeReceiverMethod(method, receiver, site.CallSpan, context);
+-            return value.Operation switch
+-            {
+-                NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
+-                NativeReturnOperation.Replace => InvokeStringReplace(receiver, second!, third!, fourth, site.CallSpan, context),
+-                NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith =>
+-                    InvokeStringAffix(receiver, second!, site.CallSpan, context, value.Operation == NativeReturnOperation.StartsWith),
+-                _ => throw new InvalidOperationException("Unknown prepared native value."),
+-            };
+-        }
+-        catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+-    }
+-
+-    // Zero operands have no storage owner, and RetireTo(0) is a no-op.
+-    // Keep this allocation helper's empty storage out of recursive evaluation.
+-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+-    private static PyList CreateEmptyNativeList(LythonSourceSpan span, ExecutionContext context)
+-    {
+-        var empty = default(ExecutableValueStorage);
+-        return CreateListFromStack(ref empty, 0, 0, span, context);
+-    }
+-
+-    private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+-    {
+-        if (instruction.OpCode == ExecutableOpCode.LoadConst)
+-        {
+-            value = codeObject.Constants[instruction.ConstantIndex];
+-            return true;
+-        }
+-        if (instruction.OpCode == ExecutableOpCode.LoadGlobal)
+-        {
+-            var name = codeObject.Names[instruction.NameIndex];
+-            return TryResolveExecutableGlobal(name, context, out value);
+-        }
+-        var index = instruction.LocalSlot;
+-        var bound = (uint)index < (uint)arguments.Length;
+-        value = bound ? arguments[index] : null;
+-        // Unbound locals must fail through the original LoadLocal operation.
+-        return bound;
+-    }
+-
+-    private static void RestoreNativeReturnException(ExecutionContext context, PyException? entryException,
+-        LythonRuntimeException error)
+-    {
+-        var previousActive = context.State.CurrentException;
+-        if (previousActive is not null && !ReferenceEquals(error.OriginalPythonException, previousActive))
+-            error.PythonContext ??= previousActive;
+-        context.State.SetCurrentException(entryException);
+-    }
+-}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operands.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operands.cs
+new file mode 100644
+index 00000000..6596e49e
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operands.cs
+@@ -0,0 +1,148 @@
++using Lokad.Lython.Frontend;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    // An ephemeral view never owns storage and cannot survive suspension. The
++    // persistent state remains the sole owner of caches, capacity and cleanup.
++    internal ref struct ExecutableWorkView
++    {
++        private readonly ref ExecutableWorkState _state;
++        internal ExecutableValueStorage.Window Stack;
++
++        internal ExecutableWorkView(ref ExecutableWorkState state, Span<object> values)
++        {
++            _state = ref state;
++            Code = state.Code;
++            Stack = new(ref state.Stack, values);
++        }
++
++        internal readonly ExecutableCodeObject Code;
++        internal readonly Span<object> Locals => Stack.Values;
++        internal readonly ExecutableCell?[]? LocalCells => _state.LocalCells;
++        internal readonly IReadOnlyList<ExecutableCell>? ClosureCells => _state.ClosureCells;
++        internal ref int InstructionIndex => ref _state.InstructionIndex;
++        internal object? ReturnValue { readonly get => _state.ReturnValue; set => _state.ReturnValue = value; }
++    }
++
++    internal sealed partial class ExecutionContext
++    {
++        private static object ReadOperand(ref ExecutableWorkState state, int source, ExecutionContext scope, int input)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            return ReadOperand(ref view, source, scope, input);
++        }
++        private static object TakeOperand(ref ExecutableWorkState state, in ExecutableInstruction instruction, ExecutionContext scope)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            return TakeOperand(ref view, instruction, scope);
++        }
++        private static bool CompleteComparisonBranch(ref ExecutableWorkState state, ExecutionContext context, in ExecutableInstruction instruction, bool truth)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            return CompleteComparisonBranch(ref view, context, instruction, truth);
++        }
++        private static void ExecuteStackTransfer(ref ExecutableWorkState state, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            ExecuteStackTransfer(ref view, scope, invocation, instruction);
++        }
++        private static void ExecuteSliceValueOperation(ref ExecutableWorkState state, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
++        {
++            var view = new ExecutableWorkView(ref state, state.Stack.Values);
++            ExecuteSliceValueOperation(ref view, scope, invocation, instruction);
++        }
++    }
++
++    internal partial struct ExecutableValueStorage
++    {
++        internal ExecutableValueStorage(ExecutableCodeObject code, ExecutionContext scope)
++        {
++            this = default;
++            _items = [];
++            _state = scope.State;
++            _firstTemporarySlot = code.FirstTemporarySlot;
++            _lastOwnedTemporarySlot = code.LastOwnedTemporarySlot;
++            LiveExtent = code.FirstTemporarySlot;
++        }
++
++        internal ref struct Window
++        {
++            private readonly ref ExecutableValueStorage _owner;
++            private readonly Span<object> _values;
++
++            internal Window(ref ExecutableValueStorage owner, Span<object> values)
++            {
++                _owner = ref owner;
++                _values = values;
++            }
++
++            internal readonly Span<object> Values => _values;
++            internal ref ExecutableValueStorage Owner => ref _owner;
++            // Inline closed helpers have no persistent frame backing. Cache
++            // admission there could invalidate a proof before a later read.
++            internal readonly bool SupportsLookupCaching => _owner._items is { Length: > 0 };
++            internal readonly bool HasPendingDisposals => _owner.HasPendingDisposals;
++            internal readonly int LiveExtent => _owner.LiveExtent;
++            internal object this[int index]
++            {
++                readonly get => _values[index].RequireNotNull();
++                set => _values[index] = value;
++            }
++
++            internal readonly ReadOnlySpan<object?> Slice(int start, int count) => _values.Slice(start, count);
++            internal readonly void CheckExecution(LythonSourceSpan span) => _owner.CheckExecution(span);
++            internal readonly ExecutableLookupCache[] GetLookupCaches(int count, LythonSourceSpan span)
++            {
++                if (!SupportsLookupCaching)
++                    throw new InvalidOperationException("Lookup storage requires persistent frame backing.");
++                return _owner.GetLookupCaches(count, span);
++            }
++
++            internal void PublishValue(int resultSlot, int liveExtent, object value)
++            {
++                if (liveExtent < LiveExtent) RetireTo(liveExtent);
++                _values[resultSlot] = value;
++                _owner.LiveExtent = liveExtent;
++            }
++
++            internal object TakeValue(int inputSlot, int liveExtent)
++            {
++                var value = _values[inputSlot].RequireNotNull();
++                _values[inputSlot] = null!;
++                _owner.LiveExtent = liveExtent;
++                return value;
++            }
++
++            internal void ForgetResultInput(int resultSlot)
++            {
++                _values[resultSlot] = null!;
++                _owner.LiveExtent = resultSlot;
++            }
++
++            internal void RetireTo(int liveExtent)
++            {
++                if (liveExtent == LiveExtent) return;
++                for (var i = Math.Min(LiveExtent - 1, _owner._lastOwnedTemporarySlot); i >= liveExtent; i--)
++                {
++                    if (_owner.DeferAsyncDisposal && _values[i] is PyIteration.Cursor cursor)
++                    {
++                        if (_owner._pendingDisposalTail is null) _owner._pendingDisposalHead = cursor;
++                        else _owner._pendingDisposalTail.NextPendingDisposal = cursor;
++                        _owner._pendingDisposalTail = cursor;
++                        _values[i] = null!;
++                    }
++                    else if (_values[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
++                }
++                _values.Slice(liveExtent, LiveExtent - liveExtent).Clear();
++                _owner.LiveExtent = liveExtent;
++            }
++
++            internal readonly bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
++                => _owner.TryPrepareNativeIteration(source, slot, liveExtent, span);
++            internal readonly bool TryAdvanceNativeIteration(int slot, out PyIterationResult next)
++                => _owner.TryAdvanceNativeIteration(slot, out next);
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+index 4c80c989..f086f73e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Operations.cs
+@@ -51,15 +51,15 @@ internal sealed partial class LythonRuntime
+         => value is IPyContextManager manager ? manager
+             : throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(value) + "' object does not support the context manager protocol", span);
+ 
+-    private static object ExecuteExecutableSlice(in ExecutableValueStorage storage, int first,
++    private static object ExecuteExecutableSlice(in ExecutableValueStorage.Window storage, int first,
+         ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
+     {
+-        var (start, end, step) = ReadExecutableSliceBounds(in storage, parts, first + 1);
++        var (start, end, step) = ReadExecutableSliceBounds(storage.Values, parts, first + 1);
+         return ReadSliceValue(storage[first], start, end, step, span, context);
+     }
+ 
+     private static (object? Start, object? End, object? Step) ReadExecutableSliceBounds(
+-        in ExecutableValueStorage storage, ExecutableSliceParts parts, int first)
++        ReadOnlySpan<object> storage, ExecutableSliceParts parts, int first)
+     {
+         var start = (parts & ExecutableSliceParts.Start) != 0 ? storage[first++] : null;
+         var end = (parts & ExecutableSliceParts.End) != 0 ? storage[first++] : null;
+@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
+                or PkgutilLoaderObject
+                or PyDirEntryObject));
+ 
+-    private static PyList CreateListFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
++    private static PyList CreateListFromStack(ref ExecutableValueStorage.Window stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
+     {
+         var bytes = PyList.EstimateCapacityBytes(count);
+         using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
+         return PyList.FromTransferredArray(items, context.MemoryGovernor, span);
+     }
+ 
+-    private static PyTuple CreateTupleFromStack(ref ExecutableValueStorage stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
++    private static PyTuple CreateTupleFromStack(ref ExecutableValueStorage.Window stack, int start, int count, LythonSourceSpan span, ExecutionContext context)
+     {
+         if (count == 0) return PyTuple.Empty;
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+index db72354b..a5d665e9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.PreparedOperations.cs
+@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
+ {
+     internal sealed partial class ExecutionContext
+     {
+-        private static bool TryExecuteFormattedInstruction(ref ExecutableWorkState execution,
++        private static bool TryExecuteFormattedInstruction(ref ExecutableWorkView execution,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutionContext context)
+         {
+             switch (instruction.OpCode)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+index 88ecb75b..fe2577e6 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+@@ -7,9 +7,12 @@ internal sealed partial class LythonRuntime
+     internal sealed partial class ExecutionContext
+     {
+         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
+-            => PublishInstructionResult(ref _execution, this, instruction, value);
++        {
++            var view = new ExecutableWorkView(ref _execution, _execution.Stack.Values);
++            PublishInstructionResult(ref view, this, instruction, value);
++        }
+ 
+-        private static void PublishInstructionResult(ref ExecutableWorkState execution,
++        private static void PublishInstructionResult(ref ExecutableWorkView execution,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
+         {
+             if (!instruction.HasLocalResult)
+@@ -19,7 +22,7 @@ internal sealed partial class LythonRuntime
+             else CompleteLocalResult(ref execution, invocation, instruction, value);
+         }
+ 
+-        private static void CompleteLocalResult(ref ExecutableWorkState execution,
++        private static void CompleteLocalResult(ref ExecutableWorkView execution,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
+         {
+             // Preserve the original input retirement and its disposal order.
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs
+index 5a049f1f..6249366a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs
+@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
+                         break;
+                     case ExecutableOpCode.DeleteSlice:
+                     {
+-                        var (start, stop, step) = ReadExecutableSliceBounds(in _execution.Stack, instruction.SliceParts, first + 1);
++                        var (start, stop, step) = ReadExecutableSliceBounds(_execution.Stack.Values, instruction.SliceParts, first + 1);
+                         if (asynchronous) mutation = ExecuteSliceDeletionAsync(_execution.Stack[first], start, stop, step, span, this);
+                         else ExecuteSliceDeletion(_execution.Stack[first], start, stop, step, span, this);
+                         break;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index f24eaf2a..3b2e6548 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -265,7 +265,7 @@ internal sealed partial class LythonRuntime
+ 
+     internal static long LookupCacheBytes(int count) => checked(32L + 64L * count);
+ 
+-    internal struct ExecutableValueStorage
++    internal partial struct ExecutableValueStorage
+     {
+         private object[] _items;
+         private int[]? _nativeIterationPositions;
+@@ -359,27 +359,22 @@ internal sealed partial class LythonRuntime
+ 
+         internal void PublishValue(int resultSlot, int liveExtent, object result)
+         {
+-            // Inputs and their owner stay live through callbacks/suspension.
+-            // Retire only after success, preserving failed-disposal behavior.
+-            if (liveExtent < LiveExtent) RetireTo(liveExtent);
+-            _items[resultSlot] = result;
+-            LiveExtent = liveExtent;
++            var window = new Window(ref this, _items);
++            window.PublishValue(resultSlot, liveExtent, result);
+         }
+ 
+         internal object TakeValue(int inputSlot, int liveExtent)
+         {
+-            var value = _items[inputSlot].RequireNotNull();
+-            _items[inputSlot] = null!;
+-            LiveExtent = liveExtent;
+-            return value;
++            var window = new Window(ref this, _items);
++            return window.TakeValue(inputSlot, liveExtent);
+         }
+ 
+         // The completed operation consumed this input, as PublishValue would
+         // overwrite it. Its result goes directly to a binding instead.
+         internal void ForgetResultInput(int resultSlot)
+         {
+-            _items[resultSlot] = null!;
+-            LiveExtent = resultSlot;
++            var window = new Window(ref this, _items);
++            window.ForgetResultInput(resultSlot);
+         }
+ 
+         internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
+@@ -427,29 +422,8 @@ internal sealed partial class LythonRuntime
+ 
+         public void RetireTo(int liveExtent)
+         {
+-            if (liveExtent == LiveExtent)
+-            {
+-                return;
+-            }
+-
+-            var newCount = liveExtent;
+-            // Compiler-owned wrappers cannot occur above this conservative bound.
+-            // Still clear every retired guest reference after private cleanup.
+-            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= newCount; i--)
+-            {
+-                if (DeferAsyncDisposal && _items[i] is PyIteration.Cursor cursor)
+-                {
+-                    if (_pendingDisposalTail is null) _pendingDisposalHead = cursor;
+-                    else _pendingDisposalTail.NextPendingDisposal = cursor;
+-                    _pendingDisposalTail = cursor;
+-                    // Ownership moved to the pending chain. A later synchronous
+-                    // disposal can fail; retrying the trim must not enqueue twice.
+-                    _items[i] = null!;
+-                }
+-                else if (_items[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
+-            }
+-            Array.Clear(_items, newCount, LiveExtent - newCount);
+-            LiveExtent = newCount;
++            var window = new Window(ref this, _items);
++            window.RetireTo(liveExtent);
+         }
+     }
+ 
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index 5224d581..9e240943 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -72,7 +72,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         // Class/annotation contexts keep their existing lexical machinery.
+         // Handler aliases belong to the caller: this closed body never binds or
+         // unwinds them, and exception state is shared with the ordinary frame.
+-        if (_codeObject.NativeBody is null
++        if (!_codeObject.SupportsClosedPrefix
+             || Closure.IsClassBody || Closure.IsAnnotationScope || Closure.IsTypeParameterScope || Closure.ClassCell is not null
+             || Closure.InlinedComprehensionLookup is not null)
+         {
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+index 533a36ee..2bf7d272 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+@@ -7,6 +7,27 @@ public sealed class NativeReturnFunctionTests
+     // Goldens independently captured with isolated CPython 3.13.
+     public static TheoryData<string, string, string> Cases => new()
+     {
++        { "record-locals-and-retained-aliases", """
++            def parse(row):
++                raw = row['amount']
++                amount = int(raw.strip())
++                return amount, raw, raw
++            row = {'amount': ' 19 '}
++            amount, first, second = parse(row)
++            print(amount, first is second, second is row['amount'])
++            """, "19 True True\n" },
++        { "record-converter-default-and-rebinding", """
++            def parse(row, convert=int):
++                raw = row['amount']
++                amount = convert(raw)
++                saved = raw
++                return amount, saved, raw
++            row = {'amount': '23'}
++            int = lambda value: 42
++            amount, first, second = parse(row)
++            print(amount, first is second, second is row['amount'])
++            print(parse(row, lambda value: 9)[0])
++            """, "23 True True\n9\n" },
+         { "captured-read-before-and-after-binding", "def outer():\n def read():return value+1\n try:read()\n except NameError as error:print(type(error).__name__)\n value=3\n print(read())\n del value\n try:read()\n except NameError as error:print(type(error).__name__)\n return read\nread=outer()\ntry:read()\nexcept NameError as error:print(type(error).__name__)\n", "NameError\n4\nNameError\nNameError\n" },
+         { "captured-callable-rebinding", "def outer():\n operation=int\n def convert(text):return operation(text)\n print(convert('7'))\n operation=lambda value:'changed'\n print(convert('8'))\n return convert\nprint(outer()('9'))\n", "7\nchanged\nchanged\n" },
+         { "captured-read-then-local-introspection", "def outer():\n offset=5\n def work(value):\n  value+=offset\n  return value,locals()['offset'],locals()['value']\n return work\nprint(outer()(3))\n", "(8, 5, 8)\n" },
+diff --git a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+index b943f33d..55e0ef9d 100644
+--- a/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
++++ b/tests/Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs
+@@ -262,7 +262,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+         foreach (var driver in Enum.GetValues<Driver>())
+         {
+             var (function, context, code) = Function("def f(value):\n    " + body + "\n", new LythonRunOptions());
+-            Assert.NotNull(code.NativeBody);
++            Assert.True(code.SupportsClosedPrefix);
+             Assert.Equal(new BigInteger(expected), Invoke(function,
+                 [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
+             Assert.Null(context.CurrentExecutableFrame);
+@@ -270,6 +270,81 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+         }
+     }
+ 
++    [Fact]
++    public void ClosedRecordLocalsKeepValuesAliasesAndFunding()
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using (var owner = budget.CreateScope())
++        {
++            var (function, context, code) = Function("""
++                def f(row):
++                    raw = row['amount']
++                    amount = int(raw.strip())
++                    return amount, raw, raw
++                """, new() { MemoryBudget = owner });
++            var raw = PyString.FromString(" 19 ", context.MemoryGovernor, CallSpan);
++            var row = new PyDict(context.MemoryGovernor, CallSpan);
++            row.SetItem(PyString.FromString("amount", context.MemoryGovernor, CallSpan), raw);
++            Assert.True(code.SupportsClosedPrefix);
++            try
++            {
++                Assert.True(LythonRuntime.TryExecuteNativeFunction(code, function.DefinitionContext,
++                    [row], "f", CallSpan, out var value));
++                var tuple = Assert.IsType<PyTuple>(value);
++                Assert.Equal(new BigInteger(19), tuple[0]);
++                Assert.Same(raw, tuple[1]);
++                Assert.Same(raw, tuple[2]);
++                Assert.Equal(" 19 ", raw.AsString());
++                Assert.True(budget.ReservedBytes > 0);
++                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++                Assert.Equal(0, context.State.CurrentInterpreterDepth);
++                Assert.Equal(0, context.State.CurrentRecursionDepth);
++            }
++            finally { context.State.CloseResources(); }
++            Assert.True(budget.ReservedBytes > 0);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Fact]
++    public void ClosedRecordLookupDoesNotAdmitBeforeTheFollowingCallableSnapshot()
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using (var owner = budget.CreateScope())
++        {
++            var hook = new AdmissionHookMemoryBudget(owner);
++            var (function, context, code) = Function("def f(row):\n value=row['amount']\n return int(value)\n",
++                new() { MemoryBudget = hook });
++            var digits = new string('9', 4096);
++            var input = PyString.FromString(digits, context.MemoryGovernor, CallSpan);
++            var row = new PyDict(context.MemoryGovernor, CallSpan);
++            row.SetItem(PyString.FromString("amount", context.MemoryGovernor, CallSpan), input);
++            Assert.NotNull(row.ShareRecordKeys(context, CallSpan));
++            Assert.True(code.SupportsClosedPrefix);
++            Assert.True(code.LookupCacheCount > 0);
++            var changed = false;
++            hook.AfterGrowth = _ =>
++            {
++                hook.AfterGrowth = null;
++                changed = true;
++                function.DefinitionContext.Variables["int"] = new Lowerable();
++            };
++            try
++            {
++                Assert.True(LythonRuntime.TryExecuteNativeFunction(code, function.DefinitionContext,
++                    [row], "f", CallSpan, out var value));
++                Assert.True(changed);
++                Assert.Equal(BigInteger.Parse(digits, CultureInfo.InvariantCulture), value);
++                Assert.Equal(digits, input.AsString());
++                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++                Assert.Equal(0, context.State.CurrentInterpreterDepth);
++                Assert.Equal(0, context.State.CurrentRecursionDepth);
++            }
++            finally { context.State.CloseResources(); }
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Fact]
+     public void NativeBranchReturnsKeepFreshListsAndOriginalOwners()
+     {
+@@ -281,7 +356,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+                 var (function, context, code) = Function(
+                     "def f(value):\n    if value.isspace():return []\n    return value.lower().split()\n",
+                     new() { MemoryBudget = owner });
+-                Assert.NotNull(code.NativeBody);
++                Assert.True(code.SupportsClosedPrefix);
+                 var input = PyString.FromString("  ", context.MemoryGovernor, CallSpan);
+                 CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
+                 var first = Assert.IsType<PyList>(Invoke(function, arguments, context, driver));
+@@ -315,7 +390,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+                 var hook = new AdmissionHookMemoryBudget(owner);
+                 var (function, context, code) = Function("def f(value):\n    if value:return []\n    return ()\n",
+                     new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+-                Assert.NotNull(code.NativeBody);
++                Assert.True(code.SupportsClosedPrefix);
+                 // Establish any ordinary reusable call workspace before targeting
+                 // the selected result's admission, independently of tiny limits.
+                 Assert.Same(PyTuple.Empty, Invoke(function, [CallArgumentValue.Positional(false)], context, driver));
+@@ -353,7 +428,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
+         {
+             var (function, context, code) = Function(
+                 "def f(flag, mapping):\n    if flag:return mapping['first']\n    return mapping['second']\n", new());
+-            Assert.NotNull(code.NativeBody);
++            Assert.True(code.SupportsClosedPrefix);
+             var mapping = new PyDict(context.MemoryGovernor, CallSpan);
+             var active = new PyException("ValueError", "outer", PyNone.Instance);
+             context.State.SetCurrentException(active);
