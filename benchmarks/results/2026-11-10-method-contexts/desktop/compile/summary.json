@@ -1,0 +1,137 @@
+[
+  {
+    "case": "scripts.report-render.class-renderer.large",
+    "roles": {
+      "before": {
+        "bytes": 120169.25,
+        "elapsedMs": 0.390140625
+      },
+      "before-control": {
+        "bytes": 120169.25,
+        "elapsedMs": 0.3843875
+      },
+      "candidate": {
+        "bytes": 120169.25,
+        "elapsedMs": 0.38746875
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -0.6848492130241635
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": 0.801599947969156
+      }
+    }
+  },
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 112689.25,
+        "elapsedMs": 0.510628125
+      },
+      "before-control": {
+        "bytes": 112689.25,
+        "elapsedMs": 0.495278125
+      },
+      "candidate": {
+        "bytes": 112689.25,
+        "elapsedMs": 0.481928125
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -5.620528638135635
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": -2.6954552050931
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 126041.25,
+        "elapsedMs": 0.56508125
+      },
+      "before-control": {
+        "bytes": 126041.25,
+        "elapsedMs": 0.503290625
+      },
+      "candidate": {
+        "bytes": 126041.25,
+        "elapsedMs": 0.4849
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -14.189331180250619
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": -3.654076608321488
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 135809.25,
+        "elapsedMs": 0.394775
+      },
+      "before-control": {
+        "bytes": 135809.25,
+        "elapsedMs": 0.361696875
+      },
+      "candidate": {
+        "bytes": 135809.25,
+        "elapsedMs": 0.371040625
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -6.012127161041092
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": 2.5833095737971323
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 171169.25,
+        "elapsedMs": 0.45913125
+      },
+      "before-control": {
+        "bytes": 171169.25,
+        "elapsedMs": 0.4498125
+      },
+      "candidate": {
+        "bytes": 171169.25,
+        "elapsedMs": 0.53860625
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": 17.30986509848762
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": 19.740169515075713
+      }
+    }
+  }
+]

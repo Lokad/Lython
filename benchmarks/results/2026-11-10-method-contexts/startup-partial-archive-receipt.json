@@ -1,0 +1,11 @@
+{
+  "complete": false,
+  "timedJobs": 0,
+  "reason": "Comparison manifest omitted reference-control/candidate-control hashes; stopped during startup before warmups/timing.",
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "3b28b5e4591c68fbcdcea52335b11c3407e0b6d08f81f23c658eaddfe08f8652",
+  "freeBytesAfterArchive": 279478272,
+  "performanceQualified": false
+}

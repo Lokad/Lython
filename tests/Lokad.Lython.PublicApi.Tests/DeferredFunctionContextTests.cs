@@ -5,6 +5,16 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class DeferredFunctionContextTests
 {
+    public static TheoryData<string, string> MethodPrograms => new()
+    {
+        { "class Renderer:\n def render(self,row):\n  amount=int(row['amount'])\n  if amount<0:return None\n  return f\"{row['name']}: {amount:04d}\"\nrenderer=Renderer()\nprint(renderer.render({'name':'A','amount':'7'}),renderer.render({'name':'B','amount':'-1'}))", "A: 0007 None\n" },
+        { "value=100\nclass Worker:\n def update(self,value,seen):\n  value+=3\n  seen['count']=seen['count']+1\n  if value<0:return None\n  snapshot=locals()\n  return value,snapshot['self'] is self,snapshot['value'],seen['count']\nprint(Worker().update(4,{'count':0}),value)", "(7, True, 7, 1) 100\n" },
+        { "class Base:\n def value(self):return 3\nclass Child(Base):\n def value(self):\n  value=super().value()\n  if value<0:return None\n  return value+4,__class__.__name__\nprint(Child().value())", "(7, 'Child')\n" },
+        { "class Worker:\n def update(self,value):\n  value+=2\n  if value<0:return None\n  def read():return value,self\n  return read\nworker=Worker()\nread=worker.update(5)\nprint(read()[0],read()[1] is worker)", "7 True\n" },
+        { "class Worker:\n @classmethod\n def update(cls,value):\n  value+=3\n  if value<0:return None\n  return value,cls\nresult=Worker.update(4)\nprint(result[0],result[1] is Worker,Worker().update(5)[0])", "7 True 8\n" },
+        { "class Worker:\n def parse(self,text):\n  value=int(text)\n  if value<0:return None\n  return value+missing\nworker=Worker()\ntry:\n raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:worker.parse('bad')\n except ValueError as error:print(error.__context__ is outer)\n try:worker.parse('3')\n except NameError as error:print(error.__context__ is outer)\nprint(worker.parse('-1'))", "True\nTrue\nNone\n" },
+    };
+
     public static TheoryData<string, string> Programs => new()
     {
         { "class Bound:\n def __index__(self):return 1\ndef work(value,index):\n value+=1\n if value<0:return None\n return value,'abcd'[index:3]\nprint(work(4,Bound()))", "(5, 'bc')\n" },
@@ -19,6 +29,7 @@ public sealed class DeferredFunctionContextTests
 
     [Theory]
     [MemberData(nameof(Programs))]
+    [MemberData(nameof(MethodPrograms))]
     public async Task NativeWorkAndLaterScopeWorkPreserveValuesAndEffects(string source, string expected)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
@@ -40,10 +51,13 @@ public sealed class DeferredFunctionContextTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task NativeErrorKeepsFunctionTraceAndAllowsBudgetReuse(bool asynchronous)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task NativeErrorKeepsFunctionTraceAndAllowsBudgetReuse(bool asynchronous, bool method)
     {
-        const string source = "def work(text):\n value=int(text)\n if value<0:return None\n return value+1\nreturn work(text)";
+        var source = method
+            ? "class Worker:\n def work(self,text):\n  value=int(text)\n  if value<0:return None\n  return value+1\nreturn Worker().work(text)"
+            : "def work(text):\n value=int(text)\n if value<0:return None\n return value+1\nreturn work(text)";
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
@@ -58,8 +72,8 @@ public sealed class DeferredFunctionContextTests
                     Assert.False(result.Success);
                     var failure = Assert.IsType<LythonRuntimeFailure>(result.Failure);
                     Assert.Equal("ValueError", failure.ExceptionType);
-                    Assert.Equal(2, failure.Span?.Line);
-                    Assert.Contains(failure.StackTrace, frame => frame.FunctionName == "work" && frame.Span?.Line == 5);
+                    Assert.Equal(method ? 3 : 2, failure.Span?.Line);
+                    Assert.Contains(failure.StackTrace, frame => frame.FunctionName == "work" && frame.Span?.Line == (method ? 6 : 5));
                 }
                 else
                 {
@@ -72,10 +86,11 @@ public sealed class DeferredFunctionContextTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task LaterIoKeepsMutatedLocalsAndBorrowedAliasesFunded(bool cancel)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task LaterIoKeepsMutatedLocalsAndBorrowedAliasesFunded(bool cancel, bool method)
     {
-        const string source = """
+        var source = """
             payload=['kept',1<<65536]
             totals={'seen':0}
             def pause(value,totals):
@@ -91,6 +106,14 @@ public sealed class DeferredFunctionContextTests
              return value
             return pause(payload,totals)
             """;
+        if (method)
+        {
+            var start = source.IndexOf("def pause(", StringComparison.Ordinal);
+            var end = source.LastIndexOf("return pause(", StringComparison.Ordinal);
+            var body = source[start..end].Replace("def pause(value,totals):", "def pause(self,value,totals):", StringComparison.Ordinal);
+            source = source[..start] + "class Worker:\n" + string.Join('\n', body.TrimEnd().Split('\n').Select(line => " " + line)) +
+                "\nreturn Worker().pause(payload,totals)\n";
+        }
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using (var script = new LythonEngine().Compile(source, budget))
         {

@@ -58,7 +58,9 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 
     // Incoming cells already belong to the work; new local cells still need a frame.
     // Scope-sensitive operations still promote before observing their namespace.
-    internal bool CanDeferInvocationContext => OwnerType is null && ArgumentsAreLocals &&
+    // Owner binding alone adds no namespace requirement; lexical class-cell
+    // facts below retain the context needed by __class__ and implicit super.
+    internal bool CanDeferInvocationContext => ArgumentsAreLocals &&
         !_codeObject.ScopeFacts.RequiresClassCell &&
         _codeObject.CapturedLocalSlots.Count == 0 &&
         _codeObject.ExceptionRegions.Count == 0 &&

@@ -1,0 +1,11 @@
+{
+  "all568ProductionFilesMatchMeasuredPrototype": true,
+  "coreSHA256": {
+    "before": "e294fad194255fa086a3356a6adc57061ac3f764cc632f83bc459fa784f41ed9",
+    "candidate": "039dc975c341d77400e8df8189524480990b042d0694a2e60e27240abcfc61d1"
+  },
+  "baseRevision": "28cb769a; fullyqualified8d44 runtime before R198",
+  "changes": "Only PyExecutableFunction.CanDeferInvocationContext owner-type proxy restriction removed; no other production changes.",
+  "finalTests": "102public/71internal eachactual.NET11/10 plus18public supplemental eachtarget (15overlap), covering3additionalcases. Supplemental tests were added after image freeze; production unchanged.",
+  "fullDelivery": "Pending separate exact-commit Windows/Ubuntu, actual11/10 ordinary, originalStress and installedReleaseconsumers. No publication."
+}

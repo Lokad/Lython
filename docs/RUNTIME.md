@@ -458,7 +458,10 @@ writes final invocation storage and observes live defaults. Completed binding
 enters the body directly; genuinely pending default lookup retains call admission,
 caller operands and bound storage until completion or failure. It then enters the
 same body transition, without recursively starting another instruction driver.
-Eligible module functions defer lexical contexts independently of signature shape.
+Eligible functions and ordinary methods defer lexical contexts independently of
+signature shape. Owner binding alone does not require a context; lexical class
+cells, implicit `super`, captured local cells and protected bodies keep their
+scope machinery.
 Mirrored/lowered calls and callbacks retain their general entry. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its

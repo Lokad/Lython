@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R198 ordinary-method context simplification](results/2026-11-10-method-contexts/README.md)
+removes the redundant owner-type restriction and reuses scope-sensitive function
+promotion. Class-report allocation falls about28.5%both APIs; quiet elapsed falls
+roughly7–10%sync/5–10%async, supporting widerCPU. Report controls and desktop CSV
+debt remain. Original startup manifest failure had zero timed jobs; preserved and
+corrected without changing code/settings. Full qualification is recorded separately.
+
 The [R197 committed-source CPython checkpoint](results/2026-11-10-json-cpython-checkpoint/README.md)
 measures postcommit8d44/E294 with complete report/text/JSON-lines across three
 phases,9jobs245.513s, all gates pass. Warm report1.22–1.24×, text1.43–1.46×,

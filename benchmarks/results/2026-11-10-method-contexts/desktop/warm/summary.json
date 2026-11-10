@@ -1,0 +1,137 @@
+[
+  {
+    "case": "scripts.report-render.class-renderer.large",
+    "roles": {
+      "before": {
+        "bytes": 4483053.5,
+        "elapsedMs": 11.655765625
+      },
+      "before-control": {
+        "bytes": 4483103.5,
+        "elapsedMs": 11.900528125
+      },
+      "candidate": {
+        "bytes": 3204837.5,
+        "elapsedMs": 10.2305125
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": -28.512173678052243,
+        "elapsedMs": -12.227880783249711
+      },
+      "before-control": {
+        "bytes": -28.51297098092872,
+        "elapsedMs": -14.033121954409056
+      }
+    }
+  },
+  {
+    "case": "scripts.report-render.large",
+    "roles": {
+      "before": {
+        "bytes": 3201385.25,
+        "elapsedMs": 10.2256375
+      },
+      "before-control": {
+        "bytes": 3201391.25,
+        "elapsedMs": 10.70673125
+      },
+      "candidate": {
+        "bytes": 3201347.0,
+        "elapsedMs": 10.316378125
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": -0.0011947952843205378,
+        "elapsedMs": 0.8873835494364046
+      },
+      "before-control": {
+        "bytes": -0.0013822115619288589,
+        "elapsedMs": -3.6458664730190216
+      }
+    }
+  },
+  {
+    "case": "scripts.text-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 1422159.25,
+        "elapsedMs": 7.86241875
+      },
+      "before-control": {
+        "bytes": 1422159.25,
+        "elapsedMs": 7.42669375
+      },
+      "candidate": {
+        "bytes": 1422159.25,
+        "elapsedMs": 7.396909375
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -5.920689164514414
+      },
+      "before-control": {
+        "bytes": 0.0,
+        "elapsedMs": -0.4010448794929844
+      }
+    }
+  },
+  {
+    "case": "scripts.json-summary-helpers.large",
+    "roles": {
+      "before": {
+        "bytes": 2333617.0,
+        "elapsedMs": 17.423590625
+      },
+      "before-control": {
+        "bytes": 2333596.0,
+        "elapsedMs": 16.752
+      },
+      "candidate": {
+        "bytes": 2333617.0,
+        "elapsedMs": 16.50194375
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -5.289649503573557
+      },
+      "before-control": {
+        "bytes": 0.0008998986971153755,
+        "elapsedMs": -1.4926949021012437
+      }
+    }
+  },
+  {
+    "case": "scripts.csv-validated-records.large",
+    "roles": {
+      "before": {
+        "bytes": 3318509.5,
+        "elapsedMs": 10.016171875
+      },
+      "before-control": {
+        "bytes": 3318531.25,
+        "elapsedMs": 10.473534375
+      },
+      "candidate": {
+        "bytes": 3318509.5,
+        "elapsedMs": 9.3713375
+      }
+    },
+    "changes": {
+      "before": {
+        "bytes": 0.0,
+        "elapsedMs": -6.437932406186874
+      },
+      "before-control": {
+        "bytes": -0.000655410431948944,
+        "elapsedMs": -10.523638301421057
+      }
+    }
+  }
+]

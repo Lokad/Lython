@@ -10,17 +10,24 @@ namespace Lokad.Lython.Tests;
 public sealed class DeferredFunctionOwnershipTests
 {
     [Theory]
-    [InlineData(false, false, false)] [InlineData(false, true, false)]
-    [InlineData(true, false, false)] [InlineData(true, true, false)]
-    [InlineData(false, false, true)] [InlineData(false, true, true)]
-    [InlineData(true, false, true)] [InlineData(true, true, true)]
-    public async Task CapacityAdmissionSeesCurrentFunctionLocalsAndNeverReplaysPriorWrites(bool asynchronous, bool refuse, bool nested)
+    [InlineData(false, false, false, false)] [InlineData(false, true, false, false)]
+    [InlineData(true, false, false, false)] [InlineData(true, true, false, false)]
+    [InlineData(false, false, true, false)] [InlineData(false, true, true, false)]
+    [InlineData(true, false, true, false)] [InlineData(true, true, true, false)]
+    [InlineData(false, false, false, true)] [InlineData(false, true, false, true)]
+    [InlineData(true, false, false, true)] [InlineData(true, true, false, true)]
+    [InlineData(false, false, true, true)] [InlineData(false, true, true, true)]
+    [InlineData(true, false, true, true)] [InlineData(true, true, true, true)]
+    public async Task CapacityAdmissionSeesCurrentFunctionLocalsAndNeverReplaysPriorWrites(bool asynchronous, bool refuse, bool nested, bool method)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var hook = new AdmissionHookMemoryBudget(owner);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
         var definition = "def update(mapping,value):\n value+=3\n mapping['seen']=mapping['seen']+1\n if value<0:return None\n mapping['new']=value\n return value\n";
+        if (method)
+            definition = "class Worker:\n" + string.Join('\n', definition.Replace("def update(mapping,value):", "def update(self,mapping,value):", StringComparison.Ordinal)
+                .TrimEnd().Split('\n').Select(line => " " + line)) + "\nupdate=Worker().update\n";
         if (nested) definition = "def factory():\n" + string.Join('\n', definition.Split('\n').Select(line => " " + line)) + "\n return update\nupdate=factory()\n";
         Execute("namespace=globals()\ntotals={'seen':0,'held':100}\n" + definition, context);
         var totals = Assert.IsType<PyDict>(context.Variables["totals"]);

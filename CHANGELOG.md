@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Let ordinary methods use the existing deferred function context when scope facts
+  permit it, avoiding eager frame construction while preserving class cells,
+  later namespace observation, suspension and cleanup.
+
 - Construct JSON containers iteratively and keep one managed decoding admission
   through awaited hooks. Remove per-token frame handoffs while preserving
   cancellation, memory preflights and cleanup. Calls near the existing managed
