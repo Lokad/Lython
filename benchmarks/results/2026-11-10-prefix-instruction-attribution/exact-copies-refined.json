@@ -1,0 +1,26 @@
+[
+  {
+    "path": "receiver-native-b540-20261110/observations.tgz",
+    "bytes": 4055722,
+    "sha256": "a38831276d7c09e8ef6d996ac440b9643c8ae3f07c37dc0c1d66631a1bf893ff",
+    "canonical": "benchmarks/results/2026-11-10-receiver-native-entry/observations.tgz"
+  },
+  {
+    "path": "receiver-native-b540-20261110/source-checks.tar.xz",
+    "bytes": 48980,
+    "sha256": "3b599da1905a0f5d8ce3fc6fc761715365739ea248216d1739283f3cd1c816d6",
+    "canonical": "benchmarks/results/2026-11-10-receiver-native-entry/observations.tgz:source-checks.tar.xz"
+  },
+  {
+    "path": "receiver-native-b540-20261110/confirmation/confirmation.json",
+    "bytes": 279483,
+    "sha256": "7faf22f9c88f2d1c25694f693d2a48cf6694c4861b4158e6bf78b0b8c1d1f7a2",
+    "canonical": "benchmarks/results/2026-11-10-receiver-native-entry/observations.tgz:confirmation/confirmation.json"
+  },
+  {
+    "path": "receiver-native-b540-20261110/representative.json",
+    "bytes": 711275,
+    "sha256": "a8841a9ce2fe3ca3add6da045d83c05277197f237ca71aa3d0f8c524416b1f62",
+    "canonical": "benchmarks/results/2026-11-10-receiver-native-entry/observations.tgz:representative.json"
+  }
+]

@@ -296,3 +296,5 @@ benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/** -text whitespace=
 
 benchmarks/results/2026-11-10-receiver-native-entry/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-10-receiver-native-entry/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-10-prefix-instruction-attribution/** -text whitespace=cr-at-eol

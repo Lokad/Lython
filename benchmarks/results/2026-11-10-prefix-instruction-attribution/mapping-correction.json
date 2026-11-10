@@ -1,0 +1,6 @@
+{
+  "condition": "Two OSR compilations share a textual header but have different code sizes. Match by exact parsed compilation index, not header text.",
+  "allObservedSampleGroupsAndInstructionsUnchanged": true,
+  "originalPreserved": true,
+  "recapture": false
+}

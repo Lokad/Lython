@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R193 instruction attribution](results/2026-11-10-prefix-instruction-attribution/README.md)
+maps all168CSV/269text prefix leaves to validated code-size/tier/native offsets.
+Three common fetch/check/dispatch-entry blocks contain8.22/10.10%guest samples,
+including required checks; no removable-tax or speedup estimate follows. It selects
+a bounded exception-boundary/loop-bookkeeping assessment, not another call arena or
+routing framework. Original parser/setup conditions and corrections remain.
+
 The [R192 receiver-aware native entry](results/2026-11-10-receiver-native-entry/README.md)
 completes the shared inline binding convention for eligible methods/bound aliases,
 removing workspace rental/return and pending-call transport. Allocation is flat;

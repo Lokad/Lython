@@ -1,0 +1,5 @@
+{
+  "sourceRevision": "Committed1a83c64f; measured precommitac6edb6f, all567production sources normalize equal. Full CI42792541280 pending, focused/quiet source gates pass.",
+  "coreSHA256": "ac6edb6fc361dba9195d973830a5ca02caac10b62cc6d041f134ce31ef9a10d3",
+  "nonincrementalBuildRecorded": true
+}

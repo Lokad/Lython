@@ -1,0 +1,14 @@
+{
+  "reference": "Installed .NET11RC3, current rebuilt main probe (not frozen quiet image)",
+  "actualProbePassed": true,
+  "codeByteLines": 1737,
+  "examples": [
+    "       55                   push     rbp",
+    "       4881EC10080000       sub      rsp, 0x810",
+    "       488DAC2410080000     lea      rbp, [rsp+0x810]",
+    "       C5D857E4             vxorps   xmm4, xmm4, xmm4",
+    "       C5F97FA530F8FFFF     vmovdqa  xmmword ptr [rbp-0x7D0], xmm4"
+  ],
+  "performanceSample": false,
+  "next": "Validate byte-count sums and tier/code-size identity before any classification."
+}

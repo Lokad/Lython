@@ -1,0 +1,12 @@
+[
+  {
+    "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+    "declared": [
+      9401
+    ],
+    "countedCodeBytes": 9401,
+    "instructions": 1737,
+    "groups": 200,
+    "allGroupOffsetsMatch": true
+  }
+]

@@ -1,0 +1,4900 @@
+[
+  {
+    "case": "csv-warm",
+    "totalGuestSamples": 1217,
+    "prefixLeafSamples": 168,
+    "unknownPrefixSamples": 0,
+    "matchedPrefixSamples": 168,
+    "parsedMethods": [
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+        "tier": "InstrumentedTier",
+        "bytes": 9767,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+        "tier": "InstrumentedTier",
+        "bytes": 9767,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "tier": "OptimizedTier1",
+        "bytes": 10822,
+        "valid": true,
+        "errors": []
+      }
+    ],
+    "mapMatches": [
+      {
+        "start": 126083421696384,
+        "size": 9767,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[QuickJitted]",
+        "tier": "QuickJitted",
+        "unique": false,
+        "matchedHeader": null,
+        "matchedIndex": null
+      },
+      {
+        "start": 126083425315872,
+        "size": 9767,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[InstrumentedTier]",
+        "tier": "InstrumentedTier",
+        "unique": false,
+        "matchedHeader": null,
+        "matchedIndex": null
+      },
+      {
+        "start": 126083425497248,
+        "size": 10822,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+        "tier": "OptimizedTier1",
+        "unique": true,
+        "matchedHeader": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "matchedIndex": 2
+      }
+    ],
+    "topGroups": [
+      {
+        "samples": 38,
+        "shareOfGuestSamples": 3.122432210353328,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG08",
+        "offset": 221,
+        "instructions": [
+          {
+            "offset": 221,
+            "codeBytes": "33F6",
+            "assembly": "xor      esi, esi"
+          },
+          {
+            "offset": 223,
+            "codeBytes": "8975D0",
+            "assembly": "mov      dword ptr [rbp-0x30], esi"
+          },
+          {
+            "offset": 226,
+            "codeBytes": "8B7728",
+            "assembly": "mov      esi, dword ptr [rdi+0x28]"
+          },
+          {
+            "offset": 229,
+            "codeBytes": "3BF3",
+            "assembly": "cmp      esi, ebx"
+          },
+          {
+            "offset": 231,
+            "codeBytes": "0F83FC270000",
+            "assembly": "jae      G_M000_IG261"
+          },
+          {
+            "offset": 237,
+            "codeBytes": "48C1E605",
+            "assembly": "shl      rsi, 5"
+          },
+          {
+            "offset": 241,
+            "codeBytes": "488D743210",
+            "assembly": "lea      rsi, bword ptr [rdx+rsi+0x10]"
+          },
+          {
+            "offset": 246,
+            "codeBytes": "4889B5A8FDFFFF",
+            "assembly": "mov      bword ptr [rbp-0x258], rsi"
+          },
+          {
+            "offset": 253,
+            "codeBytes": "488BB0B0000000",
+            "assembly": "mov      rsi, gword ptr [rax+0xB0]"
+          },
+          {
+            "offset": 260,
+            "codeBytes": "4C8B85A8FDFFFF",
+            "assembly": "mov      r8, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 267,
+            "codeBytes": "4D8B00",
+            "assembly": "mov      r8, gword ptr [r8]"
+          },
+          {
+            "offset": 270,
+            "codeBytes": "4C8B9688000000",
+            "assembly": "mov      r10, gword ptr [rsi+0x88]"
+          },
+          {
+            "offset": 277,
+            "codeBytes": "4D8B5220",
+            "assembly": "mov      r10, gword ptr [r10+0x20]"
+          },
+          {
+            "offset": 281,
+            "codeBytes": "4D85D2",
+            "assembly": "test     r10, r10"
+          },
+          {
+            "offset": 284,
+            "codeBytes": "0F856D270000",
+            "assembly": "jne      G_M000_IG256"
+          },
+          {
+            "offset": 290,
+            "codeBytes": "488BB678010000",
+            "assembly": "mov      rsi, gword ptr [rsi+0x178]"
+          },
+          {
+            "offset": 297,
+            "codeBytes": "4885F6",
+            "assembly": "test     rsi, rsi"
+          },
+          {
+            "offset": 300,
+            "codeBytes": "0F8531270000",
+            "assembly": "jne      G_M000_IG254"
+          }
+        ]
+      },
+      {
+        "samples": 33,
+        "shareOfGuestSamples": 2.711585866885785,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG07",
+        "offset": 182,
+        "instructions": [
+          {
+            "offset": 182,
+            "codeBytes": "4C8BADD8FDFFFF",
+            "assembly": "mov      r13, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 189,
+            "codeBytes": "418B7D28",
+            "assembly": "mov      edi, dword ptr [r13+0x28]"
+          },
+          {
+            "offset": 193,
+            "codeBytes": "488B95B0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x250]"
+          },
+          {
+            "offset": 200,
+            "codeBytes": "8B5A08",
+            "assembly": "mov      ebx, dword ptr [rdx+0x08]"
+          },
+          {
+            "offset": 203,
+            "codeBytes": "3BFB",
+            "assembly": "cmp      edi, ebx"
+          },
+          {
+            "offset": 205,
+            "codeBytes": "498BFD",
+            "assembly": "mov      rdi, r13"
+          },
+          {
+            "offset": 208,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 215,
+            "codeBytes": "0F8DF2270000",
+            "assembly": "jge      G_M000_IG259"
+          }
+        ]
+      },
+      {
+        "samples": 29,
+        "shareOfGuestSamples": 2.38290879211175,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG09",
+        "offset": 306,
+        "instructions": [
+          {
+            "offset": 306,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 313,
+            "codeBytes": "8B5E1C",
+            "assembly": "mov      ebx, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 316,
+            "codeBytes": "83FB44",
+            "assembly": "cmp      ebx, 68"
+          },
+          {
+            "offset": 319,
+            "codeBytes": "0F87D90C0000",
+            "assembly": "ja       G_M000_IG128"
+          },
+          {
+            "offset": 325,
+            "codeBytes": "8BF3",
+            "assembly": "mov      esi, ebx"
+          },
+          {
+            "offset": 327,
+            "codeBytes": "4C8D05FA280000",
+            "assembly": "lea      r8, [reloc @RWD00]"
+          },
+          {
+            "offset": 334,
+            "codeBytes": "458B04B0",
+            "assembly": "mov      r8d, dword ptr [r8+4*rsi]"
+          },
+          {
+            "offset": 338,
+            "codeBytes": "4C8D151AFFFFFF",
+            "assembly": "lea      r10, G_M000_IG02"
+          },
+          {
+            "offset": 345,
+            "codeBytes": "4D03C2",
+            "assembly": "add      r8, r10"
+          },
+          {
+            "offset": 348,
+            "codeBytes": "41FFE0",
+            "assembly": "jmp      r8"
+          }
+        ]
+      },
+      {
+        "samples": 10,
+        "shareOfGuestSamples": 0.8216926869350862,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG05",
+        "offset": 165,
+        "instructions": [
+          {
+            "offset": 165,
+            "codeBytes": "837DD000",
+            "assembly": "cmp      dword ptr [rbp-0x30], 0"
+          },
+          {
+            "offset": 169,
+            "codeBytes": "750B",
+            "assembly": "jne      SHORT G_M000_IG07"
+          }
+        ]
+      },
+      {
+        "samples": 6,
+        "shareOfGuestSamples": 0.4930156121610518,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG04",
+        "offset": 155,
+        "instructions": [
+          {
+            "offset": 155,
+            "codeBytes": "807DD400",
+            "assembly": "cmp      byte  ptr [rbp-0x2C], 0"
+          },
+          {
+            "offset": 159,
+            "codeBytes": "0F85D6270000",
+            "assembly": "jne      G_M000_IG255"
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4108463434675431,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG253",
+        "offset": 10318,
+        "instructions": [
+          {
+            "offset": 10318,
+            "codeBytes": "C5F877",
+            "assembly": "vzeroupper "
+          },
+          {
+            "offset": 10321,
+            "codeBytes": "4881C468020000",
+            "assembly": "add      rsp, 616"
+          },
+          {
+            "offset": 10328,
+            "codeBytes": "5B",
+            "assembly": "pop      rbx"
+          },
+          {
+            "offset": 10329,
+            "codeBytes": "415C",
+            "assembly": "pop      r12"
+          },
+          {
+            "offset": 10331,
+            "codeBytes": "415D",
+            "assembly": "pop      r13"
+          },
+          {
+            "offset": 10333,
+            "codeBytes": "415E",
+            "assembly": "pop      r14"
+          },
+          {
+            "offset": 10335,
+            "codeBytes": "415F",
+            "assembly": "pop      r15"
+          },
+          {
+            "offset": 10337,
+            "codeBytes": "5D",
+            "assembly": "pop      rbp"
+          },
+          {
+            "offset": 10338,
+            "codeBytes": "C3",
+            "assembly": "ret      "
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4108463434675431,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG126",
+        "offset": 3590,
+        "instructions": [
+          {
+            "offset": 3590,
+            "codeBytes": "C5FA6F45A0",
+            "assembly": "vmovdqu  xmm0, xmmword ptr [rbp-0x60]"
+          },
+          {
+            "offset": 3595,
+            "codeBytes": "C5FA7F4590",
+            "assembly": "vmovdqu  xmmword ptr [rbp-0x70], xmm0"
+          }
+        ]
+      },
+      {
+        "samples": 4,
+        "shareOfGuestSamples": 0.3286770747740345,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG27",
+        "offset": 976,
+        "instructions": [
+          {
+            "offset": 976,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 983,
+            "codeBytes": "448B7E10",
+            "assembly": "mov      r15d, dword ptr [rsi+0x10]"
+          },
+          {
+            "offset": 987,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 994,
+            "codeBytes": "488D7730",
+            "assembly": "lea      rsi, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 998,
+            "codeBytes": "381B",
+            "assembly": "cmp      byte  ptr [rbx], bl"
+          },
+          {
+            "offset": 1000,
+            "codeBytes": "488B36",
+            "assembly": "mov      rsi, gword ptr [rsi]"
+          },
+          {
+            "offset": 1003,
+            "codeBytes": "807B2C00",
+            "assembly": "cmp      byte  ptr [rbx+0x2C], 0"
+          },
+          {
+            "offset": 1007,
+            "codeBytes": "410F95C0",
+            "assembly": "setne    r8b"
+          },
+          {
+            "offset": 1011,
+            "codeBytes": "450FB6C0",
+            "assembly": "movzx    r8, r8b"
+          },
+          {
+            "offset": 1015,
+            "codeBytes": "4503C7",
+            "assembly": "add      r8d, r15d"
+          },
+          {
+            "offset": 1018,
+            "codeBytes": "443B4608",
+            "assembly": "cmp      r8d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 1022,
+            "codeBytes": "0F8341240000",
+            "assembly": "jae      G_M000_IG251"
+          },
+          {
+            "offset": 1028,
+            "codeBytes": "4E8B74C610",
+            "assembly": "mov      r14, gword ptr [rsi+8*r8+0x10]"
+          },
+          {
+            "offset": 1033,
+            "codeBytes": "4D85F6",
+            "assembly": "test     r14, r14"
+          },
+          {
+            "offset": 1036,
+            "codeBytes": "0F84371C0000",
+            "assembly": "je       G_M000_IG216"
+          },
+          {
+            "offset": 1042,
+            "codeBytes": "488BF0",
+            "assembly": "mov      rsi, rax"
+          },
+          {
+            "offset": 1045,
+            "codeBytes": "488B95C8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 1052,
+            "codeBytes": "488BCB",
+            "assembly": "mov      rcx, rbx"
+          },
+          {
+            "offset": 1055,
+            "codeBytes": "458BC7",
+            "assembly": "mov      r8d, r15d"
+          },
+          {
+            "offset": 1058,
+            "codeBytes": "4D8BCE",
+            "assembly": "mov      r9, r14"
+          },
+          {
+            "offset": 1061,
+            "codeBytes": "FF152D89D6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object):bool]"
+          },
+          {
+            "offset": 1067,
+            "codeBytes": "85C0",
+            "assembly": "test     eax, eax"
+          },
+          {
+            "offset": 1069,
+            "codeBytes": "0F8568FCFFFF",
+            "assembly": "jne      G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.2465078060805259,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG281",
+        "offset": 47,
+        "instructions": [
+          {
+            "offset": 47,
+            "codeBytes": "C5797F4405D0",
+            "assembly": "vmovdqa  xmmword ptr [rbp+rax-0x30], xmm8"
+          },
+          {
+            "offset": 53,
+            "codeBytes": "C5797F4405E0",
+            "assembly": "vmovdqa  xmmword ptr [rbp+rax-0x20], xmm8"
+          },
+          {
+            "offset": 59,
+            "codeBytes": "C5797F4405F0",
+            "assembly": "vmovdqa  xmmword ptr [rbp+rax-0x10], xmm8"
+          },
+          {
+            "offset": 65,
+            "codeBytes": "4883C030",
+            "assembly": "add      rax, 48"
+          },
+          {
+            "offset": 69,
+            "codeBytes": "75E8",
+            "assembly": "jne      SHORT G_M000_IG281"
+          },
+          {
+            "offset": 71,
+            "codeBytes": "4889BDD8FDFFFF",
+            "assembly": "mov      bword ptr [rbp-0x228], rdi"
+          },
+          {
+            "offset": 78,
+            "codeBytes": "4889B5D0FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x230], rsi"
+          },
+          {
+            "offset": 85,
+            "codeBytes": "488995C8FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x238], rdx"
+          },
+          {
+            "offset": 92,
+            "codeBytes": "894DD4",
+            "assembly": "mov      dword ptr [rbp-0x2C], ecx"
+          },
+          {
+            "offset": 95,
+            "codeBytes": "4C8985C0FDFFFF",
+            "assembly": "mov      bword ptr [rbp-0x240], r8"
+          },
+          {
+            "offset": 102,
+            "codeBytes": "4C898DB8FDFFFF",
+            "assembly": "mov      bword ptr [rbp-0x248], r9"
+          },
+          {
+            "offset": 109,
+            "codeBytes": "488BC6",
+            "assembly": "mov      rax, rsi"
+          },
+          {
+            "offset": 112,
+            "codeBytes": "498BC8",
+            "assembly": "mov      rcx, r8"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.2465078060805259,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG39",
+        "offset": 1326,
+        "instructions": [
+          {
+            "offset": 1326,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 1333,
+            "codeBytes": "448B6E18",
+            "assembly": "mov      r13d, dword ptr [rsi+0x18]"
+          },
+          {
+            "offset": 1337,
+            "codeBytes": "4585ED",
+            "assembly": "test     r13d, r13d"
+          },
+          {
+            "offset": 1340,
+            "codeBytes": "7C61",
+            "assembly": "jl       SHORT G_M000_IG46"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.2465078060805259,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG03",
+        "offset": 124,
+        "instructions": [
+          {
+            "offset": 124,
+            "codeBytes": "498911",
+            "assembly": "mov      gword ptr [r9], rdx"
+          },
+          {
+            "offset": 127,
+            "codeBytes": "488B17",
+            "assembly": "mov      rdx, gword ptr [rdi]"
+          },
+          {
+            "offset": 130,
+            "codeBytes": "488B5250",
+            "assembly": "mov      rdx, gword ptr [rdx+0x50]"
+          },
+          {
+            "offset": 134,
+            "codeBytes": "488995B0FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x250], rdx"
+          },
+          {
+            "offset": 141,
+            "codeBytes": "8B5A08",
+            "assembly": "mov      ebx, dword ptr [rdx+0x08]"
+          },
+          {
+            "offset": 144,
+            "codeBytes": "395F28",
+            "assembly": "cmp      dword ptr [rdi+0x28], ebx"
+          },
+          {
+            "offset": 147,
+            "codeBytes": "0F8D36280000",
+            "assembly": "jge      G_M000_IG259"
+          },
+          {
+            "offset": 153,
+            "codeBytes": "EB42",
+            "assembly": "jmp      SHORT G_M000_IG08"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.16433853738701726,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG06",
+        "offset": 171,
+        "instructions": [
+          {
+            "offset": 171,
+            "codeBytes": "4C8BADD8FDFFFF",
+            "assembly": "mov      r13, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 178,
+            "codeBytes": "41FF4528",
+            "assembly": "inc      dword ptr [r13+0x28]"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.16433853738701726,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG41",
+        "offset": 1352,
+        "instructions": [
+          {
+            "offset": 1352,
+            "codeBytes": "498B37",
+            "assembly": "mov      rsi, gword ptr [r15]"
+          },
+          {
+            "offset": 1355,
+            "codeBytes": "4C63C3",
+            "assembly": "movsxd   r8, ebx"
+          },
+          {
+            "offset": 1358,
+            "codeBytes": "448B5608",
+            "assembly": "mov      r10d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 1362,
+            "codeBytes": "4D3BD0",
+            "assembly": "cmp      r10, r8"
+          },
+          {
+            "offset": 1365,
+            "codeBytes": "0F86910A0000",
+            "assembly": "jbe      G_M000_IG139"
+          },
+          {
+            "offset": 1371,
+            "codeBytes": "4E8D44C610",
+            "assembly": "lea      r8, bword ptr [rsi+8*r8+0x10]"
+          },
+          {
+            "offset": 1376,
+            "codeBytes": "4C8B16",
+            "assembly": "mov      r10, qword ptr [rsi]"
+          },
+          {
+            "offset": 1379,
+            "codeBytes": "4D8B5230",
+            "assembly": "mov      r10, qword ptr [r10+0x30]"
+          },
+          {
+            "offset": 1383,
+            "codeBytes": "4D85F6",
+            "assembly": "test     r14, r14"
+          },
+          {
+            "offset": 1386,
+            "codeBytes": "7438",
+            "assembly": "je       SHORT G_M000_IG47"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.16433853738701726,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG33",
+        "offset": 1197,
+        "instructions": [
+          {
+            "offset": 1197,
+            "codeBytes": "4889B5C0FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x140], rsi"
+          },
+          {
+            "offset": 1204,
+            "codeBytes": "413B5E08",
+            "assembly": "cmp      ebx, dword ptr [r14+0x08]"
+          },
+          {
+            "offset": 1208,
+            "codeBytes": "0F8387230000",
+            "assembly": "jae      G_M000_IG251"
+          },
+          {
+            "offset": 1214,
+            "codeBytes": "8BF3",
+            "assembly": "mov      esi, ebx"
+          },
+          {
+            "offset": 1216,
+            "codeBytes": "4D8B74F610",
+            "assembly": "mov      r14, gword ptr [r14+8*rsi+0x10]"
+          },
+          {
+            "offset": 1221,
+            "codeBytes": "4D85F6",
+            "assembly": "test     r14, r14"
+          },
+          {
+            "offset": 1224,
+            "codeBytes": "0F84C8090000",
+            "assembly": "je       G_M000_IG132"
+          },
+          {
+            "offset": 1230,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.16433853738701726,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG32",
+        "offset": 1168,
+        "instructions": [
+          {
+            "offset": 1168,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 1175,
+            "codeBytes": "8B5E08",
+            "assembly": "mov      ebx, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 1178,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 1185,
+            "codeBytes": "4C8B2E",
+            "assembly": "mov      r13, gword ptr [rsi]"
+          },
+          {
+            "offset": 1188,
+            "codeBytes": "33F6",
+            "assembly": "xor      rsi, rsi"
+          },
+          {
+            "offset": 1190,
+            "codeBytes": "4889B5C8FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x138], rsi"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.16433853738701726,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG73",
+        "offset": 2060,
+        "instructions": [
+          {
+            "offset": 2060,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 2067,
+            "codeBytes": "488BF0",
+            "assembly": "mov      rsi, rax"
+          },
+          {
+            "offset": 2070,
+            "codeBytes": "488B95C8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 2077,
+            "codeBytes": "488B8DA8FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 2084,
+            "codeBytes": "FF15F683D6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteStackTransfer(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref)]"
+          },
+          {
+            "offset": 2090,
+            "codeBytes": "E96CF8FFFF",
+            "assembly": "jmp      G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG110",
+        "offset": 3179,
+        "instructions": [
+          {
+            "offset": 3179,
+            "codeBytes": "4D85DB",
+            "assembly": "test     r11, r11"
+          },
+          {
+            "offset": 3182,
+            "codeBytes": "410F95C3",
+            "assembly": "setne    r11b"
+          },
+          {
+            "offset": 3186,
+            "codeBytes": "450FB6DB",
+            "assembly": "movzx    r11, r11b"
+          },
+          {
+            "offset": 3190,
+            "codeBytes": "4585DA",
+            "assembly": "test     r11d, r10d"
+          },
+          {
+            "offset": 3193,
+            "codeBytes": "0F85C9050000",
+            "assembly": "jne      G_M000_IG155"
+          },
+          {
+            "offset": 3199,
+            "codeBytes": "4C63DB",
+            "assembly": "movsxd   r11, ebx"
+          },
+          {
+            "offset": 3202,
+            "codeBytes": "458B4608",
+            "assembly": "mov      r8d, dword ptr [r14+0x08]"
+          },
+          {
+            "offset": 3206,
+            "codeBytes": "4D3BC3",
+            "assembly": "cmp      r8, r11"
+          },
+          {
+            "offset": 3209,
+            "codeBytes": "0F865D030000",
+            "assembly": "jbe      G_M000_IG139"
+          },
+          {
+            "offset": 3215,
+            "codeBytes": "4F8D44DE10",
+            "assembly": "lea      r8, bword ptr [r14+8*r11+0x10]"
+          },
+          {
+            "offset": 3220,
+            "codeBytes": "4D8B1E",
+            "assembly": "mov      r11, qword ptr [r14]"
+          },
+          {
+            "offset": 3223,
+            "codeBytes": "4D8B5B30",
+            "assembly": "mov      r11, qword ptr [r11+0x30]"
+          },
+          {
+            "offset": 3227,
+            "codeBytes": "4C899DA0FEFFFF",
+            "assembly": "mov      qword ptr [rbp-0x160], r11"
+          },
+          {
+            "offset": 3234,
+            "codeBytes": "4D85E4",
+            "assembly": "test     r12, r12"
+          },
+          {
+            "offset": 3237,
+            "codeBytes": "0F84D6000000",
+            "assembly": "je       G_M000_IG123"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG76",
+        "offset": 2173,
+        "instructions": [
+          {
+            "offset": 2173,
+            "codeBytes": "49B84887A315AC720000",
+            "assembly": "mov      r8, 0x72AC15A38748"
+          },
+          {
+            "offset": 2183,
+            "codeBytes": "4C3906",
+            "assembly": "cmp      qword ptr [rsi], r8"
+          },
+          {
+            "offset": 2186,
+            "codeBytes": "0F85A9000000",
+            "assembly": "jne      G_M000_IG84"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG105",
+        "offset": 2976,
+        "instructions": [
+          {
+            "offset": 2976,
+            "codeBytes": "488D7730",
+            "assembly": "lea      rsi, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 2980,
+            "codeBytes": "4C8B85A8FDFFFF",
+            "assembly": "mov      r8, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 2987,
+            "codeBytes": "458B4010",
+            "assembly": "mov      r8d, dword ptr [r8+0x10]"
+          },
+          {
+            "offset": 2991,
+            "codeBytes": "4C8B95A8FDFFFF",
+            "assembly": "mov      r10, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 2998,
+            "codeBytes": "458B5218",
+            "assembly": "mov      r10d, dword ptr [r10+0x18]"
+          },
+          {
+            "offset": 3002,
+            "codeBytes": "4585D2",
+            "assembly": "test     r10d, r10d"
+          },
+          {
+            "offset": 3005,
+            "codeBytes": "0F8C59010000",
+            "assembly": "jl       G_M000_IG118"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG22",
+        "offset": 798,
+        "instructions": [
+          {
+            "offset": 798,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 805,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 813,
+            "codeBytes": "751D",
+            "assembly": "jne      SHORT G_M000_IG24"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG24",
+        "offset": 844,
+        "instructions": [
+          {
+            "offset": 844,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 851,
+            "codeBytes": "488BF0",
+            "assembly": "mov      rsi, rax"
+          },
+          {
+            "offset": 854,
+            "codeBytes": "488B95C8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 861,
+            "codeBytes": "488B8DA8FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 868,
+            "codeBytes": "FF15AE8AD6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteControlFlow(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref):bool]"
+          },
+          {
+            "offset": 874,
+            "codeBytes": "8945D0",
+            "assembly": "mov      dword ptr [rbp-0x30], eax"
+          },
+          {
+            "offset": 877,
+            "codeBytes": "4C8BADD8FDFFFF",
+            "assembly": "mov      r13, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 884,
+            "codeBytes": "49837D2000",
+            "assembly": "cmp      gword ptr [r13+0x20], 0"
+          },
+          {
+            "offset": 889,
+            "codeBytes": "0F841CFDFFFF",
+            "assembly": "je       G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG26",
+        "offset": 910,
+        "instructions": [
+          {
+            "offset": 910,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 917,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 924,
+            "codeBytes": "488B37",
+            "assembly": "mov      rsi, gword ptr [rdi]"
+          },
+          {
+            "offset": 927,
+            "codeBytes": "488B7668",
+            "assembly": "mov      rsi, gword ptr [rsi+0x68]"
+          },
+          {
+            "offset": 931,
+            "codeBytes": "4C8B9DA8FDFFFF",
+            "assembly": "mov      r11, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 938,
+            "codeBytes": "458B5B08",
+            "assembly": "mov      r11d, dword ptr [r11+0x08]"
+          },
+          {
+            "offset": 942,
+            "codeBytes": "49B8B82E9A15AC720000",
+            "assembly": "mov      r8, 0x72AC159A2EB8"
+          },
+          {
+            "offset": 952,
+            "codeBytes": "4C3906",
+            "assembly": "cmp      qword ptr [rsi], r8"
+          },
+          {
+            "offset": 955,
+            "codeBytes": "0F85661C0000",
+            "assembly": "jne      G_M000_IG215"
+          },
+          {
+            "offset": 961,
+            "codeBytes": "44395E08",
+            "assembly": "cmp      dword ptr [rsi+0x08], r11d"
+          },
+          {
+            "offset": 965,
+            "codeBytes": "0F86D90C0000",
+            "assembly": "jbe      G_M000_IG146"
+          },
+          {
+            "offset": 971,
+            "codeBytes": "4A8B5CDE10",
+            "assembly": "mov      rbx, gword ptr [rsi+8*r11+0x10]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG17",
+        "offset": 620,
+        "instructions": [
+          {
+            "offset": 620,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 628,
+            "codeBytes": "0F94C3",
+            "assembly": "sete     bl"
+          },
+          {
+            "offset": 631,
+            "codeBytes": "0FB6DB",
+            "assembly": "movzx    rbx, bl"
+          },
+          {
+            "offset": 634,
+            "codeBytes": "85DB",
+            "assembly": "test     ebx, ebx"
+          },
+          {
+            "offset": 636,
+            "codeBytes": "0F85B9220000",
+            "assembly": "jne      G_M000_IG238"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG36",
+        "offset": 1270,
+        "instructions": [
+          {
+            "offset": 1270,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 1277,
+            "codeBytes": "4C8D7F30",
+            "assembly": "lea      r15, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 1281,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 1288,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 1291,
+            "codeBytes": "83FE34",
+            "assembly": "cmp      esi, 52"
+          },
+          {
+            "offset": 1294,
+            "codeBytes": "7714",
+            "assembly": "ja       SHORT G_M000_IG38"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG11",
+        "offset": 424,
+        "instructions": [
+          {
+            "offset": 424,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 431,
+            "codeBytes": "4C8B8DB8FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 438,
+            "codeBytes": "4C890C24",
+            "assembly": "mov      bword ptr [rsp], r9"
+          },
+          {
+            "offset": 442,
+            "codeBytes": "440FB645D4",
+            "assembly": "movzx    r8, byte  ptr [rbp-0x2C]"
+          },
+          {
+            "offset": 447,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 454,
+            "codeBytes": "488BF0",
+            "assembly": "mov      rsi, rax"
+          },
+          {
+            "offset": 457,
+            "codeBytes": "488B95C8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 464,
+            "codeBytes": "488B8DA8FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 471,
+            "codeBytes": "4C8B8DC0FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 478,
+            "codeBytes": "FF15CC8AD6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteComparisonInstruction(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,bool,byref,byref):int]"
+          },
+          {
+            "offset": 484,
+            "codeBytes": "85C0",
+            "assembly": "test     eax, eax"
+          },
+          {
+            "offset": 486,
+            "codeBytes": "0F85021D0000",
+            "assembly": "jne      G_M000_IG207"
+          },
+          {
+            "offset": 492,
+            "codeBytes": "4C8B8DC0FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 499,
+            "codeBytes": "498B19",
+            "assembly": "mov      rbx, gword ptr [r9]"
+          },
+          {
+            "offset": 502,
+            "codeBytes": "4D0FBF7908",
+            "assembly": "movsx    r15, word  ptr [r9+0x08]"
+          },
+          {
+            "offset": 507,
+            "codeBytes": "410FB6410A",
+            "assembly": "movzx    rax, byte  ptr [r9+0x0A]"
+          },
+          {
+            "offset": 512,
+            "codeBytes": "33F6",
+            "assembly": "xor      esi, esi"
+          },
+          {
+            "offset": 514,
+            "codeBytes": "498931",
+            "assembly": "mov      qword ptr [r9], rsi"
+          },
+          {
+            "offset": 517,
+            "codeBytes": "49897108",
+            "assembly": "mov      qword ptr [r9+0x08], rsi"
+          },
+          {
+            "offset": 521,
+            "codeBytes": "4885DB",
+            "assembly": "test     rbx, rbx"
+          },
+          {
+            "offset": 524,
+            "codeBytes": "0F85E41C0000",
+            "assembly": "jne      G_M000_IG208"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG99",
+        "offset": 2833,
+        "instructions": [
+          {
+            "offset": 2833,
+            "codeBytes": "498B3F",
+            "assembly": "mov      rdi, gword ptr [r15]"
+          },
+          {
+            "offset": 2836,
+            "codeBytes": "4963F6",
+            "assembly": "movsxd   rsi, r14d"
+          },
+          {
+            "offset": 2839,
+            "codeBytes": "488BD3",
+            "assembly": "mov      rdx, rbx"
+          },
+          {
+            "offset": 2842,
+            "codeBytes": "E86109FFFF",
+            "assembly": "call     CORINFO_HELP_ARRADDR_ST"
+          },
+          {
+            "offset": 2847,
+            "codeBytes": "45896740",
+            "assembly": "mov      dword ptr [r15+0x40], r12d"
+          },
+          {
+            "offset": 2851,
+            "codeBytes": "E973F5FFFF",
+            "assembly": "jmp      G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG124",
+        "offset": 3468,
+        "instructions": [
+          {
+            "offset": 3468,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 3475,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 3483,
+            "codeBytes": "0F843C0E0000",
+            "assembly": "je       G_M000_IG190"
+          },
+          {
+            "offset": 3489,
+            "codeBytes": "807DD400",
+            "assembly": "cmp      byte  ptr [rbp-0x2C], 0"
+          },
+          {
+            "offset": 3493,
+            "codeBytes": "0F85580E0000",
+            "assembly": "jne      G_M000_IG191"
+          },
+          {
+            "offset": 3499,
+            "codeBytes": "E95CFAFFFF",
+            "assembly": "jmp      G_M000_IG73"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG01",
+        "offset": 0,
+        "instructions": [
+          {
+            "offset": 0,
+            "codeBytes": "55",
+            "assembly": "push     rbp"
+          },
+          {
+            "offset": 1,
+            "codeBytes": "4157",
+            "assembly": "push     r15"
+          },
+          {
+            "offset": 3,
+            "codeBytes": "4156",
+            "assembly": "push     r14"
+          },
+          {
+            "offset": 5,
+            "codeBytes": "4155",
+            "assembly": "push     r13"
+          },
+          {
+            "offset": 7,
+            "codeBytes": "4154",
+            "assembly": "push     r12"
+          },
+          {
+            "offset": 9,
+            "codeBytes": "53",
+            "assembly": "push     rbx"
+          },
+          {
+            "offset": 10,
+            "codeBytes": "4881EC68020000",
+            "assembly": "sub      rsp, 616"
+          },
+          {
+            "offset": 17,
+            "codeBytes": "488DAC2490020000",
+            "assembly": "lea      rbp, [rsp+0x290]"
+          },
+          {
+            "offset": 25,
+            "codeBytes": "C4413857C0",
+            "assembly": "vxorps   xmm8, xmm8, xmm8"
+          },
+          {
+            "offset": 30,
+            "codeBytes": "62717D087F45DE",
+            "assembly": "vmovdqa32 xmmword ptr [rbp-0x220], xmm8"
+          },
+          {
+            "offset": 37,
+            "codeBytes": "48B820FEFFFFFFFFFFFF",
+            "assembly": "mov      rax, -480"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG71",
+        "offset": 2046,
+        "instructions": [
+          {
+            "offset": 2046,
+            "codeBytes": "83FB03",
+            "assembly": "cmp      ebx, 3"
+          },
+          {
+            "offset": 2049,
+            "codeBytes": "7409",
+            "assembly": "je       SHORT G_M000_IG73"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG125",
+        "offset": 3504,
+        "instructions": [
+          {
+            "offset": 3504,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 3512,
+            "codeBytes": "0F84470F0000",
+            "assembly": "je       G_M000_IG195"
+          },
+          {
+            "offset": 3518,
+            "codeBytes": "807DD400",
+            "assembly": "cmp      byte  ptr [rbp-0x2C], 0"
+          },
+          {
+            "offset": 3522,
+            "codeBytes": "0F857C050000",
+            "assembly": "jne      G_M000_IG161"
+          },
+          {
+            "offset": 3528,
+            "codeBytes": "4C8B85A8FDFFFF",
+            "assembly": "mov      r8, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 3535,
+            "codeBytes": "488D3C24",
+            "assembly": "lea      rdi, [rsp]"
+          },
+          {
+            "offset": 3539,
+            "codeBytes": "498BF0",
+            "assembly": "mov      rsi, r8"
+          },
+          {
+            "offset": 3542,
+            "codeBytes": "488B0E",
+            "assembly": "mov      rcx, gword ptr [rsi]"
+          },
+          {
+            "offset": 3545,
+            "codeBytes": "48890C24",
+            "assembly": "mov      gword ptr [rsp], rcx"
+          },
+          {
+            "offset": 3549,
+            "codeBytes": "4883C608",
+            "assembly": "add      rsi, 8"
+          },
+          {
+            "offset": 3553,
+            "codeBytes": "4883C708",
+            "assembly": "add      rdi, 8"
+          },
+          {
+            "offset": 3557,
+            "codeBytes": "48A5",
+            "assembly": "movsq    "
+          },
+          {
+            "offset": 3559,
+            "codeBytes": "48A5",
+            "assembly": "movsq    "
+          },
+          {
+            "offset": 3561,
+            "codeBytes": "48A5",
+            "assembly": "movsq    "
+          },
+          {
+            "offset": 3563,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 3570,
+            "codeBytes": "33F6",
+            "assembly": "xor      esi, esi"
+          },
+          {
+            "offset": 3572,
+            "codeBytes": "FF15467CD6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteTargetInstruction(Lokad.Lython.Frontend.ExecutableInstruction,bool):System.Threading.Tasks.ValueTask:this]"
+          },
+          {
+            "offset": 3578,
+            "codeBytes": "488945A0",
+            "assembly": "mov      gword ptr [rbp-0x60], rax"
+          },
+          {
+            "offset": 3582,
+            "codeBytes": "488955A8",
+            "assembly": "mov      qword ptr [rbp-0x58], rdx"
+          },
+          {
+            "offset": 3586,
+            "codeBytes": "4C8B6DA0",
+            "assembly": "mov      r13, gword ptr [rbp-0x60]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG10",
+        "offset": 351,
+        "instructions": [
+          {
+            "offset": 351,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 358,
+            "codeBytes": "4C8B8DB8FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 365,
+            "codeBytes": "4C890C24",
+            "assembly": "mov      bword ptr [rsp], r9"
+          },
+          {
+            "offset": 369,
+            "codeBytes": "440FB645D4",
+            "assembly": "movzx    r8, byte  ptr [rbp-0x2C]"
+          },
+          {
+            "offset": 374,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 381,
+            "codeBytes": "488BF0",
+            "assembly": "mov      rsi, rax"
+          },
+          {
+            "offset": 384,
+            "codeBytes": "488B95C8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 391,
+            "codeBytes": "488B8DA8FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 398,
+            "codeBytes": "4C8B8DC0FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 405,
+            "codeBytes": "FF152D8BD6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInputInstruction(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,bool,byref,byref):int]"
+          },
+          {
+            "offset": 411,
+            "codeBytes": "85C0",
+            "assembly": "test     eax, eax"
+          },
+          {
+            "offset": 413,
+            "codeBytes": "0F84F8FEFFFF",
+            "assembly": "je       G_M000_IG04"
+          },
+          {
+            "offset": 419,
+            "codeBytes": "E9A71D0000",
+            "assembly": "jmp      G_M000_IG211"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG30",
+        "offset": 1138,
+        "instructions": [
+          {
+            "offset": 1138,
+            "codeBytes": "488BBDD8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x228]"
+          },
+          {
+            "offset": 1145,
+            "codeBytes": "4C8B3F",
+            "assembly": "mov      r15, gword ptr [rdi]"
+          },
+          {
+            "offset": 1148,
+            "codeBytes": "4C8B7708",
+            "assembly": "mov      r14, gword ptr [rdi+0x08]"
+          },
+          {
+            "offset": 1152,
+            "codeBytes": "8BF3",
+            "assembly": "mov      esi, ebx"
+          },
+          {
+            "offset": 1154,
+            "codeBytes": "83FE04",
+            "assembly": "cmp      esi, 4"
+          },
+          {
+            "offset": 1157,
+            "codeBytes": "7409",
+            "assembly": "je       SHORT G_M000_IG32"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG107",
+        "offset": 3083,
+        "instructions": [
+          {
+            "offset": 3083,
+            "codeBytes": "498B7720",
+            "assembly": "mov      rsi, gword ptr [r15+0x20]"
+          },
+          {
+            "offset": 3087,
+            "codeBytes": "49BBC0BE3514AC720000",
+            "assembly": "mov      r11, 0x72AC1435BEC0"
+          },
+          {
+            "offset": 3097,
+            "codeBytes": "4C391E",
+            "assembly": "cmp      qword ptr [rsi], r11"
+          },
+          {
+            "offset": 3100,
+            "codeBytes": "0F8505060000",
+            "assembly": "jne      G_M000_IG154"
+          },
+          {
+            "offset": 3106,
+            "codeBytes": "395E08",
+            "assembly": "cmp      dword ptr [rsi+0x08], ebx"
+          },
+          {
+            "offset": 3109,
+            "codeBytes": "0F8679040000",
+            "assembly": "jbe      G_M000_IG146"
+          },
+          {
+            "offset": 3115,
+            "codeBytes": "448BDB",
+            "assembly": "mov      r11d, ebx"
+          },
+          {
+            "offset": 3118,
+            "codeBytes": "4E8B44DE10",
+            "assembly": "mov      r8, gword ptr [rsi+8*r11+0x10]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG92",
+        "offset": 2591,
+        "instructions": [
+          {
+            "offset": 2591,
+            "codeBytes": "C5F857C0",
+            "assembly": "vxorps   xmm0, xmm0, xmm0"
+          },
+          {
+            "offset": 2595,
+            "codeBytes": "C5FA7F45B8",
+            "assembly": "vmovdqu  xmmword ptr [rbp-0x48], xmm0"
+          },
+          {
+            "offset": 2600,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 2608,
+            "codeBytes": "0F84CF120000",
+            "assembly": "je       G_M000_IG195"
+          },
+          {
+            "offset": 2614,
+            "codeBytes": "807DD400",
+            "assembly": "cmp      byte  ptr [rbp-0x2C], 0"
+          },
+          {
+            "offset": 2618,
+            "codeBytes": "0F8517150000",
+            "assembly": "jne      G_M000_IG212"
+          },
+          {
+            "offset": 2624,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, gword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 2631,
+            "codeBytes": "488BB5A8FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 2638,
+            "codeBytes": "FF15D482D6FF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteForNext(byref):bool:this]"
+          },
+          {
+            "offset": 2644,
+            "codeBytes": "8945D0",
+            "assembly": "mov      dword ptr [rbp-0x30], eax"
+          },
+          {
+            "offset": 2647,
+            "codeBytes": "E93FF6FFFF",
+            "assembly": "jmp      G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08216926869350863,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 2,
+        "methodCodeBytes": 10822,
+        "label": "G_M000_IG70",
+        "offset": 2019,
+        "instructions": [
+          {
+            "offset": 2019,
+            "codeBytes": "488B85D0FDFFFF",
+            "assembly": "mov      rax, gword ptr [rbp-0x230]"
+          },
+          {
+            "offset": 2026,
+            "codeBytes": "4883BDC8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x238], 0"
+          },
+          {
+            "offset": 2034,
+            "codeBytes": "400F94C6",
+            "assembly": "sete     sil"
+          },
+          {
+            "offset": 2038,
+            "codeBytes": "400FB6F6",
+            "assembly": "movzx    rsi, sil"
+          },
+          {
+            "offset": 2042,
+            "codeBytes": "85F6",
+            "assembly": "test     esi, esi"
+          },
+          {
+            "offset": 2044,
+            "codeBytes": "740E",
+            "assembly": "je       SHORT G_M000_IG73"
+          }
+        ]
+      }
+    ],
+    "limitation": "Exact code-size/tier and instruction/group-offset checks; group samples include useful operations. No dispatch tax or CPU gain inferred."
+  },
+  {
+    "case": "text-warm",
+    "totalGuestSamples": 1149,
+    "prefixLeafSamples": 269,
+    "unknownPrefixSamples": 0,
+    "matchedPrefixSamples": 269,
+    "parsedMethods": [
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+        "tier": "InstrumentedTier",
+        "bytes": 9767,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+        "tier": "OptimizedTier1OSR",
+        "bytes": 10556,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+        "tier": "InstrumentedTier",
+        "bytes": 9754,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+        "tier": "OptimizedTier1OSR",
+        "bytes": 13689,
+        "valid": true,
+        "errors": []
+      },
+      {
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "tier": "OptimizedTier1",
+        "bytes": 13657,
+        "valid": true,
+        "errors": []
+      }
+    ],
+    "mapMatches": [
+      {
+        "start": 138111603566720,
+        "size": 9767,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[QuickJitted]",
+        "tier": "QuickJitted",
+        "unique": false,
+        "matchedHeader": null,
+        "matchedIndex": null
+      },
+      {
+        "start": 138111607146048,
+        "size": 10556,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1OSR]",
+        "tier": "OptimizedTier1OSR",
+        "unique": true,
+        "matchedHeader": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+        "matchedIndex": 1
+      },
+      {
+        "start": 138111610635952,
+        "size": 9754,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[InstrumentedTier]",
+        "tier": "InstrumentedTier",
+        "unique": true,
+        "matchedHeader": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Instrumented Tier0)",
+        "matchedIndex": 2
+      },
+      {
+        "start": 138111610680416,
+        "size": 13689,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1OSR]",
+        "tier": "OptimizedTier1OSR",
+        "unique": true,
+        "matchedHeader": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1-OSR)",
+        "matchedIndex": 3
+      },
+      {
+        "start": 138111612107520,
+        "size": 13657,
+        "name": "valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutionContext/InstructionPause [Lokad.Lython] Lokad.Lython.Runtime.LythonRuntime+ExecutionContext::ExecuteInstructionPrefix(valuetype Lokad.Lython.Runtime.LythonRuntime/ExecutableWorkState&,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,bool,valuetype [System.Runtime]System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)[OptimizedTier1]",
+        "tier": "OptimizedTier1",
+        "unique": true,
+        "matchedHeader": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "matchedIndex": 4
+      }
+    ],
+    "topGroups": [
+      {
+        "samples": 44,
+        "shareOfGuestSamples": 3.8294168842471716,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG11",
+        "offset": 244,
+        "instructions": [
+          {
+            "offset": 244,
+            "codeBytes": "33F6",
+            "assembly": "xor      esi, esi"
+          },
+          {
+            "offset": 246,
+            "codeBytes": "8975D0",
+            "assembly": "mov      dword ptr [rbp-0x30], esi"
+          },
+          {
+            "offset": 249,
+            "codeBytes": "8B7728",
+            "assembly": "mov      esi, dword ptr [rdi+0x28]"
+          },
+          {
+            "offset": 252,
+            "codeBytes": "3BF3",
+            "assembly": "cmp      esi, ebx"
+          },
+          {
+            "offset": 254,
+            "codeBytes": "0F8309320000",
+            "assembly": "jae      G_M000_IG416"
+          },
+          {
+            "offset": 260,
+            "codeBytes": "48C1E605",
+            "assembly": "shl      rsi, 5"
+          },
+          {
+            "offset": 264,
+            "codeBytes": "488D743110",
+            "assembly": "lea      rsi, bword ptr [rcx+rsi+0x10]"
+          },
+          {
+            "offset": 269,
+            "codeBytes": "4889B598FDFFFF",
+            "assembly": "mov      bword ptr [rbp-0x268], rsi"
+          },
+          {
+            "offset": 276,
+            "codeBytes": "488BB2B0000000",
+            "assembly": "mov      rsi, gword ptr [rdx+0xB0]"
+          },
+          {
+            "offset": 283,
+            "codeBytes": "4C8B8598FDFFFF",
+            "assembly": "mov      r8, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 290,
+            "codeBytes": "4D8B00",
+            "assembly": "mov      r8, gword ptr [r8]"
+          },
+          {
+            "offset": 293,
+            "codeBytes": "4C8B9688000000",
+            "assembly": "mov      r10, gword ptr [rsi+0x88]"
+          },
+          {
+            "offset": 300,
+            "codeBytes": "4D8B5220",
+            "assembly": "mov      r10, gword ptr [r10+0x20]"
+          },
+          {
+            "offset": 304,
+            "codeBytes": "4D85D2",
+            "assembly": "test     r10, r10"
+          },
+          {
+            "offset": 307,
+            "codeBytes": "0F85CB310000",
+            "assembly": "jne      G_M000_IG415"
+          },
+          {
+            "offset": 313,
+            "codeBytes": "488BB678010000",
+            "assembly": "mov      rsi, gword ptr [rsi+0x178]"
+          },
+          {
+            "offset": 320,
+            "codeBytes": "4885F6",
+            "assembly": "test     rsi, rsi"
+          },
+          {
+            "offset": 323,
+            "codeBytes": "0F85A3310000",
+            "assembly": "jne      G_M000_IG414"
+          }
+        ]
+      },
+      {
+        "samples": 36,
+        "shareOfGuestSamples": 3.133159268929504,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG09",
+        "offset": 208,
+        "instructions": [
+          {
+            "offset": 208,
+            "codeBytes": "488B9DC8FDFFFF",
+            "assembly": "mov      rbx, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 215,
+            "codeBytes": "8B7B28",
+            "assembly": "mov      edi, dword ptr [rbx+0x28]"
+          },
+          {
+            "offset": 218,
+            "codeBytes": "488B8DA0FDFFFF",
+            "assembly": "mov      rcx, gword ptr [rbp-0x260]"
+          },
+          {
+            "offset": 225,
+            "codeBytes": "8B4108",
+            "assembly": "mov      eax, dword ptr [rcx+0x08]"
+          },
+          {
+            "offset": 228,
+            "codeBytes": "3BF8",
+            "assembly": "cmp      edi, eax"
+          },
+          {
+            "offset": 230,
+            "codeBytes": "488BFB",
+            "assembly": "mov      rdi, rbx"
+          },
+          {
+            "offset": 233,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 240,
+            "codeBytes": "7DAA",
+            "assembly": "jge      SHORT G_M000_IG04"
+          }
+        ]
+      },
+      {
+        "samples": 36,
+        "shareOfGuestSamples": 3.133159268929504,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG12",
+        "offset": 329,
+        "instructions": [
+          {
+            "offset": 329,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 336,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 339,
+            "codeBytes": "83FE44",
+            "assembly": "cmp      esi, 68"
+          },
+          {
+            "offset": 342,
+            "codeBytes": "0F8732020000",
+            "assembly": "ja       G_M000_IG40"
+          }
+        ]
+      },
+      {
+        "samples": 17,
+        "shareOfGuestSamples": 1.4795474325500435,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG228",
+        "offset": 6421,
+        "instructions": [
+          {
+            "offset": 6421,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 6428,
+            "codeBytes": "448B7E10",
+            "assembly": "mov      r15d, dword ptr [rsi+0x10]"
+          },
+          {
+            "offset": 6432,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 6439,
+            "codeBytes": "488D7730",
+            "assembly": "lea      rsi, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 6443,
+            "codeBytes": "381B",
+            "assembly": "cmp      byte  ptr [rbx], bl"
+          },
+          {
+            "offset": 6445,
+            "codeBytes": "488B36",
+            "assembly": "mov      rsi, gword ptr [rsi]"
+          },
+          {
+            "offset": 6448,
+            "codeBytes": "807B2C00",
+            "assembly": "cmp      byte  ptr [rbx+0x2C], 0"
+          },
+          {
+            "offset": 6452,
+            "codeBytes": "410F95C0",
+            "assembly": "setne    r8b"
+          },
+          {
+            "offset": 6456,
+            "codeBytes": "450FB6C0",
+            "assembly": "movzx    r8, r8b"
+          },
+          {
+            "offset": 6460,
+            "codeBytes": "4503C7",
+            "assembly": "add      r8d, r15d"
+          },
+          {
+            "offset": 6463,
+            "codeBytes": "443B4608",
+            "assembly": "cmp      r8d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 6467,
+            "codeBytes": "0F8323190000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 6473,
+            "codeBytes": "4E8B74C610",
+            "assembly": "mov      r14, gword ptr [rsi+8*r8+0x10]"
+          },
+          {
+            "offset": 6478,
+            "codeBytes": "4D85F6",
+            "assembly": "test     r14, r14"
+          },
+          {
+            "offset": 6481,
+            "codeBytes": "0F8479130000",
+            "assembly": "je       G_M000_IG370"
+          },
+          {
+            "offset": 6487,
+            "codeBytes": "488BF2",
+            "assembly": "mov      rsi, rdx"
+          },
+          {
+            "offset": 6490,
+            "codeBytes": "488B95B8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 6497,
+            "codeBytes": "488BCB",
+            "assembly": "mov      rcx, rbx"
+          },
+          {
+            "offset": 6500,
+            "codeBytes": "458BC7",
+            "assembly": "mov      r8d, r15d"
+          },
+          {
+            "offset": 6503,
+            "codeBytes": "4D8BCE",
+            "assembly": "mov      r9, r14"
+          },
+          {
+            "offset": 6506,
+            "codeBytes": "FF15B010ACFF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryExecuteNativeCall(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ExecutableCallSite,int,System.Object):bool]"
+          },
+          {
+            "offset": 6512,
+            "codeBytes": "85C0",
+            "assembly": "test     eax, eax"
+          },
+          {
+            "offset": 6514,
+            "codeBytes": "0F853EE7FFFF",
+            "assembly": "jne      G_M000_IG06"
+          }
+        ]
+      },
+      {
+        "samples": 9,
+        "shareOfGuestSamples": 0.783289817232376,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG81",
+        "offset": 2448,
+        "instructions": [
+          {
+            "offset": 2448,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 2455,
+            "codeBytes": "488D5F30",
+            "assembly": "lea      rbx, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 2459,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 2466,
+            "codeBytes": "448B7E10",
+            "assembly": "mov      r15d, dword ptr [rsi+0x10]"
+          },
+          {
+            "offset": 2470,
+            "codeBytes": "488B33",
+            "assembly": "mov      rsi, gword ptr [rbx]"
+          },
+          {
+            "offset": 2473,
+            "codeBytes": "443B7E08",
+            "assembly": "cmp      r15d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 2477,
+            "codeBytes": "0F83B9280000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 2483,
+            "codeBytes": "458BC7",
+            "assembly": "mov      r8d, r15d"
+          },
+          {
+            "offset": 2486,
+            "codeBytes": "4A8B74C610",
+            "assembly": "mov      rsi, gword ptr [rsi+8*r8+0x10]"
+          },
+          {
+            "offset": 2491,
+            "codeBytes": "4885F6",
+            "assembly": "test     rsi, rsi"
+          },
+          {
+            "offset": 2494,
+            "codeBytes": "0F8445010000",
+            "assembly": "je       G_M000_IG100"
+          }
+        ]
+      },
+      {
+        "samples": 9,
+        "shareOfGuestSamples": 0.783289817232376,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG13",
+        "offset": 348,
+        "instructions": [
+          {
+            "offset": 348,
+            "codeBytes": "8BF6",
+            "assembly": "mov      esi, esi"
+          },
+          {
+            "offset": 350,
+            "codeBytes": "4C8D05F7330000",
+            "assembly": "lea      r8, [reloc @RWD00]"
+          },
+          {
+            "offset": 357,
+            "codeBytes": "458B04B0",
+            "assembly": "mov      r8d, dword ptr [r8+4*rsi]"
+          },
+          {
+            "offset": 361,
+            "codeBytes": "4C8D150AFFFFFF",
+            "assembly": "lea      r10, G_M000_IG02"
+          },
+          {
+            "offset": 368,
+            "codeBytes": "4D03C2",
+            "assembly": "add      r8, r10"
+          },
+          {
+            "offset": 371,
+            "codeBytes": "41FFE0",
+            "assembly": "jmp      r8"
+          }
+        ]
+      },
+      {
+        "samples": 8,
+        "shareOfGuestSamples": 0.6962576153176675,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG141",
+        "offset": 3948,
+        "instructions": [
+          {
+            "offset": 3948,
+            "codeBytes": "4885DB",
+            "assembly": "test     rbx, rbx"
+          },
+          {
+            "offset": 3951,
+            "codeBytes": "0F84721A0000",
+            "assembly": "je       G_M000_IG345"
+          },
+          {
+            "offset": 3957,
+            "codeBytes": "48899D78FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x288], rbx"
+          },
+          {
+            "offset": 3964,
+            "codeBytes": "4533C0",
+            "assembly": "xor      r8, r8"
+          },
+          {
+            "offset": 3967,
+            "codeBytes": "4C898570FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x290], r8"
+          },
+          {
+            "offset": 3974,
+            "codeBytes": "4C8B4330",
+            "assembly": "mov      r8, gword ptr [rbx+0x30]"
+          },
+          {
+            "offset": 3978,
+            "codeBytes": "4D8B9088000000",
+            "assembly": "mov      r10, gword ptr [r8+0x88]"
+          },
+          {
+            "offset": 3985,
+            "codeBytes": "4D8B5220",
+            "assembly": "mov      r10, gword ptr [r10+0x20]"
+          },
+          {
+            "offset": 3989,
+            "codeBytes": "4D85D2",
+            "assembly": "test     r10, r10"
+          },
+          {
+            "offset": 3992,
+            "codeBytes": "0F85971A0000",
+            "assembly": "jne      G_M000_IG346"
+          },
+          {
+            "offset": 3998,
+            "codeBytes": "4D8B8078010000",
+            "assembly": "mov      r8, gword ptr [r8+0x178]"
+          },
+          {
+            "offset": 4005,
+            "codeBytes": "4D85C0",
+            "assembly": "test     r8, r8"
+          },
+          {
+            "offset": 4008,
+            "codeBytes": "0F85901A0000",
+            "assembly": "jne      G_M000_IG347"
+          }
+        ]
+      },
+      {
+        "samples": 8,
+        "shareOfGuestSamples": 0.6962576153176675,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG84",
+        "offset": 2555,
+        "instructions": [
+          {
+            "offset": 2555,
+            "codeBytes": "488B7608",
+            "assembly": "mov      rsi, gword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 2559,
+            "codeBytes": "443B4608",
+            "assembly": "cmp      r8d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 2563,
+            "codeBytes": "0F8363280000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 2569,
+            "codeBytes": "458BD0",
+            "assembly": "mov      r10d, r8d"
+          },
+          {
+            "offset": 2572,
+            "codeBytes": "4E8B74D610",
+            "assembly": "mov      r14, gword ptr [rsi+8*r10+0x10]"
+          },
+          {
+            "offset": 2577,
+            "codeBytes": "41BD01000000",
+            "assembly": "mov      r13d, 1"
+          }
+        ]
+      },
+      {
+        "samples": 6,
+        "shareOfGuestSamples": 0.5221932114882507,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG25",
+        "offset": 603,
+        "instructions": [
+          {
+            "offset": 603,
+            "codeBytes": "488B33",
+            "assembly": "mov      rsi, gword ptr [rbx]"
+          },
+          {
+            "offset": 606,
+            "codeBytes": "4D63C6",
+            "assembly": "movsxd   r8, r14d"
+          },
+          {
+            "offset": 609,
+            "codeBytes": "448B5608",
+            "assembly": "mov      r10d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 613,
+            "codeBytes": "4D3BD0",
+            "assembly": "cmp      r10, r8"
+          },
+          {
+            "offset": 616,
+            "codeBytes": "0F864A1C0000",
+            "assembly": "jbe      G_M000_IG272"
+          },
+          {
+            "offset": 622,
+            "codeBytes": "4E8D44C610",
+            "assembly": "lea      r8, bword ptr [rsi+8*r8+0x10]"
+          },
+          {
+            "offset": 627,
+            "codeBytes": "4C8B16",
+            "assembly": "mov      r10, qword ptr [rsi]"
+          },
+          {
+            "offset": 630,
+            "codeBytes": "4D8B5230",
+            "assembly": "mov      r10, qword ptr [r10+0x30]"
+          },
+          {
+            "offset": 634,
+            "codeBytes": "4D85FF",
+            "assembly": "test     r15, r15"
+          },
+          {
+            "offset": 637,
+            "codeBytes": "0F8475180000",
+            "assembly": "je       G_M000_IG242"
+          }
+        ]
+      },
+      {
+        "samples": 6,
+        "shareOfGuestSamples": 0.5221932114882507,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG115",
+        "offset": 3108,
+        "instructions": [
+          {
+            "offset": 3108,
+            "codeBytes": "4C8B03",
+            "assembly": "mov      r8, gword ptr [rbx]"
+          },
+          {
+            "offset": 3111,
+            "codeBytes": "413B7008",
+            "assembly": "cmp      esi, dword ptr [r8+0x08]"
+          },
+          {
+            "offset": 3115,
+            "codeBytes": "0F833B260000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 3121,
+            "codeBytes": "448BD6",
+            "assembly": "mov      r10d, esi"
+          },
+          {
+            "offset": 3124,
+            "codeBytes": "4533DB",
+            "assembly": "xor      r11, r11"
+          },
+          {
+            "offset": 3127,
+            "codeBytes": "4F895CD010",
+            "assembly": "mov      gword ptr [r8+8*r10+0x10], r11"
+          },
+          {
+            "offset": 3132,
+            "codeBytes": "897340",
+            "assembly": "mov      dword ptr [rbx+0x40], esi"
+          },
+          {
+            "offset": 3135,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 3142,
+            "codeBytes": "488B37",
+            "assembly": "mov      rsi, gword ptr [rdi]"
+          },
+          {
+            "offset": 3145,
+            "codeBytes": "488B7650",
+            "assembly": "mov      rsi, gword ptr [rsi+0x50]"
+          },
+          {
+            "offset": 3149,
+            "codeBytes": "448B4728",
+            "assembly": "mov      r8d, dword ptr [rdi+0x28]"
+          },
+          {
+            "offset": 3153,
+            "codeBytes": "41FFC0",
+            "assembly": "inc      r8d"
+          },
+          {
+            "offset": 3156,
+            "codeBytes": "443B4608",
+            "assembly": "cmp      r8d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 3160,
+            "codeBytes": "0F830E260000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 3166,
+            "codeBytes": "49C1E005",
+            "assembly": "shl      r8, 5"
+          },
+          {
+            "offset": 3170,
+            "codeBytes": "4A8D5C0610",
+            "assembly": "lea      rbx, bword ptr [rsi+r8+0x10]"
+          },
+          {
+            "offset": 3175,
+            "codeBytes": "488D7730",
+            "assembly": "lea      rsi, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 3179,
+            "codeBytes": "4C8B03",
+            "assembly": "mov      r8, gword ptr [rbx]"
+          },
+          {
+            "offset": 3182,
+            "codeBytes": "488B7618",
+            "assembly": "mov      rsi, gword ptr [rsi+0x18]"
+          },
+          {
+            "offset": 3186,
+            "codeBytes": "4C8B9688000000",
+            "assembly": "mov      r10, gword ptr [rsi+0x88]"
+          },
+          {
+            "offset": 3193,
+            "codeBytes": "4D8B5220",
+            "assembly": "mov      r10, gword ptr [r10+0x20]"
+          },
+          {
+            "offset": 3197,
+            "codeBytes": "4D85D2",
+            "assembly": "test     r10, r10"
+          },
+          {
+            "offset": 3200,
+            "codeBytes": "0F857B1B0000",
+            "assembly": "jne      G_M000_IG328"
+          },
+          {
+            "offset": 3206,
+            "codeBytes": "488BB678010000",
+            "assembly": "mov      rsi, gword ptr [rsi+0x178]"
+          },
+          {
+            "offset": 3213,
+            "codeBytes": "4885F6",
+            "assembly": "test     rsi, rsi"
+          },
+          {
+            "offset": 3216,
+            "codeBytes": "0F85741B0000",
+            "assembly": "jne      G_M000_IG329"
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4351610095735422,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG119",
+        "offset": 3300,
+        "instructions": [
+          {
+            "offset": 3300,
+            "codeBytes": "4C898588FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x278], r8"
+          },
+          {
+            "offset": 3307,
+            "codeBytes": "664183780C3C",
+            "assembly": "cmp      word  ptr [r8+0x0C], 60"
+          },
+          {
+            "offset": 3313,
+            "codeBytes": "410F95C2",
+            "assembly": "setne    r10b"
+          },
+          {
+            "offset": 3317,
+            "codeBytes": "450FB6D2",
+            "assembly": "movzx    r10, r10b"
+          },
+          {
+            "offset": 3321,
+            "codeBytes": "44899564FEFFFF",
+            "assembly": "mov      dword ptr [rbp-0x19C], r10d"
+          },
+          {
+            "offset": 3328,
+            "codeBytes": "4883BDB8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x248], 0"
+          },
+          {
+            "offset": 3336,
+            "codeBytes": "0F84B6000000",
+            "assembly": "je       G_M000_IG128"
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4351610095735422,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG07",
+        "offset": 192,
+        "instructions": [
+          {
+            "offset": 192,
+            "codeBytes": "837DD000",
+            "assembly": "cmp      dword ptr [rbp-0x30], 0"
+          },
+          {
+            "offset": 196,
+            "codeBytes": "750A",
+            "assembly": "jne      SHORT G_M000_IG09"
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4351610095735422,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG99",
+        "offset": 2814,
+        "instructions": [
+          {
+            "offset": 2814,
+            "codeBytes": "4533F6",
+            "assembly": "xor      r14, r14"
+          },
+          {
+            "offset": 2817,
+            "codeBytes": "4533ED",
+            "assembly": "xor      r13d, r13d"
+          },
+          {
+            "offset": 2820,
+            "codeBytes": "E90EFFFFFF",
+            "assembly": "jmp      G_M000_IG85"
+          }
+        ]
+      },
+      {
+        "samples": 5,
+        "shareOfGuestSamples": 0.4351610095735422,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG83",
+        "offset": 2519,
+        "instructions": [
+          {
+            "offset": 2519,
+            "codeBytes": "4C8B4308",
+            "assembly": "mov      r8, gword ptr [rbx+0x08]"
+          },
+          {
+            "offset": 2523,
+            "codeBytes": "458BD7",
+            "assembly": "mov      r10d, r15d"
+          },
+          {
+            "offset": 2526,
+            "codeBytes": "442B5338",
+            "assembly": "sub      r10d, dword ptr [rbx+0x38]"
+          },
+          {
+            "offset": 2530,
+            "codeBytes": "453B5008",
+            "assembly": "cmp      r10d, dword ptr [r8+0x08]"
+          },
+          {
+            "offset": 2534,
+            "codeBytes": "0F8380280000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 2540,
+            "codeBytes": "478B449010",
+            "assembly": "mov      r8d, dword ptr [r8+4*r10+0x10]"
+          },
+          {
+            "offset": 2545,
+            "codeBytes": "443B4628",
+            "assembly": "cmp      r8d, dword ptr [rsi+0x28]"
+          },
+          {
+            "offset": 2549,
+            "codeBytes": "0F8D03010000",
+            "assembly": "jge      G_M000_IG99"
+          }
+        ]
+      },
+      {
+        "samples": 4,
+        "shareOfGuestSamples": 0.34812880765883375,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG200",
+        "offset": 5386,
+        "instructions": [
+          {
+            "offset": 5386,
+            "codeBytes": "488B85B0FDFFFF",
+            "assembly": "mov      rax, bword ptr [rbp-0x250]"
+          },
+          {
+            "offset": 5393,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 5400,
+            "codeBytes": "4C8B8DA8FDFFFF",
+            "assembly": "mov      r9, bword ptr [rbp-0x258]"
+          },
+          {
+            "offset": 5407,
+            "codeBytes": "4C890C24",
+            "assembly": "mov      bword ptr [rsp], r9"
+          },
+          {
+            "offset": 5411,
+            "codeBytes": "440FB645D4",
+            "assembly": "movzx    r8, byte  ptr [rbp-0x2C]"
+          },
+          {
+            "offset": 5416,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 5423,
+            "codeBytes": "488BF2",
+            "assembly": "mov      rsi, rdx"
+          },
+          {
+            "offset": 5426,
+            "codeBytes": "488B95B8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 5433,
+            "codeBytes": "488B8D98FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 5440,
+            "codeBytes": "4C8BC8",
+            "assembly": "mov      r9, rax"
+          },
+          {
+            "offset": 5443,
+            "codeBytes": "FF154714ACFF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInputInstruction(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,bool,byref,byref):int]"
+          },
+          {
+            "offset": 5449,
+            "codeBytes": "85C0",
+            "assembly": "test     eax, eax"
+          },
+          {
+            "offset": 5451,
+            "codeBytes": "0F8465EBFFFF",
+            "assembly": "je       G_M000_IG06"
+          }
+        ]
+      },
+      {
+        "samples": 4,
+        "shareOfGuestSamples": 0.34812880765883375,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG227",
+        "offset": 6327,
+        "instructions": [
+          {
+            "offset": 6327,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 6334,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 6341,
+            "codeBytes": "488B37",
+            "assembly": "mov      rsi, gword ptr [rdi]"
+          },
+          {
+            "offset": 6344,
+            "codeBytes": "488B7668",
+            "assembly": "mov      rsi, gword ptr [rsi+0x68]"
+          },
+          {
+            "offset": 6348,
+            "codeBytes": "4C8B9D98FDFFFF",
+            "assembly": "mov      r11, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 6355,
+            "codeBytes": "41837B1C2B",
+            "assembly": "cmp      dword ptr [r11+0x1C], 43"
+          },
+          {
+            "offset": 6360,
+            "codeBytes": "0F85B0130000",
+            "assembly": "jne      G_M000_IG368"
+          },
+          {
+            "offset": 6366,
+            "codeBytes": "4C8B9D98FDFFFF",
+            "assembly": "mov      r11, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 6373,
+            "codeBytes": "458B5B08",
+            "assembly": "mov      r11d, dword ptr [r11+0x08]"
+          },
+          {
+            "offset": 6377,
+            "codeBytes": "49B82852379D9C7D0000",
+            "assembly": "mov      r8, 0x7D9C9D375228"
+          },
+          {
+            "offset": 6387,
+            "codeBytes": "4C3906",
+            "assembly": "cmp      qword ptr [rsi], r8"
+          },
+          {
+            "offset": 6390,
+            "codeBytes": "0F85B2130000",
+            "assembly": "jne      G_M000_IG369"
+          },
+          {
+            "offset": 6396,
+            "codeBytes": "44395E08",
+            "assembly": "cmp      dword ptr [rsi+0x08], r11d"
+          },
+          {
+            "offset": 6400,
+            "codeBytes": "0F8699060000",
+            "assembly": "jbe      G_M000_IG280"
+          },
+          {
+            "offset": 6406,
+            "codeBytes": "443B5E08",
+            "assembly": "cmp      r11d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 6410,
+            "codeBytes": "0F835C190000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 6416,
+            "codeBytes": "4A8B5CDE10",
+            "assembly": "mov      rbx, gword ptr [rsi+8*r11+0x10]"
+          }
+        ]
+      },
+      {
+        "samples": 4,
+        "shareOfGuestSamples": 0.34812880765883375,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG10",
+        "offset": 242,
+        "instructions": [
+          {
+            "offset": 242,
+            "codeBytes": "8BD8",
+            "assembly": "mov      ebx, eax"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.26109660574412535,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG121",
+        "offset": 3356,
+        "instructions": [
+          {
+            "offset": 3356,
+            "codeBytes": "4885F6",
+            "assembly": "test     rsi, rsi"
+          },
+          {
+            "offset": 3359,
+            "codeBytes": "400F95C6",
+            "assembly": "setne    sil"
+          },
+          {
+            "offset": 3363,
+            "codeBytes": "400FB6F6",
+            "assembly": "movzx    rsi, sil"
+          },
+          {
+            "offset": 3367,
+            "codeBytes": "4185F2",
+            "assembly": "test     esi, r10d"
+          },
+          {
+            "offset": 3370,
+            "codeBytes": "0F85281B0000",
+            "assembly": "jne      G_M000_IG332"
+          },
+          {
+            "offset": 3376,
+            "codeBytes": "4863F3",
+            "assembly": "movsxd   rsi, ebx"
+          },
+          {
+            "offset": 3379,
+            "codeBytes": "458B4508",
+            "assembly": "mov      r8d, dword ptr [r13+0x08]"
+          },
+          {
+            "offset": 3383,
+            "codeBytes": "4C3BC6",
+            "assembly": "cmp      r8, rsi"
+          },
+          {
+            "offset": 3386,
+            "codeBytes": "0F8678110000",
+            "assembly": "jbe      G_M000_IG272"
+          },
+          {
+            "offset": 3392,
+            "codeBytes": "4D8D44F510",
+            "assembly": "lea      r8, bword ptr [r13+8*rsi+0x10]"
+          },
+          {
+            "offset": 3397,
+            "codeBytes": "498B7500",
+            "assembly": "mov      rsi, qword ptr [r13]"
+          },
+          {
+            "offset": 3401,
+            "codeBytes": "488B7630",
+            "assembly": "mov      rsi, qword ptr [rsi+0x30]"
+          },
+          {
+            "offset": 3405,
+            "codeBytes": "4889B558FEFFFF",
+            "assembly": "mov      qword ptr [rbp-0x1A8], rsi"
+          },
+          {
+            "offset": 3412,
+            "codeBytes": "4D85F6",
+            "assembly": "test     r14, r14"
+          },
+          {
+            "offset": 3415,
+            "codeBytes": "7472",
+            "assembly": "je       SHORT G_M000_IG129"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.26109660574412535,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG06",
+        "offset": 182,
+        "instructions": [
+          {
+            "offset": 182,
+            "codeBytes": "807DD400",
+            "assembly": "cmp      byte  ptr [rbp-0x2C], 0"
+          },
+          {
+            "offset": 186,
+            "codeBytes": "0F85CB310000",
+            "assembly": "jne      G_M000_IG409"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.26109660574412535,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG130",
+        "offset": 3538,
+        "instructions": [
+          {
+            "offset": 3538,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 3545,
+            "codeBytes": "488D7730",
+            "assembly": "lea      rsi, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 3549,
+            "codeBytes": "4C8B8598FDFFFF",
+            "assembly": "mov      r8, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 3556,
+            "codeBytes": "458B4010",
+            "assembly": "mov      r8d, dword ptr [r8+0x10]"
+          },
+          {
+            "offset": 3560,
+            "codeBytes": "458BD0",
+            "assembly": "mov      r10d, r8d"
+          },
+          {
+            "offset": 3563,
+            "codeBytes": "4C8B1E",
+            "assembly": "mov      r11, gword ptr [rsi]"
+          },
+          {
+            "offset": 3566,
+            "codeBytes": "498BDB",
+            "assembly": "mov      rbx, r11"
+          },
+          {
+            "offset": 3569,
+            "codeBytes": "448B7B08",
+            "assembly": "mov      r15d, dword ptr [rbx+0x08]"
+          },
+          {
+            "offset": 3573,
+            "codeBytes": "453BD7",
+            "assembly": "cmp      r10d, r15d"
+          },
+          {
+            "offset": 3576,
+            "codeBytes": "0F836E240000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 3582,
+            "codeBytes": "458BFA",
+            "assembly": "mov      r15d, r10d"
+          },
+          {
+            "offset": 3585,
+            "codeBytes": "4A837CFB1000",
+            "assembly": "cmp      gword ptr [rbx+8*r15+0x10], 0"
+          },
+          {
+            "offset": 3591,
+            "codeBytes": "0F84E31A0000",
+            "assembly": "je       G_M000_IG336"
+          },
+          {
+            "offset": 3597,
+            "codeBytes": "33DB",
+            "assembly": "xor      rbx, rbx"
+          },
+          {
+            "offset": 3599,
+            "codeBytes": "4B895CD310",
+            "assembly": "mov      gword ptr [r11+8*r10+0x10], rbx"
+          },
+          {
+            "offset": 3604,
+            "codeBytes": "44894640",
+            "assembly": "mov      dword ptr [rsi+0x40], r8d"
+          },
+          {
+            "offset": 3608,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 3615,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 3618,
+            "codeBytes": "83FE34",
+            "assembly": "cmp      esi, 52"
+          },
+          {
+            "offset": 3621,
+            "codeBytes": "0F8F131B0000",
+            "assembly": "jg       G_M000_IG338"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.26109660574412535,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG138",
+        "offset": 3829,
+        "instructions": [
+          {
+            "offset": 3829,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 3836,
+            "codeBytes": "4180785400",
+            "assembly": "cmp      byte  ptr [r8+0x54], 0"
+          },
+          {
+            "offset": 3841,
+            "codeBytes": "0F85A21C0000",
+            "assembly": "jne      G_M000_IG361"
+          },
+          {
+            "offset": 3847,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 3854,
+            "codeBytes": "4983780800",
+            "assembly": "cmp      gword ptr [r8+0x08], 0"
+          },
+          {
+            "offset": 3859,
+            "codeBytes": "0F84901C0000",
+            "assembly": "je       G_M000_IG361"
+          },
+          {
+            "offset": 3865,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 3872,
+            "codeBytes": "4D8B4018",
+            "assembly": "mov      r8, gword ptr [r8+0x18]"
+          },
+          {
+            "offset": 3876,
+            "codeBytes": "4D85C0",
+            "assembly": "test     r8, r8"
+          },
+          {
+            "offset": 3879,
+            "codeBytes": "0F84981B0000",
+            "assembly": "je       G_M000_IG352"
+          }
+        ]
+      },
+      {
+        "samples": 3,
+        "shareOfGuestSamples": 0.26109660574412535,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG27",
+        "offset": 648,
+        "instructions": [
+          {
+            "offset": 648,
+            "codeBytes": "49BBA027C79B9C7D0000",
+            "assembly": "mov      r11, 0x7D9C9BC727A0"
+          },
+          {
+            "offset": 658,
+            "codeBytes": "4C391E",
+            "assembly": "cmp      qword ptr [rsi], r11"
+          },
+          {
+            "offset": 661,
+            "codeBytes": "0F85241C0000",
+            "assembly": "jne      G_M000_IG273"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG139",
+        "offset": 3885,
+        "instructions": [
+          {
+            "offset": 3885,
+            "codeBytes": "49BA5862459D9C7D0000",
+            "assembly": "mov      r10, 0x7D9C9D456258"
+          },
+          {
+            "offset": 3895,
+            "codeBytes": "4D3910",
+            "assembly": "cmp      qword ptr [r8], r10"
+          },
+          {
+            "offset": 3898,
+            "codeBytes": "0F85671B0000",
+            "assembly": "jne      G_M000_IG351"
+          },
+          {
+            "offset": 3904,
+            "codeBytes": "4180783000",
+            "assembly": "cmp      byte  ptr [r8+0x30], 0"
+          },
+          {
+            "offset": 3909,
+            "codeBytes": "0F85621A0000",
+            "assembly": "jne      G_M000_IG344"
+          },
+          {
+            "offset": 3915,
+            "codeBytes": "4D8B5010",
+            "assembly": "mov      r10, gword ptr [r8+0x10]"
+          },
+          {
+            "offset": 3919,
+            "codeBytes": "450FB65218",
+            "assembly": "movzx    r10, byte  ptr [r10+0x18]"
+          },
+          {
+            "offset": 3924,
+            "codeBytes": "4585D2",
+            "assembly": "test     r10d, r10d"
+          },
+          {
+            "offset": 3927,
+            "codeBytes": "0F85501A0000",
+            "assembly": "jne      G_M000_IG344"
+          },
+          {
+            "offset": 3933,
+            "codeBytes": "498B5808",
+            "assembly": "mov      rbx, gword ptr [r8+0x08]"
+          },
+          {
+            "offset": 3937,
+            "codeBytes": "4885DB",
+            "assembly": "test     rbx, rbx"
+          },
+          {
+            "offset": 3940,
+            "codeBytes": "0F85CC0A0000",
+            "assembly": "jne      G_M000_IG234"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG219",
+        "offset": 6131,
+        "instructions": [
+          {
+            "offset": 6131,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 6138,
+            "codeBytes": "4883BDB8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x248], 0"
+          },
+          {
+            "offset": 6146,
+            "codeBytes": "0F8446020000",
+            "assembly": "je       G_M000_IG236"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG14",
+        "offset": 374,
+        "instructions": [
+          {
+            "offset": 374,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 381,
+            "codeBytes": "488B1F",
+            "assembly": "mov      rbx, gword ptr [rdi]"
+          },
+          {
+            "offset": 384,
+            "codeBytes": "4C8B7F08",
+            "assembly": "mov      r15, gword ptr [rdi+0x08]"
+          },
+          {
+            "offset": 388,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 395,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 398,
+            "codeBytes": "83FE04",
+            "assembly": "cmp      esi, 4"
+          },
+          {
+            "offset": 401,
+            "codeBytes": "7409",
+            "assembly": "je       SHORT G_M000_IG16"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG125",
+        "offset": 3453,
+        "instructions": [
+          {
+            "offset": 3453,
+            "codeBytes": "4D85E4",
+            "assembly": "test     r12, r12"
+          },
+          {
+            "offset": 3456,
+            "codeBytes": "0F850C1B0000",
+            "assembly": "jne      G_M000_IG334"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG260",
+        "offset": 7408,
+        "instructions": [
+          {
+            "offset": 7408,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 7415,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 7422,
+            "codeBytes": "FF4728",
+            "assembly": "inc      dword ptr [rdi+0x28]"
+          },
+          {
+            "offset": 7425,
+            "codeBytes": "E9B0E3FFFF",
+            "assembly": "jmp      G_M000_IG06"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG112",
+        "offset": 3048,
+        "instructions": [
+          {
+            "offset": 3048,
+            "codeBytes": "48837F5000",
+            "assembly": "cmp      gword ptr [rdi+0x50], 0"
+          },
+          {
+            "offset": 3053,
+            "codeBytes": "0F85C31B0000",
+            "assembly": "jne      G_M000_IG326"
+          },
+          {
+            "offset": 3059,
+            "codeBytes": "488D5F30",
+            "assembly": "lea      rbx, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 3063,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 3070,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 3073,
+            "codeBytes": "83FE34",
+            "assembly": "cmp      esi, 52"
+          },
+          {
+            "offset": 3076,
+            "codeBytes": "7714",
+            "assembly": "ja       SHORT G_M000_IG114"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG156",
+        "offset": 4440,
+        "instructions": [
+          {
+            "offset": 4440,
+            "codeBytes": "4C8BB578FDFFFF",
+            "assembly": "mov      r14, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4447,
+            "codeBytes": "4983C678",
+            "assembly": "add      r14, 120"
+          },
+          {
+            "offset": 4451,
+            "codeBytes": "498B3E",
+            "assembly": "mov      rdi, gword ptr [r14]"
+          },
+          {
+            "offset": 4454,
+            "codeBytes": "4885FF",
+            "assembly": "test     rdi, rdi"
+          },
+          {
+            "offset": 4457,
+            "codeBytes": "742F",
+            "assembly": "je       SHORT G_M000_IG159"
+          }
+        ]
+      },
+      {
+        "samples": 2,
+        "shareOfGuestSamples": 0.17406440382941687,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG149",
+        "offset": 4210,
+        "instructions": [
+          {
+            "offset": 4210,
+            "codeBytes": "498BF8",
+            "assembly": "mov      rdi, r8"
+          },
+          {
+            "offset": 4213,
+            "codeBytes": "418BF6",
+            "assembly": "mov      esi, r14d"
+          },
+          {
+            "offset": 4216,
+            "codeBytes": "4C8B8578FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4223,
+            "codeBytes": "418B5068",
+            "assembly": "mov      edx, dword ptr [r8+0x68]"
+          },
+          {
+            "offset": 4227,
+            "codeBytes": "4C8B8578FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4234,
+            "codeBytes": "418B4858",
+            "assembly": "mov      ecx, dword ptr [r8+0x58]"
+          },
+          {
+            "offset": 4238,
+            "codeBytes": "FF158CF8BBFF",
+            "assembly": "call     [Lokad.Lython.Runtime.Text.TextLineScanning:FindLineEndByte(System.ReadOnlySpan`1[byte],int,int):int]"
+          },
+          {
+            "offset": 4244,
+            "codeBytes": "448BF8",
+            "assembly": "mov      r15d, eax"
+          },
+          {
+            "offset": 4247,
+            "codeBytes": "85DB",
+            "assembly": "test     ebx, ebx"
+          },
+          {
+            "offset": 4249,
+            "codeBytes": "0F8DB6010000",
+            "assembly": "jge      G_M000_IG164"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG20",
+        "offset": 516,
+        "instructions": [
+          {
+            "offset": 516,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 523,
+            "codeBytes": "488D5F30",
+            "assembly": "lea      rbx, bword ptr [rdi+0x30]"
+          },
+          {
+            "offset": 527,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 534,
+            "codeBytes": "8B761C",
+            "assembly": "mov      esi, dword ptr [rsi+0x1C]"
+          },
+          {
+            "offset": 537,
+            "codeBytes": "83FE34",
+            "assembly": "cmp      esi, 52"
+          },
+          {
+            "offset": 540,
+            "codeBytes": "7714",
+            "assembly": "ja       SHORT G_M000_IG22"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG233",
+        "offset": 6625,
+        "instructions": [
+          {
+            "offset": 6625,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 6632,
+            "codeBytes": "41C740503F000000",
+            "assembly": "mov      dword ptr [r8+0x50], 63"
+          },
+          {
+            "offset": 6640,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 6647,
+            "codeBytes": "4D8B4020",
+            "assembly": "mov      r8, gword ptr [r8+0x20]"
+          },
+          {
+            "offset": 6651,
+            "codeBytes": "4C8B9580FDFFFF",
+            "assembly": "mov      r10, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 6658,
+            "codeBytes": "4D8B5210",
+            "assembly": "mov      r10, gword ptr [r10+0x10]"
+          },
+          {
+            "offset": 6662,
+            "codeBytes": "4D8B80B0000000",
+            "assembly": "mov      r8, gword ptr [r8+0xB0]"
+          },
+          {
+            "offset": 6669,
+            "codeBytes": "4D8B9888000000",
+            "assembly": "mov      r11, gword ptr [r8+0x88]"
+          },
+          {
+            "offset": 6676,
+            "codeBytes": "4D8B5B20",
+            "assembly": "mov      r11, gword ptr [r11+0x20]"
+          },
+          {
+            "offset": 6680,
+            "codeBytes": "4D85DB",
+            "assembly": "test     r11, r11"
+          },
+          {
+            "offset": 6683,
+            "codeBytes": "0F856A0F0000",
+            "assembly": "jne      G_M000_IG342"
+          },
+          {
+            "offset": 6689,
+            "codeBytes": "4D8B8078010000",
+            "assembly": "mov      r8, gword ptr [r8+0x178]"
+          },
+          {
+            "offset": 6696,
+            "codeBytes": "4D85C0",
+            "assembly": "test     r8, r8"
+          },
+          {
+            "offset": 6699,
+            "codeBytes": "0F84C4F4FFFF",
+            "assembly": "je       G_M000_IG138"
+          },
+          {
+            "offset": 6705,
+            "codeBytes": "E95E0F0000",
+            "assembly": "jmp      G_M000_IG343"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG19",
+        "offset": 492,
+        "instructions": [
+          {
+            "offset": 492,
+            "codeBytes": "4889B5E0FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x120], rsi"
+          },
+          {
+            "offset": 499,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 506,
+            "codeBytes": "837E1800",
+            "assembly": "cmp      dword ptr [rsi+0x18], 0"
+          },
+          {
+            "offset": 510,
+            "codeBytes": "0F8CFE180000",
+            "assembly": "jl       G_M000_IG243"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG136",
+        "offset": 3693,
+        "instructions": [
+          {
+            "offset": 3693,
+            "codeBytes": "33F6",
+            "assembly": "xor      rsi, rsi"
+          },
+          {
+            "offset": 3695,
+            "codeBytes": "4889B550FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x1B0], rsi"
+          },
+          {
+            "offset": 3702,
+            "codeBytes": "488BB5B8FDFFFF",
+            "assembly": "mov      rsi, gword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 3709,
+            "codeBytes": "4C8B8648010000",
+            "assembly": "mov      r8, gword ptr [rsi+0x148]"
+          },
+          {
+            "offset": 3716,
+            "codeBytes": "4C8B9598FDFFFF",
+            "assembly": "mov      r10, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 3723,
+            "codeBytes": "458B5210",
+            "assembly": "mov      r10d, dword ptr [r10+0x10]"
+          },
+          {
+            "offset": 3727,
+            "codeBytes": "453B5008",
+            "assembly": "cmp      r10d, dword ptr [r8+0x08]"
+          },
+          {
+            "offset": 3731,
+            "codeBytes": "0F83D3230000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 3737,
+            "codeBytes": "4F8B44D010",
+            "assembly": "mov      r8, gword ptr [r8+8*r10+0x10]"
+          },
+          {
+            "offset": 3742,
+            "codeBytes": "4D85C0",
+            "assembly": "test     r8, r8"
+          },
+          {
+            "offset": 3745,
+            "codeBytes": "0F84AA1A0000",
+            "assembly": "je       G_M000_IG340"
+          },
+          {
+            "offset": 3751,
+            "codeBytes": "4D8BD0",
+            "assembly": "mov      r10, r8"
+          },
+          {
+            "offset": 3754,
+            "codeBytes": "49BB98B1419D9C7D0000",
+            "assembly": "mov      r11, 0x7D9C9D41B198"
+          },
+          {
+            "offset": 3764,
+            "codeBytes": "4D391A",
+            "assembly": "cmp      qword ptr [r10], r11"
+          },
+          {
+            "offset": 3767,
+            "codeBytes": "0F85C21A0000",
+            "assembly": "jne      G_M000_IG341"
+          },
+          {
+            "offset": 3773,
+            "codeBytes": "4C899580FDFFFF",
+            "assembly": "mov      gword ptr [rbp-0x280], r10"
+          },
+          {
+            "offset": 3780,
+            "codeBytes": "4C8B8580FDFFFF",
+            "assembly": "mov      r8, gword ptr [rbp-0x280]"
+          },
+          {
+            "offset": 3787,
+            "codeBytes": "4983782000",
+            "assembly": "cmp      gword ptr [r8+0x20], 0"
+          },
+          {
+            "offset": 3792,
+            "codeBytes": "7423",
+            "assembly": "je       SHORT G_M000_IG138"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG176",
+        "offset": 5040,
+        "instructions": [
+          {
+            "offset": 5040,
+            "codeBytes": "4883BD68FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x298], 0"
+          },
+          {
+            "offset": 5048,
+            "codeBytes": "7511",
+            "assembly": "jne      SHORT G_M000_IG178"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG123",
+        "offset": 3422,
+        "instructions": [
+          {
+            "offset": 3422,
+            "codeBytes": "48BEA027C79B9C7D0000",
+            "assembly": "mov      rsi, 0x7D9C9BC727A0"
+          },
+          {
+            "offset": 3432,
+            "codeBytes": "49397500",
+            "assembly": "cmp      qword ptr [r13], rsi"
+          },
+          {
+            "offset": 3436,
+            "codeBytes": "0F85081B0000",
+            "assembly": "jne      G_M000_IG333"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG152",
+        "offset": 4278,
+        "instructions": [
+          {
+            "offset": 4278,
+            "codeBytes": "488BBD78FDFFFF",
+            "assembly": "mov      rdi, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4285,
+            "codeBytes": "8B5F68",
+            "assembly": "mov      ebx, dword ptr [rdi+0x68]"
+          },
+          {
+            "offset": 4288,
+            "codeBytes": "413BDF",
+            "assembly": "cmp      ebx, r15d"
+          },
+          {
+            "offset": 4291,
+            "codeBytes": "0F8D6E020000",
+            "assembly": "jge      G_M000_IG171"
+          },
+          {
+            "offset": 4297,
+            "codeBytes": "4C8BB578FDFFFF",
+            "assembly": "mov      r14, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4304,
+            "codeBytes": "4983C678",
+            "assembly": "add      r14, 120"
+          },
+          {
+            "offset": 4308,
+            "codeBytes": "4533ED",
+            "assembly": "xor      r13, r13"
+          },
+          {
+            "offset": 4311,
+            "codeBytes": "4533E4",
+            "assembly": "xor      r12d, r12d"
+          },
+          {
+            "offset": 4314,
+            "codeBytes": "498B3E",
+            "assembly": "mov      rdi, gword ptr [r14]"
+          },
+          {
+            "offset": 4317,
+            "codeBytes": "4885FF",
+            "assembly": "test     rdi, rdi"
+          },
+          {
+            "offset": 4320,
+            "codeBytes": "743C",
+            "assembly": "je       SHORT G_M000_IG155"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG422",
+        "offset": 13111,
+        "instructions": [
+          {
+            "offset": 13111,
+            "codeBytes": "4883EC28",
+            "assembly": "sub      rsp, 40"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG146",
+        "offset": 4122,
+        "instructions": [
+          {
+            "offset": 4122,
+            "codeBytes": "4C8BBD78FDFFFF",
+            "assembly": "mov      r15, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4129,
+            "codeBytes": "4983C778",
+            "assembly": "add      r15, 120"
+          },
+          {
+            "offset": 4133,
+            "codeBytes": "4533C0",
+            "assembly": "xor      r8, r8"
+          },
+          {
+            "offset": 4136,
+            "codeBytes": "4533F6",
+            "assembly": "xor      r14d, r14d"
+          },
+          {
+            "offset": 4139,
+            "codeBytes": "4D8B17",
+            "assembly": "mov      r10, gword ptr [r15]"
+          },
+          {
+            "offset": 4142,
+            "codeBytes": "4D85D2",
+            "assembly": "test     r10, r10"
+          },
+          {
+            "offset": 4145,
+            "codeBytes": "743F",
+            "assembly": "je       SHORT G_M000_IG149"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG75",
+        "offset": 2212,
+        "instructions": [
+          {
+            "offset": 2212,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 2219,
+            "codeBytes": "4883BDB8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x248], 0"
+          },
+          {
+            "offset": 2227,
+            "codeBytes": "0F84AA000000",
+            "assembly": "je       G_M000_IG79"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG87",
+        "offset": 2617,
+        "instructions": [
+          {
+            "offset": 2617,
+            "codeBytes": "4584ED",
+            "assembly": "test     r13b, r13b"
+          },
+          {
+            "offset": 2620,
+            "codeBytes": "0F8490030000",
+            "assembly": "je       G_M000_IG130"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG118",
+        "offset": 3257,
+        "instructions": [
+          {
+            "offset": 3257,
+            "codeBytes": "8B5B08",
+            "assembly": "mov      ebx, dword ptr [rbx+0x08]"
+          },
+          {
+            "offset": 3260,
+            "codeBytes": "498B7720",
+            "assembly": "mov      rsi, gword ptr [r15+0x20]"
+          },
+          {
+            "offset": 3264,
+            "codeBytes": "49BBC0BED49B9C7D0000",
+            "assembly": "mov      r11, 0x7D9C9BD4BEC0"
+          },
+          {
+            "offset": 3274,
+            "codeBytes": "4C391E",
+            "assembly": "cmp      qword ptr [rsi], r11"
+          },
+          {
+            "offset": 3277,
+            "codeBytes": "0F856B1B0000",
+            "assembly": "jne      G_M000_IG331"
+          },
+          {
+            "offset": 3283,
+            "codeBytes": "395E08",
+            "assembly": "cmp      dword ptr [rsi+0x08], ebx"
+          },
+          {
+            "offset": 3286,
+            "codeBytes": "0F86C3120000",
+            "assembly": "jbe      G_M000_IG280"
+          },
+          {
+            "offset": 3292,
+            "codeBytes": "448BDB",
+            "assembly": "mov      r11d, ebx"
+          },
+          {
+            "offset": 3295,
+            "codeBytes": "4E8B44DE10",
+            "assembly": "mov      r8, gword ptr [rsi+8*r11+0x10]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG16",
+        "offset": 412,
+        "instructions": [
+          {
+            "offset": 412,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 419,
+            "codeBytes": "448B7608",
+            "assembly": "mov      r14d, dword ptr [rsi+0x08]"
+          },
+          {
+            "offset": 423,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 430,
+            "codeBytes": "4C8B2E",
+            "assembly": "mov      r13, gword ptr [rsi]"
+          },
+          {
+            "offset": 433,
+            "codeBytes": "33F6",
+            "assembly": "xor      rsi, rsi"
+          },
+          {
+            "offset": 435,
+            "codeBytes": "4889B5E8FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x118], rsi"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG199",
+        "offset": 5361,
+        "instructions": [
+          {
+            "offset": 5361,
+            "codeBytes": "488BB5B8FDFFFF",
+            "assembly": "mov      rsi, gword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 5368,
+            "codeBytes": "488B9598FDFFFF",
+            "assembly": "mov      rdx, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 5375,
+            "codeBytes": "488BCB",
+            "assembly": "mov      rcx, rbx"
+          },
+          {
+            "offset": 5378,
+            "codeBytes": "FF150083ACFF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CompleteLocalResult(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref,System.Object)]"
+          },
+          {
+            "offset": 5384,
+            "codeBytes": "EBBA",
+            "assembly": "jmp      SHORT G_M000_IG194"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG124",
+        "offset": 3442,
+        "instructions": [
+          {
+            "offset": 3442,
+            "codeBytes": "498BF8",
+            "assembly": "mov      rdi, r8"
+          },
+          {
+            "offset": 3445,
+            "codeBytes": "498BF6",
+            "assembly": "mov      rsi, r14"
+          },
+          {
+            "offset": 3448,
+            "codeBytes": "E8C3B70EFD",
+            "assembly": "call     CORINFO_HELP_ASSIGN_REF"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG17",
+        "offset": 442,
+        "instructions": [
+          {
+            "offset": 442,
+            "codeBytes": "4889B5E0FEFFFF",
+            "assembly": "mov      gword ptr [rbp-0x120], rsi"
+          },
+          {
+            "offset": 449,
+            "codeBytes": "453B7708",
+            "assembly": "cmp      r14d, dword ptr [r15+0x08]"
+          },
+          {
+            "offset": 453,
+            "codeBytes": "0F83A1300000",
+            "assembly": "jae      G_M000_IG407"
+          },
+          {
+            "offset": 459,
+            "codeBytes": "418BF6",
+            "assembly": "mov      esi, r14d"
+          },
+          {
+            "offset": 462,
+            "codeBytes": "4D8B7CF710",
+            "assembly": "mov      r15, gword ptr [r15+8*rsi+0x10]"
+          },
+          {
+            "offset": 467,
+            "codeBytes": "4D85FF",
+            "assembly": "test     r15, r15"
+          },
+          {
+            "offset": 470,
+            "codeBytes": "0F849A1B0000",
+            "assembly": "je       G_M000_IG266"
+          },
+          {
+            "offset": 476,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG60",
+        "offset": 1687,
+        "instructions": [
+          {
+            "offset": 1687,
+            "codeBytes": "49B8FFE7FFFFFFFF0F00",
+            "assembly": "mov      r8, 0xFFFFFFFFFE7FF"
+          },
+          {
+            "offset": 1697,
+            "codeBytes": "490FA3F0",
+            "assembly": "bt       r8, rsi"
+          },
+          {
+            "offset": 1701,
+            "codeBytes": "0F8311280000",
+            "assembly": "jae      G_M000_IG380"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG116",
+        "offset": 3222,
+        "instructions": [
+          {
+            "offset": 3222,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 3229,
+            "codeBytes": "4C8B3F",
+            "assembly": "mov      r15, gword ptr [rdi]"
+          },
+          {
+            "offset": 3232,
+            "codeBytes": "4C8B6F08",
+            "assembly": "mov      r13, gword ptr [rdi+0x08]"
+          },
+          {
+            "offset": 3236,
+            "codeBytes": "4C8B6710",
+            "assembly": "mov      r12, gword ptr [rdi+0x10]"
+          },
+          {
+            "offset": 3240,
+            "codeBytes": "8B731C",
+            "assembly": "mov      esi, dword ptr [rbx+0x1C]"
+          },
+          {
+            "offset": 3243,
+            "codeBytes": "83FE04",
+            "assembly": "cmp      esi, 4"
+          },
+          {
+            "offset": 3246,
+            "codeBytes": "7409",
+            "assembly": "je       SHORT G_M000_IG118"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG264",
+        "offset": 7475,
+        "instructions": [
+          {
+            "offset": 7475,
+            "codeBytes": "488BBDC8FDFFFF",
+            "assembly": "mov      rdi, bword ptr [rbp-0x238]"
+          },
+          {
+            "offset": 7482,
+            "codeBytes": "488BF2",
+            "assembly": "mov      rsi, rdx"
+          },
+          {
+            "offset": 7485,
+            "codeBytes": "488B95B8FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x248]"
+          },
+          {
+            "offset": 7492,
+            "codeBytes": "488B8D98FDFFFF",
+            "assembly": "mov      rcx, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 7499,
+            "codeBytes": "FF15970BACFF",
+            "assembly": "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteStackTransfer(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref)]"
+          },
+          {
+            "offset": 7505,
+            "codeBytes": "E960E3FFFF",
+            "assembly": "jmp      G_M000_IG06"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG148",
+        "offset": 4171,
+        "instructions": [
+          {
+            "offset": 4171,
+            "codeBytes": "458B5708",
+            "assembly": "mov      r10d, dword ptr [r15+0x08]"
+          },
+          {
+            "offset": 4175,
+            "codeBytes": "4181E2FFFFFF7F",
+            "assembly": "and      r10d, 0x7FFFFFFF"
+          },
+          {
+            "offset": 4182,
+            "codeBytes": "458B5F0C",
+            "assembly": "mov      r11d, dword ptr [r15+0x0C]"
+          },
+          {
+            "offset": 4186,
+            "codeBytes": "458BFB",
+            "assembly": "mov      r15d, r11d"
+          },
+          {
+            "offset": 4189,
+            "codeBytes": "4D03FA",
+            "assembly": "add      r15, r10"
+          },
+          {
+            "offset": 4192,
+            "codeBytes": "458BF6",
+            "assembly": "mov      r14d, r14d"
+          },
+          {
+            "offset": 4195,
+            "codeBytes": "4D3BFE",
+            "assembly": "cmp      r15, r14"
+          },
+          {
+            "offset": 4198,
+            "codeBytes": "0F87AF020000",
+            "assembly": "ja       G_M000_IG169"
+          },
+          {
+            "offset": 4204,
+            "codeBytes": "4D03C2",
+            "assembly": "add      r8, r10"
+          },
+          {
+            "offset": 4207,
+            "codeBytes": "458BF3",
+            "assembly": "mov      r14d, r11d"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG82",
+        "offset": 2500,
+        "instructions": [
+          {
+            "offset": 2500,
+            "codeBytes": "49B860DE419D9C7D0000",
+            "assembly": "mov      r8, 0x7D9C9D41DE60"
+          },
+          {
+            "offset": 2510,
+            "codeBytes": "4C3906",
+            "assembly": "cmp      qword ptr [rsi], r8"
+          },
+          {
+            "offset": 2513,
+            "codeBytes": "0F8532010000",
+            "assembly": "jne      G_M000_IG100"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG179",
+        "offset": 5082,
+        "instructions": [
+          {
+            "offset": 5082,
+            "codeBytes": "E8581F0000",
+            "assembly": "call     G_M000_IG422"
+          },
+          {
+            "offset": 5087,
+            "codeBytes": "90",
+            "assembly": "nop      "
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG263",
+        "offset": 7446,
+        "instructions": [
+          {
+            "offset": 7446,
+            "codeBytes": "488B95C0FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x240]"
+          },
+          {
+            "offset": 7453,
+            "codeBytes": "4883BDB8FDFFFF00",
+            "assembly": "cmp      gword ptr [rbp-0x248], 0"
+          },
+          {
+            "offset": 7461,
+            "codeBytes": "0F94C3",
+            "assembly": "sete     bl"
+          },
+          {
+            "offset": 7464,
+            "codeBytes": "0FB6DB",
+            "assembly": "movzx    rbx, bl"
+          },
+          {
+            "offset": 7467,
+            "codeBytes": "85DB",
+            "assembly": "test     ebx, ebx"
+          },
+          {
+            "offset": 7469,
+            "codeBytes": "0F85FDE5FFFF",
+            "assembly": "jne      G_M000_IG34"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG85",
+        "offset": 2583,
+        "instructions": [
+          {
+            "offset": 2583,
+            "codeBytes": "4585ED",
+            "assembly": "test     r13d, r13d"
+          },
+          {
+            "offset": 2586,
+            "codeBytes": "741D",
+            "assembly": "je       SHORT G_M000_IG87"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG22",
+        "offset": 562,
+        "instructions": [
+          {
+            "offset": 562,
+            "codeBytes": "488BB598FDFFFF",
+            "assembly": "mov      rsi, bword ptr [rbp-0x268]"
+          },
+          {
+            "offset": 569,
+            "codeBytes": "448B7614",
+            "assembly": "mov      r14d, dword ptr [rsi+0x14]"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG155",
+        "offset": 4382,
+        "instructions": [
+          {
+            "offset": 4382,
+            "codeBytes": "418BF7",
+            "assembly": "mov      esi, r15d"
+          },
+          {
+            "offset": 4385,
+            "codeBytes": "2BF3",
+            "assembly": "sub      esi, ebx"
+          },
+          {
+            "offset": 4387,
+            "codeBytes": "8BD3",
+            "assembly": "mov      edx, ebx"
+          },
+          {
+            "offset": 4389,
+            "codeBytes": "8BFE",
+            "assembly": "mov      edi, esi"
+          },
+          {
+            "offset": 4391,
+            "codeBytes": "4803D7",
+            "assembly": "add      rdx, rdi"
+          },
+          {
+            "offset": 4394,
+            "codeBytes": "418BFC",
+            "assembly": "mov      edi, r12d"
+          },
+          {
+            "offset": 4397,
+            "codeBytes": "483BD7",
+            "assembly": "cmp      rdx, rdi"
+          },
+          {
+            "offset": 4400,
+            "codeBytes": "0F87E5010000",
+            "assembly": "ja       G_M000_IG169"
+          },
+          {
+            "offset": 4406,
+            "codeBytes": "8BFB",
+            "assembly": "mov      edi, ebx"
+          },
+          {
+            "offset": 4408,
+            "codeBytes": "4903FD",
+            "assembly": "add      rdi, r13"
+          },
+          {
+            "offset": 4411,
+            "codeBytes": "488B9578FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4418,
+            "codeBytes": "488B5230",
+            "assembly": "mov      rdx, gword ptr [rdx+0x30]"
+          },
+          {
+            "offset": 4422,
+            "codeBytes": "488B9288000000",
+            "assembly": "mov      rdx, gword ptr [rdx+0x88]"
+          },
+          {
+            "offset": 4429,
+            "codeBytes": "33C9",
+            "assembly": "xor      rcx, rcx"
+          },
+          {
+            "offset": 4431,
+            "codeBytes": "FF159B2AACFF",
+            "assembly": "call     [Lokad.Lython.Runtime.Text.PyString:CopyFromUtf8(System.ReadOnlySpan`1[byte],Lokad.Lython.Runtime.MemoryGovernor,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.Text.PyString]"
+          },
+          {
+            "offset": 4437,
+            "codeBytes": "488BD8",
+            "assembly": "mov      rbx, rax"
+          }
+        ]
+      },
+      {
+        "samples": 1,
+        "shareOfGuestSamples": 0.08703220191470844,
+        "header": "; Assembly listing for method Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ExecuteInstructionPrefix(byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool,byref,byref):int (Tier1)",
+        "methodIndex": 4,
+        "methodCodeBytes": 13657,
+        "label": "G_M000_IG159",
+        "offset": 4506,
+        "instructions": [
+          {
+            "offset": 4506,
+            "codeBytes": "488B9578FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4513,
+            "codeBytes": "418BFF",
+            "assembly": "mov      edi, r15d"
+          },
+          {
+            "offset": 4516,
+            "codeBytes": "2B7A68",
+            "assembly": "sub      edi, dword ptr [rdx+0x68]"
+          },
+          {
+            "offset": 4519,
+            "codeBytes": "4863D7",
+            "assembly": "movsxd   rdx, edi"
+          },
+          {
+            "offset": 4522,
+            "codeBytes": "488BBD78FDFFFF",
+            "assembly": "mov      rdi, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4529,
+            "codeBytes": "48015748",
+            "assembly": "add      qword ptr [rdi+0x48], rdx"
+          },
+          {
+            "offset": 4533,
+            "codeBytes": "488B9578FDFFFF",
+            "assembly": "mov      rdx, gword ptr [rbp-0x288]"
+          },
+          {
+            "offset": 4540,
+            "codeBytes": "44897A68",
+            "assembly": "mov      dword ptr [rdx+0x68], r15d"
+          }
+        ]
+      }
+    ],
+    "limitation": "Exact code-size/tier and instruction/group-offset checks; group samples include useful operations. No dispatch tax or CPU gain inferred."
+  }
+]
