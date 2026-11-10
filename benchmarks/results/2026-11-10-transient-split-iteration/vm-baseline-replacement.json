@@ -1,0 +1,43 @@
+{
+  "beforeFreeBytes": 269721600,
+  "afterRecoveryFreeBytes": 264540160,
+  "requiredFreeBytes": 276516864,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "paths": [
+        "coarse-admission-b554-20261110/baseline-core.dll",
+        "coarse-admission-b554-20261110/reference/Lokad.Lython.dll"
+      ],
+      "bytes": 5660160,
+      "sha256": "ed5dbf70a423ec0c8239e382e76604b634aa757d55a775c364a0094d3d3c663e",
+      "canonical": "benchmarks/results/2026-11-10-coarse-admission/quiet/observations.tgz:baseline-core.dll",
+      "allocatedBytes": 5660672,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "paths": [
+        "coarse-admission-b554-20261110/representative.json"
+      ],
+      "bytes": 753467,
+      "sha256": "d64ade9f47ae23d99f28bd4292583d11cc9eb63f3c3a1aecc887e774c475d70a",
+      "canonical": "benchmarks/results/2026-11-10-coarse-admission/quiet/observations.tgz:representative.json",
+      "allocatedBytes": 753664,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "paths": [
+        "coarse-admission-b554-20261110/confirmation/confirmation.json"
+      ],
+      "bytes": 550264,
+      "sha256": "29886a04ab4c3f2a9d1b813c127d583e18f65fe1bd9f30add9d4ded926a96a8d",
+      "canonical": "benchmarks/results/2026-11-10-coarse-admission/quiet/observations.tgz:confirmation/confirmation.json",
+      "allocatedBytes": 552960,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "qualified039AndPriorE294Preserved": true
+}

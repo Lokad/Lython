@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Consume eligible immediate cased-split results through native iteration, removing
+  transient lists and value arrays across direct and closed-helper calls. Admit
+  all word storage before loop effects; escaping results keep ordinary list behavior.
+
 - Admit wide `enumerate` index increments before allocation and keep the retained
   next index funded. Remove duplicate late charging of the returned index while
   preserving source order, exhaustion and asynchronous iteration.

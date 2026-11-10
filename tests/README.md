@@ -87,6 +87,12 @@ checks that cancellation refunds unpublished split/CSV fragments while input sta
 funded. Its 64 MiB cases are Stress only, with a joined canceller after output
 admission. They observe concurrent cancellation without test-only checkpoints.
 
+[Immediate split iteration](Lokad.Lython.PublicApi.Tests/ImmediateCasedSplitIterationTests.cs)
+checks Unicode words across direct/default/keyword helper calls, escaping aliases,
+comprehensions, generators, dynamic targets and actual suspended host I/O. Native
+ownership cases require admission before body effects and preserve terminal refusal,
+cancellation, cleanup and shared-budget reuse.
+
 [Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
 current tokens, bound-method reuse, nested native comparisons, terminal admission
 refusal and allowance reuse. Their long-string equality and ordering

@@ -1469,6 +1469,15 @@ and final-sigma context. Final word capacities are admitted together;
 removing the unobservable cased line can change admission amounts, order and failure
 spans. First refusal remains terminal. Custom protocols keep awaited execution.
 
+Immediate iteration of an exact cased-split chain or an eligible closed helper
+uses a private native cursor in the existing executable engine. It replaces the
+transient list and value array, sharing the forward scanner and casing writer.
+All future word capacities and cursor metadata are admitted before any loop-body
+effects. Each yielded word owns its bytes; the cursor retains its immutable input
+through iteration and suspension. Unused admitted capacity remains charged until
+execution ownership ends. Assigned, exposed and escaping split results keep their
+ordinary mutable lists. Admission estimates and failure boundaries can differ.
+
 Fixed-capacity UTF-8 copies, casing and padding reserve their final capacity and
 metadata directly through the governor. Private construction refunds that balance
 on failure; successful strings retain the full backing charge. Copies into a

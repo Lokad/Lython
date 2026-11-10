@@ -68,6 +68,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
+        => TryExecuteWithoutFrame(arguments, span, false, out result);
+
+    internal bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        bool consumedByIteration, out object result)
     {
         // Closed native bodies cannot observe a function namespace or suspend.
         // Compiler capture facts, not lexical nesting alone, establish closure.
@@ -79,7 +83,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             result = PyNone.Instance;
             return false;
         }
-        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result);
+        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result, consumedByIteration);
     }
 
     private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
@@ -113,7 +117,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
             LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
                 context, receiver: receiver, callSite: call, operands: arguments);
-            return TryExecuteWithoutFrame(values, span, out result);
+            return TryExecuteWithoutFrame(values, span, call.ConsumedByIteration, out result);
         }
         finally { values.Clear(); }
     }

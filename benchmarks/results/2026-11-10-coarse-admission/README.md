@@ -77,3 +77,7 @@ diagnostics remain outside project inputs; no grant mode or quantum fixture edit
 remain in the product. The [retained source checks](retained-validation.json) pass
 1491 native storage and241 public workload/lifetime cases on each actual runtime;
 full platform delivery is tracked separately.
+
+Retained correction f6798fd7 subsequently passes the complete delivery boundary:
+Windows/Ubuntu, both actual target frameworks, original Stress and installed Release
+consumers. [Cached terminal CI proof](retained-delivery-ci.json); no repeated gate.

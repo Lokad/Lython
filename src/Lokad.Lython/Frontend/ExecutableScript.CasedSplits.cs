@@ -16,6 +16,15 @@ internal sealed partial class ExecutableCodeObject
         foreach (var block in blocks)
         {
             var instructions = block.InstructionArray;
+            // The result never enters a guest binding: the very next operation
+            // acquires it for this frame's private iteration storage.
+            for (var index = 0; index + 1 < instructions.Length; index++)
+                if (instructions[index].OpCode == ExecutableOpCode.Call
+                    && instructions[index + 1].OpCode == ExecutableOpCode.GetIter)
+                {
+                    var site = instructions[index].CallSiteIndex;
+                    sites[site] = sites[site] with { ConsumedByIteration = true };
+                }
             for (var index = 1; index + 2 < instructions.Length; index++)
                 if (instructions[index].OpCode == ExecutableOpCode.Call
                     && instructions[index + 2].OpCode == ExecutableOpCode.Call)
@@ -43,7 +52,8 @@ internal sealed partial class ExecutableCodeObject
         sites[lastIndex] = last with { CasedSplit = recipe };
         // A local between the calls is observable on the ordinary path. Only
         // native-body proof may elide that binding; never skip its instructions.
-        if (consumer == producer + 2) sites[firstIndex] = first with { CasedSplit = recipe };
+        if (consumer == producer + 2) sites[firstIndex] = first with
+        { CasedSplit = recipe, ConsumedByIteration = last.ConsumedByIteration };
         return recipe;
     }
 }

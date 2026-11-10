@@ -5,14 +5,17 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object ExecuteCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context)
+    private static object ExecuteCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context,
+        bool consumedByIteration = false)
     {
         context.CheckExecution(recipe.CasingMemberSpan);
         context.CheckExecution(recipe.CasingCallSpan);
         context.CheckExecution(recipe.SplitMemberSpan);
         context.CheckExecution(recipe.SplitCallSpan);
-        return PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
-            context.MemoryGovernor, recipe.SplitCallSpan, context);
+        return consumedByIteration
+            ? PyStringOps.PrepareCasedWhitespaceIteration(receiver, recipe.Upper, context, recipe.SplitCallSpan)
+            : PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
+                context.MemoryGovernor, recipe.SplitCallSpan, context);
     }
 
     internal sealed partial class ExecutionContext
@@ -29,7 +32,7 @@ internal sealed partial class LythonRuntime
             {
                 object result;
                 context.EnterInterpreterFrame(recipe.CasingCallSpan);
-                try { result = ExecuteCasedSplit(recipe, receiver, context); }
+                try { result = ExecuteCasedSplit(recipe, receiver, context, call.ConsumedByIteration); }
                 catch (Exception error) when (TryTranslateCallableException(error, recipe.SplitCallSpan, out var translated)) { throw translated; }
                 finally { context.LeaveInterpreterFrame(); }
                 execution.InstructionIndex += 2;

@@ -42,6 +42,56 @@ internal static partial class PyStringOps
         => SplitCore(value, -1, false, governor, span, context,
             upper ? CaseMapping.Upper : CaseMapping.Lower);
 
+    // Only compiler-private immediate iteration may consume this representation.
+    // Admit every eventual word before the first loop effect, just as eager split
+    // does. The execution owner retains unused capacity until its normal cleanup.
+    internal static CasedWhitespaceIteration PrepareCasedWhitespaceIteration(PyString value, bool upper,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.CheckExecution(span);
+        var mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
+        var state = new WhitespaceRangeState(-1, mapping);
+        long bytes = 128; // cursor metadata, including its retained source/state
+        while (TryReadWhitespaceRange(value.Utf8Span, ref state, context, span, out var range))
+            bytes = checked(bytes + PyString.EstimateApproximateBytes(range.Capacity));
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var result = new CasedWhitespaceIteration(value, upper, context, span);
+        storage.Commit(bytes);
+        return result;
+    }
+
+    internal sealed class CasedWhitespaceIteration
+    {
+        private readonly PyString _source;
+        private readonly CaseMapping _mapping;
+        private readonly LythonRuntime.ExecutionContext _context;
+        private readonly LythonSourceSpan _span;
+        private WhitespaceRangeState _state;
+
+        internal CasedWhitespaceIteration(PyString source, bool upper,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            _source = source;
+            _mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
+            _context = context;
+            _span = span;
+            _state = new WhitespaceRangeState(-1, _mapping);
+        }
+
+        internal PyIterationResult MoveNext()
+        {
+            // ForNext already checks the active execution before entering this
+            // private cursor. The shared scanner/writer check inside long work;
+            // publication retains the ordinary binding/next-opcode check.
+            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
+                return PyIterationResult.End;
+            var word = CreateSplitFragment(_source.Utf8Span, range, _mapping,
+                _context.MemoryGovernor, _span, _context);
+            return PyIterationResult.Yield(word);
+        }
+    }
+
     private static PyList SplitCore(PyString value, int maxSplit, bool reverse,
         MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,
         CaseMapping? casing = null, PyString? separator = null)
@@ -91,26 +141,7 @@ internal static partial class PyStringOps
                 context?.CheckExecution(span);
                 var range = ranges[reverse ? count - index - 1 : index];
                 if (reuseWhole) { parts[index] = value; continue; }
-                if (range.Capacity == 0) { parts[index] = PyString.Empty; continue; }
-                var fragment = PyString.CreateReservedUtf8(range.Capacity, governor);
-                var bytes = fragment.UnpublishedUtf8;
-                var written = bytes.Length;
-                if (casing is { } mapping)
-                {
-                    // Whitespace is case-stable and breaks final-sigma context.
-                    // Write final words without materializing a cased source.
-                    written = WriteCaseUtf8(source[range.Start..range.End], bytes, mapping, context, span);
-                }
-                else
-                    for (var copied = 0; copied < bytes.Length;)
-                    {
-                        context?.CheckExecution(span);
-                        var chunk = Math.Min(4096, bytes.Length - copied);
-                        source.Slice(range.Start + copied, chunk).CopyTo(bytes.Slice(copied, chunk));
-                        copied += chunk;
-                    }
-                fragment.CompleteUnpublishedUtf8(written);
-                parts[index] = fragment;
+                parts[index] = CreateSplitFragment(source, range, casing, governor, span, context);
             }
             var result = PyList.FromTransferredArray(parts, governor, span);
             context?.CheckExecution(span);
@@ -118,6 +149,31 @@ internal static partial class PyStringOps
             return result;
         }
         finally { scratch?.Dispose(); }
+    }
+
+    private static PyString CreateSplitFragment(ReadOnlySpan<byte> source,
+        (int Start, int End, int Capacity) range, CaseMapping? casing,
+        MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context)
+    {
+        if (range.Capacity == 0) return PyString.Empty;
+        var fragment = PyString.CreateReservedUtf8(range.Capacity, governor);
+        var bytes = fragment.UnpublishedUtf8;
+        var written = bytes.Length;
+        if (casing is { } mapping)
+        {
+            // Whitespace is case-stable and breaks final-sigma context.
+            written = WriteCaseUtf8(source[range.Start..range.End], bytes, mapping, context, span);
+        }
+        else
+            for (var copied = 0; copied < bytes.Length;)
+            {
+                context?.CheckExecution(span);
+                var chunk = Math.Min(4096, bytes.Length - copied);
+                source.Slice(range.Start + copied, chunk).CopyTo(bytes.Slice(copied, chunk));
+                copied += chunk;
+            }
+        fragment.CompleteUnpublishedUtf8(written);
+        return fragment;
     }
 
 
@@ -144,65 +200,87 @@ internal static partial class PyStringOps
             ref outputBytes, ref scratchBytes, ref scratch, governor, span, context);
     }
 
+    private struct WhitespaceRangeState(int maxSplit, CaseMapping? casing)
+    {
+        internal int Position;
+        internal int NextCheck;
+        internal int Remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+        internal readonly int MaximumCaseWidth = casing is null ? 0
+            : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
+    }
+
     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
         scoped ref Span<(int Start, int End, int Capacity)> ranges, ref int count, ref long outputBytes, ref long scratchBytes,
         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
     {
-        // Each chunk decodes at most 64 complete scalars; a final scalar may
-        // cross the byte boundary by at most three bytes. No shared work counter.
+        var state = new WhitespaceRangeState(maxSplit, casing);
+        while (TryReadWhitespaceRange(source, ref state, context, span, out var range))
+            AppendSplitRange(ref ranges, ref count, range.Start, range.End, ref outputBytes,
+                ref scratchBytes, ref scratch, governor, span, context, range.Capacity);
+    }
+
+    // One forward scanner serves sizing/materialization and native consumption.
+    // State carries only positions and case bounds, never a borrowed byte span.
+    private static bool TryReadWhitespaceRange(ReadOnlySpan<byte> source, ref WhitespaceRangeState state,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan? span,
+        out (int Start, int End, int Capacity) range)
+    {
         var start = -1;
-        var remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
-        var maximumCaseWidth = casing is null ? 0 : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
         long extraCapacity = 0;
-        for (var position = 0; position < source.Length;)
+        while (state.Position < source.Length)
         {
-            context?.CheckExecution(span);
-            var chunkEnd = position + Math.Min(64, source.Length - position);
-            do
+            if (state.Position >= state.NextCheck)
             {
-                int width;
-                bool whitespace;
-                if (source[position] < 0x80)
+                context?.CheckExecution(span);
+                state.NextCheck = state.Position + Math.Min(64, source.Length - state.Position);
+            }
+            var position = state.Position;
+            int width;
+            bool whitespace;
+            if (source[position] < 0x80)
+            {
+                whitespace = IsAsciiWhitespace(source[position]);
+                width = AsciiWhitespaceRunLength(source[position..state.NextCheck], whitespace);
+            }
+            else
+            {
+                Rune.DecodeFromUtf8(source[position..], out var rune, out width);
+                whitespace = IsPythonWhitespace(rune);
+                if (!whitespace && state.MaximumCaseWidth != 0)
+                    extraCapacity += state.MaximumCaseWidth - width;
+            }
+            if (whitespace)
+            {
+                if (start >= 0)
                 {
-                    whitespace = IsAsciiWhitespace(source[position]);
-                    width = AsciiWhitespaceRunLength(source[position..chunkEnd], whitespace);
+                    state.Position += width;
+                    state.Remaining--;
+                    range = (start, position, state.MaximumCaseWidth == 0 ? position - start
+                        : CheckCaseOutputCapacity(position - start + extraCapacity, span));
+                    return true;
                 }
-                else
+            }
+            else if (start < 0)
+            {
+                start = position;
+                if (state.Remaining == 0)
                 {
-                    Rune.DecodeFromUtf8(source[position..], out var rune, out width);
-                    whitespace = IsPythonWhitespace(rune);
-                    if (!whitespace && maximumCaseWidth != 0) extraCapacity += maximumCaseWidth - width;
+                    state.Position = source.Length;
+                    range = (start, source.Length, source.Length - start);
+                    return true;
                 }
-                if (whitespace)
-                {
-                    if (start >= 0)
-                    {
-                        AppendSplitRange(ref ranges, ref count, start, position, ref outputBytes,
-                            ref scratchBytes, ref scratch, governor, span, context,
-                            maximumCaseWidth == 0 ? null : CheckCaseOutputCapacity(position - start + extraCapacity, span));
-                        start = -1;
-                        extraCapacity = 0;
-                        remaining--;
-                    }
-                }
-                else if (start < 0)
-                {
-                    start = position;
-                    if (remaining == 0)
-                    {
-                        AppendSplitRange(ref ranges, ref count, start, source.Length, ref outputBytes,
-                            ref scratchBytes, ref scratch, governor, span, context);
-                        return;
-                    }
-                }
-                position += width;
-            } while (position < chunkEnd);
+            }
+            state.Position += width;
         }
         if (start >= 0)
-            AppendSplitRange(ref ranges, ref count, start, source.Length, ref outputBytes,
-                ref scratchBytes, ref scratch, governor, span, context,
-                maximumCaseWidth == 0 ? null : CheckCaseOutputCapacity(source.Length - start + extraCapacity, span));
+        {
+            range = (start, source.Length, state.MaximumCaseWidth == 0 ? source.Length - start
+                : CheckCaseOutputCapacity(source.Length - start + extraCapacity, span));
+            return true;
+        }
+        range = default;
+        return false;
     }
 
     private static void CollectWhitespaceReverse(ReadOnlySpan<byte> source, int remaining,

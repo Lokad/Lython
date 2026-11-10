@@ -20,13 +20,14 @@ internal sealed partial class LythonRuntime
     }
 
     internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
-        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result)
+        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result,
+        bool consumedByIteration = false)
     {
         result = PyNone.Instance;
         var body = code.NativeBody!;
         if (!GuardNativeBody(code, body, arguments, context)) return false;
         context.EnterFunctionCall(span);
-        try { result = ExecuteNativeBody(code, body, context, arguments, span); return true; }
+        try { result = ExecuteNativeBody(code, body, context, arguments, span, consumedByIteration); return true; }
         catch (LythonRuntimeException error)
         {
             PyFunctionBinding.AnnotateException(error, context, name, span);
@@ -42,7 +43,8 @@ internal sealed partial class LythonRuntime
         => body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _);
 
     private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
-        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan)
+        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan,
+        bool consumedByIteration = false)
     {
         context.EnterInterpreterFrame(entrySpan);
         try
@@ -52,7 +54,8 @@ internal sealed partial class LythonRuntime
             if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
             else
             {
-                result = EvaluateNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, entryException);
+                result = EvaluateNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context,
+                    entryException, consumedByIteration);
                 CheckNativeReturnExit(body.Root, body.Values, context);
             }
             context.State.SetCurrentException(entryException);
@@ -264,7 +267,8 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
-        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
+        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException,
+        bool consumedByIteration = false)
     {
         // Bound direct inputs are pure. Operations and real roots retain their
         // cancellation/refusal checks without a recursive leaf dispatch.
@@ -277,7 +281,7 @@ internal sealed partial class LythonRuntime
             var condition = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             context.State.CheckExecution(instruction.Span);
             var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
-            var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException);
+            var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException, consumedByIteration);
             CheckNativeReturnExit(selected - code.FirstTemporarySlot, values, context);
             return result;
         }
@@ -287,7 +291,8 @@ internal sealed partial class LythonRuntime
             first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             if (value.Operation == NativeReturnOperation.CasedSplit)
             {
-                try { return ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first, context); }
+                try { return ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first,
+                    context, consumedByIteration); }
                 catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
             }
             if (value.Operation is NativeReturnOperation.Binary or NativeReturnOperation.Subscript)

@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R203 private split iteration](results/2026-11-10-transient-split-iteration/README.md)
+retains the complete direct/helper producer-consumer change. Transient list/value
+arrays disappear; allocation falls about5.2% and quiet sync text elapsed1–3%,
+with supporting wider CPU. CSV is flat; report/async controls and original/refined
+desktop adversity remain explicit. Source-guided refinement removes only two added
+duplicate cursor checks. Full retained qualification is tracked separately.
+
 The [R202 coarse host-grant prototype](results/2026-11-10-coarse-admission/README.md)
 is withdrawn. Quiet synchronous workloads improve roughly2–4%, with supporting
 report/JSON CPU, flat allocation and uncertain async controls. Cached capacity,

@@ -383,6 +383,11 @@ internal sealed partial class LythonRuntime
 
         internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
         {
+            if (source is PyStringOps.CasedWhitespaceIteration)
+            {
+                PublishValue(slot, liveExtent, source);
+                return true;
+            }
             if (source is not (PyList or PyTuple)) return false;
             if (_nativeIterationPositions is null)
             {
@@ -406,6 +411,9 @@ internal sealed partial class LythonRuntime
         {
             switch (_items[slot])
             {
+                case PyStringOps.CasedWhitespaceIteration words:
+                    next = words.MoveNext();
+                    return true;
                 case PyList list:
                     var listIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
                     next = listIndex < list.Count ? PyIterationResult.Yield(list[listIndex]) : PyIterationResult.End;

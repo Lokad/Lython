@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                         scope.CheckExecution(call.CallSpan);
                         var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
                         var completed = borrow
-                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, out value)
+                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, call.ConsumedByIteration, out value)
                             : function.TryExecuteNativeCall(call, arguments, functionReceiver, scope, call.CallSpan, out value);
                         if (!completed) return false;
                     }
