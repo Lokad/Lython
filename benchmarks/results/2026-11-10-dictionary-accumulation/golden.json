@@ -1,0 +1,113 @@
+{
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "rows": [
+    {
+      "name": "native_aliases_and_iterator_versions",
+      "source": "d={'x':1000,'tail':8}; key='x'; amount=2\nprevious=d[key]; cursor=iter(d)\nfor i in range(4): d[key]=d.get(key,0)+amount\nprint(previous,d[key],next(cursor),list(d))\nalias=d[key]\nprint(alias is d[key],previous is d[key])\nkey='y'; cursor=iter(d)\nd[key]=d.get(key,0)+amount\ntry: next(cursor)\nexcept RuntimeError: print('changed')\ndel d['tail']; d.clear(); key='z'\nfor i in range(3): d[key]=d.get(key,0)+1\nprint(d)",
+      "expected": "1000 1008 x ['x', 'tail']\nTrue False\nchanged\n{'z': 3}\n",
+      "stdout": "1000 1008 x ['x', 'tail']\nTrue False\nchanged\n{'z': 3}\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "assignment_receiver_and_key_are_distinct",
+      "source": "d={'x':1}; target={'x':10}; key='x'; other='y'; amount=1\ntarget[key]=d.get(key,0)+amount\nd[other]=d.get(key,0)+3\nprint(d,target)",
+      "expected": "{'x': 1, 'y': 4} {'x': 2}\n",
+      "stdout": "{'x': 1, 'y': 4} {'x': 2}\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "default_rebinds_assignment_target",
+      "source": "old={'x':5}; d=old; other={'x':20}; key='x'\ndef default():\n globals()['d']=other\n return 0\nd[key]=d.get(key,default())+1\nprint(old,other)",
+      "expected": "{'x': 5} {'x': 6}\n",
+      "stdout": "{'x': 5} {'x': 6}\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "native_range_and_wide_values",
+      "source": "d={}; amount=1\nfor key,seed in [('a',36028797018963967),('b',36028797018963968),('c',-36028797018963968),('d',9223372036854775807)]:\n d[key]=seed\n d[key]=d.get(key,0)+amount\nprint(list(d.values()))",
+      "expected": "[36028797018963968, 36028797018963969, -36028797018963967, 9223372036854775808]\n",
+      "stdout": "[36028797018963968, 36028797018963969, -36028797018963967, 9223372036854775808]\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "native_missing_and_promotion",
+      "source": "d={'x':2**80}; key='x'; amount=2**80\nd[key]=d.get(key,0)+amount\nkey='y'\nd[key]=d.get(key,0)+1\nprint(d['x']==2**81,d['y'])",
+      "expected": "True 1\n",
+      "stdout": "True 1\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "numeric_and_receiver_fallback",
+      "source": "d={'x':1.5}; key='x'; amount=2\nd[key]=d.get(key,0)+amount\nprint(d[key])\nd={'x':True}; amount=True\nd[key]=d.get(key,0)+amount\nprint(d[key],type(d[key]).__name__)\nclass D:\n def __init__(self): self.data={}\n def get(self,key,default): return 40\n def __getitem__(self,key): return self.data[key]\n def __setitem__(self,key,value): self.data[key]=value\nd=D(); amount=2\nd[key]=d.get(key,0)+amount\nprint(d[key])",
+      "expected": "3.5\n2 int\n42\n",
+      "stdout": "3.5\n2 int\n42\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "late_binding_after_get",
+      "source": "events=[]\nif False: amount=0\nclass D:\n def get(self,key,default):\n  events.append('get')\n  globals()['amount']=4\n  return 3\n def __setitem__(self,key,value): events.append((key,value))\nd=D(); key='x'\nd[key]=d.get(key,0)+amount\nprint(events)",
+      "expected": "['get', ('x', 7)]\n",
+      "stdout": "['get', ('x', 7)]\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "protocol_key_equal_to_string",
+      "source": "events=[]\nclass Key:\n def __hash__(self): return hash('x')\n def __eq__(self,other):\n  events.append('eq')\n  return other=='x'\ncustom=Key(); d={custom:5}; key='x'; amount=2\nd[key]=d.get(key,0)+amount\nprint(list(d.values()),list(d)[0] is custom,len(events)>0)",
+      "expected": "[7] True True\n",
+      "stdout": "[7] True True\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "addition_rebinds_lhs",
+      "source": "other={}; events=[]\nclass Number:\n def __add__(self,value):\n  events.append('add')\n  globals()['d']=other\n  globals()['key']='after'\n  return 9\nd={'before':Number()}; old=d; key='before'; amount=2\nd[key]=d.get(key,0)+amount\nprint(events,other, isinstance(old['before'],Number))",
+      "expected": "['add'] {'after': 9} True\n",
+      "stdout": "['add'] {'after': 9} True\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "finally_loop_and_generator",
+      "source": "events=[]\ndef generate():\n d={}\n for key in ['a','b','a']:\n  try:\n   d[key]=d.get(key,0)+1\n   if key=='b': continue\n   yield d[key]\n  finally: events.append(key)\nprint(list(generate()),events)",
+      "expected": "[1, 2] ['a', 'b', 'a']\n",
+      "stdout": "[1, 2] ['a', 'b', 'a']\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "shadowed_comprehension_names",
+      "source": "d={}; key='outer'; amount=10\nvalues=[d.get(key,0)+amount for key in ['a','b'] for amount in [1,2]]\nprint(values,key,amount)",
+      "expected": "[1, 2, 1, 2] outer 10\n",
+      "stdout": "[1, 2, 1, 2] outer 10\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    },
+    {
+      "name": "missing_amount_retains_get_effects",
+      "source": "events=[]\nif False: amount=0\nclass D:\n def get(self,key,default):\n  events.append('get')\n  return 3\nd=D(); key='x'\ntry: d[key]=d.get(key,0)+amount\nexcept NameError: print(events)",
+      "expected": "['get']\n",
+      "stdout": "['get']\n",
+      "stderr": "",
+      "exit": 0,
+      "passed": true
+    }
+  ]
+}

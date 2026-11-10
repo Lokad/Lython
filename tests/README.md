@@ -54,6 +54,12 @@ namespaces, deletion and generators. Pending-read cancellation, retained project
 terminal wide-update refusal and sequential budget reuse are checked through the
 public API. Cooperative cancellation also covers non-allocating counter conditions.
 
+[Dictionary accumulation](Lokad.Lython.PublicApi.Tests/DictionaryAccumulationLifetimeTests.cs)
+checks retained dictionaries/old scalar aliases, genuine suspended addition and
+cancellation, terminal wide-addition refusal and allowance reuse. Aggregation-order
+cases retain independent Python goldens for receiver/key rebindings, custom
+protocols, overflow and iterator invalidation; fused counter loops observe cancellation.
+
 [String storage publication](Lokad.Lython.Tests/StringStoragePublicationTests.cs)
 checks stable UTF-8 borrows before and after indexing, cache publication during
 admission reentry, retained owner funding and refund of duplicate unpublished work.

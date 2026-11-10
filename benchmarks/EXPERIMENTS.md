@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R190 native dictionary accumulation](results/2026-11-10-dictionary-accumulation/README.md)
+removes the eligible get/add/store region's second table probe and intermediate
+transport in the existing engine. B538threejobs110.923s: text elapsed−10.9..14.9%,
+CSV−1.1..5.1%, supporting widerCPU. Report remains uncertain/possible+3%CPUdebt,
+allocationflat, compile+0.05..0.07%targetbytes. Source retained for full delivery
+qualification; no general gain or publication. Original desktopadversity remains.
+
 The [R189 current-qualified attribution](results/2026-11-10-current-call-transport-attribution/README.md)
 refreshes exactly CSV/text after R184/R185,11.888captured seconds, all identity/
 output/quiet/join/archive checks pass. Text binding/frame samples are absent;

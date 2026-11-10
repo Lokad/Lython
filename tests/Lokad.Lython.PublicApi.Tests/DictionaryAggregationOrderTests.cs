@@ -6,6 +6,42 @@ public sealed class DictionaryAggregationOrderTests
 {
     public static IEnumerable<object[]> Cases()
     {
+        yield return ["native_aliases_and_iterator_versions", """
+            d={'x':1000,'tail':8}; key='x'; amount=2
+            previous=d[key]; cursor=iter(d)
+            for i in range(4): d[key]=d.get(key,0)+amount
+            print(previous,d[key],next(cursor),list(d))
+            alias=d[key]
+            print(alias is d[key],previous is d[key])
+            key='y'; cursor=iter(d)
+            d[key]=d.get(key,0)+amount
+            try: next(cursor)
+            except RuntimeError: print('changed')
+            del d['tail']; d.clear(); key='z'
+            for i in range(3): d[key]=d.get(key,0)+1
+            print(d)
+            """, "1000 1008 x ['x', 'tail']\nTrue False\nchanged\n{'z': 3}\n"];
+        yield return ["assignment_receiver_and_key_are_distinct", """
+            d={'x':1}; target={'x':10}; key='x'; other='y'; amount=1
+            target[key]=d.get(key,0)+amount
+            d[other]=d.get(key,0)+3
+            print(d,target)
+            """, "{'x': 1, 'y': 4} {'x': 2}\n"];
+        yield return ["default_rebinds_assignment_target", """
+            old={'x':5}; d=old; other={'x':20}; key='x'
+            def default():
+             globals()['d']=other
+             return 0
+            d[key]=d.get(key,default())+1
+            print(old,other)
+            """, "{'x': 5} {'x': 6}\n"];
+        yield return ["native_range_and_wide_values", """
+            d={}; amount=1
+            for key,seed in [('a',36028797018963967),('b',36028797018963968),('c',-36028797018963968),('d',9223372036854775807)]:
+             d[key]=seed
+             d[key]=d.get(key,0)+amount
+            print(list(d.values()))
+            """, "[36028797018963968, 36028797018963969, -36028797018963967, 9223372036854775808]\n"];
         yield return ["native_missing_and_promotion", """
             d={'x':2**80}; key='x'; amount=2**80
             d[key]=d.get(key,0)+amount
@@ -99,14 +135,20 @@ public sealed class DictionaryAggregationOrderTests
     [MemberData(nameof(Cases))]
     public async Task AggregationPreservesNativeAndProtocolEvaluation(string name, string source, string expected)
     {
-        using var compiled = new LythonEngine().Compile(source);
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var compiled = new LythonEngine().Compile(source, budget);
         Assert.True(compiled.IsValid, name + ": " + string.Join("; ", compiled.Diagnostics));
-        using var sync = compiled.Run(new MockLythonHost());
-        using var asyncResult = await compiled.RunAsync(new MockLythonHost());
-        foreach (var result in new[] { sync, asyncResult })
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
         {
-            Assert.True(result.Success, name + ": " + result.Failure?.Message);
-            Assert.Equal(expected, result.StandardOutput);
+            using (var result = asynchronous ? await compiled.RunAsync(new MockLythonHost()) : compiled.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, name + ": " + result.Failure?.Message);
+                Assert.Equal(expected, result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
         }
+        compiled.Dispose();
+        Assert.Equal(0, budget.ReservedBytes);
     }
 }

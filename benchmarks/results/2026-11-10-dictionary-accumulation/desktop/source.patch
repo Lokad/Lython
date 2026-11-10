@@ -1,0 +1,407 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.DictionaryAccumulation.cs b/src/Lokad.Lython/Frontend/ExecutableScript.DictionaryAccumulation.cs
+new file mode 100644
+index 00000000..1f927694
+--- /dev/null
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.DictionaryAccumulation.cs
+@@ -0,0 +1,42 @@
++namespace Lokad.Lython.Frontend;
++
++internal sealed partial class ExecutableCodeObject
++{
++    // A native get/add/store can reuse one table probe. Original instructions
++    // remain the pre-effect path for dynamic values, growth and other methods.
++    private void PrepareDictionaryAccumulation(ExecutableCallSite[] sites)
++    {
++        for (var index = 0; index + 2 < Instructions.Length; index++)
++        {
++            ref readonly var call = ref Instructions[index];
++            ref readonly var add = ref Instructions[index + 1];
++            ref readonly var store = ref Instructions[index + 2];
++            if (call.OpCode != ExecutableOpCode.Call || call.HasLocalResult
++                || add.OpCode != ExecutableOpCode.Binary || add.BinaryOperator != BinaryOperatorSyntax.Add || add.HasLocalResult
++                || store.OpCode != ExecutableOpCode.StoreSubscript
++                || add.InputStart != call.ResultSlot || add.ResultSlot != call.ResultSlot || add.LiveExtent != call.LiveExtent
++                || store.InputStart != call.ResultSlot || store.LiveExtent != call.ResultSlot
++                || !IsUncapturedLocal(store.SecondInput) || !IsUncapturedLocal(store.ThirdInput)
++                || !(add.SecondInput < 0 || IsUncapturedLocal(add.SecondInput))) continue;
++            var site = sites[call.CallSiteIndex];
++            if (!site.HasReceiver || !site.IsPositionalOnly || site.ArgumentCount is not (1 or 2)) continue;
++            var crossesBoundary = false;
++            foreach (var region in ExceptionRegions)
++                if (InteriorBoundary(region, index)) { crossesBoundary = true; break; }
++            if (crossesBoundary) continue;
++            sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
++        }
++
++        bool IsUncapturedLocal(int slot) => slot >= 0 && slot < FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
++
++        // Do not skip across protection/handler boundaries. Routing an error
++        // with the call current must select the same handler as add or store.
++        static bool InteriorBoundary(ExecutableExceptionRegion region, int index)
++        {
++            return Inside(region.ProtectedStartIndex) || Inside(region.ProtectedEndIndex + 1)
++                || Inside(region.ExceptIndex) || Inside(region.FinallyIndex)
++                || Inside(region.SuiteStartIndex) || Inside(region.SuiteEndIndex is int end ? end + 1 : null);
++            bool Inside(int? position) => position > index && position <= index + 2;
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 95c1f048..82739d3d 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -460,6 +460,7 @@ internal sealed record ExecutableCallSite(
+     bool HasReceiver = false)
+ {
+     public ExecutableCasedSplit? CasedSplit { get; init; }
++    public bool AccumulatesDictionary { get; init; }
+     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+     public int TargetOffset => HasReceiver ? 1 : 0;
+     public int ArgumentOffset => TargetOffset + 1;
+@@ -560,6 +561,7 @@ internal sealed partial class ExecutableCodeObject
+             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
+             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
+         }).ToArray();
++        PrepareDictionaryAccumulation(callSites);
+     }
+ 
+     public string Name { get; }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs
+index 3098dec0..ee2be256 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Evaluation.Operators.cs
+@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
+     // Boxed BigInteger is an exact built-in int, so neither operand can supply
+     // user operator methods. Keep one result box and the existing ownership and
+     // overflow funnel while avoiding generalized collection/numeric dispatch.
+-    private static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
++    internal static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
+     {
+         try
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index 76f25a03..2a194afc 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -82,6 +82,8 @@ internal sealed partial class LythonRuntime
+             if (!nativeGet && unary is null) return false;
+             try
+             {
++                if (nativeGet && call.AccumulatesDictionary && TryExecuteDictionaryAccumulation(
++                    ref execution, scope, call, start, dictionary!, (PyString)argument!)) return true;
+                 var result = nativeGet
+                     ? InvokeDictionaryGet(dictionary!, argument!, call.ArgumentCount == 2
+                         ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, scope)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+new file mode 100644
+index 00000000..4c942101
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+@@ -0,0 +1,40 @@
++using System.Numerics;
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    internal sealed partial class ExecutionContext
++    {
++        private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,
++            ExecutableCallSite call, int start, PyDict dictionary, PyString key)
++        {
++            ref readonly var add = ref execution.Code.Instructions[execution.InstructionIndex + 1];
++            ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 2];
++            // Future inputs are pure locals/constants. A missing or different
++            // value leaves the original instructions to preserve read errors,
++            // source spans and all dynamic evaluation/assignment behavior.
++            if (!ReferenceEquals(execution.Locals[store.SecondInput], dictionary)
++                || !ReferenceEquals(execution.Locals[store.ThirdInput], key)) return false;
++            var source = add.SecondInput;
++            var increment = source < 0 ? execution.Code.Constants[~source] : execution.Locals[source];
++            if (increment is not BigInteger integer || integer.GetByteCount() >= 8) return false;
++            var fallback = call.ArgumentCount == 2 ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance;
++            var storeSpan = (LythonSourceSpan)execution.Code.Constants[store.TargetSpanIndex]!;
++            context.EnterInterpreterFrame(call.CallSpan);
++            try
++            {
++                if (!dictionary.TryAccumulateWithoutAdmission(key, fallback, integer, context,
++                    call.CallSpan, add.Span, storeSpan)) return false;
++            }
++            finally { context.LeaveInterpreterFrame(); }
++            // Only the plain receiver/target/key/default inputs are retired.
++            // Outer iteration and its ownership stay below this result slot.
++            execution.Stack.RetireTo(store.LiveExtent);
++            execution.InstructionIndex += 2;
++            return true;
++        }
++    }
++}
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+new file mode 100644
+index 00000000..8b8ac000
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+@@ -0,0 +1,33 @@
++using System.Numerics;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class PyDict
++{
++    // The get and assignment share this one probe only while neither operation
++    // nor the intervening addition can invoke a protocol or an admission hook.
++    // Retained old values remain ordinary immutable integers with their owner.
++    internal bool TryAccumulateWithoutAdmission(PyString key, object fallback, BigInteger increment,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
++    {
++        if (_nativeItems is null || _nativeValues is null || HasProtocolKeys
++            || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
++        var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
++        var index = FindNativeIndex(key, hash, context, querySpan);
++        if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
++        var prior = index < 0 ? fallback : ReadNativeValue(index);
++        if (prior is not BigInteger integer || integer.GetByteCount() >= 8) return false;
++
++        context.CheckExecution(addSpan);
++        // GuardIntegerAddition admits these magnitudes without a reservation;
++        // reuse its exact arithmetic rather than duplicate a scalar operator.
++        var value = LythonRuntime.AddExactIntegers(integer, increment, context.MemoryGovernor, addSpan);
++        context.CheckExecution(storeSpan);
++        var before = _nativeCount;
++        PublishNativeValue(index, key, value, hash, protocol: false, replaceExisting: true);
++        if (_nativeCount != before) _version++;
++        context.CheckExecution(storeSpan);
++        return true;
++    }
++}
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+index cddd0844..b100ad5a 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/CooperativeCancellationTests.cs
+@@ -22,6 +22,8 @@ public sealed class CooperativeCancellationTests
+         { true, "value = 1\nwhile value:\n    value += 1" },
+         { false, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
+         { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
++        { false, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
++        { true, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
+     };
+ 
+     [Theory]
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/DictionaryAccumulationLifetimeTests.cs b/tests/Lokad.Lython.PublicApi.Tests/DictionaryAccumulationLifetimeTests.cs
+new file mode 100644
+index 00000000..28bb09f3
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/DictionaryAccumulationLifetimeTests.cs
+@@ -0,0 +1,135 @@
++using System.Collections;
++using System.Numerics;
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class DictionaryAccumulationLifetimeTests
++{
++    [Fact]
++    public async Task ReturnedDictionaryAndOldCountRemainFundedUntilDisposal()
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            counts={'x':1000}; key='x'; previous=counts[key]
++            for i in range(8): counts[key]=counts.get(key,0)+2
++            return [counts,previous,counts[key] is counts.get(key)]
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                var values = Assert.IsType<List<object?>>(result.ReturnValue);
++                var counts = Assert.IsAssignableFrom<IDictionary>(values[0]);
++                Assert.Equal(new BigInteger(1016), Assert.IsType<BigInteger>(counts["x"]));
++                Assert.Equal(new BigInteger(1000), Assert.IsType<BigInteger>(values[1]));
++                Assert.True(Assert.IsType<bool>(values[2]));
++                Assert.True(budget.ReservedBytes > baseline);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task SuspendingAdditionCancelsAndRerunsWithTheSameAllowance(bool asynchronousRerun)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            class Number:
++                def __add__(self,increment):
++                    with open('/gate.txt') as source:
++                        return int(source.read())+increment
++            counts={'x':Number()}; key='x'
++            counts[key]=counts.get(key,0)+2
++            return counts
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var host = new DelayedLythonHost();
++        host.SeedFile("/gate.txt", "5");
++        using var cancellation = new CancellationTokenSource();
++        var entered = host.PauseReadUntilCancellation("/gate.txt");
++        var pending = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
++        LythonExecutionResult? result = null;
++        try
++        {
++            await entered.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(pending.IsCompleted);
++            Assert.True(budget.ReservedBytes > baseline);
++            cancellation.Cancel();
++            result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            Assert.False(result.Success);
++            Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
++        }
++        finally
++        {
++            cancellation.Cancel();
++            result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
++            result.Dispose();
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        var immediate = new MockLythonHost();
++        immediate.SeedFile("/gate.txt", "5");
++        using (var completed = asynchronousRerun ? await script.RunAsync(immediate) : script.Run(immediate))
++        {
++            Assert.True(completed.Success, completed.Failure?.Message);
++            var counts = Assert.IsAssignableFrom<IDictionary>(completed.ReturnValue);
++            Assert.Equal(new BigInteger(7), Assert.IsType<BigInteger>(counts["x"]));
++            Assert.True(budget.ReservedBytes > baseline);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData(false, false)]
++    [InlineData(false, true)]
++    [InlineData(true, false)]
++    [InlineData(true, true)]
++    public async Task RefusedWideAdditionCannotPublishOrBeSuppressed(bool asynchronous, bool finallyReturn)
++    {
++        var tail = finallyReturn ? "finally:\n return 0" : "except MemoryError:\n print('caught')";
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var script = new LythonEngine().Compile(
++            "counts={'x':1 << 524288}\nkey='x'\namount=1\nprint('ready')\ntry:\n counts[key]=counts.get(key,0)+amount\n"
++            + tail + "\nprint('after')\nreturn counts[key]", budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        ILythonMemoryReservation? padding = null;
++        var host = new MockLythonHost
++        {
++            OnStandardOutputWrite = () =>
++            {
++                if (padding is null) Assert.True(budget.TryReserve(1024 * 1024 - budget.ReservedBytes - 4096, out padding));
++            }
++        };
++        try
++        {
++            using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
++            Assert.False(result.Success);
++            Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
++            Assert.True(result.FailureAttribution?.Requested >= 65536);
++            Assert.Equal("ready\n", result.StandardOutput);
++            Assert.NotNull(padding);
++        }
++        finally { padding?.Dispose(); }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
++        {
++            Assert.True(result.Success, result.Failure?.Message);
++            Assert.Equal(finallyReturn ? BigInteger.Zero : (BigInteger.One << 524288) + 1, Assert.IsType<BigInteger>(result.ReturnValue));
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++        script.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++}
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/DictionaryAggregationOrderTests.cs b/tests/Lokad.Lython.PublicApi.Tests/DictionaryAggregationOrderTests.cs
+index b0d092c7..739f4fa8 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/DictionaryAggregationOrderTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/DictionaryAggregationOrderTests.cs
+@@ -6,6 +6,42 @@ public sealed class DictionaryAggregationOrderTests
+ {
+     public static IEnumerable<object[]> Cases()
+     {
++        yield return ["native_aliases_and_iterator_versions", """
++            d={'x':1000,'tail':8}; key='x'; amount=2
++            previous=d[key]; cursor=iter(d)
++            for i in range(4): d[key]=d.get(key,0)+amount
++            print(previous,d[key],next(cursor),list(d))
++            alias=d[key]
++            print(alias is d[key],previous is d[key])
++            key='y'; cursor=iter(d)
++            d[key]=d.get(key,0)+amount
++            try: next(cursor)
++            except RuntimeError: print('changed')
++            del d['tail']; d.clear(); key='z'
++            for i in range(3): d[key]=d.get(key,0)+1
++            print(d)
++            """, "1000 1008 x ['x', 'tail']\nTrue False\nchanged\n{'z': 3}\n"];
++        yield return ["assignment_receiver_and_key_are_distinct", """
++            d={'x':1}; target={'x':10}; key='x'; other='y'; amount=1
++            target[key]=d.get(key,0)+amount
++            d[other]=d.get(key,0)+3
++            print(d,target)
++            """, "{'x': 1, 'y': 4} {'x': 2}\n"];
++        yield return ["default_rebinds_assignment_target", """
++            old={'x':5}; d=old; other={'x':20}; key='x'
++            def default():
++             globals()['d']=other
++             return 0
++            d[key]=d.get(key,default())+1
++            print(old,other)
++            """, "{'x': 5} {'x': 6}\n"];
++        yield return ["native_range_and_wide_values", """
++            d={}; amount=1
++            for key,seed in [('a',36028797018963967),('b',36028797018963968),('c',-36028797018963968),('d',9223372036854775807)]:
++             d[key]=seed
++             d[key]=d.get(key,0)+amount
++            print(list(d.values()))
++            """, "[36028797018963968, 36028797018963969, -36028797018963967, 9223372036854775808]\n"];
+         yield return ["native_missing_and_promotion", """
+             d={'x':2**80}; key='x'; amount=2**80
+             d[key]=d.get(key,0)+amount
+@@ -99,14 +135,20 @@ public sealed class DictionaryAggregationOrderTests
+     [MemberData(nameof(Cases))]
+     public async Task AggregationPreservesNativeAndProtocolEvaluation(string name, string source, string expected)
+     {
+-        using var compiled = new LythonEngine().Compile(source);
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var compiled = new LythonEngine().Compile(source, budget);
+         Assert.True(compiled.IsValid, name + ": " + string.Join("; ", compiled.Diagnostics));
+-        using var sync = compiled.Run(new MockLythonHost());
+-        using var asyncResult = await compiled.RunAsync(new MockLythonHost());
+-        foreach (var result in new[] { sync, asyncResult })
++        var baseline = budget.ReservedBytes;
++        foreach (var asynchronous in new[] { false, true })
+         {
+-            Assert.True(result.Success, name + ": " + result.Failure?.Message);
+-            Assert.Equal(expected, result.StandardOutput);
++            using (var result = asynchronous ? await compiled.RunAsync(new MockLythonHost()) : compiled.Run(new MockLythonHost()))
++            {
++                Assert.True(result.Success, name + ": " + result.Failure?.Message);
++                Assert.Equal(expected, result.StandardOutput);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
+         }
++        compiled.Dispose();
++        Assert.Equal(0, budget.ReservedBytes);
+     }
+ }

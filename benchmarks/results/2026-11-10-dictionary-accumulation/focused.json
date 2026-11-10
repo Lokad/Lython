@@ -1,0 +1,134 @@
+{
+  "checks": [
+    {
+      "file": "tree/tests/Lokad.Lython.PublicApi.Tests/TestResults/r190-focused-net10.0.trx",
+      "counters": {
+        "total": "530",
+        "executed": "530",
+        "passed": "530",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "file": "tree/tests/Lokad.Lython.PublicApi.Tests/TestResults/r190-focused-net11.0.trx",
+      "counters": {
+        "total": "530",
+        "executed": "530",
+        "passed": "530",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "file": "tree/tests/Lokad.Lython.PublicApi.Tests/TestResults/r190-goldens.trx",
+      "counters": {
+        "total": "34",
+        "executed": "34",
+        "passed": "34",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "file": "tree/tests/Lokad.Lython.PublicApi.Tests/TestResults/r190-initial.trx",
+      "counters": {
+        "total": "512",
+        "executed": "512",
+        "passed": "512",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "file": "tree/tests/Lokad.Lython.Tests/TestResults/r190-internal-net10.0.trx",
+      "counters": {
+        "total": "146",
+        "executed": "146",
+        "passed": "146",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "file": "tree/tests/Lokad.Lython.Tests/TestResults/r190-internal-net11.0.trx",
+      "counters": {
+        "total": "146",
+        "executed": "146",
+        "passed": "146",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "publicFocusedPerActualTarget": 530,
+  "internalPerActualTarget": 146,
+  "pythonGoldens": 12,
+  "diagnosticCaptureFailure": "Original inspection read guarded ThirdInput on Import; corrected before runtime edits. Logs retained, not a semantic failure."
+}

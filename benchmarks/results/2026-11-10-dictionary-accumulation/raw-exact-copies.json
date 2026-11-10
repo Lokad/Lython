@@ -1,0 +1,501 @@
+{
+  "requiredFreeBytes": 271728640,
+  "candidates": [
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/observations.tgz",
+      "size": 2431480,
+      "sha256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "tracked": true,
+      "kind": "archive"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/combined-cpython-b534-20261110/observations.tgz",
+      "size": 2042157,
+      "sha256": "98d6c083934b7309472f8de5c5f39b767ca55de33fd36b5dfa967e86b4f619b4",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-combined-cpython-checkpoint\\observations.tgz",
+      "tracked": true,
+      "kind": "archive"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/csv-warm/perf.map",
+      "size": 1519326,
+      "sha256": "c2fbffb36d7ba174aa15e5f53b5e616d87a1cccae86c4469ce837e6e465b24c6",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/csv-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/csv-runtime-b512-20261109/profiles/csv-warm/perf.map",
+      "size": 1505214,
+      "sha256": "305aade64a1bbff9f6b8da0918bbc2d9f7e8e48e717aabc02339ae55e799fc33",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-csv-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "31e01f745049730992d6d73a3f5694dfddfef706963d6d91c987a82f4edd475a",
+      "archiveMember": "profiles/csv-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/helper-warm/perf.map",
+      "size": 1497216,
+      "sha256": "add77f8850af1186a16a6efb0e7561c74601ecd3426171d85ed20f80be5f86d2",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/helper-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/json-runtime-b505-20261109/profiles/json-warm/perf.map",
+      "size": 1462620,
+      "sha256": "fe237fb8cbd6a335d64a79c28bdd877f83b12cb16b65e3c09ff0d59d66d3b24e",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-json-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "59c4a92971759a700cdcbd26abe673ddd90579747045b222876879a7730e4004",
+      "archiveMember": "profiles/json-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/profiles/config-warm/perf.map",
+      "size": 1401990,
+      "sha256": "7b853b1251bcc2153283e1c5c981f2fafcaa909ce5e60970bb08d4bd32df7fdb",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-config-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "archiveMember": "profiles/config-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/profiles/text-warm/perf.map",
+      "size": 1387470,
+      "sha256": "cf6828e6c99d2c56ca8a55ea56cc1f810ed434b3e8fbe2b280bfcb515c1e02e5",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "archiveSHA256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "archiveMember": "profiles/text-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/text-warm/perf.map",
+      "size": 1385208,
+      "sha256": "26590a4070e9eb216a7c6bf249f9028a347d2698a4cd70913050368eb2c02102",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/text-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/inline-warm/perf.map",
+      "size": 1383700,
+      "sha256": "f57b95054111bae282b8376fe82d45313bbfb104d3f0d712c51b9a4b07addbbc",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/inline-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-runtime-b499-20261109/profiles/text-warm/perf.map",
+      "size": 1308044,
+      "sha256": "8232824654415e8a4cda35f3f485291d012df5479ff517eae0ad3cd3e7c30c30",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-text-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "7d22390281fd742fcad202c547fea5c78aa6aebe64d516a6a95fd05216051e3f",
+      "archiveMember": "profiles/text-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/search-runtime-b501-20261109/profiles/search-warm/perf.map",
+      "size": 1215759,
+      "sha256": "2410e9258fcdffdcfc7526030430678e17b46046b54ac804dc2e0c30b9db38f7",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-search-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "e1a26dde8470764396be8be7d2f44d072e929f3581cd18b1a3831cca4a0665b7",
+      "archiveMember": "profiles/search-warm/perf.map",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/profiles/config-warm/perf-stacks.txt",
+      "size": 1105408,
+      "sha256": "179ad9c1f06fd411e995a3bd05279eff99dec977f23ea981130d581e3b88fdf5",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-config-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "archiveMember": "profiles/config-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/native-integer-b535-20261110/source-checks.tar.xz",
+      "size": 1022044,
+      "sha256": "46305414e60a7ccb802eaeb3e3d0b6a744edf3a84f25c73b4e6ff1e08b14d252",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-integer-local-storage\\original\\observations.tgz",
+      "archiveSHA256": "f0fc91850e5f856fb41787461b959d0cfa2ef02477642fbe706ee3a8bbd8b6b2",
+      "archiveMember": "source-checks.tar.xz",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/native-integer-b536-20261110/source-checks.tar.xz",
+      "size": 934860,
+      "sha256": "877d721e64d84ff08136aa2d23b76007c15c5fc054aaff14d28032f07b1fc728",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-integer-local-storage\\refined\\observations.tgz",
+      "archiveSHA256": "ad6bd2b6ad6b2eed347d8d3ad7ecb020e313accae797bd71eabc09e225aef396",
+      "archiveMember": "source-checks.tar.xz",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/search-runtime-b501-20261109/profiles/search-warm/perf-stacks.txt",
+      "size": 907956,
+      "sha256": "ca3423588d17dc6148a6b1d37e5390b230ce82898bbd764047927ea9488d5d5e",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-search-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "e1a26dde8470764396be8be7d2f44d072e929f3581cd18b1a3831cca4a0665b7",
+      "archiveMember": "profiles/search-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-runtime-b499-20261109/profiles/text-warm/perf-stacks.txt",
+      "size": 695927,
+      "sha256": "854fda7e0cd5cba4e226395528a35cb26d9eea2f293e20b5092c35c0ba2d35af",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-text-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "7d22390281fd742fcad202c547fea5c78aa6aebe64d516a6a95fd05216051e3f",
+      "archiveMember": "profiles/text-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/json-runtime-b505-20261109/profiles/json-warm/perf-stacks.txt",
+      "size": 674409,
+      "sha256": "3c26146ce5a1cff5f5ae8b1b55e4acba94ed88ee3c1e8646b997febf10652a81",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-json-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "59c4a92971759a700cdcbd26abe673ddd90579747045b222876879a7730e4004",
+      "archiveMember": "profiles/json-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/helper-warm/perf-stacks.txt",
+      "size": 671082,
+      "sha256": "38ac60f90e8a8a6c2dab973d285eed82e952d35a77b5a3d68669b1892b5671ba",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/helper-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/csv-runtime-b512-20261109/profiles/csv-warm/perf-stacks.txt",
+      "size": 667768,
+      "sha256": "c2949e349a8a5cfaac765542067ac1622a48de999c661ae31ebc7e67c1174613",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-csv-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "31e01f745049730992d6d73a3f5694dfddfef706963d6d91c987a82f4edd475a",
+      "archiveMember": "profiles/csv-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/profiles/text-warm/perf-stacks.txt",
+      "size": 665481,
+      "sha256": "25f17488e62c7c311fc6d1b1364751c61754800620c1c82fe4c6367ce7c979ae",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "archiveSHA256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "archiveMember": "profiles/text-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/inline-warm/perf-stacks.txt",
+      "size": 649426,
+      "sha256": "37dd17a4415c1a3ef1adafda9f8d9fda4d012d31fe3a7cb20bb61165e3806734",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/inline-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/csv-warm/perf-stacks.txt",
+      "size": 648586,
+      "sha256": "662955cbf1173f1bc4217fddb7dc170a4e7ab79fb37b755870b79cc76b67db75",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/csv-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/text-warm/perf-stacks.txt",
+      "size": 631161,
+      "sha256": "c4a85011b8b891b08c8865b9dfd648b22f216caee137f95848570c14116eee3b",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/text-warm/perf-stacks.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/inline-warm/call-jit.txt",
+      "size": 501854,
+      "sha256": "33698f025a7cb4a3cd28d9aeb5f4398d62de27729778b0eea83af108d6a45b20",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/inline-warm/call-jit.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/profiles/config-warm/perf.data",
+      "size": 424808,
+      "sha256": "91054d96de72e145ab1038c785d678ab3bacd5dc16330a287bbea14ec9ad13c4",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-config-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "archiveMember": "profiles/config-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/helper-warm/call-jit.txt",
+      "size": 404703,
+      "sha256": "e960fe267e61784785eaf4e3a833782239b8e616f9b7533cc5e892a13415f133",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/helper-warm/call-jit.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/search-runtime-b501-20261109/profiles/search-warm/perf.data",
+      "size": 378212,
+      "sha256": "765cebbe3b9ec93309adf0d08e05e0cfe8e72a77e7f5dd69daafa0f577f751ef",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-search-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "e1a26dde8470764396be8be7d2f44d072e929f3581cd18b1a3831cca4a0665b7",
+      "archiveMember": "profiles/search-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-runtime-b499-20261109/profiles/text-warm/perf.data",
+      "size": 321420,
+      "sha256": "d6cd0fd91b7205de4d52a467f5e23a552e8fedfae1345454d20f2c82ba6a1372",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-text-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "7d22390281fd742fcad202c547fea5c78aa6aebe64d516a6a95fd05216051e3f",
+      "archiveMember": "profiles/text-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/helper-warm/perf.data",
+      "size": 315112,
+      "sha256": "c15232c934f8cb82202b6c287563608d71ac2e073a5a7a84c6a9e9fe45e216dc",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/helper-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/json-runtime-b505-20261109/profiles/json-warm/perf.data",
+      "size": 312040,
+      "sha256": "1b0d8a36ae23f662cc9546a8a9c8b1bb99dedd4d464ec6be28f734d493ab7e01",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-json-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "59c4a92971759a700cdcbd26abe673ddd90579747045b222876879a7730e4004",
+      "archiveMember": "profiles/json-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/profiles/text-warm/perf.data",
+      "size": 311156,
+      "sha256": "b85390b1a8bf989d9e4025cdd6167166353ffc8579adc11678a28cfb4396ddc2",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "archiveSHA256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "archiveMember": "profiles/text-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/inline-warm/perf.data",
+      "size": 311008,
+      "sha256": "be4b849a047ba9c4433f3c38acfc317b1e1f98d8d4f6212792cd0e8c62a9e5db",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/inline-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/csv-runtime-b512-20261109/profiles/csv-warm/perf.data",
+      "size": 310876,
+      "sha256": "eae3bff5fbd45272edd01ac49f41c1296c39b79bfd2488e2b7f65387c1df786e",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-csv-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "31e01f745049730992d6d73a3f5694dfddfef706963d6d91c987a82f4edd475a",
+      "archiveMember": "profiles/csv-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/csv-warm/perf.data",
+      "size": 303776,
+      "sha256": "5d82de7d65734033a6011d44818608f235e875330de08e49267db8b973655426",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/csv-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/text-warm/perf.data",
+      "size": 301204,
+      "sha256": "5595fb3bf4714bc1c3aa5f57f59965b0bc9255a8373ce867117a60138ad2aa40",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/text-warm/perf.data",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/profiles/config-warm/record.json",
+      "size": 159982,
+      "sha256": "5cf80f2a527e64ae1f00077ca5bbf0a2947ac2edfa38a3f505f5031eeec5e572",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-config-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "archiveMember": "profiles/config-warm/record.json",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/search-runtime-b501-20261109/profiles/search-warm/record.json",
+      "size": 71247,
+      "sha256": "451acf9793e0150de2cbe7ca6665b255f7151ebc257d4e8821c1d83eb3cae8c0",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-search-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "e1a26dde8470764396be8be7d2f44d072e929f3581cd18b1a3831cca4a0665b7",
+      "archiveMember": "profiles/search-warm/record.json",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/search-runtime-b501-20261109/profiles/search-warm/perf-leaves.txt",
+      "size": 57627,
+      "sha256": "886a97f2dc862c6bb6a651dc48c2f7c7236207461ce57b3696bc82482fab0aa2",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-search-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "e1a26dde8470764396be8be7d2f44d072e929f3581cd18b1a3831cca4a0665b7",
+      "archiveMember": "profiles/search-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-runtime-b499-20261109/profiles/text-warm/perf-leaves.txt",
+      "size": 56892,
+      "sha256": "0d0910c4c4c7c3e06ed7850a49b6c78edbd136471f1c9a4ea74fb1aa9d5afea5",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-text-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "7d22390281fd742fcad202c547fea5c78aa6aebe64d516a6a95fd05216051e3f",
+      "archiveMember": "profiles/text-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/config-runtime-b510-20261109/profiles/config-warm/perf-leaves.txt",
+      "size": 56825,
+      "sha256": "f6a5b49ada4ef653f9c547318886ec3073b03141f6b6a7a02d77e11042360b67",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-config-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "05493a925cd51e4013bdd41b1ed42baf3c4b3213db70964f4ecdc62949c08b1b",
+      "archiveMember": "profiles/config-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/helper-warm/perf-leaves.txt",
+      "size": 55909,
+      "sha256": "f8ac94d61063f24c7936ee0dd80ca176d7fa2db9ceec671fb104b07ec5af5fc5",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/helper-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/helper-cost-b482-20261108/profiles/inline-warm/perf-leaves.txt",
+      "size": 55587,
+      "sha256": "593f32ca15cc8bec5f7f55e613420335a1f9dc2939b5919694f33a4eeb5d1c7f",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-08-helper-call-attribution\\observations.tgz",
+      "archiveSHA256": "fc7169a993855cde6ff724beac44ceaf4a5813e8d1b0966d19c7a7bd3e374bbe",
+      "archiveMember": "profiles/inline-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/csv-runtime-b512-20261109/profiles/csv-warm/perf-leaves.txt",
+      "size": 55471,
+      "sha256": "d79668d587af2f6545ac2bd8672aaaa05ceb464ea75dc484f897f73a4166e88d",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-csv-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "31e01f745049730992d6d73a3f5694dfddfef706963d6d91c987a82f4edd475a",
+      "archiveMember": "profiles/csv-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/json-runtime-b505-20261109/profiles/json-warm/perf-leaves.txt",
+      "size": 55440,
+      "sha256": "57a366ecdc281e81e2b8d76f68070de074e2c3c9ccf8317a281e3f1018ff01ca",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-09-json-runtime-attribution\\observations.tgz",
+      "archiveSHA256": "59c4a92971759a700cdcbd26abe673ddd90579747045b222876879a7730e4004",
+      "archiveMember": "profiles/json-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/profiles/text-warm/perf-leaves.txt",
+      "size": 54930,
+      "sha256": "663880848fa17e85d7b321154a5750fde88b6a2f57d1f6d5f00e695c842b09fa",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "archiveSHA256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "archiveMember": "profiles/text-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/csv-warm/perf-leaves.txt",
+      "size": 54456,
+      "sha256": "f20e9edf10457f4ee4f5412e3193947e0f9769c25e4918a5d1a0177124937050",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/csv-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/text-warm/perf-leaves.txt",
+      "size": 54218,
+      "sha256": "ce96fc97cac407a6c7339d4b3a24c691a5b5e7a356b72a5cc2b3f2bc3921d134",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/text-warm/perf-leaves.txt",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/current-work-b537-20261110/profiles/text-warm/record.json",
+      "size": 41715,
+      "sha256": "cb2ba1e323b869369a9733901bafd65f2a643f78941125130c59888429fc5696",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-current-call-transport-attribution\\observations.tgz",
+      "archiveSHA256": "a8a5d2a950e23098575485ca2d9c66ff698e52f652e37f7ee21baf30659cfabc",
+      "archiveMember": "profiles/text-warm/record.json",
+      "tracked": true,
+      "kind": "raw"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/text-proof-b527-20261110/profiles/text-warm/record.json",
+      "size": 32833,
+      "sha256": "8e2238ad946922a7f4dfb07c6d218328f556ce8fdc0403feb8d90922fb9830ff",
+      "preservedLocal": "D:\\code\\Lython\\benchmarks\\results\\2026-11-10-shared-prefix-assessment\\profile\\observations.tgz",
+      "archiveSHA256": "7be3ed6fd4081d904535635b8433afbd985a7fe8c4be489b34f84d8e59fe7b81",
+      "archiveMember": "profiles/text-warm/record.json",
+      "tracked": true,
+      "kind": "raw"
+    }
+  ]
+}

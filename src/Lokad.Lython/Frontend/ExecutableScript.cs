@@ -460,6 +460,7 @@ internal sealed record ExecutableCallSite(
     bool HasReceiver = false)
 {
     public ExecutableCasedSplit? CasedSplit { get; init; }
+    public bool AccumulatesDictionary { get; init; }
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
@@ -560,6 +561,7 @@ internal sealed partial class ExecutableCodeObject
             SuiteStartIndex = region.SuiteStartIndex is int start ? offsets[start] : null,
             SuiteEndIndex = region.SuiteEndIndex is int end ? offsets[end + 1] - 1 : null
         }).ToArray();
+        PrepareDictionaryAccumulation(callSites);
     }
 
     public string Name { get; }

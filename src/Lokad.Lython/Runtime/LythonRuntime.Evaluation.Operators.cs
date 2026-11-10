@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
     // Boxed BigInteger is an exact built-in int, so neither operand can supply
     // user operator methods. Keep one result box and the existing ownership and
     // overflow funnel while avoiding generalized collection/numeric dispatch.
-    private static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
+    internal static object AddExactIntegers(BigInteger left, BigInteger right, MemoryGovernor? governor, LythonSourceSpan span)
     {
         try
         {

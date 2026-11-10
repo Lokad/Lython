@@ -82,6 +82,8 @@ internal sealed partial class LythonRuntime
             if (!nativeGet && unary is null) return false;
             try
             {
+                if (nativeGet && call.AccumulatesDictionary && TryExecuteDictionaryAccumulation(
+                    ref execution, scope, call, start, dictionary!, (PyString)argument!)) return true;
                 var result = nativeGet
                     ? InvokeDictionaryGet(dictionary!, argument!, call.ArgumentCount == 2
                         ? execution.Stack[start + call.ArgumentOffset + 1] : PyNone.Instance, call.CallSpan, scope)

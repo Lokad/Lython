@@ -22,6 +22,8 @@ public sealed class CooperativeCancellationTests
         { true, "value = 1\nwhile value:\n    value += 1" },
         { false, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
         { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
+        { false, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
+        { true, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
     };
 
     [Theory]

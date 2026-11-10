@@ -1527,7 +1527,10 @@ Dictionary tables keep insertion order, including deletion followed by reinserti
 One managed array holds keys and hash-bucket heads; dictionaries use a separate
 values array, which key-only sets omit. Namespace views keep their live backing.
 Native updates and admitted insertion share one
-hash/probe. Private bucket mixing leaves Python-visible hashes unchanged.
+hash/probe. Eligible `d[k] = d.get(k, 0) + increment` updates also combine the read,
+addition and assignment. The executable engine checks actual receivers, keys,
+values and funded capacity; other cases retain ordinary evaluation and admission.
+Private bucket mixing leaves Python-visible hashes unchanged.
 Table capacity includes conservative key/value headroom. Removal and clear retain
 that funding and reuse prepaid slots; allowance returns when the owner ends.
 Instance attributes use the same capacity-level policy. Growth admits replacement
