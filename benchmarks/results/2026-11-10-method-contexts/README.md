@@ -68,3 +68,14 @@ headroom refusals, original logs and canonical-copy recovery survive. A bounded
 idle operation retired five verified committed duplicate compressed archives,
 preserving every image and sole evidence. All successful users joined, RAM removed,
 archive verified under lease/local SHA verified; terminal owners are cached.
+
+
+## Delivery qualification
+
+Committed runtime `66ebdb4b6528c62eeaebe7707f7ce522470dd99e` is fully qualified by
+[42822411897](https://github.com/Lokad/Lython/actions/runs/42822411897): Windows and
+Ubuntu, actual .NET 11/.NET 10 ordinary tests, original Stress and installed Release
+package consumers all pass. [Cached terminal receipt](delivery-ci.json). This does
+not change measured precommit images, control uncertainty or the retained desktop
+CSV debt. Publication remains postponed; later isolated prototypes are not qualified
+by this run.

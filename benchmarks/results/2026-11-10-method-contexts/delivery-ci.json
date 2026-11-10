@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "runId": 42822411897,
+  "url": "https://github.com/Lokad/Lython/actions/runs/42822411897",
+  "headSHA": "66ebdb4b6528c62eeaebe7707f7ce522470dd99e",
+  "event": "workflow_dispatch",
+  "stress": true,
+  "requestedUTC": "2026-11-10T13:13:56.876848+00:00",
+  "doNotObserveBeforeUTC": "2026-11-10T13:40:58.164821+00:00",
+  "required": [
+    "Windows/Ubuntu",
+    "actual.NET11/10 ordinary",
+    "originalStress bothframeworks",
+    "installedReleasepackageconsumers"
+  ],
+  "terminal": true,
+  "conclusion": "success",
+  "note": "Authoritative run URL supplied by successful gh dispatch; initial run-list discovery lagged. No duplicate dispatch/query.",
+  "lastObservedUTC": "2026-11-10T13:35:58.164821+00:00",
+  "allRequiredGatesPassed": true
+}
