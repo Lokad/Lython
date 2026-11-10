@@ -7,6 +7,9 @@ public sealed class FunctionDefaultMetadataTests
 {
     public static TheoryData<string, string> Programs => new()
     {
+        { "def add(a=1,*,b=2): return a+b\nprint(add(),add(3,b=4),add(b=8))\nadd.__defaults__=(10,)\nadd.__kwdefaults__={'b':20}\nprint(add(),add(b=5))", "3 7 9\n30 15\n" },
+        { "saved=[]\ndef pick(*,value=saved): return value\nprint(pick() is saved,pick(value=saved) is saved)\npick.__kwdefaults__={'value':['changed']}\npicked=pick()\nprint(picked is pick.__kwdefaults__['value'],saved)", "True True\nTrue []\n" },
+        { "def f(a=0,b=1,c=2,d=3,e=4,f=5,g=6,h=7,i=8,j=9,k=10,l=11,m=12,n=13,o=14,p=15,q=16): return q\nprint(f(),f(q=23),f(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16))", "16 23 16\n" },
         { "def f(a=1,*,b=2): return a,b\nprint(f.__defaults__,f.__kwdefaults__)\nprint(f.__defaults__ is f.__defaults__,f.__kwdefaults__ is f.__kwdefaults__)", "(1,) {'b': 2}\nTrue True\n" },
         { "def f(x=5): return x\nf.__defaults__=(7,)\nprint(f())", "7\n" },
         { "def f(*,x=2): return x\ndefaults=f.__kwdefaults__\ndefaults['x']=9\nprint(f(),defaults is f.__kwdefaults__)", "9 True\n" },
@@ -46,14 +49,17 @@ public sealed class FunctionDefaultMetadataTests
     private const string YieldingLookup = "class Key:\n    def __hash__(self): return hash('x')\n    def __eq__(self,other):\n        f.__kwdefaults__={'x':99,'y':100}\n        with open('events.txt','a') as target: target.write('eq\\n')\n        return other=='x'\ndef f(*,x,y): return x,y\nf.__kwdefaults__={Key():7,'y':8}\nprint(f())\nprint(f())";
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task KeywordLookupCanYieldAndSubsequentParametersSeeReplacement(bool retainAlias)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task KeywordLookupCanYieldAndSubsequentParametersSeeReplacement(bool retainAlias, bool singleResult)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         var source = retainAlias
             ? YieldingLookup.Replace("f.__kwdefaults__={Key():7,'y':8}", "original={Key():7,'y':8}\nf.__kwdefaults__=original")
             : YieldingLookup;
+        if (singleResult) source = source.Replace("def f(*,x,y): return x,y", "def f(*,x,y): return x");
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
@@ -65,7 +71,7 @@ public sealed class FunctionDefaultMetadataTests
             using (var result = asynchronous ? await script.RunAsync(delayed!) : script.Run(mock!))
             {
                 Assert.True(result.Success, result.Failure?.Message);
-                Assert.Equal("(7, 100)\n(99, 100)\n", result.StandardOutput);
+                Assert.Equal(singleResult ? "7\n99\n" : "(7, 100)\n(99, 100)\n", result.StandardOutput);
                 Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
                 if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             }
@@ -73,11 +79,14 @@ public sealed class FunctionDefaultMetadataTests
         }
     }
 
-    [Fact]
-    public async Task CancelledKeywordLookupDrainsBeforeReturningAllowance()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelledKeywordLookupDrainsBeforeReturningAllowance(bool singleResult)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(YieldingLookup, budget);
+        var source = singleResult ? YieldingLookup.Replace("def f(*,x,y): return x,y", "def f(*,x,y): return x") : YieldingLookup;
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         var host = new DelayedLythonHost();
         host.SeedFile("/events.txt", "before");
@@ -124,9 +133,11 @@ public sealed class FunctionDefaultMetadataTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SuspendingDefaultRefusalKeepsArgumentsAndCannotResumeTheCaller(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task SuspendingDefaultRefusalKeepsArgumentsAndCannotResumeTheCaller(bool asynchronous, bool singleResult)
     {
         const string source = """
 class Key:
@@ -152,7 +163,8 @@ finally:
  if fail: return 0
 """;
         var budget = new LythonMemoryBudget(512 * 1024);
-        using var script = new LythonEngine().Compile(source, budget);
+        var program = singleResult ? source.Replace("return len(value[0]),x,y", "return len(value[0])") : source;
+        using var script = new LythonEngine().Compile(program, budget);
         Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
         var baseline = budget.ReservedBytes;
         foreach (var fail in new[] { true, false })
@@ -170,7 +182,7 @@ finally:
                     Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                     Assert.Empty(result.StandardOutput);
                 }
-                else Assert.Equal("(8192, 7, 100)\n", result.StandardOutput);
+                else Assert.Equal(singleResult ? "8192\n" : "(8192, 7, 100)\n", result.StandardOutput);
                 Assert.Equal("eq\n", delayed?.ReadText("/events.txt") ?? mock!.ReadText("/events.txt"));
                 if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
             }
@@ -178,11 +190,16 @@ finally:
         }
     }
 
-    [Fact]
-    public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EscapedDefaultsRemainFundedAfterMetadataIsCleared(bool callFirst)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
-        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]", budget);
+        var source = callFirst
+            ? "def f(value='x'*4096): return value\nsaved=f()\nf.__defaults__=None\nreturn saved"
+            : "def f(value='x'*4096): return value\nsaved=f.__defaults__\nf.__defaults__=None\nreturn saved[0]";
+        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         var baseline = budget.ReservedBytes;
         foreach (var asynchronous in new[] { false, true })
         {
