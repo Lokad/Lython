@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R199 current-text attribution](results/2026-11-10-current-text-attribution/README.md)
+captures one six-second warm window,1144samples/6.21%unknown, all gates/join/SHA pass.
+Instruction/operand transport, native dictionary/hash and text kernels remain
+material; frames/binding are not prominent. Source gates confirm already-fused
+case capacity, direct native hashing and no host resize on commit. No elapsed
+gain, removed-tax estimate, source optimization or recapture is claimed.
+
 The [R198 ordinary-method context simplification](results/2026-11-10-method-contexts/README.md)
 removes the redundant owner-type restriction and reuses scope-sensitive function
 promotion. Class-report allocation falls about28.5%both APIs; quiet elapsed falls
