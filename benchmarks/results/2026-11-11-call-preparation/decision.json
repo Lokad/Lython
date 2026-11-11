@@ -1,0 +1,13 @@
+{
+  "prototypeDecision": "Withdraw the complete canonical-span conversion. Its many shared/native preparation stages add more implementation complexity than justified by the representative paths, which already borrow. No useful whole-script allocation reduction or qualified CPU gain is established. Initial captured-text adversity did not repeat; other adverse and unstable measurements remain unresolved, not permanent design vetoes.",
+  "retained": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ModernTyping.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.SubprocessModule.Errors.cs",
+    "src/Lokad.Lython/Runtime/PyDataclass.cs",
+    "src/Lokad.Lython/Runtime/PyTuple.cs"
+  ],
+  "checks": "All other snapshotted source and internal tests restored byte-for-byte; retain public binding/descriptor/cancellation regressions and independent fixes. Fresh nonincremental build and focused validation follow.",
+  "next": "Assess a complete native dictionary-aggregation loop using existing non-admitting accumulation and native iteration. Target per-element VM dispatch rather than argument packaging."
+}

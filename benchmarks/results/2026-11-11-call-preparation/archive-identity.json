@@ -1,0 +1,170 @@
+{
+  "baseline-core-net11.dll.gz": {
+    "bytes": 1880455,
+    "sha256": "198f67d0a75abba3b8c7b64722bdb1dcd0032d7dcda27259d8e2806f733d5ae2"
+  },
+  "decision.json": {
+    "bytes": 1234,
+    "sha256": "ffc907166ab0dca34a86a60bd11ca74b647da4a34df0da937654d9e87daa843b"
+  },
+  "preparation.tar.xz": {
+    "bytes": 83108,
+    "sha256": "ccde683d3ba492513c998b14367e6826dae00ff4a53d072519b1a941fecc92a7"
+  },
+  "retained-source.json": {
+    "bytes": 138764,
+    "sha256": "df5da037d4575895419fcd6cfbe398c6f55cc6876f6c8ab76e5d3df920d1e631"
+  },
+  "initial/core-net10.dll.gz": {
+    "bytes": 1884619,
+    "sha256": "a6be2a3bda5934e20e7cbb7968216f5f74a4ff2a82c6bc87d85e38a3d2ba4bdc"
+  },
+  "initial/core-net11.dll.gz": {
+    "bytes": 1884766,
+    "sha256": "3138932e953421d1f26ed39cb86cfdff66738a45fb15caca2f7ba53099f72c2c"
+  },
+  "initial/diagnostic-identity.json": {
+    "bytes": 93108,
+    "sha256": "1188207c26fc8763c1e0ce9264c1faf85ae52cd7f1f1b3b05997d2c4e5a33fd9"
+  },
+  "initial/source.patch": {
+    "bytes": 613633,
+    "sha256": "b42da760311e517771e16acde6b15ef2aa0a53ab7bae026844ee651095d070f6"
+  },
+  "initial/source.tar.xz": {
+    "bytes": 903584,
+    "sha256": "402f21b1c14530fdf475111c36e7c00c3c7a53410c74072ad29d3e76dd3560d0"
+  },
+  "refined/core-net10.dll.gz": {
+    "bytes": 1883633,
+    "sha256": "b4b82575c7d4b65715290c3f27b1e4421ac32679beef003022f3b6b5f6d4a422"
+  },
+  "refined/core-net11.dll.gz": {
+    "bytes": 1883726,
+    "sha256": "0e8f17d1e7026c87164bf92f01367e29981e785e4dfeef2bd6b5b9e3acd68c41"
+  },
+  "refined/diagnostic-identity.json": {
+    "bytes": 93043,
+    "sha256": "07c024184ac2464d4afd43acd49c6a53716098632240ac9fc07055b1ddcde677"
+  },
+  "refined/source.patch": {
+    "bytes": 618124,
+    "sha256": "2e633db6686516a29bb07e91f9606caf00e9ea268db86c4382b8d3444a5af2b0"
+  },
+  "refined/source.tar.xz": {
+    "bytes": 912396,
+    "sha256": "88df6036ea403ee60d8a3b11e2e2fe20a2739552c3a3ae9fa15a1db33c587776"
+  },
+  "retained-checks/internal-net10.0.log": {
+    "bytes": 452,
+    "sha256": "4b188efaacd70b215b63214e8a01dd8edbebce0dc3c743090b16f54c8c6efc58"
+  },
+  "retained-checks/internal-net11.0.log": {
+    "bytes": 452,
+    "sha256": "d195f6a89818e6cbccf5c7e5be0825dc59736fb59fee13e885e3eb2e8c68d1f3"
+  },
+  "retained-checks/public-net10.0.log": {
+    "bytes": 461,
+    "sha256": "81da3bf14ce37d28da14e4f899d52536bfbcb40f4f3108d25147fcdd6bc43371"
+  },
+  "retained-checks/public-net11.0.log": {
+    "bytes": 461,
+    "sha256": "0314837bbd59cef95463256151ffd3a64012adf696a295e1dc19c0030b3e113a"
+  },
+  "refined/compile/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "refined/compile/measurements.json": {
+    "bytes": 26139,
+    "sha256": "ac36b3643ee8c5e403d2a376ff3434de3638248d35bc35770ab1280996c02927"
+  },
+  "refined/compile/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "refined/compile/summary.json": {
+    "bytes": 10695,
+    "sha256": "e8483e660b57fe5c328633db5191275f2d6c6af3e2c02d8f72f9a36ff6b8bdf4"
+  },
+  "refined/warm-async/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "refined/warm-async/measurements.json": {
+    "bytes": 27073,
+    "sha256": "82bf39e887643dfad5411fe57e1c0966faafb1dd20602fb35e6a12c1c20a5cb1"
+  },
+  "refined/warm-async/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "refined/warm-async/summary.json": {
+    "bytes": 11488,
+    "sha256": "0502b9e35bfc6f906db77b2f0f32e857a9cdd2ceb37aaabd82676d0917fc9493"
+  },
+  "refined/warm-sync/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "refined/warm-sync/measurements.json": {
+    "bytes": 27047,
+    "sha256": "b3db303361e30c92d86de8313ad25e3ed42424fa3d72d298473d24cc0c5e734f"
+  },
+  "refined/warm-sync/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "refined/warm-sync/summary.json": {
+    "bytes": 11483,
+    "sha256": "d4b5871ff1a46e039d388d995193484765ff8fd835b29d598da71785613799b8"
+  },
+  "initial/compile/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "initial/compile/measurements.json": {
+    "bytes": 26005,
+    "sha256": "4c5c6efe76bfc9310c3e5027fd74a5c77cdcf1b9b5fbe18f513af6e769f885ba"
+  },
+  "initial/compile/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initial/compile/summary.json": {
+    "bytes": 10667,
+    "sha256": "3abfd622d406452ac44a7d9febaf9579c936baad1d09cedbee77dbdbfd601f80"
+  },
+  "initial/warm-async/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "initial/warm-async/measurements.json": {
+    "bytes": 27038,
+    "sha256": "e275436db31f7c50afce98699b8255b54329f0e2d6d814c4767c4595e5e8a0d1"
+  },
+  "initial/warm-async/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initial/warm-async/summary.json": {
+    "bytes": 11440,
+    "sha256": "d8dfca88bbb0649e49b2663f6eb338a02e703834e4ac60d142223add0a897381"
+  },
+  "initial/warm-sync/hash-witness.json": {
+    "bytes": 70,
+    "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+  },
+  "initial/warm-sync/measurements.json": {
+    "bytes": 27026,
+    "sha256": "a7e4839c1715befbb651d223e94674812d3968b3a04a0e1d66ae2e88e9558d48"
+  },
+  "initial/warm-sync/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initial/warm-sync/summary.json": {
+    "bytes": 11510,
+    "sha256": "17cb0f262e394cd821594c83739289368a3ae25a3b1d08a7e37b26e4b67ba136"
+  }
+}

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R236 call-preparation migration](results/2026-11-11-call-preparation/README.md)
+is withdrawn after a complete prototype and source-justified refinement. Common
+paths already borrow; allocation stays flat and clocks remain mixed/adverse.
+The initial captured-text slowdown did not recur, without establishing causality
+or CPU gain. Retain independent Python factory fixes, direct admitted exception
+tuples and deletion of sync argument carriers in698f7e77;11074 retained checks pass
+across actual11/10. All other prototype code is removed. Preserve both source
+pairs/cores/controls and failures; no unchanged full qualification replay.
+
 The [R235 captured-operand trial](results/2026-11-11-captured-operand-transport/README.md)
 is fully withdrawn. A source-justified cold-span refinement preserves the initial
 adverse conditions; runtime allocation stays flat and quiet CSV/text shows no
