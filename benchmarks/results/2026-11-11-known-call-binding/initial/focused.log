@@ -1,0 +1,4 @@
+stable-internal11 - Failed:     0, Passed:   115, Skipped:     0, Total:   115, Duration: 239 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+stable-public11 - Failed:     0, Passed:  2845, Skipped:     0, Total:  2845, Duration: 32 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+stable-internal10 - Failed:     0, Passed:   115, Skipped:     0, Total:   115, Duration: 236 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)
+stable-public10 - Failed:     0, Passed:  2845, Skipped:     0, Total:  2845, Duration: 32 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)

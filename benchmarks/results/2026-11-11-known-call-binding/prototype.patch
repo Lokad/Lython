@@ -1,0 +1,215 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+index 10cfdb6f..9b9deff7 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.Infrastructure.cs
+@@ -458,7 +458,11 @@ internal sealed partial class ExecutableScript
+                 call.Arguments.Select(argument => new ExecutableCallArgument(argument.Form)).ToArray(),
+                 call.Target.Span,
+                 call.Span,
+-                hasReceiver));
++                hasReceiver)
++            {
++                PreparedParameterLayout = call.Call.PreparedParameterLayout,
++                PreparedParameterSources = call.Call.PreparedParameterSources,
++            });
+             return _callSites.Count - 1;
+         }
+ 
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.cs b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+index 7386b5ab..083009c1 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.cs
+@@ -472,6 +472,8 @@ internal sealed record ExecutableCallSite(
+     public bool ConsumedByIteration { get; init; }
+     public bool ReturnedDirectly { get; init; }
+     public bool AccumulatesDictionary { get; init; }
++    public FunctionParameterLayout? PreparedParameterLayout { get; init; }
++    public int[]? PreparedParameterSources { get; init; }
+     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
+     public int TargetOffset => HasReceiver ? 1 : 0;
+     public int ArgumentOffset => TargetOffset + 1;
+diff --git a/src/Lokad.Lython/Frontend/StaticAbstractInterpreter.ExpressionAnalyzers.cs b/src/Lokad.Lython/Frontend/StaticAbstractInterpreter.ExpressionAnalyzers.cs
+index f654d875..558ae752 100644
+--- a/src/Lokad.Lython/Frontend/StaticAbstractInterpreter.ExpressionAnalyzers.cs
++++ b/src/Lokad.Lython/Frontend/StaticAbstractInterpreter.ExpressionAnalyzers.cs
+@@ -226,6 +226,10 @@ internal static partial class StaticAbstractInterpreter
+                         return true;
+                     }
+ 
++                    if (targetValue.Kind == AbstractValueKind.Function)
++                        StaticBindingEngine.PrepareFunctionCallBinding(call,
++                            targetValue.RequireFunctionSummary().ParameterLayout, 0, bindings.AnalysisContext);
++
+                     if (targetValue.Kind == AbstractValueKind.UserClass &&
+                         StaticBindingEngine.TryGetDataclassConstructorShapeFailure(
+                             targetValue.RequireClassSummary(),
+@@ -260,6 +264,12 @@ internal static partial class StaticAbstractInterpreter
+                     return true;
+                 }
+ 
++                if (call.Target is MemberExpressionSyntax { Target: var methodReceiver, MemberName: var preparedMethodName } &&
++                    StaticAbstractValueResolver.TryResolve(methodReceiver, bindings, out var preparedReceiver) &&
++                    preparedReceiver.Kind == AbstractValueKind.UserInstance &&
++                    preparedReceiver.RequireInstanceSummary().Class.Methods.TryGetValue(preparedMethodName, out var method))
++                    StaticBindingEngine.PrepareFunctionCallBinding(call, method.ParameterLayout, 1, bindings.AnalysisContext);
++
+                 return false;
+             }
+         }
+diff --git a/src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs b/src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs
+index d158123e..29a8e3b3 100644
+--- a/src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs
++++ b/src/Lokad.Lython/Frontend/StaticBindingEngine.Functions.cs
+@@ -264,6 +264,41 @@ internal static partial class StaticBindingEngine
+     private static AbstractValue ResolveArgumentValue(ExpressionSyntax expression, AbstractState bindings)
+         => StaticAbstractValueResolver.ResolveOrUnknown(expression, bindings);
+ 
++    internal static void PrepareFunctionCallBinding(CallExpressionSyntax call, FunctionParameterLayout layout,
++        int firstParameter, StaticAnalysisContext? context)
++    {
++        if (call.PreparedParameterLayout is not null || layout.VariadicListIndex >= 0 || layout.VariadicDictionaryIndex >= 0
++            || firstParameter > layout.PositionalCount
++            || !call.TryGetConcreteArguments(out var arguments)) return;
++        // Fully supplied positional calls already borrow operands directly.
++        if (layout.KeywordOnlyCount == 0 && call.Arguments.Count == layout.ParameterCount - firstParameter
++            && arguments.Keywords.Count == 0) return;
++        // This retained map can grow with signature width, independently of
++        // source length. Admit its full metadata/capacity before allocating it.
++        var bytes = checked(64L + 4L * layout.ParameterCount);
++        using var storage = context?.MemoryGovernor?.ReserveTemporary(bytes, call.Span);
++        context?.MemoryGovernor?.ThrowIfAdmissionFailed();
++        PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, 0);
++        var sources = new int[layout.ParameterCount];
++        Array.Fill(sources, -1); // An omitted value is resolved from live defaults.
++        if (firstParameter != 0) sources[0] = -2; // Existing bound receiver.
++        var positional = firstParameter;
++        for (var index = 0; index < call.Arguments.Count; index++)
++        {
++            PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, index);
++            var argument = call.Arguments[index];
++            var slot = argument.Kind == CallArgumentKind.Positional ? positional++
++                : layout.LayoutParameterIndex.GetValueOrDefault(argument.KeywordName, -1);
++            // Validation normally excluded these shapes. Inference can visit
++            // expanded/merged states too: an unproved map is simply not retained.
++            if ((uint)slot >= (uint)sources.Length || sources[slot] != -1) return;
++            sources[slot] = index;
++        }
++        storage?.Commit(bytes);
++        call.PreparedParameterLayout = layout;
++        call.PreparedParameterSources = sources;
++    }
++
+     private static bool TryInferStraightLineReturn(
+         IReadOnlyList<StatementSyntax> statements,
+         AbstractState bindings,
+diff --git a/src/Lokad.Lython/Frontend/Syntax.cs b/src/Lokad.Lython/Frontend/Syntax.cs
+index 8438e0c8..471c6668 100644
+--- a/src/Lokad.Lython/Frontend/Syntax.cs
++++ b/src/Lokad.Lython/Frontend/Syntax.cs
+@@ -665,6 +665,11 @@ internal sealed record CallExpressionSyntax(
+     // made for class-name mangling retain this static lexical decision.
+     internal bool PreloadImplicitSuperArguments { get; set; }
+ 
++    // Guarded by the selected function's immutable signature identity at run
++    // time. Contains operand positions only, never inferred/default values.
++    internal FunctionParameterLayout? PreparedParameterLayout { get; set; }
++    internal int[]? PreparedParameterSources { get; set; }
++
+     // Argument expressions are finalized before analysis. Share their syntax
+     // partition, never inferred values: those belong to each current binding
+     // state. Expanded calls must still resolve their input in that state.
+diff --git a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+index fd37a4cb..be5d104f 100644
+--- a/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
++++ b/src/Lokad.Lython/Runtime/Calls/FunctionBindingPlan.cs
+@@ -82,6 +82,8 @@ internal sealed class FunctionBindingPlan
+ 
+     public string CallableName { get; }
+ 
++    internal FunctionParameterLayout ParameterLayout => _layout;
++
+     public PythonCallableKind CallableKind { get; }
+ 
+     public int PositionalCount => _layout.PositionalCount;
+@@ -139,6 +141,17 @@ internal sealed class FunctionBindingPlan
+         return false;
+     }
+ 
++    internal object RequiredDefault(int index, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
++    {
++        if (index < PositionalCount)
++        {
++            if (TryGetPositionalDefault(index, out var positional)) return positional;
++        }
++        else if (KeywordDefaultStorage is { } defaults &&
++            defaults.TryGetValue(KeywordDefaultNames[index - PositionalCount], out var keyword, context, span)) return keyword;
++        throw CallErrors.MissingArgument(CallableKind, CallableName, NameAt(index), span);
++    }
++
+     public bool TryGetDefaultMetadata(string name, out object value)
+     {
+         value = name switch
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index 469e1e75..27bd414f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -170,6 +170,26 @@ internal sealed partial class LythonRuntime
+         ExecutableCallSite? callSite = null,
+         ReadOnlySpan<object?> operands = default)
+     {
++        if (!deferKeywordDefaults && callSite?.PreparedParameterSources is { } sources
++            && ReferenceEquals(callSite.PreparedParameterLayout, plan.ParameterLayout)
++            && (receiver is not null) == (sources.Length != 0 && sources[0] == -2)
++            && (plan.KeywordDefaultStorage is null || plan.KeywordDefaultStorage.SupportsNativeStringReads))
++        {
++            // Values already live in caller storage. The compiler prepared only
++            // their positions; selected-function defaults remain current reads.
++            for (var index = 0; index < sources.Length; index++)
++            {
++                if ((index & 63) == 63) context.CheckExecution(span);
++                var source = sources[index];
++                values[index] = source >= 0 ? operands[source].RequireNotNull()
++                    : source == -2 ? receiver! : plan.RequiredDefault(index, span, context);
++            }
++            // Binding is complete, and this branch cannot enter deferred
++            // keyword processing. User-function body/storage consumers need
++            // only the signature length; omission bits remain for the real
++            // generic/deferred and separate builtin binders below.
++            return;
++        }
+         // The overflow list is scratch: most calls never spill positionals,
+         // so materialize it only on the first spill under existing ownership.
+         PyList? extraPositional = null;
+@@ -244,14 +264,7 @@ internal sealed partial class LythonRuntime
+                 continue;
+             }
+ 
+-            var parameterName = plan.NameAt(i);
+-            if (plan.TryGetPositionalDefault(i, out var defaultValue))
+-            {
+-                values[i] = defaultValue;
+-                continue;
+-            }
+-
+-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
++            values[i] = plan.RequiredDefault(i, span, context);
+         }
+ 
+         for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyCount; k++)
+@@ -262,15 +275,7 @@ internal sealed partial class LythonRuntime
+                 continue;
+             }
+ 
+-            var parameterName = plan.NameAt(plan.PositionalCount + k);
+-            var keywordDefaults = plan.KeywordDefaultStorage;
+-            if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
+-            {
+-                values[i] = defaultValue;
+-                continue;
+-            }
+-
+-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
++            values[i] = plan.RequiredDefault(i, span, context);
+         }
+ 
+         if (plan.VariadicListIndex >= 0)

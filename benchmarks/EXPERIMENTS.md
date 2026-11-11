@@ -6,12 +6,20 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [compiler-known argument binding study](results/2026-11-11-known-call-binding/README.md)
+withdraws both measured forms. Runtime allocation stays flat; compile allocation
+rises0.38–0.54%. Refined quiet CSV improves slightly, synchronous search remains
+adverse and asynchronous search is inconclusive. Both exact source/core pairs,
+all controls, failed conditions and raw archives survive. No mapping layer or
+architecture-only tests remain; useful public semantics/lifetime tests survive.
+This decision does not permanently veto coherent call/frame redesign.
+
 The [current native-call profiles](results/2026-11-11-current-native-call-costs/README.md)
-follow R243 with actual690 maps/code and preserved unknowns. Captured1139 leaves/
-5.74CPU seconds and keyword-default search872/4.42 show recurring proof and binding
-work; no additive removable% or timing gain. The next source gate assesses sharing
-compiler-known argument layout with the existing binder, preserving live defaults
-and dynamic signatures, without another cache/controller/ownership layer.
+use actual690 maps/code and retain unknowns. Captured1139leaves/5.74CPU seconds
+and keyword-default search872/4.42 associate work with proof/binding/evaluation;
+these are not additive removable percentages. The next source gate assesses
+eliminating a repeated structural proof traversal while preserving complete
+pre-effect validation, live mutable inputs and the existing execution engine.
 
 The [six-script current checkpoint](results/2026-11-11-captured-helper-cpython-checkpoint/README.md)
 uses retained `6904093e` versus stock CPython3.13.16, separating compile, warm and

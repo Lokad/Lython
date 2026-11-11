@@ -1,0 +1,8 @@
+{
+  "decision": "Withdraw both forms; preserve useful public semantic/lifetime tests. No new production mapping layer or compiler metadata remains.",
+  "reason": "No whole-script benefit sufficient to justify the added metadata/admission/identity branches. Refined quiet CSV improves slightly, synchronous search remains adverse, async search inconclusive. Allocation flat; compilation allocation +0.38..0.54%. Not a permanent veto on coherent call redesign.",
+  "initialQuiet": "5 jobs / 142.949972690 s. SearchAsync -7.46..-4.47%, search sync +0.34..+7.86%, CSV near flat. Wider CPU and identical-control spreads preserved.",
+  "refinedQuiet": "5 jobs / 143.083904067 s. Search sync +1.83..+4.93%; CSV sync -2.95..-0.61%; search async -3.97..+0.94%; CSV async -1.41..-0.41%; ordinary text control -1.79..+3.57%. Wider CPU does not establish search CPU regression or broad gain.",
+  "checks": "Initial 5920 focused actual11/10 plus overlapping final cases; refined 5936 focused actual11/10; 15 independent CPython3.13.2 correctness goldens. Full 690 qualification is cached GREEN; no later prototype qualification claim.",
+  "limitations": "Desktop target/control clocks conflict; all adversity retained. No RSS, embedding tail latency, pending-I/O latency, large-file throughput or new external CPython ratio claim."
+}

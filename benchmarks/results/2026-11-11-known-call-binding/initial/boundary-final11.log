@@ -1,0 +1,23 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.68]     Lokad.Lython.Tests.PreparedFunctionBindingBoundaryTests.NamedHostCallUsesPreparedSlotsBeforeItsBodyCanSuspend [FAIL]
+  Failed Lokad.Lython.Tests.PreparedFunctionBindingBoundaryTests.NamedHostCallUsesPreparedSlotsBeforeItsBodyCanSuspend [60 ms]
+  Error Message:
+   Assert.Single() Failure: The collection did not contain any matching items
+Expected:   (predicate expression)
+Collection: [ExecutableCallSite { ArgumentCount = 1, Arguments = Lokad.Lython.Frontend.ExecutableCallArgument[], TargetSpan = LythonSourceSpan { Start = 155, Length = 4, Line = 6, Column = 8 }, CallSpan = LythonSourceSpan { Start = 155, Length = 19, Line = 6, Column = 8 }, HasReceiver = False, CasedSplit = , ConsumedByIteration = False, ReturnedDirectly = True, AccumulatesDictionary = False, PreparedParameterLayout = , PreparedParameterSources = , IsPositionalOnly = False, TargetOffset = 0, ArgumentOffset = 1 }]
+  Stack Trace:
+     at Lokad.Lython.Tests.PreparedFunctionBindingBoundaryTests.NamedHostCallUsesPreparedSlotsBeforeItsBodyCanSuspend() in D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionBindingBoundaryTests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 183 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

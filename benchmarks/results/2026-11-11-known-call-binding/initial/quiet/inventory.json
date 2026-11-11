@@ -1,0 +1,79 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 256679936,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 15839232,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "mirrored-storage-b581-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5667328,
+      "sha256": "f7025485f03de431e3cd61a52b12bc55baa9df329617737555e06617b452205e",
+      "canonicalStorage": "benchmarks/results/2026-11-11-mirrored-function-storage/candidate-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "be96faeb5d5854ee8e83ff4ce9ec7367a26ccc269f1c720dd76e50df0c2f0d1d",
+      "reason": "Obsolete5f comparison baseline; next selected reference is qualified690/ccdd. Exact decompressed committed Git core verified, all aliases must be proven idle/owned and outside current roles before retirement.",
+      "paths": [
+        "call-preparation-profile-b582-20261111/current-core.dll",
+        "call-preparation-profile-b582-20261111/candidate/Lokad.Lython.dll",
+        "captured-sequence-b583-20261111/reference/Lokad.Lython.dll",
+        "mirrored-storage-b581-20261111/current-core.dll",
+        "mirrored-storage-b581-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 339948,
+      "allocatedBytes": 5668864,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "current-phases-profile-b585-20261111/observations.tgz",
+      "bytes": 2442112,
+      "sha256": "349aac2a02a73dcfa2a0246e7fbb0b837eb9b1565bc4996c3fd9174591a83993",
+      "canonicalStorage": "benchmarks/results/2026-11-11-current-native-call-costs/observations.tgz",
+      "reason": "Terminal historical raw archive duplicate; exact canonical committed Git bytes verified. Fresh absolute path/UID/inode/all-alias proof; preserve every original result and selected core.",
+      "paths": [
+        "current-phases-profile-b585-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340589,
+      "allocatedBytes": 2449408,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "captured-checkpoint-b584-20261111/observations.tgz",
+      "bytes": 2045812,
+      "sha256": "c5fc75e5a18d21a99312895a22a975874b4baae71403a8106615fede6282186d",
+      "canonicalStorage": "benchmarks/results/2026-11-11-captured-helper-cpython-checkpoint/observations.tgz",
+      "reason": "Terminal historical raw archive duplicate; exact canonical committed Git bytes verified. Fresh absolute path/UID/inode/all-alias proof; preserve every original result and selected core.",
+      "paths": [
+        "captured-checkpoint-b584-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340561,
+      "allocatedBytes": 2052096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "private-counter-b579-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5667328,
+      "sha256": "b65290175a4de17112456aa50bfc066368fecb21adc1c7b039778b09487be8c6",
+      "canonicalStorage": "benchmarks/results/2026-11-11-private-counter-segments/candidate-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "a0e5466f840d17eebeb8e2e6409683cd1ad325643323828bfdc5050680295f9d",
+      "reason": "Obsolete qualifiedb584 runtime image, predates5f/690; next reference is690/ccdd. Exact decompressed committed Git bytes verified. Fresh idle/absolute path/UID/inode/all-alias proof must exclude protected current roles before retirement.",
+      "paths": [
+        "private-counter-b579-20261111/current-core.dll",
+        "private-counter-b579-20261111/candidate/Lokad.Lython.dll",
+        "private-counter-control-b580-20261111/current-core.dll",
+        "private-counter-control-b580-20261111/candidate/Lokad.Lython.dll",
+        "mirrored-storage-b581-20261111/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844291,
+      "allocatedBytes": 5668864,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

@@ -1,0 +1,9 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+D:\code\Lython\tests\Lokad.Lython.Tests\PreparedFunctionBindingBoundaryTests.cs(46,31): error CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<int>(ReadOnlySpan<int> expectedSpan, int[] actualArray)'. [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]

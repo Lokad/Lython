@@ -1,0 +1,55 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262909952,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 11345920,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "constructor-binding-b574-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5666304,
+      "sha256": "f5ae2355139a2588a3e6193c4c44332da7a2b0cf98bdcd6b1614878eebc479d2",
+      "canonicalStorage": "benchmarks/results/2026-11-11-constructor-binding/preparation.tar.xz",
+      "canonicalEntry": "candidate-core.dll",
+      "canonicalArchiveSHA256": "de2077e2c756086626236feb86d249213efa115f4692306608934faf9d6b1d7e",
+      "reason": "Obsolete15f/4aa historical image, no longer source or selected reference. Current690/reference and firstR244 prototype stay protected. Exact committed canonical archive/core verified; fresh path/UID/inode/all-alias proof before retirement.",
+      "paths": [
+        "closure-operands-b575-20261111/baseline-core.dll",
+        "closure-operands-b575-20261111/reference/Lokad.Lython.dll",
+        "constructor-binding-b574-20261111/current-core.dll",
+        "constructor-binding-b574-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 300347,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "iteration-returns-b570-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5665792,
+      "sha256": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f",
+      "canonicalStorage": "benchmarks/results/2026-11-11-ordinary-return-consumption/quiet/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "ce262e05f46aa8d4111a7291654235e5feab5d7d4c587d77831504d70ff71491",
+      "reason": "Obsolete15f/4aa historical image, no longer source or selected reference. Current690/reference and firstR244 prototype stay protected. Exact committed canonical archive/core verified; fresh path/UID/inode/all-alias proof before retirement.",
+      "paths": [
+        "constructor-binding-b574-20261111/baseline-core.dll",
+        "constructor-binding-b574-20261111/reference/Lokad.Lython.dll",
+        "iteration-returns-b570-20261111/current-core.dll",
+        "iteration-returns-b570-20261111/candidate/Lokad.Lython.dll",
+        "patch-cpython-b573-20261111/current-core.dll",
+        "patch-cpython-b573-20261111/candidate/Lokad.Lython.dll",
+        "return-prefix-b571-20261111/current-core.dll",
+        "return-prefix-b571-20261111/candidate/Lokad.Lython.dll",
+        "return-prefix-b572-20261111/current-core.dll",
+        "return-prefix-b572-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 807577,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
