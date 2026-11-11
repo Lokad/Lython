@@ -60,7 +60,7 @@ internal static class WorkloadCatalog
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
             "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
-            "numeric-report.integer", "numeric-report.float", "report-render" })
+            "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -70,6 +70,31 @@ internal static class WorkloadCatalog
                 : name.EndsWith("-functions", StringComparison.Ordinal) ? name[..^10] : name;
             switch (kind)
             {
+                case "patch-generation":
+                    var before = Enumerable.Range(0, n).Select(i =>
+                        "setting_" + i.ToString("D4", Invariant) + " = 'café 😀 " + i.ToString("D4", Invariant) + "'\n").ToArray();
+                    var after = (string[])before.Clone();
+                    var patch = new StringBuilder();
+                    if (n != 0)
+                    {
+                        var changed = n / 2;
+                        after[changed] = before[changed].Replace(" = ", " = 'updated_' + ", StringComparison.Ordinal);
+                        // One replacement between unique lines has exactly one
+                        // three-context hunk. Construct its expected bytes from
+                        // the edit, independently of either diff implementation.
+                        var start = Math.Max(0, changed - 3);
+                        var end = Math.Min(n, changed + 4);
+                        var header = (start + 1).ToString(Invariant) + "," + (end - start).ToString(Invariant);
+                        patch.Append("--- before.py\n+++ after.py\n@@ -").Append(header).Append(" +").Append(header).Append(" @@\n");
+                        for (var i = start; i < end; i++)
+                            if (i == changed) patch.Append('-').Append(before[i]).Append('+').Append(after[i]);
+                            else patch.Append(' ').Append(before[i]);
+                    }
+                    inputs["before.py"] = Utf8(string.Concat(before));
+                    inputs["after.py"] = Utf8(string.Concat(after));
+                    outputs["change.patch"] = Utf8(patch.ToString());
+                    stdout = n.ToString(Invariant) + " " + n.ToString(Invariant) + "\n";
+                    break;
                 case "report-render":
                     const string records = """
                         {"name":"café😀-quarterly-shipments-and-reconciliation-2026.tsv","state":"ready","amount":1250},{"name":"plain.txt","state":"held","amount":-25},{"name":"","state":"new","amount":0}

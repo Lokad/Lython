@@ -1,0 +1,18 @@
+{
+  "evidenceHeadBeforeChanges": "70100ffccdea78a357e8431fd698b21d0838a6e4",
+  "productionSourceEqualQualified": "4aa2d46dadc6793e20159cf0a43316c14890d7d8",
+  "normalAdapter": "0.4 unchanged",
+  "coreSHA256": {
+    "net11.0": "fe8094d48818409e7cce9c91d0dd5d812fb422f970d787e49a75a844519cf5e8",
+    "net10.0": "8b0d48557c3b022e58cc81fdd880af73137e147fa3d8857d91b5619086862c65"
+  },
+  "build": "Release solution20.26s,zero warnings/errors,bothactualtargets; no runtime edit after exact R228 restoration.",
+  "validation": "83file-workerchecks peractualtarget plus isolated supervisedCPython3.13.2/Lython,3sizes,allfiles/output goldens; compile/warm/compile-run smoke and clean worker shutdown.",
+  "inputBytesLarge": 67597,
+  "performance": "Unmeasured; two-invocation smoke clocks remain raw and do not justify a timing ratio, CPU attribution or pending-I/O claim.",
+  "sourceHashes": {
+    "benchmarks/scripts/patch-generation.py": "f8019b9eaf45880a49790fb4e228095a6a3529c0d22cd7e4688d6f99188963d1",
+    "benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs": "d328633e94c9895b67761398a192e7694659f78404ce28ebc5b2ad9ab383e1ba",
+    "tests/Lokad.Lython.PublicApi.Tests/ComparisonFileWorkerTests.cs": "96df99d01644e86fccd9712110d3de4ff72d9a9394dad1347385800471418ee9"
+  }
+}

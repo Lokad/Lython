@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R229 patch-generation workload](results/2026-11-11-patch-workflow/README.md)
+adds a complete UTF-8 two-file unified-diff/write job to the existing catalog,
+with independent exact patch goldens at0/16/1024lines.83file-workerchecks pass per
+actualtarget; supervisedCPython3.13.2/Lython verify all3sizes and compile/warm/fresh
+smoke, with output/file hashes and joined cleanup. Core remains qualified4aa;
+no new framework, runtime edit or performance claim. Controlled timing is pending.
+
 The [R228 dispatch completion prototype](results/2026-11-11-dispatch-completion-withdrawn/README.md)
 is fully withdrawn. It removes a generic jump flag/implicit completion but adds22net
 routing lines and preserves the necessary disposal protocol. Allocation flat across

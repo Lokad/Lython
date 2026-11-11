@@ -13,6 +13,11 @@ path and writes the same file back. Independent goldens preserve Unicode and
 untouched nested metadata at zero,16 and1,024 existing paths. Zero paths is a
 metadata-only configuration, rather than an empty input file. Worker resets
 restore the original input before every invocation, including in warm lanes.
+The patch-generation job reads two UTF-8 source files, generates a unified diff
+and writes the complete patch. Its empty,16-line and1,024-line fixtures contain
+one known replacement between unique lines. Independent goldens construct the
+exact context hunk from that edit; both engine workers check every output byte.
+File-worker tests also cover compilation, compile-to-result and asynchronous replay.
 The numeric-report job loads planned/actual JSON arrays, computes each total
 once, and publishes count, totals and variance. Its integer and finite-float
 fixtures contain 0, 64 or 4,096 values per array. `NumericReportTests` checks the
