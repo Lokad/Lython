@@ -1,0 +1,47 @@
+{
+  "beforeFreeBytes": 261939200,
+  "afterRecoveryFreeBytes": 271609856,
+  "postExtractionFreeBytes": 265805824,
+  "requiredFreeBytes": 270172160,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "path": "json-cpython-b566-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-json-cpython-checkpoint/observations.tgz",
+      "bytes": 1950629,
+      "sha256": "bbec6138d71991979f614bd8b963b74de526a4045623e5382c66d835d29e9e2a",
+      "paths": [
+        "json-cpython-b566-20261111/observations.tgz"
+      ],
+      "allocatedBytes": 1953792,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "lexical-stores-b567-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-incoming-lexical-stores/quiet/observations.tgz",
+      "bytes": 3816466,
+      "sha256": "a161d644c60f5701ebc1f055dd283ad85d74b6d21cbf9871ffcc02a957a55e3b",
+      "paths": [
+        "lexical-stores-b567-20261111/observations.tgz"
+      ],
+      "allocatedBytes": 3817472,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "native-json-b463-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-native-json-construction/observations.tar.xz",
+      "canonicalMember": "b463/observations.tgz",
+      "bytes": 3892817,
+      "sha256": "2e6ffdb121265a31f0d0544a465fa3e8b9f04dec006815afe5ef79c8a912feed",
+      "paths": [
+        "native-json-b463-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3899392,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "qualifiedB8AndE122Preserved": true
+}

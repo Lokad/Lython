@@ -577,6 +577,6 @@
     "candidate": "cb03fd47311a7c8252691a598c1bbe03b8ce83c67c6d0ae84e5b0266d8514060",
     "candidate-control": "cb03fd47311a7c8252691a598c1bbe03b8ce83c67c6d0ae84e5b0266d8514060"
   },
-  "sourceQualification": "Committed retained R221,672internal/2587public focused checks per actual11/10. CI42942735331 verifies exact4625d83e; full Windows/Ubuntu/stress/installed consumers pending. Includes retained R219.",
+  "sourceQualification": "Fully qualified in combined CI42942735331, exact committed4625d83e: Windows/Ubuntu, actual.NET11/.NET10 ordinary and original stress, installed Release package consumers. Includes retained R219 and R221. Later R222 frontend source has separate focused qualification and is not covered by this run.",
   "limits": "Quiet warm synchronous complete counter variants, not CPython ratios or pending-I/O latency. Desktop allocation and async/compile clocks separate, all adversity retained. Ordinary-text neutrality unresolved; no universal CPU claim."
 }

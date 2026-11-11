@@ -574,7 +574,7 @@
     "net11.0": "dd5b1752f8b072939ae75108c1f2db4c68dff4a25e0dfb4dc6e729381bf65047",
     "net10.0": "f4c9ccacc4a4f58a04a1b6ecc3a528bba536fc3a502759ac024234f3b9f79f2b"
   },
-  "sourceQualification": "Committed retained source:64internal/397public focused regex checks per actual11/10. Full platform/stress/installed-consumer qualification is deferred to the next coherent batch; CI42931921242 qualifies predecessor e122 only.",
+  "sourceQualification": "Fully qualified in combined CI42942735331, exact committed4625d83e: Windows/Ubuntu, actual.NET11/.NET10 ordinary and original stress, installed Release package consumers. Includes retained R219 and R221. Later R222 frontend source has separate focused qualification and is not covered by this run.",
   "decision": "Retain explicit operation-owned working storage and measured17\u201318% Unicode-iteration allocation reduction. Desktop elapsed/CPU diagnostic; moving controls and all adversity retained. No current CPython/producer/CPU/publication claim.",
   "deliveryRevision": "1208a6812ea51a34de9c2c3370ed56356c6e2efa"
 }

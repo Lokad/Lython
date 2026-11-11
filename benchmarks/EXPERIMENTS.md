@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R223 current text CPython checkpoint](results/2026-11-11-text-cpython-checkpoint/README.md)
+finishes six jobs164.378s/all gates at qualified4625/cb03. Ordinary text is warm
+1.41–1.43× / complete1.35–1.40× CPython; captured-helper/counter text is warm
+2.61–2.62× / complete2.29–2.37×. Compilation separate; CPython complete ordinary
+control2.94% remains variable. Exact same source/fixtures per engine, all original
+e543/R221 observations and setup failures preserved. The remaining helper gap
+motivates a bounded current call/frame/operand attribution; no single-change claim.
+
 The [R221 incoming lexical stores](results/2026-11-11-incoming-lexical-stores/README.md)
 remove unnecessary context promotion, name walks and repeated cell synchronization
 using existing defining owners. Complete counter variants reduce CLR allocation
@@ -13,7 +21,7 @@ using existing defining owners. Complete counter variants reduce CLR allocation
 12–15%, with supporting wider CPU. Unchanged-text neutrality remains unresolved;
 all desktop adversity and the independent frontend diagnostic failure survive.
 672 internal / 2,587 public checks pass per actual target. Runtime4625 is committed;
-combined full delivery42942735331 is active. No new CPython or producer claim.
+combined full delivery42942735331 is GREEN, both platforms/targets/stress/installed consumers. No new CPython or producer claim.
 
 The [R220 offline admission-lock gate](results/2026-11-11-memory-lock-callers/README.md)
 resolves the64previously unattributed Monitor leaves from R211:38aggregate split
@@ -27,7 +35,7 @@ consolidates working storage and cursor in the existing prepared operation. Two
 per-match arrays/reservation and caller cursor plumbing disappear. Unicode iteration
 allocation falls17–18% on both APIs; compile and CSV/text controls are flat. Desktop
 elapsed/control adversity is retained; no CPU, CPython or final-adapter claim.
-64internal/397public focused checks pass per actual target; full delivery batch pending.
+64internal/397public focused checks pass per actual target; combined full delivery42942735331 is GREEN.
 
 The [R218 current JSON/report checkpoint](results/2026-11-11-json-cpython-checkpoint/README.md)
 finishes six jobs165.178s/all gates at committed e122 runtime, all568source hashes.

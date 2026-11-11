@@ -75,3 +75,8 @@ the exact `measured-source.patch` in the preparation archive,
 [archive identity](archive-identity.json). Original capability-test failure and
 setup mistakes remain explicit in [setup corrections](setup-corrections.md).
 There are no remaining workers or guest fixtures. Publication remains postponed.
+
+Full source delivery is now GREEN in combined [42942735331](https://github.com/Lokad/Lython/actions/runs/42942735331),
+exact4625: Windows/Ubuntu, actual.NET11/.NET10, original stress and installed Release
+consumers. [Cached terminal receipt](../2026-11-11-incoming-lexical-stores/delivery-ci.json).
+This qualifies retained R219/R221; later R222 and final producer capabilities stay separate.

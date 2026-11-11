@@ -1,0 +1,10 @@
+{
+  "observations.tgz": {
+    "bytes": 1947530,
+    "sha256": "4056baa14ae7444761e344d3c6d22fbd6936614adb3da454024a3c1557f0e550"
+  },
+  "preparation.tar.xz": {
+    "bytes": 64804,
+    "sha256": "00640a5b2ba3c3687e81ed8f51e621b60bc78fe4ecfd2ed6aa6e93b35d863ca8"
+  }
+}

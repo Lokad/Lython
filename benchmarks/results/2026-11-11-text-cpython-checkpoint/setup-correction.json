@@ -1,0 +1,6 @@
+{
+  "original": "Local source-map guard requested normalizedSource; the R221 field is measuredProductionSource.",
+  "errors": ["KeyError: normalizedSource", "Correction command failed PowerShell quoting; subsequent unchanged mkdir refused existing local output."],
+  "remoteWorkStarted": false,
+  "correction": "Read canonical measuredProductionSource. Keep all 568 source-hash checks. Permit reuse of the locally created output directory. No source/image/timing change."
+}

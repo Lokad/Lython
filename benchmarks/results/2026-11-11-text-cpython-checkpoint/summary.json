@@ -1,0 +1,252 @@
+{
+  "complete": true,
+  "jobs": 6,
+  "elapsedSeconds": 164.3782643149607,
+  "sourceRevision": "R223 frozenR221 cb03fd47, all568 production hashes equal committed4625d83e/0.11.0. Combined delivery42942735331 still active; local672internal/2587public eachactualtarget pass. Later R222 frontend source is separate. Ordinary and captured-helper/counter text versus stockCPython3.13.16; compilation/warm/compile-to-result separate, no single-change attribution.",
+  "coreSHA256": {
+    "candidate": "cb03fd47311a7c8252691a598c1bbe03b8ce83c67c6d0ae84e5b0266d8514060",
+    "candidate-control": "cb03fd47311a7c8252691a598c1bbe03b8ce83c67c6d0ae84e5b0266d8514060"
+  },
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "CPython": 0.04136246631695196,
+        "candidate": 0.044833274731823594,
+        "CPython-control": 0.041350049889746415,
+        "candidate-control": 0.04457314178168131
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython": 0.041413583655438985,
+        "candidate": 0.04469606674612634,
+        "CPython-control": 0.041345093715545754,
+        "candidate-control": 0.043914680050188205
+      },
+      "iqrPercent": {
+        "CPython": 0.5267394949151072,
+        "candidate": 0.9311814591566863,
+        "CPython-control": 0.3236985305114887,
+        "candidate-control": 0.39535134250180093
+      },
+      "inputBytes": 35840,
+      "controlPercent": 0.5802229520335267,
+      "pythonControlPercent": 0.030018585232316486,
+      "ratioRange": [
+        1.077622921228309,
+        1.077946505518827,
+        1.0839120275922514,
+        1.0842375003504148
+      ],
+      "timeRangeMilliseconds": [
+        0.04457314178168131,
+        0.044833274731823594
+      ],
+      "pythonTimeRangeMilliseconds": [
+        0.041350049889746415,
+        0.04136246631695196
+      ],
+      "status": "Diagnostic"
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "CPython": 1.157965542635659,
+        "candidate": 1.6504637065217391,
+        "CPython-control": 1.1692855234375,
+        "candidate-control": 1.658333901098901
+      },
+      "processCpuMedianMilliseconds": {
+        "CPython": 1.2403100775193798,
+        "candidate": 1.7391304347826086,
+        "CPython-control": 1.25,
+        "candidate-control": 1.7582417582417582
+      },
+      "iqrPercent": {
+        "CPython": 0.26002166121944253,
+        "candidate": 1.9118092246815905,
+        "CPython-control": 0.46918675571828633,
+        "candidate-control": 1.6405675536186928
+      },
+      "inputBytes": 35840,
+      "controlPercent": 0.47684747904865876,
+      "pythonControlPercent": 0.9775749264589795,
+      "ratioRange": [
+        1.4115147014474767,
+        1.4182454737177301,
+        1.4253133152521096,
+        1.432109885864434
+      ],
+      "timeRangeMilliseconds": [
+        1.6504637065217391,
+        1.658333901098901
+      ],
+      "pythonTimeRangeMilliseconds": [
+        1.157965542635659,
+        1.1692855234375
+      ],
+      "status": "Diagnostic"
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate-control": 1.7740484878048781,
+        "CPython-control": 1.271845754237288,
+        "candidate": 1.7835907564102564,
+        "CPython": 1.3103808869565219
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.951219512195122,
+        "CPython-control": 1.3559322033898304,
+        "candidate": 1.9230769230769231,
+        "CPython": 1.391304347826087
+      },
+      "iqrPercent": {
+        "candidate-control": 0.8637093098948591,
+        "CPython-control": 0.6112789540576966,
+        "candidate": 2.4784632274396463,
+        "CPython": 0.8202288240096373
+      },
+      "inputBytes": 35840,
+      "controlPercent": 0.5350032551516226,
+      "pythonControlPercent": 2.9407581492382096,
+      "ratioRange": [
+        1.3538418527495972,
+        1.3611239099746084,
+        1.394861351617874,
+        1.4023640449072035
+      ],
+      "timeRangeMilliseconds": [
+        1.7740484878048781,
+        1.7835907564102564
+      ],
+      "pythonTimeRangeMilliseconds": [
+        1.271845754237288,
+        1.3103808869565219
+      ],
+      "status": "Variable"
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "compile",
+      "medianMilliseconds": {
+        "candidate-control": 0.04460174279835391,
+        "CPython-control": 0.05365232295023273,
+        "candidate": 0.04415861721068249,
+        "CPython": 0.05364679834947973
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 0.04409171075837742,
+        "CPython-control": 0.05370569280343716,
+        "candidate": 0.04451038575667656,
+        "CPython": 0.05382131324004306
+      },
+      "iqrPercent": {
+        "candidate-control": 2.0990136041601817,
+        "CPython-control": 0.5030866073057285,
+        "candidate": 1.0897826247354643,
+        "CPython": 0.3408532119951898
+      },
+      "inputBytes": 35840,
+      "controlPercent": 1.0034861045518095,
+      "pythonControlPercent": 0.010298099649874715,
+      "ratioRange": [
+        0.8230513570054275,
+        0.8231361156543415,
+        0.831310563006302,
+        0.8313961721964803
+      ],
+      "timeRangeMilliseconds": [
+        0.04415861721068249,
+        0.04460174279835391
+      ],
+      "pythonTimeRangeMilliseconds": [
+        0.05364679834947973,
+        0.05365232295023273
+      ],
+      "status": "Diagnostic"
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 2.3034692424242422,
+        "CPython-control": 0.8824955529411765,
+        "candidate": 2.30839103030303,
+        "CPython": 0.8838592647058824
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 2.4242424242424243,
+        "CPython-control": 0.9411764705882353,
+        "candidate": 2.4242424242424243,
+        "CPython": 0.9411764705882353
+      },
+      "iqrPercent": {
+        "candidate-control": 1.8376727803918,
+        "CPython-control": 0.851347732837106,
+        "candidate": 0.6390440861182828,
+        "CPython": 0.34019323345163394
+      },
+      "inputBytes": 35840,
+      "controlPercent": 0.213212918183181,
+      "pythonControlPercent": 0.15429060023030017,
+      "ratioRange": [
+        2.6061493434599643,
+        2.6101766006041074,
+        2.611717863331084,
+        2.6157537254546344
+      ],
+      "timeRangeMilliseconds": [
+        2.3034692424242422,
+        2.30839103030303
+      ],
+      "pythonTimeRangeMilliseconds": [
+        0.8824955529411765,
+        0.8838592647058824
+      ],
+      "status": "Diagnostic"
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "candidate-control": 2.441267606557377,
+        "CPython-control": 1.0314628835616437,
+        "candidate": 2.394648421875,
+        "CPython": 1.0456204097222224
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 2.622950819672131,
+        "CPython-control": 1.095890410958904,
+        "candidate": 2.5,
+        "CPython": 1.1111111111111112
+      },
+      "iqrPercent": {
+        "candidate-control": 0.2685120772113964,
+        "CPython-control": 0.36155126691623035,
+        "candidate": 2.1042552704060524,
+        "CPython": 0.7373792083924728
+      },
+      "inputBytes": 35840,
+      "controlPercent": 1.9468070659773407,
+      "pythonControlPercent": 1.3539833412719693,
+      "ratioRange": [
+        2.2901699312766457,
+        2.3216040635473703,
+        2.3347551213216273,
+        2.3668012155005274
+      ],
+      "timeRangeMilliseconds": [
+        2.394648421875,
+        2.441267606557377
+      ],
+      "pythonTimeRangeMilliseconds": [
+        1.0314628835616437,
+        1.0456204097222224
+      ],
+      "status": "Diagnostic"
+    }
+  ]
+}

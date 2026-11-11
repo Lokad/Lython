@@ -3,9 +3,10 @@
 Retained runtime `4625d83e`, 2026-11-11; reference `0b8f9e9a` / runtime
 `1208a681`. The measured prototype's 568 production-source hashes match the
 committed source. [Identity](source-identity.json), [archive hashes](archive-identity.json).
-Full Windows/Ubuntu, both-target, original stress and installed-package validation
-is running against this exact source in [42942735331](https://github.com/Lokad/Lython/actions/runs/42942735331).
-Focused checks are complete; this record does not yet claim full delivery.
+Full Windows/Ubuntu, actual .NET 11/.NET 10, original stress and installed Release
+package consumers pass on this exact source in [42942735331](https://github.com/Lokad/Lython/actions/runs/42942735331).
+[Terminal required-step receipt](delivery-ci.json) is cached; later R222 frontend
+source retains separate focused qualification. No unchanged delivery replay.
 
 Ordinary incoming nonlocal writes no longer materialize an invocation context,
 search lexical namespaces or synchronize the same cell repeatedly. The existing
