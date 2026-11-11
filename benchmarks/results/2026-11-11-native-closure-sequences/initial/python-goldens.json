@@ -1,0 +1,41 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "captured-sequence-text",
+      "source": "def make():\n count=0\n def words(value=' A B '):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nprint(words(),read())\nprint(words(value=' C '),read())\nprint(list(map(words,['D E','F'])),read())\n",
+      "sha256": "fef6f835d7e2456c9e26c2ff9417a347a7d5745a5cffad65e3fb45bcff4ffe92",
+      "output": "['a', 'b'] 1\n['c'] 2\n[['d', 'e'], ['f']] 4\n"
+    },
+    {
+      "name": "captured-sequence-protocol-once",
+      "source": "def make():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nclass Text:\n def lower(self):\n  print('hook',read())\n  return 'X Y'\nprint(words('A'),read())\nprint(words(Text()),read())\n",
+      "sha256": "10a4b44a6281e9c9689d9c8cb60a7604bc34947a059ea0418837db8840d5aa17",
+      "output": "['a'] 1\nhook 2\n['X', 'Y'] 2\n"
+    },
+    {
+      "name": "captured-live-read-delete",
+      "source": "def make():\n value=[]\n def read():return value\n def write(new):\n  nonlocal value\n  value=new\n def erase():\n  nonlocal value\n  del value\n return read,write,erase\nread,write,erase=make()\na=read()\na.append('first')\nwrite(['second'])\nprint(a,read())\nerase()\ntry:read()\nexcept NameError:print('missing')\nwrite(a)\nprint(read() is a,read())\n",
+      "sha256": "821ff2e4b89400fc9d6bed0ce58273c3d2a919e32484ff58c2fd59b8e0a812e9",
+      "output": "['first'] ['second']\nmissing\nTrue ['first']\n"
+    },
+    {
+      "name": "captured-sequence-error-context",
+      "source": "def make():\n count=0\n def split(value):\n  nonlocal count\n  count+=1\n  return value.split('')\n def read():return count\n return split,read\nsplit,read=make()\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:split('abc')\n except ValueError as error:print(read(),error.__context__ is outer)\n",
+      "sha256": "4e1ce7914055ad2028535d7e0bc0e5f0ff46bb5aff598904a0a319b7b5ad19c5",
+      "output": "1 True\n"
+    },
+    {
+      "name": "captured-sequence-later-read",
+      "source": "def make():\n value=3\n def update():\n  nonlocal value\n  value+=2\n  return value\n return update\nupdate=make()\nprint(update(),update())\n",
+      "sha256": "3642b1d1b423e0da2474fbbcf1eecdf0c2c138100873f9f440914ded69d8fde5",
+      "output": "5 7\n"
+    },
+    {
+      "name": "captured-sequence-promotion",
+      "source": "def make():\n count=(1<<63)-1\n def words(value):\n  nonlocal count\n  count+=1\n  return value.upper()\n def read():return count\n return words,read\nwords,read=make()\nprint(words('\u00e9'),read())\nprint(words(value='\u00df'),read())\n",
+      "sha256": "cf3e67ce65849341104344e469ec1b848f3d6653662770575e97e37447b54eec",
+      "output": "\u00c9 9223372036854775808\nSS 9223372036854775809\n"
+    }
+  ]
+}

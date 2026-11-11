@@ -1,0 +1,7 @@
+{
+  "status": "Uncommitted initial R243 prototype; fully retained source/core/observations before refinement, not a delivery.",
+  "focused": "4712final focused actual11/10 checks pass, six independent CPython3.13.2 goldens; initial fixture-only lookup/recipe-selection and golden-filter errors preserved in logs.",
+  "results": "Runtime allocation essentially flat. Captured elapsed sync-3.60..+6.17%/async-0.29..+9.49% with~9%controls inconclusive. Ordinary textsync+14.16..+19.99%, async+15.73..+16.92% with1.02%asynccontrol is adverse diagnostic evidence. Compile allocation+0.93%captured/+0.39%CSV. All goldens/balances/fixtures pass.",
+  "refinement": "The first form threads incoming cells through10shared native entry/proof/evaluation signatures and37calls, affecting ordinary helpers. Reuse existing NativeParameters/argument storage for captured cell references; remove shared forwarding. Keep live cells rather than value snapshots. Check parameter-prefix bounds independently so appended cells cannot impersonate unbound locals. Borrowed/direct/default/receiver entry, width fallback, protocol/error/retained/refusal/cancellation semantics must remain. Existing native capacity is an optimization threshold, never a language cap. No new carrier, owner or configuration.",
+  "remaining": "One source-justified refinement then bounded whole-script comparison and quiet validation only if useful. No CPU claim/automatic promotion. Fullperformance objective active; regex independent and publication postponed."
+}

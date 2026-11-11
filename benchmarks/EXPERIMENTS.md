@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R243 captured native sequences](results/2026-11-11-native-closure-sequences/README.md)
+are retained in `6904093e`. Existing native input storage carries live cells;
+proven stores/continuations omit the complete binding/workspace/dispatch phase.
+Runtime allocation stays flat. Quiet captured elapsed improves10.56–15.17% Run/
+16.59–18.16% RunAsync with supporting wider CPU; ordinary text is inconclusive
+and CSV +0.49..+0.89% remains debt. Initial extra-parameter adversity, refined
+desktop CSV/report adversity, exact source pairs and all controls survive.
+4742 focused actual11/10 checks and ten isolated Python goldens pass. Full
+platform/stress/installed-consumer delivery is tracked separately. The original
+19–20% native-helper-return allocation result is a different milestone.
+
 The [R241 compiled-workspace consolidation](results/2026-11-11-mirrored-function-storage/README.md)
 is retained in `5f9059fa`. Mirrored functions use the same admitted final array
 and existing runner as other compiled functions, preserving real namespaces.
@@ -20,8 +31,8 @@ The [R242 current call-cost assessment](results/2026-11-11-current-call-costs/RE
 preserves two short profiles of qualified5f executable source, including unknown
 and inlined work. No source-pair timing or removable CPU claim. No blind binding/
 work-state merger or raw-word/scratch prototype is selected. The next complete
-phase investigates captured helper sequences using the existing native-body
-proof/evaluator, with semantics and source-pair validation before retention.
+phase selected captured helper sequences using the existing native-body
+proof/evaluator; R243 above records its subsequent validation and retention.
 
 The [R240 private-total segment](results/2026-11-11-private-counter-segments/README.md)
 is retained in `b5849b04`. Whole-script text allocation falls9.04–9.72% through

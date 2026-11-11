@@ -1,0 +1,60 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 257966080,
+  "requiredFreeBytes": 270983168,
+  "reclaimableBytes": 15196160,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "private-counter-b579-20261111/baseline-core.dll",
+      "bytes": 5667328,
+      "sha256": "284c737e5d67c9c329da41e5404b5d0c7b5c5298fca8883372f5c71abcd19b5f",
+      "canonicalStorage": "D:\\code\\Lython\\benchmarks\\results\\2026-11-11-private-counter-segments\\before-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "674f1ed2ffaa3cf81f4e71310f4d43e328795eadec746d0b793bfd020d037a3b",
+      "reason": "Obsolete historical baseline, no longer a selected live reference; exact core retained independently in existing immutable Git evidence. Fresh absolute path/UID/inode/all-alias proof required before retirement.",
+      "paths": [
+        "private-counter-b579-20261111/baseline-core.dll",
+        "private-counter-b579-20261111/reference/Lokad.Lython.dll",
+        "private-counter-control-b580-20261111/baseline-core.dll",
+        "private-counter-control-b580-20261111/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844290,
+      "allocatedBytes": 5668864,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "native-counter-loops-b576-20261111/reference/Lokad.Lython.dll",
+      "bytes": 5664256,
+      "sha256": "00586d2022e71f07ccea8f09adcca80d5f24cebcc9e3305c4bdd91deda228520",
+      "canonicalStorage": "D:\\code\\Lython\\benchmarks\\results\\2026-11-11-native-counting-loops\\before-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "d26a1079e194153fabb78ae47a775f3d50c9f11b4903c93fa577fef1ee28ae62",
+      "reason": "Obsolete historical baseline, no longer a selected live reference; exact core retained independently in existing immutable Git evidence. Fresh absolute path/UID/inode/all-alias proof required before retirement.",
+      "paths": [
+        "native-counter-loops-b576-20261111/baseline-core.dll",
+        "native-counter-loops-b576-20261111/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 823882,
+      "allocatedBytes": 5664768,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "private-counter-b579-20261111/observations.tgz",
+      "bytes": 3859850,
+      "sha256": "4cec1d28d29112543551637f4d9e9c0c44021302d9fb64f12e286e27cafdc479",
+      "canonicalStorage": "D:\\code\\Lython\\benchmarks\\results\\2026-11-11-private-counter-segments\\quiet\\observations.tgz",
+      "reason": "Historical raw archive already independently retained in immutable Git evidence; fresh unique path/UID/inode/SHA proof required.",
+      "paths": [
+        "private-counter-b579-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844304,
+      "allocatedBytes": 3862528,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

@@ -1,0 +1,68 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.77]     Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(asynchronous: True) [FAIL]
+[xUnit.net 00:00:00.78]     Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(asynchronous: False) [FAIL]
+  Failed Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(asynchronous: True) [179 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+Actual:   typeof(System.Collections.Generic.KeyNotFoundException)
+---- System.Collections.Generic.KeyNotFoundException : The given key 'words' was not present in the dictionary.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 44
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at Lokad.Lython.Tests.NativeClosureSequenceTests.Arm.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 77
+   at Lokad.Lython.Tests.NativeClosureSequenceTests.Arm.InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 91
+   at Lokad.Lython.Runtime.LythonRuntime.ICallable.InvokeBorrowedAsync(ReadOnlySpan`1 arguments, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs:line 482
+   at Lokad.Lython.Runtime.LythonRuntime.InvokeBorrowedCallableTargetAsync(Object target, ExecutableCallSite call, ReadOnlySpan`1 arguments, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs:line 426
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.CompleteCallValue(ValueTask`1 pending, Int32 start) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:line 158
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteOrdinaryCall(ExecutableCallSite call, Int32 start, Object target, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:line 140
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteInstructionPrefix(ExecutableWorkState& execution, ExecutionContext scope, ExecutionContext invocation, Boolean asynchronous, ValueTask`1& pending, LythonSourceSpan& pendingSpan) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:line 216
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 685
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteUntilCallAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs:line 730
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 46
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.AdvanceCallFrames(ExecutionContext current, Exception failure, Boolean asynchronous, ValueTask`1& pending) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 173
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteAsync() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 48
+   at Lokad.Lython.Runtime.LythonRuntime.ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context, BoundCallArguments boundArguments, IReadOnlyList`1 closureCells, Boolean argumentsAreLocals, LythonSourceSpan entrySpan, PyExecutableFunction lookupOwner) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 599
+   at Lokad.Lython.Tests.NativeClosureSequenceTests.<>c__DisplayClass0_0.<<RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying>b__2>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 46
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(asynchronous: False) [1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+Actual:   typeof(System.Collections.Generic.KeyNotFoundException)
+---- System.Collections.Generic.KeyNotFoundException : The given key 'words' was not present in the dictionary.
+  Stack Trace:
+     at Lokad.Lython.Tests.NativeClosureSequenceTests.RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying(Boolean asynchronous) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 44
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at Lokad.Lython.Tests.NativeClosureSequenceTests.Arm.Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context) in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 77
+   at Lokad.Lython.Runtime.LythonRuntime.ICallable.InvokeBorrowed(ReadOnlySpan`1 arguments, LythonSourceSpan span, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs:line 472
+   at Lokad.Lython.Runtime.LythonRuntime.InvokeBorrowedCallableTarget(Object target, ExecutableCallSite call, ReadOnlySpan`1 arguments, ExecutionContext context) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Calls.cs:line 411
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.InvokeExecutableGeneralTargetAsync(ExecutableCallSite call, Int32 start, Object target, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:line 179
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteOrdinaryCall(ExecutableCallSite call, Int32 start, Object target, Boolean asynchronous) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs:line 139
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteInstructionPrefix(ExecutableWorkState& execution, ExecutionContext scope, ExecutionContext invocation, Boolean asynchronous, ValueTask`1& pending, LythonSourceSpan& pendingSpan) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs:line 213
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.ExecuteUntilCall() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs:line 13
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.Execute() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 33
+--- End of stack trace from previous location ---
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.AdvanceCallFrames(ExecutionContext current, Exception failure, Boolean asynchronous, ValueTask`1& pending) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 173
+   at Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.Execute() in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs:line 35
+   at Lokad.Lython.Runtime.LythonRuntime.ExecuteExecutableCodeObject(ExecutableCodeObject codeObject, ExecutionContext context, BoundCallArguments boundArguments, IReadOnlyList`1 closureCells, Boolean argumentsAreLocals, LythonSourceSpan entrySpan, PyExecutableFunction lookupOwner) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 568
+   at Lokad.Lython.Tests.NativeClosureSequenceTests.<>c__DisplayClass0_0.<<RefusalAfterNativeCellWritePreservesFirstOriginWithoutReplaying>b__2>d.MoveNext() in D:\code\Lython\tests\Lokad.Lython.Tests\NativeClosureSequenceTests.cs:line 47
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\native-closure-sequence-r243\tests\sequence\r243-sequence.trx
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 210 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

@@ -1,0 +1,23 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:04.65]     Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "captured-unbound-local-after-store", source: "def make():\n value=0\n def broken():\n  nonlocal "···, expected: "unbound 3\n") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(name: "captured-unbound-local-after-store", source: "def make():\n value=0\n def broken():\n  nonlocal "···, expected: "unbound 3\n") [2 ms]
+  Error Message:
+   captured-unbound-local-after-store: Local variable 'missing' is read before it is assigned.
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeReturnFunctionTests.NativeReturnsPreservePythonBehavior(String name, String source, String expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeReturnFunctionTests.cs:line 106
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\native-closure-sequence-r243\refined\tests\public-first\r243-refined-public-first.trx
+
+Failed!  - Failed:     1, Passed:   108, Skipped:     0, Total:   109, Duration: 2 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

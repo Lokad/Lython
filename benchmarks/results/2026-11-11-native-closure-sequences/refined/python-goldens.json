@@ -1,0 +1,65 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "captured-bound-method",
+      "source": "def make():\n count=0\n def method(self,value):\n  nonlocal count\n  count+=1\n  return value.upper()\n def read():return count\n return method,read\nmethod,read=make()\nclass Box:pass\nBox.run=method\nbox=Box()\nsaved=box.run\nprint(box.run('a'),read(),saved(value='b'),read())\n",
+      "sourceSHA256": "5ac7085c91072fc532344068865fbb3f7afb7bb0e1f4dc254ba6b890e486a507",
+      "output": "A 1 B 2\n"
+    },
+    {
+      "name": "captured-sequence-text",
+      "source": "def make():\n count=0\n def words(value=' A B '):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nprint(words(),read())\nprint(words(value=' C '),read())\nprint(list(map(words,['D E','F'])),read())\n",
+      "sourceSHA256": "fef6f835d7e2456c9e26c2ff9417a347a7d5745a5cffad65e3fb45bcff4ffe92",
+      "output": "['a', 'b'] 1\n['c'] 2\n[['d', 'e'], ['f']] 4\n"
+    },
+    {
+      "name": "captured-sequence-protocol-once",
+      "source": "def make():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nclass Text:\n def lower(self):\n  print('hook',read())\n  return 'X Y'\nprint(words('A'),read())\nprint(words(Text()),read())\n",
+      "sourceSHA256": "10a4b44a6281e9c9689d9c8cb60a7604bc34947a059ea0418837db8840d5aa17",
+      "output": "['a'] 1\nhook 2\n['X', 'Y'] 2\n"
+    },
+    {
+      "name": "captured-live-read-delete",
+      "source": "def make():\n value=[]\n def read():return value\n def write(new):\n  nonlocal value\n  value=new\n def erase():\n  nonlocal value\n  del value\n return read,write,erase\nread,write,erase=make()\na=read()\na.append('first')\nwrite(['second'])\nprint(a,read())\nerase()\ntry:read()\nexcept NameError:print('missing')\nwrite(a)\nprint(read() is a,read())\n",
+      "sourceSHA256": "821ff2e4b89400fc9d6bed0ce58273c3d2a919e32484ff58c2fd59b8e0a812e9",
+      "output": "['first'] ['second']\nmissing\nTrue ['first']\n"
+    },
+    {
+      "name": "captured-sequence-error-context",
+      "source": "def make():\n count=0\n def split(value):\n  nonlocal count\n  count+=1\n  return value.split('')\n def read():return count\n return split,read\nsplit,read=make()\ntry:raise RuntimeError('outer')\nexcept RuntimeError as outer:\n try:split('abc')\n except ValueError as error:print(read(),error.__context__ is outer)\n",
+      "sourceSHA256": "4e1ce7914055ad2028535d7e0bc0e5f0ff46bb5aff598904a0a319b7b5ad19c5",
+      "output": "1 True\n"
+    },
+    {
+      "name": "captured-sequence-later-read",
+      "source": "def make():\n value=3\n def update():\n  nonlocal value\n  value+=2\n  return value\n return update\nupdate=make()\nprint(update(),update())\n",
+      "sourceSHA256": "3642b1d1b423e0da2474fbbcf1eecdf0c2c138100873f9f440914ded69d8fde5",
+      "output": "5 7\n"
+    },
+    {
+      "name": "captured-sequence-promotion",
+      "source": "def make():\n count=(1<<63)-1\n def words(value):\n  nonlocal count\n  count+=1\n  return value.upper()\n def read():return count\n return words,read\nwords,read=make()\nprint(words('\u00e9'),read())\nprint(words(value='\u00df'),read())\n",
+      "sourceSHA256": "cf3e67ce65849341104344e469ec1b848f3d6653662770575e97e37447b54eec",
+      "output": "\u00c9 9223372036854775808\nSS 9223372036854775809\n"
+    },
+    {
+      "name": "width-15",
+      "source": "def make():\n count=0\n def apply(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14):\n  nonlocal count\n  count+=1\n  missing:int\n  return a0+a14\n def read():return count\n return apply,read\napply,read=make()\nprint(apply(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14),read(),apply(a0=0,a1=1,a2=2,a3=3,a4=4,a5=5,a6=6,a7=7,a8=8,a9=9,a10=10,a11=11,a12=12,a13=13,a14=14),read())\n",
+      "sourceSHA256": "ad2ce1874f47e9ff758c9cbcce9833d8ecc4401fbd1a4b630375f411f448f496",
+      "output": "14 1 14 2\n"
+    },
+    {
+      "name": "width-16",
+      "source": "def make():\n count=0\n def apply(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15):\n  nonlocal count\n  count+=1\n  missing:int\n  return a0+a15\n def read():return count\n return apply,read\napply,read=make()\nprint(apply(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),read(),apply(a0=0,a1=1,a2=2,a3=3,a4=4,a5=5,a6=6,a7=7,a8=8,a9=9,a10=10,a11=11,a12=12,a13=13,a14=14,a15=15),read())\n",
+      "sourceSHA256": "997c617cb59376aeabc5f59f7207b5a92c30adc6fbaf617f64f1f4d4f2a7c9df",
+      "output": "15 1 15 2\n"
+    },
+    {
+      "name": "width-20",
+      "source": "def make():\n count=0\n def apply(a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19):\n  nonlocal count\n  count+=1\n  missing:int\n  return a0+a19\n def read():return count\n return apply,read\napply,read=make()\nprint(apply(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),read(),apply(a0=0,a1=1,a2=2,a3=3,a4=4,a5=5,a6=6,a7=7,a8=8,a9=9,a10=10,a11=11,a12=12,a13=13,a14=14,a15=15,a16=16,a17=17,a18=18,a19=19),read())\n",
+      "sourceSHA256": "5d644a07f3162821127270f305b5f2ba4e9c21356b2adea1e722017d5e1c4bdd",
+      "output": "19 1 19 2\n"
+    }
+  ]
+}

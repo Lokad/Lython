@@ -310,6 +310,16 @@ Failable reads retain their source spans; evaluated call and protocol packets
 retain snapshots across callbacks. Ordinary instructions carry no native-return
 provenance. Eligible helpers own compact prepared native operations, referring
 to original instruction spans and shared call metadata without copying them.
+Proven captured helpers use these same operations with live definition-owned
+cells. The existing inline input buffer holds cell references after the real
+parameters; prepared metadata keeps them separate from unbound local slots.
+Numeric nonlocal stores and their proven continuation can omit function-workspace
+binding and ordinary instruction dispatch. Actual owner/cell/namespace writes
+preserve aliases and later reads. The complete proof precedes effects; unsupported
+protocols or targets keep ordinary execution, and native errors never restart the
+body. Mutable global/closure reads after earlier effects retain ordinary execution.
+Existing native nesting and inline-capacity bounds remain optimization thresholds;
+wider captured signatures keep ordinary binding and execution.
 Closed native helpers can run while their caller owns active exception-handler
 aliases. They share current exception state and global lookup, without binding or
 unwinding the caller's aliases. Class/annotation contexts retain their lexical
