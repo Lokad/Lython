@@ -1,0 +1,43 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 264630272,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 11350016,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "known-call-binding-b586-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5671424,
+      "sha256": "00e08cfa247846f713d88f4e07c095bc7822d5e7234eb94be18a11c1db7628df",
+      "canonicalStorage": "benchmarks/results/2026-11-11-known-call-binding/initial/candidate-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "47493efbde40d310f9eb3eae8a4d09fc127c5c786c7f8e6cc958373b28135a5a",
+      "reason": "Withdrawn R244 source/core/evidence committed in e2240c23. Current690 reference stays protected. Fresh path/UID/inode/all-alias proof before retiring only these obsolete images.",
+      "paths": [
+        "known-call-binding-b586-20261111/current-core.dll",
+        "known-call-binding-b586-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 340561,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "known-call-binding-b587-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5671424,
+      "sha256": "3de54cdd1d464d959c221c91b737214b1ed694f083d180dd35570a5f22e758dd",
+      "canonicalStorage": "benchmarks/results/2026-11-11-known-call-binding/refined/candidate-net11.0.dll.gz",
+      "canonicalArchiveSHA256": "a181e342c65df32681a7755a1977946c9abda498a2349a791b59545e4ebee11d",
+      "reason": "Withdrawn R244 source/core/evidence committed in e2240c23. Current690 reference stays protected. Fresh path/UID/inode/all-alias proof before retiring only these obsolete images.",
+      "paths": [
+        "known-call-binding-b587-20261111/current-core.dll",
+        "known-call-binding-b587-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 340664,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

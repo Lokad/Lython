@@ -1,0 +1,153 @@
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+index 8b8ac000..bfca6532 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+@@ -16,16 +16,37 @@ internal sealed partial class PyDict
+         var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
+         var index = FindNativeIndex(key, hash, context, querySpan);
+         if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
+-        var prior = index < 0 ? fallback : ReadNativeValue(index);
+-        if (prior is not BigInteger integer || integer.GetByteCount() >= 8) return false;
++        long prior;
++        if (index >= 0 && _recordKeys is null && _nativeValues[index] is null)
++        {
++            prior = _nativeItems[index].Integer;
++            if (prior < -(1L << 55) || prior >= (1L << 55)) return false;
++        }
++        else
++        {
++            var value = index < 0 ? fallback : ReadNativeValue(index);
++            if (value is not BigInteger integer || integer.GetByteCount() >= 8) return false;
++            prior = (long)integer;
++        }
+ 
+         context.CheckExecution(addSpan);
+-        // GuardIntegerAddition admits these magnitudes without a reservation;
+-        // reuse its exact arithmetic rather than duplicate a scalar operator.
+-        var value = LythonRuntime.AddExactIntegers(integer, increment, context.MemoryGovernor, addSpan);
++        // Both signed operands fit seven bytes. The exact result fits long;
++        // wider subsequent updates retain the ordinary promotion/admission path.
++        var sum = prior + (long)increment;
+         context.CheckExecution(storeSpan);
+         var before = _nativeCount;
+-        PublishNativeValue(index, key, value, hash, protocol: false, replaceExisting: true);
++        if (_recordKeys is null)
++        {
++            if (index < 0)
++            {
++                index = _nativeCount;
++                AppendNativeItem(key, PyNone.Instance, hash);
++            }
++            _nativeItems[index].Integer = sum;
++            _nativeValues[index] = null;
++        }
++        else
++            PublishNativeValue(index, key, new BigInteger(sum), hash, protocol: false, replaceExisting: true);
+         if (_nativeCount != before) _version++;
+         context.CheckExecution(storeSpan);
+         return true;
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Records.cs b/src/Lokad.Lython/Runtime/PyDict.Records.cs
+index 70624e43..25ce53e0 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Records.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Records.cs
+@@ -33,7 +33,7 @@ internal sealed partial class PyDict
+             }
+             cached = new(layout, key, index);
+         }
+-        value = IsNativeLive(index) ? ReadNativeValue(index) : null;
++        value = IsNativeLive(index) ? _nativeValues![index] : null;
+         return value is not null;
+     }
+ 
+@@ -160,6 +160,7 @@ internal sealed partial class PyDict
+         // by that callback, or validate the current private keys before freezing.
+         if (_recordKeys is { } current) return current;
+         if (!CanShareRecordKeys(context, span)) return null;
++        MaterializeNativeValues(span);
+         var layout = new RecordKeys(this);
+         _recordKeys = layout;
+         // Transfer the existing key funding to the batch/cache lifetime without
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Storage.cs b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+index 76f2797d..7fb35c39 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Storage.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+@@ -10,6 +10,9 @@ internal sealed partial class PyDict
+     {
+         internal object? Key;
+         internal long Sequence;
++        // A private dictionary's live null value denotes this exact integer.
++        // Its first public read caches the ordinary immutable Python value.
++        internal long Integer;
+         internal uint Hash;
+         internal int Next, Bucket;
+         internal bool Protocol;
+@@ -22,14 +25,14 @@ internal sealed partial class PyDict
+     private long _nativeSequence;
+     private long _nativeCommittedBytes;
+     private const long NativeShellBytes = 192;
+-    private const long NativeKeyBytes = 32;
++    private const long NativeKeyBytes = 40;
+     private long NativeSlotBytes => NativeKeyBytes + (_keysOnly ? 64 : 136);
+     private int NativeExtent => _recordKeys is null ? _nativeCount : Math.Min(_recordKeys.Count, _nativeValues!.Length);
+     private bool IsNativeLive(int index) => _recordKeys is null ||
+         (uint)index < (uint)_nativeValues!.Length && _nativeValues[index] is not null;
+ 
+     private long NativeKeyStorageBytes(int capacity)
+-        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + 96L * capacity);
++        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + (NativeKeyBytes + 64L) * capacity);
+     private long NativeValueStorageBytes(int capacity)
+         => _keysOnly || capacity == 0 ? 0 : checked(32L + 72L * capacity);
+ 
+@@ -280,6 +283,7 @@ internal sealed partial class PyDict
+             _nativeValues![from - 1] = _nativeValues[from];
+             destination.Hash = source.Hash;
+             destination.Sequence = source.Sequence;
++            destination.Integer = source.Integer;
+             destination.Protocol = source.Protocol;
+             destination.Next = source.Next > removed ? source.Next - 1 : source.Next;
+         }
+@@ -289,6 +293,7 @@ internal sealed partial class PyDict
+         last.Hash = 0;
+         last.Next = 0;
+         last.Sequence = 0;
++        last.Integer = 0;
+         last.Protocol = false;
+     }
+ 
+@@ -381,7 +386,23 @@ internal sealed partial class PyDict
+         return released;
+     }
+ 
+-    private object ReadNativeValue(int index) => _nativeValues is null ? PyNone.Instance : _nativeValues[index]!;
++    private object ReadNativeValue(int index)
++        => _nativeValues is null ? PyNone.Instance
++            : _recordKeys is not null ? _nativeValues[index]!
++            : _nativeValues[index] ??= new BigInteger(_nativeItems![index].Integer);
++
++    // Copying publishes aliases, while shared record metadata must remain
++    // immutable. Materialize before either boundary. The existing value-slot
++    // allowance already funds these boxes; no callback/admission is required.
++    private void MaterializeNativeValues(LythonSourceSpan? span)
++    {
++        if (_recordKeys is not null || _nativeValues is null) return;
++        for (var index = 0; index < _nativeCount; index++)
++        {
++            PyStructuralGuard.NoteWork(null, span);
++            _ = ReadNativeValue(index);
++        }
++    }
+ 
+     private void StoreNativeValue(int index, object value)
+     {
+diff --git a/src/Lokad.Lython/Runtime/PyDict.cs b/src/Lokad.Lython/Runtime/PyDict.cs
+index 5ff24e40..b6698080 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.cs
+@@ -41,6 +41,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
+             }
+             else if (other._nativeItems is not null)
+             {
++                other.MaterializeNativeValues(allocationSpan);
+                 // Copy keys and values without rehashing or repackaging keys;
+                 // stored hashes and insertion identities stay intact.
+                 for (var offset = 0; offset < other._nativeItems.Length; offset += 4096)

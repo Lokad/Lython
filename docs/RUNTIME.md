@@ -444,14 +444,23 @@ resource-bearing/asynchronous iteration retain their ordinary cursors and cleanu
 The additional workspace can reject a tighter allowance earlier.
 
 Eligible dictionary counting loops run consecutive native iterations without
-repeating operand and call setup. They reuse the ordinary dictionary arithmetic
-and local binding paths, including optional integer totals and cancellation.
+repeating operand and call setup. They preserve ordinary local binding,
+optional integer totals and cancellation.
 Custom protocols, wide values and growth resume the original executable body
 after the current loop binding, preserving evaluation order and suspension.
 Refused admission stops execution; it does not select that continuation.
 Uncaptured totals without namespace or mirror stores can stay in a managed
 integer during that segment. Every exit publishes the ordinary Python integer
 before any handler or callback; wider values retain normal exact promotion.
+
+Private dictionary entries can retain exact counting results as managed integers
+without boxing each update. A Python value read materializes and caches an ordinary
+immutable integer; copies preserve its identity and retained older values remain
+independent. Existing coarse value capacity funds the eventual box. Shared record
+layouts materialize before publication and keep their own adopted value arrays.
+The additional key capacity is admitted before allocation, including replacement
+overlap, and can reject tighter allowances earlier. Protocols and wider arithmetic
+retain their ordinary semantics.
 
 Both public APIs advance the same non-async instruction loop. Completed operations,
 including failures and cancellation, stay in that loop; asynchronous execution awaits incomplete operations and cursor

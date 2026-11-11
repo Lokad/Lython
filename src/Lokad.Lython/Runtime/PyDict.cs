@@ -41,6 +41,7 @@ internal sealed partial class PyDict : IEnumerable<KeyValuePair<object, object>>
             }
             else if (other._nativeItems is not null)
             {
+                other.MaterializeNativeValues(allocationSpan);
                 // Copy keys and values without rehashing or repackaging keys;
                 // stored hashes and insertion identities stay intact.
                 for (var offset = 0; offset < other._nativeItems.Length; offset += 4096)

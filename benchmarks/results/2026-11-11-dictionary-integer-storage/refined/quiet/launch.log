@@ -1,0 +1,7 @@
+{"freeBytes": 267304960, "sourceAndImagesVerified": true, "jobs": 5, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min
+MainPID=3556392
+ActiveState=active
+
+
+Running as unit: lython-b589-dictionary-values-20261111.service; invocation ID: afcae2cc47c34b1bbaf350b5833febe0

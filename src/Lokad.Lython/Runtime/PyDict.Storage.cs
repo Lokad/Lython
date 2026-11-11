@@ -10,6 +10,9 @@ internal sealed partial class PyDict
     {
         internal object? Key;
         internal long Sequence;
+        // A private dictionary's live null value denotes this exact integer.
+        // Its first public read caches the ordinary immutable Python value.
+        internal long Integer;
         internal uint Hash;
         internal int Next, Bucket;
         internal bool Protocol;
@@ -22,14 +25,14 @@ internal sealed partial class PyDict
     private long _nativeSequence;
     private long _nativeCommittedBytes;
     private const long NativeShellBytes = 192;
-    private const long NativeKeyBytes = 32;
+    private const long NativeKeyBytes = 40;
     private long NativeSlotBytes => NativeKeyBytes + (_keysOnly ? 64 : 136);
     private int NativeExtent => _recordKeys is null ? _nativeCount : Math.Min(_recordKeys.Count, _nativeValues!.Length);
     private bool IsNativeLive(int index) => _recordKeys is null ||
         (uint)index < (uint)_nativeValues!.Length && _nativeValues[index] is not null;
 
     private long NativeKeyStorageBytes(int capacity)
-        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + 96L * capacity);
+        => capacity == 0 ? 0 : checked((_keysOnly ? 96L : 64L) + (NativeKeyBytes + 64L) * capacity);
     private long NativeValueStorageBytes(int capacity)
         => _keysOnly || capacity == 0 ? 0 : checked(32L + 72L * capacity);
 
@@ -280,6 +283,7 @@ internal sealed partial class PyDict
             _nativeValues![from - 1] = _nativeValues[from];
             destination.Hash = source.Hash;
             destination.Sequence = source.Sequence;
+            destination.Integer = source.Integer;
             destination.Protocol = source.Protocol;
             destination.Next = source.Next > removed ? source.Next - 1 : source.Next;
         }
@@ -289,6 +293,7 @@ internal sealed partial class PyDict
         last.Hash = 0;
         last.Next = 0;
         last.Sequence = 0;
+        last.Integer = 0;
         last.Protocol = false;
     }
 
@@ -381,7 +386,23 @@ internal sealed partial class PyDict
         return released;
     }
 
-    private object ReadNativeValue(int index) => _nativeValues is null ? PyNone.Instance : _nativeValues[index]!;
+    private object ReadNativeValue(int index)
+        => _nativeValues is null ? PyNone.Instance
+            : _recordKeys is not null ? _nativeValues[index]!
+            : _nativeValues[index] ??= new BigInteger(_nativeItems![index].Integer);
+
+    // Copying publishes aliases, while shared record metadata must remain
+    // immutable. Materialize before either boundary. The existing value-slot
+    // allowance already funds these boxes; no callback/admission is required.
+    private void MaterializeNativeValues(LythonSourceSpan? span)
+    {
+        if (_recordKeys is not null || _nativeValues is null) return;
+        for (var index = 0; index < _nativeCount; index++)
+        {
+            PyStructuralGuard.NoteWork(null, span);
+            _ = ReadNativeValue(index);
+        }
+    }
 
     private void StoreNativeValue(int index, object value)
     {

@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [native dictionary value change](results/2026-11-11-dictionary-integer-storage/README.md)
+retains exact managed counts inside already funded entries, materializing stable
+immutable values on reads/copy publication. Text allocation falls14.90–16.13%,
+CSV3.13% and JSON-lines4.20% on both APIs; compilation flat. Refined quiet text
+Run improves directionally with supporting widerCPU. Report widerCPU+1.91..+6.38%
+remains accepted debt; CSV elapsed inconclusive. Full delivery is separately
+pending. Original/refined adversity, JIT structural correction and initial archival
+failure/recovery survive. No universal neutrality, additive gain or new CPython
+ratio claim. The performance objective continues.
+
 The [compiler-known argument binding study](results/2026-11-11-known-call-binding/README.md)
 withdraws both measured forms. Runtime allocation stays flat; compile allocation
 rises0.38–0.54%. Refined quiet CSV improves slightly, synchronous search remains

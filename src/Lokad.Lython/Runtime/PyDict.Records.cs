@@ -33,7 +33,7 @@ internal sealed partial class PyDict
             }
             cached = new(layout, key, index);
         }
-        value = IsNativeLive(index) ? ReadNativeValue(index) : null;
+        value = IsNativeLive(index) ? _nativeValues![index] : null;
         return value is not null;
     }
 
@@ -160,6 +160,7 @@ internal sealed partial class PyDict
         // by that callback, or validate the current private keys before freezing.
         if (_recordKeys is { } current) return current;
         if (!CanShareRecordKeys(context, span)) return null;
+        MaterializeNativeValues(span);
         var layout = new RecordKeys(this);
         _recordKeys = layout;
         // Transfer the existing key funding to the batch/cache lifetime without

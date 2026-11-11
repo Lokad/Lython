@@ -1,0 +1,585 @@
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier0)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Tier0 code
+; rbp based frame
+; partially interruptible
+; compiling with minopt
+
+G_M000_IG01:                ;; offset=0x0000
+       push     rbp
+       sub      rsp, 112
+       vzeroupper 
+       lea      rbp, [rsp+0x70]
+       xor      eax, eax
+       mov      qword ptr [rbp-0x48], rax
+       vxorps   xmm4, xmm4, xmm4
+       vmovdqu  ymmword ptr [rbp-0x40], ymm4
+       vmovdqu  ymmword ptr [rbp-0x20], ymm4
+       mov      gword ptr [rbp+0x10], rcx
+       mov      gword ptr [rbp+0x18], rdx
+       mov      bword ptr [rbp+0x20], r8
+       mov      gword ptr [rbp+0x28], r9
+ 
+G_M000_IG02:                ;; offset=0x0031
+       mov      rcx, gword ptr [rbp+0x28]
+       mov      rdx, gword ptr [rbp+0x30]
+       cmp      dword ptr [rcx], ecx
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]
+       mov      rax, gword ptr [rbp+0x10]
+       mov      rax, gword ptr [rax+0x20]
+       mov      gword ptr [rbp-0x08], rax
+       cmp      gword ptr [rbp-0x08], 0
+       jne      SHORT G_M000_IG04
+       mov      rax, bword ptr [rbp+0x38]
+       xor      rcx, rcx
+       mov      gword ptr [rax], rcx
+       xor      eax, eax
+ 
+G_M000_IG03:                ;; offset=0x005F
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+G_M000_IG04:                ;; offset=0x0065
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Target():System.Object:this]
+       cmp      rax, gword ptr [rbp-0x08]
+       jne      SHORT G_M000_IG05
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Value():System.Object:this]
+       cmp      rax, gword ptr [rbp+0x18]
+       jne      SHORT G_M000_IG05
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Position():int:this]
+       mov      dword ptr [rbp-0x0C], eax
+       jmp      G_M000_IG08
+ 
+G_M000_IG05:                ;; offset=0x0097
+       mov      rcx, gword ptr [rbp+0x18]
+       mov      rdx, gword ptr [rbp+0x30]
+       mov      r8, gword ptr [rbp+0x28]
+       call     [Lokad.Lython.Runtime.LythonRuntime:ComputeStructuralHashCode(System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):int]
+       mov      ecx, eax
+       call     [Lokad.Lython.Runtime.PyDict:MixNativeHash(int):uint]
+       mov      dword ptr [rbp-0x10], eax
+       mov      rax, gword ptr [rbp+0x30]
+       mov      gword ptr [rsp+0x20], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      rdx, gword ptr [rbp+0x18]
+       mov      r8d, dword ptr [rbp-0x10]
+       mov      r9, gword ptr [rbp+0x28]
+       call     [Lokad.Lython.Runtime.PyDict:FindNativeIndex(System.Object,uint,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):int:this]
+       mov      dword ptr [rbp-0x0C], eax
+       cmp      dword ptr [rbp-0x0C], 0
+       jge      SHORT G_M000_IG07
+       mov      rax, bword ptr [rbp+0x38]
+       xor      rcx, rcx
+       mov      gword ptr [rax], rcx
+       xor      eax, eax
+ 
+G_M000_IG06:                ;; offset=0x00E7
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+G_M000_IG07:                ;; offset=0x00ED
+       lea      rcx, [rbp-0x28]
+       mov      rdx, gword ptr [rbp-0x08]
+       mov      r8, gword ptr [rbp+0x18]
+       mov      r9d, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:.ctor(System.Object,System.Object,int):this]
+       mov      rax, bword ptr [rbp+0x20]
+       mov      bword ptr [rbp-0x48], rax
+       mov      rcx, bword ptr [rbp-0x48]
+       mov      rax, bword ptr [rbp-0x48]
+       cmp      byte  ptr [rax], al
+       lea      rdx, [rbp-0x28]
+       mov      r8d, 24
+       call     [CORINFO_HELP_BULK_WRITEBARRIER]
+ 
+G_M000_IG08:                ;; offset=0x0125
+       mov      rax, bword ptr [rbp+0x38]
+       mov      bword ptr [rbp-0x30], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      edx, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.PyDict:IsNativeLive(int):bool:this]
+       test     eax, eax
+       jne      SHORT G_M000_IG09
+       mov      rax, bword ptr [rbp-0x30]
+       mov      bword ptr [rbp-0x38], rax
+       xor      rax, rax
+       mov      gword ptr [rbp-0x40], rax
+       jmp      SHORT G_M000_IG10
+ 
+G_M000_IG09:                ;; offset=0x014E
+       mov      rax, bword ptr [rbp-0x30]
+       mov      bword ptr [rbp-0x38], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      edx, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this]
+       mov      gword ptr [rbp-0x40], rax
+ 
+G_M000_IG10:                ;; offset=0x0167
+       mov      rcx, bword ptr [rbp-0x38]
+       mov      rdx, gword ptr [rbp-0x40]
+       call     CORINFO_HELP_CHECKED_ASSIGN_REF
+       mov      rax, bword ptr [rbp+0x38]
+       cmp      gword ptr [rax], 0
+       setne    al
+       movzx    rax, al
+ 
+G_M000_IG11:                ;; offset=0x0182
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+; Total bytes of code 392
+
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier0)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Tier0 code
+; rbp based frame
+; partially interruptible
+; compiling with minopt
+
+G_M000_IG01:                ;; offset=0x0000
+       push     rbp
+       sub      rsp, 32
+       lea      rbp, [rsp+0x20]
+       mov      gword ptr [rbp+0x10], rcx
+       mov      dword ptr [rbp+0x18], edx
+ 
+G_M000_IG02:                ;; offset=0x0011
+       mov      rax, gword ptr [rbp+0x10]
+       cmp      gword ptr [rax+0x30], 0
+       je       SHORT G_M000_IG04
+       mov      rax, gword ptr [rbp+0x10]
+       mov      rax, gword ptr [rax+0x30]
+       mov      ecx, dword ptr [rbp+0x18]
+       cmp      ecx, dword ptr [rax+0x08]
+       jae      SHORT G_M000_IG06
+       mov      edx, ecx
+       lea      rax, bword ptr [rax+8*rdx+0x10]
+       mov      rax, gword ptr [rax]
+ 
+G_M000_IG03:                ;; offset=0x0036
+       add      rsp, 32
+       pop      rbp
+       ret      
+ 
+G_M000_IG04:                ;; offset=0x003C
+       mov      rax, 0x1B1AB801BD8
+       mov      rax, gword ptr [rax]
+ 
+G_M000_IG05:                ;; offset=0x0049
+       add      rsp, 32
+       pop      rbp
+       ret      
+ 
+G_M000_IG06:                ;; offset=0x004F
+       call     CORINFO_HELP_RNGCHKFAIL
+       int3     
+ 
+; Total bytes of code 85
+
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Instrumented Tier0)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Instrumented Tier0 code
+; rbp based frame
+; partially interruptible
+; compiling with minopt
+
+G_M000_IG01:                ;; offset=0x0000
+       push     rbp
+       sub      rsp, 112
+       vzeroupper 
+       lea      rbp, [rsp+0x70]
+       xor      eax, eax
+       mov      qword ptr [rbp-0x48], rax
+       vxorps   xmm4, xmm4, xmm4
+       vmovdqu  ymmword ptr [rbp-0x40], ymm4
+       vmovdqu  ymmword ptr [rbp-0x20], ymm4
+       mov      gword ptr [rbp+0x10], rcx
+       mov      gword ptr [rbp+0x18], rdx
+       mov      bword ptr [rbp+0x20], r8
+       mov      gword ptr [rbp+0x28], r9
+ 
+G_M000_IG02:                ;; offset=0x0031
+       mov      rcx, gword ptr [rbp+0x28]
+       mov      rdx, gword ptr [rbp+0x30]
+       cmp      dword ptr [rcx], ecx
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]
+       mov      rax, gword ptr [rbp+0x10]
+       mov      rax, gword ptr [rax+0x20]
+       mov      gword ptr [rbp-0x08], rax
+       cmp      gword ptr [rbp-0x08], 0
+       jne      SHORT G_M000_IG04
+       mov      rcx, 0x7FFA10463BC0
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rax, bword ptr [rbp+0x38]
+       xor      rcx, rcx
+       mov      gword ptr [rax], rcx
+       xor      eax, eax
+ 
+G_M000_IG03:                ;; offset=0x006E
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+G_M000_IG04:                ;; offset=0x0074
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Target():System.Object:this]
+       cmp      rax, gword ptr [rbp-0x08]
+       jne      SHORT G_M000_IG06
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Value():System.Object:this]
+       cmp      rax, gword ptr [rbp+0x18]
+       jne      SHORT G_M000_IG05
+       mov      rcx, 0x7FFA10463BC4
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rcx, bword ptr [rbp+0x20]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:get_Position():int:this]
+       mov      dword ptr [rbp-0x0C], eax
+       jmp      G_M000_IG09
+ 
+G_M000_IG05:                ;; offset=0x00B5
+       mov      rcx, 0x7FFA10463BC8
+       call     CORINFO_HELP_COUNTPROFILE32
+ 
+G_M000_IG06:                ;; offset=0x00C4
+       mov      rcx, gword ptr [rbp+0x18]
+       mov      rdx, gword ptr [rbp+0x30]
+       mov      r8, gword ptr [rbp+0x28]
+       call     [Lokad.Lython.Runtime.LythonRuntime:ComputeStructuralHashCode(System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):int]
+       mov      ecx, eax
+       call     [Lokad.Lython.Runtime.PyDict:MixNativeHash(int):uint]
+       mov      dword ptr [rbp-0x10], eax
+       mov      rax, gword ptr [rbp+0x30]
+       mov      gword ptr [rsp+0x20], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      rdx, gword ptr [rbp+0x18]
+       mov      r8d, dword ptr [rbp-0x10]
+       mov      r9, gword ptr [rbp+0x28]
+       call     [Lokad.Lython.Runtime.PyDict:FindNativeIndex(System.Object,uint,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):int:this]
+       mov      dword ptr [rbp-0x0C], eax
+       cmp      dword ptr [rbp-0x0C], 0
+       jge      SHORT G_M000_IG08
+       mov      rcx, 0x7FFA10463BCC
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rax, bword ptr [rbp+0x38]
+       xor      rcx, rcx
+       mov      gword ptr [rax], rcx
+       xor      eax, eax
+ 
+G_M000_IG07:                ;; offset=0x0123
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+G_M000_IG08:                ;; offset=0x0129
+       lea      rcx, [rbp-0x28]
+       mov      rdx, gword ptr [rbp-0x08]
+       mov      r8, gword ptr [rbp+0x18]
+       mov      r9d, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableLookupCache:.ctor(System.Object,System.Object,int):this]
+       mov      rax, bword ptr [rbp+0x20]
+       mov      bword ptr [rbp-0x48], rax
+       mov      rcx, bword ptr [rbp-0x48]
+       mov      rax, bword ptr [rbp-0x48]
+       cmp      byte  ptr [rax], al
+       lea      rdx, [rbp-0x28]
+       mov      r8d, 24
+       call     CORINFO_HELP_BULK_WRITEBARRIER
+ 
+G_M000_IG09:                ;; offset=0x0160
+       mov      rax, bword ptr [rbp+0x38]
+       mov      bword ptr [rbp-0x30], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      edx, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.PyDict:IsNativeLive(int):bool:this]
+       test     eax, eax
+       jne      SHORT G_M000_IG10
+       mov      rax, bword ptr [rbp-0x30]
+       mov      bword ptr [rbp-0x38], rax
+       xor      rax, rax
+       mov      gword ptr [rbp-0x40], rax
+       jmp      SHORT G_M000_IG11
+ 
+G_M000_IG10:                ;; offset=0x0189
+       mov      rcx, 0x7FFA10463BD0
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rax, bword ptr [rbp-0x30]
+       mov      bword ptr [rbp-0x38], rax
+       mov      rcx, gword ptr [rbp+0x10]
+       mov      edx, dword ptr [rbp-0x0C]
+       call     [Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this]
+       mov      gword ptr [rbp-0x40], rax
+ 
+G_M000_IG11:                ;; offset=0x01B1
+       mov      rcx, 0x7FFA10463BD4
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rcx, bword ptr [rbp-0x38]
+       mov      rdx, gword ptr [rbp-0x40]
+       call     CORINFO_HELP_CHECKED_ASSIGN_REF
+       mov      rax, bword ptr [rbp+0x38]
+       cmp      gword ptr [rax], 0
+       setne    al
+       movzx    rax, al
+ 
+G_M000_IG12:                ;; offset=0x01DB
+       add      rsp, 112
+       pop      rbp
+       ret      
+ 
+; Total bytes of code 481
+
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Instrumented Tier0)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Instrumented Tier0 code
+; rbp based frame
+; partially interruptible
+; compiling with minopt
+
+G_M000_IG01:                ;; offset=0x0000
+       push     rbp
+       sub      rsp, 32
+       lea      rbp, [rsp+0x20]
+       mov      gword ptr [rbp+0x10], rcx
+       mov      dword ptr [rbp+0x18], edx
+ 
+G_M000_IG02:                ;; offset=0x0011
+       mov      rax, gword ptr [rbp+0x10]
+       cmp      gword ptr [rax+0x30], 0
+       je       SHORT G_M000_IG04
+       mov      rcx, 0x7FFA10463C08
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rax, gword ptr [rbp+0x10]
+       mov      rax, gword ptr [rax+0x30]
+       mov      ecx, dword ptr [rbp+0x18]
+       cmp      ecx, dword ptr [rax+0x08]
+       jae      SHORT G_M000_IG06
+       mov      edx, ecx
+       lea      rax, bword ptr [rax+8*rdx+0x10]
+       mov      rax, gword ptr [rax]
+ 
+G_M000_IG03:                ;; offset=0x0045
+       add      rsp, 32
+       pop      rbp
+       ret      
+ 
+G_M000_IG04:                ;; offset=0x004B
+       mov      rcx, 0x7FFA10463C0C
+       call     CORINFO_HELP_COUNTPROFILE32
+       mov      rax, 0x1B1AB801BD8
+       mov      rax, gword ptr [rax]
+ 
+G_M000_IG05:                ;; offset=0x0067
+       add      rsp, 32
+       pop      rbp
+       ret      
+ 
+G_M000_IG06:                ;; offset=0x006D
+       call     CORINFO_HELP_RNGCHKFAIL
+       int3     
+ 
+; Total bytes of code 115
+
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier1)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Tier1 code
+; optimized code
+; optimized using Synthesized PGO
+; rsp based frame
+; partially interruptible
+; with Synthesized PGO: fgCalledCount is 18284
+; 4 inlinees with PGO data; 10 single block inlinees; 1 inlinees without PGO data
+
+G_M000_IG01:                ;; offset=0x0000
+       push     r15
+       push     r14
+       push     r13
+       push     rdi
+       push     rsi
+       push     rbp
+       push     rbx
+       sub      rsp, 48
+       mov      rbx, rcx
+       mov      rdi, rdx
+       mov      rsi, r8
+       mov      rbp, r9
+       mov      r14, bword ptr [rsp+0x98]
+ 
+G_M000_IG02:                ;; offset=0x0022
+       mov      rcx, gword ptr [rbp+0xB0]
+       mov      rax, gword ptr [rcx+0x88]
+       mov      rax, gword ptr [rax+0x20]
+       test     rax, rax
+       jne      G_M000_IG10
+       mov      rcx, gword ptr [rcx+0x178]
+       test     rcx, rcx
+       jne      G_M000_IG11
+ 
+G_M000_IG03:                ;; offset=0x004D
+       mov      r15, gword ptr [rbx+0x20]
+       test     r15, r15
+       je       G_M000_IG12
+       cmp      gword ptr [rsi], r15
+       jne      G_M000_IG14
+ 
+G_M000_IG04:                ;; offset=0x0063
+       cmp      gword ptr [rsi+0x08], rdi
+       jne      G_M000_IG14
+       mov      r13d, dword ptr [rsi+0x10]
+ 
+G_M000_IG05:                ;; offset=0x0071
+       cmp      gword ptr [rbx+0x20], 0
+       je       SHORT G_M000_IG07
+ 
+G_M000_IG06:                ;; offset=0x0078
+       mov      rcx, gword ptr [rbx+0x30]
+       cmp      dword ptr [rcx+0x08], r13d
+       jbe      G_M000_IG15
+       cmp      r13d, dword ptr [rcx+0x08]
+       jae      G_M000_IG17
+       mov      edx, r13d
+       cmp      gword ptr [rcx+8*rdx+0x10], 0
+       setne    cl
+       movzx    rcx, cl
+       test     ecx, ecx
+       je       G_M000_IG15
+ 
+G_M000_IG07:                ;; offset=0x00A7
+       mov      rcx, gword ptr [rbx+0x30]
+       test     rcx, rcx
+       je       G_M000_IG16
+       mov      rdx, rcx
+       cmp      r13d, dword ptr [rdx+0x08]
+       jae      G_M000_IG17
+       mov      ecx, r13d
+       mov      rdx, gword ptr [rdx+8*rcx+0x10]
+ 
+G_M000_IG08:                ;; offset=0x00C9
+       mov      rcx, r14
+       call     CORINFO_HELP_CHECKED_ASSIGN_REF
+       cmp      gword ptr [r14], 0
+       setne    al
+       movzx    rax, al
+ 
+G_M000_IG09:                ;; offset=0x00DB
+       add      rsp, 48
+       pop      rbx
+       pop      rbp
+       pop      rsi
+       pop      rdi
+       pop      r13
+       pop      r14
+       pop      r15
+       ret      
+ 
+G_M000_IG10:                ;; offset=0x00EA
+       mov      rcx, rax
+       call     CORINFO_HELP_THROW
+       int3     
+ 
+G_M000_IG11:                ;; offset=0x00F3
+       cmp      dword ptr [rcx+0x20], 0
+       je       G_M000_IG03
+       mov      rcx, gword ptr [rsp+0x90]
+       call     [Lokad.Lython.Runtime.ExecutionState:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]
+       jmp      G_M000_IG03
+ 
+G_M000_IG12:                ;; offset=0x0110
+       xor      rax, rax
+       mov      gword ptr [r14], rax
+ 
+G_M000_IG13:                ;; offset=0x0115
+       add      rsp, 48
+       pop      rbx
+       pop      rbp
+       pop      rsi
+       pop      rdi
+       pop      r13
+       pop      r14
+       pop      r15
+       ret      
+ 
+G_M000_IG14:                ;; offset=0x0124
+       mov      rcx, rdi
+       mov      rdx, gword ptr [rsp+0x90]
+       mov      r8, rbp
+       call     [Lokad.Lython.Runtime.LythonRuntime:ComputeStructuralHashCode(System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):int]
+       mov      ecx, eax
+       call     [Lokad.Lython.Runtime.PyDict:MixNativeHash(int):uint]
+       mov      r8d, eax
+       mov      r13, gword ptr [rsp+0x90]
+       mov      gword ptr [rsp+0x20], r13
+       mov      rdx, rdi
+       mov      rcx, rbx
+       mov      r9, rbp
+       call     [Lokad.Lython.Runtime.PyDict:FindNativeIndex(System.Object,uint,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):int:this]
+       mov      r13d, eax
+       test     r13d, r13d
+       jl       SHORT G_M000_IG12
+       mov      rcx, rsi
+       mov      rdx, r15
+       call     CORINFO_HELP_CHECKED_ASSIGN_REF
+       lea      rcx, bword ptr [rsi+0x08]
+       mov      rdx, rdi
+       call     CORINFO_HELP_CHECKED_ASSIGN_REF
+       mov      dword ptr [rsi+0x10], r13d
+       jmp      G_M000_IG05
+ 
+G_M000_IG15:                ;; offset=0x0187
+       xor      rdx, rdx
+       jmp      G_M000_IG08
+ 
+G_M000_IG16:                ;; offset=0x018E
+       mov      rdx, 0x1B1AB801BD8
+       mov      rdx, gword ptr [rdx]
+       jmp      G_M000_IG08
+ 
+G_M000_IG17:                ;; offset=0x01A0
+       call     CORINFO_HELP_RNGCHKFAIL
+       int3     
+ 
+; Total bytes of code 422
+
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier1)
+; Emitting BLENDED_CODE for x64 + VEX on Windows
+; Tier1 code
+; optimized code
+; optimized using Dynamic PGO
+; rsp based frame
+; partially interruptible
+; with Dynamic PGO: fgCalledCount is 18404
+
+G_M000_IG01:                ;; offset=0x0000
+       sub      rsp, 40
+ 
+G_M000_IG02:                ;; offset=0x0004
+       mov      rax, gword ptr [rcx+0x30]
+       test     rax, rax
+       je       SHORT G_M000_IG04
+       cmp      edx, dword ptr [rax+0x08]
+       jae      SHORT G_M000_IG06
+       mov      ecx, edx
+       mov      rax, gword ptr [rax+8*rcx+0x10]
+ 
+G_M000_IG03:                ;; offset=0x0019
+       add      rsp, 40
+       ret      
+ 
+G_M000_IG04:                ;; offset=0x001E
+       mov      rax, 0x1B1AB801BD8
+       mov      rax, gword ptr [rax]
+ 
+G_M000_IG05:                ;; offset=0x002B
+       add      rsp, 40
+       ret      
+ 
+G_M000_IG06:                ;; offset=0x0030
+       call     CORINFO_HELP_RNGCHKFAIL
+       int3     
+ 
+; Total bytes of code 54
+

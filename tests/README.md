@@ -87,6 +87,10 @@ Private totals also cross protocol/error boundaries and genuinely pending calls.
 Admission callbacks observe their completed value before growth is refused;
 empty-loop identity, final locals and integer promotion retain Python behavior.
 
+[Dictionary value lifetimes](Lokad.Lython.PublicApi.Tests/DictionaryValueLifetimeTests.cs)
+cover repeated-read/copy identity, old aliases, ordered removal, growth and signed
+promotion. Internal cases preserve independent row values when keys are shared.
+
 [Native helper refunds](Lokad.Lython.Tests/NativeFunctionRefundTests.cs) exercise
 admission reentry during a real compiled helper and refusal during cleanup.
 Both APIs preserve the first failure and keep retained data and cached storage

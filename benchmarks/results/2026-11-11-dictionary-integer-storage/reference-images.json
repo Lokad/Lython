@@ -1,0 +1,12 @@
+{
+  "runtime": "Fully qualified6904093e, exact frozenccdd; no changed core source in e2240c23",
+  "net11": {
+    "path": "benchmarks/results/2026-11-11-known-call-binding/initial/before-net11.0.dll.gz",
+    "sha256": "ccdd645dc6d2a541dbea0aaf170e33381666563d2579cd6f596fbebce427aeaa"
+  },
+  "net10": {
+    "path": "benchmarks/results/2026-11-11-known-call-binding/initial/before-net10.0.dll.gz",
+    "sha256": "6bc88e20b3ffa77bf5e77b48586a018aaf8d14e72cc746d26c4878b9c7f0ec38"
+  },
+  "candidateNet11": "Each form quiet/observations.tgz current-core.dll; independently verified against diagnostic-identity.json. Reuse exact raw image, no duplicate core bundle."
+}

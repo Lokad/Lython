@@ -19,7 +19,7 @@ Timed rows measure **compilation plus one execution in an already-running host**
 mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
 fixture staging/reset, protocol and final cache teardown are excluded.
 
-**Measured current source:** retained `6904093e`, 2026-11-11, frozen refined
+**Measured source:** retained `6904093e`, 2026-11-11, frozen refined
 core `ccdd645d` with precommit metadata. All production source hashes match.
 The six refreshed scripts use stock CPython 3.13.16 on the same VM. Exact-source
 Windows/Ubuntu, actual .NET 11/10, original stress and installed Release consumers
@@ -93,6 +93,8 @@ five-second warmups per role/job and seven rotated 150 ms rounds. Six current
 scripts use core `ccdd645d` (retained `6904093e` production sources), fixed common
 worker `fec79afd` and optional adapter 0.4. Other rows keep their recorded images.
 These source-labelled observations do not qualify a newer regex producer.
+Later dictionary storage changes are measured separately below and are not
+reflected in these external ratios.
 
 Identical scripts and fixtures run on both engines, with complete stdout/file
 digests checked every invocation. Lython uses efficient mediated filesystem
@@ -136,6 +138,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
+| Native dictionary integer storage / complete text, CSV and JSON-lines | CLR allocation −14.90–16.13% text, −3.13% CSV, −4.20% JSON-lines on both APIs; refined quiet text Run elapsed direction improves | Focused actual11/10 passes; full delivery pending. Captured Run −3.81–9.06%, ordinary −2.62–8.66%, supporting wider CPU with moving controls. CSV elapsed inconclusive; report wider CPU +1.91..+6.38% remains accepted debt. All desktop adversity and initial archival failure/recovery retained. [Source pair](../benchmarks/results/2026-11-11-dictionary-integer-storage/README.md) |
 | Captured native helper sequences / complete text | Quiet elapsed −10.56–15.17% Run / −16.59–18.16% RunAsync, supporting wider CPU; runtime allocation flat | Fully qualified `6904093e` versus `5f9059fa`. Ordinary text inconclusive, CSV control +0.49..+0.89%, compile allocation +0.39–0.93%. Initial adverse implementation and refinement preserved. [R243](../benchmarks/results/2026-11-11-native-closure-sequences/README.md) |
 | Shared compiled workspace / local-record CSV | CLR allocation −4.92% both APIs; quiet affected elapsed direction improves | Fully qualified `5f9059fa` versus `b584`. Original desktop slowdown does not recur, cause unknown; ordinary CSV control +0.97..+2.83% remains uncertain. [Source pair](../benchmarks/results/2026-11-11-mirrored-function-storage/README.md) |
 | Private integer totals / complete text helpers | CLR allocation −9.04% captured / −9.71–9.72% ordinary text on both APIs; ordinary sync improves in two quiet collections | Fully qualified `b5849b04` versus `8314`. Captured/async CPU uncertain. Report adversity does not recur on confirmation, cause unexplained. [R240](../benchmarks/results/2026-11-11-private-counter-segments/README.md) |

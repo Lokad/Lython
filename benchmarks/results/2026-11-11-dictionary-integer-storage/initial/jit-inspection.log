@@ -1,0 +1,32 @@
+before
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier0)
+; Total bytes of code 392
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier0)
+; Total bytes of code 85
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Instrumented Tier0)
+; Total bytes of code 481
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Instrumented Tier0)
+; Total bytes of code 115
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier1)
+; Total bytes of code 422
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier1)
+; Total bytes of code 54
+candidate
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:MaterializeNativeValues(Lokad.Lython.LythonSourceSpan):this (Instrumented Tier0)
+; Total bytes of code 208
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier0)
+; Total bytes of code 298
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier0)
+; Total bytes of code 392
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Instrumented Tier0)
+; Total bytes of code 357
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Instrumented Tier0)
+; Total bytes of code 481
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:TryReadRecordValue(Lokad.Lython.Runtime.Text.PyString,byref,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this (Tier1)
+; Total bytes of code 562
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:ReadNativeValue(int):System.Object:this (Tier1)
+; Total bytes of code 210
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:MaterializeNativeValues(Lokad.Lython.LythonSourceSpan):this (Instrumented Tier0)
+; Total bytes of code 208
+; Assembly listing for method Lokad.Lython.Runtime.PyDict:MaterializeNativeValues(Lokad.Lython.LythonSourceSpan):this (Tier1)
+; Total bytes of code 437
