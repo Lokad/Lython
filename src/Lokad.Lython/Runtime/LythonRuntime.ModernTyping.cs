@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
         using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 64L * arguments.Length, span);
         object? nameValue = null, bound = null, defaultValue = null;
         var constraints = new List<object>();
-        var covariant = false; var contravariant = false; var inferVariance = false;
+        object covariantValue = false, contravariantValue = false, inferVarianceValue = false;
         var positional = 0;
         foreach (var argument in arguments)
         {
@@ -199,14 +199,20 @@ internal sealed partial class LythonRuntime
                 case "bound" when kind != TypeParameterKind.TypeVarTuple: bound = argument.Value is PyNone ? null : argument.Value; break;
                 case "default": defaultValue = ReferenceEquals(argument.Value, PyTypeParameter.NoDefault) ? null : argument.Value; break;
                 case "covariant" when kind != TypeParameterKind.TypeVarTuple:
-                    covariant = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
+                    covariantValue = argument.Value; break;
                 case "contravariant" when kind != TypeParameterKind.TypeVarTuple:
-                    contravariant = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
+                    contravariantValue = argument.Value; break;
                 case "infer_variance" when kind != TypeParameterKind.TypeVarTuple:
-                    inferVariance = asynchronous ? await IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : IsTruthy(argument.Value, context, span); break;
+                    inferVarianceValue = argument.Value; break;
                 default: throw new LythonRuntimeException("TypeError", "Unexpected type parameter keyword", span);
             }
         }
+        // Python binds the complete call before coercing flags, in parameter
+        // order rather than keyword insertion order. Keep the working owner
+        // alive through actual asynchronous truth callbacks.
+        var covariant = asynchronous ? await IsTruthyAsync(covariantValue, context, span).ConfigureAwait(false) : IsTruthy(covariantValue, context, span);
+        var contravariant = asynchronous ? await IsTruthyAsync(contravariantValue, context, span).ConfigureAwait(false) : IsTruthy(contravariantValue, context, span);
+        var inferVariance = asynchronous ? await IsTruthyAsync(inferVarianceValue, context, span).ConfigureAwait(false) : IsTruthy(inferVarianceValue, context, span);
         if (nameValue is null || !PyStringOps.TryAsString(nameValue, out var name))
             throw new LythonRuntimeException("TypeError", "Type parameter name must be a string", span);
         if (constraints.Count == 1 || constraints.Count != 0 && (kind != TypeParameterKind.TypeVar || bound is not null))

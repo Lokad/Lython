@@ -50,24 +50,11 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
-        return InvokeCallable(
-            callable,
-            callSpan,
-            context,
-            new DeferredCallArguments(expandArguments));
-    }
 
-    private static object InvokeCallable<TArguments>(
-        ICallable callable,
-        LythonSourceSpan callSpan,
-        ExecutionContext context,
-        TArguments arguments)
-        where TArguments : struct, ICallArguments
-    {
         context.EnterInterpreterFrame(callSpan);
         try
         {
-            return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
+            return RuntimeValue(callable.Invoke(expandArguments(), callSpan, context));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
@@ -410,11 +397,10 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NotCallable(targetSpan);
         }
 
-        return InvokeCallable(
-            callable,
-            callSpan,
-            context,
-            new PreparedCallArguments(arguments));
+        context.EnterInterpreterFrame(callSpan);
+        try { return RuntimeValue(callable.Invoke(arguments, callSpan, context)); }
+        catch (Exception error) when (TryTranslateCallableException(error, callSpan, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
     }
 
     private static object InvokeBorrowedCallableTarget(object target, ExecutableCallSite call,
@@ -455,17 +441,6 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    private interface ICallArguments
-    {
-        /// <summary>Supplies arguments after the target has been confirmed callable and its interpreter frame entered.</summary>
-        CallArgumentValue[] Expand();
-    }
-
-    private readonly record struct DeferredCallArguments(Func<CallArgumentValue[]> ExpandArguments) : ICallArguments
-    {
-        public CallArgumentValue[] Expand() => ExpandArguments();
-    }
-
     private interface IAsyncCallArguments
     {
         ValueTask<CallArgumentValue[]> ExpandAsync();
@@ -476,9 +451,8 @@ internal sealed partial class LythonRuntime
         public ValueTask<CallArgumentValue[]> ExpandAsync() => ExpandArguments();
     }
 
-    private readonly record struct PreparedCallArguments(CallArgumentValue[] Arguments) : ICallArguments, IAsyncCallArguments
+    private readonly record struct PreparedCallArguments(CallArgumentValue[] Arguments) : IAsyncCallArguments
     {
-        public CallArgumentValue[] Expand() => Arguments;
         public ValueTask<CallArgumentValue[]> ExpandAsync() => ValueTask.FromResult(Arguments);
     }
 

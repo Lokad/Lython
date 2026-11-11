@@ -228,8 +228,8 @@ internal static partial class PyDataclass
                         throw new LythonRuntimeException("NotImplementedError", $"dataclasses.make_dataclass({argument.KeywordName}=...) is not supported by Lython.", span);
                     default:
                         if (!seenOptions.Add(argument.KeywordName)) throw CallErrors.MultipleValues(PythonCallableKind.Builtin, "dataclasses.make_dataclass", argument.KeywordName, span);
-                        var truth = asynchronous ? await LythonRuntime.IsTruthyAsync(argument.Value, context, span).ConfigureAwait(false) : LythonRuntime.IsTruthy(argument.Value, context, span);
-                        options = ApplyDataclassOption(options, argument.KeywordName, truth, "dataclasses.make_dataclass", span);
+                        if (!IsDataclassOption(argument.KeywordName))
+                            throw CallErrors.UnexpectedKeyword(PythonCallableKind.Builtin, "dataclasses.make_dataclass", argument.KeywordName, span);
                         rawOptions[argument.KeywordName] = argument.Value;
                         break;
                 }
@@ -238,6 +238,13 @@ internal static partial class PyDataclass
             if (clsName is null || fieldsArgument is null)
             {
                 throw new LythonRuntimeException("TypeError", "dataclasses.make_dataclass(cls_name, fields, ...) expects cls_name and fields.", span);
+            }
+
+            foreach (var pair in rawOptions)
+            {
+                var truth = asynchronous ? await LythonRuntime.IsTruthyAsync(pair.Value, context, span).ConfigureAwait(false)
+                    : LythonRuntime.IsTruthy(pair.Value, context, span);
+                options = ApplyDataclassOption(options, pair.Key, truth, "dataclasses.make_dataclass", span);
             }
 
             var name = RuntimeArgumentValidation.ExpectString(clsName, "dataclasses.make_dataclass(cls_name=...)", span);

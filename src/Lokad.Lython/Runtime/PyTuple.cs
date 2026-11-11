@@ -67,6 +67,38 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 
+    internal static PyTuple FromPositionalArguments(ReadOnlySpan<CallArgumentValue> arguments,
+        MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        var count = 0;
+        long scalars = 0;
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            if (!arguments[i].IsPositional) continue;
+            count++;
+            scalars = checked(scalars + RuntimeMemoryEstimates.EstimateScalarStorageBytes(arguments[i].Value));
+        }
+        var bytes = checked(EstimateApproximateBytes(count) + scalars);
+        governor.Reserve(bytes, span);
+        try
+        {
+            context.CheckExecution(span);
+            var items = count == 0 ? Array.Empty<object>() : new object[count];
+            var written = 0;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if ((i & 1023) == 0) context.CheckExecution(span);
+                if (arguments[i].IsPositional) items[written++] = arguments[i].Value;
+            }
+            var result = new PyTuple(items, governor, span, bytes);
+            context.CheckExecution(span);
+            governor.Commit(bytes);
+            return result;
+        }
+        catch { governor.ReleaseReserved(bytes); throw; }
+    }
+
     internal static PyTuple FromOwnedArray(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         // Ownership transfer lets collection-expression callers avoid a second

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Validate factory keyword binding before truth hooks and evaluate typing variance
+  flags in Python's parameter order. Build exception argument tuples directly
+  into admitted final storage.
+
 - Use the shared executable frame runner for ordinary construction
   when the default allocator is inherited through its `staticmethod` wrapper.
   Share named, keyword-only and variadic binding with ordinary functions.

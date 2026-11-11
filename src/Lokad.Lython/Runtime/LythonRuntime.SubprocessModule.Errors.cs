@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
                 PythonCallableKind.Builtin);
             return CreateSubprocessErrorValue("CalledProcessError", bound[0], bound[1],
                 GetArgument(bound, 2), GetArgument(bound, 3),
-                new PyTuple(arguments.Where(a => a.IsPositional).Select(a => a.Value), context.MemoryGovernor, span), context, span);
+                PyTuple.FromPositionalArguments(arguments, context.MemoryGovernor, span, context), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 PythonCallableKind.Builtin);
             return CreateSubprocessErrorValue("TimeoutExpired", bound[1], bound[0],
                 GetArgument(bound, 2), GetArgument(bound, 3),
-                new PyTuple(arguments.Where(a => a.IsPositional).Select(a => a.Value), context.MemoryGovernor, span), context, span);
+                PyTuple.FromPositionalArguments(arguments, context.MemoryGovernor, span, context), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)

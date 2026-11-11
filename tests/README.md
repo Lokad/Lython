@@ -63,6 +63,12 @@ check original failure spans beyond the fourth argument. Numeric ingress checks
 also preserve BigInteger projection for guest arithmetic and CLR types for unchanged
 host integers.
 
+[Prepared call arguments](Lokad.Lython.PublicApi.Tests/PreparedCallArgumentTests.cs)
+check Python factory validation, variance-hook order, descriptor-returned
+initializer functions, pending cancellation, retained aliases and shared-budget
+reuse. Exception argument admission also checks that refusal precedes allocation
+of storage proportional to an already-prepared input vector.
+
 [Guest integer regressions](Lokad.Lython.PublicApi.Tests/GuestIntegerRepresentationTests.cs)
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.

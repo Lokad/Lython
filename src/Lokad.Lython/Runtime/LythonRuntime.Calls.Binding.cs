@@ -625,9 +625,8 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var values = arguments.Select(argument => argument.Value).ToArray();
-            var args = new PyTuple(values, context.MemoryGovernor, span);
-            var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
+            var args = PyTuple.FromPositionalArguments(arguments, context.MemoryGovernor, span, context);
+            var payload = args.Count == 0 ? PyNone.Instance : args.Count == 1 ? args[0] : args;
             var exception = PyException.CreateOwned(ExceptionIdentity, string.Empty, payload, context, span, args);
             return exception;
         }
