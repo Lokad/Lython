@@ -11,7 +11,8 @@ is retained in `b5849b04`. Whole-script text allocation falls9.04–9.72% throug
 both APIs. Ordinary sync improves directionally in two quiet collections;
 captured/async clocks remain uncertain. Original report adversity does not recur
 with fresh processes but remains unexplained and preserved. No universal CPU or
-control-neutrality claim. Exact full delivery batches R239/R240 separately.
+control-neutrality claim. Exact `b5849b04` passes Windows/Ubuntu, actual11/10,
+original stress and installed consumers, covering R239/R240 together.
 
 The [current native-word profile](results/2026-11-11-native-word-costs/README.md)
 selects the next complete boundary after R237, retaining unknown/inlined work.
@@ -19,7 +20,7 @@ It does not forecast removable CPU or reject untimed word-transport ideas.
 The [native helper refund correction](results/2026-11-11-native-helper-refund/README.md)
 removes duplicate cleanup after a refund callback throws: both APIs previously
 refunded 160 retained bytes twice. Committed `8314c02d` passes 960 focused actual11/10
-checks; full delivery batches with the next material runtime milestone.
+checks; combined `b5849b04` subsequently passes full platform/stress/package delivery.
 
 The [R237 complete counting-loop milestone](results/2026-11-11-native-counting-loops/README.md)
 is retained in `fe6648b2`. Existing native iteration and arithmetic remove repeated

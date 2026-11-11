@@ -17,5 +17,8 @@ The [original failure](before.log), focused internal/public logs on both targets
 [source/test patch](source.patch.gz) and [outcome](outcome.json) preserve the proof.
 All 960 focused checks pass across actual .NET 11/10, including live/cache funding,
 first refusal, retained input, frames, defaults, exception context, cancellation,
-awaited cleanup and shared-budget reuse. Full qualification is batched with the
-next material runtime milestone; this record does not claim full `8314` delivery.
+awaited cleanup and shared-budget reuse. Subsequent combined runtime `b5849b04`
+passes full Windows/Ubuntu, actual .NET 11/10, original stress and installed
+Release consumers in [run 43033830025](https://github.com/Lokad/Lython/actions/runs/43033830025).
+The [recorded result](delivery-ci-status.json) covers this correction; original
+outcome/logs preserve the earlier collection-time qualification status.

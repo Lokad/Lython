@@ -67,8 +67,12 @@ Both collections joined all users, removed RAM fixtures and SHA-verified archive
 under their lease and after retrieval. B579/B580 are terminal/cached; never query
 them again. Final recorded free space is 276,156,416 B.
 
-Exact `b5849b04` Windows/Ubuntu, .NET 11/10, original stress and installed-package
-delivery is in progress in run 43033830025; focused checks do not substitute for it.
+Exact `b5849b04` subsequently passes Windows/Ubuntu, .NET 11/10, original stress
+and installed-package delivery in
+[run 43033830025](https://github.com/Lokad/Lython/actions/runs/43033830025),
+including the R239 cleanup correction. The [recorded result](delivery-ci-status.json)
+is terminal/cached. Original decision/identity records preserve their collection-time
+qualification status; focused checks alone did not establish this delivery.
 The public CPython tables remain explicitly qualified `fe6648b2`, not this revision.
 RSS, real pending-I/O latency and embedding tail latency remain unqualified.
 The performance roadmap continues; publication and tagging remain postponed.
