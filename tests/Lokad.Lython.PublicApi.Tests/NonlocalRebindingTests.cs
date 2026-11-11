@@ -49,4 +49,23 @@ public sealed class NonlocalRebindingTests
         Assert.False(script.IsValid);
         Assert.Contains(script.Diagnostics, d => d.Code == "LA3146");
     }
+
+    [Fact]
+    public void AGlobalDeclarationBlocksNonlocalResolutionToAnOuterFunction()
+    {
+        using var script = new LythonEngine().Compile("""
+            def outer():
+                value = 1
+                def middle():
+                    global value
+                    def write():
+                        nonlocal value
+                        value = 7
+                del value
+                return value
+            """);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, d => d.Code == "LA3205");
+        Assert.Contains(script.Diagnostics, d => d.Code == "LA3146");
+    }
 }
