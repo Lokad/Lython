@@ -107,3 +107,11 @@ suspension/cancellation/cleanup assertions and unchanged five-second deadlines;
 32checks pass on each target. Scheduling interference remains a hypothesis.
 Corrected full delivery is pending; no runtime change or performance remeasurement
 is implied by this test-scheduling correction.
+
+Subsequent corrected delivery `43087005596`, source `458be840`, is **GREEN** on
+Windows/Ubuntu, actual .NET 11/10, original stress and installed Release consumers.
+Its production source is exactly retained `8f8628a4`; the correction changes test
+scheduling, keeping five-second deadlines and every assertion. The
+[terminal receipt](delivery-ci-status.json) is cached. Original failure and
+collection-time status remain preserved. This does not qualify later prototypes
+or resolve the report CPU debt.

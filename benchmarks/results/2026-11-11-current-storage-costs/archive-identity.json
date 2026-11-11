@@ -2,13 +2,14 @@
   "archive-receipt.json": "e5a747f2d486ff3cd20404656dc1e072644ddeb30ca8d6a2562d8423a0371dd9",
   "assessment.json": "1c457496f060a4c03881f1c22c3acda1d2a436afad2324abf3edbe0c792b3b0c",
   "config.json": "93412ba048539382817b17ba0531af3703b3b29ee3da904cddd4a370197ffd0f",
+  "delivery-ci-status.json": "43cf308f3964a1bd439e089d9d45fd5a6d7102ff8fb6c67c08b96c29678f0d2a",
   "identity.json": "79fb8dd8daef8cda530241bfca9fe938387b073e1bc1afdea8cc1021513515e2",
   "inventory.json": "59b78295222d88fd47e7275a47a0e76dbbfa389b02ff9348f1896b16e414f929",
   "launch.log": "652c01c67c0d959f26327a7831e545002fa359e6cde0db9112fc8143d26bb6ea",
   "observations.tgz": "9d0104e5cea88f963c8ddae7ff74ff781f71bd5dff92d09123f22349b982d091",
   "observe-not-before.json": "a7c5ae2a7c1c5287d12d131706f6ec1867c539fa7923bb147df31f9ff73062c1",
   "preparation.tar.xz": "c2fa3d279c9885169259e5d6af2d04cdb14fb114ffad811599fc81af3afffb9f",
-  "README.md": "6333319dc91017c5b9ea06050369df4cee7a9332cc76ff62329584c8050f229c",
+  "README.md": "3778f969f490ca5dc8cd5aca269fcb8da261f7c69b60461b27270d88e998d3da",
   "source-identity.json": "0c0c96c9baeb85269f84fe04bdd020a1ada9ffa2a5f04663d59b40d3e5911486",
   "terminal-status.json": "86aed8f9783869320c8116238339e3836009063a188606dd64c89f34159a99a7"
 }

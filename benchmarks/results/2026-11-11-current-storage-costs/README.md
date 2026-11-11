@@ -63,3 +63,11 @@ before VM work; corrected preparation and original conditions survive. Full
 delivery is independent: original 43081976930 failed on a Windows .NET 10 callback
 deadline; corrected 43087005596 is separately tracked. Current comparisons belong
 in [BENCHMARKS](../../../docs/BENCHMARKS.md). Publication remains postponed.
+
+Subsequent corrected delivery `43087005596`, source `458be840`, is **GREEN** on
+Windows/Ubuntu, actual .NET 11/10, original stress and installed Release consumers.
+Its production source is exactly retained `8f8628a4`; the correction changes test
+scheduling, keeping five-second deadlines and every assertion. The
+[terminal receipt](delivery-ci-status.json) is cached. Original failure and
+collection-time status remain preserved. This does not qualify later prototypes
+or resolve the report CPU debt.

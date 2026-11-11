@@ -8,6 +8,10 @@
       "bytes": 5042,
       "sha256": "9b92e94b01f809049b08fef3cbf4d1668504725cfba4fd59ed8c2dce620e1662"
     },
+    "delivery-ci-status.json": {
+      "bytes": 8640,
+      "sha256": "43cf308f3964a1bd439e089d9d45fd5a6d7102ff8fb6c67c08b96c29678f0d2a"
+    },
     "delivery-first-attempt.json": {
       "bytes": 8640,
       "sha256": "34e094b92e4a5f1cd2b037999ad8c96087be3d92caa4442a0c0240dd89f7c203"
@@ -41,8 +45,8 @@
       "sha256": "58a239eab96f735fd61d1d19f4cc79a679ef3f933a3914a8ad537b70f0d6c58a"
     },
     "README.md": {
-      "bytes": 4042,
-      "sha256": "03b0241583c4ce176c38383275d8932a59e96240ab4286f15174f00e92b331ca"
+      "bytes": 4552,
+      "sha256": "15f4ab37d4cccb8bc0badd85c20fdd73008e251167b7ee998f5be1e5652602f4"
     },
     "source-identity.json": {
       "bytes": 74441,

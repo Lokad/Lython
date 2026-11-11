@@ -1,6 +1,7 @@
 {
   "archive-evidence.py": "262d3dc07c3c6b9b4763501aa66d6719d3425f6e7858a1d2b1b2aa878faafa77",
   "decision.json": "6bd1bcc10f4ff722e80ff99db3b58351805f95cfa25ed7c09730c80ef662267a",
+  "delivery-ci-status.json": "43cf308f3964a1bd439e089d9d45fd5a6d7102ff8fb6c67c08b96c29678f0d2a",
   "delivery-first-attempt.json": "34e094b92e4a5f1cd2b037999ad8c96087be3d92caa4442a0c0240dd89f7c203",
   "freeze-and-measure.py": "944ca59eac3d64558ddd1133842de652d31ca9f509e8333ed22652b49bf1ba78",
   "freeze-sources.py": "17521c999aeb0a75a5596f150e85b44e3988c287ef77beb69ec127deca430488",
@@ -17,7 +18,7 @@
   "prototype.patch": "cd67883dde90cad3f4d5e3e2cd9ef5725d95ba0e01fef075349f0d3a77b96b95",
   "python-goldens.json": "5a950526ce4f490737c4e06d2cca64b857b878a435e99085ed5dbede7b77d67f",
   "python-goldens.py": "2ef6afcbe15c8eba9b260f2f0184847ee03f005b05ee9e5df47c083e00bffc63",
-  "README.md": "f0e35fe45e876baf062c78065e9e4b4aab830a04b2a18ab17593f45084b3f603",
+  "README.md": "52545450506393f5aa98c8c72a27e712979339b8a388b79321b4d82c4dc4a87c",
   "record-first-form.py": "5e1105835911152d5451a1e4c66cd4af7dc4ac19daa703261c54202dfaef50ec",
   "reference-images.json": "cd6411f8138a43f1830d7f6dcf1ec9b04370569774b821f648c2e67a92cb7200",
   "run-focused.py": "c44c15aefdea4f53cd68b7d62ad1ddf0e64d5e10f7c8b42ac95e0ded5262fef9",
