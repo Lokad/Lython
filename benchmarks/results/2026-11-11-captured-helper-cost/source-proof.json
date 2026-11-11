@@ -1,0 +1,9 @@
+{
+  "src/Lokad.Lython/Frontend/ExecutableScript.CasedSplits.cs": "2b1968ab824e42c6acfefe48328bcd62c79a15afc6631ea57640dd25518aff44",
+  "src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs": "f4ee32058249644b0c31ff6693dd3004fec81ec223e4eac3c709909c2c9cb5a0",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "9bd2f70b5ce4015a6c85c9e968cfa34dad8b9435e51d30eeebe63dc88e186b65",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs": "04954852c30072b55f5d80b3d4aade68a152fd9ba32deece30f653617366298d",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs": "c541f831d0a9b378d1e1a6018973317a59ab75bb092d3fd80e0e6e7b4120994f",
+  "src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs": "4843246de7e31d916958cd7cac8b2ea101648b1c8ba0cdc98d29fb88f1eae57f",
+  "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "d1e11fa06e418b35d2ea8442450ebe457628b496e31bc6b606facb86076e5ae9"
+}

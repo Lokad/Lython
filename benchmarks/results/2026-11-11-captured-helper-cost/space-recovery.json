@@ -1,0 +1,16 @@
+{
+  "beforeFreeBytes": 262807552,
+  "afterFreeBytes": 264667136,
+  "retiredFiles": [
+    {
+      "relative": "text-cpython-b568-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-text-cpython-checkpoint/observations.tgz",
+      "bytes": 1947530,
+      "sha256": "4056baa14ae7444761e344d3c6d22fbd6936614adb3da454024a3c1557f0e550",
+      "allocatedBytes": 1949696
+    }
+  ],
+  "canonicalCommit": "6c11b5cf",
+  "fixedFloorBytes": 251658240,
+  "setupHeadroomBytes": 12582912
+}

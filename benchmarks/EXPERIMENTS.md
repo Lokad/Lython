@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R224 captured-helper cost gate](results/2026-11-11-captured-helper-cost/README.md)
+records1166guest-thread samples/4.20%unknown on qualified4625/cb03.236stacks contain
+materializing SplitCore; none contain private cased-whitespace preparation. Source
+confirms iteration intent reaches closed native returns but is lost across ordinary
+helper returns. Call-entry leaves5.23% do not establish the entire external gap.
+One six-second capture/all ownership/archive gates; no elapsed comparison. R225
+selects ordinary direct-return consumption forwarding, removing per-record transient
+list/array/range construction while preserving actual guest lists and cleanup.
+
 The [R223 current text CPython checkpoint](results/2026-11-11-text-cpython-checkpoint/README.md)
 finishes six jobs164.378s/all gates at qualified4625/cb03. Ordinary text is warm
 1.41–1.43× / complete1.35–1.40× CPython; captured-helper/counter text is warm

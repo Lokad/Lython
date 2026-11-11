@@ -1,0 +1,12 @@
+{
+  "established": [
+    "Ordinary calls already bind into reusable compiler-sized local/operand storage; deferred helper work does not construct a lexical context here.",
+    "Closed native helper execution receives ConsumedByIteration; ordinary BeginBoundCall/CreateExecutableWorkState does not forward it to a direct returned cased split.",
+    "This script reaches SplitCore and materializes a PyList/word-reference array/range storage before immediate caller iteration. Private preparation already exists and retains full preflight before first loop effect.",
+    "Useful casing/scanning/word production remains required. SplitCore ancestry is not all removable cost; call entry alone is not shown to explain the entire external gap."
+  ],
+  "selected": "R225: forward existing private iteration-consumption intent through ordinary direct returns; eliminate this per-record list/array/range construction phase without extending native-body proofs or adding a new backend.",
+  "acceptance": "Never expose a private iterator through ordinary calls/bindings/aliases; preserve exact list type/identity/mutation where observed, function/descriptor/default/exception order, finally/with cleanup/override, active cancellation, full preflight before caller loop effects, retained results/aliases, terminal refusal and shared allowance reuse.",
+  "comparison": "One existing complete-job before/after, warm sync/async and compile separate, changed text target plus unchanged ordinary text/CSV/report controls. Keep all adversity; quiet confirmation only when useful evidence justifies it. No predicted percentage.",
+  "stop": "Complete the forwarding across normal return/call execution with displaced transient construction absent on admitted private paths, or refine/withdraw if guest observability, cleanup or regression debt defeats coherent simplification. No partial new proof/dispatch layer promoted alone."
+}
