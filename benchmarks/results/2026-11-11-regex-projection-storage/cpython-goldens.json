@@ -1,0 +1,20 @@
+{
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "source": "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))(?=(..))|(?P<missing>Z)')\nkept=list(p.finditer(text,2,6))\nre.purge()\nfor m in reversed(kept):print(m.regs,m.groups(),m.span('missing'),m.pos,m.endpos)\n",
+      "expected": "((4, 4), (2, 4), (4, 6), (-1, -1)) ('😀b', 'ç🦊', None) (-1, -1) 2 6\n((3, 3), (1, 3), (3, 5), (-1, -1)) ('é😀', 'bç', None) (-1, -1) 2 6\n((2, 2), (0, 2), (2, 4), (-1, -1)) ('aé', '😀b', None) (-1, -1) 2 6\n",
+      "stderr": ""
+    },
+    {
+      "source": "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))(.)')\nkept=[]\ndef replace(m):\n kept.append(m)\n return m.group(2).upper()\nprint(p.sub(replace,text))\nprint([(m.regs,m.groups()) for m in reversed(kept)])\n",
+      "expected": "aé😀BÇ🦊D\n[(((6, 7), (4, 6), (6, 7)), ('ç🦊', 'd')), (((5, 6), (3, 5), (5, 6)), ('bç', '🦊')), (((4, 5), (2, 4), (4, 5)), ('😀b', 'ç')), (((3, 4), (1, 3), (3, 4)), ('é😀', 'b')), (((2, 3), (0, 2), (2, 3)), ('aé', '😀'))]\n",
+      "stderr": ""
+    },
+    {
+      "source": "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))')\nfor pos,endpos in [(7,7),(7,3),(4,6),(0,7)]:\n m=p.match(text,pos,endpos)\n print(None if m is None else (m.regs,m.pos,m.endpos,m.groups()))\n",
+      "expected": "(((7, 7), (5, 7)), 7, 7, ('🦊d',))\nNone\n(((4, 4), (2, 4)), 4, 6, ('😀b',))\nNone\n",
+      "stderr": ""
+    }
+  ]
+}

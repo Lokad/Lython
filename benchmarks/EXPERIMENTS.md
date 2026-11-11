@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R219 regex projection workspace](results/2026-11-11-regex-projection-storage/README.md)
+consolidates working storage and cursor in the existing prepared operation. Two
+per-match arrays/reservation and caller cursor plumbing disappear. Unicode iteration
+allocation falls17–18% on both APIs; compile and CSV/text controls are flat. Desktop
+elapsed/control adversity is retained; no CPU, CPython or final-adapter claim.
+64internal/397public focused checks pass per actual target; full delivery batch pending.
+
 The [R218 current JSON/report checkpoint](results/2026-11-11-json-cpython-checkpoint/README.md)
 finishes six jobs165.178s/all gates at committed e122 runtime, all568source hashes.
 Report warm1.18–1.23× CPython/complete1.09–1.13×; JSON-lines warm0.86–0.89×/

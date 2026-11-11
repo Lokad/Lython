@@ -96,9 +96,13 @@ Do not probe those retired paths again. The qualified0e image remains preserved.
 [archive identities](archive-identity.json). Core remains fully managed and regex
 decoupled. No producer pin, publication or single-change CPython gain is claimed.
 
-Full delivery is pending against committed7714144f (runtimee122) in
+Full delivery is GREEN at committed7714144f (runtimee122), Windows/Ubuntu, both
+actual targets, original stress and installed Release consumers. [Cached terminal](delivery-ci.json) in
 [CI42931921242](https://github.com/Lokad/Lython/actions/runs/42931921242).
 The earlier dispatch42928757271 actually checked out already-qualifiedb8, so it
 was superseded and cannot qualify this rewrite. [Correction](delivery-tracking.json),
 [original wrong-source snapshot](mistargeted-ci-42928757271.json). Original
 measurement identities retain their then-pending run labels; no raw clocks changed.
+
+This terminal is cached; do not query it again. Subsequent R219 source changes
+retain their separate qualification status.

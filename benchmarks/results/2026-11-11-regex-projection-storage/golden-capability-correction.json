@@ -1,0 +1,6 @@
+{
+  "originalPreserved": "cpython-goldens.json/initial-added-goldens.cs/failed focused public TRX",
+  "reason": "Unchanged optional0.4 explicitly rejects reversed Match windows. Core cooperating-provider case and real-adapter capability test already pass. Refined real-adapter golden removes only that unsupported pair, not supported Python behavior.",
+  "source": "import re\ntext='aé😀bç🦊d'\np=re.compile(r'(?<=(..))')\nfor pos,endpos in [(7,7),(4,6),(0,7)]:\n m=p.match(text,pos,endpos)\n print(None if m is None else (m.regs,m.pos,m.endpos,m.groups()))\n",
+  "expected": "(((7, 7), (5, 7)), 7, 7, ('🦊d',))\n(((4, 4), (2, 4)), 4, 6, ('😀b',))\nNone\n"
+}

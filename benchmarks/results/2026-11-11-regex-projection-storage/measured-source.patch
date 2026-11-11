@@ -1,0 +1,181 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs b/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
+index a55c455b..312eb04d 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.RegexMatcher.cs
+@@ -31,6 +31,8 @@ internal sealed partial class LythonRuntime
+             private readonly LythonSourceSpan _span;
+             private readonly MemoryGovernor.TemporaryMemoryReservation _storage;
+             private ILythonRegexSubject? _subject;
++            private long[]? _coordinates;
++            private RegexScalarPosition _position;
+             internal readonly LythonRegexCapture?[] Captures;
+             internal int? LastIndex;
+ 
+@@ -38,6 +40,7 @@ internal sealed partial class LythonRuntime
+                 ExecutionContext context, LythonSourceSpan span)
+             {
+                 _pattern = pattern; _context = context; _span = span;
++                _position = new(window.StartByte, window.Pos);
+                 if (pattern.CaptureSlotCount <= 0 || pattern.CaptureSlotCount > Array.MaxLength)
+                     throw RuntimeErrors.Runtime("Regex provider returned inconsistent capture metadata.", span);
+                 _storage = context.MemoryGovernor.ReserveTemporary(checked(128L + 16L * pattern.CaptureSlotCount), span);
+@@ -70,11 +73,24 @@ internal sealed partial class LythonRuntime
+                 => RegexCompiler.TryNext(cursor, Captures, out LastIndex, _context.MemoryGovernor,
+                     _context.State.CancellationToken, _span, _pattern.Pattern);
+ 
++            internal void Project(RegexSubjectRange range, ReCaptureRange[] captures)
++            {
++                ObjectDisposedException.ThrowIf(_subject is null, this);
++                if (range.Original.Length != range.Original.ByteLength && _coordinates is null)
++                {
++                    var count = checked(2 * captures.Length);
++                    _storage.Grow(checked(32L + 8L * count), _span);
++                    _context.CheckExecution(_span);
++                    _coordinates = new long[count];
++                }
++                ProjectScalarBounds(range, captures, ref _position, _coordinates, _context, _span);
++            }
++
+             public void Dispose()
+             {
+                 var subject = _subject; _subject = null;
+                 try { subject?.Dispose(); }
+-                finally { _storage.Dispose(); }
++                finally { _coordinates = null; _storage.Dispose(); }
+             }
+         }
+ 
+@@ -122,7 +138,7 @@ internal sealed partial class LythonRuntime
+         }
+ 
+         private static void ProjectScalarBounds(RegexSubjectRange range, ReCaptureRange[] captures,
+-            ref RegexScalarPosition previous, ExecutionContext context, LythonSourceSpan span)
++            ref RegexScalarPosition previous, Span<long> coordinates, ExecutionContext context, LythonSourceSpan span)
+         {
+             var count = checked(2 * captures.Length);
+             var input = range.Original.Utf8Span;
+@@ -136,42 +152,45 @@ internal sealed partial class LythonRuntime
+                 }
+                 return;
+             }
+-            var bytes = new int[count];
+-            var slots = new int[count];
++            // One operation-owned array orders byte boundaries and remembers
++            // their capture endpoints. Signed high bits put unmatched -1 first;
++            // the low bits identify the original endpoint, including ties.
++            coordinates = coordinates[..count];
+             for (var i = 0; i < captures.Length; i++)
+             {
+                 context.CheckExecution(span);
+-                bytes[2 * i] = captures[i].StartByte;
+-                bytes[2 * i + 1] = captures[i].EndByte;
+-                slots[2 * i] = 2 * i; slots[2 * i + 1] = 2 * i + 1;
++                coordinates[2 * i] = ((long)captures[i].StartByte << 32) | (uint)(2 * i);
++                coordinates[2 * i + 1] = ((long)captures[i].EndByte << 32) | (uint)(2 * i + 1);
+             }
+-            Array.Sort(bytes, slots);
++            coordinates.Sort();
+             var offset = previous.ByteOffset;
+             var scalar = previous.ScalarOffset;
+             for (var i = 0; i < count; i++)
+             {
+                 context.CheckExecution(span);
++                var boundary = (int)(coordinates[i] >> 32);
++                var endpoint = (int)(coordinates[i] & uint.MaxValue);
+                 // Lookbehind captures can precede the previous whole match.
+                 // Seek from the nearer known byte boundary instead of rescanning
+                 // the entire prefix for every nearby overlapping capture.
+-                if (bytes[i] >= 0 && bytes[i] < offset - bytes[i]) { offset = 0; scalar = 0; }
+-                while (bytes[i] >= 0 && offset > bytes[i])
++                if (boundary >= 0 && boundary < offset - boundary) { offset = 0; scalar = 0; }
++                while (boundary >= 0 && offset > boundary)
+                 {
+                     if ((scalar & 1023) == 0) context.CheckExecution(span);
+                     Rune.DecodeLastFromUtf8(input[..offset], out _, out var width);
+                     offset -= width;
+                     scalar--;
+                 }
+-                while (offset < bytes[i])
++                while (offset < boundary)
+                 {
+                     if ((scalar & 1023) == 0) context.CheckExecution(span);
+                     Rune.DecodeFromUtf8(input[offset..], out _, out var width);
+                     offset += width;
+                     scalar++;
+                 }
+-                var value = bytes[i] < 0 ? -1 : scalar;
+-                var slot = slots[i] / 2;
+-                captures[slot] = (slots[i] & 1) == 0
++                var value = boundary < 0 ? -1 : scalar;
++                var slot = endpoint / 2;
++                captures[slot] = (endpoint & 1) == 0
+                     ? captures[slot] with { Start = value } : captures[slot] with { End = value };
+             }
+             previous = new(captures[0].EndByte, captures[0].End);
+@@ -213,19 +232,11 @@ internal sealed partial class LythonRuntime
+ 
+         internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
+             PreparedSubject match, ExecutionContext context, LythonSourceSpan span)
+-        {
+-            var position = default(RegexScalarPosition);
+-            return CreateMatchObject(pattern, range, match, ref position, context, span);
+-        }
+-
+-        internal static ReMatchObject CreateMatchObject(RePatternObject pattern, RegexSubjectRange range,
+-            PreparedSubject match, ref RegexScalarPosition position, ExecutionContext context, LythonSourceSpan span)
+         {
+             context.CheckExecution(span);
+             ValidateMatch(pattern, range, match, context, span);
+             var bytes = checked(128L + 32L * match.Captures.Length);
+             using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+-            using var projection = context.MemoryGovernor.ReserveTemporary(checked(64L + 16L * match.Captures.Length), span);
+             context.CheckExecution(span);
+             var captures = new ReCaptureRange[match.Captures.Length];
+             for (var i = 0; i < captures.Length; i++)
+@@ -234,7 +245,7 @@ internal sealed partial class LythonRuntime
+                 captures[i] = match.Captures[i] is { } capture
+                     ? new(capture.StartByte, capture.EndByte, -1, -1) : new(-1, -1, -1, -1);
+             }
+-            ProjectScalarBounds(range, captures, ref position, context, span);
++            match.Project(range, captures);
+             var result = new ReMatchObject(pattern, range.Original, range.Pos, range.EndPos,
+                 captures, match.LastIndex, context.MemoryGovernor);
+             storage.Commit(bytes);
+@@ -308,7 +319,6 @@ internal sealed partial class LythonRuntime
+             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+             var lastByte = 0;
+             long replaced = 0;
+-            var position = default(RegexScalarPosition);
+             PyString result;
+             try
+             {
+@@ -318,7 +328,7 @@ internal sealed partial class LythonRuntime
+                     var match = subject;
+                     context.CheckExecution(span);
+                     ReMatchObject? projected = null;
+-                    if (plan is null) projected = CreateMatchObject(pattern, range, match, ref position, context, span);
++                    if (plan is null) projected = CreateMatchObject(pattern, range, match, context, span);
+                     else ValidateMatch(pattern, range, match, context, span);
+                     var whole = match.Captures[0]!.Value;
+                     AppendRegexBytes(builder, range.Original.Utf8Span[lastByte..whole.StartByte], context, span);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs b/src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs
+index 760954ac..4e016394 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.RegexObjects.cs
+@@ -14,7 +14,6 @@ internal sealed partial class LythonRuntime
+         private readonly LythonSourceSpan _span;
+         private RegexMatcher.PreparedSubject? _subject;
+         private ILythonRegexCursor? _cursor;
+-        private RegexScalarPosition _position;
+         private bool _finished;
+         internal PyRegexFindIterator? NextResource;
+ 
+@@ -38,7 +37,7 @@ internal sealed partial class LythonRuntime
+                     _context.State.TrackRegexIterator(this);
+                 }
+                 if (!_subject.Next(_cursor!)) { Dispose(); return false; }
+-                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, ref _position, _context, _span);
++                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span);
+                 return true;
+             }
+             catch { Dispose(); throw; }

@@ -7,8 +7,10 @@ build **7714144f228f01e5290207b178b6c795639bd17c**, core SHA256
 **9dadd59bd75528186c66a9a95e2efcf411e611e0ccaa718ff38c4facdb191e33**, assembly 0.11.0.
 All 568 normalized production sources match the committed runtime. Both target
 builds pass without warnings; focused JSON checks pass 193 internal / 811 public per
-actual .NET 11/10. [Source proof](source-identity.json). Full platform qualification is
-pending against 7714144f in [CI 42931921242](https://github.com/Lokad/Lython/actions/runs/42931921242), independently of these observations.
+actual .NET 11/10. [Source proof](source-identity.json). The source subsequently completed Windows/Ubuntu, both targets, original stress
+and installed Release consumers at7714144f in [CI42931921242](delivery-ci.json).
+Its terminal is cached; no unchanged qualification replay is needed. Later R219
+changes have separate status.
 An earlier mistaken dispatch 42928757271 targeted b8b05ccc; cancellation was requested and
 does not qualify this source. Original measurement identities retain their then
 pending run number; no raw observation was rewritten.

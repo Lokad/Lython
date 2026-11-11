@@ -30,7 +30,8 @@ uses fresh postcommit core `0e2bc55b`, assembly 0.11.0, all 568 source hashes an
 fully qualified `e543bf15`. Frozen binaries, scripts and observations survive.
 The [report/JSON-lines checkpoint](../benchmarks/results/2026-11-11-json-cpython-checkpoint/README.md)
 uses fresh postcommit core `9dadd59b` from build `7714144f`, all 568 source hashes
-matching runtime `e122bdf6`. Full platform qualification is pending separately.
+matching runtime `e122bdf6`, subsequently fully qualified on both platforms/targets,
+original stress and installed Release consumers. Later sources keep separate status.
 Other rows retain their recorded sources:
 [keyword-default search](../benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/README.md)
 and [prior five-workload checkpoint](../benchmarks/results/2026-11-10-current-cpython-checkpoint/README.md).
