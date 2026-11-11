@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R218 current JSON/report checkpoint](results/2026-11-11-json-cpython-checkpoint/README.md)
+finishes six jobs165.178s/all gates at committed e122 runtime, all568source hashes.
+Report warm1.18–1.23× CPython/complete1.09–1.13×; JSON-lines warm0.86–0.89×/
+complete0.86–0.88×. Both remain variable; compilation is separate. Fixed workers,
+adapter and complete scripts; no single-change attribution. Replaced8d44 rows,
+all original observations and the misdirected CI dispatch remain explicit.
+
 The [R217 JSON string decoder](results/2026-11-11-json-string-decoder/README.md)
 replaces the complete backend string phase and removes156net runtime lines.
 Final storage is admitted directly; Python error/EOF goldens, refusal, cancellation,

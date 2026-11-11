@@ -1,0 +1,56 @@
+{
+  "beforeFreeBytes": 260812800,
+  "afterRecoveryFreeBytes": 275968000,
+  "postExtractionFreeBytes": 269664256,
+  "requiredFreeBytes": 270671872,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "knownPath": "construction-cpython-b561-20261110/candidate/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-10-construction-cpython-checkpoint/observations.tgz",
+      "member": "current-core.dll",
+      "bytes": 5665792,
+      "sha256": "0e2bc55bac5ebfafd9d30014e34e2afb3e9776bbe6b5d83a53cc710c0d99c492",
+      "paths": [
+        "construction-cpython-b561-20261110/current-core.dll",
+        "construction-cpython-b561-20261110/candidate/Lokad.Lython.dll",
+        "current-text-b562-20261110/current-core.dll",
+        "current-text-b562-20261110/candidate/Lokad.Lython.dll",
+        "bound-borrow-b564-20261110/baseline-core.dll",
+        "bound-borrow-b564-20261110/reference/Lokad.Lython.dll",
+        "bound-calls-b563-20261110/current-core.dll",
+        "bound-calls-b563-20261110/candidate/Lokad.Lython.dll"
+      ],
+      "allocatedBytes": 5668864,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "knownPath": "json-string-b565-20261111/candidate/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-11-json-string-decoder/quiet/observations.tgz",
+      "member": "current-core.dll",
+      "bytes": 5664256,
+      "sha256": "6e7e9ada556d68be1b58aa04c0a93814d45214b063e72e4199e39bad1969ee9f",
+      "paths": [
+        "json-string-b565-20261111/current-core.dll",
+        "json-string-b565-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "allocatedBytes": 5668864,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "json-string-b565-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-json-string-decoder/quiet/observations.tgz",
+      "bytes": 3813601,
+      "sha256": "526d9e993688253eb80e5a0ab8f47a243d31c97dc1396698d5e796123d6c67b6",
+      "paths": [
+        "json-string-b565-20261111/observations.tgz"
+      ],
+      "allocatedBytes": 3817472,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "qualifiedB8BaselinePreserved": true
+}

@@ -95,3 +95,10 @@ Do not probe those retired paths again. The qualified0e image remains preserved.
 [Preparation, exact binaries, original conditions and checks](preparation.tar.xz),
 [archive identities](archive-identity.json). Core remains fully managed and regex
 decoupled. No producer pin, publication or single-change CPython gain is claimed.
+
+Full delivery is pending against committed7714144f (runtimee122) in
+[CI42931921242](https://github.com/Lokad/Lython/actions/runs/42931921242).
+The earlier dispatch42928757271 actually checked out already-qualifiedb8, so it
+was superseded and cannot qualify this rewrite. [Correction](delivery-tracking.json),
+[original wrong-source snapshot](mistargeted-ci-42928757271.json). Original
+measurement identities retain their then-pending run labels; no raw clocks changed.

@@ -1,0 +1,9 @@
+{
+  "correctRun": 42931921242,
+  "expectedHead": "7714144f228f01e5290207b178b6c795639bd17c",
+  "runtime": "e122bdf6787bdf46e600a328b4e73ddd00766a5c",
+  "status": "pending",
+  "supersededRun": 42928757271,
+  "supersededHead": "b8b05ccc93dc455227fc9a0cec391ae904654fc4",
+  "correction": "Earlier dispatch targeted the already-qualified baseline and was cancelled. It cannot qualify R217. Preserve original pending-run labels in measurement identities; no raw data rewritten."
+}

@@ -1,0 +1,11 @@
+{
+  "protectedVMPath": "json-string-b565-20261111/reference/Lokad.Lython.dll",
+  "protectedSHA256": "c27160d53d66489976b181fb425b2f46c927fa85156433b80dc6f5477a3e5506",
+  "canonical": "benchmarks/results/2026-11-11-json-string-decoder/preparation.tar.xz",
+  "member": "baseline/net11.0/Lokad.Lython.dll",
+  "bytes": 5665792,
+  "runtimeSource": "b8b05ccc production/configuration equals fully qualified69644713; cachedGREEN42918112217. Fresh forced baseline build/source map and exact committed bytes retained.",
+  "sourceEquivalenceVerified": true,
+  "sourceCount": 568,
+  "prior0eSuperseded": true
+}
