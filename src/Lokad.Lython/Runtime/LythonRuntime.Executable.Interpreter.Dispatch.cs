@@ -42,6 +42,9 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.StoreLocal:
                             StoreExecutableLocal(ref execution, scope, invocation, instruction);
                             break;
+                        case ExecutableOpCode.StoreClosure:
+                            if (!TryStoreClosure(ref execution, invocation, instruction)) return InstructionPause.ContextRequired;
+                            break;
                         case ExecutableOpCode.StoreMember:
                         case ExecutableOpCode.StoreMemberLast
                             or ExecutableOpCode.StoreSlice or ExecutableOpCode.StoreSliceLast
@@ -133,7 +136,7 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or
                              ExecutableOpCode.LoadName or ExecutableOpCode.PreloadImplicitSuperArguments or
-                             ExecutableOpCode.StoreClosure or ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or
+                             ExecutableOpCode.StoreGlobal or ExecutableOpCode.StoreName or
                              ExecutableOpCode.Dup or ExecutableOpCode.PopTop:
                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.LoadConst or ExecutableOpCode.LoadGlobal or ExecutableOpCode.Dup or ExecutableOpCode.PopTop))
                                 return InstructionPause.ContextRequired;

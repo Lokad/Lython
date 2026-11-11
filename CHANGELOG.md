@@ -2,6 +2,14 @@
 
 ## 0.11.0 - Unreleased
 
+- Store incoming nonlocal cells through their existing owner, keeping live slots
+  and retained namespaces consistent without constructing an invocation context
+  solely for a lexical write. Scope-sensitive operations retain ordinary contexts.
+
+- Keep regex coordinate working storage and its scalar cursor in the prepared
+  operation, reusing it across matches and pending replacement callbacks. Retained
+  matches remain independent and ASCII needs no coordinate array.
+
 - Decode JSON string escapes into admitted final UTF-8 storage, removing token
   reparsing, lenient rewrite buffers and temporary unescaped copies. String errors
   use Python messages and original coordinates. Unsupported unpaired surrogates

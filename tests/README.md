@@ -209,6 +209,12 @@ and genuinely suspended regex selectors. Concurrent runs keep independent tokens
 and return the shared allowance after awaited cleanup. Capture materialization
 also checks terminal admission refusal through immediate and exposed methods.
 
+[Incoming lexical stores](Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs)
+check live owner slots and locals snapshots, deleted/rebound cells, detached
+closures, transitive shadowing, class cells, comprehensions and exception effects
+against independent Python output. Writes preserve the existing cell owner and
+namespace; they need no writer context solely for assignment.
+
 [Regex scalar positions](Lokad.Lython.PublicApi.Tests/RegexScalarCursorTests.cs)
 check consecutive Unicode lookbehind/lookahead, retained matches read after cursor
 closure and in reverse order, callbacks and original windows against independent

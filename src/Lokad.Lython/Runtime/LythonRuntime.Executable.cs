@@ -40,6 +40,23 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
+
+        // Incoming writes already know the defining storage. Keep its live
+        // slot and persistent namespace synchronized without constructing the
+        // writer's frame or searching its lexical parents again.
+        internal void StoreThroughOwner(object value)
+        {
+            var owner = _owner!;
+            var name = _name!;
+            _value = value;
+            if (owner.CurrentExecutableFrame is { } frame &&
+                frame._execution.Code.LocalNameToSlot.TryGetValue(name, out var slot) &&
+                ReferenceEquals(frame._execution.LocalCells?[slot], this))
+                frame._execution.Locals[slot] = value;
+            owner.Variables[name] = value;
+        }
+
         // MG11: set once a closure owns this cell (first-wins sharing).
         internal bool RetentionCharged;
     }

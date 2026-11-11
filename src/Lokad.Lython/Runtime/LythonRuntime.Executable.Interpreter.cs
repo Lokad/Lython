@@ -378,15 +378,6 @@ internal sealed partial class LythonRuntime
                     PreloadImplicitSuperArguments(invocation!, instruction.Span);
                     break;
 
-                case ExecutableOpCode.StoreClosure:
-                    StoreExecutableClosure(
-                        execution.Code,
-                        invocation!,
-                        instruction.ClosureSlot,
-                        execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent),
-                        instruction.Span);
-                    break;
-
                 case ExecutableOpCode.StoreGlobal:
                     StoreName(
                         execution.Code.Names[instruction.NameIndex],

@@ -77,6 +77,22 @@ internal sealed partial class LythonRuntime
         return context.TryGetBuiltin(name, out value);
     }
 
+    private static bool TryStoreClosure(ref ExecutableWorkState execution, ExecutionContext? context,
+        in ExecutableInstruction instruction)
+    {
+        var slot = instruction.ClosureSlot;
+        if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreThroughOwner)
+        {
+            var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+            cells[slot].StoreThroughOwner(value);
+            return true;
+        }
+        if (context is null) return false;
+        StoreExecutableClosure(execution.Code, context, slot,
+            execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent), instruction.Span);
+        return true;
+    }
+
     private static void StoreExecutableClosure(ExecutableCodeObject codeObject, ExecutionContext context, int slot, object value, LythonSourceSpan span)
     {
         var frame = context.CurrentExecutableFrame;
@@ -90,8 +106,12 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
-        cell.Value = value;
-        StoreName(codeObject.ClosureNames[slot], value, context, span);
+        if (cell.CanStoreThroughOwner) cell.StoreThroughOwner(value);
+        else
+        {
+            cell.Value = value;
+            StoreName(codeObject.ClosureNames[slot], value, context, span);
+        }
     }
 
     private static object ResolveExecutableName(string name, LythonSourceSpan span, ExecutionContext context)
@@ -541,10 +561,6 @@ internal sealed partial class LythonRuntime
             if (codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
                 StoreExecutableClosure(codeObject, context, closureSlot, value, span);
-                if (context.TryGetNonlocalTarget(name, out var nonlocalTarget) && nonlocalTarget.MirrorLocalStores)
-                {
-                    nonlocalTarget.Variables[name] = value;
-                }
                 return;
             }
 

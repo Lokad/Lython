@@ -335,7 +335,8 @@ nodes fail explicitly. Imports retain canonical module namespaces.
 Eligible invocations begin with owned slot workstate. Native zero-argument string
 operations, dictionary views and exact list/tuple iteration run there without
 allocating a lexical context. Other operations materialize a context when needed;
-closures, class cells, generators and protected bodies retain their lexical frames.
+Defining captured locals, class cells, generators and protected bodies retain
+their lexical frames.
 The same native dispatch serves both forms. Admitted iteration positions transfer
 with the workstate, with one owner throughout. A separate interpreter object is
 unnecessary. Terminal cleanup finishes pending users, then detaches
@@ -603,8 +604,10 @@ native returns require a closed result proof.
 Eligible helpers begin with their owned local/operand storage and existing
 incoming cells in the same instruction dispatch, without an invocation context.
 Cell reads observe live values directly from that work state; unbound reads keep
-their Python error/span. Missing-cell fallback and writes first create the ordinary
-lexical context. Plain list and tuple
+their Python error/span. Incoming writes use the cell's existing owner to update
+its live local slot and persistent namespace without creating the writer's lexical
+context or searching its parents again. Missing/ownerless cells and namespace-
+sensitive owners retain the ordinary lexical context and resolver. Plain list and tuple
 construction reuse their admitted storage builders in this loop. Starred displays
 and dictionary/set key protocols keep their ordinary protocol paths. Scope-sensitive work,
 guest protocols, nested calls and host operations create the ordinary context at
