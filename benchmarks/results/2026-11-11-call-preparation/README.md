@@ -10,7 +10,7 @@ Retained source **698f7e77** fixes factory validation before truth callbacks and
 typing variance coercion order, admits/fills exception argument tuples directly,
 and removes the synchronous argument-carrier/generic policy. Six production files
 change; every other original production file and internal test is restored
-byte-for-byte. No new span ABI, native preparation stages, ref-struct carrier,
+byte-for-byte. No canonical-call API conversion, native preparation stages, ref-struct carrier,
 ChainMap factory, control hierarchy or dormant alternative remains.
 [Decision](decision.json), [retained source/checks](retained-source.json).
 
@@ -58,6 +58,9 @@ The adverse JSON/compilation results remain unresolved, not disproved.
 Every phase passes goldens, ownership balances and owned-fixture cleanup.
 All raw observations, image identities, core binaries and verified complete source
 bytes accompany these summaries. [Archive identities](archive-identity.json).
+The first evidence commit allowed Git newline normalization. Archive attributes
+restore canonical raw bytes from frozen storage, checked against the original
+manifest; no measured values change.
 
 ## Validation and next boundary
 
