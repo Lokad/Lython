@@ -111,31 +111,11 @@ internal sealed partial class PyDict
             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecution(span);
-            if ((uint)position < (uint)Count && EqualName((PyString)_keys[position].Key!, bytes, context, span))
+            if ((uint)position < (uint)Count && EqualNativeText((PyString)_keys[position].Key!, bytes, context, span))
                 return (PyString)_keys[position].Key!;
             var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, span)));
-            for (var i = _keys[NativeBucket(hash, _keys.Length)].Bucket - 1; i >= 0; i = _keys[i].Next - 1)
-            {
-                context.CheckExecution(span);
-                if (_keys[i].Hash == hash && EqualName((PyString)_keys[i].Key!, bytes, context, span))
-                    return (PyString)_keys[i].Key!;
-            }
-            return null;
-        }
-
-        private static bool EqualName(PyString name, ReadOnlySpan<byte> bytes,
-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        {
-            var other = name.Utf8Span;
-            if (other.Length != bytes.Length) return false;
-            for (var offset = 0; offset < bytes.Length;)
-            {
-                context.CheckExecution(span);
-                var count = Math.Min(4096, bytes.Length - offset);
-                if (!bytes.Slice(offset, count).SequenceEqual(other.Slice(offset, count))) return false;
-                offset += count;
-            }
-            return true;
+            var index = FindNativeTextIndex(_keys, hash, bytes, context, span);
+            return index < 0 ? null : (PyString)_keys[index].Key!;
         }
     }
 

@@ -1,0 +1,7 @@
+{"freeBytes": 264462336, "sourceAndImagesVerified": true, "jobs": 10, "ownerSeconds": 330, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=5min 30s
+MainPID=3565804
+ActiveState=active
+
+
+Running as unit: lython-b597-native-inputs-20261112.service; invocation ID: b83985dde7944dfe8c0867c9f8bbe336

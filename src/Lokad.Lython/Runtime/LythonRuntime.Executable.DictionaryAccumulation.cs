@@ -13,16 +13,8 @@ internal sealed partial class LythonRuntime
         {
             // The ordinary ForNext owns wider/pending stack retirement. A
             // native source advances here only after that ownership is settled.
-            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals
-                || !execution.Stack.TryAdvanceNativeIteration(head.InputStart, out var next)) return false;
+            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals) return false;
             var headIndex = execution.InstructionIndex;
-            if (!next.HasValue)
-            {
-                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
-                execution.InstructionIndex = head.TargetIndex;
-                return true;
-            }
-
             var callIndex = head.DictionaryLoopCallIndex;
             var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
             ref readonly var member = ref execution.Code.Instructions[headIndex + 2];
@@ -37,8 +29,21 @@ internal sealed partial class LythonRuntime
             var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
             // No callback can observe these uncaptured slots inside the native
             // segment. Observable namespaces retain their ordinary stores.
-            var deferTotal = hasTotal && !execution.Code.RequiresLocalVariableMirroring
+            var privateBindings = !execution.Code.RequiresLocalVariableMirroring
                 && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
+            var deferTotal = hasTotal && privateBindings;
+            var cursor = privateBindings && execution.LocalCells?[store.ThirdInput] is null
+                ? execution.Stack[head.InputStart] as PyStringOps.CasedWhitespaceIteration : null;
+            if (cursor is not null && !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor)) cursor = null;
+            if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var word, out var hasWord)) return false;
+            if (!hasWord)
+            {
+                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                execution.InstructionIndex = head.TargetIndex;
+                return true;
+            }
+            var wordChanged = false;
+            PyStringOps.CompactWord pendingWord = default;
             var totalChanged = false;
             long pendingTotal = 0;
             try
@@ -46,14 +51,28 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     execution.InstructionIndex = headIndex;
-                    PublishInstructionResult(ref execution, invocation, head, next.Value);
+                    var compact = word.Value is null;
+                    if (compact)
+                    {
+                        // Keep the original binding check, even though its value
+                        // stays private until a continuation can observe it.
+                        execution.Stack.CheckExecution(execution.Code.Instructions[headIndex + 1].Span);
+                        pendingWord = word;
+                        wordChanged = true;
+                    }
+                    else
+                    {
+                        PublishInstructionResult(ref execution, invocation, head, word.Value!);
+                        wordChanged = false;
+                    }
                     // Binding may admit namespace storage and reenter. Read the
                     // actual locals afterwards, and stop a refused command first.
                     scope.CheckExecution(member.Span);
                     var dictionary = execution.Locals[store.SecondInput] as PyDict;
-                    var key = execution.Locals[store.ThirdInput] as PyString;
+                    var key = compact ? null : execution.Locals[store.ThirdInput] as PyString;
                     var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
-                    if (dictionary is null || key is null || hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                    if (dictionary is null || !compact && key is null ||
+                        hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
                     {
                         execution.InstructionIndex = headIndex + 2;
                         return true;
@@ -64,8 +83,11 @@ internal sealed partial class LythonRuntime
                     bool updated;
                     try
                     {
-                        updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
-                            call.CallSpan, add.Span, storeSpan);
+                        updated = compact
+                            ? dictionary.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
+                                call.CallSpan, add.Span, storeSpan)
+                            : dictionary.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
+                                call.CallSpan, add.Span, storeSpan);
                     }
                     finally { scope.LeaveInterpreterFrame(); }
                     if (!updated)
@@ -103,9 +125,9 @@ internal sealed partial class LythonRuntime
                     }
                     execution.InstructionIndex = headIndex;
                     scope.CheckExecution(head.Span);
-                    if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out next))
+                    if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var nextWord, out hasWord))
                         throw new InvalidOperationException("A native loop lost its private iteration source.");
-                    if (next.HasValue) continue;
+                    if (hasWord) { word = nextWord; continue; }
                     _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
                     execution.InstructionIndex = head.TargetIndex;
                     return true;
@@ -116,8 +138,23 @@ internal sealed partial class LythonRuntime
                 // Publish before any continuation, callback or error handler.
                 // This private scalar store cannot admit or invoke guest code;
                 // it must not replace a cancellation or first refusal.
-                if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal);
+                try
+                {
+                    if (wordChanged) execution.Locals[store.ThirdInput] = cursor!.Materialize(ref pendingWord);
+                }
+                finally { if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal); }
             }
+        }
+
+        private static bool TryReadDictionaryWord(ref ExecutableWorkState execution,
+            PyStringOps.CasedWhitespaceIteration? cursor, int slot, out PyStringOps.CompactWord word, out bool hasWord)
+        {
+            if (cursor is not null) { hasWord = cursor.TryReadWord(out word); return true; }
+            word = default;
+            if (!execution.Stack.TryAdvanceNativeIteration(slot, out var next)) { hasWord = false; return false; }
+            hasWord = next.HasValue;
+            if (hasWord) word.Value = next.Value;
+            return true;
         }
 
         private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,

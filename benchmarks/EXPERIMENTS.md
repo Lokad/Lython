@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [native storage/input candidate](results/2026-11-12-native-inputs/README.md)
+is retained for delivery qualification. It keeps the initial private UTF8 word
+probe while deleting captured helper packing/clearing and appended-cell indexes.
+Complete text allocation falls20–22%; B597ten quiet jobs279.026s support CPU gains
+for captured Run and both ordinary APIs. Earlier async-search/CSV adversity is
+not reproduced, without an isolated cause/recovery claim. ReportAsync additional
+widerCPU0..+6.25% versus8f862 remains accepted uncertainty; its elapsed overlaps
+zero. Both source forms, original adversity and the bounded paired profile survive.
+Full delivery and the next CPython checkpoint remain separate; publication held.
+
 The [native UTF-8 word prototype](results/2026-11-11-native-word-probing/README.md)
 retains the ordinary call/return ABI and existing owners while avoiding duplicate
 short-word objects in private histogram segments. Complete text allocation falls

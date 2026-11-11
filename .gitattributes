@@ -338,3 +338,6 @@ benchmarks/results/2026-11-11-native-iteration-storage/**/*.patch -text -whitesp
 
 benchmarks/results/2026-11-11-native-word-probing/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-word-probing/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-12-native-inputs/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-native-inputs/**/*.patch -text -whitespace

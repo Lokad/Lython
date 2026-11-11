@@ -9,7 +9,9 @@
   arithmetic, avoiding repeated instruction dispatch and argument preparation.
   Preserve custom protocols, integer promotion, cancellation and memory ownership.
   Keep private integer totals in the native segment, publishing their Python
-  value before continuation, callbacks or error handling.
+  value before continuation, callbacks or error handling. Probe private cased
+  words directly as UTF-8, materializing inserted keys and observable bindings
+  from their eagerly admitted storage.
 
 - Validate factory keyword binding before truth hooks and evaluate typing variance
   flags in Python's parameter order. Build exception argument tuples directly
@@ -35,7 +37,9 @@
 
 - Store incoming nonlocal cells through their existing owner, keeping live slots
   and retained namespaces consistent without constructing an invocation context
-  solely for a lexical write. Scope-sensitive operations retain ordinary contexts.
+  solely for a lexical write. Native helpers borrow the existing parameter prefix
+  and live cell collection directly, removing duplicate argument packing and
+  clearing. Scope-sensitive operations retain ordinary contexts.
 
 - Keep regex coordinate working storage and its scalar cursor in the prepared
   operation, reusing it across matches and pending replacement callbacks. Retained

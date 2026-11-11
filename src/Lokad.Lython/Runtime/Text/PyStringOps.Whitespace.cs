@@ -90,7 +90,54 @@ internal static partial class PyStringOps
                 _context.MemoryGovernor, _span, _context);
             return PyIterationResult.Yield(word);
         }
+
+        internal MemoryGovernor MemoryGovernor => _context.MemoryGovernor;
+
+        // Only the closed native histogram segment borrows this value. Other
+        // consumers keep MoveNext and receive their ordinary immutable strings.
+        internal bool TryReadWord(out CompactWord word)
+        {
+            word = default;
+            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
+                return false;
+            if (range.Capacity > PyString.InlineUtf8Capacity)
+                word.Value = CreateSplitFragment(_source.Utf8Span, range, _mapping,
+                    _context.MemoryGovernor, _span, _context);
+            else
+            {
+                word.Capacity = range.Capacity;
+                word.Length = WriteCaseUtf8(_source.Utf8Span[range.Start..range.End],
+                    (Span<byte>)word.Utf8, _mapping, _context, _span);
+            }
+            return true;
+        }
+
+        // The eager preflight already funds this entire value. Publication is
+        // also native unwind work: no admission, callback or execution check may
+        // replace the pending failure while restoring the last Python binding.
+        internal object Materialize(ref CompactWord word)
+        {
+            if (word.Value is not null) return word.Value;
+            var value = PyString.CreateReservedUtf8(word.Capacity, _context.MemoryGovernor);
+            CompactWordBytes(ref word).CopyTo(value.UnpublishedUtf8);
+            value.CompleteUnpublishedUtf8(word.Length);
+            word.Value = value;
+            return value;
+        }
     }
+
+    [System.Runtime.CompilerServices.InlineArray(PyString.InlineUtf8Capacity)]
+    internal struct CompactWordUtf8 { private byte _first; }
+
+    internal struct CompactWord
+    {
+        internal object? Value;
+        internal CompactWordUtf8 Utf8;
+        internal int Length, Capacity;
+    }
+
+    internal static ReadOnlySpan<byte> CompactWordBytes(ref CompactWord word)
+        => ((ReadOnlySpan<byte>)word.Utf8)[..word.Length];
 
     private static PyList SplitCore(PyString value, int maxSplit, bool reverse,
         MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,

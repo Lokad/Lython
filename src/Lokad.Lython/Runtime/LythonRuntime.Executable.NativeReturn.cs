@@ -6,6 +6,15 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // One non-owning input convention for native proof/evaluation. Parameters
+    // keep their real bounds; cells remain live in the definition-owned array.
+    // The readonly stack view cannot escape or cross a suspension boundary.
+    private readonly ref struct NativeInputs(ReadOnlySpan<object?> values, IReadOnlyList<ExecutableCell>? cells)
+    {
+        internal readonly ReadOnlySpan<object?> Values = values;
+        internal readonly IReadOnlyList<ExecutableCell>? Cells = cells;
+    }
+
     internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
         ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result, bool consumedByIteration = false)
     {
@@ -14,20 +23,22 @@ internal sealed partial class LythonRuntime
         if (body is null || body.ClosureInputCount != 0 || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
             || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
-        if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan, consumedByIteration);
+        var inputs = new NativeInputs(arguments, null);
+        if (!GuardNativeBody(codeObject, body, inputs, context)) return false;
+        result = ExecuteNativeBody(codeObject, body, context, inputs, entrySpan, consumedByIteration);
         return true;
     }
 
     internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
-        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result,
+        ReadOnlySpan<object?> arguments, IReadOnlyList<ExecutableCell> cells, string name, LythonSourceSpan span, out object result,
         bool consumedByIteration = false)
     {
         result = PyNone.Instance;
         var body = code.NativeBody!;
-        if (!GuardNativeBody(code, body, arguments, context)) return false;
+        var inputs = new NativeInputs(arguments, cells);
+        if (!GuardNativeBody(code, body, inputs, context)) return false;
         context.EnterFunctionCall(span);
-        try { result = ExecuteNativeBody(code, body, context, arguments, span, consumedByIteration); return true; }
+        try { result = ExecuteNativeBody(code, body, context, inputs, span, consumedByIteration); return true; }
         catch (LythonRuntimeException error)
         {
             PyFunctionBinding.AnnotateException(error, context, name, span);
@@ -39,11 +50,11 @@ internal sealed partial class LythonRuntime
     // Dynamic checks precede all effects, including admission. A failed proof
     // uses the ordinary executable engine; actual work never falls back/retries.
     private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
-        ReadOnlySpan<object?> arguments, ExecutionContext context)
-        => arguments.Length >= body.ClosureInputCount && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
+        in NativeInputs arguments, ExecutionContext context)
+        => (body.ClosureInputCount == 0 || arguments.Cells?.Count == body.ClosureInputCount) && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
 
     private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
-        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan,
+        ExecutionContext context, in NativeInputs arguments, LythonSourceSpan entrySpan,
         bool consumedByIteration = false)
     {
         context.EnterInterpreterFrame(entrySpan);
@@ -116,20 +127,20 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryReadNativeInput(int source, ExecutableCodeObject code, NativeReturnValue[] values,
-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+        in NativeInputs arguments, ExecutionContext context, out object? value)
     {
         if (source < 0) { value = code.Constants[~source]; return true; }
         if (source < code.FirstTemporarySlot)
         {
-            var bound = (uint)source < (uint)(arguments.Length - code.NativeBody!.ClosureInputCount);
-            value = bound ? arguments[source] : null;
+            var bound = (uint)source < (uint)arguments.Values.Length;
+            value = bound ? arguments.Values[source] : null;
             return bound;
         }
         return TryReadNativeOperand(code, values[source - code.FirstTemporarySlot].Instruction, arguments, context, out value);
     }
 
     private static bool GuardNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
-        ReadOnlySpan<object?> arguments, ExecutionContext context, out NativeReturnShape shape)
+        in NativeInputs arguments, ExecutionContext context, out NativeReturnShape shape)
     {
         shape = NativeReturnShape.Other;
         if (index < code.FirstTemporarySlot)
@@ -242,7 +253,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
+        NativeReturnValue[] values, in NativeInputs arguments, ExecutionContext context)
     {
         if (index >= code.FirstTemporarySlot)
         {
@@ -260,7 +271,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? result)
+        NativeReturnValue[] values, in NativeInputs arguments, ExecutionContext context, out object? result)
     {
         if (index < code.FirstTemporarySlot)
             return TryReadNativeInput(index, code, values, arguments, context, out result);
@@ -278,20 +289,20 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
-        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException,
+        in NativeInputs arguments, ExecutionContext context, PyException? entryException,
         bool consumedByIteration = false)
     {
         // Bound direct inputs are pure. Operations and real roots retain their
         // cancellation/refusal checks without a recursive leaf dispatch.
         if (index < code.FirstTemporarySlot)
-            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
+            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments.Values[index]);
         ref readonly var value = ref values[index - code.FirstTemporarySlot];
         var instruction = value.Instruction;
         if (value.Operation == NativeReturnOperation.StoreClosure)
         {
             var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             context.State.CheckExecution(instruction.Span);
-            ((ExecutableCell)arguments[arguments.Length - code.NativeBody!.ClosureInputCount + instruction.ClosureSlot]!).StoreThroughOwner(stored);
+            arguments.Cells![instruction.ClosureSlot].StoreThroughOwner(stored);
             var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
                 consumedByIteration);
             CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
@@ -383,7 +394,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,
-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
+        in NativeInputs arguments, ExecutionContext context, out object? value)
     {
         if (instruction.OpCode == ExecutableOpCode.LoadConst)
         {
@@ -402,20 +413,18 @@ internal sealed partial class LythonRuntime
             return value is not null;
         }
         var index = instruction.LocalSlot;
-        var bound = (uint)index < (uint)(arguments.Length - codeObject.NativeBody!.ClosureInputCount);
-        value = bound ? arguments[index] : null;
+        var bound = (uint)index < (uint)arguments.Values.Length;
+        value = bound ? arguments.Values[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
         return bound;
     }
 
-    // Incoming references follow the real parameter prefix, not its unbound
-    // local slots. Keep cells live so reads still observe their actual owner.
-    private static bool TryReadNativeCell(ExecutableCodeObject code, ReadOnlySpan<object?> arguments,
+    // The compiled function owns a fixed cell collection, validated before any
+    // proof/effects. Values remain live; no parameter slot can impersonate a cell.
+    private static bool TryReadNativeCell(ExecutableCodeObject code, in NativeInputs arguments,
         int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
     {
-        var count = code.NativeBody!.ClosureInputCount;
-        var start = arguments.Length - count;
-        cell = start >= 0 && (uint)slot < (uint)count ? arguments[start + slot] as ExecutableCell : null;
+        cell = (uint)slot < (uint)code.NativeBody!.ClosureInputCount ? arguments.Cells?[slot] : null;
         return cell is not null;
     }
 

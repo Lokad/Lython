@@ -28,8 +28,10 @@ cover live cells through direct, named, bound-method and wide calls, retaining
 withdrawn inputs across actual protocol I/O and cancellation. The
 [native cell boundary](Lokad.Lython.Tests/NativeClosureSequenceTests.cs) refuses
 after the first store without replay, preserves its split-call origin and rejects
-missing parameters before an appended cell can impersonate one. Cleanup returns
+missing parameters before cell effects. Cleanup returns
 funding; the public cases retain independent Python goldens.
+Admission reentry also rebinds caller locals after a native cell effect while
+already-bound positional and keyword parameters keep their original values.
 
 [Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
 check live default aliases and replacement, keyword binding, wide calls, retained

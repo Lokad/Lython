@@ -453,6 +453,14 @@ Uncaptured totals without namespace or mirror stores can stay in a managed
 integer during that segment. Every exit publishes the ordinary Python integer
 before any handler or callback; wider values retain normal exact promotion.
 
+Private cased-word iteration can probe existing counting keys directly from mapped
+UTF-8 bytes within the string's inline capacity. Inserted keys and observable loop
+bindings still materialize independent immutable Python strings. Every continuation,
+callback and error handler sees the completed binding; native unwind publishes it
+from already-funded storage without new admission. Larger words and dynamic
+protocols keep ordinary materialization. Eager preflight still funds all eventual
+words, including capacity not physically materialized during the native segment.
+
 Private dictionary entries can retain exact counting results as managed integers
 without boxing each update. A Python value read materializes and caches an ordinary
 immutable integer; copies preserve its identity and retained older values remain
@@ -582,7 +590,7 @@ forwarders. Genuine suspension retains the original operand cleanup.
 Guarded native return expressions retain binding and function/interpreter entry
 checks while omitting resumable interpreter storage. Closed helpers, including ordinary nested definitions,
 borrow their defining execution state and resolve globals in the module. Their
-compiler proof excludes captured cells and observable lexical work, so a separate
+compiler proof excludes creating captured local cells and observable lexical work, so a separate
 invocation context is unnecessary. Fully supplied positional
 calls without a bound receiver borrow their admitted caller operands synchronously,
 without constructing bound argument storage. These completed helpers run directly
@@ -599,9 +607,14 @@ consumed pure leaves need no separate read node or recursive read dispatch. Real
 root and mutable-name reads retain their metadata. Both paths use one fixed local
 prefix prepared with the code. Native operations, members, entries and returns
 retain cancellation/refusal checks; pure input reads have no checkpoint-count contract.
-The native evaluator reads a readonly
-span; it cannot retain that span or suspend. Returning an argument object preserves
-its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
+The native evaluator borrows one readonly stack view of the actual parameter
+prefix and the definition's fixed collection of live incoming cells. It neither
+packs cells after parameters nor copies them into another argument buffer.
+Parameter bounds remain separate from cell indexes, including missing-argument
+checks before effects. The view cannot escape or suspend and owns no allowance.
+Already-evaluated caller temporaries or the real binder keep parameters funded;
+the defining function keeps its cells and their existing owners alive. Returning
+an argument object preserves its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
 bindings. Functions requiring lexical storage or special scope handling retain
 their function contexts. Native conversions,
 dictionary string-key reads and compound

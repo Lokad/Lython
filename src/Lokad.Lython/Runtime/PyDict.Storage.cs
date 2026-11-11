@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -176,6 +177,37 @@ internal sealed partial class PyDict
             index = entry.Next - 1;
         }
         return -1;
+    }
+
+    // Canonical UTF-8 keys share this probe with immutable record layouts.
+    // It runs no Python hash/equality protocol and creates no key or cache.
+    private static int FindNativeTextIndex(NativeKey[] items, uint hash, ReadOnlySpan<byte> bytes,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (items.Length == 0) return -1;
+        for (var index = items[NativeBucket(hash, items.Length)].Bucket - 1;
+            index >= 0; index = items[index].Next - 1)
+        {
+            context.CheckExecution(span);
+            if (items[index].Hash == hash && items[index].Key is PyString name &&
+                EqualNativeText(name, bytes, context, span)) return index;
+        }
+        return -1;
+    }
+
+    private static bool EqualNativeText(PyString name, ReadOnlySpan<byte> bytes,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var other = name.Utf8Span;
+        if (other.Length != bytes.Length) return false;
+        for (var offset = 0; offset < bytes.Length;)
+        {
+            context.CheckExecution(span);
+            var count = Math.Min(4096, bytes.Length - offset);
+            if (!bytes.Slice(offset, count).SequenceEqual(other.Slice(offset, count))) return false;
+            offset += count;
+        }
+        return true;
     }
 
     private bool TryGetNativeValue(object key, [MaybeNullWhen(false)] out object value)

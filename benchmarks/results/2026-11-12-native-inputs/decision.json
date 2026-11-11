@@ -1,0 +1,14 @@
+{
+  "status": "Retained for exact-source delivery qualification; publication postponed.",
+  "reference": "Fully qualified8f8628a4, unchanged production through9b7ccda9. Frozen source/core hashes are authoritative; candidate assembly revision metadata precedes its delivery commit.",
+  "removed": "Duplicate short-word Python objects inside private histogram segments; duplicate captured native helper packing/clearing buffer; appended-cell parameter indexing and combined capacity subtraction. One canonical UTF8 probe/counter update and one readonly borrowed native-input convention remain.",
+  "preserved": "Ordinary object call/return ABI, real keyword/default binder, eager admission, host mediation, managed stack safety, current cancellation, first terminal refusal, Python identities/protocols, funding for retained aliases, deterministic/awaited cleanup. No new owner/cache/controller/policy or public API change.",
+  "allocation": "Complete captured text−20.45/−20.43% Run/RunAsync; ordinary−22.44/−22.42%. Other/compile allocation effectively flat. Reserved allowance unchanged.",
+  "cpu": "Quiet complete captured Run−9.21..−4.33%; ordinary Run−11.54..−8.53% and RunAsync−11.90..−9.68% have supporting CPU gains. CapturedAsync CPU overlaps zero. R250 async-search/CSV adversity not reproduced; cause/recovery not attributed to an isolated change.",
+  "acceptedUncertainty": "ReportAsync wider process CPU0..+6.25% versus8f8628a4, additional to that reference's earlier debt. Elapsed−2.79..+1.98%, controls3.04/1.77%, maxIQR5.05%; no neutrality or new elapsed-regression claim. Preserve for later representative profiling; no compound/equated CPU ranges.",
+  "validation": "1642internal/3810public per actual11/10 plus7cell/reentry checks per target. Six unchanged complete scripts through both APIs and separate compilation pass goldens/balances/cleanup. Full platform/stress/installed-package delivery pending.",
+  "vm": "B59710jobs279.026s, all gates/joins/RAM/archive pass; terminal cached. B596profile also terminal/cached. Protect selected cores and exact committed canonical evidence.",
+  "next": "Commit coherent change, dispatch one full platform/target/stress/installed-consumer checkpoint, refresh primary CPython compile/warm/compile-to-result once with existing tooling. Continue representative per-record/call/text/frontend roadmap after delivery; publication remains held.",
+  "publication": false,
+  "fullPlatformQualification": false
+}

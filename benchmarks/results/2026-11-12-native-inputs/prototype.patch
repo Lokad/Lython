@@ -1,0 +1,529 @@
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+@@ -13,16 +13,8 @@
+         {
+             // The ordinary ForNext owns wider/pending stack retirement. A
+             // native source advances here only after that ownership is settled.
+-            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals
+-                || !execution.Stack.TryAdvanceNativeIteration(head.InputStart, out var next)) return false;
++            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals) return false;
+             var headIndex = execution.InstructionIndex;
+-            if (!next.HasValue)
+-            {
+-                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+-                execution.InstructionIndex = head.TargetIndex;
+-                return true;
+-            }
+-
+             var callIndex = head.DictionaryLoopCallIndex;
+             var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
+             ref readonly var member = ref execution.Code.Instructions[headIndex + 2];
+@@ -37,8 +29,21 @@
+             var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
+             // No callback can observe these uncaptured slots inside the native
+             // segment. Observable namespaces retain their ordinary stores.
+-            var deferTotal = hasTotal && !execution.Code.RequiresLocalVariableMirroring
++            var privateBindings = !execution.Code.RequiresLocalVariableMirroring
+                 && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
++            var deferTotal = hasTotal && privateBindings;
++            var cursor = privateBindings && execution.LocalCells?[store.ThirdInput] is null
++                ? execution.Stack[head.InputStart] as PyStringOps.CasedWhitespaceIteration : null;
++            if (cursor is not null && !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor)) cursor = null;
++            if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var word, out var hasWord)) return false;
++            if (!hasWord)
++            {
++                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
++                execution.InstructionIndex = head.TargetIndex;
++                return true;
++            }
++            var wordChanged = false;
++            PyStringOps.CompactWord pendingWord = default;
+             var totalChanged = false;
+             long pendingTotal = 0;
+             try
+@@ -46,14 +51,28 @@
+                 while (true)
+                 {
+                     execution.InstructionIndex = headIndex;
+-                    PublishInstructionResult(ref execution, invocation, head, next.Value);
++                    var compact = word.Value is null;
++                    if (compact)
++                    {
++                        // Keep the original binding check, even though its value
++                        // stays private until a continuation can observe it.
++                        execution.Stack.CheckExecution(execution.Code.Instructions[headIndex + 1].Span);
++                        pendingWord = word;
++                        wordChanged = true;
++                    }
++                    else
++                    {
++                        PublishInstructionResult(ref execution, invocation, head, word.Value!);
++                        wordChanged = false;
++                    }
+                     // Binding may admit namespace storage and reenter. Read the
+                     // actual locals afterwards, and stop a refused command first.
+                     scope.CheckExecution(member.Span);
+                     var dictionary = execution.Locals[store.SecondInput] as PyDict;
+-                    var key = execution.Locals[store.ThirdInput] as PyString;
++                    var key = compact ? null : execution.Locals[store.ThirdInput] as PyString;
+                     var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
+-                    if (dictionary is null || key is null || hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
++                    if (dictionary is null || !compact && key is null ||
++                        hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                     {
+                         execution.InstructionIndex = headIndex + 2;
+                         return true;
+@@ -64,8 +83,11 @@
+                     bool updated;
+                     try
+                     {
+-                        updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
+-                            call.CallSpan, add.Span, storeSpan);
++                        updated = compact
++                            ? dictionary.TryAccumulateInlineWord(PyStringOps.CompactWordBytes(ref word), fallback, increment, scope,
++                                call.CallSpan, add.Span, storeSpan)
++                            : dictionary.TryAccumulateWithoutAdmission(key!, fallback, increment, scope,
++                                call.CallSpan, add.Span, storeSpan);
+                     }
+                     finally { scope.LeaveInterpreterFrame(); }
+                     if (!updated)
+@@ -103,9 +125,9 @@
+                     }
+                     execution.InstructionIndex = headIndex;
+                     scope.CheckExecution(head.Span);
+-                    if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out next))
++                    if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var nextWord, out hasWord))
+                         throw new InvalidOperationException("A native loop lost its private iteration source.");
+-                    if (next.HasValue) continue;
++                    if (hasWord) { word = nextWord; continue; }
+                     _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                     execution.InstructionIndex = head.TargetIndex;
+                     return true;
+@@ -116,8 +138,23 @@
+                 // Publish before any continuation, callback or error handler.
+                 // This private scalar store cannot admit or invoke guest code;
+                 // it must not replace a cancellation or first refusal.
+-                if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal);
++                try
++                {
++                    if (wordChanged) execution.Locals[store.ThirdInput] = cursor!.Materialize(ref pendingWord);
++                }
++                finally { if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal); }
+             }
++        }
++
++        private static bool TryReadDictionaryWord(ref ExecutableWorkState execution,
++            PyStringOps.CasedWhitespaceIteration? cursor, int slot, out PyStringOps.CompactWord word, out bool hasWord)
++        {
++            if (cursor is not null) { hasWord = cursor.TryReadWord(out word); return true; }
++            word = default;
++            if (!execution.Stack.TryAdvanceNativeIteration(slot, out var next)) { hasWord = false; return false; }
++            hasWord = next.HasValue;
++            if (hasWord) word.Value = next.Value;
++            return true;
+         }
+ 
+         private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -6,6 +6,15 @@
+ 
+ internal sealed partial class LythonRuntime
+ {
++    // One non-owning input convention for native proof/evaluation. Parameters
++    // keep their real bounds; cells remain live in the definition-owned array.
++    // The readonly stack view cannot escape or cross a suspension boundary.
++    private readonly ref struct NativeInputs(ReadOnlySpan<object?> values, IReadOnlyList<ExecutableCell>? cells)
++    {
++        internal readonly ReadOnlySpan<object?> Values = values;
++        internal readonly IReadOnlyList<ExecutableCell>? Cells = cells;
++    }
++
+     internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
+         ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result, bool consumedByIteration = false)
+     {
+@@ -14,20 +23,22 @@
+         if (body is null || body.ClosureInputCount != 0 || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+             || context.ActiveHandlerVariables is { Count: > 0 })
+             return false;
+-        if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
+-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan, consumedByIteration);
++        var inputs = new NativeInputs(arguments, null);
++        if (!GuardNativeBody(codeObject, body, inputs, context)) return false;
++        result = ExecuteNativeBody(codeObject, body, context, inputs, entrySpan, consumedByIteration);
+         return true;
+     }
+ 
+     internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result,
++        ReadOnlySpan<object?> arguments, IReadOnlyList<ExecutableCell> cells, string name, LythonSourceSpan span, out object result,
+         bool consumedByIteration = false)
+     {
+         result = PyNone.Instance;
+         var body = code.NativeBody!;
+-        if (!GuardNativeBody(code, body, arguments, context)) return false;
++        var inputs = new NativeInputs(arguments, cells);
++        if (!GuardNativeBody(code, body, inputs, context)) return false;
+         context.EnterFunctionCall(span);
+-        try { result = ExecuteNativeBody(code, body, context, arguments, span, consumedByIteration); return true; }
++        try { result = ExecuteNativeBody(code, body, context, inputs, span, consumedByIteration); return true; }
+         catch (LythonRuntimeException error)
+         {
+             PyFunctionBinding.AnnotateException(error, context, name, span);
+@@ -39,11 +50,11 @@
+     // Dynamic checks precede all effects, including admission. A failed proof
+     // uses the ordinary executable engine; actual work never falls back/retries.
+     private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context)
+-        => arguments.Length >= body.ClosureInputCount && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
++        in NativeInputs arguments, ExecutionContext context)
++        => (body.ClosureInputCount == 0 || arguments.Cells?.Count == body.ClosureInputCount) && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
+ 
+     private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+-        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan,
++        ExecutionContext context, in NativeInputs arguments, LythonSourceSpan entrySpan,
+         bool consumedByIteration = false)
+     {
+         context.EnterInterpreterFrame(entrySpan);
+@@ -116,20 +127,20 @@
+     }
+ 
+     private static bool TryReadNativeInput(int source, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
++        in NativeInputs arguments, ExecutionContext context, out object? value)
+     {
+         if (source < 0) { value = code.Constants[~source]; return true; }
+         if (source < code.FirstTemporarySlot)
+         {
+-            var bound = (uint)source < (uint)(arguments.Length - code.NativeBody!.ClosureInputCount);
+-            value = bound ? arguments[source] : null;
++            var bound = (uint)source < (uint)arguments.Values.Length;
++            value = bound ? arguments.Values[source] : null;
+             return bound;
+         }
+         return TryReadNativeOperand(code, values[source - code.FirstTemporarySlot].Instruction, arguments, context, out value);
+     }
+ 
+     private static bool GuardNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out NativeReturnShape shape)
++        in NativeInputs arguments, ExecutionContext context, out NativeReturnShape shape)
+     {
+         shape = NativeReturnShape.Other;
+         if (index < code.FirstTemporarySlot)
+@@ -242,7 +253,7 @@
+     }
+ 
+     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
+-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context)
++        NativeReturnValue[] values, in NativeInputs arguments, ExecutionContext context)
+     {
+         if (index >= code.FirstTemporarySlot)
+         {
+@@ -260,7 +271,7 @@
+     }
+ 
+     private static bool TryReadNativeFormattedValue(int index, ExecutableCodeObject code,
+-        NativeReturnValue[] values, ReadOnlySpan<object?> arguments, ExecutionContext context, out object? result)
++        NativeReturnValue[] values, in NativeInputs arguments, ExecutionContext context, out object? result)
+     {
+         if (index < code.FirstTemporarySlot)
+             return TryReadNativeInput(index, code, values, arguments, context, out result);
+@@ -278,20 +289,20 @@
+     }
+ 
+     private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException,
++        in NativeInputs arguments, ExecutionContext context, PyException? entryException,
+         bool consumedByIteration = false)
+     {
+         // Bound direct inputs are pure. Operations and real roots retain their
+         // cancellation/refusal checks without a recursive leaf dispatch.
+         if (index < code.FirstTemporarySlot)
+-            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
++            return RuntimeValue(index < 0 ? code.Constants[~index] : arguments.Values[index]);
+         ref readonly var value = ref values[index - code.FirstTemporarySlot];
+         var instruction = value.Instruction;
+         if (value.Operation == NativeReturnOperation.StoreClosure)
+         {
+             var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+             context.State.CheckExecution(instruction.Span);
+-            ((ExecutableCell)arguments[arguments.Length - code.NativeBody!.ClosureInputCount + instruction.ClosureSlot]!).StoreThroughOwner(stored);
++            arguments.Cells![instruction.ClosureSlot].StoreThroughOwner(stored);
+             var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
+                 consumedByIteration);
+             CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
+@@ -383,7 +394,7 @@
+     }
+ 
+     private static bool TryReadNativeOperand(ExecutableCodeObject codeObject, in ExecutableInstruction instruction,
+-        ReadOnlySpan<object?> arguments, ExecutionContext context, out object? value)
++        in NativeInputs arguments, ExecutionContext context, out object? value)
+     {
+         if (instruction.OpCode == ExecutableOpCode.LoadConst)
+         {
+@@ -402,20 +413,18 @@
+             return value is not null;
+         }
+         var index = instruction.LocalSlot;
+-        var bound = (uint)index < (uint)(arguments.Length - codeObject.NativeBody!.ClosureInputCount);
+-        value = bound ? arguments[index] : null;
++        var bound = (uint)index < (uint)arguments.Values.Length;
++        value = bound ? arguments.Values[index] : null;
+         // Unbound locals must fail through the original LoadLocal operation.
+         return bound;
+     }
+ 
+-    // Incoming references follow the real parameter prefix, not its unbound
+-    // local slots. Keep cells live so reads still observe their actual owner.
+-    private static bool TryReadNativeCell(ExecutableCodeObject code, ReadOnlySpan<object?> arguments,
++    // The compiled function owns a fixed cell collection, validated before any
++    // proof/effects. Values remain live; no parameter slot can impersonate a cell.
++    private static bool TryReadNativeCell(ExecutableCodeObject code, in NativeInputs arguments,
+         int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
+     {
+-        var count = code.NativeBody!.ClosureInputCount;
+-        var start = arguments.Length - count;
+-        cell = start >= 0 && (uint)slot < (uint)count ? arguments[start + slot] as ExecutableCell : null;
++        cell = (uint)slot < (uint)code.NativeBody!.ClosureInputCount ? arguments.Cells?[slot] : null;
+         return cell is not null;
+     }
+ 
+--- a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+@@ -15,11 +15,31 @@
+             || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
+         var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
+         var index = FindNativeIndex(key, hash, context, querySpan);
+-        if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems.Length)) return false;
++        return TryAccumulateAt(index, key, hash, fallback, increment, context, addSpan, storeSpan);
++    }
++
++    internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
++    {
++        if (_nativeItems is null || _nativeValues is null || _recordKeys is not null || HasProtocolKeys ||
++            !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
++        var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, querySpan)));
++        var index = FindNativeTextIndex(_nativeItems, hash, bytes, context, querySpan);
++        // New keys need their real word identity. Resume the original body
++        // after publishing that binding, before any insertion/growth admission.
++        return index >= 0 && TryAccumulateAt(index, (PyString)_nativeItems[index].Key!, hash,
++            fallback, increment, context, addSpan, storeSpan);
++    }
++
++    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
++    {
++        // Both query forms established native storage and exclude callbacks.
++        if (index < 0 && (_recordKeys is not null || _nativeCount == _nativeItems!.Length)) return false;
+         long prior;
+-        if (index >= 0 && _recordKeys is null && _nativeValues[index] is null)
++        if (index >= 0 && _recordKeys is null && _nativeValues![index] is null)
+         {
+-            prior = _nativeItems[index].Integer;
++            prior = _nativeItems![index].Integer;
+             if (prior < -(1L << 55) || prior >= (1L << 55)) return false;
+         }
+         else
+@@ -42,8 +62,8 @@
+                 index = _nativeCount;
+                 AppendNativeItem(key, PyNone.Instance, hash);
+             }
+-            _nativeItems[index].Integer = sum;
+-            _nativeValues[index] = null;
++            _nativeItems![index].Integer = sum;
++            _nativeValues![index] = null;
+         }
+         else
+             PublishNativeValue(index, key, new BigInteger(sum), hash, protocol: false, replaceExisting: true);
+--- a/src/Lokad.Lython/Runtime/PyDict.Records.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Records.cs
+@@ -111,31 +111,11 @@
+             LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+         {
+             context.CheckExecution(span);
+-            if ((uint)position < (uint)Count && EqualName((PyString)_keys[position].Key!, bytes, context, span))
++            if ((uint)position < (uint)Count && EqualNativeText((PyString)_keys[position].Key!, bytes, context, span))
+                 return (PyString)_keys[position].Key!;
+             var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, span)));
+-            for (var i = _keys[NativeBucket(hash, _keys.Length)].Bucket - 1; i >= 0; i = _keys[i].Next - 1)
+-            {
+-                context.CheckExecution(span);
+-                if (_keys[i].Hash == hash && EqualName((PyString)_keys[i].Key!, bytes, context, span))
+-                    return (PyString)_keys[i].Key!;
+-            }
+-            return null;
+-        }
+-
+-        private static bool EqualName(PyString name, ReadOnlySpan<byte> bytes,
+-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+-        {
+-            var other = name.Utf8Span;
+-            if (other.Length != bytes.Length) return false;
+-            for (var offset = 0; offset < bytes.Length;)
+-            {
+-                context.CheckExecution(span);
+-                var count = Math.Min(4096, bytes.Length - offset);
+-                if (!bytes.Slice(offset, count).SequenceEqual(other.Slice(offset, count))) return false;
+-                offset += count;
+-            }
+-            return true;
++            var index = FindNativeTextIndex(_keys, hash, bytes, context, span);
++            return index < 0 ? null : (PyString)_keys[index].Key!;
+         }
+     }
+ 
+--- a/src/Lokad.Lython/Runtime/PyDict.Storage.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Storage.cs
+@@ -1,4 +1,5 @@
+ using System.Numerics;
++using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+@@ -178,6 +179,37 @@
+         return -1;
+     }
+ 
++    // Canonical UTF-8 keys share this probe with immutable record layouts.
++    // It runs no Python hash/equality protocol and creates no key or cache.
++    private static int FindNativeTextIndex(NativeKey[] items, uint hash, ReadOnlySpan<byte> bytes,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        if (items.Length == 0) return -1;
++        for (var index = items[NativeBucket(hash, items.Length)].Bucket - 1;
++            index >= 0; index = items[index].Next - 1)
++        {
++            context.CheckExecution(span);
++            if (items[index].Hash == hash && items[index].Key is PyString name &&
++                EqualNativeText(name, bytes, context, span)) return index;
++        }
++        return -1;
++    }
++
++    private static bool EqualNativeText(PyString name, ReadOnlySpan<byte> bytes,
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        var other = name.Utf8Span;
++        if (other.Length != bytes.Length) return false;
++        for (var offset = 0; offset < bytes.Length;)
++        {
++            context.CheckExecution(span);
++            var count = Math.Min(4096, bytes.Length - offset);
++            if (!bytes.Slice(offset, count).SequenceEqual(other.Slice(offset, count))) return false;
++            offset += count;
++        }
++        return true;
++    }
++
+     private bool TryGetNativeValue(object key, [MaybeNullWhen(false)] out object value)
+     {
+         var index = FindNativeIndex(key);
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -83,34 +83,10 @@
+             result = PyNone.Instance;
+             return false;
+         }
+-        return _codeObject.NativeBody!.ClosureInputCount == 0
+-            ? LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result, consumedByIteration)
+-            : TryExecuteCapturedNativeBody(arguments, span, consumedByIteration, out result);
+-    }
+-
+-    // Reuse the existing managed native-input buffer only for captured bodies.
+-    // Cell references follow actual parameters; they are not value snapshots or
+-    // bindings for unbound locals. The definition keeps them funded throughout.
+-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+-    private bool TryExecuteCapturedNativeBody(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+-        bool consumedByIteration, out object result)
+-    {
+-        var closureCount = _codeObject.NativeBody!.ClosureInputCount;
+-        if (_closureCells.Count != closureCount || arguments.Length > NativeParameterCapacity - closureCount)
+-        {
+-            result = PyNone.Instance;
+-            return false;
+-        }
+-        NativeParameters buffer = default;
+-        Span<object> inputs = buffer;
+-        inputs = inputs[..(arguments.Length + closureCount)];
+-        try
+-        {
+-            for (var i = 0; i < arguments.Length; i++) inputs[i] = arguments[i]!;
+-            for (var i = 0; i < closureCount; i++) inputs[arguments.Length + i] = _closureCells[i];
+-            return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, inputs, Name, span, out result, consumedByIteration);
+-        }
+-        finally { inputs.Clear(); }
++        // Parameters already have their caller/binder storage. Cells retain the
++        // definition's existing owner; native evaluation borrows both directly.
++        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, _closureCells,
++            Name, span, out result, consumedByIteration);
+     }
+ 
+     private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
+@@ -121,7 +97,7 @@
+     // Wide/external-default/protocol calls keep their admitted owned binding.
+     private const int NativeParameterCapacity = 16;
+     internal bool CanBindNativeArguments => CanExecuteNativeBody
+-        && BindingPlan.ParameterCount <= NativeParameterCapacity - _codeObject.NativeBody!.ClosureInputCount
++        && BindingPlan.ParameterCount <= NativeParameterCapacity
+         && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
+         && BindingPlan.PositionalDefaults is null or PyTuple
+         && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -90,7 +90,54 @@
+                 _context.MemoryGovernor, _span, _context);
+             return PyIterationResult.Yield(word);
+         }
+-    }
++
++        internal MemoryGovernor MemoryGovernor => _context.MemoryGovernor;
++
++        // Only the closed native histogram segment borrows this value. Other
++        // consumers keep MoveNext and receive their ordinary immutable strings.
++        internal bool TryReadWord(out CompactWord word)
++        {
++            word = default;
++            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
++                return false;
++            if (range.Capacity > PyString.InlineUtf8Capacity)
++                word.Value = CreateSplitFragment(_source.Utf8Span, range, _mapping,
++                    _context.MemoryGovernor, _span, _context);
++            else
++            {
++                word.Capacity = range.Capacity;
++                word.Length = WriteCaseUtf8(_source.Utf8Span[range.Start..range.End],
++                    (Span<byte>)word.Utf8, _mapping, _context, _span);
++            }
++            return true;
++        }
++
++        // The eager preflight already funds this entire value. Publication is
++        // also native unwind work: no admission, callback or execution check may
++        // replace the pending failure while restoring the last Python binding.
++        internal object Materialize(ref CompactWord word)
++        {
++            if (word.Value is not null) return word.Value;
++            var value = PyString.CreateReservedUtf8(word.Capacity, _context.MemoryGovernor);
++            CompactWordBytes(ref word).CopyTo(value.UnpublishedUtf8);
++            value.CompleteUnpublishedUtf8(word.Length);
++            word.Value = value;
++            return value;
++        }
++    }
++
++    [System.Runtime.CompilerServices.InlineArray(PyString.InlineUtf8Capacity)]
++    internal struct CompactWordUtf8 { private byte _first; }
++
++    internal struct CompactWord
++    {
++        internal object? Value;
++        internal CompactWordUtf8 Utf8;
++        internal int Length, Capacity;
++    }
++
++    internal static ReadOnlySpan<byte> CompactWordBytes(ref CompactWord word)
++        => ((ReadOnlySpan<byte>)word.Utf8)[..word.Length];
+ 
+     private static PyList SplitCore(PyString value, int maxSplit, bool reverse,
+         MemoryGovernor? governor, LythonSourceSpan? span, LythonRuntime.ExecutionContext? context,

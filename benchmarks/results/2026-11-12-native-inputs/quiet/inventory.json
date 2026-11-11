@@ -1,0 +1,59 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262152192,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 9019392,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "word-control-profile-b596-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5671424,
+      "sha256": "284b44507c9373bcfab99dd687f2dfb10855510e5e70ad81c28862a0c475f21f",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-word-probing/quiet/observations.tgz",
+      "canonicalArchiveSHA256": "ecd3093da846f3af775d64c27bc25895ff669752a2a8d2107e3cd59cecf6e4a0",
+      "canonicalEntry": "current-core.dll",
+      "reason": "Superseded R250 prototype image; both B595/B596 terminal/cached. Exact source/core/all adverse results committed364d9852/31eb7485. Fresh idle/path/UID/inode/all-alias proof. Current selected reference and new R250/R251 image protected; optional adapter/worker unchanged.",
+      "paths": [
+        "word-control-profile-b596-20261111/current-core.dll",
+        "word-control-profile-b596-20261111/candidate/Lokad.Lython.dll",
+        "word-materialization-b595-20261111/current-core.dll",
+        "word-materialization-b595-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844400,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "word-control-profile-b596-20261111/observations.tgz",
+      "bytes": 2473566,
+      "sha256": "f7874372245a9c7d87e1c6b0d06c2319168c2107b94f6adb8deeb7b7a47ab920",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-word-probing/control-profile/observations.tgz",
+      "reason": "Unused terminal duplicate; exact committed Git bytes verified. Source/core/maps/adverse evidence retained; new collection supplies its own catalog. Fresh path/UID/inode/all-alias proof.",
+      "paths": [
+        "word-control-profile-b596-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844539,
+      "allocatedBytes": 2478080,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "word-control-profile-b596-20261111/catalog.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-word-probing/control-profile/catalog.json",
+      "reason": "Unused terminal duplicate; exact committed Git bytes verified. Source/core/maps/adverse evidence retained; new collection supplies its own catalog. Fresh path/UID/inode/all-alias proof.",
+      "paths": [
+        "word-control-profile-b596-20261111/catalog.json"
+      ],
+      "device": 66305,
+      "inode": 844505,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

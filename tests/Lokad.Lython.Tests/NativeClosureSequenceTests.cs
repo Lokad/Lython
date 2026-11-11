@@ -8,6 +8,54 @@ namespace Lokad.Lython.Tests;
 
 public sealed class NativeClosureSequenceTests
 {
+    [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task AdmissionRebindingCallerLocalsKeepsAlreadyBoundParameters(bool asynchronous, bool keywords)
+    {
+        var source = """
+            def make():
+                count=0
+                def append(value,suffix):
+                    nonlocal count
+                    count+=1
+                    return value.lower()+suffix
+                def read():return count
+                return append,read
+            append,read=make()
+            suffix='-old'
+            arm(append)
+            result=CALL
+            assert suffix=='-new'
+            assert read()==1
+            return result
+            """.Replace("CALL", keywords ? "append(suffix=suffix,value=payload)" : "append(payload,suffix)");
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            context.Variables["payload"] = PyString.FromString(new string('A', 4096), context.MemoryGovernor, null);
+            var changed = PyString.FromString("-new", context.MemoryGovernor, null);
+            var armed = new RebindCaller(hook, changed);
+            context.Variables["arm"] = armed;
+            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            try
+            {
+                var result = asynchronous
+                    ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
+                    : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+                Assert.True(armed.Rebound);
+                Assert.Equal(new string('a', 4096) + "-old", Assert.IsType<PyString>(result).AsString());
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { hook.AfterGrowth = null; context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Fact]
     public void IncomingCellCannotSatisfyAnAbsentParameterOrPublishAnEarlyStore()
     {
@@ -109,6 +157,26 @@ public sealed class NativeClosureSequenceTests
             }
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class RebindCaller(AdmissionHookMemoryBudget hook, PyString replacement) : LythonRuntime.ICallable
+    {
+        internal bool Rebound;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
+            var caller = context.CurrentExecutableFrame!;
+            hook.AfterGrowth = _ =>
+            {
+                // Rebind during output construction, after the cell effect. No
+                // particular allocation size, ordinal or checkpoint is required.
+                if (Assert.Single(function.ClosureCells).Value is not BigInteger count || count != BigInteger.One) return;
+                hook.AfterGrowth = null;
+                Assert.True(caller.TryStoreLocalOrClosure("suffix", replacement));
+                Rebound = true;
+            };
+            return PyNone.Instance;
+        }
     }
 
     private sealed class Arm(AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable
