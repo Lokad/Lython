@@ -4,7 +4,9 @@ Retained runtime4aa2d46d,2026-11-11; fresh forced ba6ea8b4 reference. All568
 production-source hashes match the measured corrected candidate. Normal adapter/
 producer0.4 remains unchanged; no core package edge or new backend/option.
 [Source identity](source-identity.json). Full [CI42953725339](https://github.com/Lokad/Lython/actions/runs/42953725339)
-is active on exact4aa, including earlier R222; focused delivery is complete.
+is GREEN on exact4aa, including earlier R222: Windows/Ubuntu, actual.NET11/.NET10,
+original stress and installed Release consumers. [Cached required-step receipt](delivery-ci.json).
+No unchanged qualification or status replay.
 
 Ordinary direct returns now inherit their immediate-iteration caller's intent
 through existing call/work/frame state, including promotion and real suspension.

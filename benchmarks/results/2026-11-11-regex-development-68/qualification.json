@@ -1,0 +1,68 @@
+{
+  "identity": {
+    "consumerRevision": "331eb4203f04eb2f46cb1ccf16ff28b2647b2cbf",
+    "consumerRuntime": "All568production hashes equal committed4aa2d46d;600internal/2653public focused eachtarget. FullCI42953725339 active separately.",
+    "producerVersion": "0.5.0-dev.68",
+    "producerSourceHead": "Immutable accepted candidate a7e985ed, never moving sibling HEAD/live artifacts/nuget.",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.68.nupkg": {
+        "sha256": "ee18caf485006d0a304275797e2f9412c94bdb592291d9a0d2a3f19dc5b2527a",
+        "repositoryCommit": "a7e985ed2c1bb4ac7d63a09c74e3ba0a74ccb9b9",
+        "dependencies": []
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.68.nupkg": {
+        "sha256": "2328d481023f0776937867f9bf8dd6d0fa153d51d3f18862588453974c2f36d4",
+        "repositoryCommit": "a7e985ed2c1bb4ac7d63a09c74e3ba0a74ccb9b9",
+        "dependencies": [
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.68]",
+            "exclude": "Build,Analyzers"
+          },
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.68]",
+            "exclude": "Build,Analyzers"
+          }
+        ]
+      }
+    },
+    "bridge": "Unchanged dev67/development bridge and cursor-admission controls; Validate default. Isolated package feed/cache/assets/locks/outputs; no normal pin/source change.",
+    "providerSourceSHA256": "48d861486c39795387f9df2e8acb22e39ed18b8523d600d796899a47733e32df",
+    "cursorTestSourceSHA256": "fa06099712588a98b6c66e98ef552349619e5ccdf7509f8bf02c165e5d9f5005",
+    "limitations": "Development semantic/cancellation/ownership qualification only; no normal pin promotion, final published producer qualification or safety/backend performance certification."
+  },
+  "checks": {
+    "build-Lokad.Lython.Tests": {
+      "exitCode": 0
+    },
+    "build-Lokad.Lython.PublicApi.Tests": {
+      "exitCode": 0
+    },
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 532
+    },
+    "net11.0-loadedFiles": {
+      "Lokad.Lython": "3f9c1e5aac34003705e2334164b7f806caa0748d6470822f2a1439f181654ecf",
+      "Lokad.Lython.Utf8Regex": "660619809f8df4192c72cd545c1663008eaebcd8c0516a56b0e33e95e330ddd3",
+      "Lokad.Utf8Regex": "3a4ce9a49ad924ab5e17fe63bdc4dff4ef79f5d113b1eadee92e7caadeec07b5",
+      "Lokad.Utf8Regex.PythonRe": "ad50db4fdc407c48bbc6add4ebe26928d9392a7e1fb788911110e0d2eb6e9679"
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 532
+    },
+    "net10.0-loadedFiles": {
+      "Lokad.Lython": "51a85dfa07be7be5f2b59836907c9386c6df0ab3fd228bd6bc2b4304c869ef85",
+      "Lokad.Lython.Utf8Regex": "063ae0be0a6b460572480c866ad365db5dcbbf61508e5957ce8916542ae97764",
+      "Lokad.Utf8Regex": "243e0a9111c76f836520f12994e9397e68f7114e18330afe8804d12a93074653",
+      "Lokad.Utf8Regex.PythonRe": "b7813674a16655a923308b3440fc1ff025157c49de6295a88613ce67a2f5d3b0"
+    }
+  },
+  "limitations": "Private immutable development adapter only; normal pin/source unchanged; final producer/safety qualification separate"
+}

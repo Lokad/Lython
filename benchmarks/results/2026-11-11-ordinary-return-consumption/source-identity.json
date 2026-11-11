@@ -1153,6 +1153,6 @@
     "net11.0": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f",
     "net10.0": "7cc8bb03fa8b403051ef45e7a7bba483ba28aefa6bda870e6e99443ecbbbcb50"
   },
-  "sourceQualification": "Committed retained R225;600internal/2653public focused checks pass on each actual.NET11/.NET10. Full CI42953725339 active on exact4aa2d46d, includes R222. Previous full4625 remains separate.",
+  "sourceQualification": "Fully qualified on exact committed4aa2d46d in cachedGREEN42953725339: Windows/Ubuntu, actual.NET11/.NET10 ordinary and original stress, installed Release consumers. Includes earlierR222. Every required step inspected; no unchanged replay.",
   "decision": "Retain complete transient-construction removal, measured4.84%CLR allocation and15.06%coarse execution-allowance peak reduction, plus independent custom-casing correctness fix. Quiet elapsed/control uncertainty and all adverse original conditions remain. No universal CPU or current CPython claim."
 }
