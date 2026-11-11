@@ -35,55 +35,88 @@ internal sealed partial class LythonRuntime
             var hasTotal = execution.Code.Instructions[totalIndex].OpCode == ExecutableOpCode.Augmented;
             ref readonly var total = ref execution.Code.Instructions[totalIndex];
             var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
-
-            while (true)
+            // No callback can observe these uncaptured slots inside the native
+            // segment. Observable namespaces retain their ordinary stores.
+            var deferTotal = hasTotal && !execution.Code.RequiresLocalVariableMirroring
+                && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
+            var totalChanged = false;
+            long pendingTotal = 0;
+            try
             {
-                execution.InstructionIndex = headIndex;
-                PublishInstructionResult(ref execution, invocation, head, next.Value);
-                // Binding may admit namespace storage and reenter. Read the
-                // actual locals afterwards, and stop a refused command first.
-                scope.CheckExecution(member.Span);
-                var dictionary = execution.Locals[store.SecondInput] as PyDict;
-                var key = execution.Locals[store.ThirdInput] as PyString;
-                var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
-                if (dictionary is null || key is null || hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                while (true)
                 {
-                    execution.InstructionIndex = headIndex + 2;
-                    return true;
-                }
+                    execution.InstructionIndex = headIndex;
+                    PublishInstructionResult(ref execution, invocation, head, next.Value);
+                    // Binding may admit namespace storage and reenter. Read the
+                    // actual locals afterwards, and stop a refused command first.
+                    scope.CheckExecution(member.Span);
+                    var dictionary = execution.Locals[store.SecondInput] as PyDict;
+                    var key = execution.Locals[store.ThirdInput] as PyString;
+                    var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
+                    if (dictionary is null || key is null || hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                    {
+                        execution.InstructionIndex = headIndex + 2;
+                        return true;
+                    }
 
-                execution.InstructionIndex = callIndex;
-                scope.EnterInterpreterFrame(call.CallSpan);
-                bool updated;
-                try
-                {
-                    updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
-                        call.CallSpan, add.Span, storeSpan);
-                }
-                finally { scope.LeaveInterpreterFrame(); }
-                if (!updated)
-                {
-                    // Only the loop binding happened. The original body now
-                    // performs any required admission/protocol, exactly once.
-                    execution.InstructionIndex = headIndex + 2;
+                    execution.InstructionIndex = callIndex;
+                    scope.EnterInterpreterFrame(call.CallSpan);
+                    bool updated;
+                    try
+                    {
+                        updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
+                            call.CallSpan, add.Span, storeSpan);
+                    }
+                    finally { scope.LeaveInterpreterFrame(); }
+                    if (!updated)
+                    {
+                        // Only the loop binding happened. The original body now
+                        // performs any required admission/protocol, exactly once.
+                        execution.InstructionIndex = headIndex + 2;
+                        return true;
+                    }
+                    execution.Stack.RetireTo(store.LiveExtent);
+                    if (hasTotal)
+                    {
+                        execution.InstructionIndex = totalIndex;
+                        scope.CheckExecution(total.Span);
+                        if (deferTotal)
+                        {
+                            // Both operands fit seven signed bytes. Stop this
+                            // segment before that bound changes; the ordinary
+                            // arithmetic path keeps exact promotion and admission.
+                            var value = (totalChanged ? pendingTotal : (long)(BigInteger)priorTotal!) + (long)totalIncrement;
+                            scope.CheckExecution(execution.Code.Instructions[totalIndex + 1].Span);
+                            pendingTotal = value;
+                            totalChanged = true;
+                            if (value < -(1L << 55) || value >= (1L << 55))
+                            {
+                                execution.InstructionIndex = totalIndex + 2;
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            var value = AddExactIntegers((BigInteger)priorTotal!, totalIncrement, scope.MemoryGovernor, total.Span);
+                            PublishInstructionResult(ref execution, invocation, total, value);
+                        }
+                    }
+                    execution.InstructionIndex = headIndex;
+                    scope.CheckExecution(head.Span);
+                    if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out next))
+                        throw new InvalidOperationException("A native loop lost its private iteration source.");
+                    if (next.HasValue) continue;
+                    _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                    execution.InstructionIndex = head.TargetIndex;
                     return true;
                 }
-                execution.Stack.RetireTo(store.LiveExtent);
-                if (hasTotal)
-                {
-                    execution.InstructionIndex = totalIndex;
-                    scope.CheckExecution(total.Span);
-                    var value = AddExactIntegers((BigInteger)priorTotal!, totalIncrement, scope.MemoryGovernor, total.Span);
-                    PublishInstructionResult(ref execution, invocation, total, value);
-                }
-                execution.InstructionIndex = headIndex;
-                scope.CheckExecution(head.Span);
-                if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out next))
-                    throw new InvalidOperationException("A native loop lost its private iteration source.");
-                if (next.HasValue) continue;
-                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
-                execution.InstructionIndex = head.TargetIndex;
-                return true;
+            }
+            finally
+            {
+                // Publish before any continuation, callback or error handler.
+                // This private scalar store cannot admit or invoke guest code;
+                // it must not replace a cancellation or first refusal.
+                if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal);
             }
         }
 

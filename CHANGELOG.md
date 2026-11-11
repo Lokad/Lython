@@ -8,6 +8,8 @@
 - Run eligible dictionary counting loops through existing native iteration and
   arithmetic, avoiding repeated instruction dispatch and argument preparation.
   Preserve custom protocols, integer promotion, cancellation and memory ownership.
+  Keep private integer totals in the native segment, publishing their Python
+  value before continuation, callbacks or error handling.
 
 - Validate factory keyword binding before truth hooks and evaluate typing variance
   flags in Python's parameter order. Build exception argument tuples directly

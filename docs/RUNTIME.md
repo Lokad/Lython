@@ -439,6 +439,9 @@ and local binding paths, including optional integer totals and cancellation.
 Custom protocols, wide values and growth resume the original executable body
 after the current loop binding, preserving evaluation order and suspension.
 Refused admission stops execution; it does not select that continuation.
+Uncaptured totals without namespace or mirror stores can stay in a managed
+integer during that segment. Every exit publishes the ordinary Python integer
+before any handler or callback; wider values retain normal exact promotion.
 
 Both public APIs advance the same non-async instruction loop. Completed operations,
 including failures and cancellation, stay in that loop; asynchronous execution awaits incomplete operations and cursor

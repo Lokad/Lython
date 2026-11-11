@@ -9,9 +9,9 @@ namespace Lokad.Lython.Tests;
 public sealed class DictionaryCountingLoopAdmissionTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RequiredGrowthResumesOnceAndRefusalKeepsItsFirstOrigin(bool asynchronous)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task RequiredGrowthResumesOnceAndRefusalKeepsItsFirstOrigin(bool asynchronous, bool mirrored)
     {
         const long limit = 2 * 1024 * 1024;
         const string source = """
@@ -28,10 +28,11 @@ public sealed class DictionaryCountingLoopAdmissionTests
         var budget = new LythonMemoryBudget(limit);
         using (var owner = budget.CreateScope())
         {
-            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner })
-            { MirrorLocalStores = true };
-            // Growth retains the storage owner's original source, as on the
-            // ordinary executable path. Mirror locals so unwind can be observed.
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook })
+            { MirrorLocalStores = mirrored };
+            // Growth retains the storage owner's original source. Observe
+            // private locals at admission and mirrored bindings after unwind.
             var span = new LythonSourceSpan(source.IndexOf("counts[word]", StringComparison.Ordinal), "counts[word]".Length, 4, 20);
             var counts = new PyDict(context.MemoryGovernor, span);
             foreach (var key in new[] { "alpha", "bravo", "café", "delta" })
@@ -41,7 +42,7 @@ public sealed class DictionaryCountingLoopAdmissionTests
             var words = new PyList([first, first, missing], context.MemoryGovernor, span);
             context.Variables["initial_counts"] = counts;
             context.Variables["initial_words"] = words;
-            using var arm = new Arm(budget);
+            using var arm = new Arm(budget, hook);
             var mark = new Mark();
             context.Variables["arm"] = arm;
             context.Variables["mark"] = mark;
@@ -63,8 +64,13 @@ public sealed class DictionaryCountingLoopAdmissionTests
             Assert.True(counts.TryGetValue(first, out var updated));
             Assert.Equal(new BigInteger(3), updated);
             Assert.False(counts.TryGetValue(missing, out _));
-            Assert.Same(missing, context.Variables["word"]);
-            Assert.Equal(new BigInteger(2), context.Variables["total"]);
+            Assert.Same(missing, arm.ObservedWord);
+            Assert.Equal(new BigInteger(2), arm.ObservedTotal);
+            if (mirrored)
+            {
+                Assert.Same(missing, context.Variables["word"]);
+                Assert.Equal(new BigInteger(2), context.Variables["total"]);
+            }
             Assert.Equal(0, mark.Calls);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(0, context.State.CurrentInterpreterDepth);
@@ -73,17 +79,28 @@ public sealed class DictionaryCountingLoopAdmissionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class Arm(LythonMemoryBudget budget) : LythonRuntime.ICallable, IDisposable
+    private sealed class Arm(LythonMemoryBudget budget, AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable, IDisposable
     {
         private ILythonMemoryReservation? _blocker;
         internal int Calls;
+        internal object? ObservedWord, ObservedTotal;
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
             Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out _blocker));
+            hook.RefuseGrowth = _ =>
+            {
+                // Actual admission after native counting must see the completed
+                // private segment, before refusal/unwind clears its frame.
+                Assert.True(context.CurrentExecutableFrame!.TryReadExecutableLocal("word", out var word));
+                Assert.True(context.CurrentExecutableFrame.TryReadExecutableLocal("total", out var total));
+                ObservedWord = word;
+                ObservedTotal = total;
+                return true;
+            };
             return PyNone.Instance;
         }
-        public void Dispose() => _blocker?.Dispose();
+        public void Dispose() { hook.RefuseGrowth = null; _blocker?.Dispose(); }
     }
 
     private sealed class Mark : LythonRuntime.ICallable

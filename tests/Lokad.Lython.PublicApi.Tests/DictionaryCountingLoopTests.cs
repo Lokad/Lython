@@ -18,6 +18,10 @@ public sealed class DictionaryCountingLoopTests
         { "protocol-keys-keep-equality-effects", "events=[]\nclass Key:\n def __hash__(self): return hash('a')\n def __eq__(self,other): events.append('eq');return other=='a'\ncounts={Key():1};total=0\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(list(counts.values()),total,events)\n", "[3] 2 ['eq', 'eq', 'eq', 'eq']\n" },
         { "list-mutation-during-continuation", "words=['a','a'];events=[]\nclass Value:\n def __add__(self,other): events.append('add');words.append('a');return 1\ncounts={'a':Value()};total=0\nfor word in words: counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,len(words),events)\n", "{'a': 3} 3 3 ['add']\n" },
         { "namespace-keeps-last-alias", "words=('alpha-value','beta-value');counts={};total=0\nfor word in words: counts[word]=counts.get(word,0)+1;total+=1\nprint(locals()['word'] is words[-1],total)\n", "True 2\n" },
+        { "private-total-before-protocol", "class Value:\n def __add__(self,other): return 0\ndef run():\n counts={'a':0,'b':Value()};total=0\n for word in ('a','a','b','a'): counts[word]=counts.get(word,0)+1;total+=1\n return counts,total,word\nprint(run())\n", "({'a': 3, 'b': 0}, 4, 'a')\n" },
+        { "private-total-before-handler", "def run():\n counts={'a':0,'b':None};total=0\n try:\n  for word in ('a','a','b'): counts[word]=counts.get(word,0)+1;total+=1\n except TypeError: return counts,total,word\nprint(run())\n", "({'a': 2, 'b': None}, 2, 'b')\n" },
+        { "private-total-final-identity-and-locals", "def run(words):\n counts={'a':0};total=1000;old=total\n for word in words: counts[word]=counts.get(word,0)+1;total+=1\n return total,total is old,locals()['total']\nprint(run(()));print(run(('a','a','a')))\n", "(1000, True, 1000)\n(1003, False, 1003)\n" },
+        { "negative-tier-boundary", "def run():\n counts={'a':0};total=-(1<<55);old=total\n for word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=-1\n return total,old,counts\nprint(run())\n", "(-36028797018963970, -36028797018963968, {'a': 2})\n" },
     };
 
     [Theory]
@@ -53,10 +57,12 @@ public sealed class DictionaryCountingLoopTests
                 def __add__(self,other):
                     with open('/gate','a') as output: output.write('add')
                     return 2
-            counts={'a':Value()};total=0
-            for word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1
-            print(counts,total)
-            return counts
+            def run():
+                counts={'a':0,'b':Value()};total=0
+                for word in ('a','a','b','b'): counts[word]=counts.get(word,0)+1;total+=1
+                print(counts,total)
+                return counts
+            return run()
             """;
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
@@ -84,7 +90,7 @@ public sealed class DictionaryCountingLoopTests
                     Assert.True(result.Success, result.Failure?.Message);
                     Assert.True(budget.ReservedBytes > baseline);
                 }
-                Assert.Equal(cancel ? "" : "{'a': 3} 2\n", result.StandardOutput);
+                Assert.Equal(cancel ? "" : "{'a': 2, 'b': 3} 4\n", result.StandardOutput);
                 Assert.Equal(cancel ? "before:" : "before:add", host.ReadText("/gate"));
                 Assert.True(host.CompletedAsynchronously > 0);
             }

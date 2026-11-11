@@ -75,6 +75,9 @@ aliases through both APIs. Pending callbacks join cancellation before refunding
 their allowance. Internal growth refusal checks preserve completed updates, the
 first source origin and cleanup despite an attempted exception suppression.
 Pure-loop cancellation also covers repeated native histogram segments.
+Private totals also cross protocol/error boundaries and genuinely pending calls.
+Admission callbacks observe their completed value before growth is refused;
+empty-loop identity, final locals and integer promotion retain Python behavior.
 
 [Native helper refunds](Lokad.Lython.Tests/NativeFunctionRefundTests.cs) exercise
 admission reentry during a real compiled helper and refusal during cleanup.
