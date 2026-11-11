@@ -21,8 +21,9 @@ fixture staging/reset, protocol and final cache teardown are excluded.
 
 **Measured current source:** retained `6904093e`, 2026-11-11, frozen refined
 core `ccdd645d` with precommit metadata. All production source hashes match.
-The six refreshed scripts use stock CPython 3.13.16 on the same VM; exact-source
-full delivery qualification is recorded in the linked checkpoint. Earlier rows remain
+The six refreshed scripts use stock CPython 3.13.16 on the same VM. Exact-source
+Windows/Ubuntu, actual .NET 11/10, original stress and installed Release consumers
+are GREEN; the linked checkpoint preserves the terminal receipt. Earlier rows remain
 historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11), `ee44` = `ee448715`
 (config/original search, 2026-11-10), `6f76` = `6f76f99d` (CSV summary, 2026-11-08),
 `4598` = `459813a3` (manifest, 2026-11-09). They do not describe current HEAD.
@@ -135,7 +136,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Captured native helper sequences / complete text | Quiet elapsed −10.56–15.17% Run / −16.59–18.16% RunAsync, supporting wider CPU; runtime allocation flat | Retained `6904093e` versus qualified `5f9059fa`; full delivery tracked separately. Ordinary text inconclusive, CSV control +0.49..+0.89%, compile allocation +0.39–0.93%. Initial adverse implementation and refinement preserved. [R243](../benchmarks/results/2026-11-11-native-closure-sequences/README.md) |
+| Captured native helper sequences / complete text | Quiet elapsed −10.56–15.17% Run / −16.59–18.16% RunAsync, supporting wider CPU; runtime allocation flat | Fully qualified `6904093e` versus `5f9059fa`. Ordinary text inconclusive, CSV control +0.49..+0.89%, compile allocation +0.39–0.93%. Initial adverse implementation and refinement preserved. [R243](../benchmarks/results/2026-11-11-native-closure-sequences/README.md) |
 | Shared compiled workspace / local-record CSV | CLR allocation −4.92% both APIs; quiet affected elapsed direction improves | Fully qualified `5f9059fa` versus `b584`. Original desktop slowdown does not recur, cause unknown; ordinary CSV control +0.97..+2.83% remains uncertain. [Source pair](../benchmarks/results/2026-11-11-mirrored-function-storage/README.md) |
 | Private integer totals / complete text helpers | CLR allocation −9.04% captured / −9.71–9.72% ordinary text on both APIs; ordinary sync improves in two quiet collections | Fully qualified `b5849b04` versus `8314`. Captured/async CPU uncertain. Report adversity does not recur on confirmation, cause unexplained. [R240](../benchmarks/results/2026-11-11-private-counter-segments/README.md) |
 | Complete dictionary counting loops / text helpers | Quiet captured sync elapsed 9–11% lower; other text shapes/APIs improve with wider controls; allocation flat | Fully qualified `fe6648b2` above retained `698`. CSV neutrality unresolved; desktop adversity retained. [R237](../benchmarks/results/2026-11-11-native-counting-loops/README.md) |

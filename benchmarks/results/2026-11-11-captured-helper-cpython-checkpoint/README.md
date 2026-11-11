@@ -77,3 +77,9 @@ runtime, fixture, golden or timing assertion was weakened.
 Next work selects a complete remaining phase from current cost evidence; this
 checkpoint does not complete the performance objective. Regex development stays
 independent and publication remains postponed.
+
+Subsequent exact-`6904093e` full delivery is **GREEN** on Windows/Ubuntu, actual
+.NET 11/10, original stress and installed Release consumers. The
+[terminal receipt](delivery-ci-status.json) is cached. Original collection-time
+status and adverse observations remain unchanged; this qualifies the retained
+source, not later prototypes.
