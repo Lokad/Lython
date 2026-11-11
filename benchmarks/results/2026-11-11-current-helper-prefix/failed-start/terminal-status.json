@@ -1,0 +1,13 @@
+{
+  "service": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\nSubState=failed\n",
+  "serviceError": "",
+  "exitCode": "1",
+  "receipt": null,
+  "remainingWorkers": "",
+  "remainingFixtures": [],
+  "remainingTrace": true,
+  "noWorkerOrWarmupStarted": true,
+  "initialFailure": "Tuple environment key introduced by broad metadata replacement; subprocess.Popen refused before worker creation.",
+  "cleanupReceipt": "failure-inspection.stdout",
+  "neverRequeryTerminalService": true
+}

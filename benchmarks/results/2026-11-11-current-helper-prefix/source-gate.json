@@ -1,0 +1,12 @@
+{
+  "selected": "R228: explicit-terminator dispatch, removing the generic per-instruction jumped state/test and implicit end-of-array completion. Preserve the existing single engine and pause/cleanup protocol.",
+  "established": [
+    "The same-process Tier1 listing separates the loop-bound block (50 samples), instruction fetch/refusal/cancellation block (44), switch-selection block (32) and generic jumped test (7). Each includes useful work and sample skid; these are not removable shares.",
+    "Compiler Linearize already emits Complete for unterminated blocks, including empty ones; other terminators explicitly return, jump or throw. The engine still treats array end as a second implicit successful completion.",
+    "Ordinary operations set/check a generic jumped flag even though only control operations and exception routes can take a target. Taken routes can reenter dispatch directly; actual pending cleanup must still preserve whether advancement is required.",
+    "VM self includes inlined useful whitespace scanning. The23.5%method share does not justify predicting a dispatch speedup or treating the method as pure overhead."
+  ],
+  "acceptance": "Complete all module/function/import/class/generator paths; retain returned-list semantics, branch/self-loop targets, finally/with and handler cleanup, pending host/protocol operations, source spans/current instructions until awaited disposal, active cancellation/first memory refusal, aliases and allowance reuse. No helper/backend/mode or new mutable state.",
+  "comparison": "One bounded existing six-complete-script before/after across warm sync/async and compilation, with unchanged controls. Exact qualified9ee7 baseline; same common worker/auxiliary images. Quiet confirmation only if source/desktop evidence justifies it; retain all original adversity.",
+  "stop": "Retain/refine/withdraw the complete dispatch change, removing all introduced-only machinery on withdrawal. An isolated instruction tweak alone does not complete the whole-script performance objective."
+}

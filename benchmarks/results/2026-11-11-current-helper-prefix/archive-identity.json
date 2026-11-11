@@ -1,0 +1,14 @@
+{
+  "observations.tgz": {
+    "bytes": 2136887,
+    "sha256": "8f95fb0f8e8bc84c4d865e524a1ba1ebecd3dc4f1a71d679c1ecda4aeb558d4a"
+  },
+  "preparation.tar.xz": {
+    "bytes": 71732,
+    "sha256": "d076b49bf3602f18b7fa2d8d277bab37903369fda890d12ef0b10a51535b7b22"
+  },
+  "failed-start/failure.tgz": {
+    "bytes": 14953,
+    "sha256": "b588a92ec583accc42984e9d31d96549d0306c4a3686cecec29626ac3b191fd9"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "beforeFreeBytes": 265588736,
+  "afterFreeBytes": 265498624,
+  "retiredFiles": [],
+  "canonicalCommit": "4f571df0",
+  "fixedFloorBytes": 251658240,
+  "setupHeadroomBytes": 12582912
+}

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R227 current helper prefix](results/2026-11-11-current-helper-prefix/README.md)
+uses qualified4aa/9ee7 after R225:1166guest samples/4.37%unknown, unique same-process
+Tier1 extent matches274prefix self samples. Zero materializingSplitCore stacks;
+102private-preparation stacks. Useful scanning is inlined into the prefix; no
+removable-share/elapsed claim. Compiler explicit terminators plus redundant loop
+completion/jump-state motivate the coherent R228 dispatch gate. Original pre-worker
+environment failure and guarded correction preserved; all final collection/cleanup
+and archive gates pass, no remaining users. No new runtime or repeated qualification.
+
 The [R226 immutable dev68 input](results/2026-11-11-regex-development-68/README.md)
 pins accepted a7e985ed packages and unchanged Validate development bridge.86internal/
 532public focused checks pass per actualtarget; loaded hashes match and all29normal
