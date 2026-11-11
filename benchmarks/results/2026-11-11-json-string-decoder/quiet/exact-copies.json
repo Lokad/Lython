@@ -1,0 +1,49 @@
+[
+  {
+    "path": "bound-borrow-b564-20261110/observations.tgz",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/quiet/observations.tgz",
+    "bytes": 3804031,
+    "sha256": "47bc3643bbb6ea2d38fd43fdb8d5c7f86b75727396e1a27db67c6eaee5868a3b"
+  },
+  {
+    "path": "bound-calls-b563-20261110/observations.tgz",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/profile/observations.tgz",
+    "bytes": 2166797,
+    "sha256": "df094555fc51ffe60a839b3fb8cdc521d7e577f4ebee51e473f452434bf4178b"
+  },
+  {
+    "path": "bound-calls-b563-20261110/profiles/class-report-warm/perf.map",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/profile/observations.tgz",
+    "member": "profiles/class-report-warm/perf.map",
+    "bytes": 1489214,
+    "sha256": "5e47da1205f2049bafeef2995e6c0c9036a91df072e366e24cf936a860b9000a"
+  },
+  {
+    "path": "bound-calls-b563-20261110/profiles/class-report-warm/perf-stacks.txt",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/profile/observations.tgz",
+    "member": "profiles/class-report-warm/perf-stacks.txt",
+    "bytes": 749482,
+    "sha256": "a19da37bc2e2999435142e7bfe60b1a440fdb22b207ed766bc5a059203298005"
+  },
+  {
+    "path": "bound-calls-b563-20261110/profiles/class-report-warm/perf-leaves.txt",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/profile/observations.tgz",
+    "member": "profiles/class-report-warm/perf-leaves.txt",
+    "bytes": 56489,
+    "sha256": "ae1e5bc7db8b5b2eee4bf6d76bba48af2673158477ebfc7a6d5960df887ecc78"
+  },
+  {
+    "path": "bound-calls-b563-20261110/profiles/class-report-warm/perf.data",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/profile/observations.tgz",
+    "member": "profiles/class-report-warm/perf.data",
+    "bytes": 333680,
+    "sha256": "37ab0b40c5c3e47bd46218f0401a1d5c9a52b0a0a7cf49abed5dc2a3ddcc31f0"
+  },
+  {
+    "path": "bound-borrow-b564-20261110/confirmation/confirmation.json",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/quiet/observations.tgz",
+    "member": "confirmation/confirmation.json",
+    "bytes": 188640,
+    "sha256": "90f856fa37b534fd452833a9ce97b727eefbc86b80b23038337d04391370d2b8"
+  }
+]

@@ -1,0 +1,151 @@
+{
+  "reference": "3.13.2",
+  "errors": [
+    {
+      "document": "\"bad\\q\"",
+      "strict": true,
+      "msg": "Invalid \\escape",
+      "pos": 4,
+      "line": 1,
+      "col": 5
+    },
+    {
+      "document": "\"é😀\\q\"",
+      "strict": true,
+      "msg": "Invalid \\escape",
+      "pos": 3,
+      "line": 1,
+      "col": 4
+    },
+    {
+      "document": "\"\\u\"",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\\u12g4\"",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\\u123\"",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"é\\u12z4\"",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 3,
+      "line": 1,
+      "col": 4
+    },
+    {
+      "document": "\"unterminated",
+      "strict": true,
+      "msg": "Unterminated string starting at",
+      "pos": 0,
+      "line": 1,
+      "col": 1
+    },
+    {
+      "document": "\"end\\",
+      "strict": true,
+      "msg": "Unterminated string starting at",
+      "pos": 0,
+      "line": 1,
+      "col": 1
+    },
+    {
+      "document": "\"a\u0000b\"",
+      "strict": true,
+      "msg": "Invalid control character at",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\n\\q\"",
+      "strict": false,
+      "msg": "Invalid \\escape",
+      "pos": 2,
+      "line": 2,
+      "col": 1
+    },
+    {
+      "document": "\"\\ud800\\u12g4\"",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 8,
+      "line": 1,
+      "col": 9
+    },
+    {
+      "document": "\"\\ud800",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\\u0061",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\\u0000",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 2,
+      "line": 1,
+      "col": 3
+    },
+    {
+      "document": "\"\\ud800\\udc00",
+      "strict": true,
+      "msg": "Invalid \\uXXXX escape",
+      "pos": 8,
+      "line": 1,
+      "col": 9
+    }
+  ],
+  "values": [
+    {
+      "document": "\"\\\"\\\\\\/\\b\\f\\n\\r\\t\"",
+      "value": "\"\\/\b\f\n\r\t"
+    },
+    {
+      "document": "\"\\u0000\"",
+      "value": "\u0000"
+    },
+    {
+      "document": "\"\\u007f\\u0080\\u07ff\\u0800\\uffff\"",
+      "value": "߿ࠀ￿"
+    },
+    {
+      "document": "\"\\ud800\\udc00\"",
+      "value": "𐀀"
+    },
+    {
+      "document": "\"\\udbff\\udfff\"",
+      "value": "􏿿"
+    },
+    {
+      "document": "\"café😀\\n\\u03bb\"",
+      "value": "café😀\nλ"
+    }
+  ]
+}

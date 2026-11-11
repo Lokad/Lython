@@ -1,0 +1,871 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 67b2c4a0..1aa2d607 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,11 @@
+ 
+ ## 0.11.0 - Unreleased
+ 
++- Decode JSON string escapes into admitted final UTF-8 storage, removing token
++  reparsing, lenient rewrite buffers and temporary unescaped copies. String errors
++  use Python messages and original coordinates. Unsupported unpaired surrogates
++  now raise an explicit `ValueError` rather than a backend `RuntimeError`.
++
+ - Decode `os.fsdecode` bytes through the strict UTF-8 codec, preserving BOMs and
+   newlines while rejecting malformed filesystem bytes. Surrogateescape paths
+   remain unsupported. Clarify that regex providers borrow valid, stable UTF-8
+diff --git a/docs/RUNTIME.md b/docs/RUNTIME.md
+index 4801acfa..e64d9dda 100644
+--- a/docs/RUNTIME.md
++++ b/docs/RUNTIME.md
+@@ -1131,12 +1131,14 @@ allocation. Replaced layout
+ metadata stays conservatively charged until the bounded execution owner ends,
+ so changing schemas can reject earlier. There is no separate cache allowance,
+ admission fallback or collector-dependent refund.
+-Lenient plain control characters need no rewrite. Escaped tokens retain direct
+-UTF-8 decoding and admitted scratch where necessary, including genuine lenient
+-rewrites. Input aliases and results stay funded across callbacks/source reuse.
+-String scanning, rewriting and error-coordinate translation check cancellation
+-across bounded input windows even when escapes skip bytes. Individual backend
+-decoding/copy calls remain atomic.
++JSON strings validate original bytes and escapes, measure decoded storage before
++allocation, then fill the admitted final UTF-8 string. Lenient controls and valid
++surrogate pairs follow the same decoder. String errors report Python messages and
++original scalar coordinates. Unpaired surrogates raise `ValueError` because
++surrogate-valued strings are unsupported.
++Scanning, filling and error-coordinate walks check cancellation across bounded input windows, including
++escapes that advance several bytes. Bulk UTF-8 validity checks remain atomic.
++Input aliases and results stay funded across callbacks and source reuse.
+ 
+ Callback-free JSON integers use a bounded, non-allocating signed-64-bit parse
+ before reserving large-magnitude working storage. Small results use the existing
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+index a2f0709d..d6d70e1f 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Deserialize.cs
+@@ -1,12 +1,8 @@
+-using System.Buffers;
+ using System.Buffers.Text;
+ using System.Globalization;
+ using System.Numerics;
+-using System.Text.Encodings.Web;
+ using System.Text;
+-using System.Text.Json;
+ using System.Text.Unicode;
+-using Lokad.Lython.Runtime.Numbers;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -38,10 +34,6 @@ internal sealed partial class LythonRuntime
+ 
+                 return decoded.Value;
+             }
+-            catch (JsonException ex)
+-            {
+-                throw CreateJsonDecodeError(text, ex, span, context);
+-            }
+             finally { context.LeaveInterpreterFrame(); }
+         }
+ 
+@@ -71,10 +63,6 @@ internal sealed partial class LythonRuntime
+                 ExecutionState.EnsureInterpreterStack(span);
+                 return (value, document.ByteIndexToRuneIndex(endByte));
+             }
+-            catch (JsonException ex)
+-            {
+-                throw CreateJsonDecodeError(document, ex, span, context);
+-            }
+             finally { context.LeaveInterpreterFrame(); }
+         }
+ 
+@@ -169,13 +157,12 @@ internal sealed partial class LythonRuntime
+ 
+         private static (PyString Value, int End) ReadJsonString(PyString input, bool strict, int position, ExecutionContext context, LythonSourceSpan span, PyDict.RecordKeys? expectedPropertyNames = null, int expectedPosition = 0)
+         {
+-            // Lenient rewriting affects only the token; coordinates keep the original document.
+             var original = input.Utf8Span;
+             var end = position + 1;
+-            var controls = 0;
++            var reduction = 0;
+             var escaped = false;
+             var closed = false;
+-            var strictControl = false;
++            var unpairedSurrogate = false;
+             var nextCheck = position + Math.Min(1024, original.Length - position);
+             while (end < original.Length)
+             {
+@@ -185,142 +172,129 @@ internal sealed partial class LythonRuntime
+                     nextCheck = end + Math.Min(1024, original.Length - end);
+                 }
+                 var current = original[end++];
++                if (current == (byte)'"') { closed = true; break; }
+                 if (current == (byte)'\\')
+                 {
+                     escaped = true;
+-                    if (end < original.Length) end++;
+-                }
+-                else if (current == (byte)'"')
+-                {
+-                    closed = true;
+-                    break;
++                    var start = end - 1;
++                    var scalar = ReadJsonEscape(input, ref end, position, context, span);
++                    unpairedSurrogate |= scalar is >= 0xd800 and <= 0xdfff;
++                    var width = scalar < 0x80 ? 1 : scalar < 0x800 ? 2 : scalar < 0x10000 ? 3 : 4;
++                    reduction += end - start - width;
+                 }
+-                else if (current < 0x20)
++                else
+                 {
+-                    if (strict) strictControl = true;
+-                    else controls++;
++                    if (strict && current < 0x20)
++                        throw NewJsonDecodeFailure(input, "Invalid control character at", end - 1, span, context);
+                 }
+             }
++            if (!closed)
++                throw NewJsonDecodeFailure(input, "Unterminated string starting at", position, span, context);
++            if (unpairedSurrogate)
++                throw new LythonRuntimeException("ValueError", "Lython does not support unpaired Unicode surrogates in JSON strings.", span);
+ 
+-            var token = input.Utf8Bytes.Slice(position, end - position);
+-            if (closed && !escaped && !strictControl && Utf8.IsValid(token.Span[1..^1]))
++            var content = original.Slice(position + 1, end - position - 2);
++            // Public string ingress is strict. Keep this defense for malformed
++            // internal storage as well; never publish an invalid guest string.
++            if (!Utf8.IsValid(content)) throw new DecoderFallbackException("JSON string contains invalid UTF-8.");
++            context.CheckExecution(span);
++            if (!escaped)
+             {
+-                // The scan already established a complete plain string. No
+-                // backend decoding scratch or second token parse is needed.
+-                context.CheckExecution(span);
+-                var existing = expectedPropertyNames?.FindName(token.Span[1..^1], expectedPosition, context, span);
+-                var value = existing ?? PyString.CopyFromUtf8(token.Span[1..^1], context.MemoryGovernor, span);
++                var existing = expectedPropertyNames?.FindName(content, expectedPosition, context, span);
++                var plain = existing ?? PyString.CopyFromUtf8(content, context.MemoryGovernor, span);
+                 context.CheckExecution(span);
+-                return (value, end);
+-            }
+-            // Fund backend decoding and, only for lenient bare controls, the
+-            // exact expanded buffer before allocation. No offset list/copy or
+-            // storage proportional to an unused suffix is needed.
+-            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(4L * token.Length), span);
+-            if (controls > 0)
+-            {
+-                var rewrittenLength = checked(token.Length + 5L * controls);
+-                scratch.Grow(checked(32L + rewrittenLength), span);
+-                var rewritten = new byte[checked((int)rewrittenLength)];
+-                const string hex = "0123456789abcdef";
+-                var written = 0;
+-                nextCheck = 0;
+-                for (var read = 0; read < token.Length; read++)
+-                {
+-                    if (read >= nextCheck)
+-                    {
+-                        context.CheckExecution(span);
+-                        nextCheck = read + Math.Min(1024, token.Length - read);
+-                    }
+-                    var current = token.Span[read];
+-                    if (current == (byte)'\\')
+-                    {
+-                        rewritten[written++] = current;
+-                        if (++read < token.Length) rewritten[written++] = token.Span[read];
+-                    }
+-                    else if (current < 0x20)
+-                    {
+-                        rewritten[written++] = (byte)'\\';
+-                        rewritten[written++] = (byte)'u';
+-                        rewritten[written++] = (byte)'0';
+-                        rewritten[written++] = (byte)'0';
+-                        rewritten[written++] = (byte)hex[current >> 4];
+-                        rewritten[written++] = (byte)hex[current & 15];
+-                    }
+-                    else
+-                    {
+-                        rewritten[written++] = current;
+-                    }
+-                }
+-                token = rewritten;
++                return (plain, end);
+             }
+ 
+-            try
++            // Validate/measure before admitting the exact final string. No
++            // rewritten token, backend parser or temporary unescaped copy.
++            var length = content.Length - reduction;
++            var bytes = PyString.EstimateApproximateBytes(length);
++            using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
++            context.CheckExecution(span);
++            var value = PyString.CreateReservedUtf8(length, context.MemoryGovernor);
++            var output = value.UnpublishedUtf8;
++            var read = position + 1;
++            var written = 0;
++            while (read < end - 1)
+             {
+-                var reader = new Utf8JsonReader(token.Span, new JsonReaderOptions());
+-                if (!reader.Read()) throw CreateJsonExpectingError(input, end, JsonIncompleteExpectation.Value, span, context);
+-                // Keep invalid UTF-8 on the backend's established error path.
+-                PyString value;
+-                if (!reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
+-                    value = CreateUtf8String(token.Slice(1, reader.ValueSpan.Length), context, span);
+-                else if (reader.ValueIsEscaped && Utf8.IsValid(reader.ValueSpan))
+-                {
+-                    // Unescaping cannot grow the UTF-8 token. The existing
+-                    // 4x token scratch funds larger managed buffers before
+-                    // allocation; the exact final copy owns separate funding.
+-                    Span<byte> unescaped = reader.ValueSpan.Length <= 256
+-                        ? stackalloc byte[256] : new byte[reader.ValueSpan.Length];
+-                    var written = reader.CopyString(unescaped);
+-                    context.CheckExecution(span);
+-                    value = PyString.CopyFromUtf8(unescaped[..written], context.MemoryGovernor, span);
+-                }
+-                else value = CreateString(reader.GetString() ?? string.Empty, context, span);
+                 context.CheckExecution(span);
+-                var existing = expectedPropertyNames?.FindName(value.Utf8Span, expectedPosition, context, span);
+-                if (existing is not null)
++                var chunk = original.Slice(read, Math.Min(4096, end - 1 - read));
++                var escape = chunk.IndexOf((byte)'\\');
++                var count = escape < 0 ? chunk.Length : escape;
++                chunk[..count].CopyTo(output[written..]);
++                written += count;
++                read += count;
++                if (escape >= 0)
+                 {
+-                    if (!ReferenceEquals(value, existing)) context.MemoryGovernor.RefundUnpublishedValue(value);
+-                    value = existing;
++                    read++;
++                    var scalar = ReadJsonEscape(input, ref read, position, context, span);
++                    written += new Rune(scalar).EncodeToUtf8(output[written..]);
+                 }
+-                return (value, end);
+             }
+-            catch (JsonException ex)
+-            {
+-                var reported = ComputeJsonErrorBytePosition(token.Span, ex.LineNumber.GetValueOrDefault(), ex.BytePositionInLine.GetValueOrDefault());
+-                var relative = NormalizeJsonErrorBytePosition(token.Span, reported, ex.Message);
+-                if (controls > 0)
+-                {
+-                    var read = position;
+-                    var copy = 0;
+-                    nextCheck = position;
+-                    while (read < end && copy < relative)
++            value.CompleteUnpublishedUtf8(written);
++            context.CheckExecution(span);
++            var shared = expectedPropertyNames?.FindName(value.Utf8Span, expectedPosition, context, span);
++            context.CheckExecution(span);
++            if (shared is not null) return (shared, end);
++            storage.Commit(bytes);
++            return (value, end);
++        }
++
++        // The slash has been consumed. A lone surrogate is reported only after
++        // validating the complete token, preserving syntax-error precedence.
++        private static int ReadJsonEscape(PyString input, ref int position, int openingQuote,
++            ExecutionContext context, LythonSourceSpan span)
++        {
++            var bytes = input.Utf8Span;
++            if (position == bytes.Length)
++                throw NewJsonDecodeFailure(input, "Unterminated string starting at", openingQuote, span, context);
++            var escapePosition = position;
++            var escape = bytes[position++];
++            switch (escape)
++            {
++                case (byte)'"': case (byte)'\\': case (byte)'/': return escape;
++                case (byte)'b': return 8;
++                case (byte)'f': return 12;
++                case (byte)'n': return 10;
++                case (byte)'r': return 13;
++                case (byte)'t': return 9;
++                case (byte)'u':
++                    if (!TryReadJsonHex4(bytes, position, out var scalar))
++                        throw NewJsonDecodeFailure(input, "Invalid \\uXXXX escape", escapePosition, span, context);
++                    position += 4;
++                    if (scalar is >= 0xd800 and <= 0xdbff && bytes.Length - position >= 6 &&
++                        bytes[position] == (byte)'\\' && bytes[position + 1] == (byte)'u' &&
++                        TryReadJsonHex4(bytes, position + 2, out var low) && low is >= 0xdc00 and <= 0xdfff)
+                     {
+-                        if (read >= nextCheck)
+-                        {
+-                            context.CheckExecution(span);
+-                            nextCheck = read + Math.Min(1024, end - read);
+-                        }
+-                        var current = original[read];
+-                        var width = current < 0x20 ? 6 : 1;
+-                        if (copy + width > relative) break;
+-                        read++;
+-                        copy += width;
+-                        if (current == (byte)'\\' && read < end && copy < relative)
+-                        {
+-                            read++;
+-                            copy++;
+-                        }
++                        position += 6;
++                        return 0x10000 + ((scalar - 0xd800) << 10) + low - 0xdc00;
+                     }
+-                    relative = read - position;
+-                }
+-                var message = ex.Message;
+-                var originalPosition = position + relative;
+-                if (strict && originalPosition < original.Length && original[originalPosition] < 0x20)
++                    return scalar;
++                default:
++                    throw NewJsonDecodeFailure(input, "Invalid \\escape", escapePosition - 1, span, context);
++            }
++        }
++
++        private static bool TryReadJsonHex4(ReadOnlySpan<byte> bytes, int position, out int scalar)
++        {
++            scalar = 0;
++            // Python requires a following byte as well: four hex digits ending
++            // at EOF are an invalid escape, rather than an unterminated token.
++            if (bytes.Length - position <= 4) return false;
++            for (var i = 0; i < 4; i++)
++            {
++                var digit = bytes[position + i] switch
+                 {
+-                    message = "Invalid control character at";
+-                }
+-                throw NewJsonDecodeFailure(input, message, originalPosition, ex, span, context);
++                    >= (byte)'0' and <= (byte)'9' => bytes[position + i] - '0',
++                    >= (byte)'a' and <= (byte)'f' => bytes[position + i] - 'a' + 10,
++                    >= (byte)'A' and <= (byte)'F' => bytes[position + i] - 'A' + 10,
++                    _ => -1,
++                };
++                if (digit < 0) return false;
++                scalar = (scalar << 4) | digit;
+             }
++            return true;
+         }
+ 
+         // Keys share the enclosing decoder admission, with no callback.
+@@ -343,7 +317,7 @@ internal sealed partial class LythonRuntime
+             if (position < bytes.Length && bytes[position] == (isObject ? (byte)'}' : (byte)']'))
+                 throw NewJsonDecodeFailure(input, isObject
+                     ? "Illegal trailing comma before end of object" : "Illegal trailing comma before end of array",
+-                    comma, innerException: null, span, context);
++                    comma, span, context);
+             return position;
+         }
+ 
+@@ -544,7 +518,6 @@ internal sealed partial class LythonRuntime
+                 input,
+                 "The maximum configured depth of 64 has been exceeded. Cannot read next JSON " + (isArray ? "array." : "object.") + " LineNumber: " + line + " | BytePositionInLine: " + (bytePosition - lineStart) + ".",
+                 bytePosition,
+-                innerException: null,
+                 span,
+                 context);
+         }
+@@ -623,12 +596,12 @@ internal sealed partial class LythonRuntime
+                 _ => "Expecting value",
+             };
+ 
+-            return NewJsonDecodeFailure(input, message, bytePosition, innerException: null, span, context);
++            return NewJsonDecodeFailure(input, message, bytePosition, span, context);
+         }
+ 
+         // Whole-document decoding rejects the suffix; raw_decode leaves it alone.
+         private static LythonRuntimeException CreateJsonTrailingDataError(PyString input, int bytePosition, LythonSourceSpan span, ExecutionContext context)
+-            => NewJsonDecodeFailure(input, "Extra data", bytePosition, innerException: null, span, context);
++            => NewJsonDecodeFailure(input, "Extra data", bytePosition, span, context);
+ 
+         // Requires a colon as the first non-whitespace byte at or after keyEnd,
+         // mirroring the comma rule above.
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+index 63bb5058..ddfec03c 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Json.Options.cs
+@@ -1,9 +1,5 @@
+ using System.Globalization;
+ using System.Numerics;
+-using System.Text.Encodings.Web;
+-using System.Text;
+-using System.Text.Json;
+-using Lokad.Lython.Runtime.Numbers;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -62,26 +58,14 @@ internal sealed partial class LythonRuntime
+ 
+     private sealed partial class JsonModule : PyModule
+     {
+-        private static LythonRuntimeException CreateJsonDecodeError(PyString input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
+-        {
+-            var reportedBytePosition = ComputeJsonErrorBytePosition(
+-                input.Utf8Span,
+-                exception.LineNumber.GetValueOrDefault(),
+-                exception.BytePositionInLine.GetValueOrDefault());
+-            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Span, reportedBytePosition, exception.Message);
+-            return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
+-        }
+-
+         // Builds the catchable JSONDecodeError value (msg/doc/pos/lineno/colno)
+-        // for an explicit message and parse-space byte position: used both for
+-        // backend errors above and for positions the core detects itself
+-        // (truncation, trailing data, strict violations, index bounds). Positions
+-        // always refer to the original document; token-local backend errors
+-        // are translated before reaching this shared payload builder.
+-        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
++        // for an explicit message and original-document byte position. Token scans,
++        // truncation, trailing data, strict violations and index bounds all use
++        // the same original UTF-8 coordinates; no backend remapping is needed.
++        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, LythonSourceSpan span, ExecutionContext context)
+         {
+             var position = document.ByteIndexToRuneIndex(bytePosition);
+-            var location = ComputeJsonErrorLocation(document, bytePosition);
++            var location = ComputeJsonErrorLocation(document, bytePosition, context, span);
+             var payload = new PyDict(context.MemoryGovernor, span);
+             var errorMessage = CreateString(message, context, span);
+             payload.SetItem(PyString.FromString("msg"), errorMessage);
+@@ -91,7 +75,7 @@ internal sealed partial class LythonRuntime
+             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
+             var summary = string.Create(CultureInfo.InvariantCulture,
+                 $"{message}: line {location.Line} column {location.Column} (char {position})");
+-            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException, payload);
++            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException: null, payload);
+         }
+ 
+         // Builds the catchable JSONDecodeError for an explicit Python string
+@@ -143,122 +127,15 @@ internal sealed partial class LythonRuntime
+             return new JsonSourceLocation(line, (int)(runePosition - lineStart + 1));
+         }
+ 
+-        private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
+-        {
+-            var line = 0L;
+-            var position = 0;
+-            while (line < lineNumber && position < text.Length)
+-            {
+-                if (text[position++] == '\n')
+-                {
+-                    line++;
+-                }
+-            }
+-
+-            return (int)Math.Min(text.Length, position + bytePositionInLine);
+-        }
+-
+-        private static int NormalizeJsonErrorBytePosition(ReadOnlySpan<byte> text, int reportedPosition, string message)
+-        {
+-            if (message.Contains("invalid escapable character", StringComparison.Ordinal) &&
+-                reportedPosition > 0 && text[reportedPosition - 1] == (byte)'\\')
+-            {
+-                return reportedPosition - 1;
+-            }
+-
+-            if (message.Contains("not a hex digit following '\\u'", StringComparison.Ordinal))
+-            {
+-                for (var position = Math.Min(reportedPosition - 1, text.Length - 1);
+-                     position > 0 && position >= reportedPosition - 6;
+-                     position--)
+-                {
+-                    if (text[position] == (byte)'u' && text[position - 1] == (byte)'\\')
+-                    {
+-                        return position;
+-                    }
+-                }
+-            }
+-
+-            if (message.Contains("Expected end of string", StringComparison.Ordinal))
+-            {
+-                var openingQuote = FindUnterminatedJsonStringStart(text, reportedPosition);
+-                if (openingQuote >= 0)
+-                {
+-                    return openingQuote;
+-                }
+-            }
+-
+-            if (message.Contains("invalid JSON literal", StringComparison.Ordinal))
+-            {
+-                var position = Math.Min(reportedPosition, text.Length);
+-                while (position > 0 && IsAsciiLetter(text[position - 1]))
+-                {
+-                    position--;
+-                }
+-
+-                return position;
+-            }
+-
+-            if (message.Contains("invalid within a number", StringComparison.Ordinal) ||
+-                message.Contains("Expected a digit ('0'-'9'), but instead reached end of data", StringComparison.Ordinal))
+-            {
+-                var tokenStart = reportedPosition;
+-                while (tokenStart > 0 && IsJsonNumberTokenByte(text[tokenStart - 1]))
+-                {
+-                    tokenStart--;
+-                }
+-
+-                for (var position = tokenStart; position < reportedPosition; position++)
+-                {
+-                    if (text[position] is (byte)'.' or (byte)'e' or (byte)'E')
+-                    {
+-                        return position;
+-                    }
+-                }
+-
+-                return tokenStart;
+-            }
+-
+-            return reportedPosition;
+-        }
+-
+-        private static int FindUnterminatedJsonStringStart(ReadOnlySpan<byte> text, int end)
+-        {
+-            var openingQuote = -1;
+-            var escaped = false;
+-            for (var position = 0; position < Math.Min(end, text.Length); position++)
+-            {
+-                if (openingQuote < 0)
+-                {
+-                    if (text[position] == (byte)'"')
+-                    {
+-                        openingQuote = position;
+-                    }
+-                }
+-                else if (escaped)
+-                {
+-                    escaped = false;
+-                }
+-                else if (text[position] == (byte)'\\')
+-                {
+-                    escaped = true;
+-                }
+-                else if (text[position] == (byte)'"')
+-                {
+-                    openingQuote = -1;
+-                }
+-            }
+-
+-            return openingQuote;
+-        }
+-
+-        private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition)
++        private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition,
++            ExecutionContext context, LythonSourceSpan span)
+         {
+             var line = 1;
+             var lineStart = 0;
+             var bytes = document.Utf8Span;
+             for (var position = 0; position < Math.Min(bytePosition, bytes.Length); position++)
+             {
++                if ((position & 1023) == 0) context.CheckExecution(span);
+                 if (bytes[position] == (byte)'\n')
+                 {
+                     line++;
+@@ -270,12 +147,6 @@ internal sealed partial class LythonRuntime
+             return new JsonSourceLocation(line, column);
+         }
+ 
+-        private static bool IsAsciiLetter(byte value)
+-            => value is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
+-
+-        private static bool IsJsonNumberTokenByte(byte value)
+-            => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
+-
+         internal static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
+         {
+             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs b/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
+index aafb3b7a..68a3dc35 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/JsonPrefixValidationTests.cs
+@@ -63,24 +63,25 @@ public sealed class JsonPrefixValidationTests
+         }
+     }
+ 
+-    [Theory]
+-    [InlineData(100000, true)]
+-    [InlineData(30000, false)]
+-    public async Task LenientEscapedControlBufferIsFundedBeforeGrowth(long budget, bool success)
++    [Fact]
++    public async Task LenientMixedEscapesHaveABoundedWorkingSetAndReleaseTheirAllowance()
+     {
+-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn len(json.loads(source, strict=False))");
++        using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile("import json\nreturn len(json.loads(source, strict=False))");
++        var budget = new LythonMemoryBudget(30000);
+         var options = new LythonRunOptions
+         {
+-            // A real escape keeps backend decoding/rewrite storage necessary;
+-            // plain lenient controls can now be copied directly as UTF-8.
+             Globals = new Dictionary<string, object?> { ["source"] = "\"" + new string('\u0001', 5000) + "\\n\"" },
+-            MemoryBudget = new LythonMemoryBudget(budget)
++            MemoryBudget = budget
+         };
+-        foreach (var result in new[] { script.Run(new MockLythonHost(), options), await script.RunAsync(new MockLythonHost(), options) })
++        foreach (var asynchronous in new[] { false, true })
+         {
+-            Assert.Equal(success, result.Success);
+-            if (success) Assert.Equal("5001", result.ReturnValue?.ToString());
+-            else Assert.Equal("MemoryError", result.Failure?.ExceptionType);
++            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
++                : script.Run(new MockLythonHost(), options))
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                Assert.Equal("5001", result.ReturnValue?.ToString());
++            }
++            Assert.Equal(0, budget.ReservedBytes);
+         }
+     }
+ }
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs b/tests/Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs
+new file mode 100644
+index 00000000..4737a5cb
+--- /dev/null
++++ b/tests/Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs
+@@ -0,0 +1,102 @@
++using Lokad.Lython.Tests.Harness;
++
++namespace Lokad.Lython.PublicApi.Tests;
++
++public sealed class JsonStringLexingTests
++{
++    // Independent CPython 3.13.2 error messages and original scalar coordinates.
++    [Theory]
++    [InlineData("\"bad\\q\"", true, "Invalid \\escape", 4, 1, 5)]
++    [InlineData("\"é😀\\q\"", true, "Invalid \\escape", 3, 1, 4)]
++    [InlineData("\"\\u\"", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"\\u12g4\"", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"\\u123\"", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"é\\u12z4\"", true, "Invalid \\uXXXX escape", 3, 1, 4)]
++    [InlineData("\"unterminated", true, "Unterminated string starting at", 0, 1, 1)]
++    [InlineData("\"end\\", true, "Unterminated string starting at", 0, 1, 1)]
++    [InlineData("\"a\u0000b\"", true, "Invalid control character at", 2, 1, 3)]
++    [InlineData("\"\n\\q\"", false, "Invalid \\escape", 2, 2, 1)]
++    [InlineData("\"\\ud800\\u12g4\"", true, "Invalid \\uXXXX escape", 8, 1, 9)]
++    [InlineData("\"\\ud800", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"\\u0061", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"\\u0000", true, "Invalid \\uXXXX escape", 2, 1, 3)]
++    [InlineData("\"\\ud800\\udc00", true, "Invalid \\uXXXX escape", 8, 1, 9)]
++    public async Task StringErrorsUsePythonMessagesAndOriginalCoordinates(string document, bool strict,
++        string message, int position, int line, int column)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("""
++            import json
++            try:
++                json.loads(source, strict=strict)
++            except json.JSONDecodeError as error:
++                print(error.msg)
++                print(error.pos, error.lineno, error.colno, error.doc is source, error.args[0] == str(error))
++            """, budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var options = new LythonRunOptions { Globals = new Dictionary<string, object?>
++            { ["source"] = document, ["strict"] = strict } };
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
++                : script.Run(new MockLythonHost(), options))
++            {
++                Assert.True(result.Success, result.Failure?.Message);
++                Assert.Equal($"{message}\n{position} {line} {column} True True\n", result.StandardOutput);
++            }
++            Assert.Equal(baseline, budget.ReservedBytes);
++        }
++    }
++
++    [Theory]
++    [InlineData("\"\\\"\\\\\\/\\b\\f\\n\\r\\t\"", "\"\\/\b\f\n\r\t")]
++    [InlineData("\"\\u0000\"", "\u0000")]
++    [InlineData("\"\\u007f\\u0080\\u07ff\\u0800\\uffff\"", "߿ࠀ￿")]
++    [InlineData("\"\\ud800\\udc00\"", "𐀀")]
++    [InlineData("\"\\udbff\\udfff\"", "􏿿")]
++    [InlineData("\"café😀\\n\\u03bb\"", "café😀\nλ")]
++    public async Task EscapesDecodeIntoIndependentRetainedStrings(string document, string expected)
++    {
++        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
++        using var script = new LythonEngine().Compile("import json\nreturn json.loads(source)", budget);
++        Assert.True(script.IsValid);
++        var baseline = budget.ReservedBytes;
++        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = document } };
++        using (var first = script.Run(new MockLythonHost(), options))
++        {
++            Assert.True(first.Success, first.Failure?.Message);
++            var retained = budget.ReservedBytes;
++            Assert.True(retained > baseline);
++            using (var second = await script.RunAsync(new MockLythonHost(), options))
++            {
++                Assert.True(second.Success, second.Failure?.Message);
++                Assert.Equal(expected, first.ReturnValue);
++                Assert.Equal(expected, second.ReturnValue);
++                Assert.True(budget.ReservedBytes > retained);
++            }
++            Assert.Equal(retained, budget.ReservedBytes);
++            Assert.Equal(expected, first.ReturnValue);
++        }
++        Assert.Equal(baseline, budget.ReservedBytes);
++    }
++
++    [Theory]
++    [InlineData("\"\\ud800\"")]
++    [InlineData("\"\\udc00\"")]
++    [InlineData("\"\\ud800x\"")]
++    [InlineData("\"\\ud800\\u0041\"")]
++    public async Task UnpairedSurrogatesFailExplicitlyWithoutLeakingBackendErrors(string document)
++    {
++        using var script = new LythonEngine().Compile("import json\nreturn json.loads(source)");
++        var options = new LythonRunOptions { Globals = new Dictionary<string, object?> { ["source"] = document } };
++        foreach (var asynchronous in new[] { false, true })
++        {
++            using var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options)
++                : script.Run(new MockLythonHost(), options);
++            Assert.False(result.Success);
++            Assert.Equal("ValueError", result.Failure?.ExceptionType);
++            Assert.Equal("Lython does not support unpaired Unicode surrogates in JSON strings.", result.Failure?.Message);
++        }
++    }
++}
+diff --git a/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs b/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
+index 1db5d09b..d18bd5ae 100644
+--- a/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
++++ b/tests/Lokad.Lython.Tests/EscapedJsonStorageTests.cs
+@@ -15,7 +15,7 @@ public sealed class EscapedJsonStorageTests
+     [InlineData(false, true)]
+     [InlineData(true, false)]
+     [InlineData(true, true)]
+-    public async Task ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(bool asynchronous, bool shared)
++    public async Task ResultAdmissionRefusalPreservesInputAndRefundsUnpublishedStorage(bool asynchronous, bool shared)
+     {
+         const long limit = 1024 * 1024;
+         var budget = new LythonMemoryBudget(limit);
+@@ -26,15 +26,14 @@ public sealed class EscapedJsonStorageTests
+         var governor = context.MemoryGovernor;
+         var source = PyString.FromString("\"" + new string('x', 240) + "\\n\"", governor, Span);
+         var before = governor.CurrentCommittedBytes;
+-        var padding = limit - budget.ReservedBytes - 4 * source.Utf8Bytes.Length;
++        var padding = limit - budget.ReservedBytes - PyString.EstimateApproximateBytes(241) + 1;
+         ILythonMemoryReservation? blocker = null;
+         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
+         else { governor.Reserve(padding, Span); governor.Commit(padding); }
+         using var hostPadding = blocker;
+         var committed = governor.CurrentCommittedBytes;
+         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
+-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
+-            error.Attribution?.Reason);
++        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+         Assert.Equal(PyString.EstimateApproximateBytes(241), governor.LastDeniedReservationBytes);
+         Assert.Same(governor.AdmissionFailure, error);
+         Assert.Same(Span, error.Span);
+@@ -50,7 +49,7 @@ public sealed class EscapedJsonStorageTests
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+-    public async Task DecodedValueRetainsItsOwnerAfterScratchEnds(bool asynchronous)
++    public async Task DecodedValueRetainsItsOwnerAfterConstructionEnds(bool asynchronous)
+     {
+         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+         using var owner = budget.CreateScope();
+@@ -77,11 +76,9 @@ public sealed class EscapedJsonStorageTests
+     }
+ 
+     [Theory]
+-    [InlineData(false, false)]
+-    [InlineData(true, false)]
+-    [InlineData(false, true)]
+-    [InlineData(true, true)]
+-    public async Task CancellationDuringWorkingOrResultAdmissionUnwindsBeforeReturning(bool asynchronous, bool finalCopy)
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task CancellationDuringOutputAdmissionUnwindsBeforeReturning(bool asynchronous)
+     {
+         var budget = new LythonMemoryBudget(1024 * 1024);
+         using var cancellation = new CancellationTokenSource();
+@@ -94,7 +91,7 @@ public sealed class EscapedJsonStorageTests
+             var text = "\"" + new string('x', 4096) + "\\n\"";
+             var source = PyString.FromString(text, context.MemoryGovernor, Span);
+             var resultBytes = PyString.EstimateApproximateBytes(4097);
+-            hook.OnGrowth = bytes => { if (!finalCopy || bytes == resultBytes) cancellation.Cancel(); };
++            hook.OnGrowth = bytes => { if (bytes == resultBytes) cancellation.Cancel(); };
+             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
+             Assert.True(cancellation.IsCancellationRequested);
+             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+diff --git a/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs b/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
+index 3f423413..21f7104d 100644
+--- a/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
++++ b/tests/Lokad.Lython.Tests/JsonStringTokenStorageTests.cs
+@@ -9,6 +9,33 @@ namespace Lokad.Lython.Tests;
+ 
+ public sealed class JsonStringTokenStorageTests
+ {
++    [Fact]
++    public void ErrorCoordinateScanObservesCancellationWithoutAdmittingPayloadStorage()
++    {
++        var budget = new LythonMemoryBudget(1024 * 1024);
++        using var cancellation = new CancellationTokenSource();
++        using (var owner = budget.CreateScope())
++        {
++            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
++                { MemoryBudget = owner, CancellationToken = cancellation.Token });
++            var source = PyString.FromString(new string('é', 2048), context.MemoryGovernor, null);
++            var before = budget.ReservedBytes;
++            var span = new LythonSourceSpan(0, 0, 0, 0);
++            var method = typeof(LythonRuntime).GetNestedType("JsonModule", BindingFlags.NonPublic)!
++                .GetMethod("ComputeJsonErrorLocation", BindingFlags.NonPublic | BindingFlags.Static)!;
++            cancellation.Cancel();
++            var wrapped = Assert.Throws<TargetInvocationException>(() =>
++                method.Invoke(null, [source, source.ByteLength, context, span]));
++            var error = Assert.IsType<LythonRuntimeException>(wrapped.InnerException);
++            Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
++            Assert.Same(span, error.Span);
++            Assert.Null(context.MemoryGovernor.AdmissionFailure);
++            Assert.Equal(before, budget.ReservedBytes);
++            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
++        }
++        Assert.Equal(0, budget.ReservedBytes);
++    }
++
+     [Theory]
+     [InlineData(false)]
+     [InlineData(true)]
+@@ -86,7 +113,7 @@ public sealed class JsonStringTokenStorageTests
+     [InlineData(true, false, true)]
+     [InlineData(false, true, true)]
+     [InlineData(true, true, true)]
+-    public async Task OutputStorageIsAdmittedBesideRequiredDecodingScratch(bool asynchronous, bool deny, bool escaped)
++    public async Task FinalStringStorageRequiresAdmissionBeforePublication(bool asynchronous, bool deny, bool escaped)
+     {
+         const long limit = 1024 * 1024;
+         const int length = 4096;
+@@ -94,8 +121,7 @@ public sealed class JsonStringTokenStorageTests
+         var document = PyString.FromString("\"" + new string('a', length - (escaped ? 1 : 0))
+             + (escaped ? @"\u0061" : "") + "\"", context.MemoryGovernor, null);
+         context.Variables["source"] = document;
+-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length,
+-            escaped ? 4L * document.Utf8Bytes.Length : 0, deny);
++        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, deny);
+         context.Variables["arm"] = arm;
+         try
+         {
+@@ -149,7 +175,7 @@ public sealed class JsonStringTokenStorageTests
+         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+     }
+ 
+-    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, long scratch, bool deny) : LythonRuntime.ICallable, IDisposable
++    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, bool deny) : LythonRuntime.ICallable, IDisposable
+     {
+         private IDisposable? _reservation;
+         public int Calls { get; private set; }
+@@ -159,7 +185,7 @@ public sealed class JsonStringTokenStorageTests
+             if (deny)
+             {
+                 var result = PyString.EstimateApproximateBytes(length);
+-                _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - scratch - result + 1, span);
++                _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - result + 1, span);
+             }
+             return Assert.Single(arguments).Value;
+         }
+diff --git a/tests/README.md b/tests/README.md
+index 3f249dee..de0abf81 100644
+--- a/tests/README.md
++++ b/tests/README.md
+@@ -555,7 +555,9 @@ instead of requerying historical green runs.
+ - [JSON string storage](Lokad.Lython.Tests/JsonStringTokenStorageTests.cs) and
+   [escaped strings](Lokad.Lython.PublicApi.Tests/EscapedJsonStringTests.cs) cover
+   native unescaping across buffer sizes, independent copies, construction overlap,
+-  strictness, Unicode, callbacks and budget reuse.
++  strictness, Unicode, callbacks and budget reuse. [String lexing](Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs)
++  checks independent Python error messages/coordinates, explicit surrogate rejection
++  and retained results sharing one allowance across executions.
+ - [Regex boundary](Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs): cooperating in-flight cancellation/ownership, separate from backend qualification.
+ - [Text predicates](Lokad.Lython.PublicApi.Tests/TextPredicateExecutionTests.cs): Unicode and split-scalar results after real I/O, alongside internal forwarding/active-scan controls without checkpoint counting.
+ - [Binary contracts](Lokad.Lython.PublicApi.Tests/BinaryContractTests.cs): independent byte/codec goldens, delayed protocols, native error fields and gated encoding ownership. Native byte cancellation is checked directly without a VM exit checkpoint.

@@ -1,0 +1,397 @@
+{
+  "coreSHA256": "6e7e9ada556d68be1b58aa04c0a93814d45214b063e72e4199e39bad1969ee9f",
+  "exitCode": 1,
+  "records": [
+    {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "\"plain\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2033,
+        "PeakProjectionMemoryBytes": 48,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"plain\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 1,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "\"caf\\u00e9\\ud83d\\ude00\\n\\ud83d\\ude00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2098,
+        "PeakProjectionMemoryBytes": 108,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"caf\\u00e9\\ud83d\\ude00\\n\\ud83d\\ude00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 2,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\escape: line 1 column 5 (char 4)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4179,
+        "PeakProjectionMemoryBytes": 148,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\escape: line 1 column 5 (char 4)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 3,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4185,
+        "PeakProjectionMemoryBytes": 160,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 4,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4185,
+        "PeakProjectionMemoryBytes": 160,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 5,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4195,
+        "PeakProjectionMemoryBytes": 180,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 6,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4195,
+        "PeakProjectionMemoryBytes": 180,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 7,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "ValueError Lython does not support unpaired Unicode surrogates in JSON strings.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2277,
+        "PeakProjectionMemoryBytes": 192,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 8,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "ValueError Lython does not support unpaired Unicode surrogates in JSON strings.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2277,
+        "PeakProjectionMemoryBytes": 192,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\udc00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 9,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "ValueError Lython does not support unpaired Unicode surrogates in JSON strings.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2277,
+        "PeakProjectionMemoryBytes": 192,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800x\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 10,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "ValueError Lython does not support unpaired Unicode surrogates in JSON strings.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2277,
+        "PeakProjectionMemoryBytes": 192,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800A\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 11,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid control character at: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4192,
+        "PeakProjectionMemoryBytes": 174,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid control character at: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  ],
+  "expectedUnsupportedSurrogateMismatches": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "stderr": ""
+}

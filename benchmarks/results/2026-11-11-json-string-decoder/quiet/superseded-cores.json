@@ -1,0 +1,9 @@
+[
+  {
+    "knownPath": "bound-borrow-b564-20261110/candidate/Lokad.Lython.dll",
+    "canonical": "benchmarks/results/2026-11-10-bound-native-arguments/quiet/observations.tgz",
+    "member": "current-core.dll",
+    "bytes": 5665792,
+    "sha256": "2f9b100e5411f9e0580a65160088b45117593965e3586d0f1dee3ec5492c6561"
+  }
+]

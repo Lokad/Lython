@@ -1,0 +1,158 @@
+[
+  {
+    "id": "scripts.text-summary-helpers.class-callable.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 9.30116875,
+        "executionMilliseconds": 7.791875,
+        "allocatedBytes": 1350395.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 9.11651875,
+        "executionMilliseconds": 7.79389375,
+        "allocatedBytes": 1350395.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 8.925825,
+        "executionMilliseconds": 7.5263,
+        "allocatedBytes": 1350395.5
+      }
+    },
+    "elapsedChangePct": [
+      -1.9852343825070506,
+      2.1364271649959576
+    ],
+    "controlSpreadPct": 4.205143502141273,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 7.5708875,
+        "executionMilliseconds": 6.2771625,
+        "allocatedBytes": 1348874.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 7.4262,
+        "executionMilliseconds": 6.15766875,
+        "allocatedBytes": 1348832.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 7.9722375,
+        "executionMilliseconds": 6.68164375,
+        "allocatedBytes": 1348411.5
+      }
+    },
+    "elapsedChangePct": [
+      -1.9111035529190024,
+      -6.8492377453632125
+    ],
+    "controlSpreadPct": 5.301227894351879,
+    "allocationChangePct": -0.003113707020185874
+  },
+  {
+    "id": "scripts.report-render.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 23.10956875,
+        "executionMilliseconds": 9.860075,
+        "allocatedBytes": 3201106.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 22.5490875,
+        "executionMilliseconds": 9.89068125,
+        "allocatedBytes": 3201108.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 23.567075,
+        "executionMilliseconds": 9.39981875,
+        "allocatedBytes": 3201344.0
+      }
+    },
+    "elapsedChangePct": [
+      -2.4253211129264485,
+      -4.319532653076386
+    ],
+    "controlSpreadPct": 1.9797264715292417,
+    "allocationChangePct": 6.247839614559325e-05
+  },
+  {
+    "id": "scripts.report-render.class-renderer.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 23.9631,
+        "executionMilliseconds": 9.2099375,
+        "allocatedBytes": 3204271.0
+      },
+      "candidate": {
+        "elapsedMilliseconds": 22.22148125,
+        "executionMilliseconds": 8.286875,
+        "allocatedBytes": 3204223.0
+      },
+      "before-control": {
+        "elapsedMilliseconds": 23.88878125,
+        "executionMilliseconds": 9.48651875,
+        "allocatedBytes": 3204398.0
+      }
+    },
+    "elapsedChangePct": [
+      -7.267919217463515,
+      -6.979426796835863
+    ],
+    "controlSpreadPct": 0.3111031459589464,
+    "allocationChangePct": -0.0014980006372788957
+  },
+  {
+    "id": "scripts.csv-validated-records.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 9.87205,
+        "executionMilliseconds": 8.59088125,
+        "allocatedBytes": 3138715.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 9.54685625,
+        "executionMilliseconds": 8.2642,
+        "allocatedBytes": 3138294.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 9.59906875,
+        "executionMilliseconds": 8.38958125,
+        "allocatedBytes": 3138294.5
+      }
+    },
+    "elapsedChangePct": [
+      -3.2940853216910426,
+      -0.5439329726646847
+    ],
+    "controlSpreadPct": 2.8438305538753372,
+    "allocationChangePct": -0.013413130307604604
+  },
+  {
+    "id": "diagnostic.report-render.escaped-unicode.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 23.25104375,
+        "executionMilliseconds": 9.29526875,
+        "allocatedBytes": 3234302.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 24.5989875,
+        "executionMilliseconds": 9.7485625,
+        "allocatedBytes": 3233762.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 23.84784375,
+        "executionMilliseconds": 9.907175,
+        "allocatedBytes": 3234412.0
+      }
+    },
+    "elapsedChangePct": [
+      5.797347269625264,
+      3.1497344492623203
+    ],
+    "controlSpreadPct": 2.566766491934369,
+    "allocationChangePct": -0.016696026423013155
+  }
+]

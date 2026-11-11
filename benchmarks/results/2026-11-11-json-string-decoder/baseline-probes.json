@@ -1,0 +1,418 @@
+{
+  "documents": [
+    "\"plain\"",
+    "\"café😀\\n\\ud83d\\ude00\"",
+    "\"bad\\q\"",
+    "\"\\u12g4\"",
+    "\"\\u123\"",
+    "\"unterminated",
+    "\"end\\",
+    "\"\\ud800\"",
+    "\"\\udc00\"",
+    "\"\\ud800x\"",
+    "\"\\ud800\\u0041\"",
+    "\"a\u0000b\""
+  ],
+  "programs": [
+    "import json\ntry:\n value=json.loads('\"plain\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"café😀\\\\n\\\\ud83d\\\\ude00\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"bad\\\\q\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\u12g4\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\u123\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"unterminated')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"end\\\\')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\ud800\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\udc00\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\ud800x\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"\\\\ud800\\\\u0041\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n",
+    "import json\ntry:\n value=json.loads('\"a\\x00b\"')\n print(json.dumps(value,ensure_ascii=True))\nexcept Exception as error:\n print(type(error).__name__,str(error))\n"
+  ],
+  "exitCode": 1,
+  "records": [
+    {
+      "Index": 0,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "\"plain\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2033,
+        "PeakProjectionMemoryBytes": 48,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"plain\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 1,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "\"caf\\u00e9\\ud83d\\ude00\\n\\ud83d\\ude00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2098,
+        "PeakProjectionMemoryBytes": 108,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"caf\\u00e9\\ud83d\\ude00\\n\\ud83d\\ude00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 2,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError 'q' is an invalid escapable character within a JSON string. The string should be correctly escaped. LineNumber: 0 | BytePositionInLine: 5.: line 1 column 5 (char 4)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4574,
+        "PeakProjectionMemoryBytes": 394,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\escape: line 1 column 5 (char 4)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 3,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError 'g' is not a hex digit following '\\u' within a JSON string. The string should be correctly escaped. LineNumber: 0 | BytePositionInLine: 5.: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4574,
+        "PeakProjectionMemoryBytes": 394,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 4,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError '\"' is not a hex digit following '\\u' within a JSON string. The string should be correctly escaped. LineNumber: 0 | BytePositionInLine: 6.: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4574,
+        "PeakProjectionMemoryBytes": 394,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid \\uXXXX escape: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 5,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Expected end of string, but instead reached end of data. LineNumber: 0 | BytePositionInLine: 13.: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4364,
+        "PeakProjectionMemoryBytes": 310,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 6,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Expected end of string, but instead reached end of data. LineNumber: 0 | BytePositionInLine: 5.: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4359,
+        "PeakProjectionMemoryBytes": 308,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Unterminated string starting at: line 1 column 1 (char 0)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 7,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "RuntimeError Cannot read incomplete UTF-16 JSON text as string with missing low surrogate.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2319,
+        "PeakProjectionMemoryBytes": 214,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 8,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "RuntimeError Cannot read invalid UTF-16 JSON text as string. Invalid surrogate value: '0xDC00'.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2339,
+        "PeakProjectionMemoryBytes": 224,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\udc00\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 9,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "RuntimeError Cannot read incomplete UTF-16 JSON text as string with missing low surrogate.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2319,
+        "PeakProjectionMemoryBytes": 214,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800x\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 10,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "RuntimeError Cannot read invalid UTF-16 JSON text as string. Invalid surrogate value: '0x41'.\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 2331,
+        "PeakProjectionMemoryBytes": 220,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "\"\\ud800A\"\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": false,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    },
+    {
+      "Index": 11,
+      "Lython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid control character at: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": 4212,
+        "PeakProjectionMemoryBytes": 174,
+        "DeniedReservationBytes": 0,
+        "Failure": null
+      },
+      "CPython": {
+        "Success": true,
+        "StandardOutput": "JSONDecodeError Invalid control character at: line 1 column 3 (char 2)\n",
+        "StandardError": "",
+        "ExitCode": null,
+        "Diagnostics": [],
+        "PeakExecutionMemoryBytes": null,
+        "PeakProjectionMemoryBytes": null,
+        "DeniedReservationBytes": null,
+        "Failure": null
+      },
+      "Matches": true,
+      "Note": null,
+      "Compared": true,
+      "Options": {
+        "MaxMemoryBytes": null,
+        "Async": false
+      }
+    }
+  ],
+  "stderr": ""
+}

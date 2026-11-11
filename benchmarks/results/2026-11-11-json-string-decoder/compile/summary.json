@@ -1,0 +1,158 @@
+[
+  {
+    "id": "scripts.text-summary-helpers.class-callable.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.45109375,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 124922.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.4144875,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 124922.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.43699375,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 124922.5
+      }
+    },
+    "elapsedChangePct": [
+      -8.114998268098372,
+      -5.150245283828436
+    ],
+    "controlSpreadPct": 3.2265907693187934,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "scripts.text-summary-helpers.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.33751875,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 126170.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.3269,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 126170.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.331125,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 126170.5
+      }
+    },
+    "elapsedChangePct": [
+      -3.146121511767852,
+      -1.2759531898829723
+    ],
+    "controlSpreadPct": 1.9309173272933133,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "scripts.report-render.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.41395625,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112706.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.41325625,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112706.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.42436875,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112706.5
+      }
+    },
+    "elapsedChangePct": [
+      -0.16909999547054522,
+      -2.61859526649878
+    ],
+    "controlSpreadPct": 2.515362432624224,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "scripts.report-render.class-renderer.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.30000625,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 120282.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.30355,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 120282.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.300175,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 120282.5
+      }
+    },
+    "elapsedChangePct": [
+      1.1812253911376969,
+      1.1243441325893055
+    ],
+    "controlSpreadPct": 0.05624882814943,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "scripts.csv-validated-records.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.44059375,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 171154.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.5743375,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 171154.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.4631,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 171154.5
+      }
+    },
+    "elapsedChangePct": [
+      30.35534435066316,
+      24.020190023752953
+    ],
+    "controlSpreadPct": 5.108163699553159,
+    "allocationChangePct": 0.0
+  },
+  {
+    "id": "diagnostic.report-render.escaped-unicode.large",
+    "medians": {
+      "before": {
+        "elapsedMilliseconds": 0.25293125,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112610.5
+      },
+      "candidate": {
+        "elapsedMilliseconds": 0.26291875,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112610.5
+      },
+      "before-control": {
+        "elapsedMilliseconds": 0.26325625,
+        "executionMilliseconds": 0.0,
+        "allocatedBytes": 112610.5
+      }
+    },
+    "elapsedChangePct": [
+      3.9487014752032312,
+      -0.12820208447095194
+    ],
+    "controlSpreadPct": 4.082136944327774,
+    "allocationChangePct": 0.0
+  }
+]

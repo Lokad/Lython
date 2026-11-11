@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R217 JSON string decoder](results/2026-11-11-json-string-decoder/README.md)
+replaces the complete backend string phase and removes156net runtime lines.
+Final storage is admitted directly; Python error/EOF goldens, refusal, cancellation,
+aliases and cleanup pass193internal/811public checks per target. Allocation is flat
+for current short strings; original desktop adversity survives. Three quiet jobs
+finish111.530s/all gates: escaped report elapsed−0.22..−1.85% with supporting wider
+CPU, plain/text uncertain. Final cold error-plumbing cleanup is separately labelled;
+no general CPU gain or completion of the whole-script objective follows.
+
 The [R215 UTF-8 contract milestone](results/2026-11-10-regex-input-contract/README.md)
 corrects malformed filesystem decoding and defines valid, stable provider borrows.
 Immutable dev67 passes focused Validate and development-only AssumeValid checks
