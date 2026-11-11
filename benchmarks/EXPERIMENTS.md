@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R232 default allocator/admission milestone](results/2026-11-11-default-allocator-admission/README.md)
+recognizes the sealed staticmethod wrapper around object.__new__, enabling the
+existing canonical constructor route for ordinary classes. Three separate attribute
+admission/refund regressions fail qualified4aa and pass on both current targets;
+93internal/143public focused checks per target pass. Constructor CSV allocation
+−3.77% both APIs; desktop elapsed diagnostic, adverse text controls unresolved.
+Both earlier field-storage variants are fully removed, with all original evidence
+preserved. No new runner/metadata/cache/pool/API. Full delivery qualification pending.
+
 The [R231 synchronous-call contract source gate](results/2026-11-11-sync-call-contract-source-gate/README.md)
 finds a real general-call packet copy, but canonical-span signatures alone reach
 shared async helpers and array delegates that retain inputs. The partial178-file

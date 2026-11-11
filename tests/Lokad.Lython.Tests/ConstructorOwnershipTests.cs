@@ -86,6 +86,7 @@ public sealed class ConstructorOwnershipTests
         Execute("namespace=globals()\nclass C:\n def __init__(self,value):self.old=value\ndef replacement(self,*values):self.new=values[0]\n", context);
         var type = Assert.IsType<PyType>(context.Variables["C"]);
         Assert.True(type.TryGetExecutableInitializer(out _));
+        Assert.True(type.CanPrepareExecutableConstructor);
         var replacement = context.Variables["replacement"];
         var blocker = new RestartBlocker();
         var code = Compile("result=C(7)\n");

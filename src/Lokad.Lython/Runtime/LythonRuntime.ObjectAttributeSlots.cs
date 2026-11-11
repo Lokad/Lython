@@ -40,7 +40,6 @@ internal sealed partial class LythonRuntime
     private static void StoreObjectInstanceAttribute(PyInstance instance, string name, object value, ExecutionContext context, LythonSourceSpan span)
     {
         instance.AttachMemoryGovernor(context.MemoryGovernor, span);
-        var attributesBefore = instance.CommittedAttributeBytes;
         instance.SetAttribute(name, value);
     }
 }

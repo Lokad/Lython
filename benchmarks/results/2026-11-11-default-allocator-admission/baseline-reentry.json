@@ -1,0 +1,37 @@
+{
+  "command": [
+    "C:/Users/JoannesVermorel/.dotnet11/dotnet.exe",
+    "test",
+    "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\instance-storage-r232\\baseline-tests\\Lokad.Lython.WhiteBox.Tests.dll",
+    "--filter",
+    "FullyQualifiedName~ReentrantAttributeGrowthFundsSharedCapacityOnce",
+    "--logger",
+    "trx;LogFileName=baseline-reentry.trx",
+    "--results-directory",
+    "D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\instance-storage-r232\\baseline-results"
+  ],
+  "exitCode": 1,
+  "counts": {
+    "total": "1",
+    "executed": "1",
+    "passed": "0",
+    "failed": "1",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "message": "Assert.Equal() Failure: Values differ\r\nExpected: 544\r\nActual:   928",
+  "coreSHA256": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f",
+  "testSHA256": "9a68aebf225277ec5b1449c9886ba7e34f2d46b283cdbb8d245cd0c289e5fd7a",
+  "isolatedCopiedImage": true,
+  "normalOutputsUnmodified": true
+}

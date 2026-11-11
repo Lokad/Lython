@@ -1,0 +1,6 @@
+{
+  "reason": "Both storage variants haveflat allocation; source probes prove the canonical allocator gate rejects the normal sealed PyStaticMethod(ObjectNewMethod) wrapper. Correct that gate instead of promoting speculative field hints/access hooks.",
+  "removal": "Restore all eight performance-prototype source files exactly; retain only separately re-applied attribute correctness changes plus sealed allocator proof correction. No root LoadName broadening/field metadata/native-storage hooks remain.",
+  "evidence": "entry-inspection-allocator.json, original and storage-refinement frozen pairs",
+  "measurement": "Same six existing scripts/settings and original baseline/control images. No performance claim before controlled observations."
+}

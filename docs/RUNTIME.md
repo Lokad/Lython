@@ -526,6 +526,8 @@ their actual completion. Dynamic calls keep the general binder.
 Ordinary positional construction with the sealed object allocator and a compiled
 initializer uses that same runner: it allocates once, binds self into the final
 locals and publishes the instance only after the initializer returns None.
+This includes the builtin `staticmethod` wrapper around `object.__new__`; checking
+that sealed wrapper does not invoke guest descriptor code.
 Initializer selection observes metadata after allocation. If admission changed it
 to a dynamic hook, initialization continues on the existing instance through the
 general binder. Dynamic engine hooks receive admitted owned argument packets
@@ -1577,6 +1579,10 @@ Instance attributes use the same capacity-level policy. Growth admits replacemen
 overlap before allocation; unused slots and peaks can cause earlier denial. A
 competing budget user may cause later growth to refuse before a new binding is
 published. After refused admission, even updates within funded capacity stop.
+Instance growth rechecks capacity established by admission callbacks and charges
+only additional storage. If a callback fills that capacity, the pending write
+fails before publication; it does not retry or grow unadmitted backing. Refusal
+raised during a refund also stops the write and preserves its original attribution.
 JSON and CSV records can share immutable keys through their existing batch/cache
 owner. Their value capacity grows from actual fields, independently of a previous
 wide layout. Value updates, deletions and clear need no metadata admission;

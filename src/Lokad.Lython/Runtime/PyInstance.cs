@@ -99,11 +99,23 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
                 var target = checked(_attributes.Count + 1);
                 using var replacement = _memoryGovernor.ReserveTemporary(
                     96L + 2L * AttributeSlotBytes * Math.Max(3, target), _allocationSpan);
-                var grown = _attributes.EnsureCapacity(target);
-                var bytes = AttributeSlotBytes * (long)(grown - capacity) + (capacity == 0 ? 96 : 0);
-                replacement.Commit(bytes);
-                _committedAttributeBytes += bytes;
+                // A successful admission callback may already have supplied
+                // this capacity. Recheck before funding or growing it again.
+                capacity = _attributes.EnsureCapacity(0);
+                if (capacity < target)
+                {
+                    var grown = _attributes.EnsureCapacity(target);
+                    var bytes = AttributeSlotBytes * (long)(grown - capacity) + (capacity == 0 ? 96 : 0);
+                    replacement.Commit(bytes);
+                    _committedAttributeBytes += bytes;
+                }
             }
+            // Refund callbacks can mutate the same table too. Never let the
+            // final dictionary write grow beyond its funded capacity.
+            _memoryGovernor.ThrowIfAdmissionFailed();
+            added = !_attributes.ContainsKey(name);
+            if (added && _attributes.Count == _attributes.EnsureCapacity(0))
+                throw _memoryGovernor.RefuseAdmission("instance attribute capacity changed during admission", null, _allocationSpan);
         }
 
         _attributes[name] = value;

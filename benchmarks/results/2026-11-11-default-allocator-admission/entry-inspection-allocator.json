@@ -1,0 +1,31 @@
+﻿{
+  "allocatorFound": true,
+  "AllocatorType": "Lokad.Lython.Runtime.PyStaticMethod",
+  "JsonBase": 0,
+  "IsBuiltinMetatype": false,
+  "CanPrepareExecutableConstructor": false,
+  "MetaType": "type",
+  "MetaBuiltin": true,
+  "RootParent": "null",
+  "CanDeferInvocationContext": true,
+  "ArgumentsAreLocals": true,
+  "MemberWriteCount": 1,
+  "RequiresLocalVariableMirroring": false,
+  "RequiresClassCell": false,
+  "Captures": 0,
+  "Regions": 0,
+  "IsClassBody": false,
+  "IsAnnotationScope": false,
+  "IsTypeParameterScope": false,
+  "ClassCell": false,
+  "Inlined": false,
+  "Handlers": 0,
+  "Opcodes": [
+    "LoadName",
+    "Subscript",
+    "Call",
+    "LoadLocal",
+    "StoreMember",
+    "ReturnNone"
+  ]
+}

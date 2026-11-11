@@ -46,6 +46,12 @@ cleanup retains its allowance after cancellation until the host finishes closing
 deleted and handler-cleared cells, transitive/class/generator targets, runtime
 unbound errors, lexical barriers and shared-budget cleanup against Python goldens.
 
+[Instance attribute funding](Lokad.Lython.Tests/InstanceAttributeAccountingTests.cs)
+checks capacity established during admission reentry, refusal before unadmitted
+publication and preservation of the first refusal raised during a refund callback.
+Existing constructor ownership fixtures verify canonical-route eligibility before
+testing initializer mutation without allocation restart.
+
 [JSON string admission](Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs)
 checks refusal before publication and funding for an adopted buffer's entire
 capacity, with cleanup returning the shared allowance to baseline.

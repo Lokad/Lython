@@ -242,7 +242,8 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal bool CanPrepareExecutableConstructor
         => JsonBase == JsonBaseKind.None && MetaType is { } meta &&
             !IsBuiltinMetatype && meta.IsBuiltinMetatype &&
-            TryLookupInMro("__new__", 0, out var allocator, out _) && LythonRuntime.IsDefaultObjectNew(allocator);
+            TryLookupInMro("__new__", 0, out var allocator, out _) &&
+            LythonRuntime.IsDefaultObjectNew(allocator is PyStaticMethod method ? method.Get(null, this, null, null) : allocator);
 
     internal bool TryGetExecutableInitializer([MaybeNullWhen(false)] out PyExecutableFunction initializer)
     {

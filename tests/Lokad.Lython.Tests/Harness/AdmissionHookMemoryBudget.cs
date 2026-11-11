@@ -3,6 +3,7 @@ namespace Lokad.Lython.Tests.Harness;
 internal sealed class AdmissionHookMemoryBudget(ILythonMemoryBudget parent) : ILythonMemoryBudget
 {
     internal Action<long>? AfterGrowth;
+    internal Action<long>? AfterShrink;
     internal Func<long, bool>? RefuseGrowth;
     public ILythonMemoryScope CreateScope() => parent.CreateScope();
     public bool TryReserve(long bytes, [NotNullWhen(true)] out ILythonMemoryReservation? reservation)
@@ -22,6 +23,7 @@ internal sealed class AdmissionHookMemoryBudget(ILythonMemoryBudget parent) : IL
             if (bytes > old && hook.RefuseGrowth?.Invoke(bytes - old) == true) return false;
             if (!inner.TryResize(bytes)) return false;
             if (bytes > old) hook.AfterGrowth?.Invoke(bytes - old);
+            if (bytes < old) hook.AfterShrink?.Invoke(old - bytes);
             return true;
         }
         public void Dispose() => inner.Dispose();

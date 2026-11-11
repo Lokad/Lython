@@ -1,0 +1,5 @@
+{
+  "reason": "Initial constructor allocation is flat. Private source probe establishes CanDefer=true/MemberWriteCount=1, but first opcode LoadName forces promotion before the field store. Permit unresolved reads from a proven module-root definition context only; preserve ambiguous lexical contexts. Also guard general attribute mutation if successful reentrant admission filled its prepared capacity, rather than allow unadmitted dictionary growth.",
+  "controls": "Same six scripts, images/auxiliaries and measurement settings. Preserve all initial adverse observations/source. No CPU claim or relaxed qualification.",
+  "scope": "No compiler-fact rewrite or new frame/ownership/cache/option. Root scope is an existing runtime fact; class/free-variable ambiguity retains context promotion."
+}

@@ -1,0 +1,14 @@
+{
+  "head": "c0b42f438bc1a3df1aed5ea0650720987817de87",
+  "qualifiedRuntime": "4aa2d46d",
+  "sourceSHA256": {
+    "src/Lokad.Lython/Runtime/PyInstance.cs": "3f14033a26eec40ff32c359bb2c169ba413afdff03457dee2c270acecc690d93",
+    "src/Lokad.Lython/Runtime/LythonRuntime.ObjectAttributeSlots.cs": "582b4e9456cbe444788a5c41e08bd9e840e2f914f86c7b1dbfeac3f9278b6a72",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "76db645a685dc7b026c2ceaab248b5064e358b98ea9a7c6e63aaeab4480d0d7f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Targets.cs": "393a56a9d65671d7604c3a9841705d1aedbc94a9d76c78e0a6cbd5f6d0762370",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "17124502e733420fa8b7f8378e50387c850ebada399c86aa43abd609fe4df990",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "2bc3af2a43470a4958ba798dc84271b9579e21b0b94602183a167a5885c23eb3",
+    "src/Lokad.Lython/Frontend/ExecutableScript.cs": "73d85972da175f4f8f2062369dbc9ca218cdd3ce512c7367244c46985393fc21",
+    "src/Lokad.Lython/Frontend/ExecutableStackLayout.cs": "6e391cd9e16e469b74192581867cf712b38105030f6a91eb8b98c5f238b71e05"
+  }
+}
