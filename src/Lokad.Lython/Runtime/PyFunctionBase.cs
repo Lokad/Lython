@@ -122,41 +122,32 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     protected object InvokeBound(BoundCallArguments boundArguments, LythonSourceSpan span)
     {
-        LythonRuntime.ExecutionContext frame;
+        LythonRuntime.ExecutionContext? frame = null;
         try
         {
             if (TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             {
-                LythonRuntime.ReturnBoundArguments(boundArguments);
                 return result;
             }
             frame = EnterInvocationFrame(boundArguments, span);
-        }
-        catch
-        {
-            // Recursion or budget failure during frame entry must not strand
-            // the rented bound-values box: hand it back before propagating.
-            LythonRuntime.ReturnBoundArguments(boundArguments);
-            throw;
-        }
-
-        try
-        {
-            return ExecuteBody(frame, boundArguments, span);
-        }
-        catch (LythonRuntime.ReturnSignal signal)
-        {
-            return signal.Value;
-        }
-        catch (LythonRuntimeException ex)
-        {
-            PyFunctionBinding.AnnotateException(ex, frame, Name, span);
-            throw;
+            try { return ExecuteBody(frame, boundArguments, span); }
+            catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
+            catch (LythonRuntimeException ex)
+            {
+                PyFunctionBinding.AnnotateException(ex, frame, Name, span);
+                throw;
+            }
         }
         finally
         {
-            frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.Assigned.Length);
+            try { frame?.LeaveFunctionCall(); }
+            finally
+            {
+                // One relinquishment covers native success, entry failure and
+                // a framed body. A throwing refund must never return it again.
+                LythonRuntime.ReturnBoundArguments(boundArguments,
+                    frame is null ? boundArguments.Assigned.Length : _storageCapacity ?? boundArguments.Assigned.Length);
+            }
         }
     }
 
@@ -183,40 +174,30 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     protected async ValueTask<object> InvokeBoundAsync(BoundCallArguments boundArguments, LythonSourceSpan span)
     {
-        LythonRuntime.ExecutionContext frame;
+        LythonRuntime.ExecutionContext? frame = null;
         try
         {
             if (TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             {
-                LythonRuntime.ReturnBoundArguments(boundArguments);
                 return result;
             }
             frame = EnterInvocationFrame(boundArguments, span);
-        }
-        catch
-        {
-            // Async twin of the entry cleanup above.
-            LythonRuntime.ReturnBoundArguments(boundArguments);
-            throw;
-        }
-
-        try
-        {
-            return await ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false);
-        }
-        catch (LythonRuntime.ReturnSignal signal)
-        {
-            return signal.Value;
-        }
-        catch (LythonRuntimeException ex)
-        {
-            PyFunctionBinding.AnnotateException(ex, frame, Name, span);
-            throw;
+            try { return await ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false); }
+            catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
+            catch (LythonRuntimeException ex)
+            {
+                PyFunctionBinding.AnnotateException(ex, frame, Name, span);
+                throw;
+            }
         }
         finally
         {
-            frame.LeaveFunctionCall();
-            LythonRuntime.ReturnBoundArguments(boundArguments, _storageCapacity ?? boundArguments.Assigned.Length);
+            try { frame?.LeaveFunctionCall(); }
+            finally
+            {
+                LythonRuntime.ReturnBoundArguments(boundArguments,
+                    frame is null ? boundArguments.Assigned.Length : _storageCapacity ?? boundArguments.Assigned.Length);
+            }
         }
     }
 

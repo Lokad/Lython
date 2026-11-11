@@ -76,6 +76,11 @@ their allowance. Internal growth refusal checks preserve completed updates, the
 first source origin and cleanup despite an attempted exception suppression.
 Pure-loop cancellation also covers repeated native histogram segments.
 
+[Native helper refunds](Lokad.Lython.Tests/NativeFunctionRefundTests.cs) exercise
+admission reentry during a real compiled helper and refusal during cleanup.
+Both APIs preserve the first failure and keep retained data and cached storage
+funded until their owner ends; the failed refund cannot return storage twice.
+
 [Guest integer regressions](Lokad.Lython.PublicApi.Tests/GuestIntegerRepresentationTests.cs)
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.

@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Relinquish native helper argument storage once when a refund callback fails,
+  preserving shared funding for retained data and idle workspaces.
+
 - Run eligible dictionary counting loops through existing native iteration and
   arithmetic, avoiding repeated instruction dispatch and argument preparation.
   Preserve custom protocols, integer promotion, cancellation and memory ownership.
