@@ -38,6 +38,9 @@ admission and reuse; pure bound-method loops retain active cancellation coverage
 [Unbound-name checks](Lokad.Lython.PublicApi.Tests/UnboundLocalVariableTests.cs)
 distinguish guest `None` from absent locals and deleted closure/generator cells,
 preserving Python error types and exposed namespace contents through both APIs.
+[Nonlocal rebinding](Lokad.Lython.PublicApi.Tests/NonlocalRebindingTests.cs) checks
+deleted and handler-cleared cells, transitive/class/generator targets, runtime
+unbound errors, lexical barriers and shared-budget cleanup against Python goldens.
 
 [JSON string admission](Lokad.Lython.Tests/JsonStringEmissionAdmissionTests.cs)
 checks refusal before publication and funding for an adopted buffer's entire

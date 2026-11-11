@@ -46,6 +46,8 @@ internal static class StaticNameBindingDiagnostics
 
         var scopeFacts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
         var localNames = new HashSet<string>(scopeFacts.LocalNames, StringComparer.Ordinal);
+        if (scopeFacts.NestedNonlocalNames is { } nonlocalTargets)
+            localNames.ExceptWith(nonlocalTargets);
 
         var maybeAssigned = new HashSet<string>(
             functionDefinition.Parameters

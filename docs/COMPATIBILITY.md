@@ -35,6 +35,11 @@ uncalled or unreachable code. Static diagnostics catch conservative known errors
 they are not a runtime type checker. Dynamic operations preserve left-to-right
 effects, short-circuiting, closures and exception cleanup under both APIs.
 
+Cells targeted by nested `nonlocal` declarations use runtime unbound-name checks:
+callbacks can rebind them after deletion or exception-handler cleanup. This is
+conservative even when the nested callable is never invoked or only reads its
+declared nonlocal. Ordinary certainly unbound locals retain compile diagnostics.
+
 Top-level `return` is an embedding extension: it ends the script and projects a
 value to the host. Python async syntax and `except*` are excluded. `RunAsync`
 awaits host effects in this same synchronous guest language.

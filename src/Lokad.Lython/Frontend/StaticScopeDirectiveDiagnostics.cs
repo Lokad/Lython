@@ -8,15 +8,17 @@ internal static class StaticScopeDirectiveDiagnostics
 
         public int Depth => _scopes.Count(facts => !ReferenceEquals(facts, ClassCellSyntaxFacts.Scope));
 
-        public bool Contains(string name)
+        public ScopeDirectiveFacts? FindBinding(string name)
         {
             for (var i = _scopes.Count - 1; i >= 0; i--)
             {
-                if (_scopes[i].IsGlobal(name)) return false;
-                if (_scopes[i].LocalNames.Contains(name)) return true;
+                if (_scopes[i].IsGlobal(name)) return null;
+                if (_scopes[i].LocalNames.Contains(name)) return _scopes[i];
             }
-            return false;
+            return null;
         }
+
+        public bool Contains(string name) => FindBinding(name) is not null;
 
         public void Enter(ScopeDirectiveFacts facts) => _scopes.Add(facts);
 
@@ -149,9 +151,14 @@ internal static class StaticScopeDirectiveDiagnostics
 
         foreach (var name in facts.NonlocalNames)
         {
-            if (!enclosingFunctions.Contains(name))
+            var target = enclosingFunctions.FindBinding(name);
+            if (target is null)
             {
                 context.AddError("LA3205", $"No enclosing function binding exists for nonlocal name '{name}'.", span);
+            }
+            else if (!ReferenceEquals(target, ClassCellSyntaxFacts.Scope))
+            {
+                (target.NestedNonlocalNames ??= new(StringComparer.Ordinal)).Add(name);
             }
         }
 

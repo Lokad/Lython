@@ -17,6 +17,10 @@ internal sealed record ScopeDirectiveFacts(
     // Lexical setup includes dead branches and excludes nested definition bodies.
     public bool ContainsVariableAnnotations { get; init; }
 
+    // Filled by scope validation, which already resolves every nonlocal target.
+    // Such cells can change through callbacks; local flow cannot prove them unbound.
+    public HashSet<string>? NestedNonlocalNames { get; set; }
+
     public static ScopeDirectiveFacts Empty { get; } = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),

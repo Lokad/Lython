@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Allow nested nonlocal callbacks to rebind deleted or handler-cleared cells
+  without false compile-time unbound-local errors. Runtime checks preserve
+  `UnboundLocalError` and `NameError` when the cell remains unbound.
+
 - Store incoming nonlocal cells through their existing owner, keeping live slots
   and retained namespaces consistent without constructing an invocation context
   solely for a lexical write. Scope-sensitive operations retain ordinary contexts.
