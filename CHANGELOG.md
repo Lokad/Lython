@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Decode JSON string escapes into admitted final UTF-8 storage, removing token
+  reparsing, lenient rewrite buffers and temporary unescaped copies. String errors
+  use Python messages and original coordinates. Unsupported unpaired surrogates
+  now raise an explicit `ValueError` rather than a backend `RuntimeError`.
+
 - Decode `os.fsdecode` bytes through the strict UTF-8 codec, preserving BOMs and
   newlines while rejecting malformed filesystem bytes. Surrogateescape paths
   remain unsupported. Clarify that regex providers borrow valid, stable UTF-8

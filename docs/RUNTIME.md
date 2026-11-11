@@ -1131,12 +1131,14 @@ allocation. Replaced layout
 metadata stays conservatively charged until the bounded execution owner ends,
 so changing schemas can reject earlier. There is no separate cache allowance,
 admission fallback or collector-dependent refund.
-Lenient plain control characters need no rewrite. Escaped tokens retain direct
-UTF-8 decoding and admitted scratch where necessary, including genuine lenient
-rewrites. Input aliases and results stay funded across callbacks/source reuse.
-String scanning, rewriting and error-coordinate translation check cancellation
-across bounded input windows even when escapes skip bytes. Individual backend
-decoding/copy calls remain atomic.
+JSON strings validate original bytes and escapes, measure decoded storage before
+allocation, then fill the admitted final UTF-8 string. Lenient controls and valid
+surrogate pairs follow the same decoder. String errors report Python messages and
+original scalar coordinates. Unpaired surrogates raise `ValueError` because
+surrogate-valued strings are unsupported.
+Scanning, filling and error-coordinate walks check cancellation across bounded input windows, including
+escapes that advance several bytes. Bulk UTF-8 validity checks remain atomic.
+Input aliases and results stay funded across callbacks and source reuse.
 
 Callback-free JSON integers use a bounded, non-allocating signed-64-bit parse
 before reserving large-magnitude working storage. Small results use the existing

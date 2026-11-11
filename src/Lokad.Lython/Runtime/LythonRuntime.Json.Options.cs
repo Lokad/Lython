@@ -1,9 +1,5 @@
 using System.Globalization;
 using System.Numerics;
-using System.Text.Encodings.Web;
-using System.Text;
-using System.Text.Json;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -62,26 +58,14 @@ internal sealed partial class LythonRuntime
 
     private sealed partial class JsonModule : PyModule
     {
-        private static LythonRuntimeException CreateJsonDecodeError(PyString input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
-        {
-            var reportedBytePosition = ComputeJsonErrorBytePosition(
-                input.Utf8Span,
-                exception.LineNumber.GetValueOrDefault(),
-                exception.BytePositionInLine.GetValueOrDefault());
-            var bytePosition = NormalizeJsonErrorBytePosition(input.Utf8Span, reportedBytePosition, exception.Message);
-            return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
-        }
-
         // Builds the catchable JSONDecodeError value (msg/doc/pos/lineno/colno)
-        // for an explicit message and parse-space byte position: used both for
-        // backend errors above and for positions the core detects itself
-        // (truncation, trailing data, strict violations, index bounds). Positions
-        // always refer to the original document; token-local backend errors
-        // are translated before reaching this shared payload builder.
-        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
+        // for an explicit message and original-document byte position. Token scans,
+        // truncation, trailing data, strict violations and index bounds all use
+        // the same original UTF-8 coordinates; no backend remapping is needed.
+        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, LythonSourceSpan span, ExecutionContext context)
         {
             var position = document.ByteIndexToRuneIndex(bytePosition);
-            var location = ComputeJsonErrorLocation(document, bytePosition);
+            var location = ComputeJsonErrorLocation(document, bytePosition, context, span);
             var payload = new PyDict(context.MemoryGovernor, span);
             var errorMessage = CreateString(message, context, span);
             payload.SetItem(PyString.FromString("msg"), errorMessage);
@@ -91,7 +75,7 @@ internal sealed partial class LythonRuntime
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
             var summary = string.Create(CultureInfo.InvariantCulture,
                 $"{message}: line {location.Line} column {location.Column} (char {position})");
-            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException, payload);
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), summary, span, innerException: null, payload);
         }
 
         // Builds the catchable JSONDecodeError for an explicit Python string
@@ -143,122 +127,15 @@ internal sealed partial class LythonRuntime
             return new JsonSourceLocation(line, (int)(runePosition - lineStart + 1));
         }
 
-        private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
-        {
-            var line = 0L;
-            var position = 0;
-            while (line < lineNumber && position < text.Length)
-            {
-                if (text[position++] == '\n')
-                {
-                    line++;
-                }
-            }
-
-            return (int)Math.Min(text.Length, position + bytePositionInLine);
-        }
-
-        private static int NormalizeJsonErrorBytePosition(ReadOnlySpan<byte> text, int reportedPosition, string message)
-        {
-            if (message.Contains("invalid escapable character", StringComparison.Ordinal) &&
-                reportedPosition > 0 && text[reportedPosition - 1] == (byte)'\\')
-            {
-                return reportedPosition - 1;
-            }
-
-            if (message.Contains("not a hex digit following '\\u'", StringComparison.Ordinal))
-            {
-                for (var position = Math.Min(reportedPosition - 1, text.Length - 1);
-                     position > 0 && position >= reportedPosition - 6;
-                     position--)
-                {
-                    if (text[position] == (byte)'u' && text[position - 1] == (byte)'\\')
-                    {
-                        return position;
-                    }
-                }
-            }
-
-            if (message.Contains("Expected end of string", StringComparison.Ordinal))
-            {
-                var openingQuote = FindUnterminatedJsonStringStart(text, reportedPosition);
-                if (openingQuote >= 0)
-                {
-                    return openingQuote;
-                }
-            }
-
-            if (message.Contains("invalid JSON literal", StringComparison.Ordinal))
-            {
-                var position = Math.Min(reportedPosition, text.Length);
-                while (position > 0 && IsAsciiLetter(text[position - 1]))
-                {
-                    position--;
-                }
-
-                return position;
-            }
-
-            if (message.Contains("invalid within a number", StringComparison.Ordinal) ||
-                message.Contains("Expected a digit ('0'-'9'), but instead reached end of data", StringComparison.Ordinal))
-            {
-                var tokenStart = reportedPosition;
-                while (tokenStart > 0 && IsJsonNumberTokenByte(text[tokenStart - 1]))
-                {
-                    tokenStart--;
-                }
-
-                for (var position = tokenStart; position < reportedPosition; position++)
-                {
-                    if (text[position] is (byte)'.' or (byte)'e' or (byte)'E')
-                    {
-                        return position;
-                    }
-                }
-
-                return tokenStart;
-            }
-
-            return reportedPosition;
-        }
-
-        private static int FindUnterminatedJsonStringStart(ReadOnlySpan<byte> text, int end)
-        {
-            var openingQuote = -1;
-            var escaped = false;
-            for (var position = 0; position < Math.Min(end, text.Length); position++)
-            {
-                if (openingQuote < 0)
-                {
-                    if (text[position] == (byte)'"')
-                    {
-                        openingQuote = position;
-                    }
-                }
-                else if (escaped)
-                {
-                    escaped = false;
-                }
-                else if (text[position] == (byte)'\\')
-                {
-                    escaped = true;
-                }
-                else if (text[position] == (byte)'"')
-                {
-                    openingQuote = -1;
-                }
-            }
-
-            return openingQuote;
-        }
-
-        private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition)
+        private static JsonSourceLocation ComputeJsonErrorLocation(PyString document, int bytePosition,
+            ExecutionContext context, LythonSourceSpan span)
         {
             var line = 1;
             var lineStart = 0;
             var bytes = document.Utf8Span;
             for (var position = 0; position < Math.Min(bytePosition, bytes.Length); position++)
             {
+                if ((position & 1023) == 0) context.CheckExecution(span);
                 if (bytes[position] == (byte)'\n')
                 {
                     line++;
@@ -269,12 +146,6 @@ internal sealed partial class LythonRuntime
             var column = document.ByteIndexToRuneIndex(bytePosition) - document.ByteIndexToRuneIndex(lineStart) + 1;
             return new JsonSourceLocation(line, column);
         }
-
-        private static bool IsAsciiLetter(byte value)
-            => value is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
-
-        private static bool IsJsonNumberTokenByte(byte value)
-            => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
         internal static object InvokeJsonCallback(object callable, object argument, ExecutionContext context, LythonSourceSpan span)
         {

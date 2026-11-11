@@ -15,7 +15,7 @@ public sealed class EscapedJsonStorageTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task ResultCopyRefusalPreservesInputAndRefundsOnlyScratch(bool asynchronous, bool shared)
+    public async Task ResultAdmissionRefusalPreservesInputAndRefundsUnpublishedStorage(bool asynchronous, bool shared)
     {
         const long limit = 1024 * 1024;
         var budget = new LythonMemoryBudget(limit);
@@ -26,15 +26,14 @@ public sealed class EscapedJsonStorageTests
         var governor = context.MemoryGovernor;
         var source = PyString.FromString("\"" + new string('x', 240) + "\\n\"", governor, Span);
         var before = governor.CurrentCommittedBytes;
-        var padding = limit - budget.ReservedBytes - 4 * source.Utf8Bytes.Length;
+        var padding = limit - budget.ReservedBytes - PyString.EstimateApproximateBytes(241) + 1;
         ILythonMemoryReservation? blocker = null;
         if (shared) Assert.True(budget.TryReserve(padding, out blocker));
         else { governor.Reserve(padding, Span); governor.Commit(padding); }
         using var hostPadding = blocker;
         var committed = governor.CurrentCommittedBytes;
         var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
-        Assert.Equal(shared ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.SharedMemoryAllowance,
-            error.Attribution?.Reason);
+        Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
         Assert.Equal(PyString.EstimateApproximateBytes(241), governor.LastDeniedReservationBytes);
         Assert.Same(governor.AdmissionFailure, error);
         Assert.Same(Span, error.Span);
@@ -50,7 +49,7 @@ public sealed class EscapedJsonStorageTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DecodedValueRetainsItsOwnerAfterScratchEnds(bool asynchronous)
+    public async Task DecodedValueRetainsItsOwnerAfterConstructionEnds(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(4 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -77,11 +76,9 @@ public sealed class EscapedJsonStorageTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task CancellationDuringWorkingOrResultAdmissionUnwindsBeforeReturning(bool asynchronous, bool finalCopy)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancellationDuringOutputAdmissionUnwindsBeforeReturning(bool asynchronous)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var cancellation = new CancellationTokenSource();
@@ -94,7 +91,7 @@ public sealed class EscapedJsonStorageTests
             var text = "\"" + new string('x', 4096) + "\\n\"";
             var source = PyString.FromString(text, context.MemoryGovernor, Span);
             var resultBytes = PyString.EstimateApproximateBytes(4097);
-            hook.OnGrowth = bytes => { if (!finalCopy || bytes == resultBytes) cancellation.Cancel(); };
+            hook.OnGrowth = bytes => { if (bytes == resultBytes) cancellation.Cancel(); };
             var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(callable, source, context, asynchronous));
             Assert.True(cancellation.IsCancellationRequested);
             Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);

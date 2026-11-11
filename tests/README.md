@@ -555,7 +555,9 @@ instead of requerying historical green runs.
 - [JSON string storage](Lokad.Lython.Tests/JsonStringTokenStorageTests.cs) and
   [escaped strings](Lokad.Lython.PublicApi.Tests/EscapedJsonStringTests.cs) cover
   native unescaping across buffer sizes, independent copies, construction overlap,
-  strictness, Unicode, callbacks and budget reuse.
+  strictness, Unicode, callbacks and budget reuse. [String lexing](Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs)
+  checks independent Python error messages/coordinates, explicit surrogate rejection
+  and retained results sharing one allowance across executions.
 - [Regex boundary](Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs): cooperating in-flight cancellation/ownership, separate from backend qualification.
 - [Text predicates](Lokad.Lython.PublicApi.Tests/TextPredicateExecutionTests.cs): Unicode and split-scalar results after real I/O, alongside internal forwarding/active-scan controls without checkpoint counting.
 - [Binary contracts](Lokad.Lython.PublicApi.Tests/BinaryContractTests.cs): independent byte/codec goldens, delayed protocols, native error fields and gated encoding ownership. Native byte cancellation is checked directly without a VM exit checkpoint.
