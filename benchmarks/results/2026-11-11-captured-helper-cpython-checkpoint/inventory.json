@@ -1,0 +1,41 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 263659520,
+  "requiredFreeBytes": 265339245,
+  "reclaimableBytes": 3952640,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "mirrored-storage-b581-20261111/observations.tgz",
+      "bytes": 1966990,
+      "sha256": "0c6ad58b73550ba06c8ecc74d7180bb3d5150b2ef8440c50aafe76161817ae1e",
+      "canonicalStorage": "benchmarks/results/2026-11-11-mirrored-function-storage/quiet/observations.tgz",
+      "canonicalCommit": "72b573019fd508955f21b30330ca0e031b8d681a",
+      "reason": "Terminal historical raw archive duplicate, exact canonical committed Git bytes verified; retain core roles and every original observation. Fresh absolute path/UID/inode/all-alias proof before retirement.",
+      "paths": [
+        "mirrored-storage-b581-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340442,
+      "allocatedBytes": 1970176,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "captured-sequence-b583-20261111/observations.tgz",
+      "bytes": 1974397,
+      "sha256": "d3df1a061c043f72ca5ba13208a519dee1786a58d2fb30acad324b196cc3a307",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-closure-sequences/quiet/observations.tgz",
+      "canonicalCommit": "72b573019fd508955f21b30330ca0e031b8d681a",
+      "reason": "Terminal historical raw archive duplicate, exact canonical committed Git bytes verified; retain core roles and every original observation. Fresh absolute path/UID/inode/all-alias proof before retirement.",
+      "paths": [
+        "captured-sequence-b583-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340535,
+      "allocatedBytes": 1982464,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

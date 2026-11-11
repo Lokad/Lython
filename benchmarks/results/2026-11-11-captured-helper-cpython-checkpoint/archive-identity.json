@@ -1,0 +1,55 @@
+{
+  "files": {
+    "archive-receipt.json": {
+      "bytes": 366,
+      "sha256": "8b230630f39d88c082173c2fbb9c4f71b515e6840266e39b80a9fa4436967f16"
+    },
+    "config.json": {
+      "bytes": 5563,
+      "sha256": "f7b994a747a14c800d010391921d0bc94a6e33baff80779007ea85087d7293fb"
+    },
+    "identity.json": {
+      "bytes": 3915,
+      "sha256": "74b81682928c61d75dcfcc6a402e29b26ee0204e053acba4cadc0e849ddd58ad"
+    },
+    "inventory.json": {
+      "bytes": 1836,
+      "sha256": "6ccffb8979ec8897eab5b05ebfca8e4a677f2470d150960a248c46d9f18168f5"
+    },
+    "launch.log": {
+      "bytes": 307,
+      "sha256": "3df85fb89dfd20cf82853f64fb6eddc2859c731415f20b5857058c87ed53fd3b"
+    },
+    "observations.tgz": {
+      "bytes": 2045812,
+      "sha256": "c5fc75e5a18d21a99312895a22a975874b4baae71403a8106615fede6282186d"
+    },
+    "observe-not-before.json": {
+      "bytes": 197,
+      "sha256": "29a41e483735f95ea1cb7a6a4b724ccacc9bd53ca8c1e02976e6f6c02dadb0ca"
+    },
+    "preparation.tar.xz": {
+      "bytes": 14308,
+      "sha256": "10175c33fc16c87781b1e35979646a85e303b25962a83410a04aeeadb5fbf6c0"
+    },
+    "prior-BENCHMARKS.md": {
+      "bytes": 25436,
+      "sha256": "2c3c72ce4286b0cb3cb8419ce7d14f3bb72b43c68b3368f2239fb81bf12d4079"
+    },
+    "source-identity.json": {
+      "bytes": 74906,
+      "sha256": "62236384410312d1fc3703f67aab74d5bf4f7436f6477b1bec6e4db281726651"
+    },
+    "summary.json": {
+      "bytes": 22618,
+      "sha256": "60fb8c0b90fed44f10571fd0afc633cf989d050638d5c1b5804b439de19cb85e"
+    },
+    "terminal-status.json": {
+      "bytes": 566,
+      "sha256": "8bfe138b4625eb4fce6236bbda5c840dafad2494fb5240bed4bb00384e01057b"
+    }
+  },
+  "all18LoadedIdentitiesVerified": true,
+  "allUsersJoined": true,
+  "allArchivesVerified": true
+}

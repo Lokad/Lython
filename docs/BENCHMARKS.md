@@ -2,15 +2,15 @@
 
 | Workload | Input | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 5,120 records / 68,625 B | 4.720–4.822 ms | 4.442–4.448 ms | 1.06–1.09× | `fe6648b2` | Variable; L2.16%, P0.13% / 2.76% |
+| CSV validation/helper calls | 5,120 records / 68,625 B | 4.717–4.801 ms | 4.442–4.506 ms | 1.05–1.08× | `6904093e` | Diagnostic; L1.76%, P1.41% / 1.48% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
-| Text summary/helpers | 3,072 lines / 35,840 B | 1.481–1.545 ms | 1.269–1.281 ms | 1.16–1.22× | `fe6648b2` | Variable; L4.32%, P0.89% / 1.12% |
-| Text / captured helper + counter | 3,072 lines / 35,840 B | 2.172–2.175 ms | 1.032–1.060 ms | 2.05–2.11× | `fe6648b2` | Variable; L0.12%, P2.76% / 1.18% |
-| JSON-lines/helpers | 4,096 records / 110,592 B | 3.861–3.939 ms | 4.470–4.495 ms | 0.86–0.88× | `e122` | Variable; L1.97%, P0.56% / 5.66% |
-| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.309–3.322 ms | 2.950–3.049 ms | 1.09–1.13× | `e122` | Variable; L0.39%, P3.35% / 6.61% |
+| Text summary/helpers | 3,072 lines / 35,840 B | 1.508–1.511 ms | 1.266–1.281 ms | 1.18–1.19× | `6904093e` | Diagnostic; L0.17%, P1.17% / 1.37% |
+| Text / captured helper + counter | 3,072 lines / 35,840 B | 1.798–1.824 ms | 1.039–1.057 ms | 1.70–1.75× | `6904093e` | Diagnostic; L1.42%, P1.67% / 1.31% |
+| JSON-lines/helpers | 4,096 records / 110,592 B | 3.816–3.897 ms | 4.376–4.387 ms | 0.87–0.89× | `6904093e` | Variable; L2.07%, P0.25% / 1.23% |
+| JSON-to-Markdown report | 3,072 records / 189,441 B | 3.186–3.279 ms | 2.480–2.540 ms | 1.25–1.32× | `6904093e` | Variable; L2.83%, P2.36% / 3.69% |
 | Config edit | 181 B / one JSON file | 140.3–140.8 µs | 124.2–127.7 µs | 1.10–1.13× | `ee44` | Variable; L0.32%, P2.67% / 3.45% |
 | Protected file search | 2,049 lines / 42,010 B; stop after 1,025 | 0.290–0.297 ms | 0.209–0.211 ms | 1.37–1.42× | `ee44` | Variable; L2.50%, P0.81% / 6.87% |
-| File search / keyword-default helper | 2,049 lines / 42,010 B; stop after 1,025 | 0.328–0.331 ms | 0.217–0.221 ms | 1.48–1.53× | `e573` | Variable; L0.93%, P2.03% / 1.99% |
+| File search / keyword-default helper | 2,049 lines / 42,010 B; stop after 1,025 | 331.61–333.08 µs | 225.24–229.60 µs | 1.44–1.48× | `6904093e` | Diagnostic; L0.44%, P1.90% / 2.84% |
 | Copy/checksum/manifest | two files /4,107 B | 0.384–0.384 ms | 0.260 ms | 1.47–1.48× | `4598` | Diagnostic; 0.14% /1.39% |
 | Patch generation | Two 1,024-line UTF-8 files / 67,597 B | 0.556–0.558 ms | 0.647–0.651 ms | 0.85–0.86× | `4aa` | Diagnostic; L0.20%, P0.65% / 1.40% |
 
@@ -19,31 +19,22 @@ Timed rows measure **compilation plus one execution in an already-running host**
 mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
 fixture staging/reset, protocol and final cache teardown are excluded.
 
-**Measured sources:** `fe6648b2` = committed runtime, 2026-11-11 (CSV validation and
-both text shapes), frozen core `bf93c7ce`; fully qualified on Windows/Ubuntu,
-actual .NET 11/10, original stress and installed Release consumers.
-All 568 source hashes match; measured core has precommit `1ce` metadata.
-`4aa` = fully qualified `4aa2d46d`, 2026-11-11 (patch);
-`e122` = committed `e122bdf6`, 2026-11-11 (report and
-JSON-lines); `e573` = `e5731404`, 2026-11-10 (keyword-default search);
-`ee44` = `ee448715`, 2026-11-10; `6f76` = `6f76f99d`, 2026-11-08;
-`4598` = `459813a3`, 2026-11-09. Timed rows use stock CPython 3.13.16 on the same VM.
-Rows from earlier sources are historical and do not describe later HEAD.
-Keyword-default search is distinct from the original literal-prefix search.
+**Measured current source:** retained `6904093e`, 2026-11-11, frozen refined
+core `ccdd645d` with precommit metadata. All production source hashes match.
+The six refreshed scripts use stock CPython 3.13.16 on the same VM; exact-source
+full delivery qualification is recorded in the linked checkpoint. Earlier rows remain
+historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11), `ee44` = `ee448715`
+(config/original search, 2026-11-10), `6f76` = `6f76f99d` (CSV summary, 2026-11-08),
+`4598` = `459813a3` (manifest, 2026-11-09). They do not describe current HEAD.
 
-The [current CSV/text checkpoint](../benchmarks/results/2026-11-11-native-loops-cpython-checkpoint/README.md)
-completes nine jobs in 244.887 s. Scripts/fixtures match the prior external checkpoints,
-including the original CSV script rather than a captured-builtin source-pair
-variant. All loaded hashes, outputs, ownership, quiet, join and archive checks pass.
-The [prior guide](../benchmarks/results/2026-11-11-native-loops-cpython-checkpoint/prior-BENCHMARKS.md)
-preserves replaced CSV/text measurements and their exact source labels.
-The [report/JSON-lines checkpoint](../benchmarks/results/2026-11-11-json-cpython-checkpoint/README.md)
-uses fresh postcommit core `9dadd59b` from build `7714144f`, all 568 source hashes
-matching runtime `e122bdf6`, subsequently fully qualified on both platforms/targets,
-original stress and installed Release consumers. Later sources keep separate status.
-Other rows retain their recorded sources:
-[keyword-default search](../benchmarks/results/2026-11-10-dictionary-cpython-checkpoint/README.md)
-and [prior five-workload checkpoint](../benchmarks/results/2026-11-10-current-cpython-checkpoint/README.md).
+The [six-script checkpoint](../benchmarks/results/2026-11-11-captured-helper-cpython-checkpoint/README.md)
+refreshes compilation, warm execution and compile-to-result using the existing
+workers/protocol and unchanged sources/fixtures. All loaded hashes, output,
+ownership, quiet, join and archive gates pass. Its
+[prior guide](../benchmarks/results/2026-11-11-captured-helper-cpython-checkpoint/prior-BENCHMARKS.md)
+preserves every replaced source-labelled measurement, including the earlier
+`fe6648b2` CSV/text and `e122` JSON/report checkpoints. Separate checkpoints cannot
+attribute differences to a single change.
 
 The captured-helper variant wraps execution in a function and adds an observable
 nonlocal counter. It is a distinct script shape, not an isolated counter-cost
@@ -62,15 +53,15 @@ Warm execution reuses the compiled script and excludes compilation:
 
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 4.614–4.639 ms | 4.283–4.339 ms | 1.06–1.08× | `fe6648b2` | Diagnostic; L0.55%, P1.30% / 2.32% |
+| CSV validation/helper calls | 4.575–4.657 ms | 4.290–4.315 ms | 1.06–1.09× | `6904093e` | Diagnostic; L1.78%, P0.60% / 0.95% |
 | CSV summary/helpers | 3.282–3.302 ms | 3.201 ms | 1.03–1.03× | `6f76` | Diagnostic; 0.60% / 0.68% |
-| Text summary/helpers | 1.410–1.412 ms | 1.157–1.168 ms | 1.21–1.22× | `fe6648b2` | Diagnostic; L0.13%, P0.93% / 1.13% |
-| Text / captured helper + counter | 2.010–2.035 ms | 0.895–0.896 ms | 2.24–2.27× | `fe6648b2` | Diagnostic; L1.23%, P0.11% / 0.97% |
-| JSON-lines/helpers | 3.775–3.862 ms | 4.322–4.389 ms | 0.86–0.89× | `e122` | Variable; L2.32%, P1.54% / 3.28% |
-| JSON-to-Markdown report | 3.312–3.356 ms | 2.739–2.796 ms | 1.18–1.23× | `e122` | Variable; L1.31%, P2.10% / 6.35% |
+| Text summary/helpers | 1.364–1.383 ms | 1.164–1.176 ms | 1.16–1.19× | `6904093e` | Diagnostic; L1.43%, P0.98% / 0.75% |
+| Text / captured helper + counter | 1.746–1.754 ms | 0.891–0.892 ms | 1.96–1.97× | `6904093e` | Diagnostic; L0.43%, P0.11% / 2.95% |
+| JSON-lines/helpers | 3.451–3.486 ms | 4.109–4.111 ms | 0.84–0.85× | `6904093e` | Diagnostic; L1.01%, P0.05% / 1.17% |
+| JSON-to-Markdown report | 2.999–3.191 ms | 2.319–2.398 ms | 1.25–1.38× | `6904093e` | Variable; L6.41%, P3.39% / 5.11% |
 | Config edit | 78.3–78.6 µs | 61.8–62.1 µs | 1.26–1.27× | `ee44` | Diagnostic; L0.41%, P0.43% / 2.18% |
 | Protected file search | 0.217–0.218 ms | 137.8–138.0 µs | 1.58–1.58× | `ee44` | Diagnostic; L0.36%, P0.11% / 1.22% |
-| File search / keyword-default helper | 0.246–0.250 ms | 0.164 ms | 1.50–1.52× | `e573` | Diagnostic; L1.53%, P0.15% / 2.45% |
+| File search / keyword-default helper | 252.93–261.90 µs | 164.23–164.30 µs | 1.54–1.59× | `6904093e` | Variable; L3.43%, P0.05% / 3.28% |
 | Copy/checksum/manifest | 0.243–0.247 ms | 0.155 ms | 1.56–1.59× | `4598` | Diagnostic; 1.72% /2.72% |
 | Patch generation | 0.497–0.520 ms | 0.576–0.580 ms | 0.86–0.90× | `4aa` | Variable; L4.44%, P0.74% /1.16% |
 
@@ -78,15 +69,15 @@ Compilation alone includes code construction and disposal under the shared allow
 
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
-| CSV validation/helper calls | 70.86–71.81 µs | 65.63–65.74 µs | 1.08–1.09× | `fe6648b2` | Variable; L1.31%, P0.17% / 3.14% |
+| CSV validation/helper calls | 70.25–70.85 µs | 65.41–65.58 µs | 1.07–1.08× | `6904093e` | Variable; L0.86%, P0.26% / 3.61% |
 | CSV summary/helpers | 61.3–62.2 µs | 59.1 µs | 1.04–1.05× | `6f76` | Diagnostic; 1.46% / 0.89% |
-| Text summary/helpers | 44.26–45.48 µs | 41.33–41.52 µs | 1.07–1.10× | `fe6648b2` | Variable; L2.68%, P0.46% / 2.49% |
-| Text / captured helper + counter | 44.23–44.45 µs | 54.18–54.38 µs | 0.81–0.82× | `fe6648b2` | Variable; L0.49%, P0.37% / 5.51% |
-| JSON-lines/helpers | 53.2–55.2 µs | 51.4–52.0 µs | 1.02–1.08× | `e122` | Variable; L3.81%, P1.18% / 5.75% |
-| JSON-to-Markdown report | 46.5–46.9 µs | 41.1–41.4 µs | 1.12–1.14× | `e122` | Diagnostic; L0.96%, P0.66% / 2.48% |
+| Text summary/helpers | 44.26–44.98 µs | 41.64–41.72 µs | 1.06–1.08× | `6904093e` | Diagnostic; L1.60%, P0.19% / 2.12% |
+| Text / captured helper + counter | 47.72–48.52 µs | 57.60–57.62 µs | 0.83–0.84× | `6904093e` | Diagnostic; L1.67%, P0.02% / 2.57% |
+| JSON-lines/helpers | 51.22–51.62 µs | 51.15–51.31 µs | 1.00–1.01× | `6904093e` | Variable; L0.79%, P0.31% / 3.27% |
+| JSON-to-Markdown report | 40.61–41.49 µs | 37.79–37.82 µs | 1.07–1.10× | `6904093e` | Variable; L2.12%, P0.09% / 3.98% |
 | Config edit | 36.5–37.2 µs | 34.2–34.4 µs | 1.06–1.09× | `ee44` | Diagnostic; L1.93%, P0.51% / 1.11% |
 | Protected file search | 29.0–29.3 µs | 30.8–30.9 µs | 0.94–0.95× | `ee44` | Diagnostic; L0.89%, P0.44% / 1.30% |
-| File search / keyword-default helper | 29.5–29.7 µs | 32.4–32.6 µs | 0.91–0.92× | `e573` | Diagnostic; L0.78%, P0.43% / 1.15% |
+| File search / keyword-default helper | 29.48–30.66 µs | 32.13–32.24 µs | 0.91–0.95× | `6904093e` | Variable; L3.83%, P0.34% / 5.47% |
 | Copy/checksum/manifest | 70.9–71.9 µs | 56.7 µs | 1.25–1.27× | `4598` | Diagnostic; 1.33% /0.62% |
 | Patch generation | 33.46–33.91 µs | 33.86–34.21 µs | 0.98–1.00× | `4aa` | Diagnostic; L1.34%, P1.06% /0.62% |
 
@@ -96,14 +87,11 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 ## Measurement boundary and fairness
 
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
-Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering; five-second
-warmups per role/job and seven rotated 150 ms rounds. CSV validation and both text shapes use
-core `bf93c7ce` (committed `fe6648b2` sources); patch uses `9ee7e700` (`4aa2d46d`);
-report/JSON-lines use `9dadd59b` (`e122bdf6`);
-keyword-default search uses `e364e4d9` (`e5731404`). All use common worker
-`fec79afd`, optional adapter 0.4 and the existing protocol. Other rows retain their
-recorded images. These are source-labelled measurements, not a claim about every
-later HEAD, and do not qualify a newer regex producer.
+Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering;
+five-second warmups per role/job and seven rotated 150 ms rounds. Six current
+scripts use core `ccdd645d` (retained `6904093e` production sources), fixed common
+worker `fec79afd` and optional adapter 0.4. Other rows keep their recorded images.
+These source-labelled observations do not qualify a newer regex producer.
 
 Identical scripts and fixtures run on both engines, with complete stdout/file
 digests checked every invocation. Lython uses efficient mediated filesystem
@@ -126,23 +114,13 @@ compile-to-result controls are tighter. The unchanged config warm control is
 1.26–1.27× CPython; this does not qualify config compilation at the newer source.
 Earlier CPython 3.13.2 correctness smoke and all its unqualified clocks survive.
 
-The current CSV/text checkpoint measures warm ordinary text 1.21–1.22× / complete
-1.16–1.22× CPython. The captured-helper script remains warm 2.24–2.27× / complete
-2.05–2.11×; compilation alone 0.81–0.82× does not explain that gap. CSV validation
-is warm 1.06–1.08× / complete 1.06–1.09×. Complete ordinary-text Lython controls move
-4.32%, captured CPython controls2.76% and CSV Lython controls2.16%, limiting precision.
-All warm rows have tighter controls; compilation remains variable. These
-cross-revision refreshes do not isolate one optimization, establish unchanged
-CSV neutrality or qualify embedding tail latency.
-
-The current report/JSON-lines checkpoint completes six jobs in 165.178 seconds,
-with all collection gates passing. Report warm is 1.18–1.23× CPython and complete
-execution 1.09–1.13×. Warm max IQR 6.35% and complete CPython control 3.35% / max
-IQR 6.61% limit precision. JSON-lines warm 0.86–0.89× and complete 0.86–0.88× are
-also variable: warm Lython control 2.32%, compile 3.81% and complete max IQR 5.66%.
-These state measurements do not isolate the JSON decoder change. The previous
-`8d44` measurements and their adversity remain linked in the checkpoint evidence.
-Keyword-default search retains earlier-source warm 1.50–1.52×.
+Captured text remains about twice as slow as CPython in warm execution; keyword-
+default search also retains a substantial gap. Report ratios are adverse versus
+the earlier checkpoint, with moving controls on both engines. Both absolute times
+are lower and CPython improves more, so these observations do not identify a
+Lython source regression. All original results remain in the checkpoint evidence.
+Controls/IQRs limit precision; allocation reduction does not establish CPU gain
+or unchanged-script neutrality. Compilation and warm medians are independent.
 
 Original literal-prefix search and config retain `ee44`; CSV summary retains
 `6f76`; the small-file manifest retains `4598`. File search stops at line 1,025

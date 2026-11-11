@@ -313,3 +313,5 @@ benchmarks/results/2026-11-11-current-call-costs/** -text whitespace=cr-at-eol
 
 benchmarks/results/2026-11-11-native-closure-sequences/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-closure-sequences/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-11-captured-helper-cpython-checkpoint/** -text whitespace=cr-at-eol

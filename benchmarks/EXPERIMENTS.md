@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [six-script current checkpoint](results/2026-11-11-captured-helper-cpython-checkpoint/README.md)
+uses retained `6904093e` versus stock CPython3.13.16, separating compile, warm and
+compile-to-result. All18jobs finish in487.016s with verified outputs/identities/
+ownership/quiet/join/archive. Captured warm remains1.96–1.97×, ordinary1.16–1.19×,
+CSV1.06–1.09×, JSON-lines0.84–0.85× and keyword-default search1.54–1.59×. Report
+1.25–1.38× has moving controls and adverse ratio versus earlier evidence; both
+engines' absolute times improve, so no source regression is attributed. All
+original data/source labels survive in the prior guide; no universal neutrality
+or individual-change attribution. The objective continues beyond this checkpoint.
+
 The [R243 captured native sequences](results/2026-11-11-native-closure-sequences/README.md)
 are retained in `6904093e`. Existing native input storage carries live cells;
 proven stores/continuations omit the complete binding/workspace/dispatch phase.
