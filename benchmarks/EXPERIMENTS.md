@@ -11,7 +11,11 @@ adds a complete UTF-8 two-file unified-diff/write job to the existing catalog,
 with independent exact patch goldens at0/16/1024lines.83file-workerchecks pass per
 actualtarget; supervisedCPython3.13.2/Lython verify all3sizes and compile/warm/fresh
 smoke, with output/file hashes and joined cleanup. Core remains qualified4aa;
-no new framework, runtime edit or performance claim. Controlled timing is pending.
+no new framework or runtime edit. Four quiet comparison jobs finish in114.763s:
+qualified4aa/9ee7 against CPython3.13.16, patch warm0.86–0.90×/complete0.85–0.86×,
+compilation0.98–1.00×. Warm Lython controls move4.44%; all adverse observations
+remain visible. All output/ownership/quiet/join/archive gates pass. The single-edit
+fixture does not justify a difflib redesign or establish general diff throughput.
 
 The [R228 dispatch completion prototype](results/2026-11-11-dispatch-completion-withdrawn/README.md)
 is fully withdrawn. It removes a generic jump flag/implicit completion but adds22net

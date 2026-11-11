@@ -1,0 +1,43 @@
+{
+  "beforeFreeBytes": 260509696,
+  "afterExtractionFreeBytes": 268120064,
+  "requiredFreeBytes": 264568832,
+  "files": [
+    {
+      "kind": "exact",
+      "knownPath": "return-prefix-b572-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-current-helper-prefix/observations.tgz",
+      "bytes": 2136887,
+      "sha256": "8f95fb0f8e8bc84c4d865e524a1ba1ebecd3dc4f1a71d679c1ecda4aeb558d4a",
+      "paths": [
+        "return-prefix-b572-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 807631,
+      "allocatedBytes": 2138112,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "core",
+      "knownPath": "iteration-returns-b570-20261111/reference/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-11-ordinary-return-consumption/quiet/observations.tgz",
+      "canonicalMember": "baseline-core.dll",
+      "bytes": 5665280,
+      "sha256": "f6c8fd22df7341c8a4959e791fd288aacd7d3e8770cb38fec83cc8e9efddb61e",
+      "paths": [
+        "iteration-returns-b570-20261111/baseline-core.dll",
+        "iteration-returns-b570-20261111/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 807576,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    }
+  ],
+  "canonicalCommit": "e5262da5",
+  "freshIdleLease": true,
+  "verifiedReplacementInExistingQualifiedSource": true,
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "threeQualifiedImagesPreserved": true
+}

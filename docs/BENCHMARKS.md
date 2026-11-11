@@ -12,14 +12,15 @@
 | Protected file search | 2,049 lines / 42,010 B; stop after 1,025 | 0.290–0.297 ms | 0.209–0.211 ms | 1.37–1.42× | `ee44` | Variable; L2.50%, P0.81% / 6.87% |
 | File search / keyword-default helper | 2,049 lines / 42,010 B; stop after 1,025 | 0.328–0.331 ms | 0.217–0.221 ms | 1.48–1.53× | `e573` | Variable; L0.93%, P2.03% / 1.99% |
 | Copy/checksum/manifest | two files /4,107 B | 0.384–0.384 ms | 0.260 ms | 1.47–1.48× | `4598` | Diagnostic; 0.14% /1.39% |
-| Patch generation | Two 1,024-line UTF-8 files / 67,597 B | — | — | — | `4aa` semantics | Output-validated; timing pending |
+| Patch generation | Two 1,024-line UTF-8 files / 67,597 B | 0.556–0.558 ms | 0.647–0.651 ms | 0.85–0.86× | `4aa` | Diagnostic; L0.20%, P0.65% / 1.40% |
 
 Timed rows measure **compilation plus one execution in an already-running host**.
 **Ratio = Lython elapsed / CPython elapsed; above one means slower.** It includes
 mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
 fixture staging/reset, protocol and final cache teardown are excluded.
 
-**Measured sources:** `4625` = committed `4625d83e`, 2026-11-11 (both text shapes);
+**Measured sources:** `4aa` = fully qualified `4aa2d46d`, 2026-11-11 (patch);
+`4625` = committed `4625d83e`, 2026-11-11 (both text shapes);
 `e122` = committed `e122bdf6`, 2026-11-11 (report and
 JSON-lines); `e543` = `e543bf15`, 2026-11-10 (CSV validation);
 `e573` = `e5731404`, 2026-11-10 (keyword-default search);
@@ -68,6 +69,7 @@ Warm execution reuses the compiled script and excludes compilation:
 | Protected file search | 0.217–0.218 ms | 137.8–138.0 µs | 1.58–1.58× | `ee44` | Diagnostic; L0.36%, P0.11% / 1.22% |
 | File search / keyword-default helper | 0.246–0.250 ms | 0.164 ms | 1.50–1.52× | `e573` | Diagnostic; L1.53%, P0.15% / 2.45% |
 | Copy/checksum/manifest | 0.243–0.247 ms | 0.155 ms | 1.56–1.59× | `4598` | Diagnostic; 1.72% /2.72% |
+| Patch generation | 0.497–0.520 ms | 0.576–0.580 ms | 0.86–0.90× | `4aa` | Variable; L4.44%, P0.74% /1.16% |
 
 Compilation alone includes code construction and disposal under the shared allowance:
 
@@ -83,6 +85,7 @@ Compilation alone includes code construction and disposal under the shared allow
 | Protected file search | 29.0–29.3 µs | 30.8–30.9 µs | 0.94–0.95× | `ee44` | Diagnostic; L0.89%, P0.44% / 1.30% |
 | File search / keyword-default helper | 29.5–29.7 µs | 32.4–32.6 µs | 0.91–0.92× | `e573` | Diagnostic; L0.78%, P0.43% / 1.15% |
 | Copy/checksum/manifest | 70.9–71.9 µs | 56.7 µs | 1.25–1.27× | `4598` | Diagnostic; 1.33% /0.62% |
+| Patch generation | 33.46–33.91 µs | 33.86–34.21 µs | 0.98–1.00× | `4aa` | Diagnostic; L1.34%, P1.06% /0.62% |
 
 Startup, RSS/heap peaks, genuinely pending I/O and impact on other embedding work
 are unmeasured. Small file-backed scripts do not establish large-file throughput.
@@ -92,7 +95,8 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering; five-second
 warmups per role/job and seven rotated 150 ms rounds. CSV validation uses
-core `0e2bc55b` (`e543bf15`); current text uses `cb03fd47` (`4625d83e`); report/JSON-lines use `9dadd59b` (`e122bdf6`);
+core `0e2bc55b` (`e543bf15`); patch uses `9ee7e700` (`4aa2d46d`);
+current text uses `cb03fd47` (`4625d83e`); report/JSON-lines use `9dadd59b` (`e122bdf6`);
 keyword-default search uses `e364e4d9` (`e5731404`). All use common worker
 `fec79afd`, optional adapter 0.4 and the existing protocol. Other rows retain their
 recorded images. These are source-labelled measurements, not a claim about every
@@ -110,10 +114,14 @@ pending-I/O latency. This is an embedding comparison, not an isolated CPU kernel
 
 ## Coverage and uncertainty
 
-The [patch-generation job](../benchmarks/results/2026-11-11-patch-workflow/README.md)
-has independent file/output checks under Lython and CPython 3.13.2 at three sizes.
-Its short correctness smoke does not establish performance; controlled timing is
-pending. Existing timed rows retain their own source/runtime conditions.
+The [patch-generation checkpoint](../benchmarks/results/2026-11-11-patch-workflow/README.md)
+completes four controlled jobs in 114.763 seconds against CPython 3.13.16, using
+qualified `4aa` source and frozen `9ee7e700`. Identity, output, ownership, quiet,
+joined-worker, cleanup and archive gates pass. Its single-central-edit fixture
+does not establish general diff throughput. Warm Lython controls differ by 4.44%;
+compile-to-result controls are tighter. The unchanged config warm control is
+1.26–1.27× CPython; this does not qualify config compilation at the newer source.
+Earlier CPython 3.13.2 correctness smoke and all its unqualified clocks survive.
 
 The current two-shape text checkpoint completes six jobs in 164.378 seconds, all
 identity/output/ownership/quiet/join/archive gates passing. Ordinary text is warm
