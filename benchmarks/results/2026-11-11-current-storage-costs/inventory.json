@@ -1,0 +1,27 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 260509696,
+  "requiredFreeBytes": 265371648,
+  "reclaimableBytes": 5672960,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "dictionary-values-b588-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5669376,
+      "sha256": "abf089e0390869aa303ef2ec041bd2b16bd1925c80a9199f349d0b294ce09053",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-integer-storage/initial/quiet/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "fce5027587ca9699e8716d2c6f0ff8a1fb8772e6ade1adc2f3660dd9732ec58f",
+      "reason": "Initial R245 image superseded by retained refined8f8628a4. Exact source/core/adverse observations preserved in committed Git; current selected refined image protected. Fresh absolute-path/UID/inode/all-alias proof before retiring only obsolete image aliases.",
+      "paths": [
+        "dictionary-values-b588-20261111/current-core.dll",
+        "dictionary-values-b588-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 340664,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

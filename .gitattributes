@@ -326,3 +326,5 @@ benchmarks/results/2026-11-11-dictionary-integer-storage/**/*.patch -text -white
 benchmarks/results/2026-11-11-dictionary-integer-storage/**/jit/*.txt -text -whitespace
 
 benchmarks/results/2026-11-11-dictionary-cpython-checkpoint/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-11-current-storage-costs/** -text whitespace=cr-at-eol

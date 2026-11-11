@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [current storage-cost profiles](results/2026-11-11-current-storage-costs/README.md)
+measure retained8f8628a4 captured text/Run and report/RunAsync:1148/1020guest leaves,
+71/60unknown, actual current code/maps. Word preparation, dictionary/native
+iteration and report dispatch/format/write remain material associations, not
+removable percentages. Source confirms shared frames/workspaces and direct UTF8
+formatting already ship. The next bounded source gate assesses one native-loop
+admission scope while preserving effect order/reentry/stack safety. No prototype
+or CPU forecast. Two short windows, all gates/join/archive pass; original failed
+preparations preserved. Full delivery and publication remain separate.
+
 The [current dictionary-storage checkpoint](results/2026-11-11-dictionary-cpython-checkpoint/README.md)
 measures retained8f8628a4 against stockCPython3.13.16 with the same six scripts,
 fixtures, workers and separate compile/warm/compile-result boundaries. All18jobs
