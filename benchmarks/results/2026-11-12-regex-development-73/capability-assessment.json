@@ -1,0 +1,36 @@
+{
+  "producerVersion": "0.5.0-dev.73",
+  "producerSource": "eae880c88f7a54ed4331715c2fd8f4b0fc6e6d63",
+  "priorQualifiedDevelopmentSource": "a7e985ed2c1bb4ac7d63a09c74e3ba0a74ccb9b9",
+  "changedPythonReFiles": [
+    "src/Lokad.Utf8Regex.PythonRe/PythonReParser.cs",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarCompiler.Classes.cs",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchCursor.cs",
+    "src/Lokad.Utf8Regex.PythonRe/PythonReScalarMatchState.cs",
+    "src/Lokad.Utf8Regex.PythonRe/README.md",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.Coordinates.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonMatchCursor.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.OneShotText.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.ScalarOperations.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Utf8.cs",
+    "src/Lokad.Utf8Regex.PythonRe/Utf8PythonRegex.Value.cs"
+  ],
+  "fourRelevantPublicApiFilesByteIdentical": true,
+  "missing": [
+    "Independent single-match working/result owners.",
+    "Native UTF-8 group-name enumeration; lookup already exists.",
+    "Token-independent cursor creation with cancellable preparation."
+  ],
+  "loadedBinaries": {
+    "net11.0": {
+      "Lokad.Utf8Regex": "7aeba1d49bedb471d284985847832eae2a4bbb3faeb235de70546387b57a1908",
+      "Lokad.Utf8Regex.PythonRe": "e5121c5b96622ce9cabb30a8bd4ce403994e16d7faeb3a9e28c8df376ddcc45d"
+    },
+    "net10.0": {
+      "Lokad.Utf8Regex": "1977457e47b9ea7c77e71a34926b0195be6428322b53e8da4a4e9ab307a37097",
+      "Lokad.Utf8Regex.PythonRe": "8a645673ca9fd7bc9e90346ae4a3e6115f47c58b9b74733777075f989c4c7a65"
+    }
+  },
+  "scope": "Development compatibility on retained Lython2ec9d67f, unchanged Validate bridge; no normal-pin promotion, final published-producer, backend performance or source-safety certification.",
+  "decision": "Changed producer parsing/capture/scalar/value paths justify new-binary focused qualification. No new core plumbing or bridge rewrite is justified by unchanged relevant APIs."
+}

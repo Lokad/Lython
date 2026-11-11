@@ -1,0 +1,10 @@
+{
+  "ci-terminal.json": {
+    "bytes": 8640,
+    "sha256": "2549c350baebc02f912f20081251a7f46252b20f2ff691c8598eec58b6e75328"
+  },
+  "README.md": {
+    "bytes": 537,
+    "sha256": "9e8786e5f12216f8dc782ac4f38661cee198b972a3d5058c3d7104f5cc8560f1"
+  }
+}

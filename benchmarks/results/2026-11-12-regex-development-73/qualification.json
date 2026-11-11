@@ -1,0 +1,68 @@
+{
+  "identity": {
+    "consumerRevision": "2ec9d67f84a0b89361abb83b178abd344961ce8c",
+    "consumerRuntime": "Retained2ec9d67f, full43119174279 active separately; normal/installed consumer checks pass both platforms/targets, stress pending. B597combined source pair and B598CPython checkpoint terminal/cached.",
+    "producerVersion": "0.5.0-dev.73",
+    "producerSourceHead": "eae880c88f7a54ed4331715c2fd8f4b0fc6e6d63",
+    "packages": {
+      "Lokad.Utf8Regex.0.5.0-dev.73.nupkg": {
+        "sha256": "1076e8e6c16bcfa763451239d5e134117536a505036f02cbbc78072419eec7f3",
+        "repositoryCommit": "eae880c88f7a54ed4331715c2fd8f4b0fc6e6d63",
+        "dependencies": []
+      },
+      "Lokad.Utf8Regex.PythonRe.0.5.0-dev.73.nupkg": {
+        "sha256": "a300291ddd03954b8998b809ad22696840a1a79889f7aeb41d09fdb052c3bf2b",
+        "repositoryCommit": "eae880c88f7a54ed4331715c2fd8f4b0fc6e6d63",
+        "dependencies": [
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.73]",
+            "exclude": "Build,Analyzers"
+          },
+          {
+            "id": "Lokad.Utf8Regex",
+            "version": "[0.5.0-dev.73]",
+            "exclude": "Build,Analyzers"
+          }
+        ]
+      }
+    },
+    "bridge": "Unchanged dev68 Validate bridge and cursor working-admission controls. Isolated feed/cache/assets/locks/outputs. No normal source/pin changes or sibling edits/builds/repack.",
+    "providerSourceSHA256": "48d861486c39795387f9df2e8acb22e39ed18b8523d600d796899a47733e32df",
+    "limitations": "Development semantic/cancellation/ownership input qualification only. No normal promotion, final published producer, source-safety or backend performance certification."
+  },
+  "checks": {
+    "build-Lokad.Lython.Tests": {
+      "exitCode": 0
+    },
+    "build-Lokad.Lython.PublicApi.Tests": {
+      "exitCode": 0
+    },
+    "Lokad.Lython.Tests-net11.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net11.0": {
+      "passed": 532
+    },
+    "Lokad.Lython.Tests-net10.0": {
+      "passed": 86
+    },
+    "Lokad.Lython.PublicApi.Tests-net10.0": {
+      "passed": 532
+    },
+    "net11.0-loadedFiles": {
+      "Lokad.Lython": "996727ed6df6f742fc5cc0b24b97c06d1af483993d27a51742097174dd3cce81",
+      "Lokad.Lython.Utf8Regex": "c3abeb7983ff1aad77462934343d6b04b23cd819c64d88a03a8c218de28ab50e",
+      "Lokad.Utf8Regex": "7aeba1d49bedb471d284985847832eae2a4bbb3faeb235de70546387b57a1908",
+      "Lokad.Utf8Regex.PythonRe": "e5121c5b96622ce9cabb30a8bd4ce403994e16d7faeb3a9e28c8df376ddcc45d"
+    },
+    "net10.0-loadedFiles": {
+      "Lokad.Lython": "a441b66cd0649f9886a9051ef7da4fa8c15cc511928fa849295b85f189a7c1e7",
+      "Lokad.Lython.Utf8Regex": "9d92d272f0f2a0ca8523b97cbe5ba808f4448f8f2fc684a8b7067994de80b8a2",
+      "Lokad.Utf8Regex": "1977457e47b9ea7c77e71a34926b0195be6428322b53e8da4a4e9ab307a37097",
+      "Lokad.Utf8Regex.PythonRe": "8a645673ca9fd7bc9e90346ae4a3e6115f47c58b9b74733777075f989c4c7a65"
+    }
+  },
+  "interruptedObservation": "Initial public11 log has no terminal outcome; process inventory confirmed all runner/test children absent before resuming unfinished frozen checks. Original partial log retained, no runtime fault inferred.",
+  "limitations": "Private immutable development adapter only; normal pin/source unchanged; final producer/safety qualification separate"
+}

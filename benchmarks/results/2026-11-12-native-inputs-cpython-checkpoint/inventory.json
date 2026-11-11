@@ -1,0 +1,86 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 260759552,
+  "requiredFreeBytes": 265371648,
+  "reclaimableBytes": 5009408,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "native-inputs-b597-20261112/observations.tgz",
+      "bytes": 2002096,
+      "sha256": "e620785ea5ed5163ef7a41f3446a32941042538add632df36149dc2fb720ae5a",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-inputs/quiet/observations.tgz",
+      "reason": "Unused terminal duplicate archive/catalog. Fresh read-only inventory confirms existence; exact committed Git bytes verified. Both current selected core roles protected; new checkpoint supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "native-inputs-b597-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844553,
+      "allocatedBytes": 2002944,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-inputs-b597-20261112/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-inputs/quiet/representative.json",
+      "reason": "Unused terminal duplicate archive/catalog. Fresh read-only inventory confirms existence; exact committed Git bytes verified. Both current selected core roles protected; new checkpoint supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "native-inputs-b597-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844539,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "dictionary-values-b588-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-integer-storage/initial/quiet/representative.json",
+      "reason": "Unused terminal duplicate archive/catalog. Fresh read-only inventory confirms existence; exact committed Git bytes verified. Both current selected core roles protected; new checkpoint supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "dictionary-values-b588-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 340694,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "known-call-binding-b586-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-known-call-binding/initial/quiet/representative.json",
+      "reason": "Unused terminal duplicate archive/catalog. Fresh read-only inventory confirms existence; exact committed Git bytes verified. Both current selected core roles protected; new checkpoint supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "known-call-binding-b586-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 340589,
+      "allocatedBytes": 868352,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "current-value-profile-b591-20261111/profiles/prefix-jit.txt",
+      "bytes": 408055,
+      "sha256": "a5a34ff9a002b7ce5623f7af5d3aa43ae598f7ea9f837c35bd19fc85ebec4049",
+      "canonicalStorage": "benchmarks/results/2026-11-11-current-storage-costs/observations.tgz",
+      "canonicalArchiveSHA256": "9d0104e5cea88f963c8ddae7ff74ff781f71bd5dff92d09123f22349b982d091",
+      "canonicalEntry": "profiles/prefix-jit.txt",
+      "reason": "Unused terminal duplicate disassembly; exact committed archive entry verified. Current source/profiles remain preserved; fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "current-value-profile-b591-20261111/profiles/prefix-jit.txt"
+      ],
+      "device": 66305,
+      "inode": 844395,
+      "allocatedBytes": 409600,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

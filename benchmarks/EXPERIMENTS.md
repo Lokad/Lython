@@ -6,6 +6,26 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Immutable regex dev73](results/2026-11-12-regex-development-73/README.md) passes
+86 internal/532 public focused checks per actual target with the unchanged Validate
+development bridge. Exact loaded-package and 29-file normal-state isolation proofs
+pass. Three final producer capability gaps remain unchanged; normal adapter 0.4
+and core dependencies are untouched. Partial first observation and resumed terminal
+checks are preserved. This is development compatibility, not final backend speed,
+safety or published-package certification.
+
+The retained native storage/input migration is fully qualified on exact source
+`2ec9d67f`: Windows/Ubuntu, actual .NET 11/10, original stress and installed Release
+consumers all pass. [Cached delivery receipt](results/2026-11-12-native-inputs/delivery/README.md).
+The [six-script CPython checkpoint](results/2026-11-12-native-inputs-cpython-checkpoint/README.md)
+finishes 18 jobs in 487.070 seconds with all identity/output/ownership/quiet/join/
+archive gates. Compile, warm and compile-to-result remain separate. Warm captured
+text is 1.74× CPython, search 1.52–1.60× (variable), ordinary text 0.99–1.06×
+(variable), CSV 1.08–1.09×, JSON-lines 0.85–0.89× (variable), report 1.26–1.31×
+(variable). This does not attribute gains to one change or settle additional async
+report debt. Older pending-at-collection records below remain historical.
+Publication and tagging remain postponed.
+
 The [native storage/input candidate](results/2026-11-12-native-inputs/README.md)
 is retained for delivery qualification. It keeps the initial private UTF8 word
 probe while deleting captured helper packing/clearing and appended-cell indexes.

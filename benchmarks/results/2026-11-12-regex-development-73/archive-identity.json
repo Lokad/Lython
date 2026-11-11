@@ -1,0 +1,30 @@
+{
+  "capability-assessment.json": {
+    "bytes": 2060,
+    "sha256": "e743c693983ffd3554f5fe2844acdb9d8da3e187f522a14f2f03a27d033002a2"
+  },
+  "identity.json": {
+    "bytes": 1665,
+    "sha256": "7440fe44385a431845baf489f4d6f0c98af0127c01b457864ee96ddc3783a85e"
+  },
+  "normal-state-proof.json": {
+    "bytes": 8352,
+    "sha256": "73180a0c3b05a753ff62d82fe937fd8be84bb4ee999efe934b1cd9c37b610089"
+  },
+  "preparation.tar.xz": {
+    "bytes": 3727588,
+    "sha256": "f0a74b9eaaaa4bc59eafa6dd82b27cbc17fa54c1e970c0124f578438f679f510"
+  },
+  "proposal.json": {
+    "bytes": 850,
+    "sha256": "3e168ebd6f80628208514f137f70cbcae47a5c23217da8a32bd0f8d3a14c9d8b"
+  },
+  "qualification.json": {
+    "bytes": 3416,
+    "sha256": "76b5c781083ebcb3fafe8b9b1ca7e21a20b75d00e3069cbc4818b67738d2e767"
+  },
+  "README.md": {
+    "bytes": 2580,
+    "sha256": "11b2466053966864d5b739b0de69128e99a7d5ad3d351a7f18591c625aec196a"
+  }
+}
