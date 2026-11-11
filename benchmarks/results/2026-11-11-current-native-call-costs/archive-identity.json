@@ -1,0 +1,50 @@
+{
+  "files": {
+    "archive-receipt.json": {
+      "bytes": 316,
+      "sha256": "89f1cee0114664c8a4740e6e57de1bf849b9d645cf9c587a1b3c34cce3dd0221"
+    },
+    "assessment.json": {
+      "bytes": 15804,
+      "sha256": "a6d56de0e07d8ed2a9833175f99f2ead64734dfa55c91030ba7d8a338df75e1d"
+    },
+    "config.json": {
+      "bytes": 5386,
+      "sha256": "df98d9d5c3c2f74f855a9e29366c0ee6886b63b8f668d6516806d4e039a244cd"
+    },
+    "identity.json": {
+      "bytes": 3779,
+      "sha256": "c5ebc2ccae9c0e9efc5b57ecd975fa5009b9f63d429b223219e096f546e2fe8b"
+    },
+    "inventory.json": {
+      "bytes": 1802,
+      "sha256": "656c5ee1b9183f3cd8911f5463de0b11f37c034f8eb0564e80e8360c0f3565f0"
+    },
+    "launch.log": {
+      "bytes": 316,
+      "sha256": "a2fadf6919b5eae4558b9b18ba56a19008f534ad8a06484f2a83357353ef3b4b"
+    },
+    "observations.tgz": {
+      "bytes": 2442112,
+      "sha256": "349aac2a02a73dcfa2a0246e7fbb0b837eb9b1565bc4996c3fd9174591a83993"
+    },
+    "observe-not-before.json": {
+      "bytes": 197,
+      "sha256": "f24bff6587308f3857c48086b0b8e4c94e2dea685f5bd985afdb539d4912b3b9"
+    },
+    "preparation.tar.xz": {
+      "bytes": 16024,
+      "sha256": "ff5459194e36c4b4e7c17b6a9f26667ee06676eb35d706de2d13bbf0c663c375"
+    },
+    "source-identity.json": {
+      "bytes": 74906,
+      "sha256": "62236384410312d1fc3703f67aab74d5bf4f7436f6477b1bec6e4db281726651"
+    },
+    "terminal-status.json": {
+      "bytes": 520,
+      "sha256": "c646a9ba0aa252a378a5dc8b027921fa90ce4d3bca34855731afbde320cc9d80"
+    }
+  },
+  "allIdentitiesVerified": true,
+  "allUsersJoined": true
+}

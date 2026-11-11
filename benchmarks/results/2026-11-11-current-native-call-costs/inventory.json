@@ -1,0 +1,41 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261709824,
+  "requiredFreeBytes": 265371648,
+  "reclaimableBytes": 4390912,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "call-preparation-profile-b582-20261111/observations.tgz",
+      "bytes": 2382026,
+      "sha256": "1c1030e87e60c7eca0a93149bac49d76e094eac4b212ea57a1a9503cfd3586cc",
+      "canonicalStorage": "benchmarks/results/2026-11-11-current-call-costs/observations.tgz",
+      "canonicalCommit": "72b573019fd508955f21b30330ca0e031b8d681a",
+      "reason": "Historical terminal raw profile duplicate, exact committed Git evidence verified; current cores/maps remain. Fresh absolute path/UID/inode/all-alias proof required.",
+      "paths": [
+        "call-preparation-profile-b582-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340471,
+      "allocatedBytes": 2387968,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-loops-cpython-b577-20261111/observations.tgz",
+      "bytes": 1998948,
+      "sha256": "e492b01a51e5f2d32b28d92bde11bcfb9dd5ce64087e600e331ca5703bb6f20b",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-loops-cpython-checkpoint/observations.tgz",
+      "canonicalCommit": "72b573019fd508955f21b30330ca0e031b8d681a",
+      "reason": "Terminal historical external-checkpoint duplicate; exact committed canonical Git bytes verified. Keep every original result and protected source cores. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "native-loops-cpython-b577-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 838676,
+      "allocatedBytes": 2002944,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
