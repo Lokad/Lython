@@ -1,0 +1,13 @@
+{
+  "ownedCandidateGuardVerified": true,
+  "restoredExactPhysicalOriginal": true,
+  "productionSourceEqualQualified": "4aa2d46dadc6793e20159cf0a43316c14890d7d8",
+  "candidatePreserved": true,
+  "requiresNonincrementalBuild": true,
+  "freshNonincrementalBuild": "Bothactualtargets, zero warnings/errors",
+  "rebuiltCoreSHA256": {
+    "net11.0": "e45c405c0de23dca4179322206c287a77fa3d96be21b5968e86a5c292fb429e1",
+    "net10.0": "0523de1c734159548ef857535778ec64b69f4de456cb8d2a1ee697156ed9dc58"
+  },
+  "limitation": "Rebuilt qualified-source binary has separate identity; no timing claim for rebuild, no unchanged full delivery replay."
+}

@@ -1,0 +1,7 @@
+{
+  "evidenceHead": "d7279fcb76f9367cc35630826b02b271cdd8e31a",
+  "runtimeRevision": "4aa2d46dadc6793e20159cf0a43316c14890d7d8",
+  "coreSHA256": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f",
+  "reuse": "Existing corrected R225 nonincremental freeze, normalized568source proof revalidated in R227; cached full deliveryGREEN42953725339. No restored source or unchanged rebuild.",
+  "dispatchPhysicalSHA256": "2bc3af2a43470a4958ba798dc84271b9579e21b0b94602183a167a5885c23eb3"
+}

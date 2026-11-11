@@ -1,0 +1,164 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 0ff84127..6643e784 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -19,9 +19,11 @@ internal sealed partial class LythonRuntime
+             pending = default;
+             pendingSpan = default;
+             var instructions = execution.Code.Instructions;
+-            while (execution.InstructionIndex < instructions.Length)
++            // Linearize terminates every block explicitly, including empty
++            // modules. Falling off the array is a compiler defect, not another
++            // successful completion path. The managed array access stays checked.
++            while (true)
+             {
+-                var jumped = false;
+                 ref readonly var instruction = ref instructions[execution.InstructionIndex];
+                 scope.State.CheckExecution(instruction.Span);
+                 try
+@@ -152,23 +154,26 @@ internal sealed partial class LythonRuntime
+                             break;
+                         case ExecutableOpCode.MakeSet or ExecutableOpCode.MakeDict or ExecutableOpCode.MatchCase:
+                             if (invocation is null) return InstructionPause.ContextRequired;
+-                            jumped = invocation!.ExecuteStructure(instruction);
++                            if (invocation!.ExecuteStructure(instruction)) goto TakenBranch;
+                             break;
+                         case ExecutableOpCode.ResolveContextManager or ExecutableOpCode.EnterContextManager or ExecutableOpCode.ExitContextManager:
+                             if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (!asynchronous) jumped = invocation!.ExecuteStructure(instruction);
++                            if (!asynchronous)
++                            {
++                                if (invocation!.ExecuteStructure(instruction)) goto TakenBranch;
++                            }
+                             else
+                             {
+                                 pending = invocation!.ExecuteContextManagerAsync(instruction);
+                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                jumped = ConsumeOperation(ref pending);
++                                if (ConsumeOperation(ref pending)) goto TakenBranch;
+                             }
+                             break;
+                         case ExecutableOpCode.CompareJumpIfFalse:
+                             var comparisonPause = ExecuteComparisonInstruction(ref execution, scope, invocation, instruction, asynchronous,
+                                 out pending, out pendingSpan);
+                             if (comparisonPause != InstructionPause.Continue) return comparisonPause;
+-                            jumped = ConsumeOperation(ref pending);
++                            if (ConsumeOperation(ref pending)) goto TakenBranch;
+                             break;
+                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or ExecutableOpCode.Subscript
+                             or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
+@@ -184,16 +189,19 @@ internal sealed partial class LythonRuntime
+                                 {
+                                     _ = execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
+                                     execution.InstructionIndex = instruction.TargetIndex;
+-                                    jumped = true;
++                                    goto TakenBranch;
+                                 }
+                             }
+                             else if (invocation is null) return InstructionPause.ContextRequired;
+-                            else if (!asynchronous) jumped = invocation!.ExecuteForNext(instruction);
++                            else if (!asynchronous)
++                            {
++                                if (invocation!.ExecuteForNext(instruction)) goto TakenBranch;
++                            }
+                             else
+                             {
+                                 pending = invocation!.ExecuteForNextAsync(instruction);
+                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                jumped = ConsumeOperation(ref pending);
++                                if (ConsumeOperation(ref pending)) goto TakenBranch;
+                             }
+                             break;
+                         case ExecutableOpCode.Call:
+@@ -243,12 +251,14 @@ internal sealed partial class LythonRuntime
+                             if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
+                                 return InstructionPause.ContextRequired;
+                             if (!asynchronous || condition is not PyInstance)
+-                                jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
++                            {
++                                if (ExecuteControlFlow(ref execution, scope, invocation, instruction)) goto TakenBranch;
++                            }
+                             else
+                             {
+                                 pending = invocation!.ExecuteConditionalJumpAsync(instruction);
+                                 if (!pending.IsCompleted) return PauseOperation(instruction.Span, out pendingSpan);
+-                                jumped = ConsumeOperation(ref pending);
++                                if (ConsumeOperation(ref pending)) goto TakenBranch;
+                             }
+                             break;
+                         case ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.MatchException or
+@@ -256,17 +266,20 @@ internal sealed partial class LythonRuntime
+                              ExecutableOpCode.EndFinally or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone:
+                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
+                                 return InstructionPause.ContextRequired;
+-                            jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
+-                            if (execution.ReturnValue is not null)
++                            if (ExecuteControlFlow(ref execution, scope, invocation, instruction))
+                             {
+-                                // Keep the returning instruction/span current and
+-                                // finish queued native disposal before leaving.
+-                                if (asynchronous && execution.Stack.HasPendingDisposals)
++                                if (execution.ReturnValue is not null)
+                                 {
+-                                    pending = new(jumped);
+-                                    return InstructionPause.Disposal;
++                                    // Keep the returning instruction/span current
++                                    // until queued native disposal has finished.
++                                    if (asynchronous && execution.Stack.HasPendingDisposals)
++                                    {
++                                        pending = new(true);
++                                        return InstructionPause.Disposal;
++                                    }
++                                    return InstructionPause.Boundary;
+                                 }
+-                                return InstructionPause.Boundary;
++                                goto TakenBranch;
+                             }
+                             break;
+                         default:
+@@ -277,12 +290,12 @@ internal sealed partial class LythonRuntime
+                 {
+                     if (invocation is null) throw;
+                     if (!invocation.TryRouteReturn(signal, instruction.Span)) return InstructionPause.Boundary;
+-                    jumped = true;
++                    goto TakenBranch;
+                 }
+                 catch (ControlSignal signal)
+                 {
+                     if (invocation is null || !invocation.TryRouteControl(signal, instruction.Span)) throw;
+-                    jumped = true;
++                    goto TakenBranch;
+                 }
+                 catch (LythonRuntimeException error)
+                 {
+@@ -293,17 +306,26 @@ internal sealed partial class LythonRuntime
+                         throw;
+                     }
+                     if (!invocation.TryRouteRuntimeException(error, instruction.Span)) throw;
+-                    jumped = true;
++                    goto TakenBranch;
++                }
++
++                if (asynchronous && execution.Stack.HasPendingDisposals)
++                {
++                    pending = new(false);
++                    return InstructionPause.Disposal;
+                 }
++                execution.InstructionIndex++;
++                continue;
+ 
++            TakenBranch:
++                // Only taken control/exception routes skip advancement. Preserve
++                // the original instruction until its pending cleanup completes.
+                 if (asynchronous && execution.Stack.HasPendingDisposals)
+                 {
+-                    pending = new(jumped);
++                    pending = new(true);
+                     return InstructionPause.Disposal;
+                 }
+-                if (!jumped) execution.InstructionIndex++;
+             }
+-            return InstructionPause.Boundary;
+         }
+ 
+         private static InstructionPause PauseOperation(LythonSourceSpan span, out LythonSourceSpan? pendingSpan)

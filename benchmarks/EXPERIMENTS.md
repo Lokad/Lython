@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R228 dispatch completion prototype](results/2026-11-11-dispatch-completion-withdrawn/README.md)
+is fully withdrawn. It removes a generic jump flag/implicit completion but adds22net
+routing lines and preserves the necessary disposal protocol. Allocation flat across
+six complete scripts; all adverse/variable desktop clocks retained, no CPU claim or
+quiet campaign.1046internal/3483public eachtarget pass; exact qualified4aa restored,
+forced rebuild and62internal/119public eachtarget pass. No partial branch rescue or
+architecture-only tests remain. Continue with uncovered complete patch workloads.
+
 The [R227 current helper prefix](results/2026-11-11-current-helper-prefix/README.md)
 uses qualified4aa/9ee7 after R225:1166guest samples/4.37%unknown, unique same-process
 Tier1 extent matches274prefix self samples. Zero materializingSplitCore stacks;
