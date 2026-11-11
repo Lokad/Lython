@@ -70,7 +70,7 @@ No RSS, pending-I/O latency or embedding tail-latency claim follows.
 [async raw data](warm-async/measurements.json), [async medians](warm-async/summary.json),
 [compilation raw data](compile/measurements.json), [compilation medians](compile/summary.json).
 [Source/image identity](source-identity.json), [common-image proof](diagnostic-identity.json),
-[exact measured patch](measured-source.patch),
+the exact `measured-source.patch` in the preparation archive,
 [frozen cores, driver, source, logs and all failed conditions](preparation.tar.xz),
 [archive identity](archive-identity.json). Original capability-test failure and
 setup mistakes remain explicit in [setup corrections](setup-corrections.md).
