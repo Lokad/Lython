@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R230 prepared-range prototype](results/2026-11-11-prepared-split-ranges-withdrawn/README.md)
+is fully withdrawn. Retaining private split boundaries removes a repeated scan
+but adds a range allocation/copy,20net lines and admitted replacement overlap.
+Text allocation+8.48–9.11%, accounted execution peaks+163,840B; desktop elapsed
+mixed/adverse with moving controls, no CPU claim. Candidate and exactly restored
+qualified4aa each pass45internal/263public checks per actual target; restored
+nonincremental build20.05s/zero warnings/errors. All original preparation failure,
+raw clocks, source/cores and tests survive. No tiers/cache/pool or quiet campaign;
+withdraw for the storage/construction tradeoff, not a fixed percentage veto.
+
 The [R229 patch-generation workload](results/2026-11-11-patch-workflow/README.md)
 adds a complete UTF-8 two-file unified-diff/write job to the existing catalog,
 with independent exact patch goldens at0/16/1024lines.83file-workerchecks pass per

@@ -1,0 +1,7 @@
+{
+  "exactPhysicalSourceRestored": true,
+  "allProductionSourcesEqualQualified4aa": true,
+  "guardedCandidateSHA256": "21fc1898245f8e39c41fa29b12a03a281f79ca6ccbccceffd3822fc0cd23dd5d",
+  "restoredSHA256": "d1e11fa06e418b35d2ea8442450ebe457628b496e31bc6b606facb86076e5ae9",
+  "forcedNonincrementalBuildRequiredBeforeNoBuildChecks": true
+}

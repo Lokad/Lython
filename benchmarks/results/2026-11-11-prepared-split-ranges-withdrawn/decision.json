@@ -1,0 +1,15 @@
+{
+  "status": "Withdraw whole one-file prepared-range prototype; restore exact fully qualified4aa production source. No new runtime mechanism or architecture test remains.",
+  "hypothesis": "Reuse the first private casing/whitespace sizing pass to retain immutable ranges instead of rescanning during immediate iteration. Existing collector, reservation, final fragment writer and eager all-word admission reused.",
+  "architecturalOutcome": "A second scan disappears, but a per-input range-array allocation/copy and additional scratch/final replacement overlap appear. Twenty net source lines added; the complete construction/lifetime pipeline is not simplified.",
+  "allocationOutcome": "Complete captured-helper text allocation +8.48\u20138.49%, ordinary text +9.11% through both APIs; text estimated execution-allowance peaks +163840B (about9.85%), not CLR/RSS. This gives back more allocation than R225 saved while retaining list avoidance.",
+  "elapsedOutcome": "Desktop complete-script clocks mixed/adverse and unchanged controls moving. Captured text sync envelope +5.98..+7.17% with1.11% control spread; async +1.19..+4.75% with3.41% spread. Ordinary text sync -2.56..+.64%, async -.14..+2.75%. No CPU regression, equivalence or gain attribution.",
+  "decisionReason": "The measured added storage plus array/copy construction has no demonstrated compensating whole-script benefit. Withdraw before adding inline tiers, pools, caches or more special cases. No fixed percentage acceptance rule or permanent ban on a different coherent bulk-text design.",
+  "qualification": "Candidate and restored45internal/263public focused checks per actual.NET11/.NET10; fresh nonincremental builds20.76s/20.05s withzero warnings/errors. Cached full runtime4aa qualification unchanged; no repeated platform/package cycle or new VM collection.",
+  "restoredCoreSHA256": {
+    "net11.0": "86a5aff93a404ff8df4d972af263d48391698377776377614315671372326662",
+    "net10.0": "e9c6557c906934d3682e137e3cbde01433d01af2ce2414e5982bed011af07a1b"
+  },
+  "limitations": "Local source-pair allocation is precise; elapsed diagnostic only. Compilation source unchanged/allocation flat, variable clocks retained. No quiet confirmation or CPU gain claimed. First driver start omitted a required hash-witness input and failed before image creation/warmup/timing; original condition and corrected unchanged input survive.",
+  "broaderObjective": "Complete-script performance objective remains active; reassess complete call/frame/operand construction from the existing current-source profile rather than adding another narrow scan fast path."
+}
