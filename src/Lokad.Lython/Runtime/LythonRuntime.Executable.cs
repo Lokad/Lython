@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
     {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
-        // is needed for nonmirrored executable functions.
+        // is needed for executable functions, including mirrored namespaces.
         var entry = codeObject.Instructions;
         var span = entry.Length == 0 ? null : entry[0].Span;
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);

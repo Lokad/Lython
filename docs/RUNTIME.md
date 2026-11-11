@@ -479,12 +479,15 @@ Eligible functions and ordinary methods defer lexical contexts independently of
 signature shape. Owner binding alone does not require a context; lexical class
 cells, implicit `super`, captured local cells and protected bodies keep their
 scope machinery.
-Mirrored/lowered calls and callbacks retain their general entry. Type subscription uses
+Lowered calls and callbacks retain their general entry. Type subscription uses
 that chain for executable `__class_getitem__` methods and raw descriptor `__get__`
 methods, followed by the getter's callable result. Each invocation owns its
 value array until its body and awaited cleanup finish. Local bindings occupy its
-prefix and temporary operands its suffix; binding writes directly into that
-storage where locals need no mirroring. Suspended callers retain their operands.
+prefix and temporary operands its suffix; every compiled function binds directly
+into that storage, including functions requiring namespace mirroring. Mirrored
+namespaces copy values for their class, closure and lowered readers; they never
+borrow the reusable array. Mirrored functions retain their scope context.
+Suspended callers retain their operands.
 Ownership admits the fixed whole-frame capacity and fresh cell/control storage
 before construction and retains them through suspension. A cache-eligible member
 lookup admits its frame's table before descriptor or protocol effects. Instances,
@@ -526,7 +529,9 @@ finish. Insufficient idle capacity is relinquished before one new admission, wit
 no retry after refusal. Resource cleanup ends idle reuse and refunds
 the cache; later active returns release their own charge. All nonempty function
 buffers, including small calls and generated dataclass methods, use this admission.
-Idle retention can reject tight shared allowances earlier. No workspace crosses
+The entire compiled capacity is admitted before binding, including for mirrored
+functions; it can remain idle in this cache after the call. Idle retention and
+earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
 Each call opcode reads its evaluated target once and offers it to the executable
 frame runner. Other calls share native/general target selection and completed

@@ -132,13 +132,17 @@ public sealed class FunctionWorkspaceOwnershipTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    [Fact]
-    public void LogicalBindingsAndRetainedAliasesRemainSeparateFromLoanCapacity()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LogicalBindingsAndRetainedAliasesRemainSeparateFromLoanCapacity(bool mirrored)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);
         using var owner = budget.CreateScope();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = owner });
-        var frontend = LythonFrontend.Compile("namespace=globals()\ndef identity(value):return value\n");
+        var frontend = LythonFrontend.Compile(mirrored
+            ? "namespace=globals()\ndef identity(value):\n class Snapshot:\n  saved=value\n return Snapshot.saved\n"
+            : "namespace=globals()\ndef identity(value):return value\n");
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
         LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
         var function = Assert.IsType<PyExecutableFunction>(context.Variables["identity"]);
@@ -151,6 +155,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         governor.ReturnFunctionWorkspace(previous, previous.Length);
         var bound = function.BindPositionalOperands([retained], Span, context);
         Assert.Equal(1, bound.Assigned.Length);
+        Assert.True(bound.Values.Length >= function.CodeObject.ValueStorageCapacity);
         Assert.Same(retained, bound.Values[0]);
         Assert.All(bound.Values.Skip(1), value => Assert.Null(value));
         var charge = MemoryGovernor.FunctionWorkspaceBytes(bound.Values.Length);

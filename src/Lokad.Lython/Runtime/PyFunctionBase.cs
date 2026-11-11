@@ -59,8 +59,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     internal bool SupportsPositionalBinding { get; }
 
-    // Remaining lowered/mirrored opcode calls bind invocation-owned values.
-    // Nonmirrored executable calls use the linear runner, including its native
+    // Lowered opcode calls and callbacks bind invocation-owned values.
+    // Executable calls use the linear runner, including its native
     // operand borrow; callbacks can still complete natively after binding below.
     internal object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)

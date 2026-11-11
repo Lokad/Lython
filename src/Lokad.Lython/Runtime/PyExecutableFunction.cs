@@ -37,11 +37,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         ScopeDirectiveFacts scopeFacts,
         PythonCallableKind callableKind = PythonCallableKind.Function)
         : base(name, parameterLayout, closure, defaultValues, scopeFacts, callableKind,
-            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.ValueStorageCapacity)
+            storageCapacity: codeObject.ValueStorageCapacity)
     {
         _codeObject = codeObject;
         _closureCells = closureCells;
-        SupportsDirectPositional = ArgumentsAreLocals && SupportsPositionalBinding;
+        SupportsDirectPositional = SupportsPositionalBinding;
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
@@ -49,8 +49,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal bool SupportsDirectPositional { get; }
     // Compiler parameter slots are the binding-layout prefix. The invocation
     // owns the full local-capacity array through completion. Captures use
-    // separate cells; exposed locals copy values, never this array.
-    internal bool ArgumentsAreLocals => !_codeObject.RequiresLocalVariableMirroring;
+    // separate cells; mirrored namespaces and exposed locals copy values,
+    // never this array.
 
     internal ExecutableCodeObject CodeObject => _codeObject;
     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
@@ -60,7 +60,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // Scope-sensitive operations still promote before observing their namespace.
     // Owner binding alone adds no namespace requirement; lexical class-cell
     // facts below retain the context needed by __class__ and implicit super.
-    internal bool CanDeferInvocationContext => ArgumentsAreLocals &&
+    internal bool CanDeferInvocationContext => !_codeObject.RequiresLocalVariableMirroring &&
         !_codeObject.ScopeFacts.RequiresClassCell &&
         _codeObject.CapturedLocalSlots.Count == 0 &&
         _codeObject.ExceptionRegions.Count == 0 &&
@@ -129,7 +129,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this)
+        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, true, span, this)
             ?? PyNone.Instance;
     }
 
@@ -142,7 +142,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
             return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
-            _codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this).ConfigureAwait(false)
+            _codeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
             ?? PyNone.Instance;
     }
 }

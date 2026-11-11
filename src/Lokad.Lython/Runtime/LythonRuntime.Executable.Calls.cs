@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
                 function = method;
                 receiver = bound.Receiver;
             }
-            if (function is not { ArgumentsAreLocals: true }) return false;
+            if (function is null) return false;
             _pendingCallSite = site;
             _pendingFunction = function;
             _pendingReceiver = receiver;
@@ -349,8 +349,7 @@ internal sealed partial class LythonRuntime
                             // A deferred prefix can write locals without ever
                             // creating a frame. Clear the compiler workspace,
                             // not only its parameter prefix, before caching it.
-                            if (bound.Values is not null) ReturnBoundArguments(bound,
-                                function.ArgumentsAreLocals ? function.CodeObject.ValueStorageCapacity : bound.Assigned.Length);
+                            if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.ValueStorageCapacity);
                             frame?.DetachExecutableExecution();
                         }
                     }

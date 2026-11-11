@@ -248,7 +248,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal bool TryGetExecutableInitializer([MaybeNullWhen(false)] out PyExecutableFunction initializer)
     {
         if (TryLookupInMro("__init__", 0, out var value, out _) &&
-            value is PyExecutableFunction { ArgumentsAreLocals: true } function)
+            value is PyExecutableFunction function)
         {
             initializer = function;
             return true;

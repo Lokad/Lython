@@ -84,6 +84,12 @@ admission reentry during a real compiled helper and refusal during cleanup.
 Both APIs preserve the first failure and keep retained data and cached storage
 funded until their owner ends; the failed refund cannot return storage twice.
 
+[Mirrored function lifetimes](Lokad.Lython.PublicApi.Tests/MirroredFunctionLifetimeTests.cs)
+exercise positional, variadic and keyword binding, local classes, escaping closures
+and compiled initializers. Pending reads retain their inputs through cancellation;
+refusal remains terminal despite suppression and `finally` returns. Later commands
+reuse the shared allowance after cleanup without corrupting retained aliases.
+
 [Guest integer regressions](Lokad.Lython.PublicApi.Tests/GuestIntegerRepresentationTests.cs)
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.
