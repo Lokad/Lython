@@ -210,8 +210,10 @@ and return the shared allowance after awaited cleanup. Capture materialization
 also checks terminal admission refusal through immediate and exposed methods.
 
 [Regex scalar positions](Lokad.Lython.PublicApi.Tests/RegexScalarCursorTests.cs)
-check consecutive Unicode lookbehind/lookahead, callbacks and original windows
-against independent Python output. [Active projection cancellation](Lokad.Lython.Tests/RegexScalarCursorCancellationTests.cs)
+check consecutive Unicode lookbehind/lookahead, retained matches read after cursor
+closure and in reverse order, callbacks and original windows against independent
+Python output. Reversed Match windows use the cooperating-provider contract and
+the adapter's explicit capability test. [Active projection cancellation](Lokad.Lython.Tests/RegexScalarCursorCancellationTests.cs)
 keeps its subject/captures funded until the scan actually ends, preserves the
 unpublished cursor on cancellation and verifies shared-budget reuse.
 

@@ -13,7 +13,7 @@ namespace Lokad.Lython.Tests;
 public sealed class RegexScalarCursorCancellationTests
 {
     private static readonly LythonSourceSpan Span = new(13, 4, 2, 6);
-    private delegate void Project(SubjectRange range, Capture[] captures, ref Position previous,
+    private delegate void Project(SubjectRange range, Capture[] captures, ref Position previous, Span<long> coordinates,
         Context context, LythonSourceSpan span);
     private static readonly Project ProjectCaptures = typeof(LythonRuntime)
         .GetNestedType("RegexMatcher", BindingFlags.NonPublic)!
@@ -35,7 +35,7 @@ public sealed class RegexScalarCursorCancellationTests
             var small = PyString.FromString("ααα", context.MemoryGovernor, Span);
             var warm = new Position(4, 2);
             ProjectCaptures(new(small, 0, 3), [new(4, 6, -1, -1), new(2, 4, -1, -1)],
-                ref warm, context, Span);
+                ref warm, new long[4], context, Span);
 
             var byteLength = checked(2 * (characters + 2));
             using var inputStorage = context.MemoryGovernor.ReserveTemporary(
@@ -54,13 +54,14 @@ public sealed class RegexScalarCursorCancellationTests
             };
             scratch.Commit(512);
             var previous = new Position(2 * characters, characters);
+            var coordinates = new long[2 * captures.Length];
             var original = previous;
             var baseline = budget.ReservedBytes;
             using var started = new ManualResetEventSlim();
             var run = Task.Factory.StartNew(() =>
             {
                 started.Set();
-                ProjectCaptures(new(text, 0, characters + 2), captures, ref previous, context, Span);
+                ProjectCaptures(new(text, 0, characters + 2), captures, ref previous, coordinates, context, Span);
             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             try
             {

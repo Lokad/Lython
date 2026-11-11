@@ -14,7 +14,6 @@ internal sealed partial class LythonRuntime
         private readonly LythonSourceSpan _span;
         private RegexMatcher.PreparedSubject? _subject;
         private ILythonRegexCursor? _cursor;
-        private RegexScalarPosition _position;
         private bool _finished;
         internal PyRegexFindIterator? NextResource;
 
@@ -38,7 +37,7 @@ internal sealed partial class LythonRuntime
                     _context.State.TrackRegexIterator(this);
                 }
                 if (!_subject.Next(_cursor!)) { Dispose(); return false; }
-                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, ref _position, _context, _span);
+                value = RegexMatcher.CreateMatchObject(_pattern, _range, _subject, _context, _span);
                 return true;
             }
             catch { Dispose(); throw; }
