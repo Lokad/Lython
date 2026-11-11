@@ -73,8 +73,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     internal bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
         bool consumedByIteration, out object result)
     {
-        // Closed native bodies cannot observe a function namespace or suspend.
-        // Compiler capture facts, not lexical nesting alone, establish closure.
+        // Proven bodies cannot inspect their invocation namespace or suspend.
+        // Incoming reads/writes retain their definition-owned cell identities.
         // Class/annotation contexts keep their existing lexical machinery.
         // Handler aliases belong to the caller: this closed body never binds or
         // unwinds them, and exception state is shared with the ordinary frame.
@@ -83,7 +83,34 @@ internal sealed class PyExecutableFunction : PyFunctionBase
             result = PyNone.Instance;
             return false;
         }
-        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result, consumedByIteration);
+        return _codeObject.NativeBody!.ClosureInputCount == 0
+            ? LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, Name, span, out result, consumedByIteration)
+            : TryExecuteCapturedNativeBody(arguments, span, consumedByIteration, out result);
+    }
+
+    // Reuse the existing managed native-input buffer only for captured bodies.
+    // Cell references follow actual parameters; they are not value snapshots or
+    // bindings for unbound locals. The definition keeps them funded throughout.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private bool TryExecuteCapturedNativeBody(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+        bool consumedByIteration, out object result)
+    {
+        var closureCount = _codeObject.NativeBody!.ClosureInputCount;
+        if (_closureCells.Count != closureCount || arguments.Length > NativeParameterCapacity - closureCount)
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+        NativeParameters buffer = default;
+        Span<object> inputs = buffer;
+        inputs = inputs[..(arguments.Length + closureCount)];
+        try
+        {
+            for (var i = 0; i < arguments.Length; i++) inputs[i] = arguments[i]!;
+            for (var i = 0; i < closureCount; i++) inputs[arguments.Length + i] = _closureCells[i];
+            return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, inputs, Name, span, out result, consumedByIteration);
+        }
+        finally { inputs.Clear(); }
     }
 
     private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
@@ -94,7 +121,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     // Wide/external-default/protocol calls keep their admitted owned binding.
     private const int NativeParameterCapacity = 16;
     internal bool CanBindNativeArguments => CanExecuteNativeBody
-        && BindingPlan.ParameterCount <= NativeParameterCapacity
+        && BindingPlan.ParameterCount <= NativeParameterCapacity - _codeObject.NativeBody!.ClosureInputCount
         && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
         && BindingPlan.PositionalDefaults is null or PyTuple
         && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);

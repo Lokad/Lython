@@ -614,13 +614,13 @@ so an earlier type proof cannot authorize a later cast.
 Adjacent local stores/loads can forward their
 value inside the native proof when no later read needs that binding. Original
 instructions and local metadata remain intact for dynamic behavior and inspection.
-Custom protocols, captures, observable locals and
+Custom protocols, unproven captured effects, observable locals and
 possible suspension keep the full executable path. Callee lookup observes current
 name/builtin rebinding. No alternate execution begins after native work or refused
 admission. Both paths share the existing operations, cancellation and ownership.
 Synchronous calls, asynchronous calls and native return expressions share unary
 builtin selection; ordinary calls keep broader protocol/error behavior while
-native returns require a closed result proof.
+native returns require a complete result/effect proof.
 Eligible helpers begin with their owned local/operand storage and existing
 incoming cells in the same instruction dispatch, without an invocation context.
 Cell reads observe live values directly from that work state; unbound reads keep

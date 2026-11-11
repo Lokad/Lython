@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
     {
         result = PyNone.Instance;
         var body = codeObject.NativeBody;
-        if (body is null || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+        if (body is null || body.ClosureInputCount != 0 || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
             || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
         if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
     // uses the ordinary executable engine; actual work never falls back/retries.
     private static bool GuardNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
         ReadOnlySpan<object?> arguments, ExecutionContext context)
-        => body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _);
+        => arguments.Length >= body.ClosureInputCount && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
 
     private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
         ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan,
@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
         if (source < 0) { value = code.Constants[~source]; return true; }
         if (source < code.FirstTemporarySlot)
         {
-            var bound = (uint)source < (uint)arguments.Length;
+            var bound = (uint)source < (uint)(arguments.Length - code.NativeBody!.ClosureInputCount);
             value = bound ? arguments[source] : null;
             return bound;
         }
@@ -160,6 +160,12 @@ internal sealed partial class LythonRuntime
                 if (!TryReadNativeOperand(code, value.Instruction, arguments, context, out var input)) return false;
                 shape = ReturnShape(input);
                 return true;
+            case NativeReturnOperation.StoreClosure:
+                var slot = value.Instruction.ClosureSlot;
+                return TryReadNativeCell(code, arguments, slot, out var cell)
+                    && cell.CanStoreThroughOwner
+                    && GuardNativeReturn(value.First, code, values, arguments, context, out _)
+                    && GuardNativeReturn(value.Second, code, values, arguments, context, out shape);
             case NativeReturnOperation.ConvertFormat or NativeReturnOperation.FormatValue:
                 shape = NativeReturnShape.String;
                 return GuardNativeFormattedValue(value.First, code, values, arguments, context);
@@ -181,9 +187,14 @@ internal sealed partial class LythonRuntime
         if (!GuardNativeReturn(value.First, code, values, arguments, context, out var first)) return false;
         switch (value.Operation)
         {
-            case NativeReturnOperation.Binary:
+            case NativeReturnOperation.Binary or NativeReturnOperation.Augmented:
                 if (!GuardNativeReturn(value.Second, code, values, arguments, context, out var right)) return false;
-                return TryGetNativeBinaryShape(value.Instruction.BinaryOperator, first, right, out shape);
+                if (value.Operation == NativeReturnOperation.Augmented &&
+                    (first is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean)
+                    || right is not (NativeReturnShape.Integer or NativeReturnShape.Float or NativeReturnShape.Boolean))) return false;
+                return TryGetNativeBinaryShape(value.Operation == NativeReturnOperation.Augmented
+                    ? AugmentedBinaryOperator(value.Instruction.AugmentedOperator) : value.Instruction.BinaryOperator,
+                    first, right, out shape);
             case NativeReturnOperation.Subscript:
                 return GuardNativeReturn(value.Second, code, values, arguments, context, out var key)
                     && first == NativeReturnShape.Dictionary && key == NativeReturnShape.String;
@@ -276,6 +287,16 @@ internal sealed partial class LythonRuntime
             return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
         ref readonly var value = ref values[index - code.FirstTemporarySlot];
         var instruction = value.Instruction;
+        if (value.Operation == NativeReturnOperation.StoreClosure)
+        {
+            var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+            context.State.CheckExecution(instruction.Span);
+            ((ExecutableCell)arguments[arguments.Length - code.NativeBody!.ClosureInputCount + instruction.ClosureSlot]!).StoreThroughOwner(stored);
+            var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
+                consumedByIteration);
+            CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
+            return result;
+        }
         if (value.Operation == NativeReturnOperation.Conditional)
         {
             var condition = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
@@ -295,7 +316,7 @@ internal sealed partial class LythonRuntime
                     context, consumedByIteration); }
                 catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
             }
-            if (value.Operation is NativeReturnOperation.Binary or NativeReturnOperation.Subscript)
+            if (value.Operation is NativeReturnOperation.Binary or NativeReturnOperation.Augmented or NativeReturnOperation.Subscript)
                 second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
             else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.EndsWith)
             {
@@ -321,6 +342,11 @@ internal sealed partial class LythonRuntime
                     return RuntimeValue(operand);
                 case NativeReturnOperation.Binary:
                     return EvaluateBinaryOperator(instruction.BinaryOperator, first!, second!, context, instruction.Span);
+                case NativeReturnOperation.Augmented:
+                    // The whole-body proof accepts only exact builtin numeric
+                    // operands. Preserve the existing in-place operator errors
+                    // without repeating protocol selection after that proof.
+                    return EvaluateAugmentedBuiltin(first!, second!, instruction.AugmentedOperator, context, instruction.Span);
                 case NativeReturnOperation.Subscript:
                     return ReadSubscriptValue(first!, second!, instruction.Span, context);
                 case NativeReturnOperation.ConvertFormat:
@@ -369,11 +395,28 @@ internal sealed partial class LythonRuntime
             var name = codeObject.Names[instruction.NameIndex];
             return TryResolveExecutableGlobal(name, context, out value);
         }
+        if (instruction.OpCode == ExecutableOpCode.LoadClosure)
+        {
+            var slot = instruction.ClosureSlot;
+            value = TryReadNativeCell(codeObject, arguments, slot, out var cell) ? cell.Value : null;
+            return value is not null;
+        }
         var index = instruction.LocalSlot;
-        var bound = (uint)index < (uint)arguments.Length;
+        var bound = (uint)index < (uint)(arguments.Length - codeObject.NativeBody!.ClosureInputCount);
         value = bound ? arguments[index] : null;
         // Unbound locals must fail through the original LoadLocal operation.
         return bound;
+    }
+
+    // Incoming references follow the real parameter prefix, not its unbound
+    // local slots. Keep cells live so reads still observe their actual owner.
+    private static bool TryReadNativeCell(ExecutableCodeObject code, ReadOnlySpan<object?> arguments,
+        int slot, [MaybeNullWhen(false)] out ExecutableCell cell)
+    {
+        var count = code.NativeBody!.ClosureInputCount;
+        var start = arguments.Length - count;
+        cell = start >= 0 && (uint)slot < (uint)count ? arguments[start + slot] as ExecutableCell : null;
+        return cell is not null;
     }
 
     private static void RestoreNativeReturnException(ExecutionContext context, PyException? entryException,

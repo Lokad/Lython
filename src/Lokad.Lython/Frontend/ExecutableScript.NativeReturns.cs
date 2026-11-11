@@ -8,7 +8,7 @@ internal sealed partial class ExecutableCodeObject
         int entryBlock, int exceptionRegionCount, ExecutableCallSite[] sites)
     {
         if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
-            || ClosureNames.Count != 0 || exceptionRegionCount != 0)
+            || exceptionRegionCount != 0)
             return null;
         if (blocks.Count == 1 && blocks[0].InstructionArray is [{ OpCode: ExecutableOpCode.ReturnNone }])
             return ExecutableNativeBody.ReturnNone;
@@ -28,9 +28,10 @@ internal sealed partial class ExecutableCodeObject
         var values = new List<NativeReturnValue>();
         var hasConditional = false;
         var readsFormatStorage = false;
+        var hasIncomingCells = false;
         var proof = Compile(entryBlock, 0, false, null, 0);
         if (proof is null || hasConditional && readsFormatStorage) return null;
-        return new(values.ToArray(), proof.Value.Root - FirstTemporarySlot);
+        return new(values.ToArray(), proof.Value.Root - FirstTemporarySlot, hasIncomingCells ? ClosureNames.Count : 0);
 
         (int Root, int Depth)? Compile(int block, int firstInstruction, bool hasEffects,
             HashSet<int>? forwardedLocals, int controlDepth)
@@ -112,11 +113,28 @@ internal sealed partial class ExecutableCodeObject
                         // Unresolved lexical lookup needs an invocation context.
                         // Only explicit globals have the native module semantics.
                         return null;
+                    case ExecutableOpCode.LoadClosure:
+                        if (hasEffects) return null;
+                        hasIncomingCells = true;
+                        break;
                     case ExecutableOpCode.LoadGlobal:
                         // Earlier native work can invoke host admission. A later
                         // mutable lookup cannot rely on the entry type proof.
                         if (hasEffects) return null;
                         break;
+                    case ExecutableOpCode.StoreClosure:
+                        // The actual incoming cell remains the write target.
+                        // Later mutable reads cannot be proved before this store
+                        // or any admission performed while producing its value.
+                        if (stack.Count != 1 || stack[0].Member is not null) return null;
+                        hasIncomingCells = true;
+                        var stored = stack[0];
+                        var continuation = Compile(block, index + 1, true, forwardedLocals, controlDepth + 1);
+                        if (continuation is null) return null;
+                        var sequenceDepth = 1 + Math.Max(stored.Depth, continuation.Value.Depth);
+                        if (sequenceDepth > 16) return null;
+                        values.Add(new(NativeReturnOperation.StoreClosure, instruction, stored.Value, continuation.Value.Root));
+                        return (FirstTemporarySlot + values.Count - 1, sequenceDepth);
                     case ExecutableOpCode.StoreLocal:
                         // Forward the operand only inside this closed native proof.
                         // Ordinary bytecode retains both instructions and bindings
@@ -138,10 +156,18 @@ internal sealed partial class ExecutableCodeObject
                         continue;
                     case ExecutableOpCode.Binary when LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
                         LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
+                    case ExecutableOpCode.Augmented when LythonRuntime.TryGetNativeBinaryShape(
+                        LythonRuntime.AugmentedBinaryOperator(instruction.AugmentedOperator),
+                        LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
                     case ExecutableOpCode.Subscript:
                         if (instruction.OpCode == ExecutableOpCode.Subscript && hasEffects) return null;
                         if (stack.Count < 2 || stack[^1].Member is not null || stack[^2].Member is not null) return null;
-                        operation = instruction.OpCode == ExecutableOpCode.Binary ? NativeReturnOperation.Binary : NativeReturnOperation.Subscript;
+                        operation = instruction.OpCode switch
+                        {
+                            ExecutableOpCode.Binary => NativeReturnOperation.Binary,
+                            ExecutableOpCode.Augmented => NativeReturnOperation.Augmented,
+                            _ => NativeReturnOperation.Subscript,
+                        };
                         first = stack[^2].Value;
                         second = stack[^1].Value;
                         depth = 1 + Math.Max(stack[^2].Depth, stack[^1].Depth);

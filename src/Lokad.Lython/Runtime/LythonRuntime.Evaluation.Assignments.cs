@@ -734,7 +734,7 @@ internal sealed partial class LythonRuntime
             _ => null,
         };
 
-    private static BinaryOperatorSyntax AugmentedBinaryOperator(AugmentedAssignmentOperatorSyntax op)
+    internal static BinaryOperatorSyntax AugmentedBinaryOperator(AugmentedAssignmentOperatorSyntax op)
         => op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => BinaryOperatorSyntax.Add,

@@ -10,20 +10,20 @@ namespace Lokad.Lython.Frontend;
 internal enum NativeReturnOperation
 {
     Read,
-    Binary,
+    Binary, Augmented,
     Subscript,
     BuiltinUnary,
     StringMethod, BytesMethod, BooleanMethod, ListMethod,
     Split, Replace, StartsWith, EndsWith,
     CasedSplit,
     ConvertFormat, FormatValue,
-    Conditional, None, EmptySequence,
+    Conditional, None, EmptySequence, StoreClosure,
 }
 
 internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, ExecutableInstruction Instruction, int First, int Second,
     LythonRuntime.ReceiverMethod? Method = null, int Third = -1, LythonSourceSpan? ReturnSpan = null, LythonSourceSpan? MemberSpan = null);
 
-internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root)
+internal sealed record ExecutableNativeBody(NativeReturnValue[] Values, int Root, int ClosureInputCount = 0)
 {
     internal static readonly ExecutableNativeBody ReturnNone = new([], -1);
 }
