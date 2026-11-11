@@ -1,0 +1,7 @@
+VSTest version 18.11.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\word-materialization-r250\tests\baseline-regressions-net11.0-public.trx
+
+Passed!  - Failed:     0, Passed:    90, Skipped:     0, Total:    90, Duration: 743 ms - Lokad.Lython.PublicApi.Tests.dll (net11.0)

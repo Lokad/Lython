@@ -48,11 +48,11 @@ public sealed class DictionaryCountingLoopTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ProtocolContinuationSuspendsOnceAndJoinsCancellation(bool cancel)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task ProtocolContinuationSuspendsOnceAndJoinsCancellation(bool cancel, bool casedWords)
     {
-        const string source = """
+        var source = """
             class Value:
                 def __add__(self,other):
                     with open('/gate','a') as output: output.write('add')
@@ -64,6 +64,7 @@ public sealed class DictionaryCountingLoopTests
                 return counts
             return run()
             """;
+        if (casedWords) source = source.Replace("('a','a','b','b')", "'A A B B'.lower().split()");
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine().Compile(source, budget);
         Assert.True(script.IsValid);
@@ -93,6 +94,8 @@ public sealed class DictionaryCountingLoopTests
                 Assert.Equal(cancel ? "" : "{'a': 2, 'b': 3} 4\n", result.StandardOutput);
                 Assert.Equal(cancel ? "before:" : "before:add", host.ReadText("/gate"));
                 Assert.True(host.CompletedAsynchronously > 0);
+                Assert.Equal(1, host.ClosedFileCount);
+                if (cancel) Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
             }
         }
         finally

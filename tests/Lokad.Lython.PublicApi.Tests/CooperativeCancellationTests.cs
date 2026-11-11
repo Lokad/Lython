@@ -38,6 +38,12 @@ public sealed class CooperativeCancellationTests
         => AssertActiveCancellation(asynchronous, loop, 16L * 1024 * 1024);
 
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public Task ActiveCancellationStopsRepeatedCasedHistogram(bool asynchronous)
+        => AssertActiveCancellation(asynchronous,
+            "text='ALPHA '*32768\ncounts={'alpha':0};total=0\nwhile True:\n for word in text.lower().split():counts[word]=counts.get(word,0)+1;total+=1", null);
+
+    [Theory]
     [InlineData(false, "math.factorial(2147483648)")]
     [InlineData(true, "math.factorial(2147483648)")]
     [InlineData(false, "math.comb(4294967296, 2147483648)")]

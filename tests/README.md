@@ -89,6 +89,12 @@ Pure-loop cancellation also covers repeated native histogram segments.
 Private totals also cross protocol/error boundaries and genuinely pending calls.
 Admission callbacks observe their completed value before growth is refused;
 empty-loop identity, final locals and integer promotion retain Python behavior.
+[Word bindings](Lokad.Lython.PublicApi.Tests/NativeWordBindingTests.cs) cover
+Unicode casing and whitespace, inserted-key/final-word identity, captured and
+mirrored locals, errors and promotion. Guest callbacks observe the current word
+and completed total; retained results stay funded and disposal restores the shared
+allowance. Internal cased-word refusal checks observe these bindings before the
+first denied allocation, with both public execution strategies.
 
 [Dictionary value lifetimes](Lokad.Lython.PublicApi.Tests/DictionaryValueLifetimeTests.cs)
 cover repeated-read/copy identity, old aliases, ordered removal, growth and signed

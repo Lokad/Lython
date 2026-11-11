@@ -1,0 +1,10 @@
+{
+  "baseline-regressions-net10.0-internal.log": "7893bfef0c471a4d98596e223950f1393718d55f1ffbae09b561d877f5b5122b",
+  "baseline-regressions-net10.0-public.log": "a03232c03670bf843a5ded743f76bf3d0a5b0f662f523f3c28f056d356b4d490",
+  "baseline-regressions-net11.0-internal.log": "ffe9cd0bde5142b2db6f426912bfb44564d4e5e4169787fd7adb13234f6e490d",
+  "baseline-regressions-net11.0-public.log": "26bedd0e2d8a04acd060069d9d4ef0d35625a1471ff23af892a1cbd9e74ac9a1",
+  "check-baseline-regressions.py": "2ac7e54fe148319a564317de436d85452748ef44a7afffe3a37d92c3e0f5c7d1",
+  "checks.tar.xz": "488da1e51c518c8cefe6d0b349e2941adf0f84bab22daa5fa6a9f7314172e89c",
+  "identity.json": "3a69bd14eb2e02faaedcd031e82152efe59ffe6b90319bdd5a53ec02a8767fc6",
+  "README.md": "447114f9c204555a126cf88ff41c5e3eb0880e11a51984c286772cf345e342a9"
+}

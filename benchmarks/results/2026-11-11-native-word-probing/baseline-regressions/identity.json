@@ -1,0 +1,14 @@
+{
+  "beforeCore11": "75a14f1399637646b21a0a12fcb08f8664c5c559c3a527859293083b6f54732e",
+  "beforeCore10": "382edf1bc3866fb7c25eb4937488a160fa37124dba5ac4c229a2787d40a66042",
+  "actualFrameworks": [
+    "net11.0",
+    "net10.0"
+  ],
+  "perFramework": {
+    "public": 90,
+    "internal": 8
+  },
+  "productionSourceAndBuildOutputsUnchanged": true,
+  "fullPlatformQualification": false
+}

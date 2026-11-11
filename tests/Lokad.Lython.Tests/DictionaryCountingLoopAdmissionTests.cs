@@ -79,7 +79,60 @@ public sealed class DictionaryCountingLoopAdmissionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
-    private sealed class Arm(LythonMemoryBudget budget, AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable, IDisposable
+    [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task CasedWordsPublishCompletedBindingsBeforeRefusal(bool asynchronous, bool mirrored)
+    {
+        const string source = """
+            counts=initial_counts;word=None;total=0
+            arm()
+            try:
+                for word in 'ALPHA ALPHA ECHO'.lower().split():counts[word]=counts.get(word,0)+1;total+=1
+            except MemoryError:mark()
+            finally:return 'hidden'
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook })
+            { MirrorLocalStores = mirrored };
+            var span = new LythonSourceSpan(0, 6, 1, 1);
+            var counts = new PyDict(context.MemoryGovernor, span);
+            foreach (var key in new[] { "alpha", "bravo", "café", "delta" })
+                counts.SetItem(PyString.FromString(key, context.MemoryGovernor, span), BigInteger.One);
+            context.Variables["initial_counts"] = counts;
+            using var arm = new Arm(budget, hook, waitForEcho: true);
+            var mark = new Mark();
+            context.Variables["arm"] = arm;
+            context.Variables["mark"] = mark;
+            var frontend = LythonFrontend.Compile(source);
+            Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
+            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            {
+                if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+                else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+            });
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+            Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
+            Assert.NotNull(failure.Span);
+            Assert.Equal(1, arm.Calls);
+            Assert.Equal("echo", Assert.IsType<PyString>(arm.ObservedWord).AsString());
+            Assert.Equal(new BigInteger(2), arm.ObservedTotal);
+            Assert.True(counts.TryGetValue(PyString.FromString("alpha"), out var updated));
+            Assert.Equal(new BigInteger(3), updated);
+            Assert.False(counts.TryGetValue(PyString.FromString("echo"), out _));
+            Assert.Equal(0, mark.Calls);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Null(context.CurrentExecutableFrame);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class Arm(LythonMemoryBudget budget, AdmissionHookMemoryBudget hook, bool waitForEcho = false) : LythonRuntime.ICallable, IDisposable
     {
         private ILythonMemoryReservation? _blocker;
         internal int Calls;
@@ -87,13 +140,16 @@ public sealed class DictionaryCountingLoopAdmissionTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
-            Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out _blocker));
+            if (!waitForEcho) Assert.True(budget.TryReserve(budget.LimitBytes!.Value - budget.ReservedBytes, out _blocker));
             hook.RefuseGrowth = _ =>
             {
                 // Actual admission after native counting must see the completed
                 // private segment, before refusal/unwind clears its frame.
                 Assert.True(context.CurrentExecutableFrame!.TryReadExecutableLocal("word", out var word));
                 Assert.True(context.CurrentExecutableFrame.TryReadExecutableLocal("total", out var total));
+                // Let eager word admission finish. Refuse the first actual
+                // allocation after the missing key becomes observable.
+                if (waitForEcho && (word is not PyString text || !text.Utf8Span.SequenceEqual("echo"u8))) return false;
                 ObservedWord = word;
                 ObservedTotal = total;
                 return true;
