@@ -1,0 +1,7 @@
+{"freeBytes": 264720384, "sourceAndImagesVerified": true, "sampledSeconds": 16, "ownerSeconds": 120, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=2min
+MainPID=3565086
+ActiveState=active
+
+
+Running as unit: lython-b596-word-control-profile-20261111.service; invocation ID: 447bdbc26af74ec3a0747a65344e496d

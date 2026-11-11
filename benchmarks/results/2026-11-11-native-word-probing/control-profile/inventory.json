@@ -1,0 +1,69 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261160960,
+  "requiredFreeBytes": 265281536,
+  "reclaimableBytes": 4599808,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "word-materialization-b595-20261111/observations.tgz",
+      "bytes": 2001879,
+      "sha256": "ecd3093da846f3af775d64c27bc25895ff669752a2a8d2107e3cd59cecf6e4a0",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-word-probing/quiet/observations.tgz",
+      "reason": "Terminal unused duplicate; exact committed Git bytes verified locally. Both current image roles remain protected and linked; new collection supplies its own catalog. Fresh idle/path/UID/inode/all-alias proof required.",
+      "paths": [
+        "word-materialization-b595-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844505,
+      "allocatedBytes": 2002944,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "word-materialization-b595-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-word-probing/quiet/representative.json",
+      "reason": "Terminal unused duplicate; exact committed Git bytes verified locally. Both current image roles remain protected and linked; new collection supplies its own catalog. Fresh idle/path/UID/inode/all-alias proof required.",
+      "paths": [
+        "word-materialization-b595-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844417,
+      "allocatedBytes": 868352,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "dictionary-values-b589-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/quiet/representative.json",
+      "reason": "Unused terminal duplicate catalog; fresh read-only inventory confirms it exists, exact committed Git bytes verified. Both active image roles protected; new collection supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "dictionary-values-b589-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 340726,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "known-call-binding-b587-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-known-call-binding/refined/quiet/representative.json",
+      "reason": "Unused terminal duplicate catalog; fresh read-only inventory confirms it exists, exact committed Git bytes verified. Both active image roles protected; new collection supplies own catalog. Fresh path/UID/inode/all-alias proof required.",
+      "paths": [
+        "known-call-binding-b587-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 340665,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
