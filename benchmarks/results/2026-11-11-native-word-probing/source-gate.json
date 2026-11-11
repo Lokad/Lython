@@ -1,0 +1,23 @@
+{
+  "currentProduction": "8f8628a4",
+  "inputLines": 3072,
+  "nonemptyLines": 2048,
+  "words": 6144,
+  "printedCount": 6144,
+  "uniqueWords": [
+    "alpha",
+    "beta",
+    "café",
+    "😀"
+  ],
+  "wordObjectsBytesIfMaterialized": 344064,
+  "priorCompleteAllocationBytes": 1120747.5,
+  "sourceFacts": [
+    "PyString.HashUtf8 already accepts a native UTF8 span with active cancellation/context. HashCode uses per-process state; do not assume a fixed FNV seed or transfer process timings.",
+    "PyDict.RecordKeys already contains UTF8 span lookup logic. Inspect and share a canonical table probe where applicable, without creating a retained key-layout cache for this purpose.",
+    "Compiler histogram eligibility already requires uncaptured dictionary/key local slots, constant small numeric increments and compatible protected boundaries. It preserves ordinary execution for other shapes.",
+    "A final word binding and newly inserted keys must retain actual immutable objects; duplicated-key words cannot simply be recycled. Prepaid bounded word construction may be needed before native cleanup/continuation. Prove it before prototype."
+  ],
+  "hypothesis": "Eliminate transient word objects/identity-hash wrapper work for private native histogram probes; leave general calls, returns and existing iteration carrier intact. Eventual key/binding objects remain funded and materialize before any observable continuation.",
+  "stoppingCriterion": "A complete effect/identity/funding proof using current ownership/preflight mechanisms, or a concrete obstacle. No new lifetime ledger, return handoff protocol, cache/pool or broad campaign. Then one affected/control source pair with independent semantics/cancellation/ownership checks, no speed forecast."
+}

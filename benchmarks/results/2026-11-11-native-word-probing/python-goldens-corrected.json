@@ -1,0 +1,47 @@
+[
+  {
+    "index": 0,
+    "source": "def run(text):\n counts={};total=0;word='before'\n for word in text.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n return counts,total,word\nfor text in ('ALPHA','ALPHA ALPHA ALPHA',''):\n counts,total,word=run(text)\n print(counts,total,word,next(iter(counts)) is word if counts else False)\n",
+    "expected": "{'alpha': 1} 1 alpha True\n{'alpha': 3} 3 alpha False\n{} 0 before False\n",
+    "actual": "{'alpha': 1} 1 alpha True\n{'alpha': 3} 3 alpha False\n{} 0 before False\n",
+    "stderr": "",
+    "returncode": 0,
+    "matched": true
+  },
+  {
+    "index": 1,
+    "source": "def run():\n counts={};total=0;word='before'\n for word in 'ALPHA ALPHA LONGER-THAN-INLINE ALPHA ALPHA'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n keys=list(counts)\n return counts,total,word,word is keys[0]\nprint(run())\n",
+    "expected": "({'alpha': 4, 'longer-than-inline': 1}, 5, 'alpha', False)\n",
+    "actual": "({'alpha': 4, 'longer-than-inline': 1}, 5, 'alpha', False)\n",
+    "stderr": "",
+    "returncode": 0,
+    "matched": true
+  },
+  {
+    "index": 2,
+    "source": "def run():\n counts={'a':0,'é':None};total=0;word='before'\n try:\n  for word in 'A A É'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n finally:print(counts,total,word)\ntry:run()\nexcept TypeError:print('type')\n",
+    "expected": "{'a': 2, 'é': None} 2 é\ntype\n",
+    "actual": "{'a': 2, 'é': None} 2 é\ntype\n",
+    "stderr": "",
+    "returncode": 0,
+    "matched": true
+  },
+  {
+    "index": 3,
+    "source": "def run():\n counts={'a':(1<<55)-2};total=0;word='before'\n for word in 'A A A A'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n return counts['a'],total,word\nprint(run())\n",
+    "expected": "(36028797018963970, 4, 'a')\n",
+    "actual": "(36028797018963970, 4, 'a')\n",
+    "stderr": "",
+    "returncode": 0,
+    "matched": true
+  },
+  {
+    "index": 4,
+    "source": "def run():\n counts={};total=0;word='before'\n def read():return word\n for word in 'A A B B'.lower().split():counts[word]=counts.get(word,0)+1;total+=1\n return counts,total,read() is word,locals()['word'] is word\nprint(run())\n",
+    "expected": "({'a': 2, 'b': 2}, 4, True, True)\n",
+    "actual": "({'a': 2, 'b': 2}, 4, True, True)\n",
+    "stderr": "",
+    "returncode": 0,
+    "matched": true
+  }
+]

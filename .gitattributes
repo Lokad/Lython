@@ -335,3 +335,6 @@ benchmarks/results/2026-11-11-current-construction-costs/** -text whitespace=cr-
 
 benchmarks/results/2026-11-11-native-iteration-storage/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-iteration-storage/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-11-native-word-probing/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-11-native-word-probing/**/*.patch -text -whitespace

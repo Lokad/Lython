@@ -1,0 +1,450 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.33]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1fΟΣ\x1fΣ\x1fİßﬃ\x1fAΣ’\x1fAΣ‍\x1f", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [80 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "", expected: []) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "", expected: []) [FAIL]
+[xUnit.net 00:00:02.35]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1dΟΣ\x1dΣ\x1dİßﬃ\x1dAΣ’\x1dAΣ‍\x1d", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "ΟΣΣİßﬃAΣ’AΣ‍", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1fΟΣ\x1fΣ\x1fİßﬃ\x1fAΣ’\x1fAΣ‍\x1f", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "", expected: []) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "", expected: []) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1dΟΣ\x1dΣ\x1dİßﬃ\x1dAΣ’\x1dAΣ‍\x1d", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "ΟΣΣİßﬃAΣ’AΣ‍", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1eΟΣ\x1eΣ\x1eİßﬃ\x1eAΣ’\x1eAΣ‍\x1e", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\nΟΣ\nΣ\nİßﬃ\nAΣ’\nAΣ‍\n", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1fΟΣ\x1fΣ\x1fİßﬃ\x1fAΣ’\x1fAΣ‍\x1f", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1eΟΣ\x1eΣ\x1eİßﬃ\x1eAΣ’\x1eAΣ‍\x1e", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1eΟΣ\x1eΣ\x1eİßﬃ\x1eAΣ’\x1eAΣ‍\x1e", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\nΟΣ\nΣ\nİßﬃ\nAΣ’\nAΣ‍\n", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1fΟΣ\x1fΣ\x1fİßﬃ\x1fAΣ’\x1fAΣ‍\x1f", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1eΟΣ\x1eΣ\x1eİßﬃ\x1eAΣ’\x1eAΣ‍\x1e", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "　ΟΣ　Σ　İßﬃ　AΣ’　AΣ‍　", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\vΟΣ\vΣ\vİßﬃ\vAΣ’\vAΣ‍\v", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\rΟΣ\rΣ\rİßﬃ\rAΣ’\rAΣ‍\r", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1dΟΣ\x1dΣ\x1dİßﬃ\x1dAΣ’\x1dAΣ‍\x1d", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1cΟΣ\x1cΣ\x1cİßﬃ\x1cAΣ’\x1cAΣ‍\x1c", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "　ΟΣ　Σ　İßﬃ　AΣ’　AΣ‍　", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\vΟΣ\vΣ\vİßﬃ\vAΣ’\vAΣ‍\v", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\rΟΣ\rΣ\rİßﬃ\rAΣ’\rAΣ‍\r", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1dΟΣ\x1dΣ\x1dİßﬃ\x1dAΣ’\x1dAΣ‍\x1d", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\x1cΟΣ\x1cΣ\x1cİßﬃ\x1cAΣ’\x1cAΣ‍\x1c", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " \t　", expected: []) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\vΟΣ\vΣ\vİßﬃ\vAΣ’\vAΣ‍\v", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " \t　", expected: []) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\rΟΣ\rΣ\rİßﬃ\rAΣ’\rAΣ‍\r", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1cΟΣ\x1cΣ\x1cİßﬃ\x1cAΣ’\x1cAΣ‍\x1c", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.36]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\fΟΣ\fΣ\fİßﬃ\fAΣ’\fAΣ‍\f", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " \t　", expected: []) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\vΟΣ\vΣ\vİßﬃ\vAΣ’\vAΣ‍\v", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " \t　", expected: []) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\rΟΣ\rΣ\rİßﬃ\rAΣ’\rAΣ‍\r", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\x1cΟΣ\x1cΣ\x1cİßﬃ\x1cAΣ’\x1cAΣ‍\x1c", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "　ΟΣ　Σ　İßﬃ　AΣ’　AΣ‍　", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "ΟΣΣİßﬃAΣ’AΣ‍", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\fΟΣ\fΣ\fİßﬃ\fAΣ’\fAΣ‍\f", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\tΟΣ\tΣ\tİßﬃ\tAΣ’\tAΣ‍\t", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "　ΟΣ　Σ　İßﬃ　AΣ’　AΣ‍　", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "ΟΣΣİßﬃAΣ’AΣ‍", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\tΟΣ\tΣ\tİßﬃ\tAΣ’\tAΣ‍\t", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\fΟΣ\fΣ\fİßﬃ\fAΣ’\fAΣ‍\f", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.37]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\fΟΣ\fΣ\fİßﬃ\fAΣ’\fAΣ‍\f", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [7 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\tΟΣ\tΣ\tİßﬃ\tAΣ’\tAΣ‍\t", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [FAIL]
+[xUnit.net 00:00:02.38]     Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\nΟΣ\nΣ\nİßﬃ\nAΣ’\nAΣ‍\n", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: " ΟΣ Σ İßﬃ AΣ’ AΣ‍ ", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "upper", text: "\tΟΣ\tΣ\tİßﬃ\tAΣ’\tAΣ‍\t", expected: ["ΟΣ", "Σ", "İSSFFI", "AΣ’", "AΣ‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(operation: "lower", text: "\nΟΣ\nΣ\nİßﬃ\nAΣ’\nAΣ‍\n", expected: ["ος", "σ", "i̇ßﬃ", "aς’", "aς‍"]) [< 1 ms]
+  Error Message:
+   initial global values may contain only supported scalar and collection values
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.NativeWordBindingTests.HistogramWordsPreserveUnicodeAndRetainedResults(String operation, String text, String[] expected) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\NativeWordBindingTests.cs:line 69
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\word-materialization-r250\tests\first-public.trx
+
+Failed!  - Failed:    62, Passed:   171, Skipped:     0, Total:   233, Duration: 1 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

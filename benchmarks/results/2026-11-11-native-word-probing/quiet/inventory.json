@@ -1,0 +1,74 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262107136,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 9486336,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "native-iteration-retirement-b594-20261111/candidate/Lokad.Lython.dll",
+      "bytes": 5671936,
+      "sha256": "36807fea97db5466c5ab47944b7034b436e6950b1ca1b6d1ae6961af3aaec1ca",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-iteration-storage/retirement/quiet/observations.tgz",
+      "canonicalArchiveSHA256": "f40889c16ff93e0b4bfad416f3042f6d068faf8112637c916e8eb2ba203b6a86",
+      "canonicalEntry": "current-core.dll",
+      "reason": "Withdrawn prototype image. Exact adverse observations/core/source committed ina2abcac1; fresh idle/path/UID/inode/all-alias proof required. Selected8f862 reference protected.",
+      "paths": [
+        "native-iteration-retirement-b594-20261111/current-core.dll",
+        "native-iteration-retirement-b594-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844400,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-iteration-retirement-b594-20261111/observations.tgz",
+      "bytes": 1980570,
+      "sha256": "f40889c16ff93e0b4bfad416f3042f6d068faf8112637c916e8eb2ba203b6a86",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-iteration-storage/retirement/quiet/observations.tgz",
+      "reason": "Unused terminal duplicate archive; exact committed Git bytes verified locally.",
+      "paths": [
+        "native-iteration-retirement-b594-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844481,
+      "allocatedBytes": 1982464,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-iteration-retirement-b594-20261111/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-11-native-iteration-storage/retirement/quiet/representative.json",
+      "reason": "Unused terminal duplicate catalog. New collection supplies its own catalog.",
+      "paths": [
+        "native-iteration-retirement-b594-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844417,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "dictionary-checkpoint-b590-20261111/representative.json",
+      "bytes": 957807,
+      "sha256": "f071caeb62bcc157696c7c94426fe5c16723cde12990c826403cb580ea05893e",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-cpython-checkpoint/observations.tgz",
+      "canonicalArchiveSHA256": "bd5d590687d2f7a6deb644192cf537c01c91579b9721f7f8decf999bd64e9232",
+      "canonicalEntry": "representative.json",
+      "reason": "Unused terminal duplicate catalog; exact committed archive entry. Reference image and auxiliary source remain protected.",
+      "paths": [
+        "dictionary-checkpoint-b590-20261111/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844355,
+      "allocatedBytes": 962560,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

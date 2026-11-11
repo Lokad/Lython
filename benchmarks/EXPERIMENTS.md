@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [native UTF-8 word prototype](results/2026-11-11-native-word-probing/README.md)
+retains the ordinary call/return ABI and existing owners while avoiding duplicate
+short-word objects in private histogram segments. Complete text allocation falls
+20–22%; ordinary text quiet CPU improves, captured CPU remains uncertain. B595's
+ten jobs finish278.387s with all identity/cleanup/archive gates. Async search
+elapsed+6.97..+11.60%/widerCPU+9.32..+17.04% confirms adverse desktop observations;
+CSVRun CPU remains adverse. Matching Release policy and normalized common IL
+rule out an accidental shared search-body edit, not a native-code effect. This
+prototype remains active and unpromoted while its control-regression gate is
+investigated. All original failed fixtures/inventory and adverse results survive;
+neither allocation gains nor a fixed improvement threshold decide retention.
+
 The [native iteration storage prototype](results/2026-11-11-native-iteration-storage/README.md)
 is withdrawn after three source/core forms, each9,178focused actual11/10 checks.
 Eight Python references and real pending-return cleanup/alias regressions survive.

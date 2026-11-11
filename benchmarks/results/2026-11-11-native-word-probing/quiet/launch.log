@@ -1,0 +1,7 @@
+{"freeBytes": 264884224, "sourceAndImagesVerified": true, "jobs": 10, "ownerSeconds": 330, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=5min 30s
+MainPID=3563473
+ActiveState=active
+
+
+Running as unit: lython-b595-word-materialization-20261111.service; invocation ID: 670b077237124960a5c856fa552596d2
