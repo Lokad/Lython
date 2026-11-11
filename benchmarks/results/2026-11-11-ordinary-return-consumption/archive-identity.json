@@ -1,0 +1,10 @@
+{
+  "preparation.tar.xz": {
+    "bytes": 6542052,
+    "sha256": "8d8c7cc7d6148dd3951f395a45eb075ce1774ace662c190a067c2a6be83d01a7"
+  },
+  "quiet/observations.tgz": {
+    "bytes": 3804324,
+    "sha256": "ce262e05f46aa8d4111a7291654235e5feab5d7d4c587d77831504d70ff71491"
+  }
+}

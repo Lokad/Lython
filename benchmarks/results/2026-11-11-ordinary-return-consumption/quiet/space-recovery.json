@@ -1,0 +1,72 @@
+{
+  "beforeFreeBytes": 259985408,
+  "afterRecoveryFreeBytes": 277663744,
+  "postExtractionFreeBytes": 266182656,
+  "requiredFreeBytes": 275849216,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "path": "captured-text-b569-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-captured-helper-cost/observations.tgz",
+      "bytes": 2108316,
+      "sha256": "027640410044aabeaa0e94a1db5c2f258fd24df234b0750758a3cc2c1eb43097",
+      "paths": [
+        "captured-text-b569-20261111/observations.tgz"
+      ],
+      "allocatedBytes": 2109440,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "completed-json-b461-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-unified-json-encoding/observations.tar.xz",
+      "bytes": 3898957,
+      "sha256": "298dbc75d22589d653f61758411c725de414df7d544f086e5347f27304e72975",
+      "canonicalMember": "b461/observations.tgz",
+      "paths": [
+        "completed-json-b461-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3899392,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "default-rsplit-b459-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-default-rsplit-preparation/observations.tar.xz",
+      "bytes": 3886953,
+      "sha256": "e29426df82c56de14f7f35214a96a466440aed9ecb1d1cb346fe8725b530007e",
+      "canonicalMember": "b459/observations.tgz",
+      "paths": [
+        "default-rsplit-b459-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3887104,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "refined-conditional-helpers-b465-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-native-conditional-helpers-final/observations.tar.xz",
+      "bytes": 3888358,
+      "sha256": "8f596064ea9405cf44f345197a5e67b5b71d4a414c7d59b748079a2a23b32497",
+      "canonicalMember": "b465/observations.tgz",
+      "paths": [
+        "refined-conditional-helpers-b465-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3891200,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "conditional-helpers-b464-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-native-conditional-helpers/observations.tar.xz",
+      "bytes": 3889736,
+      "sha256": "b5a032305febde922ef9b85edceba9d67ceb00ba84fd3dac866e072fa40e7399",
+      "canonicalMember": "b464/observations.tgz",
+      "paths": [
+        "conditional-helpers-b464-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3891200,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "fullyQualifiedE122AndB8Preserved": true
+}

@@ -1,0 +1,92 @@
+{
+  "complete": true,
+  "jobs": 2,
+  "elapsedSeconds": 75.1867820462212,
+  "sourceRevision": "R225 fresh forced ba6ea8b4/f6c8fd22 reference versus exact corrected ordinary-return-consumption9ee7e700 prototype.600internal/2653public eachactualtarget pass. Includes custom-casing intermediate-result correction; baseline separately fails one new regression, first prototype fails four. Original/refined desktop adversity retained; no full source delivery yet.",
+  "coreSHA256": {
+    "reference": "f6c8fd22df7341c8a4959e791fd288aacd7d3e8770cb38fec83cc8e9efddb61e",
+    "reference-control": "f6c8fd22df7341c8a4959e791fd288aacd7d3e8770cb38fec83cc8e9efddb61e",
+    "candidate": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f",
+    "candidate-control": "9ee7e700580399ff80d803f0a7535d2de5ff0f10d35a736370f457383be1b67f"
+  },
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 2.3211270233918126,
+        "candidate": 2.2857326685714288,
+        "reference-control": 2.3294850828402365,
+        "candidate-control": 2.32892588372093
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 2.3976608187134505,
+        "candidate": 2.342857142857143,
+        "reference-control": 2.42603550295858,
+        "candidate-control": 2.383720930232558
+      },
+      "iqrPercent": {
+        "reference": 0.4477329412679572,
+        "candidate": 0.8150016953488612,
+        "reference-control": 1.3923771898708308,
+        "candidate-control": 1.010664782656132
+      },
+      "controlSpreadPercent": {
+        "reference": 0.3600862582785469,
+        "candidate": 1.8896879649752174
+      },
+      "changePercent": {
+        "candidate/reference": -1.524877977968775,
+        "candidate/reference-control": -1.878201092211429,
+        "candidate-control/reference": 0.3359945513762286,
+        "candidate-control/reference-control": -0.024005267233762062
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": -2.285714285714291,
+        "candidate/reference-control": -3.4285714285714253,
+        "candidate-control/reference": -0.5813953488372214,
+        "candidate-control/reference-control": -1.744186046511631
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    },
+    {
+      "case": "scripts.text-summary-helpers.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 1.690841050420168,
+        "candidate": 1.6607115247933883,
+        "reference-control": 1.608417348,
+        "candidate-control": 1.643305896694215
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.7647058823529411,
+        "candidate": 1.7355371900826446,
+        "reference-control": 1.68,
+        "candidate-control": 1.6942148760330578
+      },
+      "iqrPercent": {
+        "reference": 0.7735770301970831,
+        "candidate": 0.8738992934246931,
+        "reference-control": 0.4617102650151313,
+        "candidate-control": 0.4026553739898923
+      },
+      "controlSpreadPercent": {
+        "reference": 4.874716189300354,
+        "candidate": 1.0480825742049893
+      },
+      "changePercent": {
+        "candidate/reference": -1.7819253689927095,
+        "candidate/reference-control": 3.251281569327391,
+        "candidate-control/reference": -2.811331893919944,
+        "candidate-control/reference-control": 2.1691228795559514
+      },
+      "processCpuChangePercent": {
+        "candidate/reference": -1.6528925619834656,
+        "candidate/reference-control": 3.3057851239669533,
+        "candidate-control/reference": -3.9944903581267233,
+        "candidate-control/reference-control": 0.8461235733963068
+      },
+      "limits": "Four independent source-pair processes; ranges are not confidence intervals. External CPU includes wider reset/protocol work and coarse ticks. Stability describes evidence, not a design veto."
+    }
+  ]
+}

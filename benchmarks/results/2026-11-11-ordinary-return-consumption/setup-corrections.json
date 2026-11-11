@@ -1,0 +1,7 @@
+{
+  "internalBuild": "The existing direct white-box native-call test required the new explicit consumption argument; updated its real caller, no compatibility overload.",
+  "diagnosticStartup": "Passed image directories to an existing driver that requires core assembly file paths. FileLoadException before first workload; empty stdout and original stderr preserved.",
+  "correction": "Use the exact existing benchmark worker files in the already-frozen image directories. Both images have equal worker/auxiliary hashes and differ only in core. No source/image/settings/threshold change, no timing discarded.",
+  "cancellationMarker": "Placed the late-side-effect marker after outer() using a single-line replacement independent of source newline encoding; cancellation tests rerun.",
+  "diagnosticSecondStartup": "Core assembly path loaded successfully but does not define benchmark fixtures. Existing Image constructor requires the benchmark worker DLL entry point; it loads the neighboring core itself. TypeLoadException before fixture creation/warmup; original stdout/stderr preserved."
+}

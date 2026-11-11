@@ -1,0 +1,29 @@
+{
+  "reference": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "cases": [
+    {
+      "forwarding": false,
+      "captured": false,
+      "source": "def outer():\n count=0\n class Text:\n  def lower(self):\n   return ' A B '.lower().split()\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n try:\n  for word in Text().lower().split():pass\n except AttributeError as error:print(\"'list'\" in str(error),\"'split'\" in str(error))\nouter()",
+      "expected": "True True\n"
+    },
+    {
+      "forwarding": false,
+      "captured": true,
+      "source": "def outer():\n count=0\n class Text:\n  def lower(self):\n   nonlocal count\n   count+=1\n   return ' A B '.lower().split()\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n try:\n  for word in Text().lower().split():pass\n except AttributeError as error:print(\"'list'\" in str(error),\"'split'\" in str(error))\nouter()",
+      "expected": "True True\n"
+    },
+    {
+      "forwarding": true,
+      "captured": false,
+      "source": "def outer():\n count=0\n class Text:\n  def lower(self):\n   return ' A B '.lower().split()\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n try:\n  for word in words(Text()):pass\n except AttributeError as error:print(\"'list'\" in str(error),\"'split'\" in str(error))\nouter()",
+      "expected": "True True\n"
+    },
+    {
+      "forwarding": true,
+      "captured": true,
+      "source": "def outer():\n count=0\n class Text:\n  def lower(self):\n   nonlocal count\n   count+=1\n   return ' A B '.lower().split()\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n try:\n  for word in words(Text()):pass\n except AttributeError as error:print(\"'list'\" in str(error),\"'split'\" in str(error))\nouter()",
+      "expected": "True True\n"
+    }
+  ]
+}

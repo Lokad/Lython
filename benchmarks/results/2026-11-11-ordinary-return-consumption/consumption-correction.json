@@ -1,0 +1,8 @@
+{
+  "baseline": "ba6ea8b4 fresh f6c8fd22 isolated public-boundary test image, one failed/three passed.",
+  "initial": "Four failed custom-casing cases, initial-intermediate-result-net11.trx.",
+  "corrected": "Four passed; full600internal/2653public eachactualtarget.",
+  "change": "First call keeps its own metadata. Exact fused chain resolves the final split call consumer from existing instructions after dynamic guard. No copied final flags on intermediate calls.",
+  "retention": "Preserve independently useful correction if ordinary return forwarding is withdrawn.",
+  "diagnostic": "Initial and corrected six-script desktop observations retained separately. Corrected-source comparison justified by this semantic change. No runtime config/timing-setting change."
+}

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R225 ordinary return consumption](results/2026-11-11-ordinary-return-consumption/README.md)
+retains runtime4aa2d46d: existing frame/native entries share direct-return iteration
+intent, removing per-record list/value-array/range construction. Captured text CLR
+allocation−4.84%both APIs; coarse execution-allowance peak−15.06%, compilebytes+0.05–0.16%.
+Quiet target elapsed−1.88..+0.34% remains inconclusive; modest supporting widerCPU,
+ordinary control uncertainty and all initial/corrected desktop adversity retained.
+A separate custom-casing metadata error is corrected: baseline1/4fail, prototype4/4,
+correctedallpass.600internal/2653public per actualtarget; full delivery42953725339 active.
+
 The [R224 captured-helper cost gate](results/2026-11-11-captured-helper-cost/README.md)
 records1166guest-thread samples/4.20%unknown on qualified4625/cb03.236stacks contain
 materializing SplitCore; none contain private cased-whitespace preparation. Source
