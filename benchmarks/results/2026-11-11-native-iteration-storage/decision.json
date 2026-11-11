@@ -1,0 +1,20 @@
+{
+  "status": "Withdrawn; all general private-result/iteration-state migration code removed.",
+  "production": "Exact fully qualified8f8628a4 restored. Existing43087005596both platforms/targets/stress/package GREEN cached and reused. New external regression coverage retained; actual11/10 nonincremental builds plus38internal/78public checks per target pass.",
+  "forms": [
+    "initial",
+    "refined",
+    "retirement"
+  ],
+  "focusedChecksPerForm": 9178,
+  "pythonReferences": 8,
+  "allocation": "All forms reduce complete text allocation26..29%, compilation flat. This is not a CPU gain.",
+  "quietRefined": "B593seven jobs196.604s allgates/joins/archivepass; ordinaryRun elapsed−5.01..−3.96%, widerCPU−5.65..−4.07%; captured/search variable, reportAsyncCPU+4.26..+6.38%.",
+  "quietRetirement": "B594five jobs142.232s allgates/joins/archivepass; ordinaryRun elapsed−6.18..−1.03%, widerCPU−5.69..−0.83%; captured uncertain. SearchRun elapsed+10.87..+17.24%, widerCPU+6.62..+9.07%, controls1.92/3.61%; reportAsyncelapsed+3.36..+4.11%, widerCPU+2.08..+8.51%, controls0.09/0.64%. CSV slightly adverse/inconclusive.",
+  "reason": "Removing two per-line objects and one position representation broadened private-result transport through ordinary calls/returns and increased fixed workspace/retirement work. The useful allocation and ordinary-text gains do not justify measured search/report regressions and added shared invariants. No fixed percentage veto; generated-code cause remains unresolved. Removing unconditional reference-state clears did not close material debt.",
+  "next": "Assess word materialization/probing inside the existing native histogram loop, retaining ordinary object call/return transport and existing owners. Source gate first: stable word/key identity, pending binding publication before any callback/fallback/error/finally, preflight/first refusal, exact promotion, Unicode and live aliases. No new return-destination channel, cache/pool, ownership ledger or partial replacement of the VM.",
+  "publication": false,
+  "fullPrototypeQualification": false,
+  "vm": "Both B593/B594terminal/cached; no remaining users or RAM fixtures. Canonical committed duplicates only retired under fresh proofs.",
+  "limitations": "No general native-iteration CPU improvement established. Per-line carrier/preparation reservation remain in restored runtime. A different representation may be revisited with new source/evidence; not permanently vetoed."
+}

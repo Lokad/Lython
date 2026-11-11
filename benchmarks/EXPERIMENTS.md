@@ -7,14 +7,16 @@ original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
 The [native iteration storage prototype](results/2026-11-11-native-iteration-storage/README.md)
-freezes two source/core forms. Each passes9,178focused checks across actual11/10;
-eight Python goldens and real pending-return cleanup/alias regressions survive.
-Text allocation falls26–29%, compilation flat. Refined quiet ordinaryRun improves
-about4–5% with supporting CPU; captured/search remain variable, and reportAsync
-CPU+4.26..+6.38% is adverse. Initial tight-control search regression and all
-opposing desktop observations remain. A final retirement correction addresses
-unnecessary metadata clearing on numeric-only paths; it is not covered by those
-timings. No full prototype qualification, retention or publication claim follows.
+is withdrawn after three source/core forms, each9,178focused actual11/10 checks.
+Eight Python references and real pending-return cleanup/alias regressions survive.
+Text allocation falls26–29%, compilation flat, ordinaryRun has supporting CPU
+improvement. Final quiet searchRun elapsed+10.87..+17.24%/CPU+6.62..+9.07% and
+reportAsync elapsed+3.36..+4.11% remain material debt. Removing unnecessary state
+writes did not close it; exact generated-code cause is unresolved. All original
+adversity survives, no fixed percentage veto or permanent design ban follows.
+Exact qualified8f862 production is restored; new public regressions pass after
+nonincremental builds on both targets. Next source gate assesses native word
+materialization/probing without widening ordinary calls/returns. Publication held.
 
 The [native-loop admission prototype](results/2026-11-11-native-loop-admission/README.md)
 is withdrawn after3,046focused checks and a bounded quiet confirmation. Allocation

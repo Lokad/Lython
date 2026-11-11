@@ -1,0 +1,7 @@
+{"freeBytes": 265019392, "sourceAndImagesVerified": true, "jobs": 5, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min
+MainPID=3562186
+ActiveState=active
+
+
+Running as unit: lython-b594-native-iteration-retirement-20261111.service; invocation ID: db72d720546046be968e865e4e05ded9

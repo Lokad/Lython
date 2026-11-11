@@ -50,6 +50,9 @@ preserving Python error types and exposed namespace contents through both APIs.
 direct and captured helper returns, observable lists and aliases, custom casing
 errors, generators, protected returns, Unicode and genuine async cleanup. Pending
 cleanup retains its allowance after cancellation until the host finishes closing.
+Nested native and character iteration preserves independent progress after early
+break. A protected return also keeps a withdrawn input funded while its `finally`
+suite suspends, through cancellation and the host's awaited cleanup.
 [Nonlocal rebinding](Lokad.Lython.PublicApi.Tests/NonlocalRebindingTests.cs) checks
 deleted and handler-cleared cells, transitive/class/generator targets, runtime
 unbound errors, lexical barriers and shared-budget cleanup against Python goldens.
