@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Lokad.Lython.Frontend;
 
 internal sealed partial class ExecutableCodeObject
@@ -25,18 +27,65 @@ internal sealed partial class ExecutableCodeObject
                 if (InteriorBoundary(region, index)) { crossesBoundary = true; break; }
             if (crossesBoundary) continue;
             sites[call.CallSiteIndex] = site with { AccumulatesDictionary = true };
+            PrepareDictionaryLoop(index, site, add, store);
         }
 
         bool IsUncapturedLocal(int slot) => slot >= 0 && slot < FirstTemporarySlot && !CapturedLocalSlots.Contains(slot);
 
+        void PrepareDictionaryLoop(int callIndex, ExecutableCallSite site,
+            in ExecutableInstruction add, in ExecutableInstruction store)
+        {
+            // One complete histogram body, optionally followed by a total.
+            // Only native iteration executes the segment; all other sources
+            // keep their existing ForNext/body, including actual suspension.
+            var headIndex = callIndex - 5;
+            if (headIndex < 0 || site.ArgumentCount != 2) return;
+            ref readonly var head = ref Instructions[headIndex];
+            ref readonly var binding = ref Instructions[headIndex + 1];
+            ref readonly var member = ref Instructions[headIndex + 2];
+            ref readonly var key = ref Instructions[headIndex + 3];
+            ref readonly var fallback = ref Instructions[headIndex + 4];
+            if (head.OpCode != ExecutableOpCode.ForNext || !head.HasLocalResult
+                || binding.OpCode != ExecutableOpCode.StoreLocal || binding.LocalSlot != store.ThirdInput
+                || binding.InputStart != head.ResultSlot || binding.LiveExtent != head.ResultSlot
+                || head.LiveExtent != head.ResultSlot + 1 || Instructions[callIndex].InputStart != head.ResultSlot
+                || member.OpCode != ExecutableOpCode.LoadCallMember || member.InputStart != store.SecondInput
+                || Names[member.NameIndex] != "get" || member.ResultSlot != head.ResultSlot
+                || key.OpCode != ExecutableOpCode.LoadLocal || key.LocalSlot != binding.LocalSlot
+                || key.ResultSlot != head.ResultSlot + site.ArgumentOffset
+                || fallback.OpCode != ExecutableOpCode.LoadConst
+                || fallback.ResultSlot != key.ResultSlot + 1
+                || Constants[fallback.ConstantIndex] is not BigInteger
+                || add.SecondInput >= 0 || Constants[~add.SecondInput] is not BigInteger increment
+                || increment.GetByteCount() >= 8 || store.LiveExtent != head.ResultSlot) return;
+
+            var tailIndex = callIndex + 3;
+            if (tailIndex + 2 < Instructions.Length && Instructions[tailIndex].OpCode == ExecutableOpCode.Augmented)
+            {
+                ref readonly var total = ref Instructions[tailIndex];
+                ref readonly var totalStore = ref Instructions[tailIndex + 1];
+                if (total.AugmentedOperator != AugmentedAssignmentOperatorSyntax.Add || !total.HasLocalResult
+                    || !IsUncapturedLocal(total.InputStart) || total.SecondInput >= 0
+                    || Constants[~total.SecondInput] is not BigInteger totalIncrement || totalIncrement.GetByteCount() >= 8
+                    || totalStore.OpCode != ExecutableOpCode.StoreLocal || totalStore.LocalSlot != total.InputStart
+                    || total.ResultSlot != head.ResultSlot || totalStore.LiveExtent != head.ResultSlot) return;
+                tailIndex += 2;
+            }
+            if (tailIndex >= Instructions.Length || Instructions[tailIndex].OpCode != ExecutableOpCode.Jump
+                || Instructions[tailIndex].TargetIndex != headIndex) return;
+            foreach (var region in ExceptionRegions)
+                if (InteriorBoundary(region, headIndex, tailIndex)) return;
+            Instructions[headIndex] = head.WithDictionaryLoop(callIndex);
+        }
+
         // Do not skip across protection/handler boundaries. Routing an error
         // with the call current must select the same handler as add or store.
-        static bool InteriorBoundary(ExecutableExceptionRegion region, int index)
+        static bool InteriorBoundary(ExecutableExceptionRegion region, int index, int? endIndex = null)
         {
             return Inside(region.ProtectedStartIndex) || Inside(region.ProtectedEndIndex + 1)
                 || Inside(region.ExceptIndex) || Inside(region.FinallyIndex)
                 || Inside(region.SuiteStartIndex) || Inside(region.SuiteEndIndex is int end ? end + 1 : null);
-            bool Inside(int? position) => position > index && position <= index + 2;
+            bool Inside(int? position) => position > index && position <= (endIndex ?? index + 2);
         }
     }
 }

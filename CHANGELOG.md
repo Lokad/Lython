@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Run eligible dictionary counting loops through existing native iteration and
+  arithmetic, avoiding repeated instruction dispatch and argument preparation.
+  Preserve custom protocols, integer promotion, cancellation and memory ownership.
+
 - Validate factory keyword binding before truth hooks and evaluate typing variance
   flags in Python's parameter order. Build exception argument tuples directly
   into admitted final storage.

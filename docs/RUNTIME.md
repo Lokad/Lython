@@ -433,6 +433,13 @@ Exposed iterators, generator-expression outer acquisition, user protocols and
 resource-bearing/asynchronous iteration retain their ordinary cursors and cleanup.
 The additional workspace can reject a tighter allowance earlier.
 
+Eligible dictionary counting loops run consecutive native iterations without
+repeating operand and call setup. They reuse the ordinary dictionary arithmetic
+and local binding paths, including optional integer totals and cancellation.
+Custom protocols, wide values and growth resume the original executable body
+after the current loop binding, preserving evaluation order and suspension.
+Refused admission stops execution; it does not select that continuation.
+
 Both public APIs advance the same non-async instruction loop. Completed operations,
 including failures and cancellation, stay in that loop; asynchronous execution awaits incomplete operations and cursor
 disposal before resuming it. Suspended failures keep their original instruction

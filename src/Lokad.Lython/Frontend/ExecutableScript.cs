@@ -77,6 +77,7 @@ internal enum ExecutableOpCode
     FinishFormattedString,
     ConvertFormattedValue,
     FormatField,
+    ForNextDictionaryAccumulation,
 }
 
 internal enum ExecutableUnaryOperator
@@ -196,8 +197,10 @@ internal readonly record struct ExecutableInstruction
     public int FailureIndex => OpCode == ExecutableOpCode.MatchCase
         ? _secondaryOperand : throw InvalidOperand("BlockIndex");
     public int TargetIndex => OpCode is ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
-        or ExecutableOpCode.ForNext or ExecutableOpCode.EndFinally
+        or ExecutableOpCode.ForNext or ExecutableOpCode.ForNextDictionaryAccumulation or ExecutableOpCode.EndFinally
         ? _primaryOperand : throw InvalidOperand("BlockIndex");
+    internal int DictionaryLoopCallIndex => OpCode == ExecutableOpCode.ForNextDictionaryAccumulation
+        ? _secondaryOperand : throw InvalidOperand(nameof(DictionaryLoopCallIndex));
     public int CallSiteIndex => ReadPrimaryOperand(ExecutableOpCode.Call, nameof(CallSiteIndex));
     public int CleanupId => OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand
         : ReadPrimaryOperand(ExecutableOpCode.ExitContextManager, nameof(CleanupId));
@@ -338,6 +341,12 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ForNext(int targetBlockIndex, LythonSourceSpan span)
         => new(ExecutableOpCode.ForNext, span, targetBlockIndex);
+
+    // Final-layout preparation changes no positions or storage capacity. The
+    // ordinary body remains the continuation for protocols and admission.
+    internal ExecutableInstruction WithDictionaryLoop(int callIndex)
+        => new(ExecutableOpCode.ForNextDictionaryAccumulation, Span, _primaryOperand,
+            callIndex, _inputStart, _resultSlot, _liveExtent);
 
 
     public static ExecutableInstruction Call(int callSiteIndex, LythonSourceSpan span)

@@ -26,6 +26,8 @@ public sealed class CooperativeCancellationTests
         { true, "value = 0\nwhile value < 9223372036854775807:\n    value += 1" },
         { false, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
         { true, "counts = {'x': 0}\nkey = 'x'\nwhile True:\n    counts[key] = counts.get(key, 0) + 1" },
+        { false, "words=('x',)*32768\ncounts={'x':0};total=0\nwhile True:\n for word in words: counts[word]=counts.get(word,0)+1;total+=1" },
+        { true, "words=('x',)*32768\ncounts={'x':0};total=0\nwhile True:\n for word in words: counts[word]=counts.get(word,0)+1;total+=1" },
         { false, "class Counter:\n def step(self,value):return value+1\nstep=Counter().step\nvalue=0\nwhile True:value=step(value)" },
         { true, "class Counter:\n def step(self,value):return value+1\nstep=Counter().step\nvalue=0\nwhile True:value=step(value)" },
     };

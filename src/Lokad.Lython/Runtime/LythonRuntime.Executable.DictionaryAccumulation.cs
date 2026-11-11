@@ -8,6 +8,85 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        private static bool TryExecuteDictionaryLoop(ref ExecutableWorkState execution, ExecutionContext scope,
+            ExecutionContext? invocation, in ExecutableInstruction head)
+        {
+            // The ordinary ForNext owns wider/pending stack retirement. A
+            // native source advances here only after that ownership is settled.
+            if (execution.Stack.LiveExtent != head.ResultSlot || execution.Stack.HasPendingDisposals
+                || !execution.Stack.TryAdvanceNativeIteration(head.InputStart, out var next)) return false;
+            var headIndex = execution.InstructionIndex;
+            if (!next.HasValue)
+            {
+                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                execution.InstructionIndex = head.TargetIndex;
+                return true;
+            }
+
+            var callIndex = head.DictionaryLoopCallIndex;
+            var call = execution.Code.CallSites[execution.Code.Instructions[callIndex].CallSiteIndex];
+            ref readonly var member = ref execution.Code.Instructions[headIndex + 2];
+            ref readonly var add = ref execution.Code.Instructions[callIndex + 1];
+            ref readonly var store = ref execution.Code.Instructions[callIndex + 2];
+            var fallback = execution.Code.Constants[execution.Code.Instructions[headIndex + 4].ConstantIndex]!;
+            var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
+            var storeSpan = (LythonSourceSpan)execution.Code.Constants[store.TargetSpanIndex]!;
+            var totalIndex = callIndex + 3;
+            var hasTotal = execution.Code.Instructions[totalIndex].OpCode == ExecutableOpCode.Augmented;
+            ref readonly var total = ref execution.Code.Instructions[totalIndex];
+            var totalIncrement = hasTotal ? (BigInteger)execution.Code.Constants[~total.SecondInput]! : BigInteger.Zero;
+
+            while (true)
+            {
+                execution.InstructionIndex = headIndex;
+                PublishInstructionResult(ref execution, invocation, head, next.Value);
+                // Binding may admit namespace storage and reenter. Read the
+                // actual locals afterwards, and stop a refused command first.
+                scope.CheckExecution(member.Span);
+                var dictionary = execution.Locals[store.SecondInput] as PyDict;
+                var key = execution.Locals[store.ThirdInput] as PyString;
+                var priorTotal = hasTotal ? execution.Locals[total.InputStart] : null;
+                if (dictionary is null || key is null || hasTotal && (priorTotal is not BigInteger integer || integer.GetByteCount() >= 8))
+                {
+                    execution.InstructionIndex = headIndex + 2;
+                    return true;
+                }
+
+                execution.InstructionIndex = callIndex;
+                scope.EnterInterpreterFrame(call.CallSpan);
+                bool updated;
+                try
+                {
+                    updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
+                        call.CallSpan, add.Span, storeSpan);
+                }
+                finally { scope.LeaveInterpreterFrame(); }
+                if (!updated)
+                {
+                    // Only the loop binding happened. The original body now
+                    // performs any required admission/protocol, exactly once.
+                    execution.InstructionIndex = headIndex + 2;
+                    return true;
+                }
+                execution.Stack.RetireTo(store.LiveExtent);
+                if (hasTotal)
+                {
+                    execution.InstructionIndex = totalIndex;
+                    scope.CheckExecution(total.Span);
+                    var value = AddExactIntegers((BigInteger)priorTotal!, totalIncrement, scope.MemoryGovernor, total.Span);
+                    PublishInstructionResult(ref execution, invocation, total, value);
+                }
+                execution.InstructionIndex = headIndex;
+                scope.CheckExecution(head.Span);
+                if (!execution.Stack.TryAdvanceNativeIteration(head.InputStart, out next))
+                    throw new InvalidOperationException("A native loop lost its private iteration source.");
+                if (next.HasValue) continue;
+                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                execution.InstructionIndex = head.TargetIndex;
+                return true;
+            }
+        }
+
         private static bool TryExecuteDictionaryAccumulation(ref ExecutableWorkState execution, ExecutionContext context,
             ExecutableCallSite call, int start, PyDict dictionary, PyString key)
         {

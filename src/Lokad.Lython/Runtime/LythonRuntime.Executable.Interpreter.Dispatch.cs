@@ -176,6 +176,13 @@ internal sealed partial class LythonRuntime
                                 out pending, out pendingSpan);
                             if (pause != InstructionPause.Continue) return pause;
                             break;
+                        case ExecutableOpCode.ForNextDictionaryAccumulation:
+                            if (TryExecuteDictionaryLoop(ref execution, scope, invocation, instruction))
+                            {
+                                jumped = true;
+                                break;
+                            }
+                            goto case ExecutableOpCode.ForNext;
                         case ExecutableOpCode.ForNext:
                             if (execution.Stack.TryAdvanceNativeIteration(instruction.InputStart, out var nativeNext))
                             {

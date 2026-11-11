@@ -69,6 +69,13 @@ initializer functions, pending cancellation, retained aliases and shared-budget
 reuse. Exception argument admission also checks that refusal precedes allocation
 of storage proportional to an already-prepared input vector.
 
+[Dictionary counting loops](Lokad.Lython.PublicApi.Tests/DictionaryCountingLoopTests.cs)
+preserve Python outputs, protocol effects, mutation, promotion and last-variable
+aliases through both APIs. Pending callbacks join cancellation before refunding
+their allowance. Internal growth refusal checks preserve completed updates, the
+first source origin and cleanup despite an attempted exception suppression.
+Pure-loop cancellation also covers repeated native histogram segments.
+
 [Guest integer regressions](Lokad.Lython.PublicApi.Tests/GuestIntegerRepresentationTests.cs)
 cover exact promotion, identity-returning methods, mixed numeric keys and public
 BigInteger results through both APIs, with shared-budget cleanup and reuse.
