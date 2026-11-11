@@ -34,13 +34,14 @@ After the change, fresh Release solution build22.65s/zero warnings/errors and
 The existing worker independently verifies all six complete scripts and exact
 file/stdout goldens under both Lython images and local CPython:
 [before](semantic-cpython-before.json),[candidate](semantic-cpython-candidate.json).
-These are semantic smoke checks, not timing qualification. Full platform/stress/
-installed-package qualification applies to earlier752d78ce; this changed source
-will join the next coherent delivery checkpoint.
+These are semantic smoke checks, not timing qualification. Committed **15f457f7**
+is now fully qualified: [exact-source CI42980759461](https://github.com/Lokad/Lython/actions/runs/42980759461)
+passes Windows/Ubuntu actual11/10, originalStress and installed Release consumers.
+[Cached full steps](delivery-ci.json); never query this terminal run again.
 
 ## Complete-script source pair
 
-Frozen commonfec79 worker/optional0.4/auxiliaries; only core differs. Three CSV
+Frozen common9a4272de worker/optional0.4/auxiliaries; only core differs. Three CSV
 scripts share the same5120record/68625B fixture and goldens: ordinary positional,
 named and keyword-only construction. Captured/ordinary text and JSON controls keep
 their exact maintained source. Windows/.NET11RC3, normal GC/tiering,256warmups per
@@ -69,8 +70,10 @@ the diagnostic envelope and is coarse. This is no CPython performance comparison
 
 Retain because two restrictions and a real packaging/invocation phase disappear,
 with demonstrated lower allocation and preserved semantics, rather than applying
-a fixed elapsed threshold. Quiet confirmation may address current text/constructor
-latency uncertainty at the delivery boundary. The whole-script performance
+a fixed elapsed threshold. The [quiet combined15f versus4aa confirmation](../2026-11-11-constructor-text-confirmation/README.md)
+narrows latency uncertainty: named CSV improves, captured text is inconclusive;
+ordinary text async1.9–2.6% slower is accepted milestone debt. It cannot isolate
+R233 from R232. The whole-script performance
 objective stays open. [Preparation, exact cores/source, original catalog-version
 type failure, baseline/candidate checks](preparation.tar.xz),
 [verified archive identity](archive-identity.json). No alternative backend remains.

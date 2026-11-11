@@ -1,0 +1,8 @@
+{
+  "originalProseLabel": "fec79",
+  "actualWorkerSHA256": "9a4272de9b446abb4a0db131865d7db109299d1f3c807f806af4920f5de6b86f",
+  "rawRecordsUnchanged": true,
+  "allRolesAndAllThreePhasesVerified": true,
+  "pairedRuntimeComparisonValid": true,
+  "quietUsesSeparateFixedWorker": true
+}

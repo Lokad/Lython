@@ -6,13 +6,23 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R234/B574 quiet confirmation](results/2026-11-11-constructor-text-confirmation/README.md)
+finishes5source-pair jobs/142.323s: combined15f/R232+R233 versus qualified4aa.
+Named CSV sync/async warm−3.22..−5.94%/−2.22..−5.64%; keyword-only/captured text
+inconclusive. Ordinary-text async+1.92..+2.55% with tight controls is accepted
+explicit milestone debt; wider CPU mixed. No individual-change/CPython attribution.
+All hashes/goldens/quiet/join/RAM/archive gates pass. Terminal cached; no repeat.
+Original setup/worker-label/telemetry mistakes survive with corrections; local
+R232/R233 worker is9a4272de, separately fixed quiet workerfec79. No raw data changed.
+
 The [R233 constructor-binding consolidation](results/2026-11-11-constructor-binding/README.md)
 removes two constructor-only restrictions, reusing the ordinary function binder
 and frame runner for named/keyword-only/variadic compiled initializers. Complete
 named/keyword-only CSV allocation−3.77% both APIs; other scripts/compilation flat.
 494focused checks across actual11/10 and independent complete-script goldens pass.
 Desktop clocks mixed/adverse with moving controls: no CPU/neutrality claim. No new
-route/owner/API; earlier752 qualification does not qualify this changed source.
+route/owner/API. Exact15f457f7 now separately passes Windows/Ubuntu actual11/10,
+originalStress and installed consumers; terminal GREEN42980759461 is cached.
 
 The [R232 default allocator/admission milestone](results/2026-11-11-default-allocator-admission/README.md)
 recognizes the sealed staticmethod wrapper around object.__new__, enabling the

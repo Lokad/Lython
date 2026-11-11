@@ -1,0 +1,11 @@
+{
+  "localWorkerLabel": "R232 and R233 local pairs both used9a4272de, not fec79. Raw identities are authoritative and source pairs remain valid; the prose label was wrong.",
+  "quietTelemetry": "run.sh asked systemctl for obsolete B573; live-unit.txt is unusable for B574. Actual B574 RuntimeMaxSec=210/MainPID/active acknowledgement is verified separately in launch.log and terminal success in terminal-status.json. Original raw source/telemetry retained. No timed restart.",
+  "preparation": [
+    "Initial Python prepared catalogVersion as a string; verification refused before startup. Original catalog/type failure retained in R233 preparation.",
+    "Initial CI listing raced newly dispatched run; acknowledgement URL supplies42980759461. No redispatch or repeated old terminal query.",
+    "Local/quiet worker metadata equality assertion exposed distinct common worker/adapter builds; no staging or timing had run. Each measured pair uses a fixed common image; never combine cross-host clocks.",
+    "Initial remote inventory assumed st_nlink==len(two_known_aliases), but second inode has3aliases. No root/service/RAM fixture/mutation existed. Fresh inode inventory verifies every alias and canonical hash before retirement. Original stderr preserved."
+  ],
+  "decision": "Retain canonical proof/accounting correctness and general binding consolidation. Ordinary text async+1.92..+2.55% is explicit delivery regression debt; wider CPU mixed, no neutrality claim. Current construction allocation savings and removal justify retaining without a fixed percentage veto; track the control at the next coherent transport milestone before final publication."
+}

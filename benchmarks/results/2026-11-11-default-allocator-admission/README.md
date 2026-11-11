@@ -33,7 +33,7 @@ shared-budget reuse. [Checks](focused-checks.json). No timeout/assertion relaxed
 
 ## Bounded complete-script comparison
 
-Same six complete scripts and fixedfec79 worker/optional0.4/auxiliaries; only core
+Same six complete scripts and fixed9a4272de worker/optional0.4/auxiliaries; only core
 differs. The frozen R151 constructor CSV replaces the CSV-counter diagnostic;
 ordinary CSV/text/report/JSON and captured-text controls retain their exact sources.
 Windows/.NET11RC3, ordinary GC/tiering;256warmups/image,5rotated16-invocation rounds,

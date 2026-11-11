@@ -1,0 +1,45 @@
+{
+  "files": {
+    "archive-receipt.json": {
+      "bytes": 364,
+      "sha256": "7fc21a771c2db00eb6cc181ceedf6799b2bdf2e292b83c273584a8ee41330994"
+    },
+    "identity.json": {
+      "bytes": 4656,
+      "sha256": "6691a5a7ae66b4c920eab04c537f8d8ed4313b448d9a26a39d2e8c52b91c1952"
+    },
+    "inventory.json": {
+      "bytes": 1533,
+      "sha256": "3da0fcde2a8de193d2d43512503d7b7d80166399d53e718218fbc1ed34ee0e14"
+    },
+    "metadata-and-decision.json": {
+      "bytes": 1672,
+      "sha256": "b534080a28bce2a38ab424355800f986c3e0322b737d14bbdc1bf98b1c0de4e4"
+    },
+    "observations.tgz": {
+      "bytes": 3854688,
+      "sha256": "099afd2728146e84e3d69a5b062718e63afc3593cd618784551dbe4dde2ee2f0"
+    },
+    "preparation.tar.xz": {
+      "bytes": 42776,
+      "sha256": "31bb1ea8a8390ede62c7e3f1b59aaa04efb39b5dd3489c5b7295f68909ec0ae7"
+    },
+    "source-identity.json": {
+      "bytes": 74368,
+      "sha256": "817fff6ca0effd1c35559a468d03b9f1e4af15871a33f0597a8530fd29cbc7d0"
+    },
+    "summary.json": {
+      "bytes": 7138,
+      "sha256": "5aae3a720e4dc09b367cc94e366e52c820ee8731081e3254626eea1eccecf4d1"
+    },
+    "terminal-status.json": {
+      "bytes": 564,
+      "sha256": "4dd364d4940bb271d259522a3026bb3b8cf65529a4557c15bc82167022bcffc7"
+    }
+  },
+  "rawArchiveVerified": true,
+  "allLoadedCoreHashesVerified": true,
+  "allWorkersJoined": true,
+  "noRemainingRamFixtures": true,
+  "terminalCachedNeverQueryAgain": true
+}

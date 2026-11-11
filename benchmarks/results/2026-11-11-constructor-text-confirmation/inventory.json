@@ -1,0 +1,42 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261353472,
+  "requiredFreeBytes": 270622720,
+  "reclaimableBytes": 11317248,
+  "proofs": [
+    {
+      "kind": "core",
+      "knownPath": "borrowed-call-entry-b506-20261109/baseline-core.dll",
+      "paths": [
+        "borrowed-call-entry-b506-20261109/baseline-core.dll",
+        "borrowed-call-entry-b506-20261109/reference/Lokad.Lython.dll"
+      ],
+      "canonical": "benchmarks/results/2026-11-09-borrowed-call-entry/observations.tgz",
+      "canonicalMember": "baseline-core.dll",
+      "bytes": 5651968,
+      "sha256": "6417b97a646c8e73e8ccab4b7adc027a5604f95acd20631736000716a1b5d49b",
+      "device": 66305,
+      "inode": 804038,
+      "allocatedBytes": 5656576,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "core",
+      "knownPath": "borrowed-call-entry-b506-20261109/current-core.dll",
+      "paths": [
+        "prefix-attribution-b507-20261109/candidate/Lokad.Lython.dll",
+        "borrowed-call-entry-b506-20261109/current-core.dll",
+        "borrowed-call-entry-b506-20261109/candidate/Lokad.Lython.dll"
+      ],
+      "canonical": "benchmarks/results/2026-11-09-borrowed-call-entry/observations.tgz",
+      "canonicalMember": "current-core.dll",
+      "bytes": 5653504,
+      "sha256": "21cf11182d92c1a5e73a15b89862221c24ccc7e9307d05cf75a79bc8f8fe22b1",
+      "device": 66305,
+      "inode": 804047,
+      "allocatedBytes": 5660672,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
