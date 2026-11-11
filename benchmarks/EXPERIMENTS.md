@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R237 complete counting-loop milestone](results/2026-11-11-native-counting-loops/README.md)
+is retained in `fe6648b2`. Existing native iteration and arithmetic remove repeated
+dispatch and argument preparation. Quiet captured-text sync improves about9–11%;
+other text shapes/APIs improve directionally with wider controls. Allocation is
+flat, desktop clocks remain mixed/adverse and CSV neutrality is unresolved.
+All source pairs, binaries, failed fixtures and controls survive. Focused actual11/10
+checks pass; full exact-revision delivery and CPython refresh are separate records.
+
 The [R236 call-preparation migration](results/2026-11-11-call-preparation/README.md)
 is withdrawn after a complete prototype and source-justified refinement. Common
 paths already borrow; allocation stays flat and clocks remain mixed/adverse.

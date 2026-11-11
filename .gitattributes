@@ -2,6 +2,7 @@
 src/Lokad.Lython/Runtime/Text/Data/html5.json -text
 benchmarks/results/2026-11-11-call-preparation/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-call-preparation/**/*.patch -text -whitespace
+benchmarks/results/2026-11-11-native-counting-loops/** -text whitespace=cr-at-eol
 third_party/Python.LICENSE.txt -text -whitespace
 benchmarks/*.sh text eol=lf
 benchmarks/**/*.sh text eol=lf

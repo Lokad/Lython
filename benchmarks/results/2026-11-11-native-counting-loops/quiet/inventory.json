@@ -1,0 +1,24 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262770688,
+  "requiredFreeBytes": 276643840,
+  "reclaimableBytes": 63377408,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "fresh-csv-20261017/source.tar",
+      "canonical": "D:\\code\\Lython\\.git\\agent-notes\\fresh-csv-20261017\\source.tar",
+      "canonicalStorage": "Pre-existing persistent local working evidence, independently byte-verified; not a sole VM copy. No new release bundle or source archive created.",
+      "bytes": 63375360,
+      "sha256": "0364ab4ca4dcf785cb9a6266f19352b0c8a12df3e1cda82ba6ba2b016ac40e1d",
+      "paths": [
+        "fresh-csv-20261017/source.tar"
+      ],
+      "device": 66305,
+      "inode": 2968129,
+      "allocatedBytes": 63377408,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

@@ -1,0 +1,7 @@
+{"freeBytes": 313741312, "sourceAndImagesVerified": true, "jobs": 5, "ownerSeconds": 210, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min 30s
+MainPID=3542881
+ActiveState=active
+
+
+Running as unit: lython-b576-native-counter-loops-20261111.service; invocation ID: 57e75557711b40d3ab5dce2248a1109d

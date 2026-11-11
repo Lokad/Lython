@@ -1,0 +1,11 @@
+{
+  "retainedRevision": "fe6648b243489f35e3f08cdecd94007382af8806",
+  "baselineRevision": "1ce7fbbc",
+  "baselineRuntime": "698f7e77",
+  "result": "Retain complete native loop. Same existing cursor/dictionary/arithmetic/binding invariants, no new representation/owner/control hierarchy. Quiet captured sync improvements survive all four process pairings with tight controls. Other text clocks improve directionally with wider controls. Allocation flat, no CSV gain/neutrality or compilation CPU claim.",
+  "qualification": "2692 focused checks pass across actual11/10. Exactfe delivery43024046530 in progress separately; last fully qualified source15f. Do not infer a full-delivery claim from these focused results.",
+  "regressionDebt": "CapturedCSV async source-pair control spans-1.76..+2.74%, processCPU-6.25..+3.57%; neutrality unresolved. Earlier15f versus4aa ordinary-text async+1.92..+2.55% remains historical debt; this new698-source comparison is not its direct remeasurement. No automatic threshold or permanent design veto.",
+  "measurement": "Desktop before/control instability and adverse conditions retained. Quiet five jobs140.881s, original normal GC/tiering, fixed commonfec79 worker versus separate desktop9a4272de. No cross-host clock combination, CPython ratio or isolated JIT causality. Compilation measured separately locally.",
+  "cleanup": "Terminal B576 cached; never query again. All workers joined, RAM fixtures removed, raw archive SHA-verified under lease and after retrieval; final free308989952B. Disk reserve unchanged; only an independently verified duplicate old source package retired.",
+  "ongoing": "Separate9-job source-labelled CPython refresh active. Performance objective continues beyond this milestone; publication/tagging postponed."
+}
