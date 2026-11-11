@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R231 synchronous-call contract source gate](results/2026-11-11-sync-call-contract-source-gate/README.md)
+finds a real general-call packet copy, but canonical-span signatures alone reach
+shared async helpers and array delegates that retain inputs. The partial178-file
+migration is restored exactly; no working candidate or timing/CPU rejection.
+Avoid ToArray adapter hierarchies that relocate packaging. A future migration must
+move preparation and retained ownership together. Fresh restored build23.96s and
+44public focused checks per actual target pass. Original errors/source survive.
+
 The [R230 prepared-range prototype](results/2026-11-11-prepared-split-ranges-withdrawn/README.md)
 is fully withdrawn. Retaining private split boundaries removes a repeated scan
 but adds a range allocation/copy,20net lines and admitted replacement overlap.

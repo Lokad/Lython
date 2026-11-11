@@ -1,0 +1,5 @@
+{
+  "head": "be08b541e6b125dacfbe347a74f8ce92dea285ac",
+  "qualifiedRuntime": "4aa2d46d",
+  "scope": "One canonical borrowed synchronous ICallable entry, no frame/arena/native-proof rewrite. Async array ownership unchanged. No speed claim."
+}
