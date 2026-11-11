@@ -61,8 +61,15 @@ and [refined](storage-refinement/warm-sync/measurements.json) observations, exac
 source/cores and private source probes survive. They are not CPU/permanent design
 rejections. The smallest concrete canonical correction is retained instead.
 
-Full platform/original-Stress/installed-consumer qualification is next, independently
-of deferred regex publication. A bounded quiet constructor/text comparison may
+Committed runtime **752d78ce** is fully qualified: fresh postcommit local ordinary
+tests pass4523internal/17249public per actual target (43544total), and
+[exact-source CI42976124076](https://github.com/Lokad/Lython/actions/runs/42976124076)
+passes Windows/Ubuntu actual11/10, originalStress and installed consumers.
+The terminal result is cached and must never be queried again.
+[Local checks](delivery-local.json),[source/binary identity](delivery-source.json),
+[full CI steps](delivery-ci.json). Postcommit and measured binaries are identified
+separately; all568 normalized production sources are verified against the measured
+pair. Regex publication remains independent. A bounded quiet constructor/text comparison may
 resolve elapsed debt; no full lane or broad campaign. The broader whole-script
 performance objective remains open. [Preparation/all source, binaries, probes,
 failures and checks](preparation.tar.xz),[archive identity](archive-identity.json).

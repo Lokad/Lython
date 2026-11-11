@@ -13,7 +13,9 @@ admission/refund regressions fail qualified4aa and pass on both current targets;
 93internal/143public focused checks per target pass. Constructor CSV allocation
 −3.77% both APIs; desktop elapsed diagnostic, adverse text controls unresolved.
 Both earlier field-storage variants are fully removed, with all original evidence
-preserved. No new runner/metadata/cache/pool/API. Full delivery qualification pending.
+preserved. No new runner/metadata/cache/pool/API. Committed752d78ce is fully
+qualified on Windows/Ubuntu, actual11/10, originalStress and installed consumers;
+terminal CI42976124076 is cached and must never be queried again.
 
 The [R231 synchronous-call contract source gate](results/2026-11-11-sync-call-contract-source-gate/README.md)
 finds a real general-call packet copy, but canonical-span signatures alone reach
