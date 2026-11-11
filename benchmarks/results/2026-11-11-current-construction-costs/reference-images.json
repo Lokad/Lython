@@ -1,0 +1,12 @@
+{
+  "core": {
+    "path": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/quiet/observations.tgz",
+    "entry": "current-core.dll",
+    "sha256": "75a14f1399637646b21a0a12fcb08f8664c5c559c3a527859293083b6f54732e"
+  },
+  "catalog": {
+    "path": "benchmarks/results/2026-11-11-native-loop-admission/catalog.json",
+    "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec"
+  },
+  "collectorSHA256": "7b540b471d5e450dc748d0e1b4339fcdf38ed523bf1fbe2ac23cdb887f6916a4"
+}

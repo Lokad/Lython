@@ -1,0 +1,424 @@
+{
+  "source": "Qualified8f8628a4 exact frozen75a14 image, source-map verified; optional adapter0.4; actual Windows x64/.NET11RC3.",
+  "captures": [
+    {
+      "label": "captured-text",
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "captureInvocations": 256,
+      "captureSeconds": 2.343077,
+      "allEvents": 2691,
+      "eventsInMarkedCommand": 2680,
+      "outsideMarkedCommand": 11,
+      "threadEvents": {
+        "28404": 2675,
+        "89964": 5
+      },
+      "types": [
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "triggeringEvents": 1349,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "CasedWhitespaceIteration",
+          "triggeringEvents": 425,
+          "observedObjectBytes": [
+            64
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "triggeringEvents": 385,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "System.Byte[]",
+          "triggeringEvents": 327,
+          "observedObjectBytes": [
+            48,
+            16416
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "triggeringEvents": 167,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            3168
+          ]
+        },
+        {
+          "type": "System.String[]",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            32,
+            40
+          ]
+        },
+        {
+          "type": "System.String",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            32,
+            312
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "triggeringEvents": 4,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "triggeringEvents": 3,
+          "observedObjectBytes": [
+            152
+          ]
+        },
+        {
+          "type": "System.Func`1[Lokad.Lython.LythonExecutionResult]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            40
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            96
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ExecutionState",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            400
+          ]
+        },
+        {
+          "type": "NativeKey[]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            104
+          ]
+        }
+      ],
+      "timingClaim": false
+    },
+    {
+      "label": "report-async",
+      "case": "scripts.report-render.large",
+      "captureInvocations": 256,
+      "captureSeconds": 6.460254,
+      "allEvents": 6606,
+      "eventsInMarkedCommand": 6605,
+      "outsideMarkedCommand": 1,
+      "threadEvents": {
+        "103232": 6301,
+        "34896": 301,
+        "106184": 3
+      },
+      "types": [
+        {
+          "type": "System.Byte[]",
+          "triggeringEvents": 2923,
+          "observedObjectBytes": [
+            40,
+            88,
+            288,
+            1080,
+            2136,
+            4248,
+            16416,
+            16920,
+            32792,
+            33816,
+            65560,
+            67608,
+            131096,
+            131128,
+            135192,
+            135224,
+            148576,
+            148608,
+            262168,
+            262200,
+            270360,
+            270392,
+            454216
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.PyString",
+          "triggeringEvents": 894,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "System.Numerics.BigInteger",
+          "triggeringEvents": 761,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyDict",
+          "triggeringEvents": 695,
+          "observedObjectBytes": [
+            96
+          ]
+        },
+        {
+          "type": "System.Object[]",
+          "triggeringEvents": 543,
+          "observedObjectBytes": [
+            56,
+            4120,
+            8216,
+            32792
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.Text.GovernedByteBuilder",
+          "triggeringEvents": 433,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "TemporaryMemoryReservation",
+          "triggeringEvents": 260,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "System.String",
+          "triggeringEvents": 16,
+          "observedObjectBytes": [
+            208,
+            216,
+            288,
+            296,
+            304,
+            320,
+            328
+          ]
+        },
+        {
+          "type": "Entry[System.String,System.Object][]",
+          "triggeringEvents": 9,
+          "observedObjectBytes": [
+            432,
+            3168
+          ]
+        },
+        {
+          "type": "ExceptionTypeValue",
+          "triggeringEvents": 8,
+          "observedObjectBytes": [
+            48
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.LythonRuntime",
+          "triggeringEvents": 7,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "System.Threading.Tasks.TaskCompletionSource`1[Lokad.Lython.LythonExecutionResult]",
+          "triggeringEvents": 7,
+          "observedObjectBytes": [
+            24
+          ]
+        },
+        {
+          "type": "AsynchronousWorkItem",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "System.Int32[]",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            40,
+            552
+          ]
+        },
+        {
+          "type": "Lokad.Lython.LythonRunOptions",
+          "triggeringEvents": 5,
+          "observedObjectBytes": [
+            120
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType[]",
+          "triggeringEvents": 4,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "ExecutionContext",
+          "triggeringEvents": 4,
+          "observedObjectBytes": [
+            416
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[System.String,System.Byte[]]",
+          "triggeringEvents": 3,
+          "observedObjectBytes": [
+            80
+          ]
+        },
+        {
+          "type": "Scope",
+          "triggeringEvents": 3,
+          "observedObjectBytes": [
+            72
+          ]
+        },
+        {
+          "type": "System.GCMemoryInfoData",
+          "triggeringEvents": 3,
+          "observedObjectBytes": [
+            288
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.ProjectionBudget",
+          "triggeringEvents": 2,
+          "observedObjectBytes": [
+            48
+          ]
+        },
+        {
+          "type": "System.IO.Strategies.SyncWindowsFileStreamStrategy",
+          "triggeringEvents": 2,
+          "observedObjectBytes": [
+            64
+          ]
+        },
+        {
+          "type": "BuiltinCallable",
+          "triggeringEvents": 2,
+          "observedObjectBytes": [
+            96
+          ]
+        },
+        {
+          "type": "<>c__DisplayClass27_0",
+          "triggeringEvents": 2,
+          "observedObjectBytes": [
+            40
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyBuiltinRuntimeType",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.List`1[Lokad.Lython.Runtime.PyType]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            32
+          ]
+        },
+        {
+          "type": "Entry[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]][]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            152
+          ]
+        },
+        {
+          "type": "System.Runtime.CompilerServices.ConditionalWeakTable`2[System.Object,System.Runtime.CompilerServices.StrongBox`1[System.Int64]]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            40
+          ]
+        },
+        {
+          "type": "Reservation",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            56
+          ]
+        },
+        {
+          "type": "DelegateEnumerator[System.String]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            128
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyType",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            128
+          ]
+        },
+        {
+          "type": "System.Collections.Generic.Dictionary`2[Lokad.Lython.Runtime.PyType,System.Int32]",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            80
+          ]
+        },
+        {
+          "type": "Lokad.Lython.Runtime.PyTuple",
+          "triggeringEvents": 1,
+          "observedObjectBytes": [
+            48
+          ]
+        }
+      ],
+      "timingClaim": false
+    }
+  ],
+  "interpretation": "GCAllocationTick reports the allocation triggering each threshold event. Event shares and bytesSinceTick are not exact per-type allocations or removable CPU shares. No guest/host phase stacks were collected; full marked command includes reset/I/O/validation/prior-result cleanup.",
+  "sourceFacts": [
+    "3072 input lines and one new64B CasedWhitespaceIteration per line in current compiler-private immediate iteration:196608B/source invocation,17.54%of1120747.5B prior complete desktop allocation. This is a structural opportunity, not measured elimination or predicted CPU gain.",
+    "PyString samples are56B; returned word identity/storage is real, not disposable wrappers.",
+    "Report object[] samples mostly56B include canonical adopted record value storage; execution contexts are already shared/deferred and have few triggering events. Do not infer a duplicate argument/frame array from type alone.",
+    "Report byte[] samples range40..67608B, common65560B, but call sites/host-vs-guest not determined. ComparisonFileHost already uses FileStream and efficient stream overrides; no whole-prefix append defect established.",
+    "ExecutableCell.StoreThroughOwner updates real live locals and persistent namespace values. A lazy private cell integer alone cannot eliminate boxes without changing namespace storage; no such local patch selected."
+  ],
+  "selectedSourceGate": "Consolidate private native iteration result/state transport in existing execution-owned storage; eliminate per-line heap carrier, not add a pool/cache. Preserve eager word admission and all return/unwind boundaries. Source design must remove CasedWhitespaceIteration class and displaced int[] position representation together before any retained milestone. No prototype yet.",
+  "unresolved": [
+    "No exact allocation stack attribution or CPU improvement from this diagnostic.",
+    "A typed private return handoff and unified frame iteration state may increase fixed frame storage/transport cost; design, semantic proof and affected/control source pair required.",
+    "Captured helper continuations, ordinary/framed returns, break/fallback/errors and pending cleanup must transfer/retire state without stale aliases or new ownership infrastructure."
+  ]
+}

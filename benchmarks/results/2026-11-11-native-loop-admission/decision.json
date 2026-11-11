@@ -1,0 +1,19 @@
+{
+  "status": "Withdrawn after bounded confirmation; uncertainty remains, no permanent design veto.",
+  "baseline": "Fully qualified8f8628a4 production;458be840 exact same production source;43087005596terminalGREENcached.",
+  "changedProductionFiles": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs"
+  ],
+  "focusedActualTargets": {
+    "net11": 1523,
+    "net10": 1523,
+    "total": 3046
+  },
+  "runtimeAndCompilationAllocation": "Flat in desktop three-image source pair.",
+  "desktopAdversity": "Captured text RunAsync elapsed+7.48..+8.35%, unchanged control0.81%; cause remains unexplained. Other desktop observations mixed and preserved.",
+  "quietSummary": "141.216808seconds, five jobs, four independent processes each. Captured Run elapsed−1.17..+1.78%; RunAsync−3.02..+2.80%; moving reference controls2.60/5.38%. Ordinary Run−1.78..−0.44%, widerCPU−7.80..+0.85%. OrdinaryAsync−5.05..+1.28%. UnaffectedCSV control also−2.00..−0.58%. No useful general CPU gain or neutrality established.",
+  "reason": "Small mechanical per-word admission reduction adds persistent cleanup state and extends logical nesting across namespace reentry. Complete-script evidence does not justify this contract/lifetime change. Restore original managed stack-admission boundary. No fixed percentage veto, no rejection of broader call/operand redesign.",
+  "ownershipAndCleanup": "All output/files/balances/quiet/identity/worker joins/RAM cleanup/persistent archive checks pass. Initial disk refusal stopped before mutation, reserve unchanged; verified committed duplicates retired under fresh idle/UID/inode/all-alias proofs.",
+  "fullPrototypeQualification": false,
+  "publication": false
+}

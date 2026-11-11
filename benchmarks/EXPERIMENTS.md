@@ -6,14 +6,31 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [native-loop admission prototype](results/2026-11-11-native-loop-admission/README.md)
+is withdrawn after3,046focused checks and a bounded quiet confirmation. Allocation
+is flat; captured elapsed overlaps zero, slight ordinary-text improvement lacks
+consistent CPU support, and unaffected CSV also improves. Original tight-control
+desktop async adversity remains unexplained. A longer admission lifetime/cleanup
+flag is not justified by this evidence; exact qualified production is restored
+and nonincrementally rebuilt on both targets. No permanent design veto follows.
+
+The [current construction captures](results/2026-11-11-current-construction-costs/README.md)
+reuse qualified8f862 source, existing allocation-tick collector and two complete
+scripts. Zero lost events; all goldens/balances/joins/fixture cleanup pass. Type
+trigger counts are not exact allocation totals or CPU attribution. Source identifies
+one64B private iteration carrier per3072text lines:196608B, about17.5%of prior
+complete allocation. This supports a source gate for coherent native iteration/
+return storage consolidation, without a pool/cache or predicted gain. Real record
+storage, host-phase uncertainty and already-deferred frames remain explicit.
+
 The [current storage-cost profiles](results/2026-11-11-current-storage-costs/README.md)
 measure retained8f8628a4 captured text/Run and report/RunAsync:1148/1020guest leaves,
 71/60unknown, actual current code/maps. Word preparation, dictionary/native
 iteration and report dispatch/format/write remain material associations, not
 removable percentages. Source confirms shared frames/workspaces and direct UTF8
 formatting already ship. The next bounded source gate assesses one native-loop
-admission scope while preserving effect order/reentry/stack safety. No prototype
-or CPU forecast. Two short windows, all gates/join/archive pass; original failed
+admission scope while preserving effect order/reentry/stack safety; the subsequent
+prototype and withdrawal are linked above. Two short windows, all gates/join/archive pass; original failed
 preparations preserved. Full delivery and publication remain separate.
 
 The [current dictionary-storage checkpoint](results/2026-11-11-dictionary-cpython-checkpoint/README.md)
@@ -30,8 +47,9 @@ retains exact managed counts inside already funded entries, materializing stable
 immutable values on reads/copy publication. Text allocation falls14.90–16.13%,
 CSV3.13% and JSON-lines4.20% on both APIs; compilation flat. Refined quiet text
 Run improves directionally with supporting widerCPU. Report widerCPU+1.91..+6.38%
-remains accepted debt; CSV elapsed inconclusive. Full delivery is separately
-pending. Original/refined adversity, JIT structural correction and initial archival
+remains accepted debt; CSV elapsed inconclusive. Corrected full43087005596 is
+GREEN/cached on both platforms, actual11/10, stress and installed consumers;
+original callback-deadline failure remains preserved. Original/refined adversity, JIT structural correction and initial archival
 failure/recovery survive. No universal neutrality, additive gain or new CPython
 ratio claim. The performance objective continues.
 

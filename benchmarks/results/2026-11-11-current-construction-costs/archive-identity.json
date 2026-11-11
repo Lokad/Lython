@@ -1,0 +1,41 @@
+{
+  "evidenceSHA256": {
+    "allocation-traces.tar.xz": {
+      "bytes": 103124,
+      "sha256": "5dea9f30a093a974b5d6f44665a5215d591f447b8186cbcee7f0c7fe6c284266"
+    },
+    "assessment.json": {
+      "bytes": 12723,
+      "sha256": "225b67f995d699eabd24269d3f49a37f179a27849e4ea53da9c01b4e5c61628f"
+    },
+    "collector-collector.csproj": {
+      "bytes": 991,
+      "sha256": "7ab33e42c2b780e03798ae7856c7df6d628d84bf0047b45d5b0b6f82621d2d52"
+    },
+    "collector-Program.cs": {
+      "bytes": 2277,
+      "sha256": "de60482c8ab482468db7ad178209f3e8a1e0d8099eb7b373af728db7f48ff7ec"
+    },
+    "profile-allocation.py": {
+      "bytes": 6627,
+      "sha256": "1691ffc92e651b2f860cdc48e0d0c39007ca047e807ccfa9af6a15bf63d385c1"
+    },
+    "README.md": {
+      "bytes": 3629,
+      "sha256": "cf491914e9e31b33ee843641f130659bf2d9f32bef81ee01d630a682226d8ec6"
+    },
+    "records.json": {
+      "bytes": 16591,
+      "sha256": "52535cf06d641ea93e699b75d804ced916a975657eecc8cf775f28f13ee5cbf9"
+    },
+    "reference-images.json": {
+      "bytes": 519,
+      "sha256": "0c1ab47cd43bdc80abb1e1da3d8a279ce254691bb2d603f9852af635621c759d"
+    },
+    "source-identity.json": {
+      "bytes": 74881,
+      "sha256": "3b06054b112fed51d7385f42f462fa09331fd055b7f398d60c6b7c8de251f160"
+    }
+  },
+  "bytePreservation": "Immutable measured artifacts; .gitattributes -text. Not a release/package manifest."
+}

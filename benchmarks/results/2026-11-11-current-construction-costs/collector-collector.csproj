@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks />
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <BenchmarkRoot Condition="'$(BenchmarkRoot)' == ''">D:/code/Lython/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net11.0</BenchmarkRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Diagnostics.NETCore.Client"><HintPath>$(BenchmarkRoot)/Microsoft.Diagnostics.NETCore.Client.dll</HintPath></Reference>
+    <Reference Include="Microsoft.Diagnostics.Tracing.TraceEvent"><HintPath>$(BenchmarkRoot)/Microsoft.Diagnostics.Tracing.TraceEvent.dll</HintPath></Reference>
+    <Reference Include="Microsoft.Diagnostics.FastSerialization"><HintPath>$(BenchmarkRoot)/Microsoft.Diagnostics.FastSerialization.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

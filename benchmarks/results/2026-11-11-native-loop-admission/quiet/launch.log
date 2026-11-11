@@ -1,0 +1,7 @@
+{"freeBytes": 265150464, "sourceAndImagesVerified": true, "jobs": 5, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min
+MainPID=3559830
+ActiveState=active
+
+
+Running as unit: lython-b592-native-loop-scope-20261111.service; invocation ID: 245c6b7f65e74f2eaf375f10dc9d9427

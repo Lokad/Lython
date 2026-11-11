@@ -1,0 +1,16 @@
+{
+  "net11Before": {
+    "path": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/quiet/observations.tgz",
+    "entry": "current-core.dll",
+    "sha256": "75a14f1399637646b21a0a12fcb08f8664c5c559c3a527859293083b6f54732e"
+  },
+  "net10Before": {
+    "path": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/candidate-net10.0.dll.gz",
+    "sha256": "382edf1bc3866fb7c25eb4937488a160fa37124dba5ac4c229a2787d40a66042"
+  },
+  "net11Candidate": {
+    "path": "quiet/observations.tgz",
+    "entry": "current-core.dll",
+    "sha256": "2520e4b2baa37b2f3407ea7654231d1036f92aab99757e3bce1c054ffa2a24a0"
+  }
+}

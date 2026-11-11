@@ -1,0 +1,43 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+index 0460d861..5d759949 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+@@ -41,6 +41,7 @@ internal sealed partial class LythonRuntime
+                 && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
+             var totalChanged = false;
+             long pendingTotal = 0;
++            var nativeFrameEntered = false;
+             try
+             {
+                 while (true)
+@@ -60,14 +61,16 @@ internal sealed partial class LythonRuntime
+                     }
+ 
+                     execution.InstructionIndex = callIndex;
+-                    scope.EnterInterpreterFrame(call.CallSpan);
+-                    bool updated;
+-                    try
++                    // This segment has constant CLR nesting. Admit at the same
++                    // first call boundary, then retain that scope until it exits.
++                    // Binding/reentry and cancellation keep their own checks.
++                    if (!nativeFrameEntered)
+                     {
+-                        updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
+-                            call.CallSpan, add.Span, storeSpan);
++                        scope.EnterInterpreterFrame(call.CallSpan);
++                        nativeFrameEntered = true;
+                     }
+-                    finally { scope.LeaveInterpreterFrame(); }
++                    var updated = dictionary.TryAccumulateWithoutAdmission(key, fallback, increment, scope,
++                        call.CallSpan, add.Span, storeSpan);
+                     if (!updated)
+                     {
+                         // Only the loop binding happened. The original body now
+@@ -113,6 +116,7 @@ internal sealed partial class LythonRuntime
+             }
+             finally
+             {
++                if (nativeFrameEntered) scope.LeaveInterpreterFrame();
+                 // Publish before any continuation, callback or error handler.
+                 // This private scalar store cannot admit or invoke guest code;
+                 // it must not replace a cancellation or first refusal.
