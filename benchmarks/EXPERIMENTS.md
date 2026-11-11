@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [native iteration storage prototype](results/2026-11-11-native-iteration-storage/README.md)
+freezes two source/core forms. Each passes9,178focused checks across actual11/10;
+eight Python goldens and real pending-return cleanup/alias regressions survive.
+Text allocation falls26–29%, compilation flat. Refined quiet ordinaryRun improves
+about4–5% with supporting CPU; captured/search remain variable, and reportAsync
+CPU+4.26..+6.38% is adverse. Initial tight-control search regression and all
+opposing desktop observations remain. A final retirement correction addresses
+unnecessary metadata clearing on numeric-only paths; it is not covered by those
+timings. No full prototype qualification, retention or publication claim follows.
+
 The [native-loop admission prototype](results/2026-11-11-native-loop-admission/README.md)
 is withdrawn after3,046focused checks and a bounded quiet confirmation. Allocation
 is flat; captured elapsed overlaps zero, slight ordinary-text improvement lacks

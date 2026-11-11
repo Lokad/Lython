@@ -1,0 +1,13 @@
+{
+  "source": "Fully qualified8f8628a4, same production in458be840/9f400b71,43087005596terminalGREENcached",
+  "net11": {
+    "path": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/quiet/observations.tgz",
+    "entry": "current-core.dll",
+    "sha256": "75a14f1399637646b21a0a12fcb08f8664c5c559c3a527859293083b6f54732e"
+  },
+  "net10": {
+    "path": "benchmarks/results/2026-11-11-dictionary-integer-storage/refined/candidate-net10.0.dll.gz",
+    "sha256": "382edf1bc3866fb7c25eb4937488a160fa37124dba5ac4c229a2787d40a66042"
+  },
+  "patches": "Supplemental LF-normalized text diffs; exact source bytes are in each source archive."
+}

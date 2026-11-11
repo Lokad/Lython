@@ -332,3 +332,6 @@ benchmarks/results/2026-11-11-current-storage-costs/** -text whitespace=cr-at-eo
 benchmarks/results/2026-11-11-native-loop-admission/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-loop-admission/**/*.patch -text -whitespace
 benchmarks/results/2026-11-11-current-construction-costs/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-11-native-iteration-storage/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-11-native-iteration-storage/**/*.patch -text -whitespace

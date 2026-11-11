@@ -1,0 +1,7 @@
+{"freeBytes": 264998912, "sourceAndImagesVerified": true, "jobs": 7, "ownerSeconds": 240, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=4min
+MainPID=3560991
+ActiveState=active
+
+
+Running as unit: lython-b593-native-iteration-storage-20261111.service; invocation ID: a1b5513a940245dd87b59903d6b457b3

@@ -1,0 +1,925 @@
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -124,7 +124,7 @@
+             case PendingException exception:
+                 throw exception.Exception;
+             case PendingReturn returned:
+-                throw new ReturnSignal(returned.Value);
++                throw new ReturnSignal(returned.Result);
+             case PendingControl control:
+                 throw control.Control;
+             default:
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -33,7 +33,7 @@
+                 if (!borrow && !function.CanBindNativeArguments) return false;
+                 try
+                 {
+-                    object value;
++                    ExecutableResult value;
+                     scope.EnterInterpreterFrame(call.CallSpan);
+                     try
+                     {
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -15,7 +15,7 @@
+         private PyExecutableFunction? _pendingFunction;
+         private object? _pendingReceiver;
+         private int _pendingCallStart;
+-        private object? _completedCallValue;
++        private ExecutableResult _completedCallResult;
+         private Exception? _completedCallError;
+         private enum CallCompletion { Call, TypeGetter, TypeSubscription, Constructor }
+         private CallCompletion _callCompletion;
+@@ -164,7 +164,7 @@
+             if (failure is null && current._pendingFunction is not null)
+             {
+                 try { return current.BeginPendingCall(asynchronous, out pending); }
+-                catch (Exception error) { current.CompletePendingCall(null, error); return current; }
++                catch (Exception error) { current.CompletePendingCall(default, error); return current; }
+             }
+             var caller = current._caller;
+             if (caller is null)
+@@ -174,7 +174,7 @@
+                 return null;
+             }
+ 
+-            var result = current.HasFrameReturn ? current.FrameReturnValue : PyNone.Instance;
++            var result = current.HasFrameReturn ? current._execution.ReturnValue : new ExecutableResult(PyNone.Instance);
+             try { current.CloseInvocation(failure); }
+             catch (Exception error) { failure = error; }
+             current._caller = null;
+@@ -236,7 +236,7 @@
+             catch (Exception error)
+             {
+                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
+-                CompletePendingCall(null, error);
++                CompletePendingCall(default, error);
+                 return this;
+             }
+             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+@@ -254,7 +254,7 @@
+             catch (Exception error)
+             {
+                 if (TryTranslateCallableException(error, PendingCallSpan, out var translated)) error = translated;
+-                CompletePendingCall(null, error);
++                CompletePendingCall(default, error);
+                 return this;
+             }
+             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+@@ -297,7 +297,7 @@
+                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
+                         if (pause == InstructionPause.Boundary)
+                         {
+-                            CompletePendingCall(work.ReturnValue ?? PyNone.Instance, null);
++                            CompletePendingCall(work.ReturnValue.Value is null ? new ExecutableResult(PyNone.Instance) : work.ReturnValue, null);
+                             return this;
+                         }
+                         if (pause != InstructionPause.ContextRequired)
+@@ -333,7 +333,7 @@
+                     PyFunctionBinding.AnnotateException(runtimeError, frame, function.Name, span);
+                 else if (functionEntered && error is LythonRuntimeException borrowedError)
+                     PyFunctionBinding.AnnotateException(borrowedError, function.DefinitionContext, function.Name, span);
+-                CompletePendingCall(null, error);
++                CompletePendingCall(default, error);
+                 return this;
+             }
+             finally
+@@ -383,9 +383,9 @@
+             }
+         }
+ 
+-        private void CompletePendingCall(object? value, Exception? failure)
+-        {
+-            _completedCallValue = value;
++        private void CompletePendingCall(in ExecutableResult value, Exception? failure)
++        {
++            _completedCallResult = value;
+             _completedCallError = failure;
+             _pendingFunction = null;
+             _pendingReceiver = null;
+@@ -396,14 +396,15 @@
+             if (!HasPendingCall) return;
+             if (_pendingFunction is not null) throw new InvalidOperationException("Executable call has not completed.");
+             var start = _pendingCallStart;
+-            var value = _completedCallValue;
++            var result = _completedCallResult;
++            var value = result.Value;
+             var failure = _completedCallError;
+             var completion = _callCompletion;
+             var span = PendingCallSpan;
+             _pendingCallSite = null;
+             _protocolCallSpan = null;
+             _callCompletion = CallCompletion.Call;
+-            _completedCallValue = null;
++            _completedCallResult = default;
+             _completedCallError = null;
+             if (completion == CallCompletion.Constructor)
+             {
+@@ -414,7 +415,7 @@
+                 {
+                     if (!ReferenceEquals(value, PyNone.Instance))
+                         failure = new LythonRuntimeException("TypeError", $"__init__ for class '{instance.Type.Name}' must return None.", span);
+-                    else value = instance;
++                    else result = new(instance);
+                 }
+             }
+             if (completion == CallCompletion.TypeGetter)
+@@ -438,7 +439,7 @@
+                 }
+             }
+             if (completion == CallCompletion.TypeSubscription) CheckExecution(span);
+-                if (failure is not null)
++            if (failure is not null)
+             {
+                 _execution.Stack.RetireTo(start);
+                 if (failure is LythonRuntimeException runtimeError) _injectedException = runtimeError;
+@@ -446,7 +447,7 @@
+             }
+             else
+             {
+-                PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], RuntimeValue(value));
++                PublishInstructionResult(_execution.Code.Instructions[_execution.InstructionIndex], result);
+                 _execution.InstructionIndex++;
+             }
+         }
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.CasedSplits.cs
+@@ -5,17 +5,20 @@
+ 
+ internal sealed partial class LythonRuntime
+ {
+-    private static object ExecuteCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context,
+-        bool consumedByIteration = false)
++    private static void ExecuteCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context,
++        out ExecutableResult result, bool consumedByIteration = false)
+     {
+         context.CheckExecution(recipe.CasingMemberSpan);
+         context.CheckExecution(recipe.CasingCallSpan);
+         context.CheckExecution(recipe.SplitMemberSpan);
+         context.CheckExecution(recipe.SplitCallSpan);
+-        return consumedByIteration
+-            ? PyStringOps.PrepareCasedWhitespaceIteration(receiver, recipe.Upper, context, recipe.SplitCallSpan)
+-            : PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
+-                context.MemoryGovernor, recipe.SplitCallSpan, context);
++        if (consumedByIteration)
++        {
++            PyStringOps.PrepareCasedWhitespaceIteration(receiver, recipe.Upper, context, recipe.SplitCallSpan);
++            result = new(receiver) { IterationContext = context, CasedSplit = recipe };
++        }
++        else result = new(PyStringOps.SplitCasedWhitespace(receiver, recipe.Upper,
++            context.MemoryGovernor, recipe.SplitCallSpan, context));
+     }
+ 
+     internal sealed partial class ExecutionContext
+@@ -35,9 +38,9 @@
+             // through the final call, including its local-store continuation.
+             try
+             {
+-                object result;
++                ExecutableResult result;
+                 context.EnterInterpreterFrame(recipe.CasingCallSpan);
+-                try { result = ExecuteCasedSplit(recipe, receiver, context, CallResultConsumedByIteration(in execution, resultCall)); }
++                try { ExecuteCasedSplit(recipe, receiver, context, out result, CallResultConsumedByIteration(in execution, resultCall)); }
+                 catch (Exception error) when (TryTranslateCallableException(error, recipe.SplitCallSpan, out var translated)) { throw translated; }
+                 finally { context.LeaveInterpreterFrame(); }
+                 execution.InstructionIndex += 2;
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -221,7 +221,7 @@
+                         case ExecutableOpCode.GetIter:
+                             if (execution.Stack.TryPrepareNativeIteration(
+                                 ReadOperand(ref execution, instruction.InputStart, scope, 0),
+-                                instruction.ResultSlot, instruction.LiveExtent, instruction.Span)) break;
++                                instruction.InputStart, instruction.ResultSlot, instruction.LiveExtent, instruction.Span)) break;
+                             if (invocation is null) return InstructionPause.ContextRequired;
+                             if (!asynchronous) invocation!.ExecuteValueOperation(instruction);
+                             else
+@@ -264,7 +264,7 @@
+                             if (invocation is null && instruction.OpCode is not (ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone))
+                                 return InstructionPause.ContextRequired;
+                             jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
+-                            if (execution.ReturnValue is not null)
++                            if (execution.ReturnValue.Value is not null)
+                             {
+                                 // Keep the returning instruction/span current and
+                                 // finish queued native disposal before leaving.
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Routing.cs
+@@ -21,10 +21,10 @@
+         private bool TryRouteReturn(ReturnSignal signal, LythonSourceSpan span)
+         {
+             if (TryHandleAbrupt(_execution.Code, this, ref _execution.Stack, _execution.InstructionIndex,
+-                new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _execution.InstructionIndex, out _))
++                new PendingReturn(signal.Result), span, ref _pendingAbrupt, ref _execution.InstructionIndex, out _))
+                 return true;
+ 
+-            _execution.ReturnValue = signal.Value;
++            _execution.ReturnValue = signal.Result;
+             return false;
+         }
+ 
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -75,7 +75,7 @@
+             _delegation = null;
+             HasYield = false;
+             YieldValue = PyNone.Instance;
+-            _execution.ReturnValue = null;
++            _execution.ReturnValue = default;
+             _savedActiveExceptions = null;
+             _entryActiveException = null;
+             _caller = null;
+@@ -84,7 +84,7 @@
+             _pendingFunction = null;
+             _pendingReceiver = null;
+             _pendingCallStart = 0;
+-            _completedCallValue = null;
++            _completedCallResult = default;
+             _completedCallError = null;
+             _callCompletion = CallCompletion.Call;
+             _protocolCallSpan = null;
+@@ -533,7 +533,7 @@
+         // (and its per-return signal box) entirely. Propagated signals from
+         // nested calls still arrive through the per-instruction catch below,
+         // which stays as the routing backstop.
+-        private static bool DeliverReturn(ref ExecutableWorkState execution, ExecutionContext? invocation, object value, LythonSourceSpan span)
++        private static bool DeliverReturn(ref ExecutableWorkState execution, ExecutionContext? invocation, in ExecutableResult value, LythonSourceSpan span)
+         {
+             if (execution.Code.ExceptionRegions.Count != 0 &&
+                 TryHandleAbrupt(execution.Code, invocation!, ref execution.Stack, execution.InstructionIndex, new PendingReturn(value), span, ref invocation!._pendingAbrupt, ref execution.InstructionIndex, out _))
+@@ -642,19 +642,21 @@
+                     return true;
+ 
+                 case ExecutableOpCode.Return:
+-                    return DeliverReturn(ref execution, invocation, TakeOperand(ref execution, instruction, scope), instruction.Span);
++                    var result = execution.Stack.ReadResult(instruction.InputStart);
++                    result.Value = TakeOperand(ref execution, instruction, scope);
++                    return DeliverReturn(ref execution, invocation, result, instruction.Span);
+ 
+                 case ExecutableOpCode.ReturnNone:
+-                    return DeliverReturn(ref execution, invocation, PyNone.Instance, instruction.Span);
++                    return DeliverReturn(ref execution, invocation, new ExecutableResult(PyNone.Instance), instruction.Span);
+ 
+                 default:
+                     throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
+             }
+         }
+ 
+-        internal bool HasFrameReturn => _execution.ReturnValue is not null;
+-
+-        internal object FrameReturnValue => _execution.ReturnValue.RequireNotNull();
++        internal bool HasFrameReturn => _execution.ReturnValue.Value is not null;
++
++        internal object FrameReturnValue => _execution.ReturnValue.Value.RequireNotNull();
+ 
+         private async ValueTask DrainPendingDisposalsAsync()
+         {
+@@ -711,7 +713,7 @@
+                     // A relinquished cursor must finish before another guest
+                     // instruction or handler observes its cleanup effects.
+                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+-                    if (_execution.ReturnValue is not null || HasYield) return;
++                    if (_execution.ReturnValue.Value is not null || HasYield) return;
+                     if (!jumped) _execution.InstructionIndex++;
+                 }
+             }
+--- /dev/null
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Iteration.cs
+@@ -0,0 +1,76 @@
++using Lokad.Lython.Frontend;
++using Lokad.Lython.Runtime.Text;
++
++namespace Lokad.Lython.Runtime;
++
++internal sealed partial class LythonRuntime
++{
++    // Only an immediate compiler-owned iteration consumer may receive a cased
++    // source in place of its Python list. Ordinary results remain ordinary values.
++    // Keep this handoff inline through calls, returns and protected cleanup.
++    internal struct ExecutableResult(object? value)
++    {
++        internal object? Value = value;
++        internal ExecutionContext? IterationContext;
++        internal ExecutableCasedSplit? CasedSplit;
++    }
++
++    private struct NativeIterationState
++    {
++        internal ExecutionContext? Context;
++        internal ExecutableCasedSplit? CasedSplit;
++        // Lists and tuples use Position; cased words use the shared scanner.
++        internal PyStringOps.WhitespaceRangeState Range;
++    }
++
++    internal partial struct ExecutableValueStorage
++    {
++        private void EnsureNativeIterationStorage(LythonSourceSpan span)
++        {
++            if (_nativeIterations is not null) return;
++            // Includes reference fields, scanner scalars and deliberate headroom.
++            // One retained backing replaces both position storage and word carriers.
++            var count = _items.Length - _firstTemporarySlot;
++            var bytes = checked(32L + 48L * count);
++            using var storage = _state.MemoryGovernor.ReserveTemporary(bytes, span);
++            _state.CheckExecution(span);
++            if (_nativeIterations is not null) return;
++            var ownedBytes = checked(_ownedStorageBytes + bytes);
++            var states = new NativeIterationState[count];
++            storage.Commit(bytes);
++            _nativeIterations = states;
++            _ownedStorageBytes = ownedBytes;
++        }
++
++        private void ClearNativeIteration(int slot)
++        {
++            if (_nativeIterations is not null && slot >= _firstTemporarySlot)
++                _nativeIterations[slot - _firstTemporarySlot] = default;
++        }
++
++        internal readonly ExecutableResult ReadResult(int slot, object? value = null)
++        {
++            var result = new ExecutableResult(value);
++            if (_nativeIterations is not null && slot >= _firstTemporarySlot)
++            {
++                ref readonly var state = ref _nativeIterations[slot - _firstTemporarySlot];
++                result.IterationContext = state.Context;
++                result.CasedSplit = state.CasedSplit;
++            }
++            return result;
++        }
++
++        internal void PublishIterationResult(int slot, int liveExtent, in ExecutableResult result)
++        {
++            var recipe = result.CasedSplit!;
++            EnsureNativeIterationStorage(recipe.SplitCallSpan);
++            PublishValue(slot, liveExtent, result.Value.RequireNotNull());
++            _nativeIterations![slot - _firstTemporarySlot] = new NativeIterationState
++            {
++                Context = result.IterationContext,
++                CasedSplit = recipe,
++                Range = PyStringOps.CreateCasedWhitespaceState(recipe.Upper),
++            };
++        }
++    }
++}
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -7,27 +7,27 @@
+ internal sealed partial class LythonRuntime
+ {
+     internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result, bool consumedByIteration = false)
+-    {
+-        result = PyNone.Instance;
++        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out ExecutableResult result, bool consumedByIteration = false)
++    {
++        result = default;
+         var body = codeObject.NativeBody;
+         if (body is null || body.ClosureInputCount != 0 || context.MirrorLocalStores || context.CurrentExecutableFrame is not null
+             || context.ActiveHandlerVariables is { Count: > 0 })
+             return false;
+         if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
+-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan, consumedByIteration);
++        ExecuteNativeBody(codeObject, body, context, arguments, entrySpan, ref result, consumedByIteration);
+         return true;
+     }
+ 
+     internal static bool TryExecuteNativeFunction(ExecutableCodeObject code, ExecutionContext context,
+-        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out object result,
++        ReadOnlySpan<object?> arguments, string name, LythonSourceSpan span, out ExecutableResult result,
+         bool consumedByIteration = false)
+     {
+-        result = PyNone.Instance;
++        result = default;
+         var body = code.NativeBody!;
+         if (!GuardNativeBody(code, body, arguments, context)) return false;
+         context.EnterFunctionCall(span);
+-        try { result = ExecuteNativeBody(code, body, context, arguments, span, consumedByIteration); return true; }
++        try { ExecuteNativeBody(code, body, context, arguments, span, ref result, consumedByIteration); return true; }
+         catch (LythonRuntimeException error)
+         {
+             PyFunctionBinding.AnnotateException(error, context, name, span);
+@@ -42,24 +42,26 @@
+         ReadOnlySpan<object?> arguments, ExecutionContext context)
+         => arguments.Length >= body.ClosureInputCount && (body.Root < 0 || GuardNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context, out _));
+ 
+-    private static object ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
+-        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan,
++    private static void ExecuteNativeBody(ExecutableCodeObject code, ExecutableNativeBody body,
++        ExecutionContext context, ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, ref ExecutableResult result,
+         bool consumedByIteration = false)
+     {
+         context.EnterInterpreterFrame(entrySpan);
+         try
+         {
+-            object result = PyNone.Instance;
++            result = new(PyNone.Instance);
+             var entryException = context.State.CurrentException;
+             if (body.Root < 0) context.State.CheckExecution(code.Instructions[0].Span);
+             else
+             {
+-                result = EvaluateNativeReturn(body.Root + code.FirstTemporarySlot, code, body.Values, arguments, context,
+-                    entryException, consumedByIteration);
++                var root = body.Root + code.FirstTemporarySlot;
++                if (consumedByIteration || body.Values[body.Root].Operation is
++                    NativeReturnOperation.StoreClosure or NativeReturnOperation.Conditional)
++                    EvaluateNativeRoot(root, code, body.Values, arguments, context, entryException, ref result, consumedByIteration);
++                else result.Value = EvaluateNativeValue(root, code, body.Values, arguments, context, entryException);
+                 CheckNativeReturnExit(body.Root, body.Values, context);
+             }
+             context.State.SetCurrentException(entryException);
+-            return result;
+         }
+         finally { context.LeaveInterpreterFrame(); }
+     }
+@@ -277,54 +279,76 @@
+         return false;
+     }
+ 
+-    private static object EvaluateNativeReturn(int index, ExecutableCodeObject code, NativeReturnValue[] values,
++    // Preparation emits stores and branches only as return continuations, never
++    // as expression operands. Keep their private result handoff at that boundary;
++    // ordinary recursive values need neither iteration metadata nor a byref result.
++    private static void EvaluateNativeRoot(int index, ExecutableCodeObject code, NativeReturnValue[] values,
+         ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException,
+-        bool consumedByIteration = false)
+-    {
+-        // Bound direct inputs are pure. Operations and real roots retain their
+-        // cancellation/refusal checks without a recursive leaf dispatch.
++        ref ExecutableResult returned, bool consumedByIteration)
++    {
++        ref readonly var value = ref values[index - code.FirstTemporarySlot];
++        var instruction = value.Instruction;
++        if (value.Operation == NativeReturnOperation.StoreClosure)
++        {
++            var stored = EvaluateNativeValue(value.First, code, values, arguments, context, entryException);
++            context.State.CheckExecution(instruction.Span);
++            ((ExecutableCell)arguments[arguments.Length - code.NativeBody!.ClosureInputCount + instruction.ClosureSlot]!).StoreThroughOwner(stored);
++            EvaluateNativeRoot(value.Second, code, values, arguments, context, entryException, ref returned, consumedByIteration);
++            CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
++        }
++        else if (value.Operation == NativeReturnOperation.Conditional)
++        {
++            var condition = EvaluateNativeValue(value.First, code, values, arguments, context, entryException);
++            context.State.CheckExecution(instruction.Span);
++            var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
++            EvaluateNativeRoot(selected, code, values, arguments, context, entryException, ref returned, consumedByIteration);
++            CheckNativeReturnExit(selected - code.FirstTemporarySlot, values, context);
++        }
++        else if (consumedByIteration && value.Operation == NativeReturnOperation.CasedSplit)
++        {
++            var receiver = (PyString)EvaluateNativeValue(value.First, code, values, arguments, context, entryException);
++            try { ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, receiver, context, out returned, true); }
++            catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
++        }
++        else returned.Value = EvaluateNativeValue(index, code, values, arguments, context, entryException);
++    }
++
++    // Keep the materialized split's result carrier out of every expression frame.
++    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
++    private static object EvaluateMaterializedCasedSplit(ExecutableCasedSplit recipe, PyString receiver, ExecutionContext context)
++    {
++        ExecuteCasedSplit(recipe, receiver, context, out var result);
++        return result.Value.RequireNotNull();
++    }
++
++    private static object EvaluateNativeValue(int index, ExecutableCodeObject code, NativeReturnValue[] values,
++        ReadOnlySpan<object?> arguments, ExecutionContext context, PyException? entryException)
++    {
++        // Bound direct inputs are pure. Real operations retain their checks.
+         if (index < code.FirstTemporarySlot)
+             return RuntimeValue(index < 0 ? code.Constants[~index] : arguments[index]);
+         ref readonly var value = ref values[index - code.FirstTemporarySlot];
++        if (value.Operation is NativeReturnOperation.StoreClosure or NativeReturnOperation.Conditional)
++            throw new InvalidOperationException("A native return continuation cannot be used as an expression operand.");
+         var instruction = value.Instruction;
+-        if (value.Operation == NativeReturnOperation.StoreClosure)
+-        {
+-            var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+-            context.State.CheckExecution(instruction.Span);
+-            ((ExecutableCell)arguments[arguments.Length - code.NativeBody!.ClosureInputCount + instruction.ClosureSlot]!).StoreThroughOwner(stored);
+-            var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
+-                consumedByIteration);
+-            CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
+-            return result;
+-        }
+-        if (value.Operation == NativeReturnOperation.Conditional)
+-        {
+-            var condition = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+-            context.State.CheckExecution(instruction.Span);
+-            var selected = PyTruthiness.IsTruthy(condition) ? value.Second : value.Third;
+-            var result = EvaluateNativeReturn(selected, code, values, arguments, context, entryException, consumedByIteration);
+-            CheckNativeReturnExit(selected - code.FirstTemporarySlot, values, context);
+-            return result;
+-        }
+         object? first = null, second = null, third = null, fourth = null;
+         if (value.Operation is not (NativeReturnOperation.Read or NativeReturnOperation.None or NativeReturnOperation.EmptySequence))
+         {
+-            first = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
++            first = EvaluateNativeValue(value.First, code, values, arguments, context, entryException);
+             if (value.Operation == NativeReturnOperation.CasedSplit)
+             {
+-                try { return ExecuteCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first,
+-                    context, consumedByIteration); }
++                try { return EvaluateMaterializedCasedSplit(code.CallSites[instruction.CallSiteIndex].CasedSplit!, (PyString)first, context); }
+                 catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+             }
+             if (value.Operation is NativeReturnOperation.Binary or NativeReturnOperation.Augmented or NativeReturnOperation.Subscript)
+-                second = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException);
++                second = EvaluateNativeValue(value.Second, code, values, arguments, context, entryException);
+             else if (value.Operation is >= NativeReturnOperation.BuiltinUnary and <= NativeReturnOperation.EndsWith)
+             {
+                 if (value.MemberSpan is { } memberSpan) context.State.CheckExecution(memberSpan);
+                 var call = code.CallSites[instruction.CallSiteIndex];
+-                if (call.NativeArgumentSource(0) is not int.MaxValue and var a) second = EvaluateNativeReturn(a, code, values, arguments, context, entryException);
+-                if (call.NativeArgumentSource(1) is not int.MaxValue and var b) third = EvaluateNativeReturn(b, code, values, arguments, context, entryException);
+-                if (call.NativeArgumentSource(2) is not int.MaxValue and var c) fourth = EvaluateNativeReturn(c, code, values, arguments, context, entryException);
++                if (call.NativeArgumentSource(0) is not int.MaxValue and var a) second = EvaluateNativeValue(a, code, values, arguments, context, entryException);
++                if (call.NativeArgumentSource(1) is not int.MaxValue and var b) third = EvaluateNativeValue(b, code, values, arguments, context, entryException);
++                if (call.NativeArgumentSource(2) is not int.MaxValue and var c) fourth = EvaluateNativeValue(c, code, values, arguments, context, entryException);
+             }
+         }
+         context.State.CheckExecution(instruction.Span);
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Results.cs
+@@ -8,6 +8,22 @@
+     {
+         private void PublishInstructionResult(in ExecutableInstruction instruction, object value)
+             => PublishInstructionResult(ref _execution, this, instruction, value);
++
++        private void PublishInstructionResult(in ExecutableInstruction instruction, in ExecutableResult result)
++            => PublishInstructionResult(ref _execution, this, instruction, result);
++
++        private static void PublishInstructionResult(ref ExecutableWorkState execution,
++            ExecutionContext? invocation, in ExecutableInstruction instruction, in ExecutableResult result)
++        {
++            if (result.CasedSplit is null)
++                PublishInstructionResult(ref execution, invocation, instruction, result.Value.RequireNotNull());
++            else
++            {
++                if (instruction.HasLocalResult)
++                    throw new InvalidOperationException("Private iteration cannot be published into a Python binding.");
++                execution.Stack.PublishIterationResult(instruction.ResultSlot, instruction.LiveExtent, result);
++            }
++        }
+ 
+         private static void PublishInstructionResult(ref ExecutableWorkState execution,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, object value)
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -75,7 +75,7 @@
+         // entry and protocol results retain observable Python return values.
+         internal bool ReturnConsumedByIteration;
+         // Python None is PyNone; null means no explicit return has completed.
+-        internal object? ReturnValue;
++        internal ExecutableResult ReturnValue;
+ 
+         public ExecutableWorkState()
+         {
+@@ -85,7 +85,7 @@
+             ClosureCells = null;
+             Stack = default;
+             InstructionIndex = 0;
+-            ReturnValue = null;
++            ReturnValue = default;
+         }
+     }
+ 
+@@ -274,7 +274,7 @@
+         public PendingAbruptSignal? SavedPendingAbrupt { get; set; }
+     }
+ 
+-    private sealed record PendingReturn(object Value) : PendingAbruptSignal;
++    private sealed record PendingReturn(ExecutableResult Result) : PendingAbruptSignal;
+ 
+     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
+ 
+@@ -284,10 +284,10 @@
+ 
+     internal static long LookupCacheBytes(int count) => checked(32L + 64L * count);
+ 
+-    internal struct ExecutableValueStorage
++    internal partial struct ExecutableValueStorage
+     {
+         private object[] _items;
+-        private int[]? _nativeIterationPositions;
++        private NativeIterationState[]? _nativeIterations;
+         // One reference holds private invocation storage or the existing
+         // function definition that owns shared facts. Do not widen every frame
+         // with a second owner slot, including frames that never use a cache.
+@@ -307,7 +307,7 @@
+             _state = context.State;
+             _firstTemporarySlot = firstTemporarySlot;
+             _lastOwnedTemporarySlot = lastOwnedTemporarySlot;
+-            _nativeIterationPositions = null;
++            _nativeIterations = null;
+             _lookupStorage = lookupOwner;
+             var bytes = checked(frameStorageBytes + (borrowedValues is null ? EstimateObjectArrayBytes(capacity) : 0));
+             var governor = context.MemoryGovernor;
+@@ -325,7 +325,7 @@
+         internal void ReleaseStorage()
+         {
+             _items = [];
+-            _nativeIterationPositions = null;
++            _nativeIterations = null;
+             _lookupStorage = null;
+             var bytes = _ownedStorageBytes;
+             _ownedStorageBytes = 0;
+@@ -373,7 +373,7 @@
+         public object this[int index]
+         {
+             get => _items[index].RequireNotNull();
+-            set => _items[index] = value;
++            set { ClearNativeIteration(index); _items[index] = value; }
+         }
+ 
+         internal void PublishValue(int resultSlot, int liveExtent, object result)
+@@ -381,6 +381,7 @@
+             // Inputs and their owner stay live through callbacks/suspension.
+             // Retire only after success, preserving failed-disposal behavior.
+             if (liveExtent < LiveExtent) RetireTo(liveExtent);
++            ClearNativeIteration(resultSlot);
+             _items[resultSlot] = result;
+             LiveExtent = liveExtent;
+         }
+@@ -388,6 +389,7 @@
+         internal object TakeValue(int inputSlot, int liveExtent)
+         {
+             var value = _items[inputSlot].RequireNotNull();
++            ClearNativeIteration(inputSlot);
+             _items[inputSlot] = null!;
+             LiveExtent = liveExtent;
+             return value;
+@@ -397,32 +399,21 @@
+         // overwrite it. Its result goes directly to a binding instead.
+         internal void ForgetResultInput(int resultSlot)
+         {
++            ClearNativeIteration(resultSlot);
+             _items[resultSlot] = null!;
+             LiveExtent = resultSlot;
+         }
+ 
+-        internal bool TryPrepareNativeIteration(object source, int slot, int liveExtent, LythonSourceSpan span)
+-        {
+-            if (source is PyStringOps.CasedWhitespaceIteration)
+-            {
+-                PublishValue(slot, liveExtent, source);
++        internal bool TryPrepareNativeIteration(object source, int sourceSlot, int slot, int liveExtent, LythonSourceSpan span)
++        {
++            var prepared = ReadResult(sourceSlot, source);
++            if (prepared.CasedSplit is not null)
++            {
++                PublishIterationResult(slot, liveExtent, prepared);
+                 return true;
+             }
+             if (source is not (PyList or PyTuple)) return false;
+-            if (_nativeIterationPositions is null)
+-            {
+-                // The existing private operand keeps the source alive. One
+-                // admitted position array replaces repeated native cursor and
+-                // enumerator objects; it shares this frame's storage lifetime.
+-                var bytes = checked(32L + 4L * (_items.Length - _firstTemporarySlot));
+-                var frameBytes = checked(_ownedStorageBytes + bytes);
+-                using var storage = _state.MemoryGovernor.ReserveTemporary(bytes, span);
+-                var positions = new int[_items.Length - _firstTemporarySlot];
+-                storage.Commit(bytes);
+-                _nativeIterationPositions = positions;
+-                _ownedStorageBytes = frameBytes;
+-            }
+-            _nativeIterationPositions[slot - _firstTemporarySlot] = 0;
++            EnsureNativeIterationStorage(span);
+             PublishValue(slot, liveExtent, source);
+             return true;
+         }
+@@ -431,18 +422,21 @@
+         {
+             switch (_items[slot])
+             {
+-                case PyStringOps.CasedWhitespaceIteration words:
+-                    next = words.MoveNext();
++                case PyString source when _nativeIterations is not null &&
++                    _nativeIterations[slot - _firstTemporarySlot].CasedSplit is { } recipe:
++                    ref var words = ref _nativeIterations[slot - _firstTemporarySlot];
++                    next = PyStringOps.AdvanceCasedWhitespace(source, recipe.Upper,
++                        ref words.Range, words.Context!, recipe.SplitCallSpan);
+                     return true;
+                 case PyList list:
+-                    var listIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
++                    var listIndex = _nativeIterations![slot - _firstTemporarySlot].Range.Position;
+                     next = listIndex < list.Count ? PyIterationResult.Yield(list[listIndex]) : PyIterationResult.End;
+-                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = listIndex + 1;
++                    if (next.HasValue) _nativeIterations[slot - _firstTemporarySlot].Range.Position = listIndex + 1;
+                     return true;
+                 case PyTuple tuple:
+-                    var tupleIndex = _nativeIterationPositions![slot - _firstTemporarySlot];
++                    var tupleIndex = _nativeIterations![slot - _firstTemporarySlot].Range.Position;
+                     next = tupleIndex < tuple.Count ? PyIterationResult.Yield(tuple[tupleIndex]) : PyIterationResult.End;
+-                    if (next.HasValue) _nativeIterationPositions[slot - _firstTemporarySlot] = tupleIndex + 1;
++                    if (next.HasValue) _nativeIterations[slot - _firstTemporarySlot].Range.Position = tupleIndex + 1;
+                     return true;
+                 default:
+                     next = PyIterationResult.End;
+@@ -474,6 +468,11 @@
+                     _items[i] = null!;
+                 }
+                 else if (_items[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
++            }
++            if (_nativeIterations is not null)
++            {
++                var start = Math.Max(newCount, _firstTemporarySlot);
++                if (start < LiveExtent) Array.Clear(_nativeIterations, start - _firstTemporarySlot, LiveExtent - start);
+             }
+             Array.Clear(_items, newCount, LiveExtent - newCount);
+             LiveExtent = newCount;
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ExecutionSupport.cs
+@@ -56,10 +56,13 @@
+     {
+         public ReturnSignal(object value)
+         {
+-            Value = value;
++            Result = new(value);
+         }
+ 
+-        public object Value { get; }
++        internal ReturnSignal(in ExecutableResult result) { Result = result; }
++
++        internal ExecutableResult Result { get; }
++        public object Value => Result.Value.RequireNotNull();
+     }
+ 
+     // Abrupt outcome of a lowered statement block, traveling as a value so
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -68,10 +68,14 @@
+         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
+ 
+     internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
+-        => TryExecuteWithoutFrame(arguments, span, false, out result);
++    {
++        var completed = TryExecuteWithoutFrame(arguments, span, false, out var value);
++        result = value.Value ?? PyNone.Instance;
++        return completed;
++    }
+ 
+     internal bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+-        bool consumedByIteration, out object result)
++        bool consumedByIteration, out LythonRuntime.ExecutableResult result)
+     {
+         // Proven bodies cannot inspect their invocation namespace or suspend.
+         // Incoming reads/writes retain their definition-owned cell identities.
+@@ -80,7 +84,7 @@
+         // unwinds them, and exception state is shared with the ordinary frame.
+         if (!CanExecuteNativeBody)
+         {
+-            result = PyNone.Instance;
++            result = default;
+             return false;
+         }
+         return _codeObject.NativeBody!.ClosureInputCount == 0
+@@ -93,12 +97,12 @@
+     // bindings for unbound locals. The definition keeps them funded throughout.
+     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+     private bool TryExecuteCapturedNativeBody(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+-        bool consumedByIteration, out object result)
++        bool consumedByIteration, out LythonRuntime.ExecutableResult result)
+     {
+         var closureCount = _codeObject.NativeBody!.ClosureInputCount;
+         if (_closureCells.Count != closureCount || arguments.Length > NativeParameterCapacity - closureCount)
+         {
+-            result = PyNone.Instance;
++            result = default;
+             return false;
+         }
+         NativeParameters buffer = default;
+@@ -134,7 +138,7 @@
+     // funded by their existing caller/definition owners through completion.
+     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+     internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
+-        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration, out object result)
++        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration, out LythonRuntime.ExecutableResult result)
+     {
+         NativeParameters buffer = default;
+         Span<object> values = buffer;
+@@ -155,7 +159,7 @@
+         LythonSourceSpan span)
+     {
+         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+-            return result;
++            return result.Value.RequireNotNull();
+         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, true, span, this)
+             ?? PyNone.Instance;
+     }
+@@ -167,7 +171,7 @@
+     {
+         // Only statically proven bodies without callbacks use this shared shortcut.
+         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+-            return result;
++            return result.Value.RequireNotNull();
+         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+             _codeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
+             ?? PyNone.Instance;
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs
+@@ -45,51 +45,34 @@
+     // Only compiler-private immediate iteration may consume this representation.
+     // Admit every eventual word before the first loop effect, just as eager split
+     // does. The execution owner retains unused capacity until its normal cleanup.
+-    internal static CasedWhitespaceIteration PrepareCasedWhitespaceIteration(PyString value, bool upper,
++    internal static void PrepareCasedWhitespaceIteration(PyString value, bool upper,
+         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+     {
+         context.CheckExecution(span);
+-        var mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
+-        var state = new WhitespaceRangeState(-1, mapping);
+-        long bytes = 128; // cursor metadata, including its retained source/state
++        var state = CreateCasedWhitespaceState(upper);
++        long bytes = 0;
+         while (TryReadWhitespaceRange(value.Utf8Span, ref state, context, span, out var range))
+             bytes = checked(bytes + PyString.EstimateApproximateBytes(range.Capacity));
+-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+-        context.CheckExecution(span);
+-        var result = new CasedWhitespaceIteration(value, upper, context, span);
+-        storage.Commit(bytes);
+-        return result;
+-    }
+-
+-    internal sealed class CasedWhitespaceIteration
+-    {
+-        private readonly PyString _source;
+-        private readonly CaseMapping _mapping;
+-        private readonly LythonRuntime.ExecutionContext _context;
+-        private readonly LythonSourceSpan _span;
+-        private WhitespaceRangeState _state;
+-
+-        internal CasedWhitespaceIteration(PyString source, bool upper,
+-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+-        {
+-            _source = source;
+-            _mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
+-            _context = context;
+-            _span = span;
+-            _state = new WhitespaceRangeState(-1, _mapping);
+-        }
+-
+-        internal PyIterationResult MoveNext()
+-        {
+-            // ForNext already checks the active execution before entering this
+-            // private cursor. The shared scanner/writer check inside long work;
+-            // publication retains the ordinary binding/next-opcode check.
+-            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
+-                return PyIterationResult.End;
+-            var word = CreateSplitFragment(_source.Utf8Span, range, _mapping,
+-                _context.MemoryGovernor, _span, _context);
+-            return PyIterationResult.Yield(word);
+-        }
++        // The caller's execution storage owns progress and the source borrow.
++        // This admission funds all eventual words before the first loop effect;
++        // no per-line carrier or heap reservation object is needed.
++        var governor = context.MemoryGovernor;
++        governor.Reserve(bytes, span);
++        try { context.CheckExecution(span); governor.Commit(bytes); }
++        catch { governor.ReleaseReserved(bytes); throw; }
++    }
++
++    internal static WhitespaceRangeState CreateCasedWhitespaceState(bool upper)
++        => new(-1, upper ? Math.Max(4, MaxCaseExpansionUtf8Bytes) : 4);
++
++    internal static PyIterationResult AdvanceCasedWhitespace(PyString source, bool upper,
++        ref WhitespaceRangeState state, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
++    {
++        // ForNext checks entry; the scanner/writer check during long work.
++        if (!TryReadWhitespaceRange(source.Utf8Span, ref state, context, span, out var range))
++            return PyIterationResult.End;
++        return PyIterationResult.Yield(CreateSplitFragment(source.Utf8Span, range,
++            upper ? CaseMapping.Upper : CaseMapping.Lower, context.MemoryGovernor, span, context));
+     }
+ 
+     private static PyList SplitCore(PyString value, int maxSplit, bool reverse,
+@@ -200,13 +183,12 @@
+             ref outputBytes, ref scratchBytes, ref scratch, governor, span, context);
+     }
+ 
+-    private struct WhitespaceRangeState(int maxSplit, CaseMapping? casing)
++    internal struct WhitespaceRangeState(int maxSplit, int maximumCaseWidth)
+     {
+         internal int Position;
+         internal int NextCheck;
+         internal int Remaining = maxSplit < 0 ? int.MaxValue : maxSplit;
+-        internal readonly int MaximumCaseWidth = casing is null ? 0
+-            : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes);
++        internal readonly int MaximumCaseWidth = maximumCaseWidth;
+     }
+ 
+     private static void CollectWhitespaceForward(ReadOnlySpan<byte> source, int maxSplit,
+@@ -214,7 +196,8 @@
+         ref MemoryGovernor.TemporaryMemoryReservation? scratch, MemoryGovernor? governor,
+         LythonSourceSpan? span, LythonRuntime.ExecutionContext? context, CaseMapping? casing)
+     {
+-        var state = new WhitespaceRangeState(maxSplit, casing);
++        var state = new WhitespaceRangeState(maxSplit, casing is null ? 0
++            : casing == CaseMapping.Lower ? 4 : Math.Max(4, MaxCaseExpansionUtf8Bytes));
+         while (TryReadWhitespaceRange(source, ref state, context, span, out var range))
+             AppendSplitRange(ref ranges, ref count, range.Start, range.End, ref outputBytes,
+                 ref scratchBytes, ref scratch, governor, span, context, range.Capacity);

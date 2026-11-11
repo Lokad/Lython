@@ -1,0 +1,70 @@
+{
+  "reference": "Python 3.13.2",
+  "isolatedNoSite": true,
+  "cases": [
+    {
+      "name": "nested-native-and-string-sources",
+      "source": "events=[]\ndef words(text,protected):\n    if protected:\n        try:return text.lower().split()\n        finally:events.append('done')\n    return text.upper().split()\ndef outer():\n    seen=[]\n    for item in [(' A B ',False),(' C D ',True),(' E F ',False)]:\n        for word in words(item[0],item[1]):\n            seen.append(word)\n            if word=='c':break\n        for character in 'XY':seen.append(character)\n        for number in (1,2):seen.append(number)\n    print(seen,events)\nouter()",
+      "expected": "['A', 'B', 'X', 'Y', 1, 2, 'c', 'X', 'Y', 1, 2, 'E', 'F', 'X', 'Y', 1, 2] ['done']\n",
+      "actual": "['A', 'B', 'X', 'Y', 1, 2, 'c', 'X', 'Y', 1, 2, 'E', 'F', 'X', 'Y', 1, 2] ['done']\n",
+      "sourceSHA256": "91024f6c86577a0f66bf2da7bbe4a65d028565e498bf08cbeed650fde7727fed",
+      "exitCode": 0
+    },
+    {
+      "name": "captured-and-forwarded",
+      "source": "def outer():\n count=0\n def words(value=' A B '):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def forward(value):return words(value=value)\n for word in forward(' C D '):print(word)\n result=forward(' E F ')\n result.append('g')\n print(type(result).__name__,result)\n words.__defaults__=(' NEW WORD ',)\n print([word for word in words()])\n print(count)\nouter()\n",
+      "expected": "c\nd\nlist ['e', 'f', 'g']\n['new', 'word']\n3\n",
+      "actual": "c\nd\nlist ['e', 'f', 'g']\n['new', 'word']\n3\n",
+      "sourceSHA256": "93d9710ed2a73a5fb0ef067fb55c09c2cc089997422f540f90219260ac5f21a6",
+      "exitCode": 0
+    },
+    {
+      "name": "stored-result-remains-observable",
+      "source": "kept=[]\ndef outer():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  result=value.lower().split()\n  kept.append(result)\n  return result\n seen=[]\n for word in words(' A B '):\n  seen.append(word)\n  if word=='a':kept[0].append('c')\n print(seen,type(kept[0]).__name__,count)\nouter()\n",
+      "expected": "['a', 'b', 'c'] list 1\n",
+      "actual": "['a', 'b', 'c'] list 1\n",
+      "sourceSHA256": "b36c38b3b8b0df62fae07fc4df00155c698128c95fe33ca86da94a3de655fffa",
+      "exitCode": 0
+    },
+    {
+      "name": "cleanup-and-overridden-return",
+      "source": "events=[]\nclass Manager:\n def __enter__(self):events.append('enter')\n def __exit__(self,*args):events.append('exit');return False\ndef outer():\n count=0\n def words(value,override=False):\n  nonlocal count\n  count+=1\n  with Manager():\n   try:return value.upper().split()\n   finally:\n    events.append('finally')\n    if override:return ['override']\n for word in words(' a b '):events.append(word)\n for word in words(' ignored ',True):events.append(word)\n result=words(' c d ')\n print(events,type(result).__name__,result,count)\nouter()\n",
+      "expected": "['enter', 'finally', 'exit', 'A', 'B', 'enter', 'finally', 'exit', 'override', 'enter', 'finally', 'exit'] list ['C', 'D'] 3\n",
+      "actual": "['enter', 'finally', 'exit', 'A', 'B', 'enter', 'finally', 'exit', 'override', 'enter', 'finally', 'exit'] list ['C', 'D'] 3\n",
+      "sourceSHA256": "0e68bff4a4dbf0891d44e6c82ed6620d2fcfa43ac6e3c48ba693d6af54d84f00",
+      "exitCode": 0
+    },
+    {
+      "name": "generator-return-and-yield-from",
+      "source": "def outer():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def generate():\n  yield 'start'\n  return words(' A B ')\n generator=generate()\n print(next(generator))\n try:next(generator)\n except StopIteration as done:print(type(done.value).__name__,done.value)\n def delegated():yield from words(' C D ')\n print(list(delegated()),count)\nouter()\n",
+      "expected": "start\nlist ['a', 'b']\n['c', 'd'] 2\n",
+      "actual": "start\nlist ['a', 'b']\n['c', 'd'] 2\n",
+      "sourceSHA256": "bd3c33df4a7fa57196990c95f49ac4bfdbc9be26843dc148dda854b9d23e6b90",
+      "exitCode": 0
+    },
+    {
+      "name": "bound-default-and-dynamic-protocol",
+      "source": "class Words:\n def __init__(self):self.count=0\n def words(self,value=' A B '):\n  self.count+=1\n  return value.lower().split()\nclass Text:\n def lower(self):print('lower');return self\n def split(self):print('split');return ['custom']\ninstance=Words()\nsaved=instance.words\nprint([word for word in saved()])\nWords.words.__defaults__=(' C D ',)\nprint([word for word in instance.words()])\nprint([word for word in saved(value=Text())])\nprint(type(saved()).__name__,instance.count)\n",
+      "expected": "['a', 'b']\n['c', 'd']\nlower\nsplit\n['custom']\nlist 4\n",
+      "actual": "['a', 'b']\n['c', 'd']\nlower\nsplit\n['custom']\nlist 4\n",
+      "sourceSHA256": "ee6e405c17db7f236cce354e535d4e48856851a5449a8a300d00a63876e449ba",
+      "exitCode": 0
+    },
+    {
+      "name": "handler-and-return-exception",
+      "source": "def outer():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  try:raise ValueError('local')\n  except ValueError as error:\n   return value.lower().split()\n try:raise RuntimeError('outer')\n except RuntimeError as previous:\n  for word in words(' A B '):\n   try:raise LookupError(word)\n   except LookupError as error:print(word,error.__context__ is previous)\n print(count)\nouter()\n",
+      "expected": "a True\nb True\n1\n",
+      "actual": "a True\nb True\n1\n",
+      "sourceSHA256": "b6d32935e40280fc005260cc16daa47369f64baaade8632b3c17f14ca6afdcdb",
+      "exitCode": 0
+    },
+    {
+      "name": "direct-branch-versus-stored-branch",
+      "source": "kept=[]\ndef outer():\n count=0\n def words(value,store):\n  nonlocal count\n  count+=1\n  if store:\n   result=value.upper().rsplit()\n   kept.append(result)\n   return result\n  return value.lower().split()\n print([word for word in words(' A B ',False)])\n for word in words(' c d ',True):\n  print(word,type(kept[-1]).__name__)\n print(words(' E F ',False),count)\nouter()\n",
+      "expected": "['a', 'b']\nC list\nD list\n['e', 'f'] 3\n",
+      "actual": "['a', 'b']\nC list\nD list\n['e', 'f'] 3\n",
+      "sourceSHA256": "b616d83b14e99c032e8d4998d7a88e874ca7651025eb5de09094f5470a844d3e",
+      "exitCode": 0
+    }
+  ]
+}
