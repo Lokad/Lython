@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R233 constructor-binding consolidation](results/2026-11-11-constructor-binding/README.md)
+removes two constructor-only restrictions, reusing the ordinary function binder
+and frame runner for named/keyword-only/variadic compiled initializers. Complete
+named/keyword-only CSV allocation−3.77% both APIs; other scripts/compilation flat.
+494focused checks across actual11/10 and independent complete-script goldens pass.
+Desktop clocks mixed/adverse with moving controls: no CPU/neutrality claim. No new
+route/owner/API; earlier752 qualification does not qualify this changed source.
+
 The [R232 default allocator/admission milestone](results/2026-11-11-default-allocator-admission/README.md)
 recognizes the sealed staticmethod wrapper around object.__new__, enabling the
 existing canonical constructor route for ordinary classes. Three separate attribute

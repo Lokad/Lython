@@ -6,6 +6,92 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ConstructorLifetimeTests
 {
     [Theory]
+    [InlineData(false, "success")] [InlineData(true, "success")]
+    [InlineData(false, "refusal")] [InlineData(true, "refusal")]
+    [InlineData(true, "cancellation")]
+    public async Task DefaultAllocatorOwnsNamedInputsThroughSuspendingDefaults(bool asynchronous, string outcome)
+    {
+        const string source = """
+            class Key:
+             def __hash__(self):return hash('x')
+             def __eq__(self,other):
+              global payload
+              payload=None
+              C.__init__.__kwdefaults__={'x':99,'y':100}
+              with open('/bind') as source:source.read()
+              if fail:
+               try:unused='z'*2000000
+               except MemoryError:print('caught-default')
+               finally:return True
+              return other=='x'
+            class C:
+             def __init__(self,value,*,x,y):
+              print(len(value[0]),x,y)
+              self.value=value
+            C.__init__.__kwdefaults__={Key():7,'y':8}
+            payload=['é'*8192]
+            try:result=C(value=payload)
+            except BaseException:print('caught-caller')
+            finally:
+             if fail:return 0
+            return result.value
+            """;
+        var budget = new LythonMemoryBudget(512 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+            var baseline = budget.ReservedBytes;
+            var delayed = asynchronous ? new DelayedLythonHost() : null;
+            var mock = asynchronous ? null : new MockLythonHost();
+            if (delayed is not null) delayed.SeedFile("/bind", "ready");
+            else mock!.SeedFile("/bind", "ready");
+            var entered = outcome == "cancellation" ? delayed!.PauseReadUntilCancellation("/bind") : null;
+            using var cancellation = new CancellationTokenSource();
+            var options = new LythonRunOptions
+            {
+                CancellationToken = cancellation.Token,
+                Globals = new Dictionary<string, object?> { ["fail"] = outcome == "refusal" },
+            };
+            LythonExecutionResult? result = null;
+            var pending = asynchronous ? script.RunAsync(delayed!, options) : Task.FromResult(script.Run(mock!, options));
+            try
+            {
+                if (entered is not null)
+                {
+                    Assert.Same(entered, await Task.WhenAny(entered, pending).WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.False(pending.IsCompleted);
+                    Assert.True(budget.ReservedBytes > baseline + 16384);
+                    cancellation.Cancel();
+                }
+                result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.Equal(outcome == "success", result.Success);
+                if (outcome == "success")
+                {
+                    Assert.Equal("8192 7 100\n", result.StandardOutput);
+                    var values = Assert.IsType<List<object?>>(result.ReturnValue);
+                    Assert.Equal(new string('é', 8192), Assert.Single(values));
+                    Assert.True(budget.ReservedBytes > baseline + 16384);
+                    if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+                }
+                else
+                {
+                    Assert.Equal(outcome == "refusal" ? LythonFailureReason.SharedMemoryAllowance : LythonFailureReason.Cancelled,
+                        result.FailureAttribution?.Reason);
+                    Assert.Empty(result.StandardOutput);
+                }
+            }
+            finally
+            {
+                cancellation.Cancel();
+                result ??= await pending.WaitAsync(TimeSpan.FromSeconds(5));
+                result.Dispose();
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData("allocator", false)] [InlineData("allocator", true)]
     [InlineData("initializer", false)] [InlineData("initializer", true)]
     [InlineData("descriptor", false)] [InlineData("descriptor", true)]

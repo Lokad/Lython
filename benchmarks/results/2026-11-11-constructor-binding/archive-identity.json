@@ -1,0 +1,157 @@
+{
+  "files": {
+    "before.json": {
+      "bytes": 158402,
+      "sha256": "8f57a12736e89f24e60fd87796b9f1090d61123e8e6ed5ae1b27f5dbe8b64ba4"
+    },
+    "catalog.json": {
+      "bytes": 538082,
+      "sha256": "3005d8a2e74f15c996b942b450dea13616a31d85b8bcb7707e6634021a91ccf5"
+    },
+    "diagnostic-identity.json": {
+      "bytes": 8347,
+      "sha256": "ba63a7f9e7cab8f15de81382550f666698648e2e0bc1d05ce542ec3b647830c9"
+    },
+    "focused-checks.json": {
+      "bytes": 5627,
+      "sha256": "f8678a4e6f6b7587276440719cfd1871265f3a913d288bd246d4509e3cece840"
+    },
+    "preparation.tar.xz": {
+      "bytes": 2358044,
+      "sha256": "de2077e2c756086626236feb86d249213efa115f4692306608934faf9d6b1d7e"
+    },
+    "semantic-cpython-before.json": {
+      "bytes": 57684,
+      "sha256": "8bbba985e56ab6f93d98e03789341b0098fd95a72b18d3b2328bf2df0ce12549"
+    },
+    "semantic-cpython-candidate.json": {
+      "bytes": 57697,
+      "sha256": "f40d6925735928e7e270161e130ace785488dfb18f69b8f64a11b4d806c2eaf7"
+    },
+    "compile/hash-witness.json": {
+      "bytes": 70,
+      "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+    },
+    "compile/measurements.json": {
+      "bytes": 26041,
+      "sha256": "9a08d79d6044b1bb710f5e18e9a05bd5fa8b34b655f7a2353bd14e6b0ed3053d"
+    },
+    "compile/scripts.csv-validated-records.constructor-control.large.json": {
+      "bytes": 4052,
+      "sha256": "d17ed4494d7376e438c4c8186a7d2a94c6ba9df63233ef1f4dd072a3d7bd5803"
+    },
+    "compile/scripts.csv-validated-records.constructor-keyword-only.large.json": {
+      "bytes": 4062,
+      "sha256": "e0b97c36695154e8072c07e4344244f60503927f7bdc0d10fea89d1bf838d2e5"
+    },
+    "compile/scripts.csv-validated-records.constructor-keyword.large.json": {
+      "bytes": 4088,
+      "sha256": "a0c948d214e0c86ae65711aba3446ba5d2de4717a07a112f9cc90af530512987"
+    },
+    "compile/scripts.json-summary-helpers.large.json": {
+      "bytes": 4013,
+      "sha256": "344713ab312cc670bade83dce2f36eed8f02ada688d2f3aa31b3b4fb62bb7454"
+    },
+    "compile/scripts.text-summary-helpers.large.json": {
+      "bytes": 4016,
+      "sha256": "e5db43a2d2078746055205970169358842321c49e87018d973bd895f1f0cd956"
+    },
+    "compile/scripts.text-summary-helpers.nonlocal-counter.large.json": {
+      "bytes": 4033,
+      "sha256": "2880dd134221d11cd85430b2cb074f1ad507633e776be6a2aaed1517b69432f4"
+    },
+    "compile/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compile/summary.json": {
+      "bytes": 10710,
+      "sha256": "8323be3535b1d1dad8102ba152428abc7ee61b6d9df6b9ab1431fafe9e303457"
+    },
+    "warm-async/hash-witness.json": {
+      "bytes": 70,
+      "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+    },
+    "warm-async/measurements.json": {
+      "bytes": 27173,
+      "sha256": "c60a9211280f8b871cafb1032643cac21e4ffde0f1e20249d51326f9fdc6ef23"
+    },
+    "warm-async/scripts.csv-validated-records.constructor-control.large.json": {
+      "bytes": 4243,
+      "sha256": "611f79282f04e02be947f27f583ffc83d7252bf0ca5d4c6f2e4ddda323f9b73b"
+    },
+    "warm-async/scripts.csv-validated-records.constructor-keyword-only.large.json": {
+      "bytes": 4263,
+      "sha256": "922113ec9dccab3f2c3847f0eb6eb0ec76055c613e913c24990c1f8f94113dfb"
+    },
+    "warm-async/scripts.csv-validated-records.constructor-keyword.large.json": {
+      "bytes": 4256,
+      "sha256": "b42982f51f8aff31fab82cfe96691b5506ae7f3f4c32b59d1f1c618ce53ec4b3"
+    },
+    "warm-async/scripts.json-summary-helpers.large.json": {
+      "bytes": 4216,
+      "sha256": "f90616c643a19f2df188f3bf695635bda7e0d4d590a7b8532b0518b3bede75a0"
+    },
+    "warm-async/scripts.text-summary-helpers.large.json": {
+      "bytes": 4204,
+      "sha256": "17fa8e3996735d6a84cd846c2f3952107e12aed5f7171374ec2ea5e90c36256b"
+    },
+    "warm-async/scripts.text-summary-helpers.nonlocal-counter.large.json": {
+      "bytes": 4217,
+      "sha256": "94c521a817b2f0b6cc83c5f2da57a033ea7da2c6383c34e35cc841aefc77065a"
+    },
+    "warm-async/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "warm-async/summary.json": {
+      "bytes": 11508,
+      "sha256": "54538e02445f2451a8d449a8c38213daea7266e50153a6df5775be14a1499dcb"
+    },
+    "warm-sync/hash-witness.json": {
+      "bytes": 70,
+      "sha256": "75e5b3fdb40874f3de3402422e7d7b2a051dce4eb1f578aaa2feee2dbf044921"
+    },
+    "warm-sync/measurements.json": {
+      "bytes": 27151,
+      "sha256": "38c837e65641dcd4a5d716cb2a9536b324bea71926b5636edd14a17162cd2b07"
+    },
+    "warm-sync/scripts.csv-validated-records.constructor-control.large.json": {
+      "bytes": 4252,
+      "sha256": "da6fa44886b0923d857bcf44bef4917257eba0a3a3fca27feb99900c9b78a303"
+    },
+    "warm-sync/scripts.csv-validated-records.constructor-keyword-only.large.json": {
+      "bytes": 4253,
+      "sha256": "1617ce29e9d03e8497ba92b858c997df7b70f2c41a1f227b1d99a4ec69b520da"
+    },
+    "warm-sync/scripts.csv-validated-records.constructor-keyword.large.json": {
+      "bytes": 4250,
+      "sha256": "d6e12467ba81f51f2ecb752c9da7e86456b2f0535eae7f45780d2e6e0843c9f0"
+    },
+    "warm-sync/scripts.json-summary-helpers.large.json": {
+      "bytes": 4205,
+      "sha256": "73a1d9acfc215cc266c145bfe66e119e7999223cabe2276618f4f14b9e7c847d"
+    },
+    "warm-sync/scripts.text-summary-helpers.large.json": {
+      "bytes": 4195,
+      "sha256": "178e3030eba54d43adfc04584f648619afde5c19fbcfa2076e071f2890cf80a2"
+    },
+    "warm-sync/scripts.text-summary-helpers.nonlocal-counter.large.json": {
+      "bytes": 4222,
+      "sha256": "8e44d10cb87f727b98afe7f42a2aecf474c9db425a6cf32843afa94a8f4062b6"
+    },
+    "warm-sync/stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "warm-sync/summary.json": {
+      "bytes": 11426,
+      "sha256": "9a7b319389bafaa22294545a79c738d8554bbb45a035b231f4eae40cc6750f00"
+    }
+  },
+  "sourcePairVerified": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "performanceQualified": false
+}

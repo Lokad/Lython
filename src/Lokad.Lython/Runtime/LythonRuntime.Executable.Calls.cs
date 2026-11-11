@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
 
         private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
         {
-            if (target is PyType type) return site.IsPositionalOnly && TrySuspendForExecutableConstructor(type, site, start);
+            if (target is PyType type) return TrySuspendForExecutableConstructor(type, site, start);
             var function = target as PyExecutableFunction;
             object? receiver = site.HasReceiver && _execution.Stack[start] is not PyNone ? _execution.Stack[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)

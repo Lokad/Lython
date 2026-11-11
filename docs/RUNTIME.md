@@ -523,9 +523,12 @@ frame runner. Other calls share native/general target selection and completed
 stack-value transfer across both APIs. Native results travel as objects;
 potentially asynchronous branches retain operands and argument funding until
 their actual completion. Dynamic calls keep the general binder.
-Ordinary positional construction with the sealed object allocator and a compiled
-initializer uses that same runner: it allocates once, binds self into the final
-locals and publishes the instance only after the initializer returns None.
+Ordinary construction with the sealed object allocator and a compiled initializer
+whose arguments occupy executable locals uses that same runner. Positional,
+named, keyword-only and variadic calls share ordinary function binding: it
+allocates once, binds self into the final locals and publishes the instance only
+after the initializer returns None. Default-key protocols may genuinely suspend;
+their owned input/local storage survives until completion and awaited cleanup.
 This includes the builtin `staticmethod` wrapper around `object.__new__`; checking
 that sealed wrapper does not invoke guest descriptor code.
 Initializer selection observes metadata after allocation. If admission changed it

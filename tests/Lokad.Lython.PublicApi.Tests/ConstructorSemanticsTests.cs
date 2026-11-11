@@ -73,6 +73,30 @@ public sealed class ConstructorSemanticsTests
             A()
             A(7,8,9,flag=4,other=5)
             """, "2 () 3 {}\n7 (8, 9) 4 {'other': 5}\n"];
+        yield return ["expanded arguments keep evaluation order and receiver separate", """
+            events=[]
+            def argument(label,value):events.append(label);return value
+            class A:
+             def __init__(self,x,/,*extra,flag,**rest):
+              self.value=(x,extra,flag,rest)
+            a=A(*argument('pos',[7,8]),flag=argument('flag',9),**argument('map',{'self':10}))
+            print(events,a.value)
+            """, "['pos', 'flag', 'map'] (7, (8,), 9, {'self': 10})\n"];
+        yield return ["constructor binding failures leave body unentered", """
+            events=[]
+            class A:
+             def __init__(self,x,/,*,flag):events.append((x,flag))
+            try:A(x=1,flag=2)
+            except TypeError:print('positional-only')
+            try:A(1)
+            except TypeError:print('missing')
+            try:A(1,flag=2,other=3)
+            except TypeError:print('unexpected')
+            try:A(1,flag=2,**{'flag':3})
+            except TypeError:print('duplicate')
+            A(1,flag=2)
+            print(events)
+            """, "positional-only\nmissing\nunexpected\nduplicate\n[(1, 2)]\n"];
         yield return ["non None initializer and non callable init", """
             class A:
              def __init__(self):return 7

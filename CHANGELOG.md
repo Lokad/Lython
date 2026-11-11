@@ -2,6 +2,15 @@
 
 ## 0.11.0 - Unreleased
 
+- Use the shared executable frame runner for ordinary construction
+  when the default allocator is inherited through its `staticmethod` wrapper.
+  Share named, keyword-only and variadic binding with ordinary functions.
+  Preserve custom hooks and initializer selection after allocation.
+
+- Fund instance attribute capacity established during reentrant admission once.
+  Stop pending writes when callbacks fill that capacity or refuse admission during
+  a refund, preserving the first failure and funding until owner cleanup.
+
 - Forward immediate iteration through ordinary direct helper returns, avoiding
   transient cased-split lists while preserving observable Python lists. Keep
   custom intermediate method results separate from a fused chain's final result,

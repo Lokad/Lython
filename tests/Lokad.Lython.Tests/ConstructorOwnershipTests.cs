@@ -48,8 +48,9 @@ public sealed class ConstructorOwnershipTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task DefaultAllocatorRefusesBeforeInitializerMutation(bool asynchronous)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task DefaultAllocatorRefusesBeforeInitializerMutation(bool asynchronous, bool keyword)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var owner = budget.CreateScope();
@@ -59,7 +60,7 @@ public sealed class ConstructorOwnershipTests
         context.Variables["mark"] = marker;
         context.Variables["arm"] = new Arm(hook);
         Execute("class C:\n def __init__(self,value):mark();self.value=value\n", context);
-        var code = Compile("arm()\nresult=C(7)\nmark()\n");
+        var code = Compile(keyword ? "arm()\nresult=C(value=7)\nmark()\n" : "arm()\nresult=C(7)\nmark()\n");
         var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
         {
             if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code, context);
@@ -76,20 +77,21 @@ public sealed class ConstructorOwnershipTests
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
-    public async Task AdmissionMutationInitializesTheExistingInstanceWithoutRestart(bool asynchronous)
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task AdmissionMutationInitializesTheExistingInstanceWithoutRestart(bool asynchronous, bool keyword)
     {
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var owner = budget.CreateScope();
         var hook = new AdmissionHookMemoryBudget(owner);
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = hook });
-        Execute("namespace=globals()\nclass C:\n def __init__(self,value):self.old=value\ndef replacement(self,*values):self.new=values[0]\n", context);
+        Execute("namespace=globals()\nclass C:\n def __init__(self,value):self.old=value\ndef replacement(self,*values,**named):self.new=values[0] if values else named['value']\n", context);
         var type = Assert.IsType<PyType>(context.Variables["C"]);
         Assert.True(type.TryGetExecutableInitializer(out _));
         Assert.True(type.CanPrepareExecutableConstructor);
         var replacement = context.Variables["replacement"];
         var blocker = new RestartBlocker();
-        var code = Compile("result=C(7)\n");
+        var code = Compile(keyword ? "result=C(value=7)\n" : "result=C(7)\n");
         var changed = false;
         hook.AfterGrowth = bytes =>
         {
