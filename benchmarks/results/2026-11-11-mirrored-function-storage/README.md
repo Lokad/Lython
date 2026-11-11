@@ -62,6 +62,11 @@ aliases after reuse and shared allowance returning to baseline after cleanup.
 Full Windows/Ubuntu, stress and installed-package qualification is tracked
 separately by delivery run 43042632656; focused checks do not establish it.
 
+Subsequent exact-`5f9059fa` delivery is **GREEN**: Windows/Ubuntu, actual .NET
+11/10, original stress and installed Release consumers. The
+[terminal receipt](delivery-ci-status.json) is cached; the original collection-time
+decision remains unchanged and accurately records its then-pending status.
+
 The contract deliberately admits the final capacity earlier. Larger idle
 workspaces can stay charged in the existing execution cache until cleanup;
 conservative earlier rejection is acceptable. Pending users and escaping values

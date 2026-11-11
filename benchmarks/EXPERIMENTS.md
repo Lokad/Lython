@@ -12,8 +12,16 @@ and existing runner as other compiled functions, preserving real namespaces.
 Complete local-record CSV allocation falls4.92% through both APIs; the original
 desktop sync slowdown does not recur on the quiet VM, without explaining its
 cause. Quiet affected elapsed improves; ordinary CSV control+0.97..+2.83% remains
-explicit uncertainty. 4744 focused actual11/10 checks pass; full delivery is
-separate. All source pairs, cores, controls and preparation failures survive.
+explicit uncertainty. 4744 focused actual11/10 checks pass; subsequent full
+Windows/Ubuntu, actual11/10, originalStress and installed consumers are GREEN.
+All source pairs, cores, controls and preparation failures survive.
+
+The [R242 current call-cost assessment](results/2026-11-11-current-call-costs/README.md)
+preserves two short profiles of qualified5f executable source, including unknown
+and inlined work. No source-pair timing or removable CPU claim. No blind binding/
+work-state merger or raw-word/scratch prototype is selected. The next complete
+phase investigates captured helper sequences using the existing native-body
+proof/evaluator, with semantics and source-pair validation before retention.
 
 The [R240 private-total segment](results/2026-11-11-private-counter-segments/README.md)
 is retained in `b5849b04`. Whole-script text allocation falls9.04–9.72% through

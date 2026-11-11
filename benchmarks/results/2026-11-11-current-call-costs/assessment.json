@@ -1,0 +1,41 @@
+{
+  "source": "Retained5f9059fa executable source, frozenR241 f702/precommit30b03 metadata and documented comment-only delta; now fully qualified by43042632656.",
+  "profiles": [
+    {
+      "case": "text-warm",
+      "samples": 1168,
+      "guestCpuSeconds": 5.89,
+      "unknown": 52,
+      "namedLeaves": {
+        "TryExecuteDictionaryLoop": 169,
+        "ExecuteInstructionPrefix": 138,
+        "PrepareCasedWhitespaceIteration": 96,
+        "TryAdvanceNativeIteration": 48,
+        "BindPositionalFunctionArguments": 22,
+        "CreateExecutableWorkState": 24,
+        "BeginBoundCall": 17,
+        "BeginPendingCall": 17
+      }
+    },
+    {
+      "case": "text-ordinary",
+      "samples": 1140,
+      "guestCpuSeconds": 5.74,
+      "unknown": 64,
+      "namedLeaves": {
+        "TryExecuteDictionaryLoop": 177,
+        "ExecuteInstructionPrefix": 82,
+        "PrepareCasedWhitespaceIteration": 102,
+        "TryAdvanceNativeIteration": 77,
+        "BindPositionalFunctionArguments": null,
+        "CreateExecutableWorkState": null,
+        "BeginBoundCall": null,
+        "BeginPendingCall": null
+      }
+    }
+  ],
+  "limits": "Two6sCPU captures select work; no elapsed source pair, allocation attribution, CPython ratio or removable percentage. Null named leaf means outside saved top24, not absence. Inlining/unknowns remain. No old offsets transferred.",
+  "gate": "R241 leaves no duplicate backing array. Completed argument presence is needed for real defaults, so blind work-state merging would add ownership/control machinery without a demonstrated allocation reduction. No prototype selected for that descriptor merger. No raw-word/scratch prototype for two-word lines with inline strings.",
+  "selected": "R243 tests complete captured-helper execution using existing bounded native-body proof/evaluator: incoming-cell reads and closed store/continuation sequence. Remove its binding/work-state/shared-VM phase, preserving real owner writes, source spans and pre-effect guards. Original captured-text workload is beneficiary; five unchanged whole-script controls plus compilation. No speed forecast.",
+  "cleanup": "B582 terminal/cached. All workers joined, RAM unmounted/removed and raw archive verified under lease and after retrieval; no remote deletion. Fresh disk proof required for further staging."
+}
