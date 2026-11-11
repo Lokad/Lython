@@ -1,0 +1,7 @@
+{"freeBytes": 286240768, "sourceAndImagesVerified": true, "jobs": 5, "ownerSeconds": 210, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min 30s
+MainPID=3545546
+ActiveState=active
+
+
+Running as unit: lython-b579-private-counter-20261111.service; invocation ID: 87f177b181a34bd68391c565862678d2

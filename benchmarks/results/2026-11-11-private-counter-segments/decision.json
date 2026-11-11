@@ -1,0 +1,13 @@
+{
+  "retainedRevision": "b5849b044ac0fc919d84376fedac1a4ac88855f7",
+  "baselineRevision": "8314c02d",
+  "lastFullyQualified": "fe6648b2",
+  "qualification": "2978initial focused actual11/10 checks plus8targeted admission-publication checks (some repeated),16independent CPython3.13 goldens. Full b584/R239+R240 delivery43033830025 in progress separately; never infer full delivery from focused results.",
+  "established": "Whole-script allocation-9.04%captured text/-9.71..9.72%ordinary text through both APIs; controls and compilation essentially flat. Counter publication collapses per-element boxes to per-segment ordinary BigInteger values. No general scalar bank, owner hierarchy, new cache/options or backend.",
+  "quiet": "B5795jobs140.935s: ordinary sync elapsed-4.27..-2.74%, other target ranges overlap controls; report async+0.65..+3.40%. B580 justified fresh-process2job confirmation60.272s: report async-2.78..-0.51%, ordinary sync-8.25..-1.91% with supporting widerCPU. All pairings included; no confidence intervals. Captured/async CPU remains inconclusive.",
+  "adversity": "Original desktop reportasync+9.14..+11.57% and ordinaryasync+2.87..+9.02%, all original controls/compilation adversity preserved. B579 report slowdown did not recur with identical cores/fresh processes; no cause established or correction claimed. No report-neutrality, universal CPU gain, pending-I/O or embedding-latency claim.",
+  "decision": "Retain the scoped whole-segment value-lifetime change: clear allocation benefit and repeated ordinary-sync direction, without new general machinery. Report adversity remains explicit uncertainty, not a reproduced regression or erased data. Accept this milestone with that limitation; revisit material regression debt at the next coherent source checkpoint before publication, not another unchanged retiming campaign.",
+  "ownership": "Private means uncaptured/unmirrored/nonnamespace. Same seven-byte tier, original words/aliases/empty bindings, exact promotion and stored Python types. Finally publishes before every continuation/handler/callback; actual admission sees completed total before terminal refusal. Native operations preserve cancellation/stack/retained users and shared allowance reuse.",
+  "cleanup": "B579/B580 terminal cached, never query again. All users joined/RAM removed; archives verified under lease and after retrieval. Final free276156416B. Original roles/sole evidence preserved, no retirement.",
+  "ongoing": "CPython tables deliberately remain qualifiedfe source. One isolated experiment does not complete performance objective. Continue source-justified complete-phase work; regex independent, publication/tagging postponed."
+}

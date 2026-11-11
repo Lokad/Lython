@@ -1,0 +1,117 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "case": "histogram-and-total",
+      "source": "counts={};total=0\nfor word in ('a','b','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,word)\n",
+      "stdout": "{'a': 2, 'b': 1} 3 a\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "histogram-only-and-else",
+      "source": "counts={}\nfor word in ['a','a','b']: counts[word]=counts.get(word,0)+1\nelse: print('done')\nprint(counts,word)\n",
+      "stdout": "done\n{'a': 2, 'b': 1} b\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "empty-keeps-binding",
+      "source": "counts={};total=0;word='before'\nfor word in (): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,word)\n",
+      "stdout": "{} 0 before\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "casing-and-native-fragments",
+      "source": "counts={};total=0\nfor word in 'A Café A Σ'.lower().split(): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,word)\n",
+      "stdout": "{'a': 2, 'café': 1, 'σ': 1} 4 σ\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "dynamic-value-once",
+      "source": "events=[]\nclass Value:\n def __add__(self,other): events.append('add'); return 5\ncounts={'a':Value()};total=0\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,events)\n",
+      "stdout": "{'a': 6} 2 ['add']\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "dynamic-total-after-store",
+      "source": "events=[]\nclass Value:\n def __iadd__(self,other): events.append(counts['a']); return 1\ncounts={'a':1};total=Value()\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,events)\n",
+      "stdout": "{'a': 3} 2 [2]\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "error-keeps-original-order",
+      "source": "counts={'a':None};total=0;word='before'\ntry:\n for word in ('a','b'): counts[word]=counts.get(word,0)+1;total+=1\nexcept TypeError: print(counts,total,word)\n",
+      "stdout": "{'a': None} 0 a\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "promotion-and-old-aliases",
+      "source": "counts={'a':(1<<55)-1};total=(1<<55)-1;old=(counts['a'],total)\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts['a'].bit_length(),total.bit_length(),old[0].bit_length(),old[1].bit_length())\n",
+      "stdout": "56 56 55 55\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "custom-mapping-effects",
+      "source": "events=[]\nclass Mapping:\n def __init__(self): self.data={}\n def get(self,key,default): events.append('get');return self.data.get(key,default)\n def __setitem__(self,key,value): events.append('set');self.data[key]=value\ncounts=Mapping();total=0\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(counts.data,total,events)\n",
+      "stdout": "{'a': 2} 2 ['get', 'set', 'get', 'set']\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "protocol-keys-keep-equality-effects",
+      "source": "events=[]\nclass Key:\n def __hash__(self): return hash('a')\n def __eq__(self,other): events.append('eq');return other=='a'\ncounts={Key():1};total=0\nfor word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=1\nprint(list(counts.values()),total,events)\n",
+      "stdout": "[3] 2 ['eq', 'eq', 'eq', 'eq']\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "list-mutation-during-continuation",
+      "source": "words=['a','a'];events=[]\nclass Value:\n def __add__(self,other): events.append('add');words.append('a');return 1\ncounts={'a':Value()};total=0\nfor word in words: counts[word]=counts.get(word,0)+1;total+=1\nprint(counts,total,len(words),events)\n",
+      "stdout": "{'a': 3} 3 3 ['add']\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "namespace-keeps-last-alias",
+      "source": "words=('alpha-value','beta-value');counts={};total=0\nfor word in words: counts[word]=counts.get(word,0)+1;total+=1\nprint(locals()['word'] is words[-1],total)\n",
+      "stdout": "True 2\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "private-total-before-protocol",
+      "source": "class Value:\n def __add__(self,other): return 0\ndef run():\n counts={'a':0,'b':Value()};total=0\n for word in ('a','a','b','a'): counts[word]=counts.get(word,0)+1;total+=1\n return counts,total,word\nprint(run())\n",
+      "stdout": "({'a': 3, 'b': 0}, 4, 'a')\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "private-total-before-handler",
+      "source": "def run():\n counts={'a':0,'b':None};total=0\n try:\n  for word in ('a','a','b'): counts[word]=counts.get(word,0)+1;total+=1\n except TypeError: return counts,total,word\nprint(run())\n",
+      "stdout": "({'a': 2, 'b': None}, 2, 'b')\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "private-total-final-identity-and-locals",
+      "source": "def run(words):\n counts={'a':0};total=1000;old=total\n for word in words: counts[word]=counts.get(word,0)+1;total+=1\n return total,total is old,locals()['total']\nprint(run(()));print(run(('a','a','a')))\n",
+      "stdout": "(1000, True, 1000)\n(1003, False, 1003)\n",
+      "stderr": "",
+      "exit": 0
+    },
+    {
+      "case": "negative-tier-boundary",
+      "source": "def run():\n counts={'a':0};total=-(1<<55);old=total\n for word in ('a','a'): counts[word]=counts.get(word,0)+1;total+=-1\n return total,old,counts\nprint(run())\n",
+      "stdout": "(-36028797018963970, -36028797018963968, {'a': 2})\n",
+      "stderr": "",
+      "exit": 0
+    }
+  ]
+}

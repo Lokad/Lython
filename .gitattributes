@@ -6,6 +6,7 @@ benchmarks/results/2026-11-11-native-counting-loops/** -text whitespace=cr-at-eo
 benchmarks/results/2026-11-11-native-loops-cpython-checkpoint/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-helper-refund/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-11-native-word-costs/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-11-private-counter-segments/** -text whitespace=cr-at-eol
 third_party/Python.LICENSE.txt -text -whitespace
 benchmarks/*.sh text eol=lf
 benchmarks/**/*.sh text eol=lf

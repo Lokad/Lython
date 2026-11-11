@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R240 private-total segment](results/2026-11-11-private-counter-segments/README.md)
+is retained in `b5849b04`. Whole-script text allocation falls9.04–9.72% through
+both APIs. Ordinary sync improves directionally in two quiet collections;
+captured/async clocks remain uncertain. Original report adversity does not recur
+with fresh processes but remains unexplained and preserved. No universal CPU or
+control-neutrality claim. Exact full delivery batches R239/R240 separately.
+
 The [current native-word profile](results/2026-11-11-native-word-costs/README.md)
 selects the next complete boundary after R237, retaining unknown/inlined work.
 It does not forecast removable CPU or reject untimed word-transport ideas.
