@@ -1,0 +1,25 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 264425472,
+  "requiredFreeBytes": 265339174,
+  "reclaimableBytes": 1986560,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "dictionary-values-b588-20261111/observations.tgz",
+      "bytes": 1985514,
+      "sha256": "fce5027587ca9699e8716d2c6f0ff8a1fb8772e6ade1adc2f3660dd9732ec58f",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-integer-storage/initial/quiet/observations.tgz",
+      "canonicalCommit": "8f8628a47a0758801281e826ad6ac77cf31cffc3",
+      "reason": "Terminal initial R245 archive duplicate, exact canonical committed Git bytes verified; preserve current refined core and all original observations. Fresh absolute path/UID/inode/all-alias proof before retirement.",
+      "paths": [
+        "dictionary-values-b588-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 340723,
+      "allocatedBytes": 1986560,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

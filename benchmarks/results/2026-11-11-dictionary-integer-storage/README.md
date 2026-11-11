@@ -95,3 +95,15 @@ pairs and all adverse conditions. Each raw VM archive contains its exact net11
 images are [referenced canonically](reference-images.json), avoiding duplicate
 bundles. External comparisons remain source-labelled in
 [BENCHMARKS](../../../docs/BENCHMARKS.md). Publication is postponed.
+
+First full delivery attempt `43081976930` is terminal **failed**: Ubuntu actual
+.NET 11/10, package consumers and original stress pass; Windows .NET 11 passes,
+but a five-second async file-callback test times out on .NET 10. Windows package/
+stress steps are skipped. The [receipt](delivery-first-attempt.json) and
+[original job log](windows-net10-callback-failure.log.gz) preserve that failure.
+The same32focused checks pass before correction on local .NET 10. The fixture
+moves to the existing nonparallel RuntimeStress collection, retaining its actual
+suspension/cancellation/cleanup assertions and unchanged five-second deadlines;
+32checks pass on each target. Scheduling interference remains a hypothesis.
+Corrected full delivery is pending; no runtime change or performance remeasurement
+is implied by this test-scheduling correction.

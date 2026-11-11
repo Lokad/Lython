@@ -2,6 +2,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
+[Collection("RuntimeStress")]
 public sealed class FileHelperProtocolTests
 {
     [Theory]

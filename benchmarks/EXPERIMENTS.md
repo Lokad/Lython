@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [current dictionary-storage checkpoint](results/2026-11-11-dictionary-cpython-checkpoint/README.md)
+measures retained8f8628a4 against stockCPython3.13.16 with the same six scripts,
+fixtures, workers and separate compile/warm/compile-result boundaries. All18jobs
+finish486.404s with identities/output/ownership/quiet/join/archive checks passing.
+Warm captured1.77–1.84×, ordinary1.06–1.11×, CSV1.04–1.05×, JSON-lines0.84–0.87×,
+report1.28–1.35×variable, search1.54–1.57×. Previous source-labelled rows survive
+verbatim in the prior guide. No individual-change attribution or report CPU-debt
+resolution. Full delivery is separate; the roadmap/publication hold continues.
+
 The [native dictionary value change](results/2026-11-11-dictionary-integer-storage/README.md)
 retains exact managed counts inside already funded entries, materializing stable
 immutable values on reads/copy publication. Text allocation falls14.90–16.13%,

@@ -1,0 +1,79 @@
+{
+  "files": {
+    "archive-receipt.json": {
+      "bytes": 367,
+      "sha256": "410d2042cd5aedcfb89734735bb9aa48a06546e3667e86310805d240707537f9"
+    },
+    "config.json": {
+      "bytes": 5042,
+      "sha256": "9b92e94b01f809049b08fef3cbf4d1668504725cfba4fd59ed8c2dce620e1662"
+    },
+    "delivery-first-attempt.json": {
+      "bytes": 8640,
+      "sha256": "34e094b92e4a5f1cd2b037999ad8c96087be3d92caa4442a0c0240dd89f7c203"
+    },
+    "identity.json": {
+      "bytes": 3993,
+      "sha256": "dcf3441dceb4f346c969f360bc3324bea7d5f7ee8655172e81d8337da7e1e8a0"
+    },
+    "inventory.json": {
+      "bytes": 1029,
+      "sha256": "b0cfd35ea33f02be6e40fc2ddd9840c8d98755b0f94e4910b4e15ddf3af15aa2"
+    },
+    "launch.log": {
+      "bytes": 309,
+      "sha256": "6bb9fb7b70d62cc1d83354a8abc3d1dbc9c0ed729afd6dbda65e488e0a6ecaa1"
+    },
+    "observations.tgz": {
+      "bytes": 2045901,
+      "sha256": "bd5d590687d2f7a6deb644192cf537c01c91579b9721f7f8decf999bd64e9232"
+    },
+    "observe-not-before.json": {
+      "bytes": 197,
+      "sha256": "1b2de82dba7d66b547b336563455bf13a8ce6a11de8b54545376b3c4d2279533"
+    },
+    "preparation.tar.xz": {
+      "bytes": 13716,
+      "sha256": "c203d503a8610597e54257968d950452159af4bd278c77bd7d2d27403869fb03"
+    },
+    "prior-BENCHMARKS.md": {
+      "bytes": 24370,
+      "sha256": "58a239eab96f735fd61d1d19f4cc79a679ef3f933a3914a8ad537b70f0d6c58a"
+    },
+    "README.md": {
+      "bytes": 4042,
+      "sha256": "03b0241583c4ce176c38383275d8932a59e96240ab4286f15174f00e92b331ca"
+    },
+    "source-identity.json": {
+      "bytes": 74441,
+      "sha256": "0c0c96c9baeb85269f84fe04bdd020a1ada9ffa2a5f04663d59b40d3e5911486"
+    },
+    "summary.json": {
+      "bytes": 22740,
+      "sha256": "e7f7ee2d96c8dc45c1481ad062b59380aa0c16d1501c6ab9ee9458e1cf87a0aa"
+    },
+    "terminal-status.json": {
+      "bytes": 567,
+      "sha256": "934c15229f29bd12589529cd248c3b3f09715b76569e82029ee99c47773f73d3"
+    },
+    "windows-callback-quiet10.log": {
+      "bytes": 1952,
+      "sha256": "c8047c1a3f6a5c288ecc0937f1aa9a84a4e12507c86628e6574cfd1d2492b4d0"
+    },
+    "windows-callback-quiet11.log": {
+      "bytes": 1962,
+      "sha256": "dc388312978ab19aa0dd419cf764ff0be999d7d433443b28066bd566291ce525"
+    },
+    "windows-net10-callback-failure.log.gz": {
+      "bytes": 8248,
+      "sha256": "1623932cf90ade02016eddc76f3a3e1d80810e2034dc28c9a65e25d6f3b0d54f"
+    },
+    "windows-net10-focused-before.log": {
+      "bytes": 1952,
+      "sha256": "9a71bf72305a4fff1626d45c4e1d2a249575f050146cc36fcbbf03762cb8c4d3"
+    }
+  },
+  "all18LoadedIdentitiesVerified": true,
+  "allUsersJoined": true,
+  "allArchivesVerified": true
+}
