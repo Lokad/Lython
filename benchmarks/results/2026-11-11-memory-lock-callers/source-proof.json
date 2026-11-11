@@ -1,0 +1,10 @@
+{
+  "currentRevision": "0b8f9e9a0421bb73966b9cfc8d568529442e8600",
+  "unchangedFrom": "e543bf15",
+  "sha256": {
+    "src/Lokad.Lython/Runtime/MemoryGovernor.cs": "190d93ebd16414090bd53e08f90ce3fb0c47a56089e22771493044d4abec75d1",
+    "src/Lokad.Lython/Public/LythonMemoryBudget.cs": "a2cdb0711ba48ee73679bbce5fc40bab1f5c756066a94ae3fa1bbc62c3635e49",
+    "src/Lokad.Lython/Runtime/Text/PyString.cs": "c50dfa68edfffb31b8d4d5fa9c951fa59b14ec1ceec8ccf8d25f185af4985c07",
+    "src/Lokad.Lython/Runtime/Text/PyStringOps.Whitespace.cs": "d1e11fa06e418b35d2ea8442450ebe457628b496e31bc6b606facb86076e5ae9"
+  }
+}

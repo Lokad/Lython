@@ -1,0 +1,10 @@
+{
+  "decision": "Required storage admissions, not proven duplicate transitions. Commit already avoids resizing; ordinary Reserve does not read Bytes except reentry/failure. Do not revive withdrawn coarse grants or infer contention/removable CPU. Select incoming lexical writes for the next bounded call/frame source pair.",
+  "callerGroups": {
+    "aggregate split admission": 38,
+    "UTF8 string/line admission": 26
+  },
+  "originalMapGuard": "Stopped on duplicate map starts before attribution.145start groups/168extra rows include reused dynamic stubs. Revised analysis considers every containing interval and preserves aliases; no ambiguity affects the64Monitor paths.",
+  "noNewCapture": true,
+  "noRuntimeChange": true
+}

@@ -6,6 +6,22 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R221 incoming lexical stores](results/2026-11-11-incoming-lexical-stores/README.md)
+remove unnecessary context promotion, name walks and repeated cell synchronization
+using existing defining owners. Complete counter variants reduce CLR allocation
+41.4% CSV / 47.9% text / 27.5% report; quiet warm elapsed falls 16–17% / 19–21% /
+12–15%, with supporting wider CPU. Unchanged-text neutrality remains unresolved;
+all desktop adversity and the independent frontend diagnostic failure survive.
+672 internal / 2,587 public checks pass per actual target. Runtime4625 is committed;
+combined full delivery42942735331 is active. No new CPython or producer claim.
+
+The [R220 offline admission-lock gate](results/2026-11-11-memory-lock-callers/README.md)
+resolves the64previously unattributed Monitor leaves from R211:38aggregate split
+and26UTF8 string/line admission chains, all immediate callers uniquely mapped.
+No contention/duplicate resize/removable CPU inference follows. Reused stub aliases
+are explicit, source proof and original failed map guard preserved. No new capture
+or budget mechanism; incoming lexical writes become the next call/frame hypothesis.
+
 The [R219 regex projection workspace](results/2026-11-11-regex-projection-storage/README.md)
 consolidates working storage and cursor in the existing prepared operation. Two
 per-match arrays/reservation and caller cursor plumbing disappear. Unicode iteration

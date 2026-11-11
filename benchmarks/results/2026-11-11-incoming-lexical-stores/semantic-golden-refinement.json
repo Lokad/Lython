@@ -1,0 +1,6 @@
+{
+  "originalPreserved": "semantic-goldens.json/initial-added-semantic-goldens.cs/failed focused TRX",
+  "reason": "Unchanged frontend rejects direct local reads/deletion after an indirect nonlocal rebinding. Both sources have identical frontend source hashes; tracked separately as R222. Refined case reads through the retained reader and deletes through an explicit nonlocal eraser; still exercises active/dead owner and unbound-cell rebinding.",
+  "source": "def outer():\n value=1\n def write(x):\n  nonlocal value\n  value=x\n def read():return value\n def erase():\n  nonlocal value\n  del value\n del value\n try:read()\n except NameError:print('missing')\n write(7)\n print(read(),read())\n erase()\n return write,read\nwrite,read=outer()\nwrite(19)\nprint(read())\n",
+  "expected": "missing\n7 7\n19\n"
+}

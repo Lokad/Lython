@@ -1,0 +1,49 @@
+{
+  "beforeFreeBytes": 266616832,
+  "afterRecoveryFreeBytes": 278380544,
+  "postExtractionFreeBytes": 266358784,
+  "requiredFreeBytes": 276389888,
+  "freshIdleLease": true,
+  "verifiedReplacementInPayload": true,
+  "files": [
+    {
+      "path": "direct-operands-b457-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-direct-operand-transport/observations.tar.xz",
+      "canonicalMember": "b457/observations.tgz",
+      "bytes": 3919884,
+      "sha256": "ec10b49d091b17202954b799049e9d67430a6d267673f36aecde8c8cf4604e7c",
+      "paths": [
+        "direct-operands-b457-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3928064,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "shared-cased-split-b453-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-shared-cased-split/observations.tar.xz",
+      "canonicalMember": "b453/observations.tgz",
+      "bytes": 3916691,
+      "sha256": "f72d516e04b26da268253534b63c365fcaeeac030e84b1b7d1325d17071a01ed",
+      "paths": [
+        "shared-cased-split-b453-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3919872,
+      "allHardlinkAliasesVerified": true
+    },
+    {
+      "path": "direct-native-fusion-b451-20261108/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-08-native-method-facts/observations.tar.xz",
+      "canonicalMember": "b451/observations.tgz",
+      "bytes": 3915043,
+      "sha256": "232b175d928e4b6f37bef2329edb02ab7df2259a3be49e0f22ef2712a19561c2",
+      "paths": [
+        "direct-native-fusion-b451-20261108/observations.tgz"
+      ],
+      "allocatedBytes": 3915776,
+      "allHardlinkAliasesVerified": true
+    }
+  ],
+  "osFloorMiB": 240,
+  "evidenceHeadroomMiB": 12,
+  "fullyQualifiedE122AndB8Preserved": true
+}

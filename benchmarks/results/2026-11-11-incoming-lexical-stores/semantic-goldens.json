@@ -1,0 +1,45 @@
+{
+  "reference": "CPython3.13.2 isolated local",
+  "cases": [
+    {
+      "name": "incoming-write-live-owner",
+      "source": "def outer():\n value=1\n def write(x):\n  nonlocal value\n  value=x\n  return value\n print(value,write(7),value)\n value=11\n print(write(13),value)\n return write\nwrite=outer()\nprint(write(17))\n",
+      "expected": "1 7 7\n13 13\n17\n"
+    },
+    {
+      "name": "incoming-write-owner-locals",
+      "source": "def outer():\n value=[]\n def write(x):\n  nonlocal value\n  value=x\n  return locals()['value']\n saved=[]\n print(write(saved) is saved,value is saved,locals()['value'] is saved)\n return write\nwrite=outer()\nother=[]\nprint(write(other) is other)\n",
+      "expected": "True True True\nTrue\n"
+    },
+    {
+      "name": "incoming-write-after-owner-deletion",
+      "source": "def outer():\n value=1\n def write(x):\n  nonlocal value\n  value=x\n def read():return value\n del value\n try:read()\n except NameError:print('missing')\n write(7)\n print(value,read())\n del value\n return write,read\nwrite,read=outer()\nwrite(19)\nprint(read())\n",
+      "expected": "missing\n7 7\n19\n"
+    },
+    {
+      "name": "incoming-write-transitive-shadow",
+      "source": "value=100\ndef outer():\n value=1\n def middle():\n  nonlocal value\n  def write(x):\n   nonlocal value\n   value=x\n   return value\n  return write\n write=middle()\n print(write(7),value)\n return write\nprint(outer()(11),value)\n",
+      "expected": "7 7\n11 100\n"
+    },
+    {
+      "name": "incoming-write-comprehension-binding",
+      "source": "def outer():\n value=0\n def write(items):\n  nonlocal value\n  result=[(value:=item) for item in items]\n  return result,value\n print(write([3,8]),value)\n return write\nprint(outer()([5,9]))\n",
+      "expected": "([3, 8], 8) 8\n([5, 9], 9)\n"
+    },
+    {
+      "name": "incoming-write-class-cell",
+      "source": "class C:\n def write(self,new):\n  nonlocal __class__\n  __class__=new\n  return __class__\n def read(self):return __class__\ninstance=C()\nprint(instance.write(int).__name__,instance.read().__name__)\n",
+      "expected": "int int\n"
+    },
+    {
+      "name": "incoming-write-class-body-owner",
+      "source": "def outer():\n value=1\n def write(x):\n  nonlocal value\n  value=x\n write(7)\n class C:\n  result=value\n print(value,C.result)\n return write,C\nwrite,C=outer()\nprint(write(11),C.result)\n",
+      "expected": "7 7\nNone 7\n"
+    },
+    {
+      "name": "incoming-write-default-and-exception",
+      "source": "events=[]\ndef outer():\n value=1\n def write(x=events.append('default')):\n  nonlocal value\n  value=3\n  raise ValueError(value)\n try:write()\n except ValueError as error:print(value,error.args,events)\n return write\nwrite=outer()\ntry:write(9)\nexcept ValueError as error:print(error.args,events)\n",
+      "expected": "3 (3,) ['default']\n(3,) ['default']\n"
+    }
+  ]
+}

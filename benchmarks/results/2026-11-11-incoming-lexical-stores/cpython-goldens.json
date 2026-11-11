@@ -1,0 +1,27 @@
+{
+  "reference": "CPython3.13.2 isolated local",
+  "cases": [
+    {
+      "case": "scripts.csv-validated-records.nonlocal-counter.large",
+      "stdout": "3072\n",
+      "outputFilesSHA256": {
+        "report.csv": "17cf3e77ac206eef4a3d542be7df50632af604ea548921540cdb83bc52d0ab76"
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "stdout": "6144\n",
+      "outputFilesSHA256": {
+        "report.txt": "a95b63596cabd48fb586b731f558811ece02ab9b76694c5cac7bc0c9bbad2e20"
+      }
+    },
+    {
+      "case": "scripts.report-render.nonlocal-counter.large",
+      "stdout": "3072\n",
+      "outputFilesSHA256": {
+        "report.md": "b28f0156dec79e18c1af21b9757ce29987e3809278df4692d6613581dbd4ae1a"
+      }
+    }
+  ],
+  "sourceChange": "Observable nonlocal progress counter and caller assertion; text uses ordinary default-whitespace split instead of R139 explicit separator. Same source on both Lython images; original full fixtures/output files unchanged."
+}
