@@ -7,7 +7,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal static bool TryExecuteNativeReturn(ExecutableCodeObject codeObject, ExecutionContext context,
-        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result)
+        ReadOnlySpan<object?> arguments, LythonSourceSpan entrySpan, out object result, bool consumedByIteration = false)
     {
         result = PyNone.Instance;
         var body = codeObject.NativeBody;
@@ -15,7 +15,7 @@ internal sealed partial class LythonRuntime
             || context.ActiveHandlerVariables is { Count: > 0 })
             return false;
         if (!GuardNativeBody(codeObject, body, arguments, context)) return false;
-        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan);
+        result = ExecuteNativeBody(codeObject, body, context, arguments, entrySpan, consumedByIteration);
         return true;
     }
 

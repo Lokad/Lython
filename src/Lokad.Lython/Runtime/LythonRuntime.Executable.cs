@@ -71,6 +71,9 @@ internal sealed partial class LythonRuntime
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
+        // Only the incoming ordinary call owns this intent; generators, public
+        // entry and protocol results retain observable Python return values.
+        internal bool ReturnConsumedByIteration;
         // Python None is PyNone; null means no explicit return has completed.
         internal object? ReturnValue;
 
@@ -610,9 +613,10 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals,
-        PyExecutableFunction? lookupOwner = null)
+        PyExecutableFunction? lookupOwner = null,
+        bool returnConsumedByIteration = false)
     {
-        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
+        var execution = CreateExecutableWorkState(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner, returnConsumedByIteration);
         context.AdoptExecutableExecution(ref execution, context.State.CurrentException);
     }
 
@@ -622,7 +626,8 @@ internal sealed partial class LythonRuntime
         BoundCallArguments boundArguments,
         IReadOnlyList<ExecutableCell>? closureCells,
         bool argumentsAreLocals,
-        PyExecutableFunction? lookupOwner = null)
+        PyExecutableFunction? lookupOwner = null,
+        bool returnConsumedByIteration = false)
     {
         // InvokeBound owns bound storage until this interpreter has detached,
         // including actual asynchronous suspension. No second local array/copy
@@ -670,6 +675,7 @@ internal sealed partial class LythonRuntime
                 LocalCells = localCells,
                 ClosureCells = closureCells,
                 Stack = stack,
+                ReturnConsumedByIteration = returnConsumedByIteration,
                 InstructionIndex = codeObject.EntryIndex
             };
         }

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Forward immediate iteration through ordinary direct helper returns, avoiding
+  transient cased-split lists while preserving observable Python lists. Keep
+  custom intermediate method results separate from a fused chain's final result,
+  preserving their Python attribute errors.
+
 - Allow nested nonlocal callbacks to rebind deleted or handler-cleared cells
   without false compile-time unbound-local errors. Runtime checks preserve
   `UnboundLocalError` and `NameError` when the cell remains unbound.

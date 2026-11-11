@@ -16,14 +16,19 @@ internal sealed partial class ExecutableCodeObject
         foreach (var block in blocks)
         {
             var instructions = block.InstructionArray;
-            // The result never enters a guest binding: the very next operation
-            // acquires it for this frame's private iteration storage.
+            // Before operand forwarding, these adjacent uses cannot expose a
+            // result in a guest binding. A direct return inherits its caller's
+            // consumption; a local store always keeps an ordinary Python value.
             for (var index = 0; index + 1 < instructions.Length; index++)
                 if (instructions[index].OpCode == ExecutableOpCode.Call
-                    && instructions[index + 1].OpCode == ExecutableOpCode.GetIter)
+                    && instructions[index + 1].OpCode is ExecutableOpCode.GetIter or ExecutableOpCode.Return)
                 {
                     var site = instructions[index].CallSiteIndex;
-                    sites[site] = sites[site] with { ConsumedByIteration = true };
+                    sites[site] = sites[site] with
+                    {
+                        ConsumedByIteration = instructions[index + 1].OpCode == ExecutableOpCode.GetIter,
+                        ReturnedDirectly = instructions[index + 1].OpCode == ExecutableOpCode.Return,
+                    };
                 }
             for (var index = 1; index + 2 < instructions.Length; index++)
                 if (instructions[index].OpCode == ExecutableOpCode.Call
@@ -53,7 +58,7 @@ internal sealed partial class ExecutableCodeObject
         // A local between the calls is observable on the ordinary path. Only
         // native-body proof may elide that binding; never skip its instructions.
         if (consumer == producer + 2) sites[firstIndex] = first with
-        { CasedSplit = recipe, ConsumedByIteration = last.ConsumedByIteration };
+        { CasedSplit = recipe };
         return recipe;
     }
 }

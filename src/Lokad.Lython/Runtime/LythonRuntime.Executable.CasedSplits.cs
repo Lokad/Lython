@@ -25,6 +25,11 @@ internal sealed partial class LythonRuntime
         {
             if (call.CasedSplit is not { } recipe || !ReferenceEquals(target, recipe.CasingMethod)
                 || execution.Stack[start] is not PyString receiver) return false;
+            // Only the fused result inherits the split call's consumer. If the
+            // exact native chain is declined, lower() has its own ordinary use
+            // as the receiver of the following member access.
+            var resultCall = execution.Code.CallSites[
+                execution.Code.Instructions[execution.InstructionIndex + 2].CallSiteIndex];
             // The immediate chain stays within this basic block. Original
             // operand layout gives both calls the same result position; publish
             // through the final call, including its local-store continuation.
@@ -32,7 +37,7 @@ internal sealed partial class LythonRuntime
             {
                 object result;
                 context.EnterInterpreterFrame(recipe.CasingCallSpan);
-                try { result = ExecuteCasedSplit(recipe, receiver, context, call.ConsumedByIteration); }
+                try { result = ExecuteCasedSplit(recipe, receiver, context, CallResultConsumedByIteration(in execution, resultCall)); }
                 catch (Exception error) when (TryTranslateCallableException(error, recipe.SplitCallSpan, out var translated)) { throw translated; }
                 finally { context.LeaveInterpreterFrame(); }
                 execution.InstructionIndex += 2;

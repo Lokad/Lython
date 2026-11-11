@@ -461,6 +461,7 @@ internal sealed record ExecutableCallSite(
 {
     public ExecutableCasedSplit? CasedSplit { get; init; }
     public bool ConsumedByIteration { get; init; }
+    public bool ReturnedDirectly { get; init; }
     public bool AccumulatesDictionary { get; init; }
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;

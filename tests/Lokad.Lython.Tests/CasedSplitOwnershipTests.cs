@@ -13,9 +13,16 @@ public sealed class CasedSplitOwnershipTests
     [InlineData(false, 2), InlineData(true, 2)]
     public async Task ImmediateLoopsAdmitAllWordsBeforeBodyEffects(bool asynchronous, int failureKind)
     {
-        foreach (var iterable in new[] { "input.lower().split()", "words(input)", "words(value=input)" })
+        foreach (var (definition, iterable) in new[]
         {
-            var source = "def words(value):return value.lower().split()\nfor word in " + iterable + ":\n effects.append(word)";
+            ("def words(value):return value.lower().split()\n", "input.lower().split()"),
+            ("def words(value):return value.lower().split()\n", "words(input)"),
+            ("def words(value):return value.lower().split()\n", "words(value=input)"),
+            ("def outer():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n return words\nwords=outer()\n", "words(input)"),
+            ("def outer():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def forward(value):return words(value=value)\n return forward\nwords=outer()\n", "words(input)"),
+        })
+        {
+            var source = definition + "for word in " + iterable + ":\n effects.append(word)";
             var frontend = LythonFrontend.Compile(source);
             Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
             var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script.RequireNotNull())).EntryPoint;

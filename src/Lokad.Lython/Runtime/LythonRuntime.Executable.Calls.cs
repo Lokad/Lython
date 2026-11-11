@@ -267,6 +267,8 @@ internal sealed partial class LythonRuntime
         {
             var function = _pendingFunction!;
             var span = PendingCallSpan;
+            var consumedByIteration = _callCompletion == CallCompletion.Call && _pendingCallSite is { } site
+                && CallResultConsumedByIteration(in _execution, site);
             ExecutionContext? frame = null;
             ExecutableWorkState work = default;
             var ownsWork = false;
@@ -276,7 +278,7 @@ internal sealed partial class LythonRuntime
             {
                 CheckExecution(span);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
-                if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, out var nativeValue))
+                if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, consumedByIteration, out var nativeValue))
                 {
                     CompletePendingCall(nativeValue, null);
                     return this;
@@ -290,7 +292,7 @@ internal sealed partial class LythonRuntime
                     try
                     {
                         work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
-                            argumentsAreLocals: true, lookupOwner: function);
+                            argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                         ownsWork = true;
                         var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
                         if (pause == InstructionPause.Boundary)
@@ -310,13 +312,13 @@ internal sealed partial class LythonRuntime
                 {
                     frame = function.EnterInvocationFrame(bound, span);
                     functionEntered = true;
-                    if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value))
+                    if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value, consumedByIteration))
                     {
                         CompletePendingCall(value, null);
                         return this;
                     }
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
-                        function.ClosureCells, argumentsAreLocals: true, lookupOwner: function);
+                        function.ClosureCells, argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                 }
                 frame.EnterExecutableSlots();
                 frame._caller = this;

@@ -38,6 +38,10 @@ admission and reuse; pure bound-method loops retain active cancellation coverage
 [Unbound-name checks](Lokad.Lython.PublicApi.Tests/UnboundLocalVariableTests.cs)
 distinguish guest `None` from absent locals and deleted closure/generator cells,
 preserving Python error types and exposed namespace contents through both APIs.
+[Returned iteration](Lokad.Lython.PublicApi.Tests/ReturnedIterationTests.cs) covers
+direct and captured helper returns, observable lists and aliases, custom casing
+errors, generators, protected returns, Unicode and genuine async cleanup. Pending
+cleanup retains its allowance after cancellation until the host finishes closing.
 [Nonlocal rebinding](Lokad.Lython.PublicApi.Tests/NonlocalRebindingTests.cs) checks
 deleted and handler-cleared cells, transitive/class/generator targets, runtime
 unbound errors, lexical barriers and shared-budget cleanup against Python goldens.

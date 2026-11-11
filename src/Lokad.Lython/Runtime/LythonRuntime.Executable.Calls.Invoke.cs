@@ -7,6 +7,9 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        private static bool CallResultConsumedByIteration(in ExecutableWorkState execution, ExecutableCallSite call)
+            => call.ConsumedByIteration || execution.ReturnConsumedByIteration && call.ReturnedDirectly;
+
         // The same native selection serves ordinary and not-yet-materialized
         // invocations. A false result has performed no operation or admission.
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
@@ -36,9 +39,10 @@ internal sealed partial class LythonRuntime
                     {
                         scope.CheckExecution(call.CallSpan);
                         var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                        var consumedByIteration = CallResultConsumedByIteration(in execution, call);
                         var completed = borrow
-                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, call.ConsumedByIteration, out value)
-                            : function.TryExecuteNativeCall(call, arguments, functionReceiver, scope, call.CallSpan, out value);
+                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, consumedByIteration, out value)
+                            : function.TryExecuteNativeCall(call, arguments, functionReceiver, scope, call.CallSpan, consumedByIteration, out value);
                         if (!completed) return false;
                     }
                     catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
