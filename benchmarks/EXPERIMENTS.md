@@ -6,13 +6,23 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [current native-word profile](results/2026-11-11-native-word-costs/README.md)
+selects the next complete boundary after R237, retaining unknown/inlined work.
+It does not forecast removable CPU or reject untimed word-transport ideas.
+The [native helper refund correction](results/2026-11-11-native-helper-refund/README.md)
+removes duplicate cleanup after a refund callback throws: both APIs previously
+refunded 160 retained bytes twice. Committed `8314c02d` passes 960 focused actual11/10
+checks; full delivery batches with the next material runtime milestone.
+
 The [R237 complete counting-loop milestone](results/2026-11-11-native-counting-loops/README.md)
 is retained in `fe6648b2`. Existing native iteration and arithmetic remove repeated
 dispatch and argument preparation. Quiet captured-text sync improves about9–11%;
 other text shapes/APIs improve directionally with wider controls. Allocation is
 flat, desktop clocks remain mixed/adverse and CSV neutrality is unresolved.
-All source pairs, binaries, failed fixtures and controls survive. Focused actual11/10
-checks pass; full exact-revision delivery and CPython refresh are separate records.
+All source pairs, binaries, failed fixtures and controls survive. Exact `fe6648b2`
+passes full Windows/Ubuntu actual11/10, original stress and installed consumers.
+The [three-script CPython refresh](results/2026-11-11-native-loops-cpython-checkpoint/README.md)
+keeps compilation separate and shows a remaining captured-helper gap.
 
 The [R236 call-preparation migration](results/2026-11-11-call-preparation/README.md)
 is withdrawn after a complete prototype and source-justified refinement. Common

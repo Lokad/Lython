@@ -1,0 +1,8 @@
+{
+  "revision": "8314c02d",
+  "baselineRuntime": "fe6648b2",
+  "problem": "A native-success cleanup refund can throw after publishing its returned workspace. The old catch returns that same array again, refunding160B still retained by its idle cache and stealing live-owner funding.",
+  "before": "Real compiledvalue.lower helper; legitimate nested workspace during admission; first refusal during return eviction. Both APIs fail: expected8737B, actual8577B. First failure identity already survives; funding does not.",
+  "replacement": "One finally per API relinquishes the bound workspace once, with nested finally ensuring return after frame cleanup. Preserve logical clear extents, native/entry/body error semantics and actual await lifetime.49deleted lines/30added production lines; no public API change, owner framework, counters or switches.",
+  "validation": "282internal+198public per actual11/10,960total: first origin/live balances/retained input, recursion/frames/defaults/exception context/pending cancellation/cleanup/budget reuse. No timing or CPU claim. Full831 delivery batches with the next material runtime change; fe is separately fully qualified."
+}

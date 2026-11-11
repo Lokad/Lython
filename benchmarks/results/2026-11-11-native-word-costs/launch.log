@@ -1,0 +1,7 @@
+{"freeBytes": 303476736, "sourceAndImagesVerified": true, "sampledSeconds": 10, "ownerSeconds": 90, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=1min 30s
+MainPID=3544742
+ActiveState=active
+
+
+Running as unit: lython-b578-native-word-profile-20261111.service; invocation ID: a61a4fedb4844105a30e7547bd31d92a

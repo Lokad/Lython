@@ -1,0 +1,33 @@
+{
+  "files": {
+    "before.log": {
+      "bytes": 2720,
+      "sha256": "60f89605561942cc9c0081c8f67980982e2f5f8f635e933499c491d7737819e9"
+    },
+    "focused-internal-net10.0.log": {
+      "bytes": 1332,
+      "sha256": "4e7a631b353756a94dfe06812e469d35d17185f8f7cc8d2eb37ffde195c90660"
+    },
+    "focused-internal-net11.0.log": {
+      "bytes": 1352,
+      "sha256": "861e536475b42f55bdd42453606d54671b62e052940a52d3e8c2b63d58621e3c"
+    },
+    "focused-public-net10.0.log": {
+      "bytes": 1868,
+      "sha256": "048720b3d985fb410ce70c7de582909171ade8c7dcb683352f95356803344038"
+    },
+    "focused-public-net11.0.log": {
+      "bytes": 1878,
+      "sha256": "7a0e2a280143aeceaf1d7c03b465501666d8d1630169b4e3c9d7457b1a8bd7ff"
+    },
+    "outcome.json": {
+      "bytes": 1179,
+      "sha256": "d4a376a3131c6a2647eadaccb4e9968063697ed889b4d0f1dfb825db127f2104"
+    },
+    "source.patch.gz": {
+      "bytes": 2351,
+      "sha256": "68fee3c425af222e8c4b24453ccee5ab3ceb3c9aa965f24018b75113bcde2cea"
+    }
+  },
+  "rawBytesVerified": true
+}

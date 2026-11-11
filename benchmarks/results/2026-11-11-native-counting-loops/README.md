@@ -10,9 +10,11 @@ refused admission throws rather than selecting that continuation.
 
 Both source snapshots and actual .NET 11/10 binaries are frozen. The measured
 precommit candidate has `1ce` assembly metadata; all 568 production source hashes
-match committed `fe6648b2`. Full exact-revision delivery is tracked separately:
-2,692 focused Release cases pass across both targets; this record alone does not
-establish full platform, stress or installed-package qualification.
+match committed `fe6648b2`. Subsequent exact-revision delivery
+[43024046530](https://github.com/Lokad/Lython/actions/runs/43024046530) passes
+Windows/Ubuntu, actual .NET 11/10, original stress and installed Release consumers;
+see the [recorded result](delivery-ci-status.json). The original decision retains
+its then-pending status. Later runtime changes need separate qualification.
 
 ## Quiet source-pair confirmation
 

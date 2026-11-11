@@ -1,0 +1,7 @@
+{
+  "source": "Qualifiedfe6648b2/frozenbf93, materially changed R237 path; no offsets or CPU shares transferred from earlier source.",
+  "observation": "1151guest leaves/5.8CPU seconds,58unknown; native counting loop141(12.25%), shared dispatcher131(11.38%), private preparation91(7.91%), MoveNext46(4.00%), AddExactIntegers42(3.65%). Useful/inlined work and ancestry overlap. No elapsed pair, allocation attribution or removable-share forecast.",
+  "wordTransport": "Construction per word is real, but eliminating it needs exact binding/identity/continuation proof. No prototype or timing rejection. A constant worst-case admission count can overcharge long words/spaceruns roughly64x; do not weaken reasonable bounded streaming to remove a scan. Do not add R230 range arrays/wrappers or a general deferred-binding framework.",
+  "immediateCorrection": "R239 confirms native-return duplicate refund. Simplify to one finally per API, preserve live/cache funding. Independent correctness proof, no CPU claim.",
+  "selectedNext": "R240 complete private integer-total transport inside the existing native segment. Managedlong only for proven uncaptured/unmirrored/nonnamespace totals; same seven-byte tier; publish ordinary BigInteger on every exit/error/bailout, before actual callbacks/admission. Remove repeated total boxes/stores across a whole segment. No general scalar bank/tagged representation/owner/cache/options. Six whole-script pair with controls, both APIs, compile separate. Retain/refine/withdraw on combined evidence, not fixed percentages."
+}
