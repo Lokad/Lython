@@ -1,0 +1,6 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\mirrored-call-storage-r241\tests\public11\r241-public11.trx
+
+Passed!  - Failed:     0, Passed:  2082, Skipped:     0, Total:  2082, Duration: 12 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

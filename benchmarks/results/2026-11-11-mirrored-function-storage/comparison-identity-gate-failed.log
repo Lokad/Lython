@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "D:\code\Lython\.git\agent-notes\review-20261031\mirrored-call-storage-r241\freeze-and-measure.py", line 9, in <module>
+    assert sha(r/'images'/role/name)==h,(role,name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('before', 'Lokad.Lython.dll')

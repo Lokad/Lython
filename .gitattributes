@@ -305,3 +305,6 @@ benchmarks/results/2026-11-10-receiver-native-entry/** -text whitespace=cr-at-eo
 benchmarks/results/2026-11-10-receiver-native-entry/**/*.patch -text -whitespace
 
 benchmarks/results/2026-11-10-prefix-instruction-attribution/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-11-mirrored-function-storage/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-11-mirrored-function-storage/**/*.patch -text -whitespace

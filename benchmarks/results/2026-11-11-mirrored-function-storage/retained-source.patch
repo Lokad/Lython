@@ -1,0 +1,120 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index 88150a8c..e18a2d4a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
+                 function = method;
+                 receiver = bound.Receiver;
+             }
+-            if (function is not { ArgumentsAreLocals: true }) return false;
++            if (function is null) return false;
+             _pendingCallSite = site;
+             _pendingFunction = function;
+             _pendingReceiver = receiver;
+@@ -349,8 +349,7 @@ internal sealed partial class LythonRuntime
+                             // A deferred prefix can write locals without ever
+                             // creating a frame. Clear the compiler workspace,
+                             // not only its parameter prefix, before caching it.
+-                            if (bound.Values is not null) ReturnBoundArguments(bound,
+-                                function.ArgumentsAreLocals ? function.CodeObject.ValueStorageCapacity : bound.Assigned.Length);
++                            if (bound.Values is not null) ReturnBoundArguments(bound, function.CodeObject.ValueStorageCapacity);
+                             frame?.DetachExecutableExecution();
+                         }
+                     }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index c4159de9..b6d4cdeb 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -631,7 +631,7 @@ internal sealed partial class LythonRuntime
+     {
+         // InvokeBound owns bound storage until this interpreter has detached,
+         // including actual asynchronous suspension. No second local array/copy
+-        // is needed for nonmirrored executable functions.
++        // is needed for executable functions, including mirrored namespaces.
+         var entry = codeObject.Instructions;
+         var span = entry.Length == 0 ? null : entry[0].Span;
+         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
+diff --git a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+index 73b1c3a5..9502da89 100644
+--- a/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
++++ b/src/Lokad.Lython/Runtime/PyExecutableFunction.cs
+@@ -37,11 +37,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         ScopeDirectiveFacts scopeFacts,
+         PythonCallableKind callableKind = PythonCallableKind.Function)
+         : base(name, parameterLayout, closure, defaultValues, scopeFacts, callableKind,
+-            storageCapacity: codeObject.RequiresLocalVariableMirroring ? null : codeObject.ValueStorageCapacity)
++            storageCapacity: codeObject.ValueStorageCapacity)
+     {
+         _codeObject = codeObject;
+         _closureCells = closureCells;
+-        SupportsDirectPositional = ArgumentsAreLocals && SupportsPositionalBinding;
++        SupportsDirectPositional = SupportsPositionalBinding;
+     }
+ 
+     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
+@@ -49,8 +49,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+     internal bool SupportsDirectPositional { get; }
+     // Compiler parameter slots are the binding-layout prefix. The invocation
+     // owns the full local-capacity array through completion. Captures use
+-    // separate cells; exposed locals copy values, never this array.
+-    internal bool ArgumentsAreLocals => !_codeObject.RequiresLocalVariableMirroring;
++    // separate cells; mirrored namespaces and exposed locals copy values,
++    // never this array.
+ 
+     internal ExecutableCodeObject CodeObject => _codeObject;
+     internal IReadOnlyList<LythonRuntime.ExecutableCell> ClosureCells => _closureCells;
+@@ -60,7 +60,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+     // Scope-sensitive operations still promote before observing their namespace.
+     // Owner binding alone adds no namespace requirement; lexical class-cell
+     // facts below retain the context needed by __class__ and implicit super.
+-    internal bool CanDeferInvocationContext => ArgumentsAreLocals &&
++    internal bool CanDeferInvocationContext => !_codeObject.RequiresLocalVariableMirroring &&
+         !_codeObject.ScopeFacts.RequiresClassCell &&
+         _codeObject.CapturedLocalSlots.Count == 0 &&
+         _codeObject.ExceptionRegions.Count == 0 &&
+@@ -129,7 +129,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+     {
+         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+             return result;
+-        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this)
++        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, true, span, this)
+             ?? PyNone.Instance;
+     }
+ 
+@@ -142,7 +142,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
+         if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
+             return result;
+         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
+-            _codeObject, frame, boundArguments, _closureCells, ArgumentsAreLocals, span, this).ConfigureAwait(false)
++            _codeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
+             ?? PyNone.Instance;
+     }
+ }
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index d9ac3ee2..27d2ed0c 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -59,8 +59,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+ 
+     internal bool SupportsPositionalBinding { get; }
+ 
+-    // Remaining lowered/mirrored opcode calls bind invocation-owned values.
+-    // Nonmirrored executable calls use the linear runner, including its native
++    // Lowered opcode calls and callbacks bind invocation-owned values.
++    // Executable calls use the linear runner, including its native
+     // operand borrow; callbacks can still complete natively after binding below.
+     internal object InvokeFromOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+         LythonRuntime.ExecutionContext context, object? receiver = null, ExecutableCallSite? callSite = null)
+diff --git a/src/Lokad.Lython/Runtime/PyType.cs b/src/Lokad.Lython/Runtime/PyType.cs
+index 3a7e480c..24f22add 100644
+--- a/src/Lokad.Lython/Runtime/PyType.cs
++++ b/src/Lokad.Lython/Runtime/PyType.cs
+@@ -248,7 +248,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
+     internal bool TryGetExecutableInitializer([MaybeNullWhen(false)] out PyExecutableFunction initializer)
+     {
+         if (TryLookupInMro("__init__", 0, out var value, out _) &&
+-            value is PyExecutableFunction { ArgumentsAreLocals: true } function)
++            value is PyExecutableFunction function)
+         {
+             initializer = function;
+             return true;

@@ -1,0 +1,7 @@
+{"freeBytes": 269340672, "sourceAndImagesVerified": true, "jobs": 3, "ownerSeconds": 150, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=2min 30s
+MainPID=3547406
+ActiveState=active
+
+
+Running as unit: lython-b581-mirrored-storage-20261111.service; invocation ID: 80f0ad325aed40908b7f5e701246c9c8

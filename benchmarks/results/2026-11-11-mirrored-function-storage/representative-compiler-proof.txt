@@ -1,0 +1,101 @@
+case minimal
+code <module> mirrored=False capacity=5 locals=run
+code run mirrored=False capacity=8 locals=words,counts,word
+counter call 9
+1 StoreLocal InputStart=3 ResultSlot=3 LiveExtent=3 HasLocalResult=False local=1
+2 GetIter InputStart=0 ResultSlot=3 LiveExtent=4 HasLocalResult=False
+3 Jump InputStart=4 ResultSlot=4 LiveExtent=4 HasLocalResult=False target=4
+4 ForNextDictionaryAccumulation InputStart=3 ResultSlot=4 LiveExtent=5 HasLocalResult=True
+5 StoreLocal InputStart=4 ResultSlot=4 LiveExtent=4 HasLocalResult=False local=2
+6 LoadCallMember InputStart=1 ResultSlot=4 LiveExtent=6 HasLocalResult=False name=get
+7 LoadLocal InputStart=6 ResultSlot=6 LiveExtent=7 HasLocalResult=False
+8 LoadConst InputStart=7 ResultSlot=7 LiveExtent=8 HasLocalResult=False
+9 Call InputStart=4 ResultSlot=4 LiveExtent=5 HasLocalResult=False argc=2 sources=2147483647,2147483647
+10 Binary InputStart=4 ResultSlot=4 LiveExtent=5 HasLocalResult=False second=-2
+11 StoreSubscript InputStart=4 ResultSlot=4 LiveExtent=4 HasLocalResult=False second=1 third=2
+12 Jump InputStart=4 ResultSlot=4 LiveExtent=4 HasLocalResult=False target=4
+13 Return InputStart=1 ResultSlot=3 LiveExtent=3 HasLocalResult=False
+case mirrored-class-reader
+code <module> mirrored=True capacity=5 locals=snapshot
+code snapshot mirrored=True capacity=6 locals=value,Record
+case scripts.csv-local-record-class.large
+code <module> mirrored=True capacity=5 locals=main
+code main mirrored=True capacity=26 locals=processed,parse_amount,skip_note,csv,validated_record,totals,accepted,source,row,item,kind,amount,target,writer,<with_manager:0>,<with_value:1>,<with_manager:2>,<with_value:3>
+code validated_record mirrored=True capacity=10 locals=record,minimum,record_types,Record,amount
+case scripts.text-summary-helpers.nonlocal-counter.large
+code <module> mirrored=False capacity=5 locals=main
+code main mirrored=False capacity=21 locals=processed,words_from_line,counts,total,source,line,word,target,<with_manager:0>,<with_value:1>,<with_manager:2>,<with_value:3>
+counter call 29
+21 Call InputStart=13 ResultSlot=13 LiveExtent=14 HasLocalResult=False argc=1 sources=2147483647
+22 GetIter InputStart=13 ResultSlot=13 LiveExtent=14 HasLocalResult=False
+23 Jump InputStart=14 ResultSlot=14 LiveExtent=14 HasLocalResult=False target=24
+24 ForNextDictionaryAccumulation InputStart=13 ResultSlot=14 LiveExtent=15 HasLocalResult=True
+25 StoreLocal InputStart=14 ResultSlot=14 LiveExtent=14 HasLocalResult=False local=6
+26 LoadCallMember InputStart=2 ResultSlot=14 LiveExtent=16 HasLocalResult=False name=get
+27 LoadLocal InputStart=16 ResultSlot=16 LiveExtent=17 HasLocalResult=False
+28 LoadConst InputStart=17 ResultSlot=17 LiveExtent=18 HasLocalResult=False
+29 Call InputStart=14 ResultSlot=14 LiveExtent=15 HasLocalResult=False argc=2 sources=2147483647,2147483647
+30 Binary InputStart=14 ResultSlot=14 LiveExtent=15 HasLocalResult=False second=-3
+31 StoreSubscript InputStart=14 ResultSlot=14 LiveExtent=14 HasLocalResult=False second=2 third=6
+32 Augmented InputStart=3 ResultSlot=14 LiveExtent=15 HasLocalResult=True second=-3
+33 StoreLocal InputStart=14 ResultSlot=14 LiveExtent=14 HasLocalResult=False local=3
+34 Jump InputStart=14 ResultSlot=14 LiveExtent=14 HasLocalResult=False target=24
+code words_from_line mirrored=False capacity=5 locals=line
+case scripts.report-render.large
+code <module> mirrored=False capacity=16 locals=json,render,<with_manager:0>,<with_value:1>,source,records,written,<with_manager:2>,<with_value:3>,target,record
+code render mirrored=False capacity=6 locals=record
+case scripts.text-summary-helpers.large
+code <module> mirrored=False capacity=20 locals=words_from_line,counts,total,<with_manager:0>,<with_value:1>,source,line,word,<with_manager:2>,<with_value:3>,target
+counter call 28
+20 Call InputStart=12 ResultSlot=12 LiveExtent=13 HasLocalResult=False argc=1 sources=2147483647
+21 GetIter InputStart=12 ResultSlot=12 LiveExtent=13 HasLocalResult=False
+22 Jump InputStart=13 ResultSlot=13 LiveExtent=13 HasLocalResult=False target=23
+23 ForNextDictionaryAccumulation InputStart=12 ResultSlot=13 LiveExtent=14 HasLocalResult=True
+24 StoreLocal InputStart=13 ResultSlot=13 LiveExtent=13 HasLocalResult=False local=7
+25 LoadCallMember InputStart=1 ResultSlot=13 LiveExtent=15 HasLocalResult=False name=get
+26 LoadLocal InputStart=15 ResultSlot=15 LiveExtent=16 HasLocalResult=False
+27 LoadConst InputStart=16 ResultSlot=16 LiveExtent=17 HasLocalResult=False
+28 Call InputStart=13 ResultSlot=13 LiveExtent=14 HasLocalResult=False argc=2 sources=2147483647,2147483647
+29 Binary InputStart=13 ResultSlot=13 LiveExtent=14 HasLocalResult=False second=-3
+30 StoreSubscript InputStart=13 ResultSlot=13 LiveExtent=13 HasLocalResult=False second=1 third=7
+31 Augmented InputStart=2 ResultSlot=13 LiveExtent=14 HasLocalResult=True second=-3
+32 StoreLocal InputStart=13 ResultSlot=13 LiveExtent=13 HasLocalResult=False local=2
+33 Jump InputStart=13 ResultSlot=13 LiveExtent=13 HasLocalResult=False target=23
+code words_from_line mirrored=False capacity=5 locals=line
+case scripts.csv-validated-records.large
+code <module> mirrored=False capacity=5 locals=main
+code main mirrored=False capacity=25 locals=parse_amount,skip_note,csv,validated_record,totals,accepted,source,row,item,kind,amount,target,writer,<with_manager:0>,<with_value:1>,<with_manager:2>,<with_value:3>
+counter call 41
+33 Jump InputStart=18 ResultSlot=18 LiveExtent=18 HasLocalResult=False target=24
+34 LoadLocal InputStart=18 ResultSlot=18 LiveExtent=19 HasLocalResult=False
+35 UnpackValues InputStart=18 ResultSlot=18 LiveExtent=20 HasLocalResult=False
+36 StoreLocal InputStart=19 ResultSlot=19 LiveExtent=19 HasLocalResult=False local=9
+37 StoreLocal InputStart=18 ResultSlot=18 LiveExtent=18 HasLocalResult=False local=10
+38 LoadCallMember InputStart=4 ResultSlot=18 LiveExtent=20 HasLocalResult=False name=get
+39 LoadLocal InputStart=20 ResultSlot=20 LiveExtent=21 HasLocalResult=False
+40 LoadConst InputStart=21 ResultSlot=21 LiveExtent=22 HasLocalResult=False
+41 Call InputStart=18 ResultSlot=18 LiveExtent=19 HasLocalResult=False argc=2 sources=2147483647,2147483647
+42 Binary InputStart=18 ResultSlot=18 LiveExtent=19 HasLocalResult=False second=10
+43 StoreSubscript InputStart=18 ResultSlot=18 LiveExtent=18 HasLocalResult=False second=4 third=9
+44 Augmented InputStart=5 ResultSlot=18 LiveExtent=19 HasLocalResult=True second=-7
+45 StoreLocal InputStart=18 ResultSlot=18 LiveExtent=18 HasLocalResult=False local=5
+46 Jump InputStart=18 ResultSlot=18 LiveExtent=18 HasLocalResult=False target=24
+code validated_record mirrored=False capacity=8 locals=record,minimum,amount
+case scripts.json-summary-helpers.large
+code <module> mirrored=False capacity=22 locals=record_amount,json,totals,accepted,<with_manager:0>,<with_value:1>,source,line,record,amount,kind,<with_manager:2>,<with_value:3>,target
+counter call 36
+28 Call InputStart=15 ResultSlot=15 LiveExtent=16 HasLocalResult=True argc=1 sources=2147483647
+29 StoreLocal InputStart=15 ResultSlot=15 LiveExtent=15 HasLocalResult=False local=9
+30 CompareJumpIfFalse InputStart=9 ResultSlot=15 LiveExtent=15 HasLocalResult=False
+31 Subscript InputStart=8 ResultSlot=15 LiveExtent=16 HasLocalResult=True
+32 StoreLocal InputStart=15 ResultSlot=15 LiveExtent=15 HasLocalResult=False local=10
+33 LoadCallMember InputStart=2 ResultSlot=15 LiveExtent=17 HasLocalResult=False name=get
+34 LoadLocal InputStart=17 ResultSlot=17 LiveExtent=18 HasLocalResult=False
+35 LoadConst InputStart=18 ResultSlot=18 LiveExtent=19 HasLocalResult=False
+36 Call InputStart=15 ResultSlot=15 LiveExtent=16 HasLocalResult=False argc=2 sources=2147483647,2147483647
+37 Binary InputStart=15 ResultSlot=15 LiveExtent=16 HasLocalResult=False second=9
+38 StoreSubscript InputStart=15 ResultSlot=15 LiveExtent=15 HasLocalResult=False second=2 third=10
+39 Augmented InputStart=3 ResultSlot=15 LiveExtent=16 HasLocalResult=True second=-5
+40 StoreLocal InputStart=15 ResultSlot=15 LiveExtent=15 HasLocalResult=False local=3
+41 Jump InputStart=15 ResultSlot=15 LiveExtent=15 HasLocalResult=False target=17
+code record_amount mirrored=False capacity=5 locals=record

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R241 compiled-workspace consolidation](results/2026-11-11-mirrored-function-storage/README.md)
+is retained in `5f9059fa`. Mirrored functions use the same admitted final array
+and existing runner as other compiled functions, preserving real namespaces.
+Complete local-record CSV allocation falls4.92% through both APIs; the original
+desktop sync slowdown does not recur on the quiet VM, without explaining its
+cause. Quiet affected elapsed improves; ordinary CSV control+0.97..+2.83% remains
+explicit uncertainty. 4744 focused actual11/10 checks pass; full delivery is
+separate. All source pairs, cores, controls and preparation failures survive.
+
 The [R240 private-total segment](results/2026-11-11-private-counter-segments/README.md)
 is retained in `b5849b04`. Whole-script text allocation falls9.04–9.72% through
 both APIs. Ordinary sync improves directionally in two quiet collections;

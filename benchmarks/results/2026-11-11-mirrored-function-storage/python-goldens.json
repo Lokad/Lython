@@ -1,0 +1,8 @@
+{
+  "reference": "Python 3.13.2",
+  "lifetimeOutput": "4096 ((9,), 4, {'label': 'held'}) 7 ((11,), 3, {})\n",
+  "aliasIdentity": true,
+  "csvOutput": "3072\n",
+  "csvFilesMatch": true,
+  "boundary": "Semantic goldens only. In-memory ready input for lifetime script; isolated temporary file tree for CSV. No timing or performance comparison."
+}
