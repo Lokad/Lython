@@ -1,0 +1,14 @@
+{
+  "reason": "Both images still inline two ReadOperand sites and call one; no inlining-loss explanation. Initial candidate eagerly resolves OperandReadSpan for every captured read, unlike local failure-only spans. Refine the existing TryLoadClosure to request forwarded read spans only on error/fallback; no new helper/engine/storage. Original data retained.",
+  "instrumentedTier1Bytes": {
+    "ReadOperand": [
+      265,
+      472
+    ],
+    "ExecuteInputInstruction": [
+      3671,
+      4161
+    ]
+  },
+  "performanceAttribution": false
+}

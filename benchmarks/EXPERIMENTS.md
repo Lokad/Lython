@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The [R235 captured-operand trial](results/2026-11-11-captured-operand-transport/README.md)
+is fully withdrawn. A source-justified cold-span refinement preserves the initial
+adverse conditions; runtime allocation stays flat and quiet CSV/text shows no
+convincing overall gain, with captured text unstable. No fixed% veto or permanent
+design rejection. All568 production files equal qualified15f; fresh restored
+build23.22s/zero warnings/errors and530 focused checks pass. Keep independent
+span/lifetime/cancellation/refusal coverage, remove encoding-specific assertions.
+All source/cores/JIT/controls survive; no new bank/guard/span machinery remains.
+
 The [R234/B574 quiet confirmation](results/2026-11-11-constructor-text-confirmation/README.md)
 finishes5source-pair jobs/142.323s: combined15f/R232+R233 versus qualified4aa.
 Named CSV sync/async warm−3.22..−5.94%/−2.22..−5.64%; keyword-only/captured text

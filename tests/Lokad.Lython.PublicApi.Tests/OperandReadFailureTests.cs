@@ -22,6 +22,12 @@ public sealed class OperandReadFailureTests
     [InlineData("def fail():\n for value in []:pass\n return value\nfail()", "value", "UnboundLocalError")]
     [InlineData("def target(*values):print('called')\ndef fail():\n for missing in []:pass\n return target(1,2,3,4,missing,6)\nfail()", "missing", "UnboundLocalError")]
     [InlineData("def target(*values):print('called')\ndef fail():\n for left in []:pass\n for right in []:pass\n return target(left,1,2,3,right,6)\nfail()", "left", "UnboundLocalError")]
+    [InlineData("def outer():\n left=1\n del left\n right=2\n del right\n def fail():return left+right\n return fail()\nouter()", "left", "NameError")]
+    [InlineData("def outer():\n value=1\n del value\n def fail():return -value\n return fail()\nouter()", "value", "NameError")]
+    [InlineData("def outer():\n value={}\n del value\n def fail():return value[0]\n return fail()\nouter()", "value", "NameError")]
+    [InlineData("def outer():\n value=[]\n del value\n def fail():\n  for item in value:print('called')\n return fail()\nouter()", "value", "NameError")]
+    [InlineData("def outer():\n value=1\n del value\n def fail():\n  if value:print('called')\n return fail()\nouter()", "value", "NameError")]
+    [InlineData("def outer():\n value=1\n del value\n def fail():return value\n return fail()\nouter()", "value", "NameError")]
     public async Task FailedReadsKeepTheirOriginalSpanAndPrecedeProtocols(string source, string name, string exceptionType)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

@@ -9,10 +9,13 @@ namespace Lokad.Lython.Tests;
 public sealed class DirectOperandOwnershipTests
 {
     [Theory]
-    [InlineData(false, 0), InlineData(true, 0)]
-    [InlineData(false, 1), InlineData(true, 1)]
-    [InlineData(false, 2), InlineData(true, 2)]
-    public async Task ThreeInputStoreKeepsSnapshotsThroughProtocolRebindingAndCleanup(bool asynchronous, int failureKind)
+    [InlineData(false, 0, false), InlineData(true, 0, false)]
+    [InlineData(false, 1, false), InlineData(true, 1, false)]
+    [InlineData(false, 2, false), InlineData(true, 2, false)]
+    [InlineData(false, 0, true), InlineData(true, 0, true)]
+    [InlineData(false, 1, true), InlineData(true, 1, true)]
+    [InlineData(false, 2, true), InlineData(true, 2, true)]
+    public async Task ThreeInputStoreKeepsSnapshotsThroughProtocolRebindingAndCleanup(bool asynchronous, int failureKind, bool captured)
     {
         const string source = """
             def place(receiver,key,value):
@@ -41,14 +44,23 @@ public sealed class DirectOperandOwnershipTests
             finished=True
             return original_receiver.items[0]
             """;
-        var frontend = LythonFrontend.Compile(source);
+        var program = source.ReplaceLineEndings("\n");
+        if (captured)
+            program = program.Replace("def place(receiver,key,value):\n receiver[key]=value\n return value",
+                "def prepare(receiver,key,value):\n def place():\n  receiver[key]=value\n  return value\n return place")
+                .Replace("result=place(receiver,token,rhs)", "place=prepare(receiver,token,rhs)\nresult=place()");
+        var frontend = LythonFrontend.Compile(program);
         Assert.NotNull(frontend.Script);
         var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script)).EntryPoint;
-        var place = code.Functions.Single(binding => binding.CodeObject?.Name == "place").CodeObject!;
+        var ownerCode = captured ? code.Functions.Single(binding => binding.CodeObject?.Name == "prepare").CodeObject! : code;
+        var place = ownerCode.Functions.Single(binding => binding.CodeObject?.Name == "place").CodeObject!;
         var store = Assert.Single(place.Instructions, instruction => instruction.OpCode == ExecutableOpCode.StoreSubscript);
-        Assert.Equal(place.LocalNameToSlot["value"], store.InputStart);
-        Assert.Equal(place.LocalNameToSlot["receiver"], store.SecondInput);
-        Assert.Equal(place.LocalNameToSlot["key"], store.ThirdInput);
+        if (!captured)
+        {
+            Assert.Equal(place.LocalNameToSlot["value"], store.InputStart);
+            Assert.Equal(place.LocalNameToSlot["receiver"], store.SecondInput);
+            Assert.Equal(place.LocalNameToSlot["key"], store.ThirdInput);
+        }
         Assert.Equal(store.LiveExtent, store.ResultSlot);
 
         var budget = new LythonMemoryBudget(1024 * 1024);

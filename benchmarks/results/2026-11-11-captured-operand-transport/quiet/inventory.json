@@ -1,0 +1,68 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261484544,
+  "requiredFreeBytes": 270983168,
+  "reclaimableBytes": 12849152,
+  "proofs": [
+    {
+      "kind": "core",
+      "knownPath": "json-cpython-b566-20261111/candidate/Lokad.Lython.dll",
+      "canonical": "benchmarks/results/2026-11-11-json-cpython-checkpoint/observations.tgz",
+      "bytes": 5664256,
+      "sha256": "9dadd59bd75528186c66a9a95e2efcf411e611e0ccaa718ff38c4facdb191e33",
+      "canonicalMember": "current-core.dll",
+      "paths": [
+        "json-cpython-b566-20261111/current-core.dll",
+        "json-cpython-b566-20261111/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 807465,
+      "allocatedBytes": 5668864,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "constructor-binding-b574-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-constructor-text-confirmation/observations.tgz",
+      "bytes": 3854688,
+      "sha256": "099afd2728146e84e3d69a5b062718e63afc3593cd618784551dbe4dde2ee2f0",
+      "paths": [
+        "constructor-binding-b574-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 300360,
+      "allocatedBytes": 3858432,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "patch-cpython-b573-20261111/observations.tgz",
+      "canonical": "benchmarks/results/2026-11-11-patch-workflow/quiet/observations.tgz",
+      "bytes": 1976472,
+      "sha256": "6253542de01b940e90f7e892bae8db88c561f374716fd70c67fcabe4e612a9d1",
+      "paths": [
+        "patch-cpython-b573-20261111/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 807666,
+      "allocatedBytes": 1978368,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "return-prefix-b572-20261111/profiles/text-warm/perf.map",
+      "canonical": "benchmarks/results/2026-11-11-current-helper-prefix/observations.tgz",
+      "bytes": 1341045,
+      "sha256": "579b1f601c7c440a68831f7cba89e50b1e1d0f12aa664477d897820b1bc97d63",
+      "canonicalMember": "profiles/text-warm/perf.map",
+      "paths": [
+        "return-prefix-b572-20261111/profiles/text-warm/perf.map"
+      ],
+      "device": 66305,
+      "inode": 807645,
+      "allocatedBytes": 1343488,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
