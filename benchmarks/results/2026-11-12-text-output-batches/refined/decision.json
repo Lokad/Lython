@@ -1,0 +1,20 @@
+{
+  "status": "Retain coherent final-byte/bounded-output migration; full delivery pending",
+  "baselineRevision": "f4f44caf2bea091e9f1f117abc33b37b2b429f5a",
+  "coreSHA256": {
+    "reference": "09ad301e790ce664ed044088f80e8e144c5d502de70f656ccb55eeb235e0e463",
+    "reference-control": "09ad301e790ce664ed044088f80e8e144c5d502de70f656ccb55eeb235e0e463",
+    "candidate": "b2cbfdb6ebec288a356233356e81b72e9dfccdd57065ec53f668acd4ad1597fe",
+    "candidate-control": "b2cbfdb6ebec288a356233356e81b72e9dfccdd57065ec53f668acd4ad1597fe"
+  },
+  "qualification": "8616focused actual11/10 all pass, four complete scripts bothAPIs/separatecompile allgoldens/files/balances/cleanup pass. No full retained-source qualification claim yet.",
+  "change": "Shared count/write codec kernels; final encoded storage, no normalizedUTF8/alternative counters/flush reencoding. Existing governed file buffer batches output, complete admission and strict validation before first effects. Async ordinary/exposed write,writelines,CSV/JSON/PyTextStream await actual hostusers. Completed receiver methods use same immediate guard; onlypendingoperation retained. Remove CanSuspend/old async guard and unused fuel snapshot.",
+  "contract": "Filled staging publishes before explicitflush; acceptedprefix may survive failure. Physicalcapacity atmost128KiB, eachpayload atmost64KiB. No outputceiling/newowner/pool/allowance. Guestinput/otherallocations retain owners; boundedhostcommands stillstreamingboundary. Explicitflush/close releasesbuffer. Terminalrefusal remainsoriginal, no retry; pendingusersfundedthroughawaitedcleanup.",
+  "established": "UTF8report allocation about-12.7%, UTF16-19.16%, UTF16 admittedpeak-493734B; controls/compileallocation flat. Independently corrected newline-translated codecerror subject/indices, eightCPython3.13.2 goldens. Original localhelper carrier isvaluetype; no removedheapclosure claim.",
+  "quiet": "B608sixjobs169.344s allidentity/output/file/allowance/quiet/join/RAM/archivegates. AsyncUTF8report elapsed-3.77..+1.37%, widerCPU-5.88..-3.96%; UTF16 elapsed-1.22..-.61%, CPU-5.88..-2.44%. SyncUTF8elapsed-3.55..+.44%, CPU-2..+4.49%; syncUTF16-3.07..-.07%, CPU-5.88..+2.38%. TextAsync elapsed-3.11..+3.65%, CPU-3.15..+3.17%. CSVAsync+.03..+1.52%, CPU0. Fourprocessmedianpairings notconfidenceintervals.",
+  "debt": "Accept small CSVelapsed debt and uncertain sync/text clocks in exchange for coherent storage/work removal and measured reportallocation/asyncCPU. No universalCPU/neutrality claim or attribution that refinement caused B607 debt to disappear; separatecollections. Prior R259/R260differentbase debts remain separate. Desktop reportRun+9..15%, compileCSV+3.85..5.75%, and initialB607+2..8.61% asyncreportCPU preserved.",
+  "priorForms": "Original wholefileencodedform raises allocation6.8%/peak208KB, desktop syncUTF16+20..23%; initialbatchdesktop textAsync+18..23%, reportcompile+9.2..9.6%. Earlierarchitecture assertions/goldenfailure/setupmistakes and original unchangedspacefloorfailure remain in committed first-form/batching evidence.",
+  "boundary": "Warm public invocation/mediatedRAMI/O/fullvalidation/priorresultcleanup; excludesstartup,compile,reset/protocol/finalcache. WiderCPUincludesreset/protocol. Desktopincludesreset/immediatedisposal. No newCPython/RSS/tail/largefileclaim.",
+  "cleanup": "B608terminalcached, noVMusers/RAMfixtures. Exactcommitted initialB607candidateallaliases/raw/catalog/records retired onlyafter freshidle/UID/path/inode/allaliases/canonicalGitSHAproof; protected09ad. Free261931008B; freshproof before nextstaging.",
+  "ongoing": "Full exactsource platform/stress/package atdelivery, representativeCPython checkpoint, then completecall/frame/operandsourcegate. Regexindependent; publication/taggingheld. One milestone doesnotcomplete performanceobjective."
+}

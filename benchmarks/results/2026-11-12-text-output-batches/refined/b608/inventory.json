@@ -1,0 +1,76 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261582848,
+  "requiredFreeBytes": 271278080,
+  "reclaimableBytes": 10477568,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "text-batches-b607-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5681664,
+      "sha256": "f1c309df9ec8af6bf7dd859da0fc07c7897e87f902e11b9fdbd26fbf293c054a",
+      "canonicalStorage": "benchmarks/results/2026-11-12-text-output-batches/batching/b607/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "85cce72ec0d4c51cf8c8d12942ef9288080cc234923d084ad3d814756497bf7d",
+      "reason": "Superseded initialprototype core; exactcommittedc60f canonicalsource/code/evidence preservealladversity. Selectedfullyqualifiedf4/09adreferenceandnewrefinedcoreprotected. Freshidle/UID/path/inode/allaliases proof, unchangedfloors.",
+      "paths": [
+        "text-batches-b607-20261112/current-core.dll",
+        "text-batches-b607-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844727,
+      "allocatedBytes": 5689344,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "text-batches-b607-20261112/observations.tgz",
+      "bytes": 2007922,
+      "sha256": "85cce72ec0d4c51cf8c8d12942ef9288080cc234923d084ad3d814756497bf7d",
+      "canonicalStorage": "benchmarks/results/2026-11-12-text-output-batches/batching/b607/observations.tgz",
+      "reason": "Unused terminal duplicate, exactcommittedcanonical Git/SHA; freshUID/path/inode/allaliasesproof, sourcefailures/adverse data preserved, no floorrelaxation.",
+      "paths": [
+        "text-batches-b607-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844789,
+      "allocatedBytes": 2011136,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "text-batches-b607-20261112/representative.json",
+      "bytes": 1244731,
+      "sha256": "3dd0b7bd7e339ccc5f5c06b22729b3160fa2e197a5715aabada51dbe1364846e",
+      "canonicalStorage": "benchmarks/results/2026-11-12-text-output-batches/batching/b607/observations.tgz",
+      "reason": "Unused terminal duplicate, exactcommittedcanonical Git/SHA; freshUID/path/inode/allaliasesproof, sourcefailures/adverse data preserved, no floorrelaxation.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "85cce72ec0d4c51cf8c8d12942ef9288080cc234923d084ad3d814756497bf7d",
+      "paths": [
+        "text-batches-b607-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844752,
+      "allocatedBytes": 1245184,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "text-batches-b607-20261112/confirmation/confirmation.json",
+      "bytes": 1528491,
+      "sha256": "900e6d7867fe0cad3afae6a3ad51b78fb9c54839b73160dffd3b83f10d70bf6c",
+      "canonicalStorage": "benchmarks/results/2026-11-12-text-output-batches/batching/b607/observations.tgz",
+      "reason": "Unused terminal duplicate, exactcommittedcanonical Git/SHA; freshUID/path/inode/allaliasesproof, sourcefailures/adverse data preserved, no floorrelaxation.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "85cce72ec0d4c51cf8c8d12942ef9288080cc234923d084ad3d814756497bf7d",
+      "paths": [
+        "text-batches-b607-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844800,
+      "allocatedBytes": 1531904,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

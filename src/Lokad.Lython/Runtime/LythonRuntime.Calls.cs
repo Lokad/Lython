@@ -155,8 +155,7 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // Exact native file writes stage governed output synchronously. Publication
-    // remains on the existing flush/close and execution cleanup paths.
+    // Exact native file writes share guarded entry and owned batch publication.
     internal static object InvokeFileWrite(object receiver, object value, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
@@ -170,16 +169,21 @@ internal sealed partial class LythonRuntime
         finally { context.LeaveInterpreterFrame(); }
     }
 
-    // A private producer range is copied into the file's admitted staging before
-    // this guard returns. It never escapes to a guest or asynchronous borrower.
-    internal static object InvokeFileWrite(ExecutionContext.TextFileHandle receiver, ReadOnlyMemory<byte> utf8,
+    // Producer storage remains owned until the actual staged/host users finish.
+    internal static async ValueTask<object> InvokeFileWriteAsync(ExecutionContext.TextFileHandle receiver, ReadOnlyMemory<byte> utf8,
+        LythonSourceSpan span, ExecutionContext context, bool asynchronous)
+    {
+        context.EnterInterpreterFrame(span);
+        try { return await receiver.WriteUtf8Async(utf8, asynchronous).ConfigureAwait(false); }
+        catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
+        finally { context.LeaveInterpreterFrame(); }
+    }
+
+    internal static async ValueTask<object> InvokeFileWriteAsync(ExecutionContext.TextFileHandle receiver, object value,
         LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
-        try
-        {
-            return receiver.WriteUtf8(utf8);
-        }
+        try { return await TextFileHandleMembers.WriteAsync(receiver, value, span).ConfigureAwait(false); }
         catch (Exception ex) when (TryTranslateCallableException(ex, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }

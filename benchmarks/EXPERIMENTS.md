@@ -7,7 +7,7 @@ original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
 [Final-byte text storage/batching](results/2026-11-12-text-output-batches/README.md)
-preserves two active prototype forms. Whole-file final staging raises UTF16
+preserves the original forms and retained refinement. Whole-file staging raises UTF16
 allocation6.8%/peak208KB; bounded batches instead reduce report allocation12.7%
 UTF8/19.2%UTF16 and peak494KB.4574focused actualtarget checks and complete-script
 bothAPI/compile goldens/balances pass. B607tenjobs277.347s allgates/join/RAM/archive
@@ -15,6 +15,11 @@ pass. CPU is mixed; additional asyncUTF8report+2..8.61% debt requires a bounded
 completed-receiver refinement before promotion. Original desktop adversity,
 space-short inventory and baseline codec-error defect/goldens survive. No new
 externalbaseline or final delivery claim; wider roadmap continues.
+The completed-operation refinement passes8616focused actual-target checks;
+B608sixjobs169.344s allgates pass. Async report CPU falls4–6%UTF8/2–6%UTF16;
+elapsed mostly uncertain, smallCSVelapsed+0.03..1.52% debt accepted. Retain final
+encoded/bounded storage, preserving all prior adversity and separate-base debts.
+Full exact-source delivery and representative external checkpoint follow.
 
 The retained cell-write runtime `f4f44caf` is fully qualified by terminal GREEN
 [43155450349](results/2026-11-12-cell-write-authority/delivery/README.md):

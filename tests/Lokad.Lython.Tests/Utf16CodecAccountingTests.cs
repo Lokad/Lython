@@ -40,8 +40,10 @@ public sealed class Utf16CodecAccountingTests
         var pending = file.FlushAsync().AsTask();
         await started.WaitAsync(cancellation.Token);
         Assert.False(pending.IsCompleted);
-        if (encoding == 0) Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        else Assert.True(context.MemoryGovernor.CurrentReservedBytes >= encodedBytes);
+        // The existing staging owner funds the final encoding throughout I/O;
+        // flush no longer constructs a separately reserved encoded payload.
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.True(stagedCharge - shellCharge >= encodedBytes);
         Assert.Equal(stagedCharge, context.MemoryGovernor.CurrentCommittedBytes);
         cancellation.Cancel();
         Assert.Equal("execution canceled", (await Assert.ThrowsAsync<LythonRuntimeException>(() => pending)).Message);
@@ -52,23 +54,104 @@ public sealed class Utf16CodecAccountingTests
     }
 
     [Fact]
-    public void EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding()
+    public void EncodedWriteRefusalPreservesTheFundedPrefixBeforeMutation()
     {
-        var host = new MockLythonHost();
-        host.SeedBytes("/output", [1, 2, 3]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(14000) },regexProvider:Utf8RegexProvider.Instance);
-        var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
-            LythonRuntime.TextEncodingMode.Utf16, LythonRuntime.TextErrorMode.Strict,
-            LythonRuntime.TextNewlineMode.PreserveUniversal);
-        _ = file.Write(PyString.FromString(new string('a', 5000)));
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        for (var attempt = 0; attempt < 20; attempt++)
+        const long limit = 14000;
+        var budget = new LythonMemoryBudget(limit);
+        using (var owner = budget.CreateScope())
         {
-            Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => file.Flush()).ExceptionType);
-            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+            var host = new MockLythonHost();
+            host.SeedBytes("/output", [1, 2, 3]);
+            var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MemoryBudget = owner });
+            var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
+                LythonRuntime.TextEncodingMode.Utf16, LythonRuntime.TextErrorMode.Strict,
+                LythonRuntime.TextNewlineMode.PreserveUniversal);
+            try
+            {
+                _ = file.Write(PyString.FromString("safe"));
+                var position = file.Tell();
+                var before = context.MemoryGovernor.CurrentCommittedBytes;
+                Assert.True(budget.TryReserve(limit - budget.ReservedBytes - 256, out var padding));
+                using (padding)
+                {
+                    var error = Assert.Throws<LythonRuntimeException>(() => file.Write(PyString.FromString(new string('a', 5000))));
+                    Assert.Equal(LythonFailureReason.SharedMemoryAllowance, error.Attribution?.Reason);
+                    Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                    Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                    Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+                    Assert.Equal(position, file.Tell());
+                    Assert.Empty(host.ReadBytes("/output"));
+                }
+            }
+            finally { file.Exit(); }
         }
-        Assert.Empty(host.ReadBytes("/output"));
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public void CancellationAfterFinalCapacityAdmissionLeavesTheStagedPrefixUnchanged(bool utf16)
+    {
+        var root = new LythonMemoryBudget(1024 * 1024);
+        using var cancellation = new CancellationTokenSource();
+        using (var owner = root.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var host = new MockLythonHost();
+            var context = new LythonRuntime.ExecutionContext(host, new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
+                utf16 ? LythonRuntime.TextEncodingMode.Utf16 : LythonRuntime.TextEncodingMode.Utf8,
+                LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.PreserveUniversal);
+            try
+            {
+                file.Write(PyString.FromString("safe"));
+                var position = file.Tell();
+                var input = PyString.FromString(new string('a', 5000), context.MemoryGovernor, null);
+                hook.AfterGrowth = _ => { hook.AfterGrowth = null; cancellation.Cancel(); };
+                var error = Assert.Throws<LythonRuntimeException>(() => file.Write(input));
+                Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+                Assert.Equal(position, file.Tell());
+                Assert.Empty(host.ReadBytes("/output"));
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Equal(5000, input.ByteLength);
+            }
+            finally { file.Exit(); }
+        }
+        Assert.Equal(0, root.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false), InlineData(true)]
+    public void RepeatedWritesReuseBoundedFundedStorageAndExplicitFlushReleasesIt(bool utf16)
+    {
+        var root = new LythonMemoryBudget(192 * 1024);
+        using (var owner = root.CreateScope())
+        {
+            var host = new MockLythonHost();
+            var context = new LythonRuntime.ExecutionContext(host, new() { MemoryBudget = owner });
+            var file = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output", context,
+                utf16 ? LythonRuntime.TextEncodingMode.Utf16 : LythonRuntime.TextEncodingMode.Utf8,
+                LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.PreserveUniversal);
+            try
+            {
+                var input = PyString.FromString(string.Concat(Enumerable.Repeat("A😀", 1000)), context.MemoryGovernor, null);
+                var baseline = root.ReservedBytes;
+                for (var index = 0; index < 64; index++)
+                {
+                    Assert.Equal(new System.Numerics.BigInteger(2000), file.Write(input));
+                    Assert.Equal(new System.Numerics.BigInteger((index + 1L) * (utf16 ? 6000 : 5000) + (utf16 ? 2 : 0)), file.Tell());
+                    Assert.InRange(root.ReservedBytes - baseline, 0, 128 * 1024);
+                }
+                Assert.InRange(context.MemoryGovernor.PeakAccountedBytes, 1, root.LimitBytes!.Value);
+                file.Flush();
+                Assert.Equal(baseline, root.ReservedBytes);
+                var expected = string.Concat(Enumerable.Repeat(input.AsString(), 64));
+                Assert.Equal(utf16 ? System.Text.Encoding.Unicode.GetPreamble().Concat(System.Text.Encoding.Unicode.GetBytes(expected)).ToArray()
+                    : System.Text.Encoding.UTF8.GetBytes(expected), host.ReadBytes("/output"));
+            }
+            finally { file.Exit(); }
+        }
+        Assert.Equal(0, root.ReservedBytes);
     }
 
     [Theory]

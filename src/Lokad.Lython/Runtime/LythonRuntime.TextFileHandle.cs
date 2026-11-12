@@ -357,32 +357,49 @@ internal sealed partial class LythonRuntime
                 return items;
             }
 
-            public BigInteger Write(PyString text)
+            public BigInteger Write(PyString text) => WriteAsync(text, false).GetAwaiter().GetResult();
+
+            internal ValueTask<BigInteger> WriteAsync(PyString text, bool asynchronous)
             {
                 EnsureOpen();
-                return RequireWriter().Write(text);
+                var pending = RequireWriter().WriteAsync(text, asynchronous);
+                return pending.IsCompletedSuccessfully ? pending : CompleteWriteAsync(pending, asynchronous);
             }
 
-            internal BigInteger WriteUtf8(ReadOnlyMemory<byte> utf8)
+            internal ValueTask<BigInteger> WriteUtf8Async(ReadOnlyMemory<byte> utf8, bool asynchronous)
             {
                 EnsureOpen();
-                return RequireWriter().Write(utf8);
+                var pending = RequireWriter().WriteAsync(utf8, asynchronous);
+                return pending.IsCompletedSuccessfully ? pending : CompleteWriteAsync(pending, asynchronous);
+            }
+
+            private async ValueTask<BigInteger> CompleteWriteAsync(ValueTask<BigInteger> pending, bool asynchronous)
+            {
+                try { return await pending.ConfigureAwait(false); }
+                finally { if (_file.IsClosed) await CompleteCloseAsync(asynchronous).ConfigureAwait(false); }
             }
 
             public object WriteLines(object value, LythonSourceSpan span, ExecutionContext context)
             {
                 EnsureOpen();
-                var writer = RequireWriter();
                 foreach (var item in ToSequence(value, span, context))
                 {
                     if (!PyStringOps.TryAsString(item, out var text))
-                    {
                         throw new LythonRuntimeException("TypeError", "file.writelines(lines) expects an iterable of strings.", span);
-                    }
-
-                    _ = writer.Write(text);
+                    _ = Write(text);
                 }
+                return PyNone.Instance;
+            }
 
+            internal async ValueTask<object> WriteLinesAsync(object value, LythonSourceSpan span, ExecutionContext context)
+            {
+                EnsureOpen();
+                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                {
+                    if (!PyStringOps.TryAsString(item, out var text))
+                        throw new LythonRuntimeException("TypeError", "file.writelines(lines) expects an iterable of strings.", span);
+                    _ = await WriteAsync(text, true).ConfigureAwait(false);
+                }
                 return PyNone.Instance;
             }
 

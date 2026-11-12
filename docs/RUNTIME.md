@@ -90,10 +90,24 @@ contained Cwd in `LythonPathRequest`; they resolve dot segments and trailing sla
 and enforce containment. Reads fill admitted caller buffers directly. The opened
 identity survives path rename/replacement, and short reads continue until zero.
 Guest update/seek modes remain unsupported. Python text decoding, BOMs, newline
-translation and supported positioning remain in Lython. Unchanged UTF-8 output
-borrows admitted writer storage; other encodings fund their replacement overlap
-through actual publication. Path helpers, local imports and archive input use the
-same owned-file capability. Whole-file reads grow admitted storage in bounded
+translation and supported positioning remain in Lython. Text writers stage the
+final encoded bytes with the same sizing/writing kernels used by guest byte
+encoding. They validate each complete input before publishing it, including
+single-byte codec errors and newline-translated error subjects and positions.
+Small writes copy directly from UTF-8 spans; actual pending I/O retains stable,
+funded input and output storage until the host operation and cleanup finish.
+
+Text output publishes batches of at most 64 KiB when staging fills, including
+under `write`, exposed write methods, `writelines`, CSV and JSON. One working-buffer
+admission precedes the first batch of a write; later batches reuse that funded
+capacity. Geometric headroom can retain up to 128 KiB in the open file. Explicit
+`flush()` and close release staging. These sizes describe transport storage and
+place no ceiling on a write or file. Publication can occur before explicit flush;
+a failed write can leave an accepted prefix. BOM and payload share the same
+partial-publication failure rule. Guest inputs and other values retain their own
+owners; bounded output staging does not reclaim arbitrary guest references.
+
+Path helpers, local imports and archive input use the same owned-file capability. Whole-file reads grow admitted storage in bounded
 chunks and fund capacity and construction overlap before publication. Text helpers
 use the shared decoder, retaining input funding until the result is charged.
 UTF-8 and Latin-1 decoding produces admitted native text directly, including

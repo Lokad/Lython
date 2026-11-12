@@ -394,11 +394,136 @@ public sealed class OwnedByteFileTests
                 Assert.True(result.Success, result.Failure?.Message);
                 Assert.Equal(zero ? "False\n" : "True\n", result.StandardOutput);
                 Assert.Equal(zero ? expected : expected[..2], host.Inner.ReadBytes("/target"));
-                Assert.Equal(zero ? 2 : 1, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
+                Assert.Equal(zero ? (encoding == "utf-8" ? 2 : 3) : 1, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
             }
             Assert.Equal(baseline, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData(false, "utf-8-sig"), InlineData(true, "utf-8-sig")]
+    [InlineData(false, "utf-16"), InlineData(true, "utf-16")]
+    public async Task PayloadFailureAfterAcceptedBomRetiresTheWholePublication(bool asynchronous, string encoding)
+    {
+        var host = new FileHost();
+        host.Write = (file, buffer, token) => host.WriteCalls == 2
+            ? ValueTask.FromResult(new LythonFileWriteResult(0, new LythonHostException(LythonHostFailureKind.Transport, "payload refused")))
+            : file.WriteAsync(buffer, token);
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var script = new LythonEngine().Compile("f=open('target','w',encoding='" + encoding + "')\nf.write('x')\ntry:f.flush()\nexcept OSError:print(f.closed)\nf.close()", budget))
+        {
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(host) : script.Run(host))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True\n", result.StandardOutput);
+                Assert.Equal(Convert.FromHexString(encoding == "utf-16" ? "fffe" : "efbbbf"), host.Inner.ReadBytes("/target"));
+                Assert.Equal(2, host.WriteCalls);
+                Assert.Equal(1, host.Inner.ClosedFileCount);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
+    [InlineData("utf-8-sig"), InlineData("utf-16")]
+    public async Task EncodedPayloadRemainsFundedAfterBomUntilPendingWriteAndCloseFinish(string encoding)
+    {
+        var entered = Signal(); var release = Signal(); var closing = Signal(); var closeRelease = Signal();
+        var host = new FileHost { CompletesSynchronously = false };
+        using var cancellation = new CancellationTokenSource();
+        var payload = Convert.FromHexString(encoding == "utf-16" ? "3dd800de" : "f09f9880");
+        host.Write = async (file, buffer, token) =>
+        {
+            if (host.WriteCalls == 1) return await file.WriteAsync(buffer, token);
+            Assert.Equal(cancellation.Token, token);
+            Assert.Equal(payload, buffer.ToArray());
+            entered.TrySetResult();
+            await release.Task;
+            Assert.Equal(payload, buffer.ToArray());
+            throw new OperationCanceledException(token);
+        };
+        host.Dispose = async file => { closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync(); };
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using var script = new LythonEngine().Compile("with open('target','w',encoding='" + encoding + "') as f:f.write('😀')", budget);
+        var baseline = budget.ReservedBytes;
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var held = budget.ReservedBytes;
+            Assert.True(held > baseline);
+            cancellation.Cancel();
+            Assert.False(run.IsCompleted);
+            release.TrySetResult();
+            await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes >= held);
+            closeRelease.TrySetResult();
+            using (var result = await run.WaitAsync(TimeSpan.FromSeconds(10)))
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+            Assert.Equal(Convert.FromHexString(encoding == "utf-16" ? "fffe" : "efbbbf"), host.Inner.ReadBytes("/target"));
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        finally { release.TrySetResult(); closeRelease.TrySetResult(); using var drained = await run; }
+    }
+
+    [Theory]
+    [InlineData("write"), InlineData("exposed"), InlineData("writelines"), InlineData("csv"), InlineData("json")]
+    public async Task ImplicitTextBatchesAwaitTheRealProducerBorrowAndCleanup(string producer)
+    {
+        var entered = Signal(); var release = Signal(); var closing = Signal(); var closeRelease = Signal();
+        using var cancellation = new CancellationTokenSource();
+        var host = new FileHost { CompletesSynchronously = false };
+        host.Write = async (_, buffer, token) =>
+        {
+            Assert.Equal(cancellation.Token, token);
+            var expected = buffer.ToArray();
+            Assert.InRange(expected.Length, 1, 64 * 1024);
+            entered.TrySetResult();
+            await release.Task;
+            Assert.Equal(expected, buffer.ToArray());
+            throw new OperationCanceledException(token);
+        };
+        host.Dispose = async file => { closing.TrySetResult(); await closeRelease.Task; await file.DisposeAsync(); };
+        var statement = producer switch
+        {
+            "write" => "target.write(value)",
+            "exposed" => "method=target.write\n method(value)",
+            "writelines" => "target.writelines([value])",
+            "csv" => "csv.writer(target).writerow([value])",
+            _ => "json.dump(value,target)",
+        };
+        var source = "import csv,json\nvalue='x'*70000\nwith open('target','w',newline='') as target:\n " + statement + "\nprint('after')";
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var baseline = budget.ReservedBytes;
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var held = budget.ReservedBytes;
+            Assert.True(held > baseline + 70000);
+            cancellation.Cancel();
+            Assert.False(run.IsCompleted);
+            release.TrySetResult();
+            await closing.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            Assert.True(budget.ReservedBytes >= held);
+            closeRelease.TrySetResult();
+            using (var result = await run.WaitAsync(TimeSpan.FromSeconds(10)))
+            {
+                Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+                Assert.Empty(result.StandardOutput);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+            Assert.Equal(1, host.Inner.ClosedFileCount);
+        }
+        finally { release.TrySetResult(); closeRelease.TrySetResult(); using var drained = await run; }
     }
 
     private static TaskCompletionSource Signal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -415,7 +540,7 @@ public sealed class OwnedByteFileTests
         using var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(Convert.FromHexString(encoding == "utf-8" ? "7879" : "fffe78007900"), host.Inner.ReadBytes("/target"));
-        Assert.Equal(2, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
+        Assert.Equal(encoding == "utf-8" ? 2 : 3, host.WriteCalls); Assert.Equal(1, host.Inner.ClosedFileCount);
     }
 
     [Theory]

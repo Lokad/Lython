@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
                 AppendBytes(builder, writer.Options.LineTerminator.Utf8Span, context, span);
                 context.CheckExecution(span);
                 if (writer.WriteTarget is ExecutionContext.TextFileHandle textFile)
-                    return InvokeFileWrite(textFile, builder.WrittenMemory, span, context);
+                    return await InvokeFileWriteAsync(textFile, builder.WrittenMemory, span, context, asynchronous).ConfigureAwait(false);
                 var rendered = builder.ToPyStringAndRelease();
                 if (writer.WriteTarget is null)
                 {

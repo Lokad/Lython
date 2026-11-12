@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -16,12 +15,14 @@ internal sealed partial class LythonRuntime
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
             private readonly GovernedByteBuilder _buffer;
+            // Storage/transport batches, not a limit on a write or file size.
+            private const int BufferBatchBytes = 64 * 1024;
+            private const int SourceChunkBytes = 4096;
             private BigInteger _publishedPosition;
-            private long _bufferedRuneLength;
-            private long _bufferedLineFeedCount;
-            private long _bufferedUtf16ByteLength;
             private bool _hasWrittenText;
             private bool _bomWritten;
+            private static readonly byte[] Utf8Preamble = [0xef, 0xbb, 0xbf];
+            private static readonly byte[] Utf16Preamble = [0xff, 0xfe];
 
             public TextFileWriteState(
                 OpenedByteFile file,
@@ -40,142 +41,98 @@ internal sealed partial class LythonRuntime
                 _buffer = new GovernedByteBuilder(context.MemoryGovernor);
             }
 
-            public BigInteger Position
+            private ReadOnlyMemory<byte> PendingPreamble => !_hasWrittenText || _bomWritten ? default
+                : _encoding == TextEncodingMode.Utf8Bom ? Utf8Preamble
+                : _encoding == TextEncodingMode.Utf16 ? Utf16Preamble : default;
+
+            public BigInteger Position => _publishedPosition + _buffer.Length + PendingPreamble.Length;
+
+            public ValueTask<BigInteger> WriteAsync(PyString text, bool asynchronous)
             {
-                get
-                {
-                    var length = IsUtf16Encoding(_encoding) ? _bufferedUtf16ByteLength : IsSingleByteEncoding(_encoding)
-                        ? _bufferedRuneLength
-                        : _buffer.Length;
-                    if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
-                    {
-                        length += _bufferedLineFeedCount * (IsUtf16Encoding(_encoding) ? 2 : 1);
-                    }
-
-                    if (_hasWrittenText && !_bomWritten && _encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        length += 3;
-                    }
-                    if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_bomWritten)
-                        length += 2;
-
-                    return _publishedPosition + length;
-                }
+                if (TryStage(text.Utf8Span, text, out var count)) return new(new BigInteger(count));
+                return WriteBatchesAsync(text.Utf8Bytes, count, asynchronous);
             }
 
-            public BigInteger Write(PyString text) => Write(text.Utf8Bytes, text);
+            internal ValueTask<BigInteger> WriteAsync(ReadOnlyMemory<byte> utf8, bool asynchronous)
+                => TryStage(utf8.Span, null, out var count) ? new(new BigInteger(count))
+                    : WriteBatchesAsync(utf8, count, asynchronous);
 
-            // The producer keeps its admitted range alive until staging finishes.
-            // Ordinary writes retain the original string for codec-error identity.
-            internal BigInteger Write(ReadOnlyMemory<byte> utf8) => Write(utf8, null);
-
-            private BigInteger Write(ReadOnlyMemory<byte> utf8, PyString? original)
+            private bool TryStage(ReadOnlySpan<byte> source, PyString? original, out int inputLength)
             {
-                var inputLength = original?.Length ?? 0;
-                var appendedLineFeedCount = 0;
-                if (original is null || _newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
-                {
-                    var offset = 0;
-                    foreach (var value in utf8.Span)
-                    {
-                        if ((offset++ & 1023) == 0) _services.CheckExecution(null);
-                        if (original is null && (value & 0xC0) != 0x80) inputLength++;
-                        if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed && value == (byte)'\n')
-                            appendedLineFeedCount++;
-                    }
-                }
-
-                if (IsSingleByteEncoding(_encoding))
-                {
-                    var normalizedLength = GetSingleByteNormalizedLength();
-                    var normalizedBufferedLength = checked(_bufferedRuneLength + normalizedLength);
-                    AppendSingleByteNormalized();
-                    _bufferedRuneLength = normalizedBufferedLength;
-                    _bufferedLineFeedCount += appendedLineFeedCount;
-                    return new BigInteger(inputLength);
-                }
-
-                var bufferedLength = checked(_bufferedRuneLength + inputLength);
-                _buffer.Append(utf8.Span);
-                if (IsUtf16Encoding(_encoding))
-                    _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(utf8.Span);
+                _services.CheckExecution(null);
+                inputLength = original?.GetCharacterCount(_services.CancellationToken, null) ?? CountScalars(source);
+                var encoding = EffectiveEncoding;
+                // Validate the whole write before publishing any buffered prefix,
+                // including an encoding failure near the end of a large input.
+                var byteCount = EncodedTextByteCount(source, encoding, _errors, _newline, _services, null, original);
+                if (byteCount > BufferBatchBytes - _buffer.Length) return false;
+                Stage(source, (int)byteCount);
                 _hasWrittenText = true;
-                _bufferedRuneLength = bufferedLength;
-                _bufferedLineFeedCount += appendedLineFeedCount;
-                return new BigInteger(inputLength);
+                return true;
+            }
 
-                long GetSingleByteNormalizedLength()
+            private void Stage(ReadOnlySpan<byte> source, int byteCount)
+            {
+                var destination = _buffer.GetWriteWindow(byteCount).Span;
+                _services.CheckExecution(null);
+                WriteEncodedText(source, destination, EffectiveEncoding, _errors, _newline, _services, null);
+                _buffer.Advance(byteCount);
+            }
+
+            private async ValueTask<BigInteger> WriteBatchesAsync(ReadOnlyMemory<byte> source, int inputLength, bool asynchronous)
+            {
+                // Admit all working capacity before this write's first I/O.
+                // Subsequent chunks reuse this funded backing; there is no
+                // cumulative allocation count or late core-buffer admission.
+                _ = _buffer.GetWriteWindow(BufferBatchBytes - _buffer.Length);
+                _services.CheckExecution(null);
+                _hasWrittenText = true;
+                var published = false;
+                try
                 {
-                    var length = 0L;
-                    var position = 0;
-                    var source = utf8.Span;
-                    for (var offset = 0; offset < source.Length; position++)
-                    {
-                        if ((position & 1023) == 0) _services.CheckExecution(null);
-                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                        offset += consumed;
-                        if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
-                        {
-                            length++;
-                            continue;
-                        }
-
-                        length = _errors switch
-                        {
-                            TextErrorMode.Ignore => length,
-                            TextErrorMode.Replace => checked(length + 1),
-                            TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
-                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, original, _services)
-                        };
-                    }
-
-                    return length;
-                }
-
-                void AppendSingleByteNormalized()
-                {
-                    const string hex = "0123456789abcdef";
-                    var source = utf8.Span;
-                    Span<byte> encoded = stackalloc byte[4];
-                    var position = 0;
                     for (var offset = 0; offset < source.Length;)
                     {
-                        if ((position++ & 1023) == 0) _services.CheckExecution(null);
-                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                        offset += consumed;
-                        if (rune.Value <= 0x7F)
+                        _services.CheckExecution(null);
+                        var end = offset + Math.Min(SourceChunkBytes, source.Length - offset);
+                        while (end < source.Length && (source.Span[end] & 0xc0) == 0x80) end--;
+                        var count = (int)EncodedTextByteCount(source.Span[offset..end], EffectiveEncoding,
+                            _errors, _newline, _services, null);
+                        if (count > BufferBatchBytes - _buffer.Length)
                         {
-                            _buffer.Append((byte)rune.Value);
-                            continue;
+                            await PublishBufferedAsync(null, asynchronous).ConfigureAwait(false);
+                            published = true;
                         }
-
-                        if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
-                        {
-                            var encodedLength = rune.EncodeToUtf8(encoded);
-                            _buffer.Append(encoded[..encodedLength]);
-                            continue;
-                        }
-
-                        if (_errors == TextErrorMode.Ignore)
-                        {
-                            continue;
-                        }
-
-                        if (_errors == TextErrorMode.Replace)
-                        {
-                            _buffer.Append((byte)'?');
-                            continue;
-                        }
-
-                        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xFFFF ? 4 : 8;
-                        _buffer.Append((byte)'\\');
-                        _buffer.Append(rune.Value <= 0xff ? (byte)'x' : rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U');
-                        for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
-                        {
-                            _buffer.Append((byte)hex[(rune.Value >> shift) & 0xF]);
-                        }
+                        Stage(source.Span[offset..end], count);
+                        offset = end;
                     }
                 }
+                catch
+                {
+                    // Earlier completed batches are part of this same write.
+                    if (published) await _file.CloseAfterFailureAsync(null, asynchronous).ConfigureAwait(false);
+                    throw;
+                }
+                return new BigInteger(inputLength);
+            }
+
+            // BOM framing remains a flush concern, independently of capacity
+            // admission/reentry while a write stages its final payload bytes.
+            private TextEncodingMode EffectiveEncoding => _encoding switch
+            {
+                TextEncodingMode.Utf8Bom => TextEncodingMode.Utf8,
+                TextEncodingMode.Utf16 => TextEncodingMode.Utf16LittleEndian,
+                _ => _encoding,
+            };
+
+            private int CountScalars(ReadOnlySpan<byte> source)
+            {
+                var count = 0;
+                for (var index = 0; index < source.Length; index++)
+                {
+                    if ((index & 1023) == 0) _services.CheckExecution(null);
+                    if ((source[index] & 0xc0) != 0x80) count++;
+                }
+                return count;
             }
 
             internal void InitializePosition(long position)
@@ -186,55 +143,44 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
             {
-                using var pending = PrepareFlush(span);
-                if (pending is { } output)
-                {
-                    await _file.WriteAsync(output.Payload, span, asynchronous).ConfigureAwait(false);
-                    // Drop accepted staging before any later metadata/flush failure.
-                    CompleteFlush();
-                    _services.CheckExecution(span);
-                    _publishedPosition = _file.Position(span);
-                }
+                await PublishBufferedAsync(span, asynchronous).ConfigureAwait(false);
+                _buffer.Release();
                 await _file.FlushAsync(span, asynchronous).ConfigureAwait(false);
             }
 
-            public void Release() => _buffer.Release();
-
-            private PendingTextFlush? PrepareFlush(LythonSourceSpan? span)
+            private async ValueTask PublishBufferedAsync(LythonSourceSpan? span, bool asynchronous)
             {
-                var needsBom = _hasWrittenText && !_bomWritten && _encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom;
-                if (_buffer.Length == 0 && !needsBom)
+                var publishedPreamble = false;
+                try
                 {
-                    return null;
+                    if (PendingPreamble is { IsEmpty: false } preamble)
+                    {
+                        await _file.WriteAsync(preamble, span, asynchronous).ConfigureAwait(false);
+                        publishedPreamble = true;
+                        _bomWritten = true;
+                        _services.CheckExecution(span);
+                        _publishedPosition = _file.Position(span);
+                    }
+                    if (_buffer.Length != 0)
+                    {
+                        // Final bytes stay funded through the real host borrow.
+                        await _file.WriteAsync(_buffer.WrittenMemory, span, asynchronous).ConfigureAwait(false);
+                        _buffer.Clear();
+                        _services.CheckExecution(span);
+                        _publishedPosition = _file.Position(span);
+                    }
                 }
-
-                var effectiveEncoding = _encoding == TextEncodingMode.Utf8Bom && _bomWritten ? TextEncodingMode.Utf8 : _encoding;
-                if (_encoding == TextEncodingMode.Utf16 && _bomWritten) effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
-                if (effectiveEncoding == TextEncodingMode.Utf8 && _newline is TextNewlineMode.TranslateUniversal
-                    or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
-                    return new PendingTextFlush(_buffer.WrittenMemory, null);
-                var reservation = _services.MemoryGovernor.ReserveTemporary(0, span);
-                byte[] payload;
-                try { payload = EncodeText(_buffer.WrittenSpan, effectiveEncoding, _errors, _newline, _services, span, outputStorage: reservation); }
-                catch { reservation.Dispose(); throw; }
-                return new PendingTextFlush(payload, reservation);
+                catch
+                {
+                    // The preamble and payload form one logical publication.
+                    // A later zero-byte failure still follows an accepted prefix;
+                    // retire the handle instead of allowing that flush to replay.
+                    if (publishedPreamble) await _file.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
+                    throw;
+                }
             }
 
-            private void CompleteFlush()
-            {
-                if (_encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom && _hasWrittenText) _bomWritten = true;
-                _buffer.Release();
-                _bufferedRuneLength = 0;
-                _bufferedLineFeedCount = 0;
-                _bufferedUtf16ByteLength = 0;
-            }
-
-            private readonly record struct PendingTextFlush(ReadOnlyMemory<byte> Payload,
-                MemoryGovernor.TemporaryMemoryReservation? Reservation) : IDisposable
-            {
-                public void Dispose() => Reservation?.Dispose();
-            }
-
+            public void Release() => _buffer.Release();
         }
     }
 }

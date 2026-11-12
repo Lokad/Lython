@@ -2,6 +2,13 @@
 
 ## 0.11.0 - Unreleased
 
+- Share final-byte encoding between guest bytes and text files, removing normalized
+  UTF-8 staging, alternative length counters and flush-time encoding copies.
+  Reuse governed text-output batches and await actual I/O from ordinary/exposed
+  writes, writelines and native CSV/JSON producers. Preserve allocation preflights,
+  cancellation and funding through cleanup. Encoding errors now identify the
+  newline-translated Python subject and character positions.
+
 - Share captured-cell assignment with active local caches and conditional namespace
   mirroring, removing repeated owner-name lookup and duplicate stores. Preserve
   inactive workspace safety and generator synchronization. Keep comprehension

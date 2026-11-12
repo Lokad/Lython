@@ -16,6 +16,17 @@ internal sealed partial class LythonRuntime
             return handle.Write(text);
         }
 
+        internal static ValueTask<object> WriteAsync(ExecutionContext.TextFileHandle handle, object value, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(value, out var text))
+                throw new LythonRuntimeException("TypeError", "file.write(text) expects one string argument.", span);
+            var pending = handle.WriteAsync(text, true);
+            return pending.IsCompletedSuccessfully ? new((object)pending.Result) : CompleteWriteAsync(pending);
+        }
+
+        private static async ValueTask<object> CompleteWriteAsync(ValueTask<BigInteger> pending)
+            => await pending.ConfigureAwait(false);
+
         public static bool TryGetMember(ExecutionContext.TextFileHandle handle, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -80,7 +91,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return handle.WriteLines(arguments[0], span, context);
-                }, "file.writelines", ["lines"]),
+                }, (arguments, span, context) => handle.WriteLinesAsync(arguments[0], span, context), "file.writelines", ["lines"]),
                 "flush" => BoundCallable.CreateNoArguments(
                     handle,
                     "file.flush",

@@ -38,7 +38,12 @@ internal static class PyTextStream
 
     internal static async ValueTask WriteAsync(object stream, object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (stream is LythonRuntime.ExecutionContext.TextFileHandle or LythonRuntime.ExecutionContext.BinaryFileHandle)
+        if (stream is LythonRuntime.ExecutionContext.TextFileHandle text)
+        {
+            _ = await LythonRuntime.InvokeFileWriteAsync(text, value, span, context).ConfigureAwait(false);
+            return;
+        }
+        if (stream is LythonRuntime.ExecutionContext.BinaryFileHandle)
         {
             _ = LythonRuntime.InvokeFileWrite(stream, value, span, context);
             return;

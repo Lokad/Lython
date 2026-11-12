@@ -47,7 +47,6 @@ internal sealed partial class LythonRuntime
             => asyncImplementation is null ? new(Invoke(receiver, arguments, span, context))
                 : asyncImplementation(receiver, arguments, span, context);
 
-        public bool CanSuspend => asyncImplementation is not null;
     }
 
     private static object InvokeReceiverMethod(ReceiverMethod method, object receiver,
@@ -78,18 +77,27 @@ internal sealed partial class LythonRuntime
 
     private static ValueTask<object> InvokeReceiverMethodAsync(ReceiverMethod method, object receiver,
         ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
-        => method.CanSuspend ? AwaitReceiverMethodAsync(method, receiver, arguments, span, context)
-            : new(InvokeReceiverMethod(method, receiver, arguments, span, context));
-
-    private static async ValueTask<object> AwaitReceiverMethodAsync(ReceiverMethod method, object receiver,
-        ReadOnlyMemory<object?> arguments, LythonSourceSpan span, ExecutionContext context)
     {
         context.EnterInterpreterFrame(span);
+        var transferred = false;
         try
         {
             context.CheckExecution(span);
-            return await method.InvokeAsync(receiver, arguments, span, context).ConfigureAwait(false);
+            var pending = method.InvokeAsync(receiver, arguments, span, context);
+            if (pending.IsCompleted) return new(pending.GetAwaiter().GetResult());
+            transferred = true;
+            return CompleteReceiverMethodAsync(pending, span, context);
         }
+        catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
+        finally { if (!transferred) context.LeaveInterpreterFrame(); }
+    }
+
+    // Only genuine suspension retains the guarded call. Completed native
+    // operations use the ordinary synchronous cleanup and publication order.
+    private static async ValueTask<object> CompleteReceiverMethodAsync(ValueTask<object> pending,
+        LythonSourceSpan span, ExecutionContext context)
+    {
+        try { return await pending.ConfigureAwait(false); }
         catch (Exception error) when (TryTranslateCallableException(error, span, out var translated)) { throw translated; }
         finally { context.LeaveInterpreterFrame(); }
     }
@@ -115,7 +123,8 @@ internal sealed partial class LythonRuntime
 
         internal static readonly ReceiverMethod TextWrite = new(
             LythonCallableSignature.Create("file.write", ["text"]),
-            static (receiver, arguments, span, _) => TextFileHandleMembers.Write((ExecutionContext.TextFileHandle)receiver, arguments.Span[0]!, span));
+            static (receiver, arguments, span, _) => TextFileHandleMembers.Write((ExecutionContext.TextFileHandle)receiver, arguments.Span[0]!, span),
+            static (receiver, arguments, span, _) => TextFileHandleMembers.WriteAsync((ExecutionContext.TextFileHandle)receiver, arguments.Span[0]!, span));
 
         internal static readonly ReceiverMethod BinaryWrite = new(
             LythonCallableSignature.Create("file.write", ["value"], 1, 1, LythonVariadicParameters.None, 1),

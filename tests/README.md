@@ -676,3 +676,12 @@ The [probe](../tools/LythonProbe/README.md) runs trusted pure snippets and optio
 isolated CPython comparison without I/O/process capabilities. Test-project builds
 do not build it; build its project in the matching configuration before dependent
 tests, or build the solution.
+
+[Encoded file staging](Lokad.Lython.PublicApi.Tests/EncodedFileStagingTests.cs)
+uses independent CPython goldens for incremental writes, BOMs, append, byte
+positions and translated codec errors. [Owned byte-file regressions](Lokad.Lython.PublicApi.Tests/OwnedByteFileTests.cs)
+cover accepted prefixes and genuine implicit text-batch suspension through
+ordinary/exposed writes, writelines and CSV/JSON, keeping storage funded through
+late cancellation and awaited close. [Codec ownership](Lokad.Lython.Tests/Utf16CodecAccountingTests.cs)
+also checks repeated output with bounded working storage and release at explicit
+flush; these are resource/semantic assertions, not execution-step counts.

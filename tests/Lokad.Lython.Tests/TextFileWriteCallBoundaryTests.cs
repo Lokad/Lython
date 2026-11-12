@@ -11,15 +11,6 @@ namespace Lokad.Lython.Tests;
 public sealed class TextFileWriteCallBoundaryTests
 {
     private static readonly ExecutableCodeObject Code = Compile("return file.write(argument())");
-    // Captured on 2b68d4ea before changing call lowering or runtime dispatch.
-    private static readonly string[] Checkpoints =
-    [
-        "-:0:0", "7,4,1,8:0:0", "7,10,1,8:0:0", "18,8,1,19:0:0",
-        "18,10,1,19:0:0", "18,10,1,19:0:0", "18,10,1,19:0:0",
-        "7,22,1,8:1:0", "7,22,1,8:1:0", "7,22,1,8:1:0", "7,22,1,8:1:0",
-        "0,29,1,1:1:6",
-    ];
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
