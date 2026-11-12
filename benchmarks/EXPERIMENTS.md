@@ -6685,3 +6685,16 @@ bound and explicit large requested storage; cleanup/terminal semantics remain.
 A deliberately displaced eager power preflight is detected, then exact production
 bytes are restored/nonincrementally rebuilt.29focused cases pass per actual target;
 all568production hashes match. Full correction qualification follows without retiming.
+
+## R275 — config/report source gate
+
+[Four bounded profiles](results/2026-11-12-config-report-costs/README.md) reuse
+existing config and UTF8/UTF16 report fixtures/fixed workers;23.725sampled seconds.
+Caller/guest/GC CPU and all unknown/raw stacks remain explicit. No demonstrated
+dominant duplicate frontend/builtin graph or frame construction stage; keep prior
+simplifications. UTF16 already uses native UTF8, but manual scalar emission and a
+separate character-count/sizing pass remain. Select R276 bulk managed UTF16
+transcoding with shared count/sizing, exact semantics/preflight/cancellation and
+one affected/control comparison. No CPU forecast from leaf shares. Preserve B629
+pre-sampling filename failure and B630 corrected-path confirmation; no runtime edit
+or permanent design rejection follows. Existing patch evidence needs no replay.
