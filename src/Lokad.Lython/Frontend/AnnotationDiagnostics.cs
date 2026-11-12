@@ -24,16 +24,22 @@ internal static class AnnotationDiagnostics
         // the ordinary analyzer's refined bindings, but no later check can use
         // facts produced after an isolated scope's final annotation-dependent
         // statement. Control-flow bodies still export their complete exit facts.
-        var lastChecks = new Dictionary<IReadOnlyList<StatementSyntax>, int>(ReferenceEqualityComparer.Instance);
-        var requiresRegexBindings = false;
-        var last = Prepare(script.Statements, annotatedReturn: false);
-        if (last < 0 && !requiresRegexBindings) return [];
+        // The shared lexical walk already establishes demand across dead and
+        // deferred scopes. Only actual annotation checks need last-use facts;
+        // regex flow always consumes complete bodies.
+        Dictionary<IReadOnlyList<StatementSyntax>, int>? lastChecks = null;
+        if (!script.ImportsRegex)
+        {
+            if (!script.RequiresAnnotationChecks) return [];
+            lastChecks = new(ReferenceEqualityComparer.Instance);
+            if (Prepare(script.Statements, annotatedReturn: false) < 0) return [];
+        }
         var diagnostics = new List<LythonDiagnostic>();
         // Constant regex analysis also consumes this conservative flow, even
         // in dead/deferred scopes. Retain it in full when regex bindings can
         // enter the script; aliases and rebinding need the original analysis.
         AnalyzeStatements(script.Statements, diagnostics, new AbstractState(context), returnAnnotation: null,
-            requiresRegexBindings ? null : lastChecks);
+            lastChecks);
         return diagnostics;
 
         int Prepare(IReadOnlyList<StatementSyntax> statements, bool annotatedReturn)
@@ -42,9 +48,6 @@ internal static class AnnotationDiagnostics
             for (var i = 0; i < statements.Count; i++)
             {
                 var statement = statements[i];
-                if (statement is ImportStatementSyntax import &&
-                    (import.ModuleName == "re" || import.ModuleName.StartsWith("re.", StringComparison.Ordinal)))
-                    requiresRegexBindings = true;
                 context?.MemoryGovernor?.ThrowIfAdmissionFailed();
                 PythonTokenization.CheckCancellation(context?.CancellationToken ?? default, statement.Span.Start);
                 bool needed;
@@ -64,7 +67,7 @@ internal static class AnnotationDiagnostics
                 }
                 if (needed) last = i;
             }
-            lastChecks[statements] = lastChecks.TryGetValue(statements, out var previous)
+            lastChecks![statements] = lastChecks.TryGetValue(statements, out var previous)
                 ? Math.Max(previous, last) : last;
             return last;
         }

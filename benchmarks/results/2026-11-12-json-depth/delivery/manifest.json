@@ -1,0 +1,18 @@
+{
+  "ci-terminal.json": {
+    "bytes": 8370,
+    "sha256": "c5a6d5c796171cd00db210b8b9d69d17a2ddcbe998dc6759130bbe2fa0b76e51"
+  },
+  "logs.tar.xz": {
+    "bytes": 13516,
+    "sha256": "3e626fe0e64cfb9e722d77ce0bf871695cf0330d728680171693126ae09f7892"
+  },
+  "README.md": {
+    "bytes": 1008,
+    "sha256": "7371d6df1282736444839552ebb18d49c33424c1a885655c88610d19f5f21ba9"
+  },
+  "source-proof.json": {
+    "bytes": 73729,
+    "sha256": "42e7877fc63f54df41619424f64cdbbf642a2f9747a3bd6383389f72310edbcd"
+  }
+}

@@ -46,3 +46,7 @@ The unchanged-allocation outcome is expected: ordinary admitted documents still
 construct the same storage. The justified retention is removal of an obsolete
 policy and acceptance of deeper admitted input. Final platform/stress/installed
 Release consumers will batch at the combined delivery boundary; not yet qualified.
+
+[Exact-source full delivery](delivery/README.md) is now green on Windows/Ubuntu,
+actual .NET 11/10, original stress and installed Release consumers. The diagnostic
+adversity above is unchanged; correctness qualification is not a CPU claim.

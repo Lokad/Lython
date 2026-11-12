@@ -1,0 +1,240 @@
+{
+  "baseline.json": {
+    "bytes": 73643,
+    "sha256": "bcf6b70a66a6d723420df60a2a9f5ab1a3aaa0b986b187f32dbc6a02ff5cc14b",
+    "gitBlobBytes": 73643,
+    "gitBlobSha256": "bcf6b70a66a6d723420df60a2a9f5ab1a3aaa0b986b187f32dbc6a02ff5cc14b",
+    "normalization": "none"
+  },
+  "boundary-correction.json": {
+    "bytes": 719,
+    "sha256": "30a422d6b488dc88494a35f7ed16597e84d85664919d96c6e2f3a0df58d25f15",
+    "gitBlobBytes": 719,
+    "gitBlobSha256": "30a422d6b488dc88494a35f7ed16597e84d85664919d96c6e2f3a0df58d25f15",
+    "normalization": "none"
+  },
+  "build-2.log": {
+    "bytes": 6712,
+    "sha256": "a01f1aeb2fb0c7f01e87185d9e4ab55a70ff5202eddcc7b403af8d91c911f525",
+    "gitBlobBytes": 6675,
+    "gitBlobSha256": "3d8d4bb1db4c0b3522f4ac975cc32279fdd4f9f439fc6130383bce90b6900e3e",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "build.log": {
+    "bytes": 6358,
+    "sha256": "77995435bc68e3039e92e2f1a3cff42dd56345e44686024e65e0c2218984f426",
+    "gitBlobBytes": 6322,
+    "gitBlobSha256": "7b837c25bc3e837cf25a42e6feceb6b7b9abe24dd55d60e86b27805a44aafb19",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "development.tar.xz": {
+    "bytes": 2660464,
+    "sha256": "9d679ff7a8e956eda34368636ba8aaa9562ebaaa1143aebc3d112c9146a395cc",
+    "gitBlobBytes": 2660464,
+    "gitBlobSha256": "9d679ff7a8e956eda34368636ba8aaa9562ebaaa1143aebc3d112c9146a395cc",
+    "normalization": "none"
+  },
+  "final-checks.json": {
+    "bytes": 1553,
+    "sha256": "11455311c10e7421c5e64a71a2a6f981f2d3c11ad1d7fefda6a899cb11c6cfb4",
+    "gitBlobBytes": 1553,
+    "gitBlobSha256": "11455311c10e7421c5e64a71a2a6f981f2d3c11ad1d7fefda6a899cb11c6cfb4",
+    "normalization": "none"
+  },
+  "original-text-evidence.tar.xz": {
+    "bytes": 144168,
+    "sha256": "ca794fd7c17224d0cca5092647ee98e9be035e2733daef6c8fd869b868e2007f",
+    "gitBlobBytes": 144168,
+    "gitBlobSha256": "ca794fd7c17224d0cca5092647ee98e9be035e2733daef6c8fd869b868e2007f",
+    "normalization": "none"
+  },
+  "python-controls.json": {
+    "bytes": 814,
+    "sha256": "9ef8329ec8cafbd6830bd5fd8ba9f97b316dd6d5ea5eea9a49670ec3cb069cb6",
+    "gitBlobBytes": 814,
+    "gitBlobSha256": "9ef8329ec8cafbd6830bd5fd8ba9f97b316dd6d5ea5eea9a49670ec3cb069cb6",
+    "normalization": "none"
+  },
+  "README.md": {
+    "bytes": 4417,
+    "sha256": "2d0ae613da34dc9c9ba517074686922eab23c190cfd4de19e1aea9f2579b96be",
+    "gitBlobBytes": 4417,
+    "gitBlobSha256": "2d0ae613da34dc9c9ba517074686922eab23c190cfd4de19e1aea9f2579b96be",
+    "normalization": "none"
+  },
+  "source-identity.json": {
+    "bytes": 150727,
+    "sha256": "cd7e77130053bb31f511308c01c005c26cc34210f44b8950356d323d06b1e785",
+    "gitBlobBytes": 150727,
+    "gitBlobSha256": "cd7e77130053bb31f511308c01c005c26cc34210f44b8950356d323d06b1e785",
+    "normalization": "none"
+  },
+  "b621/archive-receipt.json": {
+    "bytes": 366,
+    "sha256": "fb3c7bc10c5f7687e59fdbab12aa2a5ebe111a31c9b348cb808dd4ad5578abf2",
+    "gitBlobBytes": 366,
+    "gitBlobSha256": "fb3c7bc10c5f7687e59fdbab12aa2a5ebe111a31c9b348cb808dd4ad5578abf2",
+    "normalization": "none"
+  },
+  "b621/config-original-redundant.json": {
+    "bytes": 18957,
+    "sha256": "04b857cc3307e94099d9d9f292cd093a8b9a206d02a8e70ac3cb2b9828e16a5a",
+    "gitBlobBytes": 18957,
+    "gitBlobSha256": "04b857cc3307e94099d9d9f292cd093a8b9a206d02a8e70ac3cb2b9828e16a5a",
+    "normalization": "none"
+  },
+  "b621/config.json": {
+    "bytes": 18957,
+    "sha256": "25a720686c8eb3c27d27108f2f61de029ae3ce6e9ebb86821063975c3d7c1a09",
+    "gitBlobBytes": 18957,
+    "gitBlobSha256": "25a720686c8eb3c27d27108f2f61de029ae3ce6e9ebb86821063975c3d7c1a09",
+    "normalization": "none"
+  },
+  "b621/inventory-original-space.stderr": {
+    "bytes": 125,
+    "sha256": "f5bc4589b0c7622ed8e25aafc625ef2aaea4efb9f834b12e3c2ddabb1ce8713f",
+    "gitBlobBytes": 125,
+    "gitBlobSha256": "f5bc4589b0c7622ed8e25aafc625ef2aaea4efb9f834b12e3c2ddabb1ce8713f",
+    "normalization": "none"
+  },
+  "b621/inventory.json": {
+    "bytes": 18643,
+    "sha256": "8dc33ef61f17d6e4bd649e621a5380d7238e507460ba436aa5b6ec91462d440d",
+    "gitBlobBytes": 18308,
+    "gitBlobSha256": "48d2bd958fb8fb357fe7d71e9be40ac8a5876f131ac107512875c8a41c5138b8",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "b621/observations.tgz": {
+    "bytes": 1973770,
+    "sha256": "aa7c3a610fcd48bc4d7d2e50eb8f862bc265617ee4af40897c230bff82b2c7e4",
+    "gitBlobBytes": 1973770,
+    "gitBlobSha256": "aa7c3a610fcd48bc4d7d2e50eb8f862bc265617ee4af40897c230bff82b2c7e4",
+    "normalization": "none"
+  },
+  "b621/source-identity-original-redundant.json": {
+    "bytes": 150727,
+    "sha256": "cd7e77130053bb31f511308c01c005c26cc34210f44b8950356d323d06b1e785",
+    "gitBlobBytes": 150727,
+    "gitBlobSha256": "cd7e77130053bb31f511308c01c005c26cc34210f44b8950356d323d06b1e785",
+    "normalization": "none"
+  },
+  "b621/summary.json": {
+    "bytes": 6024,
+    "sha256": "558d57d39fc56bc62f947e55dbcdea281f510c7d1ee78befb64786fa4b19708a",
+    "gitBlobBytes": 5865,
+    "gitBlobSha256": "1c2e864de696aa3f0c63d835d30bedef3c8c08e676283c4b3f690fc7d126f280",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "b621/terminal-status.json": {
+    "bytes": 566,
+    "sha256": "fcc77f79aaed9a1f19b925d23b8f46f2ae9fb80ff6b7efbcacb716f8375f2be4",
+    "gitBlobBytes": 565,
+    "gitBlobSha256": "a77eb49f59beeceaab5ad0aa37aaf65eb24ac519295b89cca260bd22ac97444a",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "compile/measurements.json": {
+    "bytes": 21744,
+    "sha256": "7b46eb83b7108be89e0dc7fb05d773bfa44b7eef8b18cdee1d05c08194ff763d",
+    "gitBlobBytes": 21743,
+    "gitBlobSha256": "f404a95c768ec4f7906848dde01430f4f70ab928442ebe78c24f88311e60b0ad",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "compile/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gitBlobBytes": 0,
+    "gitBlobSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "none"
+  },
+  "compile/summary.json": {
+    "bytes": 8978,
+    "sha256": "fdf199b13590c399d31c4a0f1b319f2374415ee48daf35742272c4b312778bde",
+    "gitBlobBytes": 8680,
+    "gitBlobSha256": "f66bb100fc5a4c017111c8307c40d326b4983a212b4a1ad3034615c9fe615f3e",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "fresh/measurements.json": {
+    "bytes": 22609,
+    "sha256": "a762ac10e35e9ecbbbbd0907a0ea6f08899e5bebd56a91170745b6e2465d30e6",
+    "gitBlobBytes": 22608,
+    "gitBlobSha256": "e1b1fe0c5c8d7751c6c0dd449a66da25f2a33b148f078c89073c3a0802a77c59",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "fresh/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gitBlobBytes": 0,
+    "gitBlobSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "none"
+  },
+  "fresh/summary.json": {
+    "bytes": 9525,
+    "sha256": "653990cb4823843c8a93779569bc277dc1188e061eb9096e2cd6af5399bfa033",
+    "gitBlobBytes": 9227,
+    "gitBlobSha256": "db55608d5a10de293a534deba0072603c8627743aff1d751d3b0083544908331",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/final-internal-net10.0.trx": {
+    "bytes": 56480,
+    "sha256": "b22a3e3102b270faeef4e7d8dec9bf59d984f9e3004547ff5fcbec8d2ff77d35",
+    "gitBlobBytes": 56236,
+    "gitBlobSha256": "8a2cba49be7ce24f40d22e644e78165f20b43bd2c408b5b2d754041cdc267c06",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/final-internal-net11.0.trx": {
+    "bytes": 56495,
+    "sha256": "42383c4369e3d4d8d45bf35dadc893c720148b689d1137e6060e4925917c251d",
+    "gitBlobBytes": 56251,
+    "gitBlobSha256": "82e1853a35d341140d26086a1b1189d2d25a961dcf001912565e7d8665020713",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/final-public-net10.0.trx": {
+    "bytes": 590296,
+    "sha256": "3549dc4bb02cdb5780dcafa49ef5bf7b6f5572322cec57756377b3de18c5f1c1",
+    "gitBlobBytes": 588048,
+    "gitBlobSha256": "0cda718cf6c4ed2db11dd536c9dd8d506f57e3f0dd8038efc7165e198d4e3511",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/final-public-net11.0.trx": {
+    "bytes": 590311,
+    "sha256": "7c6716c53a41f2407649f89a5aaf8346e92f6f396995922984a30c20213a29dd",
+    "gitBlobBytes": 588063,
+    "gitBlobSha256": "45592dcb71e1b85a278fbdc6a13622e38033cbb26d7eeea400d6900ac4310e3b",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/focused-internal-net11.0.trx": {
+    "bytes": 56495,
+    "sha256": "ca20c7558e9935adfde880a99d21f3f9407bcd59bf82a5b7db26df3cc096a5a2",
+    "gitBlobBytes": 56251,
+    "gitBlobSha256": "517ea6002951b022354f32c86fa3919f5da91f91fc4e09b108ff65893126df68",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "tests/focused-public-net11.0.trx": {
+    "bytes": 592283,
+    "sha256": "d5b0fd6896c64d102b4b9d277c7f1192f73a970328ed3eaf7811dfeaaf8d6a9d",
+    "gitBlobBytes": 590023,
+    "gitBlobSha256": "ce1eb2a3f79714a5a529281ffda8ff8bb1a7c294c5bd79540ac605f0e3d7ed3b",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "warm-sync/measurements.json": {
+    "bytes": 22597,
+    "sha256": "b12bdddb70140a50f39263088878d229d8a598636de1bfceaa0797337e4ea290",
+    "gitBlobBytes": 22596,
+    "gitBlobSha256": "a7cb8eb79bb3166f1510f23dbce8b5abf8b22f806e797b6d28c5bb7984bf5228",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "warm-sync/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gitBlobBytes": 0,
+    "gitBlobSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "none"
+  },
+  "warm-sync/summary.json": {
+    "bytes": 9364,
+    "sha256": "3c9c6bd32b87a75e1b15a03a7746997a137d3766a95ceb0f18208e5112d57965",
+    "gitBlobBytes": 9066,
+    "gitBlobSha256": "f480bb8ce2469fed28e033082dfa62f7ec034b6b1e8a0a895c77395df62a6c21",
+    "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  }
+}

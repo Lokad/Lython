@@ -1,0 +1,27 @@
+{
+  "python": "CPython3.13.2, -I -S -X utf8",
+  "records": [
+    {
+      "case": "scripts.file-search.annotated-control.large",
+      "passed": true,
+      "returnCode": 0,
+      "stdout": "1025\r\n",
+      "stderr": "",
+      "sourceSHA256": "71364c1371c87962291129ef2fbb6748bfb0e6e4aa5fbff2ba311bb7deb1d218",
+      "fileSHA256": {
+        "matches.txt": "72ceb3e3e2eaba1b390f910ed563fc267945db5454af06581f466095c5ceee14"
+      }
+    },
+    {
+      "case": "scripts.config-edit.regex-control.small",
+      "passed": true,
+      "returnCode": 0,
+      "stdout": "17\r\n",
+      "stderr": "",
+      "sourceSHA256": "63e2d0df496ea1c8ac51f52b9ac788ff5f8ff7954afc166b8ed9a3cf8fa29fe1",
+      "fileSHA256": {
+        "config.json": "0e83649b07b0708ec80ea9ebf2b79219a7d353bb651e8057c11c9a36d0c6ba8e"
+      }
+    }
+  ]
+}

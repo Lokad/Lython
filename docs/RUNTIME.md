@@ -203,7 +203,9 @@ runtime failure; preceding guest effects can already have occurred.
 ## Execution internals
 
 Annotation diagnostics retain conservative branch facts, including unreachable
-checks, independently of the main analyzer's refined flow. Non-regex lexical
+checks, independently of the main analyzer's refined flow. Shared lexical
+preparation identifies annotation demand and regex imports; ordinary scripts
+need no extra annotation-demand walk or binding setup. Non-regex lexical
 scopes omit binding analysis after their final relevant annotation check. Constant
 regex analysis retains its full conservative bindings across dead/deferred scopes.
 

@@ -6,12 +6,24 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Shared annotation demand](results/2026-11-12-annotation-demand/README.md) removes
+the repeated demand walk/body dictionary from unannotated and regex scripts,
+using facts from lexical preparation. 816 focused actual-target checks and five
+complete scripts/compile-to-result controls pass. Two combined-source quiet
+compilation rows improve elapsed1–3%; CPU crosses zero and warm controls remain
+variable. Allocation savings are432–456bytes on unannotated scripts; annotated
+controls add eight bytes. Desktop adversity and the corrected new test expectation
+remain preserved. Retained for delivery, with no substantial whole-script claim.
+
 [Iterative JSON admission](results/2026-11-12-json-depth/README.md) removes the
 inherited 64-container decoder policy and backend error builder. Existing explicit
 frames retain overlap admission, cancellation and awaited ownership. 120 focused
 actual-target checks and three complete scripts/both APIs/compile pass; allocation
 is flat. Desktop native-async control +4.31..+5.83% remains adverse and unresolved;
-no CPU gain claim. Full platform/stress/package qualification batches separately.
+no CPU gain claim. [Exact8233c969 delivery](results/2026-11-12-json-depth/delivery/README.md)
+is GREEN43208107207: Windows/Ubuntu, actual .NET11/10, original stress and installed
+Release consumers. All568 frozen source hashes match with explicit checkout
+normalization; terminal status is cached, not replayed.
 
 [Ordered helper prototype](results/2026-11-12-ordered-helper-prototype/README.md)
 is withdrawn. One prefix/span borrow/live export removed the duplicate native

@@ -1,0 +1,9 @@
+{
+  "noMeasurementsChanged": true,
+  "reason": "The reused driver common boundary prose describes its warm phase. The recorded phase and actual Measure code define compile and fresh accurately; keep original raw prose and disambiguate here.",
+  "boundaries": {
+    "compile": "Construction and disposal of a freshly compiled script under shared admission; no execution.",
+    "fresh": "Compilation plus one synchronous public Run, fixture reset, mediated I/O, full output validation and immediate result/script disposal; warm host, startup excluded.",
+    "warm-sync": "Reused compiled script, fixture reset, public Run, mediated I/O, full validation and immediate result disposal; compilation/startup excluded."
+  }
+}

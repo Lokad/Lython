@@ -9,6 +9,8 @@ public sealed class RegexAnalysisBindingTests
     [InlineData("import re\nif False: pattern = re.compile('a')")]
     [InlineData("import re\ndef prepare():\n global pattern\n pattern = re.compile('a')")]
     [InlineData("import re\ndef prepare():\n global pattern\n pattern = re.compile('a')\nprepare()")]
+    [InlineData("if False:\n import re\n pattern = re.compile('a')")]
+    [InlineData("def prepare():\n import re\n pattern = re.compile('a')")]
     public void ConstantPatternAnalysisPreservesMissingProviderFailureAcrossScopes(string source)
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

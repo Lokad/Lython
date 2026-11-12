@@ -1,0 +1,335 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261681152,
+  "requiredFreeBytes": 270675968,
+  "reclaimableBytes": 9035776,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/__pycache__/cpython-worker.cpython-312.pyc",
+      "bytes": 31315,
+      "sha256": "1ba7520296872d031cb6738ca639d68a5b620e7b8f1b73f2dc0990cf5b46059f",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "__pycache__/cpython-worker.cpython-312.pyc",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/__pycache__/cpython-worker.cpython-312.pyc"
+      ],
+      "device": 66305,
+      "inode": 845084,
+      "allocatedBytes": 32768,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/archive-owned.py",
+      "bytes": 1516,
+      "sha256": "26f0ec3a127d7a299a1b4f1768faa348130f919e98f928569426becbd526b005",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "archive-owned.py",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/archive-owned.py"
+      ],
+      "device": 66305,
+      "inode": 845053,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/collect.py",
+      "bytes": 10039,
+      "sha256": "d0411c206812ac6e26dc45d52008cc3739d402b4ddde6610bc48739d44abf141",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "collect.py",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/collect.py"
+      ],
+      "device": 66305,
+      "inode": 845052,
+      "allocatedBytes": 12288,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/confirmation/confirmation.json",
+      "bytes": 463409,
+      "sha256": "bab7e3bb9bfe7892d1d52654ebf41b3d2dd17e618089f1b22972440f14deba2b",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 845091,
+      "allocatedBytes": 466944,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/confirmation/fixture-filesystem.txt",
+      "bytes": 298,
+      "sha256": "f78efd1a67295c004c0a38058750c97435372ad777520c7753121b084c875c6e",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "confirmation/fixture-filesystem.txt",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/confirmation/fixture-filesystem.txt"
+      ],
+      "device": 66305,
+      "inode": 845087,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/confirmation/machine-after.json",
+      "bytes": 11144,
+      "sha256": "2af956002df9b1769bc097061afb1ab2212612598e9bc87433c2fda510cde5e1",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "confirmation/machine-after.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/confirmation/machine-after.json"
+      ],
+      "device": 66305,
+      "inode": 845090,
+      "allocatedBytes": 12288,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/confirmation/machine-before.json",
+      "bytes": 11142,
+      "sha256": "3edf355e42907fdde7796da3c751add8d8ab05d6cfd480440b031f334997eebc",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "confirmation/machine-before.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/confirmation/machine-before.json"
+      ],
+      "device": 66305,
+      "inode": 845086,
+      "allocatedBytes": 12288,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/cpython-worker.py",
+      "bytes": 20599,
+      "sha256": "02ca606af6b937a5bec8da744da36e6dbea45ef14ee7207732f34da052ad32f1",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "cpython-worker.py",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/cpython-worker.py"
+      ],
+      "device": 66305,
+      "inode": 845074,
+      "allocatedBytes": 24576,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/identity.json",
+      "bytes": 4321,
+      "sha256": "0a30a0b4fd58af9319d053c64c62bd8d1be5986e25c8c141bd3e6f2ad9bcb1ee",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "identity.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/identity.json"
+      ],
+      "device": 66305,
+      "inode": 845051,
+      "allocatedBytes": 8192,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/live-unit.txt",
+      "bytes": 72,
+      "sha256": "df844025c58b368df6f732a40a21f8de1eb3915160ec95ee7dd38ebb362f27c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "live-unit.txt",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/live-unit.txt"
+      ],
+      "device": 66305,
+      "inode": 845080,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/representative.json",
+      "bytes": 666232,
+      "sha256": "d35a9254e3a341d3b9362a81db807ba3f89fbf5ec05dfb4e5857273ae1a21469",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 845047,
+      "allocatedBytes": 667648,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/run.sh",
+      "bytes": 431,
+      "sha256": "9ef91b1ea8ae72fd02c48cd054e51350eae0aefcd9147cff0657eb25b2f440ca",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "run.sh",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/run.sh"
+      ],
+      "device": 66305,
+      "inode": 845054,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/setup.json",
+      "bytes": 144,
+      "sha256": "c590bcc397c6c01f09fb0f4c9350e0b3cdd20ff2fdfa0f9c5e5f27d65e12d4f1",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "setup.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/setup.json"
+      ],
+      "device": 66305,
+      "inode": 845076,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/source-identity.json",
+      "bytes": 79661,
+      "sha256": "9cfd96012fde67ac627ddb1001854974da6df993dbd3d5cef13a9501b657aa38",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "source-identity.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/source-identity.json"
+      ],
+      "device": 66305,
+      "inode": 845050,
+      "allocatedBytes": 81920,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/space-recovery.json",
+      "bytes": 38340,
+      "sha256": "570d18e9945904aa635fb05093af49a6ce5ac4608c425dde5382dc6a322cc8cd",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "space-recovery.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/space-recovery.json"
+      ],
+      "device": 66305,
+      "inode": 845060,
+      "allocatedBytes": 40960,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/staging-correction.json",
+      "bytes": 861,
+      "sha256": "72247c813df78246d7ffddf3266fee3f1b0cec53b8d4f394efeaecf229fe838a",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "staging-correction.json",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/staging-correction.json"
+      ],
+      "device": 66305,
+      "inode": 845007,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/started.utc",
+      "bytes": 21,
+      "sha256": "9d5c238310363560d9a75acc1b1f7605482688187f65da57290cd9f96a28cb36",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "started.utc",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Exact terminal withdrawnB620 evidence duplicate, committedfcaca860 canonical archive entry verified locally. Original stagingfailure/patch/records preserved; fresh idlelease UID/path/inode/link proof, a552reference protected.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/started.utc"
+      ],
+      "device": 66305,
+      "inode": 845079,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-positional-b620-20261112/observations.tgz",
+      "bytes": 1971791,
+      "sha256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "reason": "Exact terminalB620 archive duplicate, committedfcaca860 originalfailedconditions andwithdrawal retained.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 845075,
+      "allocatedBytes": 1974272,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "ordered-helper-positional-b620-20261112/candidate/Lokad.Lython.dll",
+      "knownAliases": [
+        "ordered-helper-positional-b620-20261112/candidate/Lokad.Lython.dll",
+        "ordered-helper-positional-b620-20261112/current-core.dll"
+      ],
+      "bytes": 5668864,
+      "sha256": "a90a2e0444cf1b292c396555249401542aca354dc7fc851df5d16413b1a57473",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/positional-refinement/b620/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207",
+      "reason": "Fully withdrawn a90 prototype, exact committedfcaca860 source/patch/tests/adversity/core preserved. Both expectedaliases plus exact linkcount prove wholephysicalimage without broadinventory. Qualifieda552 staysprotected; newfrozen candidate supplied inpayload.",
+      "paths": [
+        "ordered-helper-positional-b620-20261112/candidate/Lokad.Lython.dll",
+        "ordered-helper-positional-b620-20261112/current-core.dll"
+      ],
+      "device": 66305,
+      "inode": 845055,
+      "allocatedBytes": 5672960,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

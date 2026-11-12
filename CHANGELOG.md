@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Reuse lexical preparation to select annotation analysis. Unannotated scripts
+  omit a duplicate statement walk and body-position dictionary; regex scripts
+  retain full conservative flow directly. Preserve nested/dead-scope diagnostics,
+  annotation-dependent flow, cooperative cancellation and admission failures.
+
 - Remove the JSON decoder's inherited 64-container ceiling. Iterative construction
   admits its frame capacity through the shared memory budget, including growth
   overlap, and preserves cancellation and pending-hook ownership. Encoding,
