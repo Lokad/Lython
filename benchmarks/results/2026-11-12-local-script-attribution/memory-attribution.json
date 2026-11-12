@@ -1,0 +1,323 @@
+{
+  "boundary": "EventPipe sampled .NET thread wall time; exclusive intervals with active executable prefix, plus all other threads. Not CPU samples or elapsed comparison; unmanaged leaves/selection/inlining limit attribution.",
+  "rows": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "threads": [
+        {
+          "name": "Thread (30948)",
+          "guestMilliseconds": 0,
+          "guestIntervals": 0,
+          "allMilliseconds": 8011.02685546875,
+          "allTop": [
+            [
+              "UNMANAGED_CODE_TIME",
+              7860.107496811104
+            ],
+            [
+              "CPU_TIME",
+              150.91277773132137
+            ],
+            [
+              "profile!Program.<Main>$(class System.String[])",
+              0.005814165497781687
+            ],
+            [
+              "System.Private.CoreLib.il!System.Reflection.RuntimeMethodInfo.Invoke(class System.Object,value class System.Reflection.BindingFlags,class System.Reflection.Binder,class System.Object[],class System.Globalization.CultureInfo)",
+              0.00029031925259914715
+            ],
+            [
+              "profile!Image.Once()",
+              0.0001715179441816872
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.ExecutionThreads+SynchronousWorkItem.Wait()",
+              0.00016823253605480204
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.LythonCompiledScript.RunCore(class Lokad.Lython.ILythonHost,class Lokad.Lython.LythonRunOptions)",
+              0.00013669109398506407
+            ]
+          ],
+          "guestTop": [],
+          "guestManagedParents": [],
+          "guestInclusive": []
+        },
+        {
+          "name": "Thread (52320)",
+          "guestMilliseconds": 7700.405565481752,
+          "guestIntervals": 776,
+          "allMilliseconds": 8010.962099888611,
+          "allTop": [
+            [
+              "CPU_TIME",
+              7804.8131637882225
+            ],
+            [
+              "UNMANAGED_CODE_TIME",
+              206.14842662277206
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&)",
+              0.00024492854741708925
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,value class Lokad.Lython.Frontend.ExecutableInstruction&)",
+              0.0001214504229949398
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass737_0.<Run>b__0()",
+              7.454795979811024e-05
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.ExecutionThreads+Worker.Run()",
+              5.7394412181110965e-05
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.MapCaseRune(value class System.Text.Rune,value class CaseMapping,value class System.ReadOnlySpan`1<unsigned int8>,int32,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,value class System.ReadOnlySpan`1<unsigned int8>&)",
+              1.0295869287801906e-05
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.WriteCaseUtf8(value class System.ReadOnlySpan`1<unsigned int8>,value class System.Span`1<unsigned int8>,value class CaseMapping,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+              7.152557373046875e-07
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.ExecutionThreads.Take(class Worker)",
+              1.1920928955078125e-07
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool)",
+              2.5939698389265686e-08
+            ]
+          ],
+          "guestTop": [
+            [
+              "CPU_TIME",
+              7686.522788723181
+            ],
+            [
+              "UNMANAGED_CODE_TIME",
+              13.882399342535791
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&)",
+              0.00024492854741708925
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,value class Lokad.Lython.Frontend.ExecutableInstruction&)",
+              0.0001214504229949398
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.MapCaseRune(value class System.Text.Rune,value class CaseMapping,value class System.ReadOnlySpan`1<unsigned int8>,int32,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,value class System.ReadOnlySpan`1<unsigned int8>&)",
+              1.0295869287801906e-05
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.WriteCaseUtf8(value class System.ReadOnlySpan`1<unsigned int8>,value class System.Span`1<unsigned int8>,value class CaseMapping,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+              7.152557373046875e-07
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool)",
+              2.5939698389265686e-08
+            ]
+          ],
+          "guestManagedParents": [
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.MapCaseRune(value class System.Text.Rune,value class CaseMapping,value class System.ReadOnlySpan`1<unsigned int8>,int32,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,value class System.ReadOnlySpan`1<unsigned int8>&)",
+              7394.7695340004
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ICallable.InvokeBorrowed(value class System.ReadOnlySpan`1<value class Lokad.Lython.Runtime.CallArgumentValue>,class Lokad.Lython.LythonSourceSpan,class ExecutionContext)",
+              49.58467986335569
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool)",
+              42.078869176481476
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.OpenedByteFile+<ReadAsync>d__10.MoveNext()",
+              32.28497741699215
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,value class Lokad.Lython.Frontend.ExecutableInstruction&)",
+              30.515416897580764
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.PrepareCasedWhitespaceIteration(class Lokad.Lython.Runtime.Text.PyString,bool,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+              22.510995297050954
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.MemoryGovernor.Reserve(int64,class Lokad.Lython.LythonSourceSpan)",
+              17.262691405867827
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+<AttachTypeMetadataAsync>d__1213.MoveNext()",
+              14.070495533179383
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.GuardNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,value class Lokad.Lython.Frontend.NativeReturnValue[],value class NativeInputs&,class ExecutionContext,value class NativeReturnShape&)",
+              13.28630006313324
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStorage.RetireTo(int32)",
+              10.615700006484985
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&)",
+              10.142120227619543
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object)",
+              9.607097535133107
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.EvaluateNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,value class Lokad.Lython.Frontend.NativeReturnValue[],value class NativeInputs&,class ExecutionContext,class Lokad.Lython.Runtime.PyException,bool)",
+              8.297298891639343
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.PathOps.RequireContainedPath(class System.String,class Lokad.Lython.LythonSourceSpan)",
+              7.953293442535596
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.BeginBoundCall(class Lokad.Lython.Runtime.PyExecutableFunction,value class Lokad.Lython.Runtime.BoundCallArguments&,class Lokad.Lython.Frontend.ExecutableCallSite,int32,class Lokad.Lython.LythonSourceSpan,value class CallCompletion,bool,bool)",
+              5.951099659156739
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.AppendSplitRange(value class System.Span`1<value class System.ValueTuple`3<int32,int32,int32>>&,int32&,int32,int32,int64&,int64&,class TemporaryMemoryReservation&,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan,class ExecutionContext,value class System.Nullable`1<int32>)",
+              5.630499605751538
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteForNext(value class Lokad.Lython.Frontend.ExecutableInstruction&)",
+              4.43939640865301
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.TryExecuteNativeFunction(class Lokad.Lython.Frontend.ExecutableCodeObject,class ExecutionContext,value class System.ReadOnlySpan`1<class System.Object>,class System.Collections.Generic.IReadOnlyList`1<class ExecutableCell>,class System.String,class Lokad.Lython.LythonSourceSpan,class System.Object&,bool)",
+              3.5621999502182007
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.WriteCaseUtf8(value class System.ReadOnlySpan`1<unsigned int8>,value class System.Span`1<unsigned int8>,value class CaseMapping,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+              3.2688007080078023
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+TextFileHandle+<OpenAsync>d__35.MoveNext()",
+              3.2134998884203014
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteComparisonInstruction(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,value class Lokad.Lython.Frontend.ExecutableInstruction&,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&)",
+              2.058799679947697
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.WriteAsciiCase(value class System.ReadOnlySpan`1<unsigned int8>,value class System.Span`1<unsigned int8>,value class CaseMapping,int32,bool&)",
+              2.0064999759679267
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext+ChunkedTextFileReadState.CreateWindowValue(int32,int32)",
+              1.9727999065398762
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.AddExactIntegers(value class System.Numerics.BigInteger,value class System.Numerics.BigInteger,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.LythonSourceSpan)",
+              1.9127999467846166
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.ParseFileOpenMode(class Lokad.Lython.Runtime.Text.PyString,class System.String,class Lokad.Lython.LythonSourceSpan)",
+              1.7825000286102295
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.ExecuteCasedSplit(class Lokad.Lython.Frontend.ExecutableCasedSplit,class Lokad.Lython.Runtime.Text.PyString,class ExecutionContext,bool)",
+              1.6271999662394592
+            ]
+          ],
+          "guestInclusive": [
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass737_0.<Run>b__0()",
+              7700.405565481752
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteInstructionPrefix(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,bool,value class System.Threading.Tasks.ValueTask`1<bool>&,class Lokad.Lython.LythonSourceSpan&,value class System.Threading.Tasks.ValueTask`1<class ExecutionContext>&)",
+              7700.405565481752
+            ],
+            [
+              "Threads",
+              7700.405565481752
+            ],
+            [
+              "System.Private.CoreLib.il!System.Threading.Thread.StartCallback(class System.Threading.Thread*)",
+              7700.405565481752
+            ],
+            [
+              "System.Private.CoreLib.il!System.Threading.ExecutionContext.RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,class System.Object)",
+              7700.405565481752
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.Execute()",
+              7700.405565481752
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.ExecutionThreads+Worker.Run()",
+              7700.405565481752
+            ],
+            [
+              "(Non-Activities)",
+              7700.405565481752
+            ],
+            [
+              "Process64 dotnet (55684) Args: D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\whole-script-r286\\memory-control\\bin\\Release\\net11.0\\profile.dll D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\lexical-cell-storage-r284\\reference\\Lokad.Lython.Benchmarks.dll D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\lexical-cell-storage-r284\\catalog.json D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\lexical-cell-storage-r284\\warm-sync\\witness.json scripts.text-summary-helpers.nonlocal-counter.large D:\\code\\Lython\\.git\\agent-notes\\review-20261031\\whole-script-r286\\memory-control\\capture-0",
+              7700.405565481752
+            ],
+            [
+              "Thread (52320)",
+              7700.405565481752
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.ExecutionThreads+WorkItem.Execute(class System.Threading.ExecutionContext)",
+              7700.405565481752
+            ],
+            [
+              "CPU_TIME",
+              7686.522788723181
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteDictionaryLoop(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,value class Lokad.Lython.Frontend.ExecutableInstruction&)",
+              7439.51715158253
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.WriteCaseUtf8(value class System.ReadOnlySpan`1<unsigned int8>,value class System.Span`1<unsigned int8>,value class CaseMapping,class ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+              7400.044834684377
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps.MapCaseRune(value class System.Text.Rune,value class CaseMapping,value class System.ReadOnlySpan`1<unsigned int8>,int32,class ExecutionContext,class Lokad.Lython.LythonSourceSpan,value class System.ReadOnlySpan`1<unsigned int8>&)",
+              7394.7695340004
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.Text.PyStringOps+CasedWhitespaceIteration.TryReadWord(value class CompactWord&)",
+              7331.275562150958
+            ],
+            [
+              "System.Private.CoreLib.il!System.Threading.Thread.<PollGC>g__PollGCWorker|75_0()",
+              109.95944080905531
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.InvokeExecutableGeneralTargetAsync(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool)",
+              104.61284239940329
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.ExecuteOrdinaryCall(class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object,bool)",
+              104.61284239940329
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime+ExecutionContext.TryExecuteNativeCall(value class ExecutableWorkState&,class ExecutionContext,class ExecutionContext,class Lokad.Lython.Frontend.ExecutableCallSite,int32,class System.Object)",
+              79.69568975429479
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.TryExecuteNativeFunction(class Lokad.Lython.Frontend.ExecutableCodeObject,class ExecutionContext,value class System.ReadOnlySpan`1<class System.Object>,class System.Collections.Generic.IReadOnlyList`1<class ExecutableCell>,class System.String,class Lokad.Lython.LythonSourceSpan,class System.Object&,bool)",
+              68.4297922132489
+            ],
+            [
+              "Lokad.Lython!Lokad.Lython.Runtime.LythonRuntime.EvaluateNativeReturn(int32,class Lokad.Lython.Frontend.ExecutableCodeObject,value class Lokad.Lython.Frontend.NativeReturnValue[],value class NativeInputs&,class ExecutionContext,class Lokad.Lython.Runtime.PyException,bool)",
+              51.58129219989746
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

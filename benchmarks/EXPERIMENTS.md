@@ -6831,3 +6831,17 @@ remain separate deliverables.
 +nonincremental build and438focused target checks pass. No dormant promotion hooks
 +or repeated full qualification. The substantial performance objective stays open.
 +
+## R285/R286 — result ownership gate and bounded local attribution
+
++[The source gate](results/2026-11-12-private-iteration-source-gate/README.md) finds
++that the private cursor transfers a real range loan through native, ordinary and
++protected/suspending returns. A caller-only side table would add an incomplete
++protocol; no local carrier prototype is selected. The broader alternative remains
++open. [Three current-core Windows disk traces and one existing-memory-host
++correction](results/2026-11-12-local-script-attribution/README.md) retain all goldens,
++balances, thread stacks and original failures. Sampled wall time does not establish
++CPU dominance; unmanaged waits and apparent MapCaseRune concentration remain
++unresolved. No speedup or Linux/CPython inference, no repeated full qualification.
++The next actual source prototype is ordinary tuple storage, preserving Python
++objects and aliases rather than adding a private return/unpack convention.
++

@@ -1,0 +1,34 @@
+{
+  "complete": true,
+  "cases": [
+    "scripts.text-summary-helpers.nonlocal-counter.large",
+    "scripts.csv-validated-records.large",
+    "scripts.report-render.large"
+  ],
+  "coreSHA256": "e4cc65b251ace242546f337b0846908a4e2a4313953da74df6fb666e1ce87529",
+  "source": "9bca1337 qualified production, HEAD da61f00f source unchanged",
+  "allWorkersJoined": true,
+  "allFixturesRemoved": true,
+  "normalRuntimeOverrides": {
+    "DOTNET_gcServer": null,
+    "COMPlus_gcServer": null,
+    "DOTNET_GCHeapCount": null,
+    "COMPlus_GCHeapCount": null,
+    "DOTNET_GCHeapHardLimit": null,
+    "COMPlus_GCHeapHardLimit": null,
+    "DOTNET_GCHeapHardLimitPercent": null,
+    "COMPlus_GCHeapHardLimitPercent": null,
+    "DOTNET_TieredCompilation": null,
+    "COMPlus_TieredCompilation": null,
+    "DOTNET_TieredPGO": null,
+    "COMPlus_TieredPGO": null,
+    "DOTNET_TC_QuickJit": null,
+    "COMPlus_TC_QuickJit": null,
+    "DOTNET_TC_QuickJitForLoops": null,
+    "COMPlus_TC_QuickJitForLoops": null,
+    "DOTNET_ReadyToRun": null,
+    "COMPlus_ReadyToRun": null,
+    "DOTNET_PROCESSOR_COUNT": null
+  },
+  "quietComparison": false
+}

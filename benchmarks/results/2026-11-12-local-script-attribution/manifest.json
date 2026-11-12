@@ -1,0 +1,22 @@
+{
+  "attribution.json": {
+    "bytes": 59286,
+    "sha256": "f4c432e6fee1c32c24c0a1e0a650f37aa5b600cb61e2be8946b2230675497ac1"
+  },
+  "diagnostics.tar.xz": {
+    "bytes": 1149552,
+    "sha256": "24c677a9cf6590ea3aa154a2bdd7c9375a20f9b56c9c6369cce1148a0a62ec8e"
+  },
+  "memory-attribution.json": {
+    "bytes": 19185,
+    "sha256": "78224ff0f2f6f10d2d02e71bd08e9fed240c61a678f278dfd06b9b0ecaedc7ed"
+  },
+  "memory-terminal.json": {
+    "bytes": 1047,
+    "sha256": "5506bca3be7c8e23eea30cbcf6a9724a52657edaf161e15c724d5bf1773e1f4d"
+  },
+  "terminal.json": {
+    "bytes": 1125,
+    "sha256": "049701c3a1f842ca409ccbcc17341e807da4ad98593d2f55f845d0b155ab29e1"
+  }
+}
