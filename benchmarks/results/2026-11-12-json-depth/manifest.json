@@ -39,11 +39,19 @@
     "normalization": "Git CRLF-to-LF only; original bytes preserved in original-text-evidence.tar.xz"
   },
   "README.md": {
-    "bytes": 3091,
-    "sha256": "5e60879f7f78413433f8aead472b4c230cb8df2c136993f9abc55238554045bf",
-    "gitBlobBytes": 3043,
-    "gitBlobSha256": "7374a98a915dffd55fe819d0e2081073dd10ea25416af275ba07dac2d467df97",
-    "normalization": "Git CRLF-to-LF only; original bytes preserved in original-text-evidence.tar.xz"
+    "bytes": 3284,
+    "sha256": "f99fc93a82f3ffddd77561155eaa98bab651493fa6da5393857d66e328eb64b9",
+    "gitBlobBytes": 3284,
+    "gitBlobSha256": "f99fc93a82f3ffddd77561155eaa98bab651493fa6da5393857d66e328eb64b9",
+    "earlierEvidence": {
+      "bytes": 3091,
+      "sha256": "5e60879f7f78413433f8aead472b4c230cb8df2c136993f9abc55238554045bf",
+      "gitBlobBytes": 3043,
+      "gitBlobSha256": "7374a98a915dffd55fe819d0e2081073dd10ea25416af275ba07dac2d467df97",
+      "normalization": "Git CRLF-to-LF only; original bytes preserved in original-text-evidence.tar.xz"
+    },
+    "earlierEvidenceLocation": "original-text-evidence.tar.xz:README.md",
+    "reason": "Append exact-source green delivery link; measurements unchanged."
   },
   "source-identity.json": {
     "bytes": 149897,

@@ -1,0 +1,9 @@
+{
+  "originalSource": "def prepare():\n import re\n return re.compile('a')",
+  "originalExpectation": "Compilation invalid with LA2010 missing provider",
+  "observed": "Compilation valid; new test failed Assert.False",
+  "reason": "The existing unannotated-return analysis does not resolve this unused return. The source assessment did not justify expanding that behavior as part of shared demand facts.",
+  "correctedSource": "def prepare():\n import re\n pattern = re.compile('a')",
+  "preserved": "Original failure log/TRX and 370 passing cases; corrected test preserves nested-local-import constant-assignment analysis.",
+  "newRuntimeBugClaimed": false
+}

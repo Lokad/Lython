@@ -236,5 +236,12 @@
     "gitBlobBytes": 9066,
     "gitBlobSha256": "f480bb8ce2469fed28e033082dfa62f7ec034b6b1e8a0a895c77395df62a6c21",
     "normalization": "Text CRLF-to-LF only; original text bytes archived"
+  },
+  "test-expectation-correction.json": {
+    "bytes": 660,
+    "sha256": "53e6b6e6d349e6f5dd8f7671e8c1de486e00d22b98cd82f4e51f6a908a643165",
+    "gitBlobBytes": 660,
+    "gitBlobSha256": "53e6b6e6d349e6f5dd8f7671e8c1de486e00d22b98cd82f4e51f6a908a643165",
+    "normalization": "none"
   }
 }
