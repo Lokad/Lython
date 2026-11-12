@@ -12,10 +12,12 @@ internal sealed partial class LythonRuntime
         // existing stack scratch. Context promotion runs no guest/admission hook.
         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
-            out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+            out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
+            out ValueTask<ExecutionContext?> nextCall)
         {
             pending = default;
             pendingSpan = null;
+            nextCall = default;
             // A failed leaf read precedes operation cleanup/routing, just as the
             // separate load did. No protocol or admission has run at this point.
             // Descriptor resumption uses the original receiver/key retained in
@@ -91,9 +93,10 @@ internal sealed partial class LythonRuntime
                     return InstructionPause.ContextRequired;
                 }
                 if (instruction.OpCode == ExecutableOpCode.Subscript && invocation is not null &&
-                    invocation.TrySuspendForTypeSubscription(instruction, first, second!))
+                    invocation.TryBeginTypeSubscription(instruction, first, second!, asynchronous, out nextCall))
                 {
-                    return InstructionPause.Boundary;
+                    pendingSpan = instruction.Span;
+                    return InstructionPause.Call;
                 }
                 if (immediate)
                 {

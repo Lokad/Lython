@@ -1,0 +1,33 @@
+from pathlib import Path
+import ast,hashlib,json,shutil,subprocess,tarfile
+r=Path('.git/agent-notes/review-20261031/completed-call-lifecycle-r259').resolve();q=r/'b605';q.mkdir();old=r.parent/'receiver-operations-r256/refined/b602';sha=lambda b:hashlib.sha256(b).hexdigest();meta=json.loads((r/'diagnostic-identity.json').read_text(encoding='utf-8'))
+for n,h in meta['sourceHashes'].items():assert sha(Path(n).read_bytes())==h,n
+for phase in ['warm-sync','warm-async','compile']:
+ j=json.loads((r/phase/'measurements.json').read_text(encoding='utf-8-sig'));assert j['allGoldensPassed']and j['allBalancesZero']and j['ownedFixturesRemoved']
+identity=json.loads((old/'identity.json').read_text(encoding='utf-8'));identity['sourceRevision']='R259 five-file direct completed-call entry versus fully qualified82ed92d4. Delete pendingfunction/receiver and runner preparation branch; preserve nativeinline/borrow and actualchild result/error staging.12938focused actual11/10pass, seven complete scripts bothAPIs/compile goldens/balances/cleanup. Allocationflat; elapseddiagnosticwithadverse capturedAsync+5.24..+5.62(control.36) andreportAsync+4.43..+14.40(control9.54). No CPUclaim. Target9jobs, not new externalCPython.'
+identity['coreSHA256']={k:meta['beforeCoreSHA256'if k.startswith('reference')else'candidateCoreSHA256']for k in ['reference','reference-control','candidate','candidate-control']};identity['catalogSHA256']=sha((r/'catalog.json').read_bytes());(q/'identity.json').write_text(json.dumps(identity,indent=2)+'\n',encoding='utf-8')
+jobs=[['scripts.file-search.guarded-helper.large','warm'],['scripts.file-search.guarded-helper.large','warm-async'],['scripts.file-search.large','warm'],['scripts.text-summary-helpers.large','warm'],['scripts.text-summary-helpers.nonlocal-counter.large','warm-async'],['scripts.report-render.large','warm'],['scripts.report-render.large','warm-async'],['scripts.csv-validated-records.large','warm-async'],['scripts.file-search.guarded-helper.large','compile']]
+(q/'source-identity.json').write_text(json.dumps(dict(beforeRevision=meta['beforeRevision'],qualification=meta['qualification'],sourceSHA256=meta['sourceHashes'],changedProductionFiles=meta['changedProductionFiles'],prototypeUncommitted=True,candidateQualification='12938focused actual11/10 and7full scripts bothAPIs/compile; fullcheckpoint pending',selectedJobs=jobs,limits='Bounded9-job sourcepair, not externalbaseline or embeddinglatency. All original diagnosticadversity retained.'),indent=2)+'\n',encoding='utf-8')
+shutil.copyfile(r/'candidate/Lokad.Lython.dll',q/'current-core.dll');shutil.copyfile(r/'catalog.json',q/'representative.json')
+for n in ['collect.py','archive-owned.py','run.sh','launch.py','retrieve.py','summarize.py','remote-launch.py']:
+ t=(old/n).read_text(encoding='utf-8').replace('receiver-ops-b602-20261112','completed-calls-b605-20261112').replace('lython-b602-receiver-ops-20261112','lython-b605-completed-calls-20261112').replace('receiver-ops-b602-launch.py','completed-calls-b605-launch.py').replace('lython-b602-fixtures','lython-b605-fixtures').replace('B602','B605')
+ if n=='collect.py':
+  a=t.index('jobs=');b=t.index('\nenv =',a);t=t[:a]+'jobs='+repr(jobs)+'\nassert len(jobs)==9 and all(case in cases for case,lane in jobs)\n'+t[b:]
+  a=t.index("purpose='");b=t.index("',\n                  warmupSeconds",a);t=t[:a]+"purpose='R259 direct completed-call lifecycle versus qualified82ed92d4. GuardedbothAPIs/nativeRun/ordinaryRun, adversecapturedAsync/reportbothAPIs/CSVAsync, separateguardedcompile. Fixed worker/adapter; RAMI/O/fullvalidation/prior-resultcleanup included. Preserve all diagnosticadversity; no CPU or externalbaselineclaim beforequalification"+t[b:]
+ if n=='remote-launch.py':t=t.replace("source=base/'native-inputs-b597-20261112/candidate'", "source=base/'receiver-ops-b602-20261112/candidate'")
+ (q/n).write_text(t,encoding='utf-8',newline='\n')
+ if n.endswith('.py')and n!='remote-launch.py':ast.parse(t)
+with tarfile.open(q/'payload.tgz','w:gz')as a:
+ for n in ['current-core.dll','representative.json','source-identity.json','identity.json','collect.py','archive-owned.py','run.sh']:a.add(q/n,arcname=n)
+with tarfile.open(q/'payload.tgz')as a:expanded=sum(((m.size+4095)//4096)*4096 for m in a.getmembers())
+retire=[]
+p=Path('benchmarks/results/2026-11-12-native-inputs/quiet/observations.tgz');b=p.read_bytes();assert b==subprocess.check_output(['git','show','HEAD:'+p.as_posix()])
+with tarfile.open(p)as a:data=a.extractfile('current-core.dll').read()
+assert sha(data)=='c9829194548b8c94b1f2bb4c4d5d3eea548d43b4b10a4920e27d273d9e64b351'
+retire.append(dict(kind='all-aliases',knownPath='native-inputs-b597-20261112/candidate/Lokad.Lython.dll',bytes=len(data),sha256=sha(data),canonicalStorage=p.as_posix(),canonicalEntry='current-core.dll',canonicalArchiveSHA256=sha(b),reason='Superseded qualified2ec core: exact source/core/qualification evidence committed;82ed is now fullyqualified and current selected reference0106. Verify fresh idle/UID/path/inode/allhardlink aliases. No current0106/newcandidate retirement; floors unchanged.'))
+p=Path('benchmarks/results/2026-11-12-helper-lifecycle-costs/observations.tgz');b=p.read_bytes();assert b==subprocess.check_output(['git','show','HEAD:'+p.as_posix()]);retire.append(dict(kind='exact',knownPath='helper-lifecycle-b604-20261112/observations.tgz',bytes=len(b),sha256=sha(b),canonicalStorage=p.as_posix(),reason='Exact committed terminal raw duplicate, all evidence retained. Fresh path/UID/inode/allaliases proof.'))
+with tarfile.open(p)as a:data=a.extractfile('catalog.json').read()
+retire.append(dict(kind='exact',knownPath='helper-lifecycle-b604-20261112/catalog.json',bytes=len(data),sha256=sha(data),canonicalStorage=p.as_posix(),canonicalEntry='catalog.json',canonicalArchiveSHA256=sha(b),reason='Exact committed terminal catalog duplicate; current0106 source core remainsprotected.'))
+config=dict(root='/home/lokad/lython-bench-checks/completed-calls-b605-20261112',unit='lython-b605-completed-calls-20261112',payloadBytes=(q/'payload.tgz').stat().st_size,payloadSHA256=sha((q/'payload.tgz').read_bytes()),requiredFreeBytes=expanded+252*1024*1024,retire=retire,identity=identity);(q/'config.json').write_text(json.dumps(config,indent=2)+'\n',encoding='utf-8')
+for n,needle in [('collect.py','len(jobs)==9'),('collect.py',' < 265'),('archive-owned.py',"len(raw['jobs'])==9"),('retrieve.py',"['jobs']==9"),('retrieve.py',"['elapsedSeconds']<300"),('remote-launch.py','RuntimeMaxSec=300'),('launch.py','seconds=360')]:assert needle in(q/n).read_text(encoding='utf-8'),(n,needle)
+print('Nine focused sourcepair jobs prepared;300sowner/265slast-start/360sobservation; fresh inventory before any retirement.')

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare executable function calls at their instructions and publish completed
+  bodies after cleanup, removing pending function/receiver staging and a separate
+  runner preparation step. Preserve native binding, genuinely pending calls,
+  constructor/type protocols, cancellation and shared-memory ownership.
+
 - Share canonical string receiver operations between prepared helpers and ordinary
   executable calls, avoiding unnecessary function contexts for guarded helpers.
   Preserve dynamic protocols and admission-time argument snapshots. Await guest

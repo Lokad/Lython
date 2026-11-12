@@ -8,16 +8,18 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        private enum InstructionPause { Continue, Boundary, Operation, Disposal, ContextRequired }
+        private enum InstructionPause { Continue, Boundary, Call, Operation, Disposal, ContextRequired }
 
         // Both APIs execute completed instructions here, outside an async state
         // machine. An incomplete operation leaves its instruction/span current.
         // The async driver owns the pending value and all disposal until resume.
         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
+            ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
+            out ValueTask<ExecutionContext?> nextCall)
         {
             pending = default;
             pendingSpan = default;
+            nextCall = default;
             var instructions = execution.Code.Instructions;
             while (execution.InstructionIndex < instructions.Length)
             {
@@ -173,7 +175,7 @@ internal sealed partial class LythonRuntime
                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or ExecutableOpCode.Subscript
                             or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
-                                out pending, out pendingSpan);
+                                out pending, out pendingSpan, out nextCall);
                             if (pause != InstructionPause.Continue) return pause;
                             break;
                         case ExecutableOpCode.ForNextDictionaryAccumulation:
@@ -209,7 +211,18 @@ internal sealed partial class LythonRuntime
                             var target = execution.Stack[callStart + call.TargetOffset];
                             if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target)) break;
                             if (invocation is null) return InstructionPause.ContextRequired;
-                            if (invocation!.TrySuspendForExecutableCall(call, callStart, target)) return InstructionPause.Boundary;
+                            if (invocation!.TryBeginExecutableCall(call, callStart, target, asynchronous, out nextCall))
+                            {
+                                if (!nextCall.IsCompletedSuccessfully || !ReferenceEquals(nextCall.Result, invocation))
+                                {
+                                    pendingSpan = call.CallSpan;
+                                    return InstructionPause.Call;
+                                }
+                                nextCall = default;
+                                // Completed calls already published after cleanup.
+                                jumped = true;
+                                break;
+                            }
                             if (!asynchronous) invocation!.ExecuteOrdinaryCall(call, callStart, target, false).GetAwaiter().GetResult();
                             else
                             {

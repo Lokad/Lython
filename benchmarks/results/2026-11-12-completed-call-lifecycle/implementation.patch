@@ -1,0 +1,594 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index e18a2d4a..ab7e95a4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -12,8 +12,6 @@ internal sealed partial class LythonRuntime
+         private ExecutionContext? _caller;
+         private MemoryGovernor? _boundStorageOwner;
+         private ExecutableCallSite? _pendingCallSite;
+-        private PyExecutableFunction? _pendingFunction;
+-        private object? _pendingReceiver;
+         private int _pendingCallStart;
+         private object? _completedCallValue;
+         private Exception? _completedCallError;
+@@ -30,10 +28,10 @@ internal sealed partial class LythonRuntime
+             while (current is not null)
+             {
+                 Exception? failure = null;
+-                try { current.ExecuteUntilCall(); }
++                ExecutionContext? child = null;
++                try { child = current.ExecuteUntilCall(); }
+                 catch (Exception error) { failure = error; }
+-                current = AdvanceCallFrames(current, failure, false, out var pending);
+-                if (current is null) current = pending.GetAwaiter().GetResult();
++                current = child ?? CompleteCallFrame(current, failure);
+             }
+         }
+ 
+@@ -43,17 +41,18 @@ internal sealed partial class LythonRuntime
+             while (current is not null)
+             {
+                 Exception? failure = null;
+-                try { await current.ExecuteUntilCallAsync().ConfigureAwait(false); }
++                ExecutionContext? child = null;
++                try { child = await current.ExecuteUntilCallAsync().ConfigureAwait(false); }
+                 catch (Exception error) { failure = error; }
+-                current = AdvanceCallFrames(current, failure, true, out var pending);
+-                if (current is null)
+-                    current = pending.IsCompletedSuccessfully ? pending.Result : await pending.ConfigureAwait(false);
++                current = child ?? CompleteCallFrame(current, failure);
+             }
+         }
+ 
+-        private bool TrySuspendForExecutableCall(ExecutableCallSite site, int start, object target)
++        private bool TryBeginExecutableCall(ExecutableCallSite site, int start, object target,
++            bool asynchronous, out ValueTask<ExecutionContext?> next)
+         {
+-            if (target is PyType type) return TrySuspendForExecutableConstructor(type, site, start);
++            next = default;
++            if (target is PyType type) return TryBeginExecutableConstructor(type, site, start, asynchronous, out next);
+             var function = target as PyExecutableFunction;
+             object? receiver = site.HasReceiver && _execution.Stack[start] is not PyNone ? _execution.Stack[start] : null;
+             if (target is PyBoundMethod { Function: PyExecutableFunction method } bound)
+@@ -62,15 +61,15 @@ internal sealed partial class LythonRuntime
+                 receiver = bound.Receiver;
+             }
+             if (function is null) return false;
+-            _pendingCallSite = site;
+-            _pendingFunction = function;
+-            _pendingReceiver = receiver;
+-            _pendingCallStart = start;
++            next = BeginFunctionCall(function, receiver, site, start, site.CallSpan,
++                CallCompletion.Call, asynchronous);
+             return true;
+         }
+ 
+-        private bool TrySuspendForExecutableConstructor(PyType type, ExecutableCallSite site, int start)
++        private bool TryBeginExecutableConstructor(PyType type, ExecutableCallSite site, int start,
++            bool asynchronous, out ValueTask<ExecutionContext?> next)
+         {
++            next = default;
+             if (!type.CanPrepareExecutableConstructor) return false;
+             EnterInterpreterFrame(site.CallSpan);
+             var transferred = false;
+@@ -82,12 +81,9 @@ internal sealed partial class LythonRuntime
+                 // Admission may change live metadata. Continue the generic init
+                 // stage on this same instance when it no longer fits the runner.
+                 if (!type.TryGetExecutableInitializer(out var initialize)) return false;
+-                _pendingCallSite = site;
+-                _pendingFunction = initialize;
+-                _pendingReceiver = instance;
+-                _pendingCallStart = start;
+-                _callCompletion = CallCompletion.Constructor;
+-                transferred = true;
++                transferred = true; // The call entry owns admission even on failure.
++                next = BeginFunctionCall(initialize, instance, site, start, site.CallSpan,
++                    CallCompletion.Constructor, asynchronous, callEntered: true);
+                 return true;
+             }
+             finally { if (!transferred) LeaveInterpreterFrame(); }
+@@ -95,14 +91,14 @@ internal sealed partial class LythonRuntime
+ 
+         // Type subscription has at most two calls: a raw descriptor getter,
+         // then its callable result. Both use the existing admitted frame runner.
+-        private bool TrySuspendForTypeSubscription(in ExecutableInstruction instruction, object receiver, object key)
++        private bool TryBeginTypeSubscription(in ExecutableInstruction instruction, object receiver, object key,
++            bool asynchronous, out ValueTask<ExecutionContext?> next)
+         {
++            next = default;
+             var start = instruction.ResultSlot;
+             if (_preparedCallValue is { } prepared)
+             {
+-                if (!TryPrepareSubscriptionCallable(prepared, instruction.Span, start)) return false;
+-                _preparedCallValue = null;
+-                return true;
++                return TryBeginSubscriptionCallable(prepared, instruction.Span, start, asynchronous, out next);
+             }
+             if (receiver is not PyType type ||
+                 !type.TryLookupInMro("__class_getitem__", 0, out var raw, out _)) return false;
+@@ -116,24 +112,23 @@ internal sealed partial class LythonRuntime
+                 // retaining the original receiver and key in their current slots.
+                 _execution.Stack.PublishValue(start + 2, start + 3, PyNone.Instance);
+                 _execution.Stack.PublishValue(start + 3, start + 4, type);
+-                _pendingFunction = function;
+-                _pendingReceiver = descriptor;
+-                _pendingCallStart = start;
+-                _protocolCallSpan = instruction.Span;
+-                _callCompletion = CallCompletion.TypeGetter;
++                next = BeginFunctionCall(function, descriptor, null, start, instruction.Span,
++                    CallCompletion.TypeGetter, asynchronous);
+                 return true;
+             }
+             if (raw is not (PyClassMethod or PyStaticMethod or PyExecutableFunction)) return false;
+             _execution.Stack.PublishValue(start, start + 1, receiver);
+             _execution.Stack.PublishValue(start + 1, start + 2, key);
+             var member = PyAttributeLookup.BindForType(type, raw, this, instruction.Span);
+-            if (TryPrepareSubscriptionCallable(member, instruction.Span, start)) return true;
++            if (TryBeginSubscriptionCallable(member, instruction.Span, start, asynchronous, out next)) return true;
+             _preparedCallValue = member;
+             return false;
+         }
+ 
+-        private bool TryPrepareSubscriptionCallable(object callable, LythonSourceSpan span, int start)
++        private bool TryBeginSubscriptionCallable(object callable, LythonSourceSpan span, int start,
++            bool asynchronous, out ValueTask<ExecutionContext?> next)
+         {
++            next = default;
+             var function = callable as PyExecutableFunction;
+             object? receiver = null;
+             if (callable is PyBoundMethod { Function: PyExecutableFunction method } bound)
+@@ -142,11 +137,9 @@ internal sealed partial class LythonRuntime
+                 receiver = bound.Receiver;
+             }
+             if (function is not { SupportsDirectPositional: true }) return false;
+-            _pendingFunction = function;
+-            _pendingReceiver = receiver;
+-            _pendingCallStart = start;
+-            _protocolCallSpan = span;
+-            _callCompletion = CallCompletion.TypeSubscription;
++            _preparedCallValue = null;
++            next = BeginFunctionCall(function, receiver, null, start, span,
++                CallCompletion.TypeSubscription, asynchronous);
+             return true;
+         }
+ 
+@@ -157,15 +150,8 @@ internal sealed partial class LythonRuntime
+             return InvokeTypeSubscriptionMemberAsync(member, index, this, span, asynchronous);
+         }
+ 
+-        private static ExecutionContext? AdvanceCallFrames(ExecutionContext current, Exception? failure,
+-            bool asynchronous, out ValueTask<ExecutionContext?> pending)
++        private static ExecutionContext? CompleteCallFrame(ExecutionContext current, Exception? failure)
+         {
+-            pending = default;
+-            if (failure is null && current._pendingFunction is not null)
+-            {
+-                try { return current.BeginPendingCall(asynchronous, out pending); }
+-                catch (Exception error) { current.CompletePendingCall(null, error); return current; }
+-            }
+             var caller = current._caller;
+             if (caller is null)
+             {
+@@ -182,23 +168,21 @@ internal sealed partial class LythonRuntime
+             return caller;
+         }
+ 
+-        private ExecutionContext? BeginPendingCall(bool asynchronous, out ValueTask<ExecutionContext?> pending)
++        // Binding is prepared at the call instruction, rather than staged on
++        // the caller and replayed by the frame driver. A completed body publishes
++        // only after its binding/work/admission cleanup has finished.
++        private ValueTask<ExecutionContext?> BeginFunctionCall(PyExecutableFunction function, object? receiver,
++            ExecutableCallSite? site, int start, LythonSourceSpan span, CallCompletion completion,
++            bool asynchronous, bool callEntered = false)
+         {
+-            pending = default;
+-            var function = _pendingFunction!;
+-            var span = PendingCallSpan;
+-            var ordinaryCall = _pendingCallSite is not null;
+-            var argumentStart = ordinaryCall ? _pendingCallStart + _pendingCallSite!.ArgumentOffset
+-                : _pendingCallStart + (_callCompletion == CallCompletion.TypeGetter ? 2 : 1);
+-            var argumentCount = ordinaryCall ? _pendingCallSite!.ArgumentCount
+-                : _callCompletion == CallCompletion.TypeGetter ? 2 : 1;
+-            var callEntered = _callCompletion == CallCompletion.Constructor;
++            var ordinaryCall = site is not null;
++            var argumentStart = ordinaryCall ? start + site!.ArgumentOffset
++                : start + (completion == CallCompletion.TypeGetter ? 2 : 1);
++            var argumentCount = ordinaryCall ? site!.ArgumentCount
++                : completion == CallCompletion.TypeGetter ? 2 : 1;
+             var prepared = false;
+             try
+             {
+-                // Ordinary calls own one admission through child completion.
+-                // Raw protocols retain their function/managed-stack checks
+-                // without gaining an ordinary call-opcode admission.
+                 if (ordinaryCall && !callEntered)
+                 {
+                     EnterInterpreterFrame(span);
+@@ -206,55 +190,56 @@ internal sealed partial class LythonRuntime
+                 }
+                 CheckExecution(span);
+                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
+-                // Exact ordinary borrows already received their read-only native
+-                // attempt in the call opcode. Binding must not repeat that proof.
+-                var positional = !ordinaryCall || _pendingCallSite!.IsPositionalOnly && function.SupportsDirectPositional;
+-                var nativeAttempted = ordinaryCall && positional && function.CanBorrowPositionalArguments(argumentCount, _pendingReceiver);
++                var positional = !ordinaryCall || site!.IsPositionalOnly && function.SupportsDirectPositional;
++                var nativeAttempted = ordinaryCall && positional && function.CanBorrowPositionalArguments(argumentCount, receiver);
+                 if (positional)
+                 {
+-                    var bound = function.BindPositionalOperands(operands, span, this, _pendingReceiver);
+-                    prepared = true; // The bound-body entry now owns storage/admission.
+-                    return BeginBoundCall(bound, callEntered, nativeAttempted);
++                    var bound = function.BindPositionalOperands(operands, span, this, receiver);
++                    prepared = true;
++                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted));
+                 }
+                 if (!asynchronous)
+                 {
+-                    var bound = function.BindCallOperands(operands, span, this, _pendingReceiver, _pendingCallSite!);
++                    var bound = function.BindCallOperands(operands, span, this, receiver, site!);
+                     prepared = true;
+-                    return BeginBoundCall(bound, callEntered, nativeAttempted: false);
++                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted: false));
+                 }
+-                var binding = function.BindCallOperandsAsync(operands, span, this, _pendingReceiver, _pendingCallSite!);
++                var binding = function.BindCallOperandsAsync(operands, span, this, receiver, site!);
+                 if (!binding.IsCompleted)
+                 {
+-                    prepared = true; // Only actual suspension retains a continuation.
+-                    pending = AwaitPendingBinding(binding, callEntered);
+-                    return null;
++                    prepared = true;
++                    return AwaitPendingBinding(binding, function, site, start, span, completion, callEntered);
+                 }
+                 var supplied = binding.GetAwaiter().GetResult();
+                 prepared = true;
+-                return BeginBoundCall(supplied, callEntered, nativeAttempted: false);
++                return new(BeginBoundCall(function, supplied, site, start, span, completion, callEntered, nativeAttempted: false));
+             }
+             catch (Exception error)
+             {
++                if (prepared) throw; // Bound execution already owns postprocessing.
+                 if (TryTranslateCallableException(error, span, out var translated)) error = translated;
+-                CompletePendingCall(null, error);
+-                return this;
++                ApplyCallResult(start, span, completion, null, error);
++                return new(this);
+             }
+             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+         }
+ 
+-        private async ValueTask<ExecutionContext?> AwaitPendingBinding(ValueTask<BoundCallArguments> binding, bool callEntered)
++        private async ValueTask<ExecutionContext?> AwaitPendingBinding(ValueTask<BoundCallArguments> binding,
++            PyExecutableFunction function, ExecutableCallSite? site, int start, LythonSourceSpan span,
++            CallCompletion completion, bool callEntered)
+         {
+             var prepared = false;
+             try
+             {
+                 var bound = await binding.ConfigureAwait(false);
+                 prepared = true;
+-                return BeginBoundCall(bound, callEntered, nativeAttempted: false);
++                return BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted: false);
+             }
+             catch (Exception error)
+             {
+-                if (TryTranslateCallableException(error, PendingCallSpan, out var translated)) error = translated;
+-                CompletePendingCall(null, error);
++                if (prepared) throw; // Bound execution already owns postprocessing.
++                if (TryTranslateCallableException(error, span, out var translated)) error = translated;
++                ApplyCallResult(start, span, completion, null, error);
+                 return this;
+             }
+             finally { if (!prepared && callEntered) LeaveInterpreterFrame(); }
+@@ -263,12 +248,14 @@ internal sealed partial class LythonRuntime
+         // Binding locals own this descriptor through the synchronous transition.
+         // Borrow it rather than copying its references onto the outgoing stack;
+         // surviving values and ownership transfer into the work/frame below.
+-        private ExecutionContext BeginBoundCall(in BoundCallArguments bound, bool callEntered, bool nativeAttempted)
++        private ExecutionContext BeginBoundCall(PyExecutableFunction function, in BoundCallArguments bound,
++            ExecutableCallSite? site, int start, LythonSourceSpan span, CallCompletion completion,
++            bool callEntered, bool nativeAttempted)
+         {
+-            var function = _pendingFunction!;
+-            var span = PendingCallSpan;
+-            var consumedByIteration = _callCompletion == CallCompletion.Call && _pendingCallSite is { } site
++            var consumedByIteration = completion == CallCompletion.Call && site is not null
+                 && CallResultConsumedByIteration(in _execution, site);
++            object? completedValue = null;
++            Exception? completedError = null;
+             ExecutionContext? frame = null;
+             ExecutableWorkState work = default;
+             var ownsWork = false;
+@@ -280,8 +267,8 @@ internal sealed partial class LythonRuntime
+                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
+                 if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, consumedByIteration, out var nativeValue))
+                 {
+-                    CompletePendingCall(nativeValue, null);
+-                    return this;
++                    completedValue = nativeValue;
++                    goto Completed;
+                 }
+                 if (function.CanDeferInvocationContext)
+                 {
+@@ -294,11 +281,11 @@ internal sealed partial class LythonRuntime
+                         work = CreateExecutableWorkState(function.CodeObject, scope, bound, function.ClosureCells,
+                             argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+                         ownsWork = true;
+-                        var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _);
++                        var pause = ExecuteInstructionPrefix(ref work, scope, null, false, out _, out _, out _);
+                         if (pause == InstructionPause.Boundary)
+                         {
+-                            CompletePendingCall(work.ReturnValue ?? PyNone.Instance, null);
+-                            return this;
++                            completedValue = work.ReturnValue ?? PyNone.Instance;
++                            goto Completed;
+                         }
+                         if (pause != InstructionPause.ContextRequired)
+                             throw new InvalidOperationException("A borrowed invocation cannot suspend.");
+@@ -314,13 +301,19 @@ internal sealed partial class LythonRuntime
+                     functionEntered = true;
+                     if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value, consumedByIteration))
+                     {
+-                        CompletePendingCall(value, null);
+-                        return this;
++                        completedValue = value;
++                        goto Completed;
+                     }
+                     InitializeExecutableFrame(function.CodeObject, frame, bound,
+                         function.ClosureCells, argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
+                 }
+                 frame.EnterExecutableSlots();
++                // Only a real child establishes a suspended caller. No reverse
++                // link or preparation packet is needed for completed prefixes.
++                _pendingCallSite = site;
++                _protocolCallSpan = site is null ? span : null;
++                _pendingCallStart = start;
++                _callCompletion = completion;
+                 frame._caller = this;
+                 frame._boundStorageOwner = bound.StorageOwner;
+                 transferred = true;
+@@ -333,8 +326,7 @@ internal sealed partial class LythonRuntime
+                     PyFunctionBinding.AnnotateException(runtimeError, frame, function.Name, span);
+                 else if (functionEntered && error is LythonRuntimeException borrowedError)
+                     PyFunctionBinding.AnnotateException(borrowedError, function.DefinitionContext, function.Name, span);
+-                CompletePendingCall(null, error);
+-                return this;
++                completedError = error;
+             }
+             finally
+             {
+@@ -356,6 +348,9 @@ internal sealed partial class LythonRuntime
+                     finally { if (callEntered) LeaveInterpreterFrame(); }
+                 }
+             }
++        Completed:
++            ApplyCallResult(start, span, completion, completedValue, completedError);
++            return this;
+         }
+ 
+         private void CloseInvocation(Exception? failure)
+@@ -387,14 +382,11 @@ internal sealed partial class LythonRuntime
+         {
+             _completedCallValue = value;
+             _completedCallError = failure;
+-            _pendingFunction = null;
+-            _pendingReceiver = null;
+         }
+ 
+         private void ResumePendingCall()
+         {
+             if (!HasPendingCall) return;
+-            if (_pendingFunction is not null) throw new InvalidOperationException("Executable call has not completed.");
+             var start = _pendingCallStart;
+             var value = _completedCallValue;
+             var failure = _completedCallError;
+@@ -405,6 +397,13 @@ internal sealed partial class LythonRuntime
+             _callCompletion = CallCompletion.Call;
+             _completedCallValue = null;
+             _completedCallError = null;
++            try { ApplyCallResult(start, span, completion, value, failure); }
++            catch (LythonRuntimeException error) { _injectedException = error; }
++        }
++
++        private void ApplyCallResult(int start, LythonSourceSpan span, CallCompletion completion,
++            object? value, Exception? failure)
++        {
+             if (completion == CallCompletion.Constructor)
+             {
+                 var instance = (PyInstance)_preparedCallValue!;
+@@ -438,11 +437,10 @@ internal sealed partial class LythonRuntime
+                 }
+             }
+             if (completion == CallCompletion.TypeSubscription) CheckExecution(span);
+-                if (failure is not null)
++            if (failure is not null)
+             {
+                 _execution.Stack.RetireTo(start);
+-                if (failure is LythonRuntimeException runtimeError) _injectedException = runtimeError;
+-                else ExceptionDispatchInfo.Throw(failure);
++                ExceptionDispatchInfo.Throw(failure);
+             }
+             else
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+index b4c79017..ed102416 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+@@ -12,10 +12,12 @@ internal sealed partial class LythonRuntime
+         // existing stack scratch. Context promotion runs no guest/admission hook.
+         private static InstructionPause ExecuteInputInstruction(ref ExecutableWorkState execution, ExecutionContext scope,
+             ExecutionContext? invocation, in ExecutableInstruction instruction, bool asynchronous,
+-            out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
++            out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
++            out ValueTask<ExecutionContext?> nextCall)
+         {
+             pending = default;
+             pendingSpan = null;
++            nextCall = default;
+             // A failed leaf read precedes operation cleanup/routing, just as the
+             // separate load did. No protocol or admission has run at this point.
+             // Descriptor resumption uses the original receiver/key retained in
+@@ -91,9 +93,10 @@ internal sealed partial class LythonRuntime
+                     return InstructionPause.ContextRequired;
+                 }
+                 if (instruction.OpCode == ExecutableOpCode.Subscript && invocation is not null &&
+-                    invocation.TrySuspendForTypeSubscription(instruction, first, second!))
++                    invocation.TryBeginTypeSubscription(instruction, first, second!, asynchronous, out nextCall))
+                 {
+-                    return InstructionPause.Boundary;
++                    pendingSpan = instruction.Span;
++                    return InstructionPause.Call;
+                 }
+                 if (immediate)
+                 {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 78835808..820c3f1a 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -8,16 +8,18 @@ internal sealed partial class LythonRuntime
+ {
+     internal sealed partial class ExecutionContext
+     {
+-        private enum InstructionPause { Continue, Boundary, Operation, Disposal, ContextRequired }
++        private enum InstructionPause { Continue, Boundary, Call, Operation, Disposal, ContextRequired }
+ 
+         // Both APIs execute completed instructions here, outside an async state
+         // machine. An incomplete operation leaves its instruction/span current.
+         // The async driver owns the pending value and all disposal until resume.
+         private static InstructionPause ExecuteInstructionPrefix(ref ExecutableWorkState execution, ExecutionContext scope,
+-            ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan)
++            ExecutionContext? invocation, bool asynchronous, out ValueTask<bool> pending, out LythonSourceSpan? pendingSpan,
++            out ValueTask<ExecutionContext?> nextCall)
+         {
+             pending = default;
+             pendingSpan = default;
++            nextCall = default;
+             var instructions = execution.Code.Instructions;
+             while (execution.InstructionIndex < instructions.Length)
+             {
+@@ -173,7 +175,7 @@ internal sealed partial class LythonRuntime
+                         case ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Unary or ExecutableOpCode.Subscript
+                             or ExecutableOpCode.StoreSubscript or ExecutableOpCode.StoreSubscriptLast:
+                             var pause = ExecuteInputInstruction(ref execution, scope, invocation, instruction, asynchronous,
+-                                out pending, out pendingSpan);
++                                out pending, out pendingSpan, out nextCall);
+                             if (pause != InstructionPause.Continue) return pause;
+                             break;
+                         case ExecutableOpCode.ForNextDictionaryAccumulation:
+@@ -209,7 +211,18 @@ internal sealed partial class LythonRuntime
+                             var target = execution.Stack[callStart + call.TargetOffset];
+                             if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target)) break;
+                             if (invocation is null) return InstructionPause.ContextRequired;
+-                            if (invocation!.TrySuspendForExecutableCall(call, callStart, target)) return InstructionPause.Boundary;
++                            if (invocation!.TryBeginExecutableCall(call, callStart, target, asynchronous, out nextCall))
++                            {
++                                if (!nextCall.IsCompletedSuccessfully || !ReferenceEquals(nextCall.Result, invocation))
++                                {
++                                    pendingSpan = call.CallSpan;
++                                    return InstructionPause.Call;
++                                }
++                                nextCall = default;
++                                // Completed calls already published after cleanup.
++                                jumped = true;
++                                break;
++                            }
+                             if (!asynchronous) invocation!.ExecuteOrdinaryCall(call, callStart, target, false).GetAwaiter().GetResult();
+                             else
+                             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+index 32d7cad3..aaa2fb4e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs
+@@ -4,13 +4,19 @@ internal sealed partial class LythonRuntime
+ {
+     internal sealed partial class ExecutionContext
+     {
+-        private void ExecuteUntilCall()
++        private ExecutionContext? ExecuteUntilCall()
+         {
+             try
+             {
+                 ResumePendingCall();
+                 RoutePendingFrameException();
+-                _ = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _);
++                while (true)
++                {
++                    var pause = ExecuteInstructionPrefix(ref _execution, this, this, false, out _, out _, out var nextCall);
++                    if (pause != InstructionPause.Call) return null;
++                    var child = nextCall.GetAwaiter().GetResult();
++                    if (!ReferenceEquals(child, this)) return child;
++                }
+             }
+             finally
+             {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index dfe8b8a6..c89e1fab 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -81,8 +81,6 @@ internal sealed partial class LythonRuntime
+             _caller = null;
+             _boundStorageOwner = null;
+             _pendingCallSite = null;
+-            _pendingFunction = null;
+-            _pendingReceiver = null;
+             _pendingCallStart = 0;
+             _completedCallValue = null;
+             _completedCallError = null;
+@@ -672,7 +670,7 @@ internal sealed partial class LythonRuntime
+             failure?.Throw();
+         }
+ 
+-        private async ValueTask ExecuteUntilCallAsync()
++        private async ValueTask<ExecutionContext?> ExecuteUntilCallAsync()
+         {
+             _execution.Stack.DeferAsyncDisposal = true;
+             try
+@@ -682,16 +680,25 @@ internal sealed partial class LythonRuntime
+                 RoutePendingFrameException();
+                 while (true)
+                 {
+-                    var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span);
+-                    if (pause == InstructionPause.Boundary) return;
++                    var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
++                    if (pause == InstructionPause.Boundary) return null;
+                     var jumped = false;
+-                    if (pause == InstructionPause.Operation)
++                    if (pause is InstructionPause.Call or InstructionPause.Operation)
+                     {
+                         var operationSpan = span.RequireNotNull();
+-                        try { jumped = await pending.ConfigureAwait(false); }
++                        try
++                        {
++                            if (pause == InstructionPause.Call)
++                            {
++                                var child = nextCall.IsCompletedSuccessfully ? nextCall.Result : await nextCall.ConfigureAwait(false);
++                                if (!ReferenceEquals(child, this)) return child;
++                                jumped = true; // The call published and advanced its opcode.
++                            }
++                            else jumped = await pending.ConfigureAwait(false);
++                        }
+                         catch (ReturnSignal signal)
+                         {
+-                            if (!TryRouteReturn(signal, operationSpan)) return;
++                            if (!TryRouteReturn(signal, operationSpan)) return null;
+                             jumped = true;
+                         }
+                         catch (ControlSignal signal)
+@@ -704,14 +711,14 @@ internal sealed partial class LythonRuntime
+                             if (!TryRouteRuntimeException(error, operationSpan)) throw;
+                             jumped = true;
+                         }
+-                        finally { pending = default; }
++                        finally { pending = default; nextCall = default; }
+                     }
+                     else jumped = ConsumeOperation(ref pending);
+ 
+                     // A relinquished cursor must finish before another guest
+                     // instruction or handler observes its cleanup effects.
+                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
+-                    if (_execution.ReturnValue is not null || HasYield) return;
++                    if (_execution.ReturnValue is not null || HasYield) return null;
+                     if (!jumped) _execution.InstructionIndex++;
+                 }
+             }

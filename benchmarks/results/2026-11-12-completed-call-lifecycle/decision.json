@@ -1,0 +1,10 @@
+{
+  "retention": "retained-for-delivery",
+  "baseline": "Fully qualified82ed92d4/0106a711; productionunchanged40369b33",
+  "changes": "Remove pendingfunction/receiver and frame-runnerpreparation; completedcallee publication after cleanup. Preserve nativebinding and actualpendingchildren/results.",
+  "focusedChecks": 12938,
+  "fullDelivery": "Pending coherent Windows/Ubuntu actual11/10originalstress/installedReleaseconsumers; no publication.",
+  "performance": "GuardedAsync elapsed-8.61..-6.75%/widerCPU-7.20..-1.46%, nativeRunelapsed-4.62..-3.22%/CPU-5.42..-1.15%, ordinaryRunelapsed-3.62..-.82%/CPU-3.10..-1.56%. Allocationflat. GuardedRunelapseduncertainwith8.74%referencecontrol, CPUallnegative; report/CSV/capturedAsyncvariable. No inference from allocation or newexternalratio.",
+  "debt": "Accept additional R259 captured/report/CSV CPUuncertainty versus82ed atdelivery; preserve prior82ed native/captured debt versus2ec separately, do notadd/compound. Before publication explicitlyreview/accept materialremaining representative regressions.",
+  "next": "Continue roadmap afterdelivery, no furtherunchanged retiming/profile. Sourcegate for complete call/operand construction or per-record/text storage must identify work actuallypresent, notbuiltinmetadata alreadyshared."
+}

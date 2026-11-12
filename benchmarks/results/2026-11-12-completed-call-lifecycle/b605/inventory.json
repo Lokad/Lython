@@ -1,0 +1,66 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262266880,
+  "requiredFreeBytes": 270946304,
+  "reclaimableBytes": 9125888,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "native-inputs-b597-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5671424,
+      "sha256": "c9829194548b8c94b1f2bb4c4d5d3eea548d43b4b10a4920e27d273d9e64b351",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-inputs/quiet/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "e620785ea5ed5163ef7a41f3446a32941042538add632df36149dc2fb720ae5a",
+      "reason": "Superseded qualified2ec core: exact source/core/qualification evidence committed;82ed is now fullyqualified and current selected reference0106. Verify fresh idle/UID/path/inode/allhardlink aliases. No current0106/newcandidate retirement; floors unchanged.",
+      "paths": [
+        "receiver-ops-b601-20261112/reference/Lokad.Lython.dll",
+        "current-runtime-b599-20261112/current-core.dll",
+        "current-runtime-b599-20261112/candidate/Lokad.Lython.dll",
+        "receiver-ops-b602-20261112/reference/Lokad.Lython.dll",
+        "native-inputs-b597-20261112/current-core.dll",
+        "native-inputs-b597-20261112/candidate/Lokad.Lython.dll",
+        "native-inputs-cpython-b598-20261112/current-core.dll",
+        "native-inputs-cpython-b598-20261112/candidate/Lokad.Lython.dll",
+        "native-proof-b600-20261112/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844505,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "helper-lifecycle-b604-20261112/observations.tgz",
+      "bytes": 2526918,
+      "sha256": "82e79d7249c98352305b65143bfb75337959639548b2f6df6a6c20676cd624c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-helper-lifecycle-costs/observations.tgz",
+      "reason": "Exact committed terminal raw duplicate, all evidence retained. Fresh path/UID/inode/allaliases proof.",
+      "paths": [
+        "helper-lifecycle-b604-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844727,
+      "allocatedBytes": 2527232,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "helper-lifecycle-b604-20261112/catalog.json",
+      "bytes": 917844,
+      "sha256": "2c6821631aa2c7d822ce3bfd1e93c3d61da763d6a51f939ff8f33b8e3fe957a9",
+      "canonicalStorage": "benchmarks/results/2026-11-12-helper-lifecycle-costs/observations.tgz",
+      "canonicalEntry": "catalog.json",
+      "canonicalArchiveSHA256": "82e79d7249c98352305b65143bfb75337959639548b2f6df6a6c20676cd624c7",
+      "reason": "Exact committed terminal catalog duplicate; current0106 source core remainsprotected.",
+      "paths": [
+        "helper-lifecycle-b604-20261112/catalog.json"
+      ],
+      "device": 66305,
+      "inode": 844686,
+      "allocatedBytes": 921600,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

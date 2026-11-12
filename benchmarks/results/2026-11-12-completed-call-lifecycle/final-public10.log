@@ -1,0 +1,6 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\completed-call-lifecycle-r259\tests\final-public10.trx
+
+Passed!  - Failed:     0, Passed:  4962, Skipped:     0, Total:  4962, Duration: 1 m 11 s - Lokad.Lython.PublicApi.Tests.dll (net10.0)

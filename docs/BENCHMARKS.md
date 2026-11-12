@@ -32,6 +32,12 @@ Earlier rows remain historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11)
 (CSV summary, 2026-11-08), `4598` = `459813a3` (manifest, 2026-11-09).
 They do not describe current HEAD.
 
+Later completed-call lifecycle changes have a
+[separate source-pair comparison](../benchmarks/results/2026-11-12-completed-call-lifecycle/README.md):
+guarded search `RunAsync` elapsed is6.7–8.6% lower with supporting CPU, allocation
+flat. Synchronous guarded elapsed and report/CSV remain uncertain. They have no
+new CPython rows; the tables retain their measured revisions.
+
 The [affected-script checkpoint](../benchmarks/results/2026-11-12-receiver-cpython-checkpoint/README.md)
 finishes9jobs/247.974s with all validation/ownership/quiet/join/archive gates.
 Guarded search remains2.30–2.33×CPython warm despite a
@@ -152,6 +158,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
+| Completed ordinary helper calls / guarded search, RunAsync | Allocation flat; quiet elapsed−8.61..−6.75%, supporting wider CPU−7.20..−1.46% | Retained candidate versus82ed92d4; synchronous guarded elapsed/report/CSV uncertain. Full delivery separate. [Source pair](../benchmarks/results/2026-11-12-completed-call-lifecycle/README.md) |
 | Shared canonical receiver operations / guarded search | Allocation−71%; quiet elapsed−23..−30% with supporting CPU | Retained82ed92d4 versus2ec. Existing native-search/capturedRun CPU debt remains; Windows/Ubuntu .NET11/10, original stress and installed Release consumers pass. [Source pair](../benchmarks/results/2026-11-12-receiver-operations/refined/README.md) |
 | Native storage and borrowed call inputs / complete text | Allocation−20.43–22.44%; quiet captured Run elapsed−8.74..−4.66%, ordinary Run−9.68..−8.54%/RunAsync−12.48..−9.49%, supporting CPU | Retained2ec9d67f versus8f8628a4. Captured async CPU uncertain; earlier search/CSV adversity not reproduced without a cause claim. Additional reportAsync CPU0..+6.25% uncertainty accepted; fully qualified on Windows/Ubuntu .NET 11/10, stress and package consumers. [Source pair](../benchmarks/results/2026-11-12-native-inputs/README.md) |
 | Native dictionary integer storage / complete text, CSV and JSON-lines | CLR allocation −14.90–16.13% text, −3.13% CSV, −4.20% JSON-lines on both APIs; refined quiet text Run elapsed direction improves | Fully qualified `8f8628a4` production via corrected `458be840`. Captured Run −3.81–9.06%, ordinary −2.62–8.66%, supporting wider CPU with moving controls. CSV elapsed inconclusive; report wider CPU +1.91..+6.38% remains accepted debt. All desktop adversity and initial archival failure/recovery retained. [Source pair](../benchmarks/results/2026-11-11-dictionary-integer-storage/README.md) |

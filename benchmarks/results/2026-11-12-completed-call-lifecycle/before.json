@@ -1,0 +1,14 @@
+{
+  "head": "40369b33a2947121abbd8844888674f37eb511b0",
+  "qualification": "Exact production82ed92d4 fully qualified43139754244 Windows/Ubuntu actual11/10 originalStress installedReleaseconsumers; terminalcached.",
+  "files": {
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs": "f0198ff313a5b0dff958d19dbdc39cdc54b8d7ea67783bdefe526249545ab0ec",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs": "dc8fefcbc799f7d099d605baecb74d7748e5d32b0002d46c0587bb50d5c7b44a",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs": "b20d69b5177c674492400004113d43331be6f82c34d50f06663eb25374cccad1",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Sync.cs": "d21b059ae793995030476cdb8985635587b56e5e04467f7073c72c5b7ec348e4",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs": "17124502e733420fa8b7f8378e50387c850ebada399c86aa43abd609fe4df990"
+  },
+  "hypothesis": "Prepare function calls in the existing instruction path; directly publish completed bodies after native/binding/work cleanup; only actual child/pendingbinding transfers to existing runner through ValueTask<ExecutionContext?>. Delete _pendingFunction/_pendingReceiver and BeginPendingCall/Advance preparation branch; child result/error staging retains real async cleanup purpose. No new owner/framework/reversecalllink.",
+  "semanticAcceptance": "Preserve native borrowed/inline binding, evaluation/default/keyword/capture snapshots, constructors/type subscription/getters, protected error/context propagation, canonical stack/recursion guards, currenttokens, first terminalrefusal and allusers/cleanupfunding. No rebinding/replay aftereffects.",
+  "validation": "Focused Release actual11then10, complete scripts bothAPIs/fulloutput/files/balances, compilationseparate; short sourcepair before retention, regressiondebt explicit."
+}

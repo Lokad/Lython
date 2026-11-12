@@ -81,8 +81,6 @@ internal sealed partial class LythonRuntime
             _caller = null;
             _boundStorageOwner = null;
             _pendingCallSite = null;
-            _pendingFunction = null;
-            _pendingReceiver = null;
             _pendingCallStart = 0;
             _completedCallValue = null;
             _completedCallError = null;
@@ -672,7 +670,7 @@ internal sealed partial class LythonRuntime
             failure?.Throw();
         }
 
-        private async ValueTask ExecuteUntilCallAsync()
+        private async ValueTask<ExecutionContext?> ExecuteUntilCallAsync()
         {
             _execution.Stack.DeferAsyncDisposal = true;
             try
@@ -682,16 +680,25 @@ internal sealed partial class LythonRuntime
                 RoutePendingFrameException();
                 while (true)
                 {
-                    var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span);
-                    if (pause == InstructionPause.Boundary) return;
+                    var pause = ExecuteInstructionPrefix(ref _execution, this, this, true, out var pending, out var span, out var nextCall);
+                    if (pause == InstructionPause.Boundary) return null;
                     var jumped = false;
-                    if (pause == InstructionPause.Operation)
+                    if (pause is InstructionPause.Call or InstructionPause.Operation)
                     {
                         var operationSpan = span.RequireNotNull();
-                        try { jumped = await pending.ConfigureAwait(false); }
+                        try
+                        {
+                            if (pause == InstructionPause.Call)
+                            {
+                                var child = nextCall.IsCompletedSuccessfully ? nextCall.Result : await nextCall.ConfigureAwait(false);
+                                if (!ReferenceEquals(child, this)) return child;
+                                jumped = true; // The call published and advanced its opcode.
+                            }
+                            else jumped = await pending.ConfigureAwait(false);
+                        }
                         catch (ReturnSignal signal)
                         {
-                            if (!TryRouteReturn(signal, operationSpan)) return;
+                            if (!TryRouteReturn(signal, operationSpan)) return null;
                             jumped = true;
                         }
                         catch (ControlSignal signal)
@@ -704,14 +711,14 @@ internal sealed partial class LythonRuntime
                             if (!TryRouteRuntimeException(error, operationSpan)) throw;
                             jumped = true;
                         }
-                        finally { pending = default; }
+                        finally { pending = default; nextCall = default; }
                     }
                     else jumped = ConsumeOperation(ref pending);
 
                     // A relinquished cursor must finish before another guest
                     // instruction or handler observes its cleanup effects.
                     if (_execution.Stack.HasPendingDisposals) await DrainPendingDisposalsAsync().ConfigureAwait(false);
-                    if (_execution.ReturnValue is not null || HasYield) return;
+                    if (_execution.ReturnValue is not null || HasYield) return null;
                     if (!jumped) _execution.InstructionIndex++;
                 }
             }

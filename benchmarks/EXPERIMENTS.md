@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Direct completed-call lifecycle](results/2026-11-12-completed-call-lifecycle/README.md)
+retains five-file state/control migration for delivery. Pendingfunction/receiver and
+runner preparation are removed; actualchildren keep funded result/error staging.
+12938focused actual11/10 and7complete scripts bothAPIs/compile pass. Allocationflat;
+B605ninejobs251.294s allgates/joins/RAM/archivepass. GuardedAsyncelapsed-8.61..-6.75%,
+nativeRun-4.62..-3.22%, ordinaryRun-3.62..-.82%, supportingCPU. GuardedRunelapsed
+uncertain, captured/report/CSVvariable; all initial desktop adversity remains.
+Accept additional CPUuncertainty versus82ed explicitly, separately from earlier
+82ed/2ec debt. Full delivery pending; continue wider roadmap, no isolated completion.
+
 [Completed helper-lifecycle captures](results/2026-11-12-helper-lifecycle-costs/README.md)
 record986guarded leaves/4.99guestCPU seconds and898native leaves/4.55seconds.
 Binding/workstate/pending transitions are real ordinary work; allocations already

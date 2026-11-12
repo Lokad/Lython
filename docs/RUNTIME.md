@@ -567,11 +567,17 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-Each call opcode reads its evaluated target once and offers it to the executable
-frame runner. Other calls share native/general target selection and completed
-stack-value transfer across both APIs. Native results travel as objects;
-potentially asynchronous branches retain operands and argument funding until
-their actual completion. Dynamic calls keep the general binder.
+Each call opcode prepares the evaluated function and receiver at the instruction.
+Native borrowed/inline binding and the ordinary deferred prefix remain shared by
+both APIs. Completed bodies publish directly after bound argument, workspace and
+call-admission cleanup, without staging a pending function on the caller. Only
+actual pending binding or child execution transfers to the existing frame runner.
+The caller's operands and the callee's inputs stay funded until actual completion.
+Real children retain their source/completion metadata; their result is staged until
+the parent's async driver can await disposal before publication. Constructor and
+type-subscription protocols share this call entry and preserve their postprocessing.
+Suspending transitions retain the originating source span before a completion can
+advance the instruction. Dynamic calls keep the general binder.
 Ordinary construction with the sealed object allocator and a compiled initializer
 whose arguments occupy executable locals uses that same runner. Positional,
 named, keyword-only and variadic calls share ordinary function binding: it
