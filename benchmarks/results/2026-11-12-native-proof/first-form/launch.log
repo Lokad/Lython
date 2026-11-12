@@ -1,0 +1,7 @@
+{"freeBytes": 264957952, "sourceAndImagesVerified": true, "jobs": 12, "ownerSeconds": 390, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=6min 30s
+MainPID=3569610
+ActiveState=active
+
+
+Running as unit: lython-b600-native-proof-20261112.service; invocation ID: df4b45a02b334cebad9413267db16754

@@ -1,0 +1,17 @@
+{
+  "complete": false,
+  "plannedJobs": 12,
+  "completedJobs": 11,
+  "cause": "Collector retained295s cutoff after supervisor/matrix expanded to390s/12jobs; compiler job and original final gate missing. Source and initial failures unchanged.",
+  "service": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\nSubState=failed\n",
+  "allWorkersJoined": true,
+  "ramEmptyBeforeUnmount": true,
+  "lateGateReturnCode": 0,
+  "lateGateUTC": "2026-11-12T00:28:51.158038+00:00",
+  "lateGateIsNotOriginalFinalQualification": true,
+  "performanceQualified": false,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "archiveSHA256": "31e7ef1029101a72751b06cfc57e1b68a854251a5657cdc1e2a9652387cfce74",
+  "freeBytesAfterArchive": 261074944
+}

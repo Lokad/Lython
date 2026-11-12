@@ -345,3 +345,4 @@ benchmarks/results/2026-11-12-native-inputs/**/*.patch -text -whitespace
 benchmarks/results/2026-11-12-native-inputs-cpython-checkpoint/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-regex-development-73/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-current-runtime-costs/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-native-proof/** -text whitespace=cr-at-eol

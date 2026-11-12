@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Linear native proof first form](results/2026-11-12-native-proof/first-form/README.md)
+passes initial14964focused checks and refined checkpoint3958checks across actual
+targets, plus complete six-script bothAPI/separatecompile goldens and balances.
+Allocation flat; desktop elapsed mixed/adverse. B600stops after11warmjobs because
+the collector retained an old295s cutoff despite the expanded390s/12job matrix.
+Compilation and original final gate are missing; no complete qualification claim.
+Partial capturedRun elapsed+5.17..+9.37%/CPU+5.06..+9.41%, searchRunelapsed+1.16..+2.13%
+do not support retention. All failure/source/raw evidence is archived, users joined,
+empty RAM unmounted; late quiet gate explicitly separate. One source refinement
+assesses removing new per-node packing, not unchanged retiming or permanent closure.
+
 [Current retained-source CPU captures](results/2026-11-12-current-runtime-costs/README.md)
 complete two bounded windows: captured text 1,162 leaves/5.85 guest CPU seconds,
 helper search 895/4.53. Histogram/preparation dominate text labels; shared dispatch,

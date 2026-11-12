@@ -1,0 +1,69 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262582272,
+  "requiredFreeBytes": 270950400,
+  "reclaimableBytes": 9084928,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "native-inputs-b597-20261112/reference/Lokad.Lython.dll",
+      "bytes": 5669376,
+      "sha256": "75a14f1399637646b21a0a12fcb08f8664c5c559c3a527859293083b6f54732e",
+      "canonicalStorage": "benchmarks/results/2026-11-11-dictionary-cpython-checkpoint/observations.tgz",
+      "reason": "New selected reference is fully qualified2ec9d67f. Predecessor8f862 core or terminal profile duplicate evidence eligible only with exact committed canonical bytes and fresh idle/path/UID/inode/all-hardlink proofs. Current selected reference and new candidate protected.",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "bd5d590687d2f7a6deb644192cf537c01c91579b9721f7f8decf999bd64e9232",
+      "paths": [
+        "word-control-profile-b596-20261111/reference/Lokad.Lython.dll",
+        "native-iteration-storage-b593-20261111/reference/Lokad.Lython.dll",
+        "dictionary-values-b589-20261111/current-core.dll",
+        "dictionary-values-b589-20261111/candidate/Lokad.Lython.dll",
+        "dictionary-checkpoint-b590-20261111/current-core.dll",
+        "dictionary-checkpoint-b590-20261111/candidate/Lokad.Lython.dll",
+        "current-value-profile-b591-20261111/current-core.dll",
+        "current-value-profile-b591-20261111/candidate/Lokad.Lython.dll",
+        "native-inputs-b597-20261112/reference/Lokad.Lython.dll",
+        "word-materialization-b595-20261111/reference/Lokad.Lython.dll",
+        "native-loop-scope-b592-20261111/reference/Lokad.Lython.dll",
+        "native-iteration-retirement-b594-20261111/reference/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 340679,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "current-runtime-b599-20261112/observations.tgz",
+      "bytes": 2444854,
+      "sha256": "1eab385025b5fc06c862e288324444826288252b269ffef074ca0547899e90df",
+      "canonicalStorage": "benchmarks/results/2026-11-12-current-runtime-costs/observations.tgz",
+      "reason": "New selected reference is fully qualified2ec9d67f. Predecessor8f862 core or terminal profile duplicate evidence eligible only with exact committed canonical bytes and fresh idle/path/UID/inode/all-hardlink proofs. Current selected reference and new candidate protected.",
+      "paths": [
+        "current-runtime-b599-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844605,
+      "allocatedBytes": 2449408,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "current-runtime-b599-20261112/catalog.json",
+      "bytes": 957807,
+      "sha256": "f071caeb62bcc157696c7c94426fe5c16723cde12990c826403cb580ea05893e",
+      "canonicalStorage": "benchmarks/results/2026-11-12-current-runtime-costs/observations.tgz",
+      "reason": "New selected reference is fully qualified2ec9d67f. Predecessor8f862 core or terminal profile duplicate evidence eligible only with exact committed canonical bytes and fresh idle/path/UID/inode/all-hardlink proofs. Current selected reference and new candidate protected.",
+      "canonicalEntry": "catalog.json",
+      "canonicalArchiveSHA256": "1eab385025b5fc06c862e288324444826288252b269ffef074ca0547899e90df",
+      "paths": [
+        "current-runtime-b599-20261112/catalog.json"
+      ],
+      "device": 66305,
+      "inode": 793900,
+      "allocatedBytes": 958464,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
