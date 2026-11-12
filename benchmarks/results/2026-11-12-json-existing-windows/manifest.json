@@ -1,0 +1,74 @@
+{
+  "candidate-identity.json": {
+    "bytes": 73873,
+    "sha256": "1386d309e831a5ed388f836bcac79003f993dafa12f2c69b02807da957a81ea3"
+  },
+  "decision.json": {
+    "bytes": 1564,
+    "sha256": "47f1c82ca9728367aae82da8708b4773694891ad6782a55e81f222d980596df3"
+  },
+  "development.tar.xz": {
+    "bytes": 2611748,
+    "sha256": "e767abaef74ff0850392f2303c0673c862eccb089f98fe5618c972921c36b3e6"
+  },
+  "source-gate.md": {
+    "bytes": 4720,
+    "sha256": "681a9c034cf3911f5e2777f150970a1502b3f9819e4a1a9253995b3b4ecff327"
+  },
+  "b634/archive-receipt.json": {
+    "bytes": 366,
+    "sha256": "ffd15e1739ff2e79a36ec341bf70de731159070463333ab886e2f47ed1db1587"
+  },
+  "b634/extraction.json": {
+    "bytes": 70,
+    "sha256": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf"
+  },
+  "b634/inventory.json": {
+    "bytes": 174,
+    "sha256": "f6517a0b000a806b7e5f2287f8c5d308b7e8f6aa0b822e9da05ed2e822736581"
+  },
+  "b634/observations.tgz": {
+    "bytes": 2908593,
+    "sha256": "eb20c371d5dbf38fb25bdfc73531a9facb9fd5404e883d2d529ea7495d207451"
+  },
+  "b634/preparation.tar.xz": {
+    "bytes": 10752,
+    "sha256": "ed2ab1d699ab5e52198132e61d14dab7cb84929f8ee3dae22157db126f22c598"
+  },
+  "b634/summary.json": {
+    "bytes": 5503,
+    "sha256": "a0e64c6503b9f3f6ae60bddcc7bf377fb95935c35db5e71c68afdf8a9ae0a71a"
+  },
+  "b634/terminal-status.json": {
+    "bytes": 566,
+    "sha256": "2f0dbf75753e6e5fd751a020cfc43904d45e6563a0b571abee2a980d6dd819b1"
+  },
+  "b635/archive-receipt.json": {
+    "bytes": 366,
+    "sha256": "a7ce6aaf238cff5f6db4d316d118d753a1968605ec94d0d88c1b33b022088b4e"
+  },
+  "b635/extraction.json": {
+    "bytes": 70,
+    "sha256": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf"
+  },
+  "b635/inventory.json": {
+    "bytes": 174,
+    "sha256": "be5a4f5532fc47ebee62820660e76b97c92e8aacd40e1bbb3edb90918db13349"
+  },
+  "b635/observations.tgz": {
+    "bytes": 2905722,
+    "sha256": "03842ec59ed2f7c859c63703d830280c24975fd21426c75ce70191caf5302544"
+  },
+  "b635/preparation.tar.xz": {
+    "bytes": 10708,
+    "sha256": "fb3dfa92ab9d6004fb03bdb719701ebc37a2a5f089084f6ac391d9834ca5a313"
+  },
+  "b635/summary.json": {
+    "bytes": 4251,
+    "sha256": "bdffba3299162f70229b1c71c7edf0fa1cf53cef281992d4dd47bc17d3e467b3"
+  },
+  "b635/terminal-status.json": {
+    "bytes": 566,
+    "sha256": "d35a64df86c8e84244dd733403f9d1ef42ee6d6f95dac119bce1d44f0283424a"
+  }
+}

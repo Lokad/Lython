@@ -1,0 +1,17 @@
+{
+  "retained": true,
+  "reason": "Reuse existing immutable string storage to remove same-owner plain JSON token payload arrays/copies; modest supported UTF8 report elapsed/CPU benefit and physical allocation reduction, without a new global layout or ownership subsystem.",
+  "focused": { "actualTargets": ["net11.0", "net10.0"], "internalPerTarget": 254, "publicPerTarget": 891, "total": 2290 },
+  "desktopPhases": ["warm-sync", "warm-async", "compile", "fresh"],
+  "completeScriptsPerPhase": 7,
+  "acceptedLimitations": [
+    "Small surviving native values can retain full input/spare capacity and header until the command owner ends, causing earlier conservative denial.",
+    "B634 report reference spread and favorable text control limit precise attribution; supporting CPU is modest, not the complete elapsed reduction.",
+    "B635 UTF16 and CSV CPU cross zero; UTF16 reference elapsed spread3.84%. No equivalence or async UTF16 speedup claim.",
+    "Original desktop async report+3..7% remains; confirmation does not establish its cause or erase adversity.",
+    "External CPython source-labelled tables remain unchanged; do not multiply internal source-pair gains into them.",
+    "Full Windows/Ubuntu, original stress and installed Release consumers remain required at this retained-source delivery boundary. Publication is held."
+  ],
+  "timingDecision": "No further unchanged timing is needed for this decision. New source/evidence may justify future bounded refinement; this is not a permanent closure rule.",
+  "wholeScriptObjectiveComplete": false
+}

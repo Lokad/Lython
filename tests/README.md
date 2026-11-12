@@ -647,10 +647,15 @@ instead of requerying historical green runs.
 - [Conditional helpers](Lokad.Lython.PublicApi.Tests/NativeConditionalHelperTests.cs): independent Python branch results, fresh aliases, actual truth suspension, terminal refusal and budget reuse. [Native boundaries](Lokad.Lython.Tests/SimpleFunctionExecutionBoundaryTests.cs) also preserve selected error spans and post-admission cancellation/refunds across call drivers.
 - [JSON string storage](Lokad.Lython.Tests/JsonStringTokenStorageTests.cs) and
   [escaped strings](Lokad.Lython.PublicApi.Tests/EscapedJsonStringTests.cs) cover
-  native unescaping across buffer sizes, independent copies, construction overlap,
+  native unescaping across buffer sizes, external-input copies, construction overlap,
   strictness, Unicode, callbacks and budget reuse. [String lexing](Lokad.Lython.PublicApi.Tests/JsonStringLexingTests.cs)
   checks independent Python error messages/coordinates, explicit surrogate rejection
   and retained results sharing one allowance across executions.
+  [Decoded windows](Lokad.Lython.Tests/JsonWindowOwnershipTests.cs) keep full backing,
+  spare capacity and metadata funded after source-shell cleanup and through genuine
+  callback suspension/late cancellation. Nested offsets, other-owner copies and
+  refusal precede publication; [retained projections](Lokad.Lython.PublicApi.Tests/JsonRetainedTextTests.cs)
+  preserve aliases and return the shared allowance between executions.
 - [Regex boundary](Lokad.Lython.PublicApi.Tests/RegexProviderContractTests.cs): cooperating in-flight cancellation/ownership, separate from backend qualification.
 - [Text predicates](Lokad.Lython.PublicApi.Tests/TextPredicateExecutionTests.cs): Unicode and split-scalar results after real I/O, alongside internal forwarding/active-scan controls without checkpoint counting.
 - [Binary contracts](Lokad.Lython.PublicApi.Tests/BinaryContractTests.cs): independent byte/codec goldens, delayed protocols, native error fields and gated encoding ownership. Native byte cancellation is checked directly without a VM exit checkpoint.

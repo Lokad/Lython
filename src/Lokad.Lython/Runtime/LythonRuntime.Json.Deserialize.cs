@@ -201,7 +201,7 @@ internal sealed partial class LythonRuntime
             if (!escaped)
             {
                 var existing = expectedPropertyNames?.FindName(content, expectedPosition, context, span);
-                var plain = existing ?? PyString.CopyFromUtf8(content, context.MemoryGovernor, span);
+                var plain = existing ?? input.CopyOrBorrowUtf8Range(position + 1, content.Length, context.MemoryGovernor, span);
                 context.CheckExecution(span);
                 return (plain, end);
             }

@@ -90,11 +90,11 @@ public sealed class JsonStringTokenStorageTests
     [InlineData("\"\"", "", true)]
     [InlineData("\"a\\nb\"", "a\nb", false)]
     [InlineData("\"a\\nb\"", "a\nb", true)]
-    public async Task DecodedStorageDoesNotBorrowTheInputArray(string source, string expected, bool asynchronous)
+    public async Task DecodedStorageDoesNotBorrowUnownedInput(string source, string expected, bool asynchronous)
     {
         var (code, context) = Prepare("import json\nreturn json.loads(source)");
         var bytes = Encoding.UTF8.GetBytes(source);
-        context.Variables["source"] = PyString.FromOwnedUtf8(bytes, context.MemoryGovernor, null);
+        context.Variables["source"] = PyString.FromOwnedUtf8(bytes);
         var decoded = Assert.IsType<PyString>(asynchronous
             ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
             : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
@@ -117,11 +117,12 @@ public sealed class JsonStringTokenStorageTests
     {
         const long limit = 1024 * 1024;
         const int length = 4096;
-        var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(limit) });
+        var admission = new AdmissionHookMemoryBudget(new LythonMemoryBudget(limit));
+        var (code, context) = Prepare("import json\nreturn json.loads(arm(source))", new LythonRunOptions { MemoryBudget = admission });
         var document = PyString.FromString("\"" + new string('a', length - (escaped ? 1 : 0))
             + (escaped ? @"\u0061" : "") + "\"", context.MemoryGovernor, null);
         context.Variables["source"] = document;
-        using var arm = new AdmissionGate(context.MemoryGovernor, limit, length, deny);
+        using var arm = new AdmissionGate(admission, deny);
         context.Variables["arm"] = arm;
         try
         {
@@ -131,7 +132,8 @@ public sealed class JsonStringTokenStorageTests
                     ? await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context))
                     : Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
                 Assert.Equal("MemoryError", error.ExceptionType);
-                Assert.Equal(PyString.EstimateApproximateBytes(length), context.MemoryGovernor.LastDeniedReservationBytes);
+                Assert.Same(error, context.MemoryGovernor.AdmissionFailure);
+                Assert.True(context.MemoryGovernor.LastDeniedReservationBytes > 0);
             }
             else
             {
@@ -175,22 +177,20 @@ public sealed class JsonStringTokenStorageTests
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
-    private sealed class AdmissionGate(MemoryGovernor governor, long limit, int length, bool deny) : LythonRuntime.ICallable, IDisposable
+    private sealed class AdmissionGate(AdmissionHookMemoryBudget admission, bool deny) : LythonRuntime.ICallable, IDisposable
     {
-        private IDisposable? _reservation;
         public int Calls { get; private set; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Calls++;
             if (deny)
             {
-                var result = PyString.EstimateApproximateBytes(length);
-                _reservation = governor.ReserveTemporary(limit - governor.CurrentAccountedBytes - result + 1, span);
+                admission.RefuseGrowth = _ => true;
             }
             return Assert.Single(arguments).Value;
         }
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => ValueTask.FromResult(Invoke(arguments, span, context));
-        public void Dispose() { _reservation?.Dispose(); _reservation = null; }
+        public void Dispose() => admission.RefuseGrowth = null;
     }
 }

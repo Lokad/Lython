@@ -6704,6 +6704,25 @@ stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
 
+## R279 — JSON tokens over existing immutable storage
+
+The [retained source migration](results/2026-11-12-json-existing-windows/README.md)
+removes same-owner plain-token arrays/copies using R271's existing representation.
+R54/R60 original global-layout/accessor costs and adverse data remain; no new
+layout/hash policy, owner, ledger, parser, pool or option is introduced. Full
+backing/header stays funded after source-shell cleanup; small native aliases can
+retain large input until the bounded command ends. Other-owner/unowned, escaped
+and inline text copies. CLR result projection can end the guest lifetime safely.
+2290focused actual-target checks and seven complete scripts/both APIs/compile/fresh
+pass. Report allocation−4.68%UTF8 /−4.46..4.49%UTF16; other allocations effectively
+flat. Desktop async report adversity and failed fixture/launcher/compile conditions
+are retained. B634four jobs208.984s and targeted B635three143.230s pass all identity/
+golden/zero-balance exit/quiet/join/unmount/archive gates; terminal cached. UTF8
+report elapsed improves with modest supporting CPU. UTF16/JSON/CSV CPU remains
+uncertain; small control/retention debt is accepted, no equivalence or extrapolated
+CPython claim. Full delivery follows at the retained-source checkpoint. This
+milestone does not complete the substantial whole-script performance objective.
+
 ## R277 — qualified selected CPython checkpoint
 
 Qualified41bd869b completes seven existing jobs in328.130s: captured-text warm/

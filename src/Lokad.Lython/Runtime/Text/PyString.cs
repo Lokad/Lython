@@ -34,7 +34,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // Zero means an owned array; 1..8 holds inline capacity; WindowStorage
     // borrows an immutable admitted array. That form keeps its byte offset in
     // the otherwise unused inline word, without enlarging ordinary strings.
-    private readonly byte _inlineCapacity;
+    private byte _inlineCapacity;
     private int _byteLength;
     private int _runeLength = -1;
     private int _hashCode;
@@ -64,6 +64,39 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // allocation. No source refund may release that still-shared array.
     internal static PyString CreateReservedUtf8Window(byte[] utf8, int offset, int length, MemoryGovernor governor)
         => new(utf8, offset, length, governor);
+
+    // Plain decoded text may share immutable storage already funded by this
+    // command. Unowned/other-owner input and inline values retain independent
+    // copies. Once shared, the source refunds only its shell; the full backing
+    // stays with the command/result owner, without reference tracking.
+    internal PyString CopyOrBorrowUtf8Range(int start, int length, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        var content = Utf8Span.Slice(start, length);
+        if (length <= InlineUtf8Capacity || !ReferenceEquals(OwnerMemoryGovernor, governor))
+            return CopyFromUtf8(content, governor, span);
+
+        // The ordinary string estimate includes array metadata in its shell.
+        // Keep that header funded after the source shell can be relinquished.
+        var header = _inlineCapacity == 0 ? 32 : 0;
+        var metadata = EstimateApproximateBytes(0);
+        var reserved = metadata + header;
+        governor.Reserve(reserved, span);
+        try
+        {
+            PyStructuralGuard.AmbientContext?.CheckExecution(span);
+            if (header != 0)
+            {
+                governor.Commit(header);
+                reserved -= header;
+                _inlineUtf8[0] = 0;
+                _inlineCapacity = WindowStorage;
+            }
+            var result = CreateReservedUtf8Window(_utf8!, checked((int)_inlineUtf8[0] + start), length, governor);
+            governor.Commit(metadata);
+            return result;
+        }
+        catch { governor.ReleaseReserved(reserved); throw; }
+    }
 
     private PyString(ReadOnlySpan<byte> utf8, int capacity, MemoryGovernor? governor)
     {

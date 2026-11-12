@@ -1224,11 +1224,17 @@ without materializing unused padding. Checked string-representation bounds apply
 JSON decoders evaluate a guest `strict` option once when preparing the scanner,
 including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.
-Plain JSON strings use the native scan's validated boundary/control facts and an
-independent admitted UTF-8 copy, without a second token parse or decoding scratch.
+Plain JSON strings use the native scan's validated boundary/control facts without
+a second token parse or decoding scratch. Non-inline tokens can share immutable
+input already funded by the same command; unowned or other-owner input keeps an
+independent admitted copy. The source's full backing capacity and array metadata
+remain funded after source-shell cleanup, until the bounded command and its native
+users finish. A small retained value can therefore keep a large input alive and
+cause earlier conservative denial. Independent CLR result projections retain
+their own funding. No reference tracing or additional cache allowance is involved.
 Property names can reuse immutable UTF-8 keys from the previous completed native
 object, independently of field order. The native dictionary key table supplies
-this lookup; names own their bytes and never borrow input. Ordered matching
+this lookup; names retain their own or shared immutable backing. Ordered matching
 records share immutable key/hash/order metadata with independently admitted values.
 When an ordered record prefix outgrows its value backing, it reserves the
 retained layout's full value capacity, avoiding repeated replacement arrays.
@@ -1246,7 +1252,7 @@ allocation. Replaced layout
 metadata stays conservatively charged until the bounded execution owner ends,
 so changing schemas can reject earlier. There is no separate cache allowance,
 admission fallback or collector-dependent refund.
-JSON strings validate original bytes and escapes, measure decoded storage before
+Escaped JSON strings validate original bytes and escapes, measure decoded storage before
 allocation, then fill the admitted final UTF-8 string. Lenient controls and valid
 surrogate pairs follow the same decoder. String errors report Python messages and
 original scalar coordinates. Unpaired surrogates raise `ValueError` because
