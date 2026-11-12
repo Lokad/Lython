@@ -1,0 +1,7 @@
+{"freeBytes": 264540160, "sourceAndImagesVerified": true, "jobs": 6, "ownerSeconds": 210, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min 30s
+MainPID=3583421
+ActiveState=active
+
+
+Running as unit: lython-b611-positional-binding-20261112.service; invocation ID: 14042421ffde4266a98088782762e1ca

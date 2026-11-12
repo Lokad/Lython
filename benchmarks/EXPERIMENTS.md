@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Positional/default binding](results/2026-11-12-positional-default-binding/README.md)
+withdraws the three-file form after628focused actualtarget checks/five complete
+scripts and B611sixjobs170.297s. Allocationflat; guarded elapsed modest/uncertain,
+nativeRun+1.45..3.13%, capturedRun+1.43..7.05%, CPU/controls uncertain. Sharing a
+loop/removing projected records keeps whole ordinary work and adds control flow;
+additional debt unjustified for thisform. No fixed%veto/permanent designban.
+All source/cores/desktopadversity/first space-short condition survive. Qualified
+source restored with freshnonincremental build/same628checks; no full replay.
+
 [Ordinary call/body source gate](results/2026-11-12-ordinary-call-source-gate/README.md)
 retains exact983bab96 source facts and one6s guarded-search profile:1006guest
 leaves/5.09CPU-s,35unknown. Binding80/entry-work91/dispatch206 top24leaf samples

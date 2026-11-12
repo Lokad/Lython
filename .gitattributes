@@ -370,3 +370,6 @@ benchmarks/results/2026-11-12-text-output-batches/**/*.patch -text -whitespace
 benchmarks/results/2026-11-12-output-cpython-checkpoint/** -text whitespace=cr-at-eol
 
 benchmarks/results/2026-11-12-ordinary-call-source-gate/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-12-positional-default-binding/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-positional-default-binding/**/*.patch -text -whitespace

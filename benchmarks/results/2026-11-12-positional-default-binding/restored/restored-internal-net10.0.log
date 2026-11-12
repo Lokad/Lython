@@ -1,0 +1,6 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\positional-binding-r265\tests\restored-internal-net10.0.trx
+
+Passed!  - Failed:     0, Passed:   119, Skipped:     0, Total:   119, Duration: 309 ms - Lokad.Lython.WhiteBox.Tests.dll (net10.0)

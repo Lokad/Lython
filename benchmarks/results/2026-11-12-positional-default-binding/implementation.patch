@@ -1,0 +1,189 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+index 469e1e75..72509a50 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Calls.Binding.cs
+@@ -89,13 +89,13 @@ internal sealed partial class LythonRuntime
+         return defer ? CompleteProtocolDefaultsAsync(bound, span, plan, context) : new(bound);
+     }
+ 
+-    // Eligible signatures contain only positional parameters. Read existing
+-    // operands once into owned bound storage, before a body can suspend.
++    // Read positional operands directly into their final parameter slots.
++    // Keyword-only defaults share completion with the general binder below.
+     internal static BoundCallArguments BindPositionalFunctionArguments(
+         ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver,
+-        MemoryGovernor governor, int? storageCapacity = null)
++        ExecutionContext context, int? storageCapacity = null, bool deferKeywordDefaults = false)
+     {
+-        var storage = RentFunctionArgumentStorage(plan, span, governor, storageCapacity);
++        var storage = RentFunctionArgumentStorage(plan, span, context.MemoryGovernor, storageCapacity);
+         var values = storage.Values;
+         try
+         {
+@@ -113,12 +113,13 @@ internal sealed partial class LythonRuntime
+                 values[i + offset] = arguments[i].RequireNotNull();
+                 assigned[i + offset] = true;
+             }
+-            for (var i = arguments.Length + offset; i < assigned.Length; i++)
++            for (var i = arguments.Length + offset; i < plan.PositionalCount; i++)
+             {
+                 if (!plan.TryGetPositionalDefault(i, out var value))
+                     throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
+                 values[i] = value;
+             }
++            if (!deferKeywordDefaults) FillKeywordOnlyDefaults(values, assigned, plan, context, span);
+             return storage with { Assigned = assigned };
+         }
+         catch
+@@ -128,6 +129,45 @@ internal sealed partial class LythonRuntime
+         }
+     }
+ 
++    internal static ValueTask<BoundCallArguments> BindPositionalFunctionArgumentsAsync(
++        ReadOnlySpan<object?> arguments, LythonSourceSpan span, FunctionBindingPlan plan, object? receiver,
++        ExecutionContext context, int? storageCapacity = null)
++    {
++        if (plan.KeywordOnlyCount == 0)
++            return new(BindPositionalFunctionArguments(arguments, span, plan, receiver, context, storageCapacity));
++
++        var bound = BindPositionalFunctionArguments(arguments, span, plan, receiver, context, storageCapacity,
++            deferKeywordDefaults: true);
++        // Workspace admission may reenter and change live default storage.
++        // Inspect it after that admission, while all supplied inputs are owned.
++        if (plan.KeywordDefaultStorage is { HasProtocolKeys: true })
++            return CompleteProtocolDefaultsAsync(bound, span, plan, context);
++        try
++        {
++            FillKeywordOnlyDefaults(bound.Values, bound.Assigned, plan, context, span);
++            return new(bound);
++        }
++        catch
++        {
++            ReturnBoundArguments(bound);
++            throw;
++        }
++    }
++
++    private static void FillKeywordOnlyDefaults(Span<object> values, ArgumentPresence assigned,
++        FunctionBindingPlan plan, ExecutionContext context, LythonSourceSpan span)
++    {
++        for (var k = 0; k < plan.KeywordOnlyCount; k++)
++        {
++            var i = plan.PositionalCount + k;
++            if (assigned[i]) continue;
++            var defaults = plan.KeywordDefaultStorage;
++            if (defaults is null || !defaults.TryGetValue(plan.KeywordDefaultNames[k], out var value, context, span))
++                throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, plan.NameAt(i), span);
++            values[i] = value;
++        }
++    }
++
+     private static async ValueTask<BoundCallArguments> CompleteProtocolDefaultsAsync(
+         BoundCallArguments bound, LythonSourceSpan span, FunctionBindingPlan plan, ExecutionContext context)
+     {
+@@ -254,24 +294,7 @@ internal sealed partial class LythonRuntime
+             throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+         }
+ 
+-        for (var k = 0; !deferKeywordDefaults && k < plan.KeywordOnlyCount; k++)
+-        {
+-            var i = plan.PositionalCount + k;
+-            if (assigned[i])
+-            {
+-                continue;
+-            }
+-
+-            var parameterName = plan.NameAt(plan.PositionalCount + k);
+-            var keywordDefaults = plan.KeywordDefaultStorage;
+-            if (keywordDefaults is not null && keywordDefaults.TryGetValue(plan.KeywordDefaultNames[k], out var defaultValue, context, span))
+-            {
+-                values[i] = defaultValue;
+-                continue;
+-            }
+-
+-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
+-        }
++        if (!deferKeywordDefaults) FillKeywordOnlyDefaults(values, assigned, plan, context, span);
+ 
+         if (plan.VariadicListIndex >= 0)
+         {
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+index ab7e95a4..175927e9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.cs
+@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
+                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
+                 var positional = !ordinaryCall || site!.IsPositionalOnly && function.SupportsDirectPositional;
+                 var nativeAttempted = ordinaryCall && positional && function.CanBorrowPositionalArguments(argumentCount, receiver);
+-                if (positional)
++                if (positional && !asynchronous)
+                 {
+                     var bound = function.BindPositionalOperands(operands, span, this, receiver);
+                     prepared = true;
+@@ -204,7 +204,9 @@ internal sealed partial class LythonRuntime
+                     prepared = true;
+                     return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted: false));
+                 }
+-                var binding = function.BindCallOperandsAsync(operands, span, this, receiver, site!);
++                var binding = positional
++                    ? function.BindPositionalOperandsAsync(operands, span, this, receiver)
++                    : function.BindCallOperandsAsync(operands, span, this, receiver, site!);
+                 if (!binding.IsCompleted)
+                 {
+                     prepared = true;
+@@ -212,7 +214,7 @@ internal sealed partial class LythonRuntime
+                 }
+                 var supplied = binding.GetAwaiter().GetResult();
+                 prepared = true;
+-                return new(BeginBoundCall(function, supplied, site, start, span, completion, callEntered, nativeAttempted: false));
++                return new(BeginBoundCall(function, supplied, site, start, span, completion, callEntered, nativeAttempted));
+             }
+             catch (Exception error)
+             {
+diff --git a/src/Lokad.Lython/Runtime/PyFunctionBase.cs b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+index 27d2ed0c..467c6e5d 100644
+--- a/src/Lokad.Lython/Runtime/PyFunctionBase.cs
++++ b/src/Lokad.Lython/Runtime/PyFunctionBase.cs
+@@ -44,8 +44,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+         _nameValue = callableKind == PythonCallableKind.Lambda
+             ? LambdaName : PyString.FromString(name, closure.MemoryGovernor, null);
+         _bindingPlan = new FunctionBindingPlan(name, callableKind, parameterLayout, defaultValues, closure);
+-        SupportsPositionalBinding = _bindingPlan.KeywordOnlyCount == 0 &&
+-            _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
++        SupportsPositionalBinding = _bindingPlan.VariadicListIndex < 0 && _bindingPlan.VariadicDictionaryIndex < 0;
+         _scopeFacts = scopeFacts;
+     }
+ 
+@@ -77,7 +76,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+     {
+         context.CheckExecution(span);
+         var binding = callSite is null
+-            ? new ValueTask<BoundCallArguments>(BindPositionalOperands(arguments, span, context, receiver))
++            ? BindPositionalOperandsAsync(arguments, span, context, receiver)
+             : BindCallOperandsAsync(arguments, span, context, receiver, callSite);
+         return binding.IsCompletedSuccessfully ? InvokeBoundAsync(binding.Result, span) : BindAndInvokeAsync(binding, span);
+     }
+@@ -87,7 +86,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+     internal BoundCallArguments BindPositionalOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+         LythonRuntime.ExecutionContext context, object? receiver = null)
+         => LythonRuntime.BindPositionalFunctionArguments(arguments, span, _bindingPlan, receiver,
+-            context.MemoryGovernor, _storageCapacity);
++            context, _storageCapacity);
++
++    internal ValueTask<BoundCallArguments> BindPositionalOperandsAsync(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
++        LythonRuntime.ExecutionContext context, object? receiver = null)
++        => LythonRuntime.BindPositionalFunctionArgumentsAsync(arguments, span, _bindingPlan, receiver,
++            context, _storageCapacity);
+ 
+     internal BoundCallArguments BindCallOperands(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
+         LythonRuntime.ExecutionContext context, object? receiver, ExecutableCallSite callSite)
+@@ -99,7 +103,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
+ 
+     // No defaults, receiver insertion or dynamic binding during the borrow.
+     internal bool CanBorrowPositionalArguments(int count, object? receiver)
+-        => receiver is null && SupportsPositionalBinding && count == _bindingPlan.PositionalCount;
++        => receiver is null && SupportsPositionalBinding && _bindingPlan.KeywordOnlyCount == 0
++            && count == _bindingPlan.PositionalCount;
+ 
+     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
+     protected abstract bool RequiresArgumentMirroring { get; }

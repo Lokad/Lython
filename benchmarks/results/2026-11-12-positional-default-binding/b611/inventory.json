@@ -1,0 +1,129 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 259276800,
+  "requiredFreeBytes": 270753792,
+  "reclaimableBytes": 11849728,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "cell-authority-b606-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5674496,
+      "sha256": "09ad301e790ce664ed044088f80e8e144c5d502de70f656ccb55eeb235e0e463",
+      "canonicalStorage": "benchmarks/results/2026-11-12-cell-write-authority/b606/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "c4863970ea6a0d2a2193d19cca7467dcb209f9df4440b6f13164c581db68ee13",
+      "reason": "Supersededqualifiedf4/09ad afternewb2/796c fullGREEN43166350709. Exactcommittedsource/core/evidence preserved; no activeusers. Currentb2andnewprototype protected. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "paths": [
+        "text-batches-b608-20261112/reference/Lokad.Lython.dll",
+        "text-batches-b607-20261112/reference/Lokad.Lython.dll",
+        "cell-authority-b606-20261112/current-core.dll",
+        "cell-authority-b606-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844605,
+      "allocatedBytes": 5681152,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/observations.tgz",
+      "bytes": 2231065,
+      "sha256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "reason": "Exactterminalduplicate only, committed0964e84c canonicalGitSHA verified. Allmaps/unknowns/currentcode preserved; freshUID/path/inode/allaliasesproof and unchangedfloors.",
+      "paths": [
+        "call-boundary-profile-b610-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844858,
+      "allocatedBytes": 2236416,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/catalog.json",
+      "bytes": 717634,
+      "sha256": "aa6d07295d9223b2ded9212237e34c9a58081cba7db7cc892c8206dfa925e3c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "reason": "Exactterminalduplicate only, committed0964e84c canonicalGitSHA verified. Allmaps/unknowns/currentcode preserved; freshUID/path/inode/allaliasesproof and unchangedfloors.",
+      "canonicalEntry": "catalog.json",
+      "canonicalArchiveSHA256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "paths": [
+        "call-boundary-profile-b610-20261112/catalog.json"
+      ],
+      "device": 66305,
+      "inode": 844835,
+      "allocatedBytes": 720896,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/profiles/guarded-search/perf-stacks.txt",
+      "bytes": 859506,
+      "sha256": "9e5792c69d53e68342bb6f209a27e9651e0b7632ea06e696db3054c53636ce57",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "canonicalEntry": "profiles/guarded-search/perf-stacks.txt",
+      "canonicalArchiveSHA256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "reason": "Onlyunusedterminal rawfileduplicate, completecommitted0964e84c canonicalprofile/code archive independentlyverified. Originalfailedfloorconditionpreserved; no remote mutation occurred. Freshidle/UID/path/inode/allaliasesproof required; currentb2protected, floors unchanged.",
+      "paths": [
+        "call-boundary-profile-b610-20261112/profiles/guarded-search/perf-stacks.txt"
+      ],
+      "device": 66305,
+      "inode": 844879,
+      "allocatedBytes": 860160,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/profiles/guarded-search/perf.data",
+      "bytes": 359184,
+      "sha256": "5cd51f0a5c43b4f923dad88cf3d266dc2836987b51bc02b69b7b40695d454567",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "canonicalEntry": "profiles/guarded-search/perf.data",
+      "canonicalArchiveSHA256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "reason": "Onlyunusedterminal rawfileduplicate, completecommitted0964e84c canonicalprofile/code archive independentlyverified. Originalfailedfloorconditionpreserved; no remote mutation occurred. Freshidle/UID/path/inode/allaliasesproof required; currentb2protected, floors unchanged.",
+      "paths": [
+        "call-boundary-profile-b610-20261112/profiles/guarded-search/perf.data"
+      ],
+      "device": 66305,
+      "inode": 844871,
+      "allocatedBytes": 360448,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/profiles/guarded-search/perf.map",
+      "bytes": 1211866,
+      "sha256": "d41cf50337d0ab3396c0b4bf1d8a49686e84ead147417ef068eb493c6d7c26b3",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "canonicalEntry": "profiles/guarded-search/perf.map",
+      "canonicalArchiveSHA256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "reason": "Onlyunusedterminal rawfileduplicate, completecommitted0964e84c canonicalprofile/code archive independentlyverified. Originalfailedfloorconditionpreserved; no remote mutation occurred. Freshidle/UID/path/inode/allaliasesproof required; currentb2protected, floors unchanged.",
+      "paths": [
+        "call-boundary-profile-b610-20261112/profiles/guarded-search/perf.map"
+      ],
+      "device": 66305,
+      "inode": 844872,
+      "allocatedBytes": 1212416,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "call-boundary-profile-b610-20261112/profiles/prefix-jit.txt",
+      "bytes": 778125,
+      "sha256": "914981a9a0cc391e0f2cfa8075196c29550390d60e7df4e9e842dad5cf12564c",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordinary-call-source-gate/observations.tgz",
+      "canonicalEntry": "profiles/prefix-jit.txt",
+      "canonicalArchiveSHA256": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+      "reason": "Onlyunusedterminal rawfileduplicate, completecommitted0964e84c canonicalprofile/code archive independentlyverified. Originalfailedfloorconditionpreserved; no remote mutation occurred. Freshidle/UID/path/inode/allaliasesproof required; currentb2protected, floors unchanged.",
+      "paths": [
+        "call-boundary-profile-b610-20261112/profiles/prefix-jit.txt"
+      ],
+      "device": 66305,
+      "inode": 844867,
+      "allocatedBytes": 778240,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
