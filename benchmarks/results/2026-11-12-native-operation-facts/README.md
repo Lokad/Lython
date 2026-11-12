@@ -1,4 +1,4 @@
-# Native operation facts — R273, retained for delivery
+# Native operation facts — R273, fully qualified
 
 2026-11-12 over qualified8ec7bfab/beeb828e, worktree50004849. NativeReturnValue no
 longer embeds an ordinary ExecutableInstruction, its physical positions or opcode.
@@ -61,7 +61,7 @@ claim. Warm includes mediated RAM I/O/full validation/prior-result cleanup; excl
 compile/startup/reset/protocol/finalcache. Wider CPU includes reset/protocol/JIT/GC.
 Retain the representation deletion and established node-storage reduction, with
 explicit CPU uncertainty. Existing CPython rows remain source-labelled; do not
-extrapolate source-pair gains. Full platform/stress/installed consumers follow.
+extrapolate source-pair gains. Full platform/stress/installed consumers pass on cb8f59c3; see [delivery](delivery/README.md).
 The broader whole-script CPU objective remains open; publication stays postponed.
 
 The first launch preflight was8,016Bshort after staging its helper: no root, worker

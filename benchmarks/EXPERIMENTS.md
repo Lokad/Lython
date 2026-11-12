@@ -6655,3 +6655,8 @@ all desktop adversity and the staging-preflight correction survive. B627 finishe
 four jobs184.637seconds; moving6–8%reference controls leave CPU uncertain. Retained
 for the actual representation simplification/storage result, without a speedup
 claim; full delivery tracked separately. The whole-script objective stays open.
+
+R273 full delivery is GREEN on exact cb8f59c3: Windows/Ubuntu, actual .NET 11/10,
+original stress and installed Release consumers. All 568 frozen production files
+match with explicit newline normalization. [Archived delivery](results/2026-11-12-native-operation-facts/delivery/README.md).
+CPU uncertainty remains; this does not qualify the later range prototype.
