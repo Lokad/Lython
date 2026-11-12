@@ -6861,3 +6861,12 @@ remain separate deliverables.
 +duplicated initializers or premature field-type proof. No automatic larger
 +compiler migration or replay of the slower generic-prefix/arena forms.
 +
+## R289 — ordered final-slot migration, first controlled comparison
+
+[First source/checks/B643](results/2026-11-12-ordered-final-slots/README.md) removes
+the native graph/proof/recursive evaluator,287 production lines. Both targets and
+seven full-script/phase controls pass. CSV improves but native search+12–14% and
+captured text+4–8% remain adverse with supporting CPU; warm allocation is flat.
+Retain all controls/first fixture/build/disk failures. One bounded lifetime/cache/
+obsolete-metadata refinement is active, not a retained speedup or completed goal.
+Qualified production remains9bca1337; no platform/package replay or publication.
