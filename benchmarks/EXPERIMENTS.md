@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The retained cell-write runtime `f4f44caf` is fully qualified by terminal GREEN
+[43155450349](results/2026-11-12-cell-write-authority/delivery/README.md):
+Windows/Ubuntu actual .NET 11/10, original stress and installed Release consumers.
+The measured frozen sources match the commit. Its original pending-at-collection
+records and all adverse observations remain unchanged; publication stays postponed.
+Further final-encoding storage work is a separate prototype.
+
 [Cell-write authority](results/2026-11-12-cell-write-authority/README.md) retains
 common Value assignment/cachedownedslot, removing repeated mapping/ownerstore/
 duplicatemirroring. Activecacheguard and necessaryresume sync remain. Independent
