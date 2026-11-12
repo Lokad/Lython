@@ -14,6 +14,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private static readonly PyString[] AsciiCharacters = CreateAsciiCharacters();
 
     internal const int InlineUtf8Capacity = 8;
+    private const byte WindowStorage = byte.MaxValue;
 
     // A managed word gives the payload its natural alignment. All encoding is
     // through bounded byte spans; it assumes neither field layout nor endianness.
@@ -30,8 +31,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         internal readonly int[] Offsets = offsets;
     }
     private InlineUtf8 _inlineUtf8;
-    // Zero means adopted array storage. A positive capacity also funds any
-    // later stable memory borrow; native span readers keep using inline bytes.
+    // Zero means an owned array; 1..8 holds inline capacity; WindowStorage
+    // borrows an immutable admitted array. That form keeps its byte offset in
+    // the otherwise unused inline word, without enlarging ordinary strings.
     private readonly byte _inlineCapacity;
     private int _byteLength;
     private int _runeLength = -1;
@@ -46,6 +48,22 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         _byteLength = byteLength;
         _metadata = governor;
     }
+
+    private PyString(byte[] utf8, int offset, int byteLength, MemoryGovernor governor)
+    {
+        if (offset < 0 || byteLength <= 0 || offset > utf8.Length - byteLength)
+            throw new ArgumentOutOfRangeException(nameof(byteLength));
+        _utf8 = utf8;
+        _byteLength = byteLength;
+        _metadata = governor;
+        _inlineCapacity = WindowStorage;
+        _inlineUtf8[0] = offset;
+    }
+
+    // The caller admits this shell and transfers full backing ownership before
+    // allocation. No source refund may release that still-shared array.
+    internal static PyString CreateReservedUtf8Window(byte[] utf8, int offset, int length, MemoryGovernor governor)
+        => new(utf8, offset, length, governor);
 
     private PyString(ReadOnlySpan<byte> utf8, int capacity, MemoryGovernor? governor)
     {
@@ -74,13 +92,19 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // Only the constructing factory may borrow this span, before committing.
     private Span<byte> InlineBytes => MemoryMarshal.AsBytes((Span<long>)_inlineUtf8);
 
-    internal Span<byte> UnpublishedUtf8 => _inlineCapacity != 0
-        ? InlineBytes[.._inlineCapacity] : _utf8.AsSpan();
+    internal Span<byte> UnpublishedUtf8 => _inlineCapacity switch
+    {
+        0 => _utf8.AsSpan(),
+        WindowStorage => throw new InvalidOperationException("An immutable string window cannot be written."),
+        _ => InlineBytes[.._inlineCapacity]
+    };
 
     // Native writers handle empty values before allocation. Completion neither
     // publishes nor transfers funding: its caller still owns the reservation.
     internal void CompleteUnpublishedUtf8(int byteLength)
     {
+        if (_inlineCapacity == WindowStorage)
+            throw new InvalidOperationException("An immutable string window cannot be completed again.");
         var capacity = _inlineCapacity != 0 ? _inlineCapacity : _utf8!.Length;
         if (byteLength <= 0 || byteLength > capacity) throw new ArgumentOutOfRangeException(nameof(byteLength));
         _byteLength = byteLength;
@@ -143,14 +167,17 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return units;
     }
 
-    internal ReadOnlySpan<byte> Utf8Span => _inlineCapacity != 0
-        ? MemoryMarshal.AsBytes((ReadOnlySpan<long>)_inlineUtf8)[.._byteLength]
-        : _utf8.AsSpan(0, _byteLength);
+    internal ReadOnlySpan<byte> Utf8Span => _inlineCapacity switch
+    {
+        0 => _utf8.AsSpan(0, _byteLength),
+        WindowStorage => _utf8.AsSpan((int)_inlineUtf8[0], _byteLength),
+        _ => MemoryMarshal.AsBytes((ReadOnlySpan<long>)_inlineUtf8)[.._byteLength]
+    };
 
     internal int ByteLength => _byteLength;
 
     public ReadOnlyMemory<byte> Utf8Bytes => Volatile.Read(ref _utf8) is { } bytes
-        ? bytes.AsMemory(0, _byteLength) : MaterializeInlineMemory();
+        ? bytes.AsMemory(_inlineCapacity == WindowStorage ? (int)_inlineUtf8[0] : 0, _byteLength) : MaterializeInlineMemory();
 
     private ReadOnlyMemory<byte> MaterializeInlineMemory()
     {
@@ -518,7 +545,8 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     // Borrowed bounded working storage uses the same strict decoder as AsString.
     internal int CopyUtf16To(Span<char> destination) => Utf8.GetChars(Utf8Span, destination);
 
-    internal long CommittedOwnedBytes => EstimateApproximateBytes(_inlineCapacity != 0 ? _inlineCapacity : _utf8!.Length)
+    internal long CommittedOwnedBytes => EstimateApproximateBytes(_inlineCapacity == WindowStorage ? 0
+        : _inlineCapacity != 0 ? _inlineCapacity : _utf8!.Length)
         + (OwnerMemoryGovernor is not null && _metadata is RuneIndexCache indexed ? 32L + 4L * indexed.Offsets.Length : 0);
 
     public string AsString(int runeIndex)

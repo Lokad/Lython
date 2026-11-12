@@ -1,4 +1,4 @@
-# Immutable reader windows — prototype, decision pending
+# Immutable reader windows — retained with explicit latency tradeoff
 
 2026-11-12, R271 over qualified23997d4f. Non-inline line/read values borrow an
 immutable admitted window. Their offset uses the existing inline word/tag, with
@@ -45,8 +45,8 @@ spread3.49% and250ms batches/10msCPU ticks leave global-access cost unresolved.
 Warm clocks include mediated RAM I/O, full validation and prior-result cleanup;
 exclude compilation/startup/reset/protocol/finalcache. Wider CPU includes reset,
 protocol and processGC/JIT. No CPython update or attribution from allocation alone.
-A bounded two-job JSON/report confirmation with longer batches is justified before
-promotion. This is not a delivered runtime; full delivery is not replayed yet.
+A bounded two-job JSON/report confirmation with longer batches follows below.
+No full delivery replay was started before the retention decision.
 
 Space recovery retires only exact terminal canonical-Git/SHA duplicates and the
 superseded a552 image (all11aliases), after a fresh lease/UID/path/inode/link proof.
@@ -54,3 +54,31 @@ Qualified d51f/current images remain. OS240MiB/evidence12MiB floors stay unchang
 One targeted inode-alias inventory was necessary; no broad usage audit. Original
 staging inventories and all retired bytes survive in committed canonical archives.
 B622 terminal state is cached. Publication remains held.
+
+## B623 confirmation and retention decision
+
+Identical binaries/catalogs/normal runtime profile; two jobs, two processes/image,
+8swarmup,7rotated750msrounds.121.705seconds. All identities/goldens/balances,
+quiet/join/unmount/archive/localSHA checks pass. Terminal status is cached.
+
+| Complete warm Run | Elapsed change | Wider process CPU change |
+| --- | --- | --- |
+| JSON-lines helpers | −2.62..+1.72% | −2.69..+1.85% |
+| Report control | +0.62..+2.77% | −0.04..+2.03% |
+
+Report controls1.13%/0.98%, maxIQR1.96%. A small elapsed regression survives the
+longer batches; the earlier report CPU+7.79% bound is not reproduced. JSON reference
+spread3.90% leaves its direction uncertain. Original B622/desktop adversity remains.
+Retain the immutable storage/copy removal for the established18% search and5%
+text/JSON allocation savings and modest search CPU benefit. Accept report's small
+elapsed debt explicitly; no further unchanged retiming, equivalence claim, broad
+CPU gain or extrapolated CPython ratio. A later end-to-end representation redesign
+may address hot access; useful source changes/new evidence can justify revisiting.
+The substantial whole-script performance objective remains open.
+
+The first confirmation launch had a Python quoting syntax error, before any remote
+mutation or worker. Original script/error survive; corrected script is parsed before
+launch. Exact terminal B622 duplicates were retired only after committed canonical
+archive verification/fresh lease/UID/path/inode proof, keeping both image families
+and existing floors. Publication remains postponed. Platform/stress/installed
+Release package qualification follows the retained-source commit.

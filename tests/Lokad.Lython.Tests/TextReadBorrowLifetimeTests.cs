@@ -154,9 +154,11 @@ public sealed class TextReadBorrowLifetimeTests
                 if (closeFails) throw new LythonHostException(LythonHostFailureKind.Transport, "controlled close failure");
             };
             LythonRuntimeException? first = null;
+            long borrowedStorageAtCleanup = 0;
             hook.AfterGrowth = _ =>
             {
                 hook.AfterGrowth = null;
+                borrowedStorageAtCleanup = reader.OwnedBytes;
                 reader.Release();
                 if (failureKind == 1) cancellation.Cancel();
                 if (failureKind == 2) first = context.MemoryGovernor.RefuseAdmission("controlled read refusal", 777, null);
@@ -174,8 +176,8 @@ public sealed class TextReadBorrowLifetimeTests
                 await closing.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 await returned.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 Assert.False(pending.IsCompleted);
-                Assert.True(reader.OwnedBytes > LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes);
-                Assert.True(budget.ReservedBytes >= reader.OwnedBytes);
+                Assert.True(borrowedStorageAtCleanup > LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes);
+                Assert.True(budget.ReservedBytes >= borrowedStorageAtCleanup);
                 finishClose.SetResult();
                 if (failureKind == 0 && !closeFails)
                     Assert.Equal(new string('x', 40) + "\n", (await pending).AsString());

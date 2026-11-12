@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Lokad.Lython.Runtime.Text;
 
@@ -10,11 +11,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        // Input storage is bounded by the current decoded UTF-8 window and raw
-        // carry. Unchanged UTF-8 windows borrow the admitted raw prefix until
-        // consumption; transformed windows retain their codec output funding.
-        // Accumulated reads admit capacity before growth and returned strings
-        // own independent storage. Long streams use bounded host-driven batches.
+        // Private input storage holds the current decoded window and raw carry.
+        // Returned non-inline views keep shared windows immutable and funded by
+        // the execution owner. Replacement raw storage is admitted before refill.
+        // Accumulated reads own independent admitted capacity. Long streams use
+        // bounded host-driven batches; shared windows survive reader cleanup.
         internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot, IDisposable
         {
             // The decoded Python window is stored beside byte/carry backing.
@@ -41,6 +42,8 @@ internal sealed partial class LythonRuntime
             private int _rawLength;
             private ReadOnlyMemory<byte> _window;
             private int _rawWindowLength;
+            private int _rawCarryStart;
+            private bool _rawShared;
             private long _windowCharge;
             private int _windowConsumed;
             private long _position;
@@ -48,7 +51,7 @@ internal sealed partial class LythonRuntime
             private bool _bomChecked;
             private bool _released;
             private bool _reading;
-            internal long OwnedBytes => ShellBytes + (_raw?.LongLength ?? 0) + _windowCharge;
+            internal long OwnedBytes => ShellBytes + (_rawShared ? 0 : _raw?.LongLength ?? 0) + _windowCharge;
 
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
                 => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
@@ -323,7 +326,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (builder is null)
                     {
-                        line = CopyWindowRange(_windowConsumed, end);
+                        line = CreateWindowValue(_windowConsumed, end);
                         Advance(end);
                     }
                     else
@@ -390,8 +393,10 @@ internal sealed partial class LythonRuntime
                     ReleaseWindow();
                     if (_raw is not null)
                     {
-                        _services.MemoryGovernor.Release(_raw.Length);
+                        if (!_rawShared) _services.MemoryGovernor.Release(_raw.Length);
                         _raw = null;
+                        _rawShared = false;
+                        _rawCarryStart = 0;
                     }
                 }
             }
@@ -417,7 +422,7 @@ internal sealed partial class LythonRuntime
                         {
                             if (builder is null)
                             {
-                                var piece = CopyWindowRange(_windowConsumed, take);
+                                var piece = CreateWindowValue(_windowConsumed, take);
                                 Advance(take);
                                 _services.CheckExecution(null);
                                 return piece;
@@ -461,7 +466,7 @@ internal sealed partial class LythonRuntime
                         {
                             if (builder is null)
                             {
-                                var piece = CopyWindowRange(_windowConsumed, take);
+                                var piece = CreateWindowValue(_windowConsumed, take);
                                 Advance(take);
                                 _services.CheckExecution(null);
                                 return piece;
@@ -578,9 +583,34 @@ internal sealed partial class LythonRuntime
                 Advance(byteEnd);
             }
 
-            private PyString CopyWindowRange(int start, int end)
-                => start >= end ? PyString.Empty
-                    : PyString.CopyFromUtf8(_window.Span[start..end], _services.MemoryGovernor, null);
+            private PyString CreateWindowValue(int start, int end)
+            {
+                var length = end - start;
+                if (length <= 0) return PyString.Empty;
+                if (length <= PyString.InlineUtf8Capacity)
+                    return PyString.CopyFromUtf8(_window.Span[start..end], _services.MemoryGovernor, null);
+                if (!MemoryMarshal.TryGetArray(_window, out var window) || window.Array is null)
+                    throw new InvalidOperationException("A decoded read window must have stable array storage.");
+                var raw = ReferenceEquals(window.Array, _raw);
+                // Raw storage's reader shell supplied header headroom. Admit it
+                // independently when the execution becomes its longer-lived owner.
+                var bytes = PyString.EstimateApproximateBytes(0) + (raw && !_rawShared ? 32 : 0);
+                var governor = _services.MemoryGovernor;
+                governor.Reserve(bytes, null);
+                try
+                {
+                    _services.CheckExecution(null);
+                    // Establish the surviving backing owner before allocating a
+                    // view. Cleanup can drop reader references, never this funding.
+                    if (raw) _rawShared = true;
+                    else _windowCharge = 0;
+                    var value = PyString.CreateReservedUtf8Window(window.Array, window.Offset + start, length, governor);
+                    _services.CheckExecution(null);
+                    governor.Commit(bytes);
+                    return value;
+                }
+                catch { governor.ReleaseReserved(bytes); throw; }
+            }
 
             private int WindowEndAfterRunes(int limit, int maximum, out int count)
             {
@@ -637,6 +667,7 @@ internal sealed partial class LythonRuntime
 
             private void DecodeNextWindow()
             {
+                EnsureRaw();
                 while (true)
                 {
                     if (!EnsureBomDecided())
@@ -676,6 +707,7 @@ internal sealed partial class LythonRuntime
 
             private async ValueTask DecodeNextWindowAsync()
             {
+                EnsureRaw();
                 while (true)
                 {
                     if (!EnsureBomDecided())
@@ -826,7 +858,7 @@ internal sealed partial class LythonRuntime
 
             private void EnsureRaw()
             {
-                if (_raw is not null)
+                if (_raw is not null && !_rawShared)
                 {
                     return;
                 }
@@ -835,9 +867,15 @@ internal sealed partial class LythonRuntime
                 _services.MemoryGovernor.Reserve(length, null);
                 try
                 {
+                    _services.CheckExecution(null);
+                    EnsureNotReleased();
                     var raw = new byte[length];
+                    if (_raw is not null && _rawLength != 0)
+                        _raw.AsSpan(_rawCarryStart, _rawLength).CopyTo(raw);
                     _services.MemoryGovernor.Commit(length);
                     _raw = raw;
+                    _rawShared = false;
+                    _rawCarryStart = 0;
                 }
                 catch
                 {
@@ -877,7 +915,8 @@ internal sealed partial class LythonRuntime
                 {
                     _services.CheckExecution(null);
                     // The raw prefix cannot move or be refilled while this view
-                    // is active. Returned values acquire their independent copy.
+                    // is active. Returned views transfer its funding and prevent
+                    // reuse; the next decode admits replacement storage.
                     _window = _raw.AsMemory(0, head);
                 }
                 else
@@ -912,7 +951,8 @@ internal sealed partial class LythonRuntime
                 _windowConsumed = 0;
                 if (_rawWindowLength > 0)
                 {
-                    Buffer.BlockCopy(_raw!, _rawWindowLength, _raw!, 0, _rawLength - _rawWindowLength);
+                    if (_rawShared) _rawCarryStart = _rawWindowLength;
+                    else Buffer.BlockCopy(_raw!, _rawWindowLength, _raw!, 0, _rawLength - _rawWindowLength);
                     _rawLength -= _rawWindowLength;
                     _rawWindowLength = 0;
                 }

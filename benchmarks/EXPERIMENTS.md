@@ -6610,3 +6610,22 @@ failure, killed-worker exit and unknown/malformed samples remain visible.
 Configuration captures and final qualification gates are missing. No elapsed or
 ownership-delivery claim follows. All users are joined and raw evidence survives
 the owned RAM cleanup. Source remains the qualified runtime.
+
+
+## R269–R271 — iterative JSON, shared annotation demand and reader windows
+
+2026-11-12. [R269](results/2026-11-12-json-depth/README.md) removes the obsolete
+JSON decoder depth policy; [R270](results/2026-11-12-annotation-demand/README.md)
+removes duplicate frontend demand preparation. Both pass full Windows/Ubuntu,
+actual.NET11/10, original stress and installed Release consumers. No substantial
+whole-script CPU claim follows from their correctness/allocation results.
+
+[R271](results/2026-11-12-reader-windows/README.md) removes non-inline per-line
+payload copies by sharing immutable admitted windows, reusing existing string
+storage fields. Focused semantics/ownership/cancellation and six complete scripts
+pass. Search allocation−18%, text/JSON−5%; controlled search warm elapsed−2..−6%.
+Longer confirmation retains a small report elapsed cost(+0.6..+2.8%) explicitly;
+JSON/captured-text CPU remains uncertain. All adverse/original failed conditions
+survive. Earlier general-window and ordered-prefix designs are not replayed.
+Conservative full-window command/result retention can deny earlier. Full delivery
+is tracked from the retained-source commit; the broad CPU objective remains open.

@@ -18,7 +18,8 @@ Reuse compiled programs for repeated inputs when useful.
 Compilation observes its token during indentation checks, tokenization, ordinary
 parsing, literal decoding, container/callback fact inspection and provider work,
 and between later compiler phases.
-Later diagnostics, annotation formatting, lexical-fact preparation, lowering and
+Lexical-fact discovery also checks between statements.
+Later diagnostics, annotation formatting, lowering and
 instruction construction can finish their current pass before the next check; CLR copies/conversions are
 also not preemptible. Cancellation returns an invalid script with `LA2011`;
 dispose that script to release its compilation owner. Refused admission retains
@@ -113,6 +114,14 @@ use the shared decoder, retaining input funding until the result is charged.
 UTF-8 and Latin-1 decoding produces admitted native text directly, including
 UTF-8 error handling and newline translation. Text readers borrow unchanged valid
 UTF-8 from the admitted raw prefix; transformed windows retain codec output funding.
+Complete non-inline lines and read values can share those immutable windows.
+Once shared, raw storage is replaced under overlap admission before another refill;
+aliases remain valid after later reads and close. The execution/result owner keeps
+the full backing capacity charged, including unused prefix/tail. Closing the file
+or discarding one line does not refund shared backing; ownership ends with the
+bounded command/result. This can deny earlier than independent copies when only
+a small part of a window is retained. Small inline and accumulated reads keep
+independent storage. Use bounded host-driven commands for long streams.
 Shared byte-line scanning uses managed bulk searches, selecting newline mode once;
 CRLF/window holdback and scalar read limits stay with the caller.
 Readline, file iteration and native CSV input share the same window scanner.
