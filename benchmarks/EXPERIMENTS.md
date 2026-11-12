@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Iterative JSON admission](results/2026-11-12-json-depth/README.md) removes the
+inherited 64-container decoder policy and backend error builder. Existing explicit
+frames retain overlap admission, cancellation and awaited ownership. 120 focused
+actual-target checks and three complete scripts/both APIs/compile pass; allocation
+is flat. Desktop native-async control +4.31..+5.83% remains adverse and unresolved;
+no CPU gain claim. Full platform/stress/package qualification batches separately.
+
 [Ordered helper prototype](results/2026-11-12-ordered-helper-prototype/README.md)
 is withdrawn. One prefix/span borrow/live export removed the duplicate native
 tree and passed 1,366 focused checks/six complete scripts. Shared callback

@@ -1240,6 +1240,9 @@ validated their grammar, preserving binary64 rounding and signed zero. Conversio
 is atomic; token scanning and surrounding operations check cooperative cancellation.
 
 Arrays, dictionaries and pairs-hook output share one iterative construction loop.
+Decoding has no separate document-depth ceiling: nested containers use admitted
+frame capacity rather than CLR recursion. Encoding, guest callbacks and public
+projection retain their own managed nesting checks.
 One managed decoding admission remains live through parsing and awaited hooks;
 continuations check the current managed stack before resuming. Calls near the
 existing managed nesting bound can reject before parsing begins. Deeper frame

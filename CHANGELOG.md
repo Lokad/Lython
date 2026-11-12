@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Remove the JSON decoder's inherited 64-container ceiling. Iterative construction
+  admits its frame capacity through the shared memory budget, including growth
+  overlap, and preserves cancellation and pending-hook ownership. Encoding,
+  public projection and guest callback nesting protections remain active.
+
 - Prepare negated branch predicates with the existing conditional helper plan,
   avoiding ordinary binding and body dispatch for eligible complete helpers.
   Preserve lazy branches, Python truth protocols and guarded execution before

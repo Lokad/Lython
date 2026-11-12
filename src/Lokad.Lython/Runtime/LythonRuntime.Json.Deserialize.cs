@@ -498,30 +498,6 @@ internal sealed partial class LythonRuntime
             });
         }
 
-        // Reports container nesting past the previous backend limit with its
-        // wording: entering a 65th nested container fails like before.
-        private static LythonRuntimeException CreateJsonDepthError(PyString input, int bytePosition, bool isArray, LythonSourceSpan span, ExecutionContext context)
-        {
-            var line = 0;
-            var lineStart = 0;
-            var bytes = input.Utf8Span;
-            for (var index = 0; index < bytePosition; index++)
-            {
-                if (bytes[index] == (byte)'\n')
-                {
-                    line++;
-                    lineStart = index + 1;
-                }
-            }
-
-            return NewJsonDecodeFailure(
-                input,
-                "The maximum configured depth of 64 has been exceeded. Cannot read next JSON " + (isArray ? "array." : "object.") + " LineNumber: " + line + " | BytePositionInLine: " + (bytePosition - lineStart) + ".",
-                bytePosition,
-                span,
-                context);
-        }
-
         private static int SkipJsonWhitespace(ReadOnlySpan<byte> bytes, int position, ExecutionContext context, LythonSourceSpan span)
         {
             while (position < bytes.Length && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')

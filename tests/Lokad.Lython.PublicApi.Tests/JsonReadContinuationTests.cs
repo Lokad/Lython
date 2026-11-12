@@ -24,6 +24,7 @@ public sealed class JsonReadContinuationTests
         var decode = raw
             ? $"value,end=json.JSONDecoder({options}).raw_decode(prefix+document+' tail',len(prefix))\n assert end==len(prefix)+len(document)"
             : $"value=json.loads(document,{options})";
+        const int depth = 65;
         var source = """
             import json,time
             marker=['x'*4096]
@@ -31,8 +32,7 @@ public sealed class JsonReadContinuationTests
              time.sleep(0)
              return marker
             prefix='😀 ignored '
-            """ + $"\ndocument='['*17+'{payload}'+']'*17\ntry:\n {decode}\n" + """
-             for unused in range(17):value=value[0]
+            """ + $"\ndocument='['*{depth}+'{payload}'+']'*{depth}\ntry:\n {decode}\n for unused in range({depth}):value=value[0]\n" + """
              print(value[0] is value[1])
             except BaseException:pass
             print('later')
@@ -245,7 +245,7 @@ public sealed class JsonReadContinuationTests
         // Isolated CPython 3.13.2 outputs; Windows CRLF normalized to capture LF.
         yield return ["pairs_postorder", "import json\nevents=[]\ndef number(s):\n events.append(('number',s)); return int(s)\ndef pairs(value):\n events.append(('pairs',[k for k,v in value])); return ('pairs',value)\ndef wrong(value):raise AssertionError('object_hook')\nvalue=json.loads('{\"k\":[{},{\"x\":1,\"x\":2}],\"k\":null}',parse_int=number,object_pairs_hook=pairs,object_hook=wrong)\nprint(events,value)\n", "[('pairs', []), ('number', '1'), ('number', '2'), ('pairs', ['x', 'x']), ('pairs', ['k', 'k'])] ('pairs', [('k', [('pairs', []), ('pairs', [('x', 1), ('x', 2)])]), ('k', None)])\n"];
         yield return ["nested_errors_prefix", "import json\nfor document in ['[{},[1,{\"x\":[]}]]','[{},[1,{\"x\":}', '[1,]', '{\"x\":1,}', '{\"x\" 2}', '[[', '{', '{\"x\":', '[1', '{\"x\":1']:\n events=[]\n def number(s):events.append(s);return int(s)\n def pairs(p):events.append([k for k,v in p]);return dict(p)\n prefix='😀 ignored '\n source=prefix+document+' tail'\n try:\n  value,end=json.JSONDecoder(parse_int=number,object_pairs_hook=pairs).raw_decode(source,len(prefix))\n  print(value,end,events)\n except json.JSONDecodeError as e:print(e.pos,e.doc is source,events)\n", "[{}, [1, {'x': []}]] 27 [[], '1', ['x']]\n22 True [[], '1']\n12 True ['1']\n16 True ['1']\n15 True []\n13 True []\n12 True []\n16 True []\n13 True ['1']\n17 True ['1']\n"];
-        yield return ["deep_prefix", "import json\nfor depth in [0,1,4,17,64]:\n document='['*depth+'42'+']'*depth\n prefix='😀 ignored '\n value,end=json.JSONDecoder().raw_decode(prefix+document+' tail',len(prefix))\n for i in range(depth):value=value[0]\n print(depth,value,end==len(prefix)+len(document))\n", "0 42 True\n1 42 True\n4 42 True\n17 42 True\n64 42 True\n"];
+        yield return ["deep_prefix", "import json\nfor depth in [0,1,4,17,64,65,257]:\n document='['*depth+'42'+']'*depth\n prefix='😀 ignored '\n value,end=json.JSONDecoder().raw_decode(prefix+document+' tail',len(prefix))\n for i in range(depth):value=value[0]\n print(depth,value,end==len(prefix)+len(document))\n", "0 42 True\n1 42 True\n4 42 True\n17 42 True\n64 42 True\n65 42 True\n257 42 True\n"];
         yield return ["hook_aliases", "import json\nevents=[]\nmarker=['saved']\ndef object_hook(value):\n events.append(list(value.keys()))\n if 'x' in value:return marker\n return value\nvalue=json.loads('{\"a\":[{\"x\":1},{\"x\":2}],\"b\":{}}',object_hook=object_hook)\nprint(events,value['a'][0] is value['a'][1],value)\n", "[['x'], ['x'], [], ['a', 'b']] True {'a': [['saved'], ['saved']], 'b': {}}\n"];
         yield return ["lenient_controls", "import json\nsource='{\"a'+chr(1)+'\":[[],{\"b\":\"x'+chr(0)+'y\"}]}'\nprint(json.loads(source,strict=False))\ntry:json.loads(source)\nexcept json.JSONDecodeError as e:print(e.pos,e.doc is source)\n", "{'a\\x01': [[], {'b': 'x\\x00y'}]}\n3 True\n"];
         yield return ["numeric_prefix_callbacks", "import json\nfor document in ['01','-01','1.','2e','-3e+','1e-2','NaN','Infinity','-Infinity']:\n events=[]\n def number(s):events.append(('int',s));return int(s)\n def floating(s):events.append(('float',s));return float(s)\n def constant(s):events.append(('constant',s));return s\n value,end=json.JSONDecoder(parse_int=number,parse_float=floating,parse_constant=constant).raw_decode(document)\n print(value,end,events)\n", "0 1 [('int', '0')]\n0 2 [('int', '-0')]\n1 1 [('int', '1')]\n2 1 [('int', '2')]\n-3 2 [('int', '-3')]\n0.01 4 [('float', '1e-2')]\nNaN 3 [('constant', 'NaN')]\nInfinity 8 [('constant', 'Infinity')]\n-Infinity 9 [('constant', '-Infinity')]\n"];

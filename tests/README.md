@@ -226,8 +226,10 @@ The JSON continuation checks also cover paused wide-record hooks, cancellation,
 refused admission, awaited cleanup and allowance reuse.
 
 [Decoder admission](Lokad.Lython.Tests/JsonDecodeAdmissionTests.cs) checks rejection
-before construction at the managed nesting bound and subsequent reuse. Nested
-hook tests retain funding through real suspension, cancellation and refusal.
+before construction at the managed nesting bound, cancellation/refusal during
+substantial frame growth, and subsequent budget reuse. Iterative decoding beyond
+64 containers preserves leaf values and object-hook order. Nested hook tests
+retain funding through real suspension, cancellation and refusal at that depth.
 The owned stack fixture checks one deep decoder-hook rejection after suspension,
 then three real callback recoveries within its existing deadline.
 

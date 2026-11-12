@@ -63,4 +63,69 @@ public sealed class JsonDecodeAdmissionTests
         }
         Assert.Equal(0, budget.ReservedBytes);
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task DeepFrameGrowthStopsBeforeCallbacksAndRefundsWorkingStorage(bool cancel, bool asynchronous)
+    {
+        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var admission = new AdmissionHookMemoryBudget(owner);
+            var context = new Context(new MockLythonHost(), new LythonRunOptions
+                { MemoryBudget = admission, CancellationToken = cancellation.Token });
+            var input = PyString.FromString(new string('[', 65) + "7" + new string(']', 65), context.MemoryGovernor, null);
+            var callback = new CountCallback();
+            var options = Options.Default with { ParseInt = callback };
+            var span = new LythonSourceSpan(0, input.ByteLength, 1, 1);
+            var reachedGrowth = false;
+            // Interrupt a substantial frame replacement, not a tiny scalar or
+            // a particular number of checkpoints. Earlier containers stay live.
+            if (cancel)
+                admission.AfterGrowth = bytes =>
+                {
+                    if (bytes < 4096) return;
+                    reachedGrowth = true;
+                    cancellation.Cancel();
+                };
+            else
+                admission.RefuseGrowth = bytes => reachedGrowth = bytes >= 4096;
+
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+            {
+                _ = asynchronous ? await DecodeAsync(input, options, context, span)
+                    : Decode(input, options, context, span);
+            });
+            Assert.True(reachedGrowth);
+            Assert.Equal(cancel ? LythonFailureReason.Cancelled : LythonFailureReason.SharedMemoryAllowance,
+                error.Attribution?.Reason);
+            if (!cancel)
+            {
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, error);
+                Assert.Same(span, error.Span);
+            }
+            Assert.Equal(0, callback.Calls);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+        using var reused = new LythonEngine().Run("import json\nreturn json.loads('[7]')[0]",
+            new MockLythonHost(), new LythonRunOptions { MemoryBudget = budget });
+        Assert.True(reused.Success, reused.Failure?.Message);
+    }
+
+    private sealed class CountCallback : LythonRuntime.ICallable
+    {
+        internal int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Calls++;
+            return arguments[0].Value;
+        }
+    }
 }

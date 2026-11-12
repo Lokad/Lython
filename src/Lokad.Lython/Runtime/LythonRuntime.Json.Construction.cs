@@ -52,12 +52,13 @@ internal sealed partial class LythonRuntime
         {
             var context = state.Context;
             context.CheckExecution(state.Span);
-            if (state.Depth >= 64)
-                throw CreateJsonDepthError(state.Input, opening, !isObject, state.Span, context);
             if (state.Depth == JsonFrames(ref state).Length)
             {
                 var old = state.HeapFrames;
-                var next = JsonFrames(ref state).Length * 2;
+                var frameCapacity = JsonFrames(ref state).Length;
+                var next = (int)Math.Min(Array.MaxLength, 2L * frameCapacity);
+                if (next == frameCapacity)
+                    throw RuntimeErrors.Memory("JSON decoder frame storage exceeds supported capacity", state.Span);
                 var bytes = checked(32L + 48L * next);
                 if (state.Working is null)
                     state.Working = context.MemoryGovernor.ReserveTemporary(bytes, state.Span);

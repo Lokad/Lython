@@ -3,10 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// R07: the JSON serializer funds variable-sized appends before they land,
-// keeps sort scratch alive beside the builder, and accounts overlapping
-// builder/UTF-16/UTF-8 storage at final conversion. Deserializer calibration
-// pins dense and escaped shapes against the existing 4x document estimate.
+// JSON storage is admitted before construction, including scratch and
+// replacement overlap. Iterative decoding has no separate nesting allowance.
 public sealed class JsonBoundedGrowthScenarioTests
 {
     private static void AssertError(LythonExecutionResult result, string type, string messagePart)
@@ -105,25 +103,29 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     }
 
     [Fact]
-    public async Task LoadsDeepNestingMeetsBackendDepthCap()
+    public async Task LoadsDeepNestingUsesAdmittedFrames()
     {
-        // The streaming core preserves the previous backend limit: nesting
-        // past 64 containers fails explicitly instead of recursing unbounded.
-        var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(
-            """
+        const string source = """
             import json
-            return json.loads("[" * 100 + "]" * 100)
-            """);
-        Assert.True(script.IsValid);
-        var sync = script.Run(new MockLythonHost());
-        Assert.False(sync.Success);
-        Assert.Equal("JSONDecodeError", sync.Failure?.ExceptionType);
-        Assert.Contains("maximum configured depth of 64", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
-
-        var asyncResult = await script.RunAsync(new MockLythonHost());
-        Assert.False(asyncResult.Success);
-        Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("maximum configured depth of 64", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+            depth = 257
+            value = json.loads('[' * depth + '42' + ']' * depth)
+            for unused in range(depth):
+                value = value[0]
+            return value
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using var script = new LythonEngine().Compile(source, budget);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics));
+        var baseline = budget.ReservedBytes;
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(42), result.ReturnValue);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
     }
 
     [Theory]
@@ -131,34 +133,31 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     [InlineData(false, 65)]
     [InlineData(true, 64)]
     [InlineData(true, 65)]
-    public async Task LoadsExactNestingBoundaryPrecedesObjectHooks(bool objects, int depth)
+    public async Task LoadsNestedContainersPreserveHookOrderAndBudgetReuse(bool objects, int depth)
     {
         const string source = """
             import json
             events = []
             def hook(value):
-                events.append(1)
+                events.append(value['a'] is True)
                 return value
-            try:
-                json.loads(source, object_hook=hook)
-                print('ok', depth, len(events))
-            except json.JSONDecodeError as error:
-                print('limited', depth, error.pos, error.lineno, error.colno, len(events))
+            value = json.loads(source, object_hook=hook)
+            if objects:
+                assert events[0] and not any(events[1:])
+            for unused in range(depth):
+                value = value['a'] if objects else value[0]
+            print(value, depth, len(events))
             """;
         var document = string.Concat(Enumerable.Repeat(objects ? "{\"a\":" : "[", depth))
             + "true" + new string(objects ? '}' : ']', depth);
-        var position = objects ? 320 : 64;
-        var expected = depth == 64
-            ? $"ok 64 {(objects ? 64 : 0)}\n"
-            : $"limited 65 {position} 1 {position + 1} 0\n";
+        var expected = $"True {depth} {(objects ? depth : 0)}\n";
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
         using var script = new LythonEngine(Utf8RegexProvider.Instance).Compile(source, budget);
         Assert.True(script.IsValid);
         var baseline = budget.ReservedBytes;
         var options = new LythonRunOptions
         {
-            Globals = new Dictionary<string, object?> { ["source"] = document, ["depth"] = depth },
-            MemoryBudget = new LythonMemoryBudget(1024 * 1024)
+            Globals = new Dictionary<string, object?> { ["source"] = document, ["depth"] = depth, ["objects"] = objects }
         };
         foreach (var asynchronous in new[] { false, true })
         {
