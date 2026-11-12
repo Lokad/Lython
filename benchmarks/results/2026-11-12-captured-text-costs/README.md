@@ -34,8 +34,7 @@ may retain it and its validated dictionary/initial scalar through native words;
 leave before any ordinary fallback/protocol/growth and pending-binding publication.
 Keep per-word cancellation/terminal checks and dynamic dictionary/value guards.
 Mirrored namespaces retain their actual per-word reload/admission behavior.
-No new opcode/controller/evaluator/arena/metadata owner or option. Actual code
-and any timing remain an uncommitted prototype, not a delivered improvement.
+No new opcode/controller/evaluator/arena/metadata owner or option. The evaluated prototype did not ship; see the withdrawal decision below.
 
 The alternative cached word-range inventory would add cursor/array storage; an
 analytic word-count estimate could over-admit substantially for long/Unicode
@@ -44,3 +43,7 @@ loop effects and existing Unicode/context behavior. The selected segment must
 pass stack/refusal/alias/suspension/promotion/namespace checks and complete affected/
 control scripts before timing/promotion. Broad performance objective remains open.
 Publication remains postponed.
+
+Both segment-entry forms were subsequently [withdrawn](segment-entry-withdrawn/README.md).
+Their source/measurements/refinement and restored-source proof remain; no dormant
+prototype is retained or performance improvement claimed.

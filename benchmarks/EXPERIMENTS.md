@@ -6629,3 +6629,16 @@ JSON/captured-text CPU remains uncertain. All adverse/original failed conditions
 survive. Earlier general-window and ordered-prefix designs are not replayed.
 Conservative full-window command/result retention can deny earlier. Full delivery
 is tracked from the retained-source commit; the broad CPU objective remains open.
+
+
+## R272 — current captured-text cost and segment-entry withdrawal
+
+[One retained-image CPU assessment](results/2026-11-12-captured-text-costs/README.md)
+identifies actual native dictionary-loop, text-preparation and guard/evaluation
+work, not a duplicate frame. Two scoped-entry forms each pass742 focused checks
+and six complete scripts; allocations stay flat and affected desktop warm results
+remain adverse. The cached-values form and lifetime-only refinement are both
+[withdrawn with original data](results/2026-11-12-captured-text-costs/segment-entry-withdrawn/README.md).
+All568 qualified production files restored/nonincrementally rebuilt;80 restored
+checks pass. No quiet CPU or permanent design conclusion follows. No dormant
+prototype remains; the whole-script performance objective continues.
