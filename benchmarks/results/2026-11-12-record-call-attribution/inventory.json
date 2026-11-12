@@ -1,0 +1,58 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 263520256,
+  "requiredFreeBytes": 265134080,
+  "reclaimableBytes": 3330048,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "conditional-normalized-b614-20261112/observations.tgz",
+      "bytes": 1978355,
+      "sha256": "24450d2ec64baf443e74e8735508d7cec836178770f55d9901b912474ab7b7c3",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/normalized/b614/observations.tgz",
+      "reason": "Exact committed da9e5066 B614 evidence duplicates only; a552 and b2 images protected. Fresh idle lease/UID/path/inode/all-alias proof, unchanged floors.",
+      "paths": [
+        "conditional-normalized-b614-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844959,
+      "allocatedBytes": 1978368,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "conditional-normalized-b614-20261112/representative.json",
+      "bytes": 717634,
+      "sha256": "aa6d07295d9223b2ded9212237e34c9a58081cba7db7cc892c8206dfa925e3c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/normalized/b614/observations.tgz",
+      "reason": "Exact committed da9e5066 B614 evidence duplicates only; a552 and b2 images protected. Fresh idle lease/UID/path/inode/all-alias proof, unchanged floors.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "24450d2ec64baf443e74e8735508d7cec836178770f55d9901b912474ab7b7c3",
+      "paths": [
+        "conditional-normalized-b614-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844906,
+      "allocatedBytes": 720896,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "conditional-normalized-b614-20261112/confirmation/confirmation.json",
+      "bytes": 627389,
+      "sha256": "448b4f8442445ef21f135be35d32547fa0b61edc23c849dc230ec7c0f3fc1163",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/normalized/b614/observations.tgz",
+      "reason": "Exact committed da9e5066 B614 evidence duplicates only; a552 and b2 images protected. Fresh idle lease/UID/path/inode/all-alias proof, unchanged floors.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "24450d2ec64baf443e74e8735508d7cec836178770f55d9901b912474ab7b7c3",
+      "paths": [
+        "conditional-normalized-b614-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844970,
+      "allocatedBytes": 630784,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

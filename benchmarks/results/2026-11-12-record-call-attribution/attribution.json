@@ -1,0 +1,26 @@
+{
+  "csv-validation": {
+    "samples": 1189,
+    "unknown": 70,
+    "cpuSeconds": 5.9799999999999995,
+    "groupsTop24Only": {
+      "instruction dispatch/input/local results/comparison": 267,
+      "call binding/entry/work": 90,
+      "CSV scan/materialization/adoption": 129,
+      "format/write": 0,
+      "shared-root lock entry/exit": 41
+    }
+  },
+  "report": {
+    "samples": 1068,
+    "unknown": 68,
+    "cpuSeconds": 5.38,
+    "groupsTop24Only": {
+      "instruction dispatch/input/local results/comparison": 196,
+      "call binding/entry/work": 17,
+      "CSV scan/materialization/adoption": 0,
+      "format/write": 160,
+      "shared-root lock entry/exit": 72
+    }
+  }
+}

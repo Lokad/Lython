@@ -376,3 +376,5 @@ benchmarks/results/2026-11-12-positional-default-binding/**/*.patch -text -white
 
 benchmarks/results/2026-11-12-conditional-helper-bodies/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-conditional-helper-bodies/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-12-record-call-attribution/** -text whitespace=cr-at-eol

@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current CSV/report attribution](results/2026-11-12-record-call-attribution/README.md)
+closes two short captures, 11.771 seconds total execution, all identity/output/
+ownership/quiet/join/archive gates. Selected leaves: CSV instruction/input/result/
+comparison267/1189, binding/entry/work90; report196/1068 and17, with160 formatting/
+write and material JSON work. Useful work and unknowns remain explicit; these are
+not removable shares. Source excludes already-shared workspace/bulk CSV/inline
+strings/final UTF-8 formatting. Ordered admission and later mutable reads prevent
+speculating all fields or restarting after effects. Next is a concrete operand/
+lifetime deletion proof; no extra dispatcher, arena or tagged-value prototype is
+justified by leaf counts alone. No elapsed/allocation or external-baseline claim.
+
 [Conditional helper normalization](results/2026-11-12-conditional-helper-bodies/normalized/README.md)
 retains the one-file compiler form after996focused actual-target checks and five
 complete scripts/bothAPIs. B614 fourjobs254.822s supports guardedRun elapsed
