@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current output/text CPython checkpoint](results/2026-11-12-output-cpython-checkpoint/README.md)
+completes12jobs325.440s, allgates/join/RAM/archive pass. Retained983bab96 warm
+UTF8report1.26–1.33x, UTF16report1.44–1.51x, capturedtext1.62–1.67x; ordinarytext
+0.95–1.11x variable. Compile/compile-to-result separate; no singlechange
+attribution or equivalence. Original flush-copy CI failures and fixture-only
+correction survive. Full correctedhead qualification pending, publication held.
+
 [Final-byte text storage/batching](results/2026-11-12-text-output-batches/README.md)
 preserves the original forms and retained refinement. Whole-file staging raises UTF16
 allocation6.8%/peak208KB; bounded batches instead reduce report allocation12.7%
