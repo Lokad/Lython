@@ -5,11 +5,11 @@
 | CSV validation/helper calls | 5,120 records / 68,625 B | 4.718–4.854 ms | 4.439–4.500 ms | 1.05–1.09× | `da9e5066` | Variable; L2.88%, P1.35% / 1.12% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
 | Text summary/helpers | 3,072 lines /35,840 B | 1.295–1.323 ms | 1.290–1.308 ms | 0.99–1.03× | `983bab96` | Variable; L2.14%, P1.37% / 2.70% |
-| Text / captured helper + counter | 3,072 lines /35,840 B | 1.595–1.612 ms | 1.034–1.045 ms | 1.53–1.56× | `983bab96` | Variable; L1.08%, P1.14% / 3.56% |
+| Text / captured helper + counter | 3,072 lines /35,840 B | 1.521–1.605 ms | 1.036–1.040 ms | 1.46–1.55× | `41bd869b` | Variable; L5.19%, P0.37% / 1.23% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 3.613–3.627 ms | 4.183–4.214 ms | 0.86–0.87× | `8ec7bfab` | Diagnostic; L0.37%, P0.72% / 0.63% |
 | JSON-to-Markdown report | 3,072 records /189,441 B | 3.142–3.188 ms | 2.463–2.491 ms | 1.26–1.29× | `983bab96` | Variable; L1.46%, P1.14% / 3.61% |
-| JSON-to-Markdown / UTF-16 output | 3,072 records /189,441 B | 3.655–3.690 ms | 2.630–2.650 ms | 1.38–1.40× | `983bab96` | Diagnostic; L0.94%, P0.76% / 1.94% |
-| Config edit | 181 B / one JSON file | 140.3–140.8 µs | 124.2–127.7 µs | 1.10–1.13× | `ee44` | Variable; L0.32%, P2.67% / 3.45% |
+| JSON-to-Markdown / UTF-16 output | 3,072 records /189,441 B | 3.630–3.643 ms | 2.592–2.641 ms | 1.37–1.41× | `41bd869b` | Diagnostic; L0.37%, P1.86% / 3.16% |
+| Config edit | 181 B / one JSON file | 138.7–139.3 µs | 124.8–125.1 µs | 1.11–1.12× | `41bd869b` | Diagnostic; L0.47%, P0.24% / 2.20% |
 | Protected file search | 2,049 lines / 42,010 B; stop after 1,025 | 0.318–0.320 ms | 0.216–0.219 ms | 1.45–1.48× | `8ec7bfab` | Variable; L0.56%, P1.41% / 2.65% |
 | File search / keyword-default helper | 2,049 lines / 42,010 B; stop after 1,025 | 321.74–349.61 µs | 217.05–217.07 µs | 1.48–1.61× | `82ed92d4` | Variable; L8.66%, P0.01% / 2.35% |
 | File search / guarded helper | 2,049 lines / 42,010 B; stop after 1,025 | 362.03–393.61 µs | 221.41–224.67 µs | 1.61–1.78× | `da9e5066` | Variable; L8.02%, P1.45% / 1.39% |
@@ -21,14 +21,14 @@ Timed rows measure **compilation plus one execution in an already-running host**
 mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
 fixture staging/reset, protocol and final cache teardown are excluded.
 
-**Measured sources:** collected 2026-11-12: retained `8ec7bfab` for file search
-and JSON-lines (all three phases), captured-text/report warm execution. Test-only
-correction `beeb828e` leaves all 568 production sources and measured bits unchanged.
-[Exact source proof and phase evidence](../benchmarks/results/2026-11-12-reader-cpython-checkpoint/README.md).
-`da9e5066` remains CSV validation and guarded search; `983bab96` remains ordinary
-text, captured-text/report compilation and compile-to-result, and UTF-16 report.
-`82ed92d4` remains keyword-default search. All use stock CPython 3.13.16 on the same
-quiet VM. Sources are labelled per row; they do not describe later HEAD.
+**Measured sources:** collected 2026-11-12: qualified `41bd869b` for captured
+text and UTF-16 report warm/compile-to-result, UTF-8 report warm, and config
+compilation/compile-to-result. [Exact identities, controls and boundaries](../benchmarks/results/2026-11-12-utf16-cpython-checkpoint/README.md).
+Captured-text compile-to-result has5.19% Lython process spread and remains variable.
+`8ec7bfab` retains file search/JSON-lines all phases; `da9e5066` retains CSV
+validation/guarded search; `983bab96` retains ordinary text, report/captured-text
+compilation and UTF-8 report compile-to-result. `82ed92d4` retains keyword-default
+search. All use stock CPython3.13.16 on the same quiet VM; each row names its source.
 Earlier rows remain historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11),
 `ee44` = `ee448715` (config/original search, 2026-11-10), `6f76` = `6f76f99d`
 (CSV summary, 2026-11-08), `4598` = `459813a3` (manifest, 2026-11-09).
@@ -39,7 +39,8 @@ and [earlier report/text checkpoint](../benchmarks/results/2026-11-12-output-cpy
 separate compilation, warm execution and compile-to-result. Guarded search,
 captured text and reports retain material warm gaps. CSV is close and JSON-lines
 is faster in these observations, with variability shown. All output, ownership,
-quiet, joined-user and archival checks pass. Original/adverse controls and
+quiet, joined-user and archival checks pass. The [latest selected checkpoint](../benchmarks/results/2026-11-12-utf16-cpython-checkpoint/README.md)
+retains the captured-text fresh variability and significant warm gaps. Original/adverse controls and
 replaced rows remain linked; cross-collection differences do not isolate a change.
 
 The captured-helper variant wraps execution in a function and adds an observable
@@ -62,10 +63,10 @@ Warm execution reuses the compiled script and excludes compilation:
 | CSV validation/helper calls | 4.487–4.500 ms | 4.318–4.354 ms | 1.03–1.04× | `da9e5066` | Variable; L0.29%, P0.83% / 3.28% |
 | CSV summary/helpers | 3.282–3.302 ms | 3.201 ms | 1.03–1.03× | `6f76` | Diagnostic; 0.60% / 0.68% |
 | Text summary/helpers | 1.143–1.305 ms | 1.179–1.200 ms | 0.95–1.11× | `983bab96` | Variable; L12.40%, P1.74% / 1.10% |
-| Text / captured helper + counter | 1.457–1.494 ms | 0.889–0.910 ms | 1.60–1.68× | `8ec7bfab` | Variable; L2.53%, P2.24% / 3.56% |
+| Text / captured helper + counter | 1.475–1.475 ms | 0.879–0.890 ms | 1.66–1.68× | `41bd869b` | Diagnostic; L0.01%, P1.28% / 0.41% |
 | JSON-lines/helpers | 3.512 ms | 4.082–4.101 ms | 0.86–0.86× | `8ec7bfab` | Variable; L0.01%, P0.47% / 2.69% |
-| JSON-to-Markdown report | 3.102–3.130 ms | 2.540–2.594 ms | 1.20–1.23× | `8ec7bfab` | Variable; L0.90%, P2.05% / 3.37% |
-| JSON-to-Markdown / UTF-16 output | 3.577–3.673 ms | 2.434–2.488 ms | 1.44–1.51× | `983bab96` | Variable; L2.60%, P2.21% / 4.49% |
+| JSON-to-Markdown report | 3.051–3.090 ms | 2.336–2.350 ms | 1.30–1.32× | `41bd869b` | Diagnostic; L1.29%, P0.61% / 3.04% |
+| JSON-to-Markdown / UTF-16 output | 3.605–3.645 ms | 2.448–2.478 ms | 1.45–1.49× | `41bd869b` | Diagnostic; L1.11%, P1.19% / 2.73% |
 | Config edit | 78.3–78.6 µs | 61.8–62.1 µs | 1.26–1.27× | `ee44` | Diagnostic; L0.41%, P0.43% / 2.18% |
 | Protected file search | 0.246–0.248 ms | 0.159–0.160 ms | 1.54–1.56× | `8ec7bfab` | Variable; L0.78%, P0.36% / 3.07% |
 | File search / keyword-default helper | 259.11–262.53 µs | 160.56–161.12 µs | 1.61–1.64× | `82ed92d4` | Diagnostic; L1.32%, P0.35% / 1.40% |
@@ -84,7 +85,7 @@ Compilation alone includes code construction and disposal under the shared allow
 | JSON-lines/helpers | 51.02–52.49 µs | 50.80–51.18 µs | 1.00–1.03× | `8ec7bfab` | Variable; L2.80%, P0.74% / 1.27% |
 | JSON-to-Markdown report | 0.041–0.041 ms | 0.038–0.038 ms | 1.07–1.09× | `983bab96` | Diagnostic; L0.92%, P0.50% / 2.53% |
 | JSON-to-Markdown / UTF-16 output | 0.041–0.042 ms | 0.039–0.039 ms | 1.07–1.08× | `983bab96` | Variable; L0.69%, P0.43% / 5.75% |
-| Config edit | 36.5–37.2 µs | 34.2–34.4 µs | 1.06–1.09× | `ee44` | Diagnostic; L1.93%, P0.51% / 1.11% |
+| Config edit | 37.11–37.30 µs | 34.57–34.72 µs | 1.07–1.08× | `41bd869b` | Diagnostic; L0.53%, P0.43% / 1.35% |
 | Protected file search | 29.53–29.99 µs | 32.19–32.34 µs | 0.91–0.93× | `8ec7bfab` | Variable; L1.51%, P0.45% / 2.11% |
 | File search / keyword-default helper | 29.52–29.89 µs | 32.33–32.58 µs | 0.91–0.92× | `82ed92d4` | Diagnostic; L1.24%, P0.77% / 2.04% |
 | File search / guarded helper | 32.67–32.78 µs | 34.30–34.64 µs | 0.94–0.96× | `da9e5066` | Variable; L0.35%, P0.99% / 5.44% |
@@ -98,8 +99,9 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering;
-five-second warmups per role/job and seven rotated 250 ms rounds for `8ec7bfab`
-(frozen `641c3f75`); captured-text warmup is twelve seconds. Earlier CSV/guarded
+five-second warmups per role/job and seven rotated250ms rounds for `41bd869b`
+(frozen `f0b736b2`); captured-text/UTF16 warmups are twelve seconds. `8ec7bfab`
+uses frozen`641c3f75` with the recorded5s/12s warmups. Earlier CSV/guarded
 search use 150 ms rounds and `a55202fb`/`da9e5066`; earlier report/text phases
 retain `b2cbfdb6`/`983bab96` as labelled. Keyword-default search keeps
 `0106a711`/`82ed92d4`. All reuse common worker `fec79afd` and adapter 0.4.
@@ -152,7 +154,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Bulk UTF16 output | Complete UTF16 report warm elapsed −1..−8% Run /−2..−5% RunAsync; allocation flat | Bulk encoder replaces manual scalar emission; three dormant helpers removed. Sync CPU uncertain; UTF8 control elapsed−0.36..+2.11% /CPU0..+1.25% accepted debt, no equivalence/CPython claim. Full delivery pending. [Both forms and confirmation](../benchmarks/results/2026-11-12-bulk-utf16/README.md) |
+| Bulk UTF16 output | Complete UTF16 report warm elapsed −1..−8% Run /−2..−5% RunAsync; allocation flat | Bulk encoder replaces manual scalar emission; three dormant helpers removed. Sync CPU uncertain; UTF8 control elapsed−0.36..+2.11% /CPU0..+1.25% accepted debt, no equivalence/CPython claim. Fully qualified41bd869b. [Both forms](../benchmarks/results/2026-11-12-bulk-utf16/README.md), [delivery](../benchmarks/results/2026-11-12-bulk-utf16/delivery/README.md) |
 | Prepared cased-word ranges | Allocation flat; captured text warm elapsed −1..−5% Run /−3..−5% RunAsync | Removes the second whitespace scan. Wider CPU/control movement limits attribution; no substantial CPU or CPython claim. Focused/quiet and full platform/stress/consumer qualification pass on1011ed0b. [Source pair](../benchmarks/results/2026-11-12-prepared-word-ranges/README.md) |
 | Native operation metadata | Node storage72→48B (−33%); affected whole-script compile allocation−0.06..−0.18%, warm flat | Ordinary instruction/opcode/third word removed. Quiet reference spreads6–8% leave CPU uncertain; no speedup claim or CPython update. [Source pair and qualification](../benchmarks/results/2026-11-12-native-operation-facts/README.md) |
 | Immutable reader windows / search, text, JSON | Warm allocation −18% search / −5% text and JSON; controlled search elapsed −2..−6%, supporting CPU | Full-window command/result retention can deny earlier. Report elapsed +0.6..+2.8% is accepted debt; text/JSON CPU uncertain. [Source pair, confirmation and qualification](../benchmarks/results/2026-11-12-reader-windows/README.md) |

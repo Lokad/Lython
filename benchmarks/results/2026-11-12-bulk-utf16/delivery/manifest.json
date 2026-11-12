@@ -1,0 +1,14 @@
+{
+  "logs.tar.xz": {
+    "bytes": 15008,
+    "sha256": "cc9d9fdd1985f52a82343f48a677b1293dd75e4bb518464eff323a923927e4f8"
+  },
+  "source-proof.json": {
+    "bytes": 157114,
+    "sha256": "704b7a6194ee6e5a1682b5571bc0bb89305d358787c2196bc4e81eaabdcb0637"
+  },
+  "terminal-status.json": {
+    "bytes": 5484,
+    "sha256": "1b78f540f43f1ed95a744dd23a5769bddd5cb097e3a6cc09f51ca39d44f0530d"
+  }
+}

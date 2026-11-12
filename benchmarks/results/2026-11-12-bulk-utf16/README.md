@@ -66,6 +66,6 @@ Warm includes mediated RAM I/O/full output checks/prior-result cleanup; excludes
 compile/startup/reset/protocol/finalcache. Wider CPU includes reset/protocol/JIT/GC.
 Frozen before/reference source equality and different generated metadata remain
 explicit; no DLL is relabelled as a CI-built image. Full platform/stress/installed
-consumer qualification follows at this retained-source boundary. Publication stays
+consumer qualification [passes on41bd869b](delivery/README.md) at this retained-source boundary. Publication stays
 postponed; broader whole-script objective remains open. No benchmark evidence/image
 retirement or reduced OS/evidence floor. Final B632free350,363,648B.

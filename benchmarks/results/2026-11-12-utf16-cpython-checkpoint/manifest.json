@@ -1,0 +1,30 @@
+{
+  "archive-receipt.json": {
+    "bytes": 366,
+    "sha256": "f90781c24dbbfd3b0623c6f88802978b1eb1ee29561871fbd4e3ebb7879e8d0a"
+  },
+  "extraction.json": {
+    "bytes": 70,
+    "sha256": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf"
+  },
+  "observations.tgz": {
+    "bytes": 84821,
+    "sha256": "ddd257c3347cd9d59794cf98e67b6951dc11f5e24ef8c058657f61180bb4bb4e"
+  },
+  "preparation.tar.xz": {
+    "bytes": 9108,
+    "sha256": "df1696422d52ed198035b479134013b369c46035208641104f04912cfde1110e"
+  },
+  "prior-BENCHMARKS.md": {
+    "bytes": 19306,
+    "sha256": "493c93c064dd6faa3d0aeef60c5a71d52b184764f34c86280ce0ca4643696a20"
+  },
+  "summary.json": {
+    "bytes": 5348,
+    "sha256": "a6b45632da33e64965f17c4aa5ec5e6a0ca7fb3382e08c696df9f26c227fe5b5"
+  },
+  "terminal-status.json": {
+    "bytes": 566,
+    "sha256": "8e9446294994b999f11653b271a010a8b894a96703ba29a6c5eaba9ee208e23a"
+  }
+}

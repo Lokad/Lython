@@ -6704,6 +6704,35 @@ stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
 
+## R277 — qualified selected CPython checkpoint
+
+Qualified41bd869b completes seven existing jobs in328.130s: captured-text warm/
+fresh, UTF16report warm/fresh, UTF8warm control, config compile/fresh. Captured
+warm1.66–1.68×CPython; UTF16warm1.45–1.49×/fresh1.37–1.41×; UTF8warm1.30–1.32×;
+config compile1.07–1.08×/fresh1.11–1.12×. Captured fresh1.46–1.55× retains5.19%
+Lython process spread. All identity/golden/quiet/zero-balance worker exit/join/RAM
+cleanup/archive gates pass; terminal cached. The original launcher self-match
+failure occurred before staging/workers and survives with its correction. No
+cross-collection attribution or new timing needed for this bounded decision.
+[Raw evidence and boundaries](results/2026-11-12-utf16-cpython-checkpoint/README.md).
+The external gaps remain a product priority; this checkpoint does not finish it.
+
+## R278 source gate — shared prefix form not selected
+
+The proposed managed span/inline frame view, array-backed retained continuation,
+funded live-state promotion and native graph deletion match the already implemented
+R268 migration. Its [positional refinement](results/2026-11-12-ordered-helper-prototype/positional-refinement/README.md)
+removed ordinary argument packaging but still regressed native search22–26% with
+stable controls. Paired profiles identified recurring entry/instruction dispatch;
+the removed guard/evaluator also performed useful execution. No new production
+prototype or quiet-VM timing is warranted for the same form. This is a decision on
+this proposal, not a permanent ban on coherent call/frame redesigns. A different
+design needs to show which recurring work disappears before another migration.
+Current executable locals/operands already share an array, the binder accepts
+spans and deferred contexts already support incoming closure cells. Source facts
+must not present these as new improvements. [Source map and offline attribution](results/2026-11-12-redesign-source-gate/README.md)
+preserve the bounded decision and its limitations. No public contract changed.
+
 ## R276 — bulk managed UTF16 output
 
 [Both forms and bounded confirmation](results/2026-11-12-bulk-utf16/README.md)
