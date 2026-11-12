@@ -8,6 +8,51 @@ namespace Lokad.Lython.Tests;
 public sealed class CasedSplitOwnershipTests
 {
     [Fact]
+    public void CancelledHelperReturnRelinquishesItsPreparedRangeLoan()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            { MemoryBudget = owner, CancellationToken = cancellation.Token });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
+                LoweredScript.Lower(LythonFrontend.Compile("def words(value):return value.lower().split()").Script!).Statements));
+            var code = ExecutableScript.CompileClassFunction(definition);
+            var function = new PyExecutableFunction("words", definition.ParameterLayout, code, context, [],
+                new Dictionary<string, object>(), definition.ScopeFacts);
+            var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
+            using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
+            var index = Array.FindIndex(code.Instructions, instruction => instruction.OpCode == ExecutableOpCode.Return);
+            var source = code.Instructions[index].InputStart;
+            var values = new object[code.ValueStorageCapacity];
+            values[source] = cursor;
+            // Model interruption after the real fused kernel has completed but
+            // before Return publishes its private value, without a timer race.
+            var execution = new LythonRuntime.NativeExecution(function, values, true)
+            { Index = index, LiveExtent = source + 1 };
+            context.State.CloseResources();
+            var active = budget.ReservedBytes;
+            cancellation.Cancel();
+            try
+            {
+                try { execution.Run(span, out _); Assert.Fail("Cancelled return completed."); }
+                catch (LythonRuntimeException error)
+                { Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason); }
+            }
+            finally { execution.Dispose(); }
+            Assert.True(budget.ReservedBytes < active);
+            var ended = budget.ReservedBytes;
+            cursor.Dispose();
+            Assert.Equal(ended, budget.ReservedBytes);
+            Assert.Equal(0, context.State.CurrentInterpreterDepth);
+            Assert.Equal(0, context.State.CurrentRecursionDepth);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
     public void PreparedRangesKeepOverlappingLoansFundedThroughReuseShutdown()
     {
         var budget = new LythonMemoryBudget(1024 * 1024);

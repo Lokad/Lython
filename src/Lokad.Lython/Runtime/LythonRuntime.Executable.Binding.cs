@@ -396,7 +396,7 @@ internal sealed partial class LythonRuntime
         => callSite.ArgumentCount <= 3 ? null : context.MemoryGovernor.ReserveTemporary(
             checked(32L + 32L * callSite.ArgumentCount), callSite.CallSpan);
 
-    private static CallArgumentValue CreateExecutableCallArgument(ExecutableCallArgument spec, object value)
+    private static CallArgumentValue CreateExecutableCallArgument(CallArgumentForm spec, object value)
         => spec.Kind switch
         {
             CallArgumentKind.Positional => CallArgumentValue.Positional(value),

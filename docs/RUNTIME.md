@@ -332,35 +332,28 @@ before binding. If disposal is pending, the existing funded result operand and
 store remain the continuation after awaited cleanup. No result is published early
 and no extra async completion stage is needed.
 Failable reads retain their source spans; evaluated call and protocol packets
-retain snapshots across callbacks. Ordinary instructions carry no native-return
-provenance. Eligible helpers own compact prepared native operations, referring
-to original source spans and shared call metadata. Nodes keep semantic operation
-facts; they embed neither ordinary executable instructions nor physical stack
-positions. Compiler preparation validates these facts once.
-Proven captured helpers use these same operations with live definition-owned
-cells. One non-owning readonly input view borrows the bound parameter prefix
-and the definition-owned live cell collection separately; it does not pack or
-clear a second buffer or encode cells as appended parameter indexes.
-Numeric nonlocal stores and their proven continuation can omit function-workspace
-binding and ordinary instruction dispatch. Actual owner/cell/namespace writes
-preserve aliases and later reads. The complete proof precedes effects; unsupported
-protocols or targets keep ordinary execution, and native errors never restart the
-body. Mutable global/closure reads after earlier effects retain ordinary execution.
-Existing native nesting and inline-capacity bounds remain optimization thresholds;
-wider captured signatures keep ordinary binding and execution.
-Closed native helpers can run while their caller owns active exception-handler
-aliases. They share current exception state and global lookup, without binding or
-unwinding the caller's aliases. Class/annotation contexts retain their lexical
-machinery; custom protocols still promote to ordinary execution before effects.
-Named and default arguments use the same binding fill as ordinary calls. Small
-closed native helpers and methods can fill managed inline slots without renting
-function workspace or creating an activation. Direct method calls and saved bound
-methods pass the evaluated receiver separately through this same binder; exposing
-a method as a value still produces its normal Python bound-method object. This path accepts only native default storage
-that cannot invoke a protocol; values remain funded by their caller and definition
-owners through completion. Wide signatures and dynamic defaults keep owned binding,
-including across suspension. The inline capacity is an optimization threshold,
-not a limit on Python arguments. Live default aliases retain their normal behavior.
+retain snapshots across callbacks. Small acyclic helpers use the final executable
+slots and instruction positions directly in a private managed span. Parameters
+bind once, local initializers run once, and returned tuples/lists remain ordinary
+Python values. There is no separate native expression graph or whole-body type
+proof. Each operation checks its actual operands after earlier effects and admission.
+
+Incoming captured cells retain their definition-owned identity. Creating new
+captured locals, protected suites, mirrored namespaces and special lexical scopes
+use ordinary frames. Native and ordinary calls share canonical operators and
+receiver declarations; dynamic protocols stop before their operation and transfer
+the current PC and live values into the existing frame runner. They may then
+genuinely suspend. Defaults, bindings and earlier work are never replayed.
+
+Direct positional, named and method calls can fill the private span without an
+owned workspace. Wider or dynamic binding keeps admitted invocation storage.
+The sixteen-slot inline capacity is an optimization threshold, not a Python
+argument or expression limit. Caller and definition owners keep all inputs funded.
+At most sixteen dead private references can remain until the synchronous prefix
+ends; the dead tail clears before transfer and owned arrays clear on return.
+Private cursors retire deterministically, including cancellation before a return
+publishes its result. Call/function stack admission and exception context remain
+active. No span or private borrow survives suspension.
 The ordinary code is one instruction array with absolute branch and
 protected-suite ranges; temporary builder blocks are discarded. An explicit
 completion instruction distinguishes module completion from a guest return.
@@ -375,7 +368,7 @@ operations, exact positional split/replace/affix calls, dictionary views and exa
 list/tuple iteration run there without allocating a lexical context. Canonical
 truth tests and unary `not` share eligibility; custom truth protocols retain their
 normal frame. String operation selection, shape checking and invocation are shared
-with prepared native helpers. Evaluated arguments stay snapshotted across admission
+with native helper execution. Evaluated arguments stay snapshotted across admission
 callbacks. Other operations materialize a context when needed; defining captured
 locals, class cells, generators and protected bodies retain their lexical frames.
 Dynamic index arguments, keyword binding and guest callbacks use ordinary execution.
@@ -415,7 +408,7 @@ with its receiver and metadata. Fixed zero-argument values reuse their existing
 wrapper and raw argument validation; other shapes use the ordinary binder.
 Suspended protocols keep the receiver and operands funded until completion
 and cleanup. Custom string index, width and line-ending truth callbacks can suspend
-under RunAsync. Native no-argument operations and helper-return proofs remain shared.
+under RunAsync. Native no-argument and helper operations remain shared.
 Zero-argument whitespace `split()` and `rsplit()` after native `lower()` or
 `upper()` share one prepared
 recipe with closed helpers, including inside branches and protected bodies. They
@@ -581,8 +574,8 @@ a previous row or its value; every hit reads the current live slot. Deleted or
 detached fields and general Python mappings keep ordinary lookup. Backing
 admission precedes the layout check because a host callback can mutate the row.
 Formatting still reads each actual field in order and supports protocols that
-suspend after earlier formatting changes later fields. Native helper guards keep
-their existing admission ordering.
+suspend after earlier formatting changes later fields. Native helpers use the same
+definition-owned record-key cache and recheck protocol eligibility after admission.
 Read-only lexical misses leave unused
 namespace dictionaries unmaterialized; explicit namespace consumers retain the
 same stable dictionary. Arrays do not
@@ -644,97 +637,20 @@ Return values and failures resume the existing instruction
 and exception routing. Prepared operations route directly to their existing
 handler; native stores do not traverse asynchronous display and definition
 forwarders. Genuine suspension retains the original operand cleanup.
-Guarded native return expressions retain binding and function/interpreter entry
-checks while omitting resumable interpreter storage. Closed helpers, including ordinary nested definitions,
-borrow their defining execution state and resolve globals in the module. Their
-compiler proof excludes creating captured local cells and observable lexical work, so a separate
-invocation context is unnecessary. Fully supplied positional
-calls without a bound receiver borrow their admitted caller operands synchronously,
-without constructing bound argument storage. These completed helpers run directly
-in call dispatch, before pending-call state is created. Call and function stack
-admission still apply; result publication and input retirement follow completion.
-Eligible acyclic branch returns use this same prepared native expression proof.
-Consecutive `not` operations used immediately by a branch are normalized during
-preparation by exchanging the existing conditional roots. Other unary expressions
-keep ordinary execution; no additional runtime unary plan is needed.
-All type proofs precede effects; only selected operations execute, with the selected
-return's source span. Empty lists remain fresh and admitted, including cancellation
-after admission. Loops, shared joins, custom truth and format proofs that query
-container values keep ordinary executable dispatch. No separate branch interpreter
-or runtime working owner is introduced.
-Native helper inputs share the ordinary direct constant/local operand convention;
-consumed pure leaves need no separate read node or recursive read dispatch. Real
-root and mutable-name reads retain their metadata. Both paths use one fixed local
-prefix prepared with the code. Native operations, members, entries and returns
-retain cancellation/refusal checks; pure input reads have no checkpoint-count contract.
-The native evaluator borrows one readonly stack view of the actual parameter
-prefix and the definition's fixed collection of live incoming cells. It neither
-packs cells after parameters nor copies them into another argument buffer.
-Parameter bounds remain separate from cell indexes, including missing-argument
-checks before effects. The view cannot escape or suspend and owns no allowance.
-Already-evaluated caller temporaries or the real binder keep parameters funded;
-the defining function keeps its cells and their existing owners alive. Returning
-an argument object preserves its existing ownership. Defaults, dynamic binding and suspending bodies retain owned
-bindings. Functions requiring lexical storage or special scope handling retain
-their function contexts. Native conversions,
-dictionary string-key reads and compound
-native string operations qualify only after the entire expression's runtime
-guards pass, before native work. Compilation prepares operation kinds, method
-arity and supported casing/formatting combinations. Closed zero-argument string
-calls reuse the ordinary method declarations and frontend return facts; no separate
-method-kind inventory is needed. Existing casing/split fusion retains its original
-receiver and source checks, without a discarded casing node. Invocation checks actual
-types, callable identities and namespaces. Native global reads require the
-compiler's explicit global opcode; unresolved lexical names retain ordinary
-scope resolution. Prepared values own immutable original opcode metadata and member/return source
-spans independently of physical bytecode positions. Ordinary operand forwarding
-still applies when native guards fail. One shared compiler/runtime result-shape
-fact covers primitive integer, float and boolean binary operations and string
-addition; execution uses the canonical operators. Custom protocols keep ordinary
-dispatch. Evaluation requires no operand or argument arrays.
-They retain no caller values or tokens. Deeper or unsupported
-expressions keep the full engine. Single-value primitive formatting can share
-that proof. Multipart formatted strings use ordinary executable instructions and
-operand storage, including in context-free helpers. Closed primitive fields run
-synchronously through the shared formatter; dynamic fields create their function
-context at the current instruction and retain the genuine asynchronous protocol
-path. Earlier fields, allocations and bindings are not replayed. One working
-UTF-8 builder releases on failure or cancellation and transfers retained output
-with its funding. The native preparation declines mutable name/global/subscript
-reads after potentially allocating operations: admission can change their values,
-so an earlier type proof cannot authorize a later cast.
-Adjacent local stores/loads can forward their
-value inside the native proof when no later read needs that binding. Original
-instructions and local metadata remain intact for dynamic behavior and inspection.
-Custom protocols, unproven captured effects, observable locals and
-possible suspension keep the full executable path. Callee lookup observes current
-name/builtin rebinding. No alternate execution begins after native work or refused
-admission. Both paths share the existing operations, cancellation and ownership.
-Synchronous calls, asynchronous calls and native return expressions share unary
-builtin selection; ordinary calls keep broader protocol/error behavior while
-native returns require a complete result/effect proof.
-Eligible helpers begin with their owned local/operand storage and existing
-incoming cells in the same instruction dispatch, without an invocation context.
-Cell reads observe live values directly from that work state; unbound reads keep
-their Python error/span. Cell assignment uses its known owner slot to update an
-active local cache and applies the existing conditional namespace-mirroring policy.
-It needs no repeated name-to-slot lookup, separate owner-store path or writer's lexical
-context. Inactive owners may be retiring pooled storage and do not receive cache
-writes. Generators synchronize captured cells or their mirrored namespace before
-resuming, including lowered class writes and deletions during suspension.
-Missing/ownerless cells and namespace-sensitive owners retain the ordinary lexical
-context and resolver. Inlined comprehension bindings take precedence over the
-surrounding scope's global/nonlocal directives when storing or deleting names. Plain list and tuple
-construction reuse their admitted storage builders in this loop. Starred displays
-and dictionary/set key protocols keep their ordinary protocol paths. Scope-sensitive work,
-guest protocols, nested calls and host operations create the ordinary context at
-the current instruction and adopt that storage; bindings and prior effects are
-not replayed. Protected bodies and functions creating captured local cells start
-with their normal context.
-Native dictionary writes use this deferred context only when an already funded
-table needs neither capacity growth nor key protocols. Growth creates the context
-before admission. Operand storage retains shared execution services rather than
-lexical identity; cancellation, nesting admission and cleanup remain unchanged.
+Both APIs share native unary and receiver selection; ordinary calls retain broader
+protocol and error behavior. Multipart formatting uses ordinary executable slots
+and one working UTF-8 builder. Dynamic fields create their context at the current
+instruction; earlier fields and effects are not replayed. Builder failure refunds
+only unpublished output, while completed output retains its owner.
+
+Larger context-free helpers can start in ordinary owned workstate and materialize
+their lexical frame only when required. Incoming cells use their current shared
+identity; inlined comprehension bindings retain their lexical precedence. Plain
+list/tuple construction uses admitted builders. Scope-sensitive work, dynamic
+protocols, nested calls and host operations adopt the same storage and current PC.
+Protected bodies and functions creating captured local cells start with a frame.
+Native dictionary writes remain context-free only when funded capacity needs no
+growth or key protocol; growth establishes a context before admission.
 Mirrored/lowered functions and native/protocol callbacks use their general
 invocation routes. Short executable calls and shared native callback helpers pass
 managed stack arguments through the same borrowed entry on the callable contract.

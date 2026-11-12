@@ -209,7 +209,13 @@ internal sealed partial class LythonRuntime
                             var call = execution.Code.CallSites[instruction.CallSiteIndex];
                             var callStart = instruction.InputStart;
                             var target = execution.Stack[callStart + call.TargetOffset];
-                            if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target)) break;
+                            if (TryExecuteNativeCall(ref execution, scope, invocation, call, callStart, target, out var started))
+                            {
+                                if (started is null) break;
+                                nextCall = new(started);
+                                pendingSpan = call.CallSpan;
+                                return InstructionPause.Call;
+                            }
                             if (invocation is null) return InstructionPause.ContextRequired;
                             if (invocation!.TryBeginExecutableCall(call, callStart, target, asynchronous, out nextCall))
                             {

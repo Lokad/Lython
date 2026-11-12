@@ -191,18 +191,17 @@ internal sealed partial class LythonRuntime
                 CheckExecution(span);
                 var operands = _execution.Stack.Slice(argumentStart, argumentCount).Span;
                 var positional = !ordinaryCall || site!.IsPositionalOnly && function.SupportsDirectPositional;
-                var nativeAttempted = ordinaryCall && positional && function.CanBorrowPositionalArguments(argumentCount, receiver);
                 if (positional)
                 {
                     var bound = function.BindPositionalOperands(operands, span, this, receiver);
                     prepared = true;
-                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted));
+                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered));
                 }
                 if (!asynchronous)
                 {
                     var bound = function.BindCallOperands(operands, span, this, receiver, site!);
                     prepared = true;
-                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted: false));
+                    return new(BeginBoundCall(function, bound, site, start, span, completion, callEntered));
                 }
                 var binding = function.BindCallOperandsAsync(operands, span, this, receiver, site!);
                 if (!binding.IsCompleted)
@@ -212,7 +211,7 @@ internal sealed partial class LythonRuntime
                 }
                 var supplied = binding.GetAwaiter().GetResult();
                 prepared = true;
-                return new(BeginBoundCall(function, supplied, site, start, span, completion, callEntered, nativeAttempted: false));
+                return new(BeginBoundCall(function, supplied, site, start, span, completion, callEntered));
             }
             catch (Exception error)
             {
@@ -233,7 +232,7 @@ internal sealed partial class LythonRuntime
             {
                 var bound = await binding.ConfigureAwait(false);
                 prepared = true;
-                return BeginBoundCall(function, bound, site, start, span, completion, callEntered, nativeAttempted: false);
+                return BeginBoundCall(function, bound, site, start, span, completion, callEntered);
             }
             catch (Exception error)
             {
@@ -250,7 +249,7 @@ internal sealed partial class LythonRuntime
         // surviving values and ownership transfer into the work/frame below.
         private ExecutionContext BeginBoundCall(PyExecutableFunction function, in BoundCallArguments bound,
             ExecutableCallSite? site, int start, LythonSourceSpan span, CallCompletion completion,
-            bool callEntered, bool nativeAttempted)
+            bool callEntered)
         {
             var consumedByIteration = completion == CallCompletion.Call && site is not null
                 && CallResultConsumedByIteration(in _execution, site);
@@ -265,10 +264,11 @@ internal sealed partial class LythonRuntime
             {
                 CheckExecution(span);
                 var arguments = bound.Values.AsSpan(0, bound.Assigned.Length);
-                if (!nativeAttempted && function.TryExecuteWithoutFrame(arguments, span, consumedByIteration, out var nativeValue))
+                if (function.TryStartBoundInvocation(bound, span, consumedByIteration, out var nativeValue, out frame))
                 {
-                    completedValue = nativeValue;
-                    goto Completed;
+                    if (frame is null) { completedValue = nativeValue; goto Completed; }
+                    functionEntered = true;
+                    goto PreparedFrame;
                 }
                 if (function.CanDeferInvocationContext)
                 {
@@ -299,23 +299,14 @@ internal sealed partial class LythonRuntime
                 {
                     frame = function.EnterInvocationFrame(bound, span);
                     functionEntered = true;
-                    if (TryExecuteNativeReturn(function.CodeObject, frame, arguments, span, out var value, consumedByIteration))
-                    {
-                        completedValue = value;
-                        goto Completed;
-                    }
                     InitializeExecutableFrame(function.CodeObject, frame, bound,
                         function.ClosureCells, argumentsAreLocals: true, lookupOwner: function, returnConsumedByIteration: consumedByIteration);
                 }
+            PreparedFrame:
                 frame.EnterExecutableSlots();
                 // Only a real child establishes a suspended caller. No reverse
                 // link or preparation packet is needed for completed prefixes.
-                _pendingCallSite = site;
-                _protocolCallSpan = site is null ? span : null;
-                _pendingCallStart = start;
-                _callCompletion = completion;
-                frame._caller = this;
-                frame._boundStorageOwner = bound.StorageOwner;
+                AttachPreparedCall(frame, site, start, span, completion, bound.StorageOwner);
                 transferred = true;
                 return frame;
             }
@@ -351,6 +342,17 @@ internal sealed partial class LythonRuntime
         Completed:
             ApplyCallResult(start, span, completion, completedValue, completedError);
             return this;
+        }
+
+        private void AttachPreparedCall(ExecutionContext frame, ExecutableCallSite? site,
+            int start, LythonSourceSpan span, CallCompletion completion, MemoryGovernor? storageOwner)
+        {
+            _pendingCallSite = site;
+            _protocolCallSpan = site is null ? span : null;
+            _pendingCallStart = start;
+            _callCompletion = completion;
+            frame._caller = this;
+            frame._boundStorageOwner = storageOwner;
         }
 
         private void CloseInvocation(Exception? failure)

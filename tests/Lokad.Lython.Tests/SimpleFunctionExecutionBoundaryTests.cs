@@ -262,7 +262,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         foreach (var driver in Enum.GetValues<Driver>())
         {
             var (function, context, code) = Function("def f(value):\n    " + body + "\n", new LythonRunOptions());
-            Assert.NotNull(code.NativeBody);
+            Assert.True(code.CanInlineInstructions);
             Assert.Equal(new BigInteger(expected), Invoke(function,
                 [CallArgumentValue.Positional(new BigInteger(5))], context, driver));
             Assert.Null(context.CurrentExecutableFrame);
@@ -281,7 +281,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var (function, context, code) = Function(
                     "def f(value):\n    if value.isspace():return []\n    return value.lower().split()\n",
                     new() { MemoryBudget = owner });
-                Assert.NotNull(code.NativeBody);
+                Assert.True(code.CanInlineInstructions);
                 var input = PyString.FromString("  ", context.MemoryGovernor, CallSpan);
                 CallArgumentValue[] arguments = [CallArgumentValue.Positional(input)];
                 var first = Assert.IsType<PyList>(Invoke(function, arguments, context, driver));
@@ -315,7 +315,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var hook = new AdmissionHookMemoryBudget(owner);
                 var (function, context, code) = Function("def f(value):\n    if value:return []\n    return ()\n",
                     new() { MemoryBudget = hook, CancellationToken = cancellation.Token });
-                Assert.NotNull(code.NativeBody);
+                Assert.True(code.CanInlineInstructions);
                 // Establish any ordinary reusable call workspace before targeting
                 // the selected result's admission, independently of tiny limits.
                 Assert.Same(PyTuple.Empty, Invoke(function, [CallArgumentValue.Positional(false)], context, driver));
@@ -353,7 +353,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
         {
             var (function, context, code) = Function(
                 "def f(flag, mapping):\n    if flag:return mapping['first']\n    return mapping['second']\n", new());
-            Assert.NotNull(code.NativeBody);
+            Assert.True(code.CanInlineInstructions);
             var mapping = new PyDict(context.MemoryGovernor, CallSpan);
             var active = new PyException("ValueError", "outer", PyNone.Instance);
             context.State.SetCurrentException(active);
@@ -655,14 +655,16 @@ public sealed class SimpleFunctionExecutionBoundaryTests
                 var callFrontend = LythonFrontend.Compile("f(value)",regexProvider:Utf8RegexProvider.Instance);
                 var call = Assert.Single(ExecutableScript.Compile(
                     LoweredScript.Lower(callFrontend.Script.RequireNotNull())).EntryPoint.CallSites);
-                Assert.NotNull(code.NativeBody);
+                Assert.True(code.CanInlineInstructions);
                 Assert.True(function.CanBindNativeArguments);
                 var baseline = budget.ReservedBytes;
                 hook.RefuseGrowth = _ => true;
                 context.EnterInterpreterFrame(CallSpan);
                 try
                 {
-                    Assert.True(function.TryExecuteNativeCall(call, [line], null, context, CallSpan, false, out var result));
+                    Assert.True(function.TryStartNativeCall(call, [line], null, context, CallSpan, false,
+                        borrow: false, out var result, out var frame));
+                    Assert.Null(frame);
                     Assert.True(Assert.IsType<bool>(result));
                     Assert.Null(context.MemoryGovernor.AdmissionFailure);
                     Assert.Equal(baseline, budget.ReservedBytes);

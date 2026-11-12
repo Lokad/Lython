@@ -100,7 +100,7 @@ internal enum ExecutableSliceParts
 internal readonly record struct ExecutableInstruction
 {
     // Opcode metadata and physical positions share one immutable instruction.
-    // Closed native-body preparation is stored only by eligible helpers.
+    // Native and resumable execution use these same final storage positions.
     private readonly int _primaryOperand;
     private readonly int _secondaryOperand;
     private readonly int _inputStart;
@@ -444,26 +444,9 @@ internal sealed record ExecutableExceptionRegion(
     int? CleanupId = null,
     int StackDepth = 0);
 
-// Executable argument forms retain direct native sources for eligible bodies;
-// ordinary binding uses the same existing form array.
-internal readonly record struct ExecutableCallArgument
-{
-    private readonly string _keywordName;
-    public ExecutableCallArgument(CallArgumentForm form)
-    {
-        Kind = form.Kind;
-        _keywordName = form.Kind == CallArgumentKind.Keyword ? form.KeywordName : string.Empty;
-        NativeInput = int.MaxValue;
-    }
-    public CallArgumentKind Kind { get; }
-    public string KeywordName => Kind == CallArgumentKind.Keyword ? _keywordName
-        : throw new InvalidOperationException("Only a keyword argument has a keyword name.");
-    public int NativeInput { get; init; }
-}
-
 internal sealed record ExecutableCallSite(
     int ArgumentCount,
-    ExecutableCallArgument[] Arguments,
+    CallArgumentForm[] Arguments,
     LythonSourceSpan TargetSpan,
     LythonSourceSpan CallSpan,
     bool HasReceiver = false)
@@ -475,8 +458,6 @@ internal sealed record ExecutableCallSite(
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
     public int ArgumentOffset => TargetOffset + 1;
-    public int NativeArgumentSource(int index) => (uint)index < (uint)Arguments.Length
-        ? Arguments[index].NativeInput : int.MaxValue;
 }
 
 // Execution retains declaration inputs, not the original syntax/body graph.
@@ -548,10 +529,9 @@ internal sealed partial class ExecutableCodeObject
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
         PrepareCasedSplits(blocks, callSites);
-        NativeBody = PrepareNativeBody(blocks, entryBlockIndex, exceptionRegions.Count, callSites);
         var reads = ExecutableStackLayout.ForwardValues(this, blocks);
-        // Assign physical positions after forwarding. Native proof metadata is
-        // independent of these positions, including when a runtime guard fails.
+        // Assign physical positions after forwarding. Both execution forms use
+        // this final layout, including at a dynamic-operation transition.
         var operandLayout = ExecutableStackLayout.Prepare(blocks, constants, callSites,
             exceptionRegions, entryBlockIndex, initialOperandDepth, FirstTemporarySlot);
         OperandCapacity = operandLayout.MaximumDepth;
@@ -560,6 +540,12 @@ internal sealed partial class ExecutableCodeObject
         _operandReadSpans = reads.Select(read => new ExecutableOperandSpan(
             ((long)(offsets[read.Block] + read.Instruction) << 2) | (uint)read.Input, read.Span)).ToArray();
         EntryIndex = offsets[entryBlockIndex];
+        CanInlineInstructions = IsFunctionScope && !RequiresLocalVariableMirroring && capturedLocalSlots.Count == 0
+            && exceptionRegions.Count == 0 && ValueStorageCapacity <= LythonRuntime.NativeValueCapacity
+            && Instructions.All(IsInlineInstruction)
+            && !Instructions.Where((instruction, index) => instruction.OpCode is ExecutableOpCode.Jump
+                or ExecutableOpCode.JumpIfFalse or ExecutableOpCode.CompareJumpIfFalse
+                && instruction.TargetIndex <= index).Any();
         ExceptionRegions = exceptionRegions
             .Where(region => operandLayout.EntryDepths[region.ProtectedStartIndex].HasValue)
             .Select(region => region with
@@ -623,5 +609,14 @@ internal sealed partial class ExecutableCodeObject
     public int PatternStorageStart => checked(FirstTemporarySlot + Math.Max(4, OperandCapacity));
     public int ValueStorageCapacity => checked(PatternStorageStart + PatternStorageCount);
 
-    public ExecutableNativeBody? NativeBody { get; }
+    public bool CanInlineInstructions { get; }
+
+    private static bool IsInlineInstruction(ExecutableInstruction instruction) => instruction.OpCode is
+        ExecutableOpCode.LoadConst or ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadGlobal
+        or ExecutableOpCode.LoadClosure or ExecutableOpCode.StoreLocal or ExecutableOpCode.StoreClosure
+        or ExecutableOpCode.LoadCallMember or ExecutableOpCode.Call or ExecutableOpCode.Unary
+        or ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript
+        or ExecutableOpCode.CompareJumpIfFalse or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+        or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.Return
+        or ExecutableOpCode.ReturnNone or ExecutableOpCode.Complete or ExecutableOpCode.Dup or ExecutableOpCode.PopTop;
 }

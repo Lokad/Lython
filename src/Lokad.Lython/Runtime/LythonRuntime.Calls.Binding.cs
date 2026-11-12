@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
         else Array.Clear(values);
     }
 
-    private static BoundCallArguments RentFunctionArgumentStorage(
+    internal static BoundCallArguments RentFunctionArgumentStorage(
         FunctionBindingPlan plan, LythonSourceSpan span, MemoryGovernor governor, int? storageCapacity)
     {
         var parameterCount = plan.ParameterCount;

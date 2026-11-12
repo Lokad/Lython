@@ -6870,3 +6870,19 @@ captured text+4–8% remain adverse with supporting CPU; warm allocation is flat
 Retain all controls/first fixture/build/disk failures. One bounded lifetime/cache/
 obsolete-metadata refinement is active, not a retained speedup or completed goal.
 Qualified production remains9bca1337; no platform/package replay or publication.
+
+## R290 — optional adapter capability refresh, immutable dev78
+
+[New bounded package observation](results/2026-11-13-regex-provider-capability/README.md)
+finds a material adoption detail: funded Compile ignores AssumeValid on both actual
+TFMs, although the unfunded overload honors it; ownership returns to0. Preserve
+package hashes/raw property checks; no timing or adapter promotion claim. Three
+precise final-adapter API gaps remain, not a stop on core/runtime development.
+
+R289's [refined B644](results/2026-11-12-ordered-final-slots/README.md) improves CSV
+Run10–11%/Async13–15% with supporting CPU, allocation flat; original native
+regression shrinks but moving controls leave debt uncertain. Captured/report
+cross zero. A demonstrated private-return cancellation cleanup gap is corrected
+after the measured freeze;3288focused checks pass actual targets. Prepare the
+coherent delivery candidate and targeted final-source confirmation, preserving
+all first/refined results. Full delivery is not established by these timings.

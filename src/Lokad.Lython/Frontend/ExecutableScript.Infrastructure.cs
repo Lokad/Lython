@@ -455,7 +455,7 @@ internal sealed partial class ExecutableScript
         {
             _callSites.Add(new ExecutableCallSite(
                 call.Arguments.Count,
-                call.Arguments.Select(argument => new ExecutableCallArgument(argument.Form)).ToArray(),
+                call.Arguments.Select(argument => argument.Form).ToArray(),
                 call.Target.Span,
                 call.Span,
                 hasReceiver));

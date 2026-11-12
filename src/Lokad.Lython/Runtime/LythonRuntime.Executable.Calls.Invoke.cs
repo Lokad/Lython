@@ -13,8 +13,9 @@ internal sealed partial class LythonRuntime
         // The same native selection serves ordinary and not-yet-materialized
         // invocations. A false result has performed no operation or admission.
         private static bool TryExecuteNativeCall(ref ExecutableWorkState execution, ExecutionContext scope,
-            ExecutionContext? invocation, ExecutableCallSite call, int start, object target)
+            ExecutionContext? invocation, ExecutableCallSite call, int start, object target, out ExecutionContext? started)
         {
+            started = null;
             // Closed helpers complete here just like native builtins. Borrow the
             // evaluated arguments without manufacturing a pending call/resume.
             // Other function calls still use the existing binding/frame runner.
@@ -26,36 +27,48 @@ internal sealed partial class LythonRuntime
                 function = boundFunction;
                 functionReceiver = bound.Receiver;
             }
-            if (function is not null && function.CodeObject.NativeBody is not null)
+            if (function is not null && function.CanStartInline && invocation is not null)
             {
                 var borrow = call.IsPositionalOnly && function.SupportsDirectPositional
                     && function.CanBorrowPositionalArguments(call.ArgumentCount, functionReceiver);
                 if (!borrow && !function.CanBindNativeArguments) return false;
+                var callEntered = false;
                 try
                 {
-                    object value;
                     scope.EnterInterpreterFrame(call.CallSpan);
-                    try
+                    callEntered = true;
+                    scope.CheckExecution(call.CallSpan);
+                    var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                    if (!function.TryStartNativeCall(call, arguments, functionReceiver, scope, call.CallSpan,
+                        CallResultConsumedByIteration(in execution, call), borrow, out var value, out var frame)) return false;
+                    if (frame is not null)
                     {
-                        scope.CheckExecution(call.CallSpan);
-                        var arguments = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
-                        var consumedByIteration = CallResultConsumedByIteration(in execution, call);
-                        var completed = borrow
-                            ? function.TryExecuteWithoutFrame(arguments, call.CallSpan, consumedByIteration, out value)
-                            : function.TryExecuteNativeCall(call, arguments, functionReceiver, scope, call.CallSpan, consumedByIteration, out value);
-                        if (!completed) return false;
+                        try
+                        {
+                            frame.EnterExecutableSlots();
+                            invocation.AttachPreparedCall(frame, call, start, call.CallSpan, CallCompletion.Call, function.DefinitionContext.MemoryGovernor);
+                        }
+                        catch
+                        {
+                            AbortPreparedNativeCall(frame, function.DefinitionContext.MemoryGovernor);
+                            throw;
+                        }
+                        started = frame;
+                        callEntered = false; // The existing child completion owns it.
+                        return true;
                     }
-                    catch (Exception error) when (TryTranslateCallableException(error, call.CallSpan, out var translated))
-                    {
-                        throw translated;
-                    }
-                    finally { scope.LeaveInterpreterFrame(); }
-                    // As in the frame runner, release call admission before
-                    // publishing the result or retiring any caller inputs.
+                    scope.LeaveInterpreterFrame();
+                    callEntered = false;
                     PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], value);
                     return true;
                 }
-                catch { execution.Stack.RetireTo(start); throw; }
+                catch (Exception error)
+                {
+                    execution.Stack.RetireTo(start);
+                    if (TryTranslateCallableException(error, call.CallSpan, out var translated)) throw translated;
+                    throw;
+                }
+                finally { if (callEntered) scope.LeaveInterpreterFrame(); }
             }
 
             // These existing native receiver operations need execution services,
@@ -92,8 +105,7 @@ internal sealed partial class LythonRuntime
                 var first = inputs[0];
                 var second = inputs.Length > 1 ? inputs[1] : null;
                 var third = inputs.Length > 2 ? inputs[2] : null;
-                if (TryGetNativeStringCallShape(operation, NativeReturnShape.String,
-                    ReturnShape(first), ReturnShape(second), ReturnShape(third), out _))
+                if (CanUseNativeStringCall(operation, first, second, third))
                 {
                     try
                     {
@@ -111,10 +123,10 @@ internal sealed partial class LythonRuntime
                 ReferenceEquals(target, ReceiverMethods.DictionaryGet)
                 ? execution.Stack[start] as PyDict : null;
             var nativeGet = dictionary is not null && dictionary.CanReadKeySynchronously(argument!);
-            var shape = NativeReturnShape.Other;
+            var closed = false;
             var unary = call.IsPositionalOnly && call.ArgumentCount == 1
-                ? SelectNativeUnaryOperation(target, argument, NativeReturnShape.Other, out shape) : null;
-            if (invocation is null && shape == NativeReturnShape.Other) unary = null;
+                ? SelectNativeUnaryOperation(target, argument, out closed) : null;
+            if (invocation is null && !closed) unary = null;
             if (!nativeGet && unary is null) return false;
             try
             {
@@ -128,6 +140,25 @@ internal sealed partial class LythonRuntime
                 return true;
             }
             catch { execution.Stack.RetireTo(start); throw; }
+        }
+
+        private static void AbortPreparedNativeCall(ExecutionContext frame, MemoryGovernor storageOwner)
+        {
+            try
+            {
+                frame.LeaveExecutableSlots();
+                try { frame.AbandonFrame(); }
+                finally { frame._execution.Stack.ReleaseStorage(); }
+            }
+            finally
+            {
+                try { frame.LeaveFunctionCall(); }
+                finally
+                {
+                    try { ReturnBoundArguments(frame._execution.Locals, storageOwner, frame._execution.Code.ValueStorageCapacity); }
+                    finally { frame.DetachExecutableExecution(); }
+                }
+            }
         }
 
         // The opcode has already read its evaluated target and offered it to the

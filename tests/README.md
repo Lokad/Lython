@@ -45,6 +45,15 @@ funding; the public cases retain independent Python goldens.
 Admission reentry also rebinds caller locals after a native cell effect while
 already-bound positional and keyword parameters keep their original values.
 
+[Ordered helper continuation](Lokad.Lython.PublicApi.Tests/OrderedFunctionContinuationTests.cs)
+keeps once-only local/closure effects and temporary record inputs through late
+comparison-protocol I/O. Cancellation joins file cleanup before returning input
+funding, then the same budget is reusable. Native cell tests also refuse a late
+callback's explicit admission despite attempted suppression and finally returns.
+Prepared-range cleanup checks model cancellation before a helper return publishes
+its private cursor, checking that cache shutdown keeps the loan funded until
+actual retirement. They use no timer race or test-only checkpoint counter.
+
 [Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
 check live default aliases and replacement, keyword binding, wide calls, retained
 values and genuinely suspending default protocols through both APIs. The white-box

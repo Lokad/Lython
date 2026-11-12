@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute small helpers over the ordinary final slots and instruction positions,
+  removing the separate native expression graph, whole-body proof and recursive
+  evaluator. Reuse local values and construct normal Python collection results.
+  Transfer once to the existing frame for dynamic protocols and actual I/O,
+  preserving cancellation, terminal admission refusal and funded cleanup.
+
 - Reuse lexical preparation to select annotation analysis. Unannotated scripts
   omit a duplicate statement walk and body-position dictionary; regex scripts
   retain full conservative flow directly. Preserve nested/dead-scope diagnostics,

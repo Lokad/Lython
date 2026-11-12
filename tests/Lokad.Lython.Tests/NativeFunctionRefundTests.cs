@@ -23,7 +23,7 @@ public sealed class NativeFunctionRefundTests
             var definition = Assert.IsType<LoweredFunctionDefinitionStatement>(Assert.Single(
                 LoweredScript.Lower(LythonFrontend.Compile("def f(value,unused): return value.lower()").Script!).Statements));
             var code = ExecutableScript.CompileClassFunction(definition);
-            Assert.NotNull(code.NativeBody);
+            Assert.True(code.CanInlineInstructions);
             var function = new PyExecutableFunction("f", definition.ParameterLayout, code, context, [],
                 new Dictionary<string, object>(), definition.ScopeFacts);
             var retained = PyString.FromString(new string('A', 4096), governor, span);

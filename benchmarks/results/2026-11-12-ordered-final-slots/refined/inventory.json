@@ -1,0 +1,75 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 266608640,
+  "requiredFreeBytes": 276824064,
+  "reclaimableBytes": 12455936,
+  "proofs": [
+    {
+      "knownPath": "ordered-native-b643-20261112/current-core.dll",
+      "kind": "withdrawn-image",
+      "knownAliases": [
+        "ordered-native-b643-20261112/current-core.dll",
+        "ordered-native-b643-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "bytes": 5675008,
+      "sha256": "c8d0a5154ea3dee3b9d4280c4acd2a98178c88b7272e78923470c75034af5bd2",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-final-slots/first-form/observations.tgz!current-core.dll",
+      "canonicalArchiveSHA256": "8e407674e73c2daeb64843363197196f34b914cf7bfb847ca65d878acaa888b5",
+      "paths": [
+        "ordered-native-b643-20261112/current-core.dll",
+        "ordered-native-b643-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 845388,
+      "allocatedBytes": 5681152,
+      "allAliasesVerified": true
+    },
+    {
+      "knownPath": "ordered-native-b643-20261112/candidate-sources.tar.xz",
+      "kind": "exact",
+      "knownAliases": [],
+      "bytes": 933736,
+      "sha256": "173e7d89b51ebe81658f8f57b77b4e59b6695a38e13a93dadfaf7dd9d9bee15f",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-final-slots/first-form/observations.tgz!candidate-sources.tar.xz",
+      "canonicalArchiveSHA256": "8e407674e73c2daeb64843363197196f34b914cf7bfb847ca65d878acaa888b5",
+      "paths": [
+        "ordered-native-b643-20261112/candidate-sources.tar.xz"
+      ],
+      "device": 66305,
+      "inode": 845390,
+      "allocatedBytes": 933888,
+      "allAliasesVerified": true
+    },
+    {
+      "knownPath": "ordered-native-b643-20261112/observations.tgz",
+      "kind": "exact",
+      "knownAliases": [],
+      "bytes": 2920471,
+      "sha256": "8e407674e73c2daeb64843363197196f34b914cf7bfb847ca65d878acaa888b5",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-final-slots/first-form/observations.tgz",
+      "paths": [
+        "ordered-native-b643-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 845399,
+      "allocatedBytes": 2924544,
+      "allAliasesVerified": true
+    },
+    {
+      "knownPath": "native-boundaries-b636-20261112/observations.tgz",
+      "kind": "exact",
+      "knownAliases": [],
+      "bytes": 2912360,
+      "sha256": "f4ebb51d907c861ac5f4b68ccf6d0ace3ee514cc844c0f9da570c5660c6b2fe1",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-accumulation-boundaries/b636/observations.tgz",
+      "paths": [
+        "native-boundaries-b636-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 845210,
+      "allocatedBytes": 2916352,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

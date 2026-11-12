@@ -55,8 +55,7 @@ internal sealed partial class ExecutableCodeObject
             name == "upper", instructions[producer - 1].Span, first.CallSpan,
             instructions[consumer - 1].Span, last.CallSpan);
         sites[lastIndex] = last with { CasedSplit = recipe };
-        // A local between the calls is observable on the ordinary path. Only
-        // native-body proof may elide that binding; never skip its instructions.
+        // A local between the calls is observable. Never skip its instructions.
         if (consumer == producer + 2) sites[firstIndex] = first with
         { CasedSplit = recipe };
         return recipe;

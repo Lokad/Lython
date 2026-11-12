@@ -64,3 +64,45 @@ RAM fixtures remain. Original adverse conditions and all controls are retained.
 [Raw source/checks](first-form/source-checks.tar.xz),
 [controlled summary](first-form/summary.json),
 [raw VM observations](first-form/observations.tgz).
+
+## Refined form: B644 and delivery correction
+
+Frozen2bc15497 retains the same final-slot migration, reuses the existing
+definition-owned record cache with post-admission protocol rechecking, and clears
+the private synchronous span at transfer/exit rather than every operation. It
+deletes the obsolete argument wrapper and speculative input/result shapes.
+3286 focused checks and all seven full scripts/both APIs/compile/fresh pass.
+The private driver's initial relative witness-path error was corrected before
+any collection; no lost/failed timing is replaced. Desktop adverse rows remain.
+
+| Complete script / API | Elapsed change | Wider process CPU change | Reference/candidate control spread |
+| --- | ---: | ---: | ---: |
+| CSV / Run | −11.25..−10.43% | −11.11..−8.48% | 0.19/0.72% |
+| CSV / RunAsync | −15.29..−12.68% | −14.66..−12.07% | 2.66/0.33% |
+| Native search / Run | +0.41..+9.52% | +0.00..+6.74% | 8.07/0.27% |
+| Guarded search / Run | +0.40..+7.64% | +1.50..+8.41% | 4.63/2.25% |
+| Captured text / Run | −2.50..+0.58% | −2.05..+0.90% | 0.30/2.84% |
+| UTF8 report control / Run | −2.65..+1.33% | −1.77..+2.31% | 3.23/0.73% |
+
+Conditions/boundaries are unchanged. Six jobs finish279.172s; all identity,
+golden, zero-balance, quiet, exit/join, RAM-unmount and independent archive gates
+pass. Terminal cached; final free267194368B and no users/fixtures. All first-form
+adversity survives. Warm allocation remains essentially flat; simpler structure
+and supported CSV CPU benefit are separate outcomes. Native control movement
+prevents a precise debt estimate; guarded debt remains explicit. One focused
+confirmation on the final delivery source is justified by this movement and the
+following ownership correction, not an unchanged open-ended retiming campaign.
+
+Source review then identified a real prototype cleanup gap: a fused Call can
+produce a private return cursor even when compiler LastOwnedTemporarySlot has no
+GetIter in that function. A bounded ownership regression models cancellation
+before publication with a real prepared cursor and ended idle reuse. It fails
+before the fix and passes afterward: final native cleanup scans its live temporary
+range, releasing the loan once; successful return still transfers ownership.
+Both actual targets pass3288 focused checks after that correction. The test uses
+no timer race, fuel or checkpoint counter. B644 timings describe2bc15497, before
+this final correction; do not silently relabel them as the final delivery binary.
+Platform/stress/installed-package qualification and final debt decision are separate.
+
+[Refined source/checks](refined/source-checks.tar.xz),
+[controlled summary](refined/summary.json), [all raw observations](refined/observations.tgz).

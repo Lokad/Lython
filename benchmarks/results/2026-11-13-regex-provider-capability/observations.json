@@ -1,0 +1,34 @@
+{
+  "packages": [
+    {
+      "file": "Lokad.Utf8Regex.0.5.0-dev.78.nupkg",
+      "sha256": "edb996fa51209f1972a26161924b51dbdd1db8ef356b30c58a25af7f4a31a1f5"
+    },
+    {
+      "file": "Lokad.Utf8Regex.PythonRe.0.5.0-dev.78.nupkg",
+      "sha256": "1a8bde10ea8924cae87473b838339b0c9e851cd8dccd82438f3c44feed6ad7f9"
+    }
+  ],
+  "sourceRevision": "5ea22bbd (frozen package source faa48f57)",
+  "observations": [
+    {
+      "runtime": ".NET 11.0.0-rc.3.26522.148",
+      "unfunded": "AssumeValid",
+      "funded": "Validate",
+      "reservedDuring": 45664,
+      "reservedAfter": 0,
+      "callerSettingHonored": false,
+      "purpose": "Immutable package contract observation only; no Lython adapter promotion or timing"
+    },
+    {
+      "runtime": ".NET 10.0.8",
+      "unfunded": "AssumeValid",
+      "funded": "Validate",
+      "reservedDuring": 45664,
+      "reservedAfter": 0,
+      "callerSettingHonored": false,
+      "purpose": "Immutable package contract observation only; no Lython adapter promotion or timing"
+    }
+  ],
+  "normalCoreAndAdapterUnchanged": true
+}

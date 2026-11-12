@@ -125,12 +125,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext? frame = null;
         try
         {
-            if (TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
-            {
-                return result;
-            }
-            frame = EnterInvocationFrame(boundArguments, span);
-            try { return ExecuteBody(frame, boundArguments, span); }
+            var prepared = TryStartBoundInvocation(boundArguments, span, out var result, out frame);
+            if (prepared && frame is null) return result;
+            frame ??= EnterInvocationFrame(boundArguments, span);
+            try { return prepared ? LythonRuntime.ExecuteInitializedFrame(frame) ?? PyNone.Instance
+                : ExecuteBody(frame, boundArguments, span); }
             catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
             catch (LythonRuntimeException ex)
             {
@@ -146,7 +145,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
                 // One relinquishment covers native success, entry failure and
                 // a framed body. A throwing refund must never return it again.
                 LythonRuntime.ReturnBoundArguments(boundArguments,
-                    frame is null ? boundArguments.Assigned.Length : _storageCapacity ?? boundArguments.Assigned.Length);
+                    _storageCapacity ?? boundArguments.Assigned.Length);
             }
         }
     }
@@ -177,12 +176,11 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonRuntime.ExecutionContext? frame = null;
         try
         {
-            if (TryExecuteWithoutFrame(boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
-            {
-                return result;
-            }
-            frame = EnterInvocationFrame(boundArguments, span);
-            try { return await ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false); }
+            var prepared = TryStartBoundInvocation(boundArguments, span, out var result, out frame);
+            if (prepared && frame is null) return result;
+            frame ??= EnterInvocationFrame(boundArguments, span);
+            try { return prepared ? await LythonRuntime.ExecuteInitializedFrameAsync(frame).ConfigureAwait(false) ?? PyNone.Instance
+                : await ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false); }
             catch (LythonRuntime.ReturnSignal signal) { return signal.Value; }
             catch (LythonRuntimeException ex)
             {
@@ -196,7 +194,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             finally
             {
                 LythonRuntime.ReturnBoundArguments(boundArguments,
-                    frame is null ? boundArguments.Assigned.Length : _storageCapacity ?? boundArguments.Assigned.Length);
+                    _storageCapacity ?? boundArguments.Assigned.Length);
             }
         }
     }
@@ -399,9 +397,13 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         LythonSourceSpan span)
         => ValueTask.FromResult(ExecuteBody(frame, boundArguments, span));
 
-    internal virtual bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
+    // Generators create their suspension state in ExecuteBody. Ordinary compiled
+    // functions can complete this prefix or hand back an initialized frame.
+    internal virtual bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span,
+        out object result, out LythonRuntime.ExecutionContext? frame)
     {
         result = PyNone.Instance;
+        frame = null;
         return false;
     }
 

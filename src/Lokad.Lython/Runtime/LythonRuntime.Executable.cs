@@ -343,6 +343,8 @@ internal sealed partial class LythonRuntime
 
         public int LiveExtent { get; private set; }
 
+        internal void RestoreNativeExtent(int liveExtent) => LiveExtent = liveExtent;
+
         public object this[int index]
         {
             get => _items[index].RequireNotNull();
@@ -534,17 +536,10 @@ internal sealed partial class LythonRuntime
         try
         {
             InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
-            // Even a zero-local module has live operands during calls. Publish
-            // the same existing frame that the async entry publishes; local
-            // slot counts do not determine whether an invocation is active.
-            context.EnterExecutableSlots();
-            context.Execute();
-            return context.HasFrameReturn ? context.FrameReturnValue : null;
+            return ExecuteInitializedFrame(context);
         }
         finally
         {
-            context.LeaveExecutableSlots();
-            context.DetachExecutableExecution();
             if (ownsAdmission) context.LeaveInterpreterFrame();
         }
     }
@@ -568,16 +563,34 @@ internal sealed partial class LythonRuntime
         try
         {
             InitializeExecutableFrame(codeObject, context, boundArguments, closureCells, argumentsAreLocals, lookupOwner);
+            return await ExecuteInitializedFrameAsync(context).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (ownsAdmission) context.LeaveInterpreterFrame();
+        }
+    }
+
+    internal static object? ExecuteInitializedFrame(ExecutionContext context)
+    {
+        try
+        {
+            context.EnterExecutableSlots();
+            context.Execute();
+            return context.HasFrameReturn ? context.FrameReturnValue : null;
+        }
+        finally { context.LeaveExecutableSlots(); context.DetachExecutableExecution(); }
+    }
+
+    internal static async ValueTask<object?> ExecuteInitializedFrameAsync(ExecutionContext context)
+    {
+        try
+        {
             context.EnterExecutableSlots();
             await context.ExecuteAsync().ConfigureAwait(false);
             return context.HasFrameReturn ? context.FrameReturnValue : null;
         }
-        finally
-        {
-            context.LeaveExecutableSlots();
-            context.DetachExecutableExecution();
-            if (ownsAdmission) context.LeaveInterpreterFrame();
-        }
+        finally { context.LeaveExecutableSlots(); context.DetachExecutableExecution(); }
     }
 
     private static void InitializeExecutableFrame(

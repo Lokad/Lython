@@ -83,11 +83,9 @@ public sealed class NativeClosureSequenceTests
             try
             {
                 var function = Assert.IsType<PyExecutableFunction>(LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null));
-                Assert.NotNull(function.CodeObject.NativeBody);
+                Assert.True(function.CodeObject.CanInlineInstructions);
                 Assert.Single(function.ClosureCells);
                 var span = new LythonSourceSpan(0, 1, 1, 1);
-                Assert.False(function.TryExecuteWithoutFrame([], span, out _));
-                Assert.Equal(BigInteger.Zero, function.ClosureCells[0].Value);
                 var failure = Assert.Throws<LythonRuntimeException>(() => function.Invoke([], span, context));
                 Assert.Equal("TypeError", failure.ExceptionType);
                 Assert.Equal(BigInteger.Zero, function.ClosureCells[0].Value);
@@ -165,6 +163,91 @@ public sealed class NativeClosureSequenceTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task LateCallbackRefusalKeepsEarlierEffectsAndFirstOrigin(bool asynchronous, bool mapped)
+    {
+        var source = """
+            def make():
+                count=0
+                def apply(value):
+                    nonlocal count
+                    count+=1
+                    return callback(value)
+                return apply
+            apply=make()
+            arm(apply)
+            try:
+                CALL
+            except MemoryError:print('suppressed')
+            finally:return 'suppressed-finally'
+            """.Replace("CALL", mapped ? "list(map(apply,[payload]))" : "apply(payload)");
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var payload = PyString.FromString(new string('A', 4096), context.MemoryGovernor, null);
+            context.Variables["payload"] = payload;
+            var callback = new RefusingCallback();
+            context.Variables["callback"] = callback;
+            var arm = new ArmLateFrame(hook);
+            context.Variables["arm"] = arm;
+            var code = ExecutableScript.Compile(LoweredScript.Lower(LythonFrontend.Compile(source).Script!));
+            try
+            {
+                var failure = await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
+                {
+                    if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+                    else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+                });
+                Assert.True(arm.Refused);
+                Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
+                Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
+                Assert.Equal(BigInteger.One, Assert.Single(arm.Function!.ClosureCells).Value);
+                Assert.Equal(1, callback.Calls);
+                Assert.Equal(new string('A', 4096), payload.AsString());
+                Assert.Null(context.CurrentExecutableFrame);
+                Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                Assert.Equal(0, context.State.CurrentRecursionDepth);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            }
+            finally { hook.RefuseGrowth = null; context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class RefusingCallback : LythonRuntime.ICallable
+    {
+        internal int Calls;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Calls++;
+            context.MemoryGovernor.Reserve(8192, span);
+            return arguments[0].Value!;
+        }
+    }
+
+    private sealed class ArmLateFrame(AdmissionHookMemoryBudget hook) : LythonRuntime.ICallable
+    {
+        internal bool Refused;
+        internal PyExecutableFunction? Function;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
+            hook.RefuseGrowth = _ =>
+            {
+                // Allow argument/iterator setup. The local write is an observable
+                // effect; the late callback's explicit admission must refuse.
+                if (Assert.Single(Function.ClosureCells).Value is not BigInteger count || count == BigInteger.Zero) return false;
+                Assert.Equal(BigInteger.One, count);
+                return Refused = true;
+            };
+            return PyNone.Instance;
+        }
+    }
+
     private sealed class RebindCaller(AdmissionHookMemoryBudget hook, PyString replacement) : LythonRuntime.ICallable
     {
         internal bool Rebound;
@@ -192,8 +275,7 @@ public sealed class NativeClosureSequenceTests
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             Function = Assert.IsType<PyExecutableFunction>(Assert.Single(arguments).Value);
-            Assert.NotNull(Function.CodeObject.NativeBody);
-            Assert.Contains(Function.CodeObject.NativeBody.Values, value => value.Operation == NativeReturnOperation.StoreClosure);
+            Assert.True(Function.CodeObject.CanInlineInstructions);
             hook.RefuseGrowth = _ =>
             {
                 // The native counter store precedes output admission, including

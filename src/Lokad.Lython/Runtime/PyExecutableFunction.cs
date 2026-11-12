@@ -67,62 +67,99 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope && Closure.ClassCell is null &&
         Closure.InlinedComprehensionLookup is null && Closure.ActiveHandlerVariables is not { Count: > 0 };
 
-    internal override bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span, out object result)
-        => TryExecuteWithoutFrame(arguments, span, false, out result);
-
-    internal bool TryExecuteWithoutFrame(ReadOnlySpan<object?> arguments, LythonSourceSpan span,
-        bool consumedByIteration, out object result)
-    {
-        // Proven bodies cannot inspect their invocation namespace or suspend.
-        // Incoming reads/writes retain their definition-owned cell identities.
-        // Class/annotation contexts keep their existing lexical machinery.
-        // Handler aliases belong to the caller: this closed body never binds or
-        // unwinds them, and exception state is shared with the ordinary frame.
-        if (!CanExecuteNativeBody)
-        {
-            result = PyNone.Instance;
-            return false;
-        }
-        // Parameters already have their caller/binder storage. Cells retain the
-        // definition's existing owner; native evaluation borrows both directly.
-        return LythonRuntime.TryExecuteNativeFunction(_codeObject, Closure, arguments, _closureCells,
-            Name, span, out result, consumedByIteration);
-    }
-
-    private bool CanExecuteNativeBody => _codeObject.NativeBody is not null
+    internal bool CanStartInline => _codeObject.CanInlineInstructions
         && !Closure.IsClassBody && !Closure.IsAnnotationScope && !Closure.IsTypeParameterScope
         && Closure.ClassCell is null && Closure.InlinedComprehensionLookup is null;
 
-    // An optimization threshold, never a Python argument/execution limit.
-    // Wide/external-default/protocol calls keep their admitted owned binding.
-    private const int NativeParameterCapacity = 16;
-    internal bool CanBindNativeArguments => CanExecuteNativeBody
-        && BindingPlan.ParameterCount <= NativeParameterCapacity
+    internal bool CanBindNativeArguments => CanStartInline
+        && BindingPlan.ParameterCount <= LythonRuntime.NativeValueCapacity
         && BindingPlan.VariadicListIndex < 0 && BindingPlan.VariadicDictionaryIndex < 0
         && BindingPlan.PositionalDefaults is null or PyTuple
         && (BindingPlan.KeywordDefaultStorage is null || BindingPlan.KeywordDefaultStorage.SupportsNativeStringReads);
 
-    [System.Runtime.CompilerServices.InlineArray(NativeParameterCapacity)]
-    private struct NativeParameters { private object _first; }
+    [System.Runtime.CompilerServices.InlineArray(LythonRuntime.NativeValueCapacity)]
+    private struct NativeValues { private object _first; }
 
-    // Eligibility precedes this frame: filling these slots cannot allocate,
-    // admit storage or invoke default/key protocols. Arguments/defaults remain
-    // funded by their existing caller/definition owners through completion.
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    internal bool TryExecuteNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
-        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration, out object result)
+    internal bool TryStartNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
+        bool borrow, out object result, out LythonRuntime.ExecutionContext? frame)
     {
-        NativeParameters buffer = default;
+        result = PyNone.Instance;
+        frame = null;
+        if (!CanStartInline || !borrow && !CanBindNativeArguments) return false;
+        NativeValues buffer = default;
         Span<object> values = buffer;
-        values = values[..BindingPlan.ParameterCount];
+        values = values[.._codeObject.ValueStorageCapacity];
+        // This span is private to the synchronous prefix and cannot escape. Its
+        // live values transfer before suspension; stack exit ends the remaining
+        // references. Owned callback arrays keep their ordinary full clear.
+        var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
+        if (borrow)
+        {
+            arguments.CopyTo(values!);
+            for (var i = 0; i < assigned.Length; i++) assigned[i] = true;
+        }
+        else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount], ref assigned,
+            [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
+        return StartInline(values, assigned, null, span, consumedByIteration, out result, out frame);
+    }
+
+    internal override bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span,
+        out object result, out LythonRuntime.ExecutionContext? frame)
+        => TryStartBoundInvocation(bound, span, false, out result, out frame);
+
+    internal bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span, bool consumedByIteration,
+        out object result, out LythonRuntime.ExecutionContext? frame)
+    {
+        result = PyNone.Instance;
+        frame = null;
+        return CanStartInline && StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
+            bound.Assigned, bound, span, consumedByIteration, out result, out frame);
+    }
+
+    private bool StartInline(Span<object> values, ArgumentPresence assigned, BoundCallArguments? existing,
+        LythonSourceSpan span, bool consumedByIteration, out object result, out LythonRuntime.ExecutionContext? frame)
+    {
+        result = PyNone.Instance;
+        frame = null;
+        var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration);
+        var entered = false;
+        var transferred = false;
+        BoundCallArguments owned = existing.GetValueOrDefault();
+        var rented = false;
         try
         {
-            var assigned = new ArgumentPresence(BindingPlan.ParameterCount);
-            LythonRuntime.BindFunctionArgumentsInto(values, ref assigned, [], span, BindingPlan,
-                context, receiver: receiver, callSite: call, operands: arguments);
-            return TryExecuteWithoutFrame(values, span, consumedByIteration, out result);
+            Closure.EnterFunctionCall(span);
+            entered = true;
+            if (state.Run(span, out result)) return true;
+            state.PrepareTransfer();
+            if (existing is null)
+            {
+                owned = LythonRuntime.RentFunctionArgumentStorage(BindingPlan, span, Closure.MemoryGovernor,
+                    _codeObject.ValueStorageCapacity) with { Assigned = assigned };
+                rented = true;
+                values[..state.LiveExtent].CopyTo(owned.Values);
+            }
+            frame = LythonRuntime.CreateNativeContinuation(this, owned, span, state.Index, state.LiveExtent, consumedByIteration);
+            state.TransferOwnership();
+            transferred = true;
+            return true;
         }
-        finally { values.Clear(); }
+        catch (LythonRuntimeException error)
+        {
+            PyFunctionBinding.AnnotateException(error, Closure, Name, span);
+            throw;
+        }
+        finally
+        {
+            try { state.Dispose(); }
+            finally
+            {
+                try { if (entered && !transferred) Closure.LeaveFunctionCall(); }
+                finally { if (rented && !transferred) LythonRuntime.ReturnBoundArguments(owned, _codeObject.ValueStorageCapacity); }
+            }
+        }
     }
 
     protected override object ExecuteBody(
@@ -130,8 +167,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
-            return result;
         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells, true, span, this)
             ?? PyNone.Instance;
     }
@@ -141,9 +176,6 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
-        // Only statically proven bodies without callbacks use this shared shortcut.
-        if (LythonRuntime.TryExecuteNativeReturn(_codeObject, frame, boundArguments.Values.AsSpan(0, boundArguments.Assigned.Length), span, out var result))
-            return result;
         return await LythonRuntime.ExecuteExecutableCodeObjectAsync(
             _codeObject, frame, boundArguments, _closureCells, true, span, this).ConfigureAwait(false)
             ?? PyNone.Instance;
