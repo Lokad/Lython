@@ -1,5 +1,10 @@
 # Conditional helper bodies — prototype and retained simplification
 
+Current delivery: compiler-only `da9e5066` is [fully qualified](delivery/README.md)
+on Windows/Ubuntu, both targets, original stress and installed consumers. The
+initial narrative below records the raw prototype's status at collection; that
+runtime unary form was never promoted. [Current retained form](normalized/README.md).
+
 2026-11-12. **No runtime promotion or final qualification yet.** Source pair versus
 fullyqualified983bab96/unchanged796c3218, frozenb2cb. Three production files add
 unary eligibility/shape to the existing native plan, reusing normal unary kernels.

@@ -1,0 +1,15 @@
+{
+  "archive-receipt.json": "1ca66b631fadb40f27e68d8e76cf19fa32ef84f2ccf72851452593f2a2f0737f",
+  "identity.json": "e143ee941200ee221c8fcf69a66e8f1fda448c4fd76270aa01ac9eb740a5576f",
+  "inventory.json": "da637f02309190d2da949e18ac5ac50a8df48eea7e7d70515ed3426f051cdf89",
+  "launch.log": "588cc44bbdb6db6cd2e54881535c02ae319441ebf9fd73dce4c52dde3bb22412",
+  "observations.tgz": "f0960460a190b002ea211d4e8e1b2cf0ca2edaf82dda9f70be2e7c213e2c0cf7",
+  "observe-not-before.json": "55c88feabf174170f0de7f3ced6e9af29570a69a7ce9971589ca469235dd6d83",
+  "operand-proof.md": "5102876e840a4eae37387b50d109172501feb2503891dc6c98fc7c227d6a5535",
+  "preparation.tar.xz": "362ac609c299dd9d4727e060255a9c304e3d99c3d091ebc0851070aa4eb4f259",
+  "prior-BENCHMARKS.md": "fa1e3bfea83bd37feae974d6fbf5b8a8c629920331f8951a24cb45c0ef2cb01a",
+  "README.md": "505fd306fb8766281d4955d2dc5e0b0187dc48799bc77e1ff8725eb7c3e85de4",
+  "source-identity.json": "7fc52eb9596f1a3970d3e0faf5bc35f13b80f075b3fe0a6b9048bb2a73081a83",
+  "summary.json": "f936f0611af1c133e631abbe10195c7782938224fc1ada863ce01355f9f43ed9",
+  "terminal-status.json": "c8003d88c8e27011aa88810b29bdce9286189a467c9bab509f19f84fd9112c68"
+}

@@ -6,6 +6,21 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R266 delivery](results/2026-11-12-conditional-helper-bodies/delivery/README.md)
+is terminal GREEN43183343974, exactda9e5066: Windows/Ubuntu, actual .NET11/10,
+original stress and installed Release consumers. All568 frozen production sources
+match with explicit checkout newline normalization. Terminal cached; no unchanged
+qualification replay. Measurement uncertainty and accepted debts remain separate.
+
+[Current record/search CPython checkpoint](results/2026-11-12-record-cpython-checkpoint/README.md)
+finishes10jobs301.542s, all identity/output/ownership/quiet/join/RAM/archive gates.
+Qualified da9e5066 warm CSV1.03–1.04×, JSON-lines0.85–0.91×, guardedsearch1.81–1.99×;
+captured text1.65–1.67× absolute control is stable. Compile/result stay separate;
+guarded/JSON spreads and all adversity survive. Captured source-pair causality
+remains unresolved. No compounded gains or equivalence claim. Bounded operand
+proof identifies actual array/suspension/effect-order obstacles without a new
+runtime prototype. Publication held; substantial performance work continues.
+
 [Current CSV/report attribution](results/2026-11-12-record-call-attribution/README.md)
 closes two short captures, 11.771 seconds total execution, all identity/output/
 ownership/quiet/join/archive gates. Selected leaves: CSV instruction/input/result/

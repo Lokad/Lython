@@ -1,0 +1,330 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 256655360,
+  "requiredFreeBytes": 264699904,
+  "reclaimableBytes": 9936896,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/observations.tgz",
+      "bytes": 2535281,
+      "sha256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "reason": "Only terminal exact B615 evidence duplicates; committed34f2f325 canonicalGitSHA verified. Source a552 and referenceb2 protected, original adverseconditions preserved. Freshidle/UID/path/inode/all-alias proof, unchanged floors.",
+      "paths": [
+        "record-call-profile-b615-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844982,
+      "allocatedBytes": 2535424,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/catalog.json",
+      "bytes": 717634,
+      "sha256": "aa6d07295d9223b2ded9212237e34c9a58081cba7db7cc892c8206dfa925e3c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "reason": "Only terminal exact B615 evidence duplicates; committed34f2f325 canonicalGitSHA verified. Source a552 and referenceb2 protected, original adverseconditions preserved. Freshidle/UID/path/inode/all-alias proof, unchanged floors.",
+      "canonicalEntry": "catalog.json",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "paths": [
+        "record-call-profile-b615-20261112/catalog.json"
+      ],
+      "device": 66305,
+      "inode": 844959,
+      "allocatedBytes": 720896,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/collector.log",
+      "bytes": 255,
+      "sha256": "23be0e4fde04c9c2e6b84891422d9eb04b80e6d08827689e66f8ec8f7c715e78",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/collector.log",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/collector.log"
+      ],
+      "device": 66305,
+      "inode": 844992,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/guest-cpu-leaves.json",
+      "bytes": 7001,
+      "sha256": "58d80c2516874f6cb4291f24d23583b7a503c827ae320bdd9fcc895116639112",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/guest-cpu-leaves.json",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/guest-cpu-leaves.json"
+      ],
+      "device": 66305,
+      "inode": 845012,
+      "allocatedBytes": 8192,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/perf-leaves.txt",
+      "bytes": 54659,
+      "sha256": "39bb1b13cb97b72a5d0404ac28bba6e90a1f1c0e3fef720a23d9c4e46f425d63",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/perf-leaves.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/perf-leaves.txt"
+      ],
+      "device": 66305,
+      "inode": 845011,
+      "allocatedBytes": 57344,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/perf-report.txt",
+      "bytes": 2242,
+      "sha256": "a11cd1591cfdb6ca83eb6a12ce35df9d9a045bd0b3ca4acce2386c8005eee4d8",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/perf-report.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/perf-report.txt"
+      ],
+      "device": 66305,
+      "inode": 844997,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/perf-stacks.txt",
+      "bytes": 665428,
+      "sha256": "b420935f730bbb3bb247a303d2214d3cf7318e12dcac079cd0da71706abfc795",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/perf-stacks.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/perf-stacks.txt"
+      ],
+      "device": 66305,
+      "inode": 845013,
+      "allocatedBytes": 667648,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/perf.data",
+      "bytes": 309952,
+      "sha256": "2b088e1868a6ce2c48ec2077922fb63692765781de2082c68eba5b9b90c08dca",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/perf.data",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/perf.data"
+      ],
+      "device": 66305,
+      "inode": 844995,
+      "allocatedBytes": 311296,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/perf.map",
+      "bytes": 1543772,
+      "sha256": "4df678e865f1d53469c973fff188ebbf8c22e7cba3d4aac6f919b5a1846e1bcd",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/perf.map",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/perf.map"
+      ],
+      "device": 66305,
+      "inode": 844996,
+      "allocatedBytes": 1544192,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/csv-validation/record.json",
+      "bytes": 23709,
+      "sha256": "9046599f8108f3e6391a6ca906941b4c2a35221874b477466cf9105d0ca22449",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/csv-validation/record.json",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/csv-validation/record.json"
+      ],
+      "device": 66305,
+      "inode": 844999,
+      "allocatedBytes": 24576,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/prefix-jit.txt",
+      "bytes": 1493157,
+      "sha256": "a2270cb444c826f2a9eceaad0111cfb2cd582a072f73f8e9c6969ba5c16e0e46",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/prefix-jit.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/prefix-jit.txt"
+      ],
+      "device": 66305,
+      "inode": 844991,
+      "allocatedBytes": 1495040,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/collector.log",
+      "bytes": 247,
+      "sha256": "7adf204a8bf17554f404c14c23e570e0b74ade09ff4f8fff0f8f2cccb1e8cc28",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/collector.log",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/collector.log"
+      ],
+      "device": 66305,
+      "inode": 845002,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/guest-cpu-leaves.json",
+      "bytes": 6958,
+      "sha256": "aac37952ff3b6e49b738444e52dcea9f4fb48a580f4c65315516052142816968",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/guest-cpu-leaves.json",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/guest-cpu-leaves.json"
+      ],
+      "device": 66305,
+      "inode": 845015,
+      "allocatedBytes": 8192,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/perf-leaves.txt",
+      "bytes": 53460,
+      "sha256": "66c6f076f4db991603d4be78d7d94bc8b64dc553772a259a3b06bd902c4b6c6d",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/perf-leaves.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/perf-leaves.txt"
+      ],
+      "device": 66305,
+      "inode": 845014,
+      "allocatedBytes": 57344,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/perf-report.txt",
+      "bytes": 2143,
+      "sha256": "8d3d40ba045a7c2eaff0196bacefcf40e814ea2ee0a9b364cfd103ec10fd9216",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/perf-report.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/perf-report.txt"
+      ],
+      "device": 66305,
+      "inode": 845007,
+      "allocatedBytes": 4096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/perf-stacks.txt",
+      "bytes": 728557,
+      "sha256": "17b866e16c981828e0de22cc272562e750769069b37fedf42e6d39da09d15060",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/perf-stacks.txt",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/perf-stacks.txt"
+      ],
+      "device": 66305,
+      "inode": 845016,
+      "allocatedBytes": 729088,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/perf.data",
+      "bytes": 323776,
+      "sha256": "a0ad268d23f03617d28b92620305a3d7d8755d4dd2e3a884168a64ddff6b363b",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/perf.data",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/perf.data"
+      ],
+      "device": 66305,
+      "inode": 845005,
+      "allocatedBytes": 327680,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/perf.map",
+      "bytes": 1400785,
+      "sha256": "39a656cecc3cb36749459af978e232cb35e8ec53bbd59be41c709311dfed305b",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/perf.map",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/perf.map"
+      ],
+      "device": 66305,
+      "inode": 845006,
+      "allocatedBytes": 1400832,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-call-profile-b615-20261112/profiles/report/record.json",
+      "bytes": 29342,
+      "sha256": "7a5e4f229410be96f36cb3e7c4bf54142b6ae881f918bd93c65757bd0a2c58fd",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-call-attribution/observations.tgz",
+      "canonicalEntry": "profiles/report/record.json",
+      "canonicalArchiveSHA256": "c63314a7dd02fffc51790a8f0b367f8a7ad4834149e3295074014a9878bcc618",
+      "reason": "Only exact completed B615 raw profiles/maps/stacks/JIT duplicates; canonical committed34f2f325 Git/SHA verified locally. Fresh idle lease/UID/resolved path/inode/all-alias proof; current/reference core images protected, floors unchanged. Original first staging shortfall preserved.",
+      "paths": [
+        "record-call-profile-b615-20261112/profiles/report/record.json"
+      ],
+      "device": 66305,
+      "inode": 845009,
+      "allocatedBytes": 32768,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
