@@ -104,7 +104,7 @@ internal sealed partial class LythonRuntime
 
         internal void SeedGeneratorOuter(object iterator, PyIteration.Cursor cursor)
         {
-            _execution.Locals[_execution.Code.LocalNameToSlot[".0"]] = iterator;
+            WriteLocalValue(_execution.Locals, _execution.Code.LocalNameToSlot[".0"], iterator);
             _execution.Stack.PublishValue(_execution.Code.FirstTemporarySlot, _execution.Code.FirstTemporarySlot + 1, cursor);
         }
 
@@ -123,16 +123,10 @@ internal sealed partial class LythonRuntime
         internal void Resume(object sent, LythonRuntimeException? injected)
         {
             // Lowered class/annotation work may update a mirrored namespace
-            // while this generator is suspended. Other frames need only their
-            // captured cells, which can be written through escaped closures.
+            // while this generator is suspended. Captured slots already hold
+            // the authoritative cells written through escaped closures.
             if (MirrorsExecutableLocals || MirrorLocalStores)
-                SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
-            else
-                for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
-                {
-                    var slot = _execution.Code.CapturedLocalSlots[index];
-                    _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
-                }
+                SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
             HasYield = false;
             _sentValue = sent;
             _injectedException = injected;
@@ -228,13 +222,12 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        // Stores through the same cell-mirroring and host-mirroring policy as
+        // Stores through the same captured-cell and host-mirroring policy as
         // StoreLocal, so synthetic slots (chain, match, with) behave exactly
         // like compiler-issued stores.
         private static void StoreLocalValue(
             ExecutableCodeObject codeObject,
             object[] locals,
-            ExecutableCell?[]? localCells,
             ExecutionContext? context,
             int slot,
             object value,
@@ -247,9 +240,9 @@ internal sealed partial class LythonRuntime
                 StoreGlobalNamespaceName(context, name, value);
                 return;
             }
-            if (localCells?[slot] is ExecutableCell localCell)
+            if (locals[slot] is ExecutableCell localCell)
             {
-                // The cell owns both its local cache and namespace policy.
+                // The cell owns this binding and its namespace policy.
                 localCell.Value = value;
             }
             else
@@ -261,7 +254,7 @@ internal sealed partial class LythonRuntime
         }
 
         private static void StoreExecutableLocal(ref ExecutableWorkState execution, ExecutionContext scope, ExecutionContext? invocation, in ExecutableInstruction instruction)
-            => StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, instruction.LocalSlot,
+            => StoreLocalValue(execution.Code, execution.Locals, invocation, instruction.LocalSlot,
                 TakeOperand(ref execution, instruction, scope), instruction.Span);
 
         private static object ReadOperand(ref ExecutableWorkState execution, int source, ExecutionContext scope, int input)
@@ -269,8 +262,9 @@ internal sealed partial class LythonRuntime
             if (source < 0) return RuntimeValue(execution.Code.Constants[~source]);
             // Unbound locals raise Python errors before the temporary-value
             // invariant rejects an empty operand slot.
-            var value = execution.Stack.Values[source];
-            if (source < execution.Code.FirstTemporarySlot && value is null)
+            var value = source < execution.Code.FirstTemporarySlot
+                ? ReadLocalValue(execution.Locals, source) : execution.Stack.Values[source];
+            if (value is null && source < execution.Code.FirstTemporarySlot)
                 return LoadLocal(execution.Code, execution.Locals, source,
                     execution.Code.OperandReadSpan(execution.InstructionIndex, input), scope);
             return value.RequireNotNull();
@@ -290,12 +284,12 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.Import:
-                    ExecuteExecutableImport(_execution.Code, _execution.Code.Imports[instruction.ImportIndex], _execution.Locals, _execution.LocalCells, this);
+                    ExecuteExecutableImport(_execution.Code, _execution.Code.Imports[instruction.ImportIndex], _execution.Locals, this);
                     break;
 
                 case ExecutableOpCode.DefineFunction:
                     ExecuteExecutableFunctionDefinitionAsync(_execution.Code, _execution.Code.Functions[instruction.FunctionIndex],
-                        _execution.Locals, _execution.LocalCells, this, false).GetAwaiter().GetResult();
+                        _execution.Locals, this, false).GetAwaiter().GetResult();
                     break;
 
                 case ExecutableOpCode.ExecuteFallbackStatement:
@@ -303,7 +297,7 @@ internal sealed partial class LythonRuntime
                         _execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],
                         this,
                         SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
-                    SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
+                    SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
                     break;
             }
         }
@@ -393,7 +387,6 @@ internal sealed partial class LythonRuntime
                     AssignExecutableBoundName(
                         execution.Code,
                         execution.Locals,
-                        execution.LocalCells,
                         execution.Code.Names[instruction.NameIndex],
                         execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent),
                         invocation!,
@@ -463,7 +456,6 @@ internal sealed partial class LythonRuntime
                             subject,
                             this,
                             _execution.Locals,
-                            _execution.LocalCells,
                             _execution.Stack.Values.AsSpan(_execution.Code.PatternStorageStart)))
                     {
                         _execution.InstructionIndex = instruction.FailureIndex;
@@ -610,7 +602,7 @@ internal sealed partial class LythonRuntime
                         ?? throw new InvalidOperationException("Exception binding requires an active exception.");
                     bound.Adopt(invocation!, instruction.Span);
                     var name = execution.Code.Names[instruction.NameIndex];
-                    AssignExecutableBoundName(execution.Code, execution.Locals, execution.LocalCells, name, bound, invocation!, instruction.Span);
+                    AssignExecutableBoundName(execution.Code, execution.Locals, name, bound, invocation!, instruction.Span);
                     var suite = invocation!.SavedActiveExceptions().Peek();
                     invocation!.ActiveHandlerVariables ??= new();
                     invocation!.ActiveHandlerVariables.Push((name, suite.SuiteStartIndex ?? 0, suite.SuiteEndIndex ?? int.MaxValue));

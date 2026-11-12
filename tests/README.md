@@ -19,7 +19,8 @@ invariants belong in the white-box suite.
 
 [Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
 check class nonlocal updates and deletions during suspension through both APIs,
-including shared-budget cleanup. Comprehension lambda goldens also read the
+including shared-budget cleanup. Generators read their shared captured cells
+directly after resume. Comprehension lambda goldens also read the
 surrounding binding through a separate closure to detect hidden cell corruption.
 
 [Guarded string operations](Lokad.Lython.PublicApi.Tests/NativeReceiverOperationTests.cs)

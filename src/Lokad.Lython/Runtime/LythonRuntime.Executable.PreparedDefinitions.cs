@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
                         AdmitPreparedDefinitionStorage(128L + 64L * definition.Decorators.Count, span);
                         await ExecuteExecutableFunctionDefinitionAsync(_execution.Code,
                             definition,
-                            _execution.Locals, _execution.LocalCells, this, asynchronous).ConfigureAwait(false);
+                            _execution.Locals, this, asynchronous).ConfigureAwait(false);
                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
                     }
                     break;
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                         }
                         if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, this).ConfigureAwait(false);
                         else ExecuteLoweredClassDefinition(definition, this);
-                        SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
+                        SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
                     }
                     break;
                 default: throw new InvalidOperationException("Unknown prepared definition operation.");

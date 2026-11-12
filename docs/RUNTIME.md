@@ -386,7 +386,12 @@ with the workstate, with one owner throughout. A separate interpreter object is
 unnecessary. Terminal cleanup finishes pending users, then detaches
 operand storage, private caches, handler records and caller references. Closures
 can retain that context's names and cells without retaining refunded workspace.
-Cleared local and cell storage represents an unbound name; guest `None` is the
+Captured local slots hold their shared cell directly; reads and stores use that
+cell rather than maintaining a second slot value or a sparse cell array. Escaped
+closures and suspended generators observe the same binding without copying it
+back into executable slots. Namespace retention seeds current values before
+switching cells to namespace lookup. These internal cells never become guest values.
+Cleared local values and cell contents represent an unbound name; guest `None` is the
 distinct `PyNone` value. Reads raise Python's unbound-local or free-variable error
 before enforcing the nonempty temporary-operand invariant. Workspaces are cleared
 on return and need no sentinel fill at invocation entry. Unbound names stay absent
@@ -437,7 +442,7 @@ Bound arguments copy directly into their admitted retained workspace before the
 call's binding storage returns. Complete lexical scopes need no blanket namespace
 mirroring; lowered class construction and incomplete scopes retain their namespace
 bridge. Nonlocal stores and deletions update captured cells even after the defining
-workspace has detached, while live defining frames retain synchronized slots.
+workspace has detached; live defining frames read those same cells.
 Match patterns have one compile-owned lowered representation shared by executable
 code and class suites. Immutable literal keys, capture indexes and required working
 positions are prepared once. Captures stay private until a complete pattern succeeds;

@@ -15,14 +15,12 @@ internal sealed partial class LythonRuntime
         private object? _value;
         private readonly ExecutionContext? _owner;
         private readonly string? _name;
-        private readonly int _ownerSlot;
 
-        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null, int ownerSlot = -1)
+        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null)
         {
             _value = value;
             _owner = owner;
             _name = name;
-            _ownerSlot = ownerSlot;
         }
 
         // Tree-walk methods and executable siblings share the defining frame's
@@ -34,13 +32,6 @@ internal sealed partial class LythonRuntime
             set
             {
                 _value = value;
-                // Only an active owner may expose its operand cache: an
-                // inactive frame may already be returning that array to its
-                // pool. Suspended generators synchronize before resuming.
-                if (_owner?.CurrentExecutableFrame is { } frame
-                    && frame._execution.LocalCells is { } cells && (uint)_ownerSlot < (uint)cells.Length
-                    && ReferenceEquals(cells[_ownerSlot], this))
-                    frame._execution.Locals[_ownerSlot] = value!;
                 if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
                 {
                     if (value is null) _owner!.Variables.Remove(_name!);
@@ -61,7 +52,6 @@ internal sealed partial class LythonRuntime
     {
         internal ExecutableCodeObject Code;
         internal object[] Locals;
-        internal ExecutableCell?[]? LocalCells;
         internal IReadOnlyList<ExecutableCell>? ClosureCells;
         internal ExecutableValueStorage Stack;
         internal int InstructionIndex;
@@ -75,7 +65,6 @@ internal sealed partial class LythonRuntime
         {
             Code = null!;
             Locals = [];
-            LocalCells = null;
             ClosureCells = null;
             Stack = default;
             InstructionIndex = 0;
@@ -91,7 +80,6 @@ internal sealed partial class LythonRuntime
         {
             _execution.Code = null!;
             _execution.Locals = [];
-            _execution.LocalCells = null;
             _execution.ClosureCells = null;
         }
 
@@ -105,7 +93,7 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var slot))
             {
-                value = _execution.LocalCells?[slot] is { } cell ? cell.Value : _execution.Locals[slot];
+                value = ReadLocalValue(_execution.Locals, slot);
                 if (value is not null) return true;
             }
 
@@ -117,7 +105,7 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                var local = _execution.Locals[localSlot];
+                var local = ReadLocalValue(_execution.Locals, localSlot);
                 if (local is not null)
                 {
                     value = local;
@@ -144,7 +132,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in _execution.Code.LocalNameToSlot)
             {
                 if (pair.Key.StartsWith('<')) continue;
-                var value = _execution.Locals[pair.Value];
+                var value = ReadLocalValue(_execution.Locals, pair.Value);
                 if (value is not null)
                 {
                     yield return new KeyValuePair<string, object>(pair.Key, value);
@@ -171,9 +159,9 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetCell(string name, [MaybeNullWhen(false)] out ExecutableCell cell)
         {
-            if (_execution.LocalCells is not null && _execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
+            if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                if (_execution.LocalCells[localSlot] is ExecutableCell localCell)
+                if (_execution.Locals[localSlot] is ExecutableCell localCell)
                 {
                     cell = localCell;
                     return true;
@@ -206,8 +194,7 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell) localCell.Value = value;
-                else _execution.Locals[localSlot] = value;
+                WriteLocalValue(_execution.Locals, localSlot, value);
 
                 return true;
             }
@@ -225,13 +212,8 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                var removed = _execution.Locals[localSlot] is not null;
-                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
-                {
-                    removed |= localCell.Value is not null;
-                    localCell.Value = null;
-                }
-                else _execution.Locals[localSlot] = null!;
+                var removed = ReadLocalValue(_execution.Locals, localSlot) is not null;
+                WriteLocalValue(_execution.Locals, localSlot, null);
 
                 return removed;
             }
@@ -627,8 +609,7 @@ internal sealed partial class LythonRuntime
         var span = entry.Length == 0 ? null : entry[0].Span;
         long bytes = checked((long)codeObject.PatternStorageCount * RuntimeMemoryEstimates.ScalarStorageBytes);
         if (codeObject.CapturedLocalSlots.Count != 0)
-            bytes = checked(bytes + EstimateObjectArrayBytes(codeObject.LocalNames.Count)
-                + 48L * codeObject.CapturedLocalSlots.Count);
+            bytes = checked(bytes + 48L * codeObject.CapturedLocalSlots.Count);
         // The compiler-sized operand lifetime funds private frame arrays before any
         // are allocated. Escaping cells acquire their separate retained charge.
         var stack = new ExecutableValueStorage(codeObject.ValueStorageCapacity, codeObject.FirstTemporarySlot, codeObject.LastOwnedTemporarySlot,
@@ -636,34 +617,21 @@ internal sealed partial class LythonRuntime
         try
         {
             var locals = stack.Values;
-            var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
-            ExecutableCell?[]? localCells = null;
-            if (needsLocalCells)
-            {
-                localCells = new ExecutableCell[codeObject.LocalNames.Count];
-                for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
-                {
-                    var slot = codeObject.CapturedLocalSlots[i];
-                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot], slot);
-                }
-            }
-
             var argumentValues = boundArguments.Values ?? Array.Empty<object>();
             for (var i = 0; !argumentsAreLocals && i < boundArguments.Assigned.Length; i++)
+                locals[i] = argumentValues[i];
+            // A captured slot holds its cell, never a second cached value. The
+            // frame array and escaped closures borrow this same identity.
+            for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
             {
-                var value = argumentValues[i];
-                locals[i] = value;
-                if (localCells?[i] is ExecutableCell localCell)
-                {
-                    localCell.Value = value;
-                }
+                var slot = codeObject.CapturedLocalSlots[i];
+                locals[slot] = new ExecutableCell(locals[slot], context, codeObject.LocalNames[slot]);
             }
 
             return new ExecutableWorkState
             {
                 Code = codeObject,
                 Locals = locals,
-                LocalCells = localCells,
                 ClosureCells = closureCells,
                 Stack = stack,
                 ReturnConsumedByIteration = returnConsumedByIteration,

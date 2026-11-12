@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
             var privateBindings = !execution.Code.RequiresLocalVariableMirroring
                 && invocation?.MirrorLocalStores != true && invocation?.GlobalNamespace is null;
             var deferTotal = hasTotal && privateBindings;
-            var cursor = privateBindings && execution.LocalCells?[store.ThirdInput] is null
+            var cursor = privateBindings
                 ? execution.Stack[head.InputStart] as PyStringOps.CasedWhitespaceIteration : null;
             if (cursor is not null && !ReferenceEquals(cursor.MemoryGovernor, scope.MemoryGovernor)) cursor = null;
             if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var word, out var hasWord)) return false;

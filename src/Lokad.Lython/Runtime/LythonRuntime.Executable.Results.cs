@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
             execution.Stack.ForgetResultInput(instruction.ResultSlot);
             ref readonly var store = ref execution.Code.Instructions[execution.InstructionIndex + 1];
             execution.Stack.CheckExecution(store.Span);
-            StoreLocalValue(execution.Code, execution.Locals, execution.LocalCells, invocation, store.LocalSlot, value, store.Span);
+            StoreLocalValue(execution.Code, execution.Locals, invocation, store.LocalSlot, value, store.Span);
             execution.InstructionIndex++;
         }
     }

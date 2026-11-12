@@ -1,0 +1,7 @@
+{
+  "retained": true,
+  "reason": "One authoritative captured binding removes sparse arrays, backpointers and synchronization; controlled capturedRun improves with supporting CPU. Accept small CSVAsync elapsed debt; async captured/report remain uncertain.",
+  "fullyQualified": false,
+  "core": "e4cc65b251ace242546f337b0846908a4e2a4313953da74df6fb666e1ce87529",
+  "publicationHeld": true
+}

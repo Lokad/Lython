@@ -70,10 +70,9 @@ public sealed class ComprehensionLambdaExecutableTests
         var facts = Assert.Single(outer.Constants.OfType<ExecutableStartComprehension>()).ScopeFacts;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(cap) },regexProvider:Utf8RegexProvider.Instance);
         var values = new object[outer.LocalNames.Count];
-        var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var parentCell = new LythonRuntime.ExecutableCell(new BigInteger(7));
-        cells[outer.LocalNameToSlot["offset"]] = parentCell;
-        context._execution = new() { Code = outer, Locals = values, LocalCells = cells };
+        values[outer.LocalNameToSlot["offset"]] = parentCell;
+        context._execution = new() { Code = outer, Locals = values };
         context.EnterExecutableSlots();
         var previousClosure = context.FunctionClosureContext;
         var scope = context.EnterComprehension(facts);

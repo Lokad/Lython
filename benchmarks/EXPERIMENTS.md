@@ -6704,6 +6704,23 @@ stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
 
+## R281 — authoritative captured slots
+
+[The representation migration](results/2026-11-12-captured-slot-ownership/README.md)
+removes sparse LocalCells arrays, owner-slot backpointers, active-frame cache writes,
+generator cell-to-slot resynchronization and duplicate transport. Captured locals
+hold their shared cell in the existing workspace. Initial three generic-function
+failures expose namespace handover's dependency on the old cache; seeding before
+mirroring corrects it, with all failed checks retained.7458focused actual-target
+checks and an overlapping3683public checks per target pass; seven scripts/both APIs/
+compile/fresh pass, whole allocation effectively flat. B638five jobs264.498s shows
+capturedRun elapsed−4..−6%/CPU−2.6..−4.5%; async/control uncertainty and initial
+report adversity remain. Same-source B639two jobs139.022s narrows CSVAsync elapsed
+debt to+0.4..2.3%, with CPU uncertain; report remains variable and initial CPU
+adversity is not reproduced. Retain the mechanism removal/affectedRun benefit,
+accept that explicit debt, and batch full delivery separately. No CPython
+extrapolation or closure of the broader whole-script objective; publication held.
+
 ## R280 — native accumulation boundary deletion withdrawn
 
 [Both measured forms](results/2026-11-12-native-accumulation-boundaries/README.md)

@@ -7,9 +7,23 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
+    // Captured local slots hold their authoritative cell. Cells are internal
+    // storage and never guest values; temporary operands always hold the value.
+    private static object? ReadLocalValue(object[] locals, int slot)
     {
         var value = locals[slot];
+        return value is ExecutableCell cell ? cell.Value : value;
+    }
+
+    private static void WriteLocalValue(object[] locals, int slot, object? value)
+    {
+        if (locals[slot] is ExecutableCell cell) cell.Value = value;
+        else locals[slot] = value!;
+    }
+
+    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
+    {
+        var value = ReadLocalValue(locals, slot);
         if (value is null)
         {
             if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<'))
@@ -232,7 +246,7 @@ internal sealed partial class LythonRuntime
 
     private static bool TryExecuteExecutableMatchCase(
         ExecutableMatchCaseBinding matchCase, object subject, ExecutionContext context,
-        object[] locals, IReadOnlyList<ExecutableCell?>? localCells, Span<object> storage)
+        object[] locals, Span<object> storage)
     {
         var pattern = matchCase.Pattern;
         storage = storage[..pattern.StorageCount];
@@ -245,8 +259,7 @@ internal sealed partial class LythonRuntime
                 StoreName(pattern.Bindings[i].Name, value, context, matchCase.Span);
                 var slot = matchCase.LocalBindingSlots[i];
                 if (slot < 0) continue;
-                locals[slot] = value;
-                if (localCells?[slot] is ExecutableCell localCell) localCell.Value = value;
+                WriteLocalValue(locals, slot, value);
             }
             return true;
         }
@@ -257,7 +270,6 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ImportStatementSyntax importBinding,
         object[] locals,
-        ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
         if (importBinding.ModuleName == "__future__" && importBinding.ImportedMembers is not null &&
@@ -272,7 +284,7 @@ internal sealed partial class LythonRuntime
             var boundModule = string.Equals(importBinding.BoundModuleName, importBinding.ModuleName, StringComparison.Ordinal)
                 ? module
                 : ResolveImportedModule(importBinding.BoundModuleName, context, importBinding.Span);
-            AssignExecutableBoundName(codeObject, locals, localCells, importBinding.BindingName, boundModule, context, importBinding.Span);
+            AssignExecutableBoundName(codeObject, locals, importBinding.BindingName, boundModule, context, importBinding.Span);
             return;
         }
 
@@ -286,7 +298,7 @@ internal sealed partial class LythonRuntime
                     throw PyMemberAccess.CreateMissingMemberError(importedModule, name, importBinding.Span, context);
                 }
 
-                AssignExecutableBoundName(codeObject, locals, localCells, name, value, context, importBinding.Span);
+                AssignExecutableBoundName(codeObject, locals, name, value, context, importBinding.Span);
             }
 
             return;
@@ -299,7 +311,7 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.CannotImportMember(importBinding.ModuleName, importedMember.Name, importBinding.Span);
             }
 
-            AssignExecutableBoundName(codeObject, locals, localCells, importedMember.BindingName, value, context, importBinding.Span);
+            AssignExecutableBoundName(codeObject, locals, importedMember.BindingName, value, context, importBinding.Span);
         }
     }
 
@@ -311,7 +323,6 @@ internal sealed partial class LythonRuntime
         ExecutableCodeObject codeObject,
         ExecutableFunctionBinding functionBinding,
         object[] locals,
-        ExecutableCell?[]? localCells,
         ExecutionContext context,
         bool asynchronous)
     {
@@ -359,7 +370,7 @@ internal sealed partial class LythonRuntime
             var decorated = asynchronous
                 ? await ApplyDecoratorsAsync(function, decorators, functionBinding.Span, context).ConfigureAwait(false)
                 : ApplyDecorators(function, decorators, functionBinding.Span, context);
-            AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Name, decorated, context, functionBinding.Span);
+            AssignExecutableBoundName(codeObject, locals, functionBinding.Name, decorated, context, functionBinding.Span);
         }
         finally
         {
@@ -461,41 +472,26 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Lambdas resolve free names by walking parent Variables, but executable
-    // frames keep locals in slots that vanish on return. Flagging the chain
-    // mirrors slot stores into Variables (catch-up below seeds current values,
-    // preferring shared cells), so escaped lambdas keep reading finals.
+    // Namespace-backed closures outlive executable workspaces. Seed the current
+    // values before switching cells to namespace reads; there is no slot cache
+    // to recover a value after the namespace becomes authoritative.
     internal static void RetainLocalsForLambda(ExecutionContext definingContext)
     {
         for (var current = definingContext; current is not null; current = current.ParentContext)
         {
-            current.MirrorLocalStores = true;
             var frame = current.CurrentExecutableFrame;
-            if (frame is null)
+            if (frame is not null)
             {
-                continue;
-            }
-
-            foreach (var pair in frame.EnumerateLocals())
-            {
-                if (frame.TryGetCell(pair.Key, out var cell) &&
-                    cell is not null &&
-                    cell.Value is not null)
-                {
-                    current.Variables[pair.Key] = cell.Value;
-                }
-                else
-                {
+                foreach (var pair in frame.EnumerateLocals())
                     current.Variables[pair.Key] = pair.Value;
-                }
             }
+            current.MirrorLocalStores = true;
         }
     }
 
     private static void SyncExecutableLocalsFromContext(
         ExecutableCodeObject codeObject,
         object[] locals,
-        ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
         for (var i = 0; i < codeObject.LocalNames.Count; i++)
@@ -504,29 +500,14 @@ internal sealed partial class LythonRuntime
             // Compiler slots belong to this frame, rather than the guest
             // namespace. Fallback statements cannot rebind or delete them.
             if (codeObject.LocalNames[i].StartsWith('<')) continue;
-            if (!context.Variables.TryGetValue(codeObject.LocalNames[i], out var value))
-            {
-                locals[i] = null!;
-                if (localCells?[i] is ExecutableCell localCell)
-                {
-                    localCell.Value = null;
-                }
-
-                continue;
-            }
-
-            locals[i] = value;
-            if (localCells?[i] is ExecutableCell existingCell)
-            {
-                existingCell.Value = value;
-            }
+            context.Variables.TryGetValue(codeObject.LocalNames[i], out var value);
+            WriteLocalValue(locals, i, value);
         }
     }
 
     private static void SyncExecutableLocalFromValue(
         ExecutableCodeObject codeObject,
         object[] locals,
-        ExecutableCell?[]? localCells,
         string name,
         object value)
     {
@@ -535,17 +516,12 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        locals[slot] = value;
-        if (localCells?[slot] is ExecutableCell localCell)
-        {
-            localCell.Value = value;
-        }
+        WriteLocalValue(locals, slot, value);
     }
 
     private static void AssignExecutableBoundName(
         ExecutableCodeObject codeObject,
         object[] locals,
-        ExecutableCell?[]? localCells,
         string name,
         object value,
         ExecutionContext context,
@@ -574,7 +550,7 @@ internal sealed partial class LythonRuntime
             StoreGlobalNamespaceName(context, name, value);
             return;
         }
-        SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
+        SyncExecutableLocalFromValue(codeObject, locals, name, value);
         // Module declarations must survive this executable frame: retained
         // functions/imports and later code in the same namespace still read them.
         // Their slots accelerate live execution without replacing that ownership.

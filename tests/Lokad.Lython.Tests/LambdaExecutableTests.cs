@@ -18,10 +18,9 @@ public sealed class LambdaExecutableTests
         var lambda = Assert.Single(outer.Constants.OfType<ExecutableCreateLambda>()).CodeObject!;
         var context = new Context(new MockLythonHost(), new LythonRunOptions { MemoryBudget = new LythonMemoryBudget(1024 * 1024) },regexProvider:Utf8RegexProvider.Instance);
         var values = new object[outer.LocalNames.Count];
-        var cells = new LythonRuntime.ExecutableCell?[values.Length];
         var cell = new LythonRuntime.ExecutableCell(BigInteger.One);
-        cells[outer.LocalNameToSlot["value"]] = cell;
-        context._execution = new() { Code = outer, Locals = values, LocalCells = cells };
+        values[outer.LocalNameToSlot["value"]] = cell;
+        context._execution = new() { Code = outer, Locals = values };
         context.EnterExecutableSlots();
         var capture = typeof(LythonRuntime).GetMethod("CaptureExecutableClosures", BindingFlags.Static | BindingFlags.NonPublic)!
             .CreateDelegate<Func<ExecutableCodeObject, Context, LythonSourceSpan, LythonRuntime.ExecutableCell[]>>();

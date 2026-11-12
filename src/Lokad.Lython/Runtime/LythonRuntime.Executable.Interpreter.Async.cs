@@ -129,14 +129,14 @@ internal sealed partial class LythonRuntime
                     return;
                 case ExecutableOpCode.DefineFunction:
                     await ExecuteExecutableFunctionDefinitionAsync(_execution.Code, _execution.Code.Functions[instruction.FunctionIndex],
-                        _execution.Locals, _execution.LocalCells, this, true).ConfigureAwait(false);
+                        _execution.Locals, this, true).ConfigureAwait(false);
                     return;
                 default:
                     await DispatchLoweredStatementAsync(_execution.Code.StatementFallbacks[instruction.StatementFallbackIndex],
                         this, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
                     break;
             }
-            SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
+            SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, this);
         }
 
         private async ValueTask<bool> ExecuteContextManagerAsync(ExecutableInstruction instruction)
