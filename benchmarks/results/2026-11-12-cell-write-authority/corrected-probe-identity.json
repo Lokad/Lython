@@ -1,0 +1,7 @@
+{
+  "coreSHA256": "09ad301e790ce664ed044088f80e8e144c5d502de70f656ccb55eeb235e0e463",
+  "reference": "Python3.13.2 isolated UTF8",
+  "cases": 3,
+  "allMatch": true,
+  "scope": "Focused correctness only; bothAPIs checked separately inpublictests, no performanceclaim."
+}

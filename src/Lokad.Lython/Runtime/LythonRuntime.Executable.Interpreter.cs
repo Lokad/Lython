@@ -122,13 +122,17 @@ internal sealed partial class LythonRuntime
 
         internal void Resume(object sent, LythonRuntimeException? injected)
         {
-            // A retained closure can write a cell while this generator is
-            // suspended. Refresh only captured slots, including direct-call inputs.
-            for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
-            {
-                var slot = _execution.Code.CapturedLocalSlots[index];
-                _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
-            }
+            // Lowered class/annotation work may update a mirrored namespace
+            // while this generator is suspended. Other frames need only their
+            // captured cells, which can be written through escaped closures.
+            if (MirrorsExecutableLocals || MirrorLocalStores)
+                SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
+            else
+                for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
+                {
+                    var slot = _execution.Code.CapturedLocalSlots[index];
+                    _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
+                }
             HasYield = false;
             _sentValue = sent;
             _injectedException = injected;
@@ -243,15 +247,16 @@ internal sealed partial class LythonRuntime
                 StoreGlobalNamespaceName(context, name, value);
                 return;
             }
-            locals[slot] = value;
             if (localCells?[slot] is ExecutableCell localCell)
             {
+                // The cell owns both its local cache and namespace policy.
                 localCell.Value = value;
             }
-
-            if (guestName && (codeObject.RequiresLocalVariableMirroring || context?.MirrorLocalStores == true))
+            else
             {
-                context!.Variables[name] = value;
+                locals[slot] = value;
+                if (guestName && (codeObject.RequiresLocalVariableMirroring || context?.MirrorLocalStores == true))
+                    context!.Variables[name] = value;
             }
         }
 

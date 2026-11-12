@@ -1,0 +1,9 @@
+{
+  "baselineRevision": "7114021edb1e850380e885eba32953042cc211fb",
+  "baselineCoreSHA256": "0e715d19c6f99ecbee0c01c4dee3e4e86ebfe87ae8ca26687baa1b11bc7f39e0",
+  "probeCoreSHA256": "0e715d19c6f99ecbee0c01c4dee3e4e86ebfe87ae8ca26687baa1b11bc7f39e0",
+  "programSHA256": "c7af45500efa080152d9bcc705ae5330fd9b94abec4e558504a4fe806a5a2f19",
+  "observed": "Lython([2,2,2],'outer',2) versus isolatedCPython([2,2,2],'outer','outer'); latentincomingcell mutation hiddenbylocalcache beforeprototype",
+  "correction": "Inlined comprehension binding precedes nonlocal directive when synchronizing retained cells, matching existing storage-context selection. Keep original regression and add separate closure reader.",
+  "initialPrototype": "1073internalpass,1524publicpass/1existingnonlocal-comprehensionfailure; original logs/TRX preserved."
+}

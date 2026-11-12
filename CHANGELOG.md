@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Share captured-cell assignment with active local caches and conditional namespace
+  mirroring, removing repeated owner-name lookup and duplicate stores. Preserve
+  inactive workspace safety and generator synchronization. Keep comprehension
+  loop bindings from corrupting enclosing nonlocal cells, and refresh mirrored
+  generator locals after suspended class updates or deletions.
+
 - Prepare executable function calls at their instructions and publish completed
   bodies after cleanup, removing pending function/receiver staging and a separate
   runner preparation step. Preserve native binding, genuinely pending calls,

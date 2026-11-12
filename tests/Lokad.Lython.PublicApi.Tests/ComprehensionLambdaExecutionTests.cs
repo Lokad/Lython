@@ -17,6 +17,7 @@ public sealed class ComprehensionLambdaExecutionTests
         { "retained-container", "def make():\n held=[]\n return [lambda:held.append(value) for value in range(3)],held\nfs,held=make()\nfor f in fs:f()\nprint(held)", "[2, 2, 2]\n" },
         { "free-variable-locals", "fs=[lambda:(value,locals()['value']) for value in range(3)]\nprint([f() for f in fs])", "[(2, 2), (2, 2), (2, 2)]\n" },
         { "nonlocal-directive", "def make():\n value='outer'\n def collect():\n  nonlocal value\n  return [lambda:value for value in range(3)]\n fs=collect()\n return [f() for f in fs],value\nprint(make())", "([2, 2, 2], 'outer')\n" },
+        { "nonlocal-binding-separate-reader", "def make():\n value='outer'\n def peek():return value\n def collect():\n  nonlocal value\n  return [lambda:value for value in range(3)]\n fs=collect()\n return [f() for f in fs],value,peek()\nprint(make())", "([2, 2, 2], 'outer', 'outer')\n" },
         { "future-binding-after-capture", "fs=[]\nrows=[later for first in (0,) if fs.append(lambda:later) or True for later in (2,)]\nprint(fs[0](),rows)", "2 [2]\n" },
         { "future-binding-before-and-after-store", "fs=[]\ndef check(f):\n fs.append(f)\n try: print(f())\n except NameError: print('unbound')\n return True\nrows=[later for first in (0,) if check(lambda:later) for later in (2,)]\nprint([f() for f in fs],rows)", "unbound\n[2] [2]\n" },
         { "dictionary-bodies", "fs={value:lambda:value for value in range(3)}\nprint([(key,f()) for key,f in fs.items()])", "[(0, 2), (1, 2), (2, 2)]\n" },

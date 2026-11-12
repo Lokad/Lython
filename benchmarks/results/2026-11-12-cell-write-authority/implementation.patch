@@ -1,0 +1,221 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+index 39a18fcf..30def2f4 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Binding.cs
+@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
+         if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreThroughOwner)
+         {
+             var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
+-            cells[slot].StoreThroughOwner(value);
++            cells[slot].Value = value;
+             return true;
+         }
+         if (context is null) return false;
+@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
+             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
+         }
+ 
+-        if (cell.CanStoreThroughOwner) cell.StoreThroughOwner(value);
++        if (cell.CanStoreThroughOwner) cell.Value = value;
+         else
+         {
+             cell.Value = value;
+@@ -500,6 +500,7 @@ internal sealed partial class LythonRuntime
+     {
+         for (var i = 0; i < codeObject.LocalNames.Count; i++)
+         {
++            if ((i & 63) == 0) context.CheckExecution(context.CurrentInstructionSpan);
+             // Compiler slots belong to this frame, rather than the guest
+             // namespace. Fallback statements cannot rebind or delete them.
+             if (codeObject.LocalNames[i].StartsWith('<')) continue;
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+index c89e1fab..b1b430ad 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.cs
+@@ -122,13 +122,17 @@ internal sealed partial class LythonRuntime
+ 
+         internal void Resume(object sent, LythonRuntimeException? injected)
+         {
+-            // A retained closure can write a cell while this generator is
+-            // suspended. Refresh only captured slots, including direct-call inputs.
+-            for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
+-            {
+-                var slot = _execution.Code.CapturedLocalSlots[index];
+-                _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
+-            }
++            // Lowered class/annotation work may update a mirrored namespace
++            // while this generator is suspended. Other frames need only their
++            // captured cells, which can be written through escaped closures.
++            if (MirrorsExecutableLocals || MirrorLocalStores)
++                SyncExecutableLocalsFromContext(_execution.Code, _execution.Locals, _execution.LocalCells, this);
++            else
++                for (var index = 0; index < _execution.Code.CapturedLocalSlots.Count; index++)
++                {
++                    var slot = _execution.Code.CapturedLocalSlots[index];
++                    _execution.Locals[slot] = _execution.LocalCells![slot]!.Value!;
++                }
+             HasYield = false;
+             _sentValue = sent;
+             _injectedException = injected;
+@@ -243,15 +247,16 @@ internal sealed partial class LythonRuntime
+                 StoreGlobalNamespaceName(context, name, value);
+                 return;
+             }
+-            locals[slot] = value;
+             if (localCells?[slot] is ExecutableCell localCell)
+             {
++                // The cell owns both its local cache and namespace policy.
+                 localCell.Value = value;
+             }
+-
+-            if (guestName && (codeObject.RequiresLocalVariableMirroring || context?.MirrorLocalStores == true))
++            else
+             {
+-                context!.Variables[name] = value;
++                locals[slot] = value;
++                if (guestName && (codeObject.RequiresLocalVariableMirroring || context?.MirrorLocalStores == true))
++                    context!.Variables[name] = value;
+             }
+         }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index 6f93e217..c24bf943 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
+         {
+             var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
+             context.State.CheckExecution(instruction.Span);
+-            arguments.Cells![instruction.ClosureSlot].StoreThroughOwner(stored);
++            arguments.Cells![instruction.ClosureSlot].Value = stored;
+             var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
+                 consumedByIteration);
+             CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+index b6d4cdeb..806efdd9 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs
+@@ -15,12 +15,14 @@ internal sealed partial class LythonRuntime
+         private object? _value;
+         private readonly ExecutionContext? _owner;
+         private readonly string? _name;
++        private readonly int _ownerSlot;
+ 
+-        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null)
++        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null, int ownerSlot = -1)
+         {
+             _value = value;
+             _owner = owner;
+             _name = name;
++            _ownerSlot = ownerSlot;
+         }
+ 
+         // Tree-walk methods and executable siblings share the defining frame's
+@@ -32,6 +34,13 @@ internal sealed partial class LythonRuntime
+             set
+             {
+                 _value = value;
++                // Only an active owner may expose its operand cache: an
++                // inactive frame may already be returning that array to its
++                // pool. Suspended generators synchronize before resuming.
++                if (_owner?.CurrentExecutableFrame is { } frame
++                    && frame._execution.LocalCells is { } cells && (uint)_ownerSlot < (uint)cells.Length
++                    && ReferenceEquals(cells[_ownerSlot], this))
++                    frame._execution.Locals[_ownerSlot] = value!;
+                 if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
+                 {
+                     if (value is null) _owner!.Variables.Remove(_name!);
+@@ -42,21 +51,6 @@ internal sealed partial class LythonRuntime
+ 
+         internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
+ 
+-        // Incoming writes already know the defining storage. Keep its live
+-        // slot and persistent namespace synchronized without constructing the
+-        // writer's frame or searching its lexical parents again.
+-        internal void StoreThroughOwner(object value)
+-        {
+-            var owner = _owner!;
+-            var name = _name!;
+-            _value = value;
+-            if (owner.CurrentExecutableFrame is { } frame &&
+-                frame._execution.Code.LocalNameToSlot.TryGetValue(name, out var slot) &&
+-                ReferenceEquals(frame._execution.LocalCells?[slot], this))
+-                frame._execution.Locals[slot] = value;
+-            owner.Variables[name] = value;
+-        }
+-
+         // MG11: set once a closure owns this cell (first-wins sharing).
+         internal bool RetentionCharged;
+     }
+@@ -212,11 +206,8 @@ internal sealed partial class LythonRuntime
+         {
+             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
+             {
+-                _execution.Locals[localSlot] = value;
+-                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
+-                {
+-                    localCell.Value = value;
+-                }
++                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell) localCell.Value = value;
++                else _execution.Locals[localSlot] = value;
+ 
+                 return true;
+             }
+@@ -235,12 +226,12 @@ internal sealed partial class LythonRuntime
+             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
+             {
+                 var removed = _execution.Locals[localSlot] is not null;
+-                _execution.Locals[localSlot] = null!;
+                 if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
+                 {
+                     removed |= localCell.Value is not null;
+                     localCell.Value = null;
+                 }
++                else _execution.Locals[localSlot] = null!;
+ 
+                 return removed;
+             }
+@@ -653,7 +644,7 @@ internal sealed partial class LythonRuntime
+                 for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
+                 {
+                     var slot = codeObject.CapturedLocalSlots[i];
+-                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot]);
++                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot], slot);
+                 }
+             }
+ 
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+index 2bd9b17e..27885003 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Resolution.cs
+@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
+     {
+         // A retained closure cell remains authoritative after its defining
+         // executable workspace has detached. Do not write only its old namespace.
+-        if (context.ScopeFacts.IsNonlocal(name))
++        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _))
+             context.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
+         var storageContext = ResolveNameStorageContext(name, context, span);
+         if (storageContext.GlobalNamespace is not null)
+@@ -110,7 +110,8 @@ internal sealed partial class LythonRuntime
+     internal static bool DeleteName(string name, ExecutionContext context, LythonSourceSpan span)
+     {
+         var removed = false;
+-        if (context.ScopeFacts.IsNonlocal(name) && context.CurrentExecutableFrame is { } frame &&
++        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _)
++            && context.CurrentExecutableFrame is { } frame &&
+             frame.TryGetCell(name, out var cell))
+         {
+             removed = cell.Value is not null;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/ComprehensionLambdaExecutionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/ComprehensionLambdaExecutionTests.cs
+index 013f42c4..42c8c570 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/ComprehensionLambdaExecutionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/ComprehensionLambdaExecutionTests.cs
+@@ -17,6 +17,7 @@ public sealed class ComprehensionLambdaExecutionTests
+         { "retained-container", "def make():\n held=[]\n return [lambda:held.append(value) for value in range(3)],held\nfs,held=make()\nfor f in fs:f()\nprint(held)", "[2, 2, 2]\n" },
+         { "free-variable-locals", "fs=[lambda:(value,locals()['value']) for value in range(3)]\nprint([f() for f in fs])", "[(2, 2), (2, 2), (2, 2)]\n" },
+         { "nonlocal-directive", "def make():\n value='outer'\n def collect():\n  nonlocal value\n  return [lambda:value for value in range(3)]\n fs=collect()\n return [f() for f in fs],value\nprint(make())", "([2, 2, 2], 'outer')\n" },
++        { "nonlocal-binding-separate-reader", "def make():\n value='outer'\n def peek():return value\n def collect():\n  nonlocal value\n  return [lambda:value for value in range(3)]\n fs=collect()\n return [f() for f in fs],value,peek()\nprint(make())", "([2, 2, 2], 'outer', 'outer')\n" },
+         { "future-binding-after-capture", "fs=[]\nrows=[later for first in (0,) if fs.append(lambda:later) or True for later in (2,)]\nprint(fs[0](),rows)", "2 [2]\n" },
+         { "future-binding-before-and-after-store", "fs=[]\ndef check(f):\n fs.append(f)\n try: print(f())\n except NameError: print('unbound')\n return True\nrows=[later for first in (0,) if check(lambda:later) for later in (2,)]\nprint([f() for f in fs],rows)", "unbound\n[2] [2]\n" },
+         { "dictionary-bodies", "fs={value:lambda:value for value in range(3)}\nprint([(key,f()) for key,f in fs.items()])", "[(0, 2), (1, 2), (2, 2)]\n" },

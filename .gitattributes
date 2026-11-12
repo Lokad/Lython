@@ -360,3 +360,6 @@ benchmarks/results/2026-11-12-helper-lifecycle-costs/** -text whitespace=cr-at-e
 
 benchmarks/results/2026-11-12-completed-call-lifecycle/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-completed-call-lifecycle/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-12-cell-write-authority/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-cell-write-authority/**/*.patch -text -whitespace

@@ -1,0 +1,19 @@
+{
+  "reference": "Python 3.13.2",
+  "observations": [
+    {
+      "delete": false,
+      "source": "def outer():\n    value='old'\n    def change():\n        class C:\n            nonlocal value\n            value='new'\n    yield change\n    try:print(value)\n    except UnboundLocalError:print('unbound')\ngenerator=outer()\nnext(generator)()\ntry:next(generator)\nexcept StopIteration:pass",
+      "stdout": "new\n",
+      "stderr": "",
+      "exitCode": 0
+    },
+    {
+      "delete": true,
+      "source": "def outer():\n    value='old'\n    def change():\n        class C:\n            nonlocal value\n            del value\n    yield change\n    try:print(value)\n    except UnboundLocalError:print('unbound')\ngenerator=outer()\nnext(generator)()\ntry:next(generator)\nexcept StopIteration:pass",
+      "stdout": "unbound\n",
+      "stderr": "",
+      "exitCode": 0
+    }
+  ]
+}

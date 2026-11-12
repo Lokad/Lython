@@ -15,12 +15,14 @@ internal sealed partial class LythonRuntime
         private object? _value;
         private readonly ExecutionContext? _owner;
         private readonly string? _name;
+        private readonly int _ownerSlot;
 
-        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null)
+        public ExecutableCell(object? value, ExecutionContext? owner = null, string? name = null, int ownerSlot = -1)
         {
             _value = value;
             _owner = owner;
             _name = name;
+            _ownerSlot = ownerSlot;
         }
 
         // Tree-walk methods and executable siblings share the defining frame's
@@ -32,6 +34,13 @@ internal sealed partial class LythonRuntime
             set
             {
                 _value = value;
+                // Only an active owner may expose its operand cache: an
+                // inactive frame may already be returning that array to its
+                // pool. Suspended generators synchronize before resuming.
+                if (_owner?.CurrentExecutableFrame is { } frame
+                    && frame._execution.LocalCells is { } cells && (uint)_ownerSlot < (uint)cells.Length
+                    && ReferenceEquals(cells[_ownerSlot], this))
+                    frame._execution.Locals[_ownerSlot] = value!;
                 if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
                 {
                     if (value is null) _owner!.Variables.Remove(_name!);
@@ -41,21 +50,6 @@ internal sealed partial class LythonRuntime
         }
 
         internal bool CanStoreThroughOwner => _owner is not null && _name is not null && _owner.GlobalNamespace is null;
-
-        // Incoming writes already know the defining storage. Keep its live
-        // slot and persistent namespace synchronized without constructing the
-        // writer's frame or searching its lexical parents again.
-        internal void StoreThroughOwner(object value)
-        {
-            var owner = _owner!;
-            var name = _name!;
-            _value = value;
-            if (owner.CurrentExecutableFrame is { } frame &&
-                frame._execution.Code.LocalNameToSlot.TryGetValue(name, out var slot) &&
-                ReferenceEquals(frame._execution.LocalCells?[slot], this))
-                frame._execution.Locals[slot] = value;
-            owner.Variables[name] = value;
-        }
 
         // MG11: set once a closure owns this cell (first-wins sharing).
         internal bool RetentionCharged;
@@ -212,11 +206,8 @@ internal sealed partial class LythonRuntime
         {
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
-                _execution.Locals[localSlot] = value;
-                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
-                {
-                    localCell.Value = value;
-                }
+                if (_execution.LocalCells?[localSlot] is ExecutableCell localCell) localCell.Value = value;
+                else _execution.Locals[localSlot] = value;
 
                 return true;
             }
@@ -235,12 +226,12 @@ internal sealed partial class LythonRuntime
             if (_execution.Code.LocalNameToSlot.TryGetValue(name, out var localSlot))
             {
                 var removed = _execution.Locals[localSlot] is not null;
-                _execution.Locals[localSlot] = null!;
                 if (_execution.LocalCells?[localSlot] is ExecutableCell localCell)
                 {
                     removed |= localCell.Value is not null;
                     localCell.Value = null;
                 }
+                else _execution.Locals[localSlot] = null!;
 
                 return removed;
             }
@@ -653,7 +644,7 @@ internal sealed partial class LythonRuntime
                 for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
                 {
                     var slot = codeObject.CapturedLocalSlots[i];
-                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot]);
+                    localCells[slot] = new ExecutableCell(argumentsAreLocals ? locals[slot] : null, context, codeObject.LocalNames[slot], slot);
                 }
             }
 

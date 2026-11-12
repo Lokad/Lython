@@ -32,6 +32,11 @@ Earlier rows remain historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11)
 (CSV summary, 2026-11-08), `4598` = `459813a3` (manifest, 2026-11-09).
 They do not describe current HEAD.
 
+The later [cell-assignment source pair](../benchmarks/results/2026-11-12-cell-write-authority/README.md)
+reduces captured-text elapsed by3.2–8.9% (`Run`) and4.8–7.0% (`RunAsync`), with
+supporting CPU and flat allocation. A small ordinary-text CPU increase is accepted;
+report elapsed remains variable. It has no new CPython rows.
+
 Later completed-call lifecycle changes (`7114021e`) have a
 [separate source-pair comparison](../benchmarks/results/2026-11-12-completed-call-lifecycle/README.md):
 guarded search `RunAsync` elapsed is6.7–8.6% lower with supporting CPU, allocation
@@ -158,6 +163,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
+| Captured-cell assignment / captured text | Allocation flat; quiet elapsed−8.91..−3.17% Run / −6.96..−4.75% RunAsync, supporting CPU | Versus`7114021e`; ordinary control CPU+0.77..+1.54% accepted, report elapsed variable. Full delivery separate. [Source pair](../benchmarks/results/2026-11-12-cell-write-authority/README.md) |
 | Completed ordinary helper calls / guarded search, RunAsync | Allocation flat; quiet elapsed−8.61..−6.75%, supporting wider CPU−7.20..−1.46% | `7114021e` versus`82ed92d4`; synchronous guarded elapsed/report/CSV uncertain. Windows/Ubuntu .NET11/10, original stress and installed consumers pass. [Source pair](../benchmarks/results/2026-11-12-completed-call-lifecycle/README.md) |
 | Shared canonical receiver operations / guarded search | Allocation−71%; quiet elapsed−23..−30% with supporting CPU | Retained82ed92d4 versus2ec. Existing native-search/capturedRun CPU debt remains; Windows/Ubuntu .NET11/10, original stress and installed Release consumers pass. [Source pair](../benchmarks/results/2026-11-12-receiver-operations/refined/README.md) |
 | Native storage and borrowed call inputs / complete text | Allocation−20.43–22.44%; quiet captured Run elapsed−8.74..−4.66%, ordinary Run−9.68..−8.54%/RunAsync−12.48..−9.49%, supporting CPU | Retained2ec9d67f versus8f8628a4. Captured async CPU uncertain; earlier search/CSV adversity not reproduced without a cause claim. Additional reportAsync CPU0..+6.25% uncertainty accepted; fully qualified on Windows/Ubuntu .NET 11/10, stress and package consumers. [Source pair](../benchmarks/results/2026-11-12-native-inputs/README.md) |

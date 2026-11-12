@@ -1,0 +1,7 @@
+{
+  "acknowledgedUTC": "2026-11-12T04:16:45.060359+00:00",
+  "doNotObserveBeforeUTC": "2026-11-12T04:20:15.060359+00:00",
+  "ownerSeconds": 150,
+  "stopSeconds": 30,
+  "marginSeconds": 30
+}

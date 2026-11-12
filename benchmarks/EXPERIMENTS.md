@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Cell-write authority](results/2026-11-12-cell-write-authority/README.md) retains
+common Value assignment/cachedownedslot, removing repeated mapping/ownerstore/
+duplicatemirroring. Activecacheguard and necessaryresume sync remain. Independent
+baselineprobes uncover nonlocalcomprehension hidden cellcorruption and mirrored
+generator staleclasswrites/deletion; focused regressiongoldens bothAPIs pass.
+9184actualtargetchecks,3correctedCPythonprobes and3whole scriptsbothAPIs pass.
+B606fourjobs114.479s allgates/joins/RAM/archivepass, capturedRunelapsed-8.91..-3.17%,
+Async-6.96..-4.75%, supportingCPU/allocationflat. AdditionalordinaryRunCPU+.77..+1.54%
+accepted versus7114; reportelapsedvariable. Initialinactivecache/refreshdeletion
+form and stagingmissingpath failure preserved. Full delivery pending, widerroadmap
+continues; no unchangedretiming or scalarproject inferred.
+
 The direct-call runtime7114021e is fully qualified by terminalGREEN
 [43148511620](results/2026-11-12-completed-call-lifecycle/delivery/README.md):Windows/
 Ubuntu actual11/10, original stress and installedReleaseconsumers. Receiptcached;

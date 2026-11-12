@@ -287,7 +287,7 @@ internal sealed partial class LythonRuntime
         {
             var stored = EvaluateNativeReturn(value.First, code, values, arguments, context, entryException);
             context.State.CheckExecution(instruction.Span);
-            arguments.Cells![instruction.ClosureSlot].StoreThroughOwner(stored);
+            arguments.Cells![instruction.ClosureSlot].Value = stored;
             var result = EvaluateNativeReturn(value.Second, code, values, arguments, context, entryException,
                 consumedByIteration);
             CheckNativeReturnExit(value.Second - code.FirstTemporarySlot, values, context);

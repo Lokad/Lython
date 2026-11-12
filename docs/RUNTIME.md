@@ -669,10 +669,15 @@ native returns require a complete result/effect proof.
 Eligible helpers begin with their owned local/operand storage and existing
 incoming cells in the same instruction dispatch, without an invocation context.
 Cell reads observe live values directly from that work state; unbound reads keep
-their Python error/span. Incoming writes use the cell's existing owner to update
-its live local slot and persistent namespace without creating the writer's lexical
-context or searching its parents again. Missing/ownerless cells and namespace-
-sensitive owners retain the ordinary lexical context and resolver. Plain list and tuple
+their Python error/span. Cell assignment uses its known owner slot to update an
+active local cache and applies the existing conditional namespace-mirroring policy.
+It needs no repeated name-to-slot lookup, separate owner-store path or writer's lexical
+context. Inactive owners may be retiring pooled storage and do not receive cache
+writes. Generators synchronize captured cells or their mirrored namespace before
+resuming, including lowered class writes and deletions during suspension.
+Missing/ownerless cells and namespace-sensitive owners retain the ordinary lexical
+context and resolver. Inlined comprehension bindings take precedence over the
+surrounding scope's global/nonlocal directives when storing or deleting names. Plain list and tuple
 construction reuse their admitted storage builders in this loop. Starred displays
 and dictionary/set key protocols keep their ordinary protocol paths. Scope-sensitive work,
 guest protocols, nested calls and host operations create the ordinary context at

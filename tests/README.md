@@ -17,6 +17,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
+check class nonlocal updates and deletions during suspension through both APIs,
+including shared-budget cleanup. Comprehension lambda goldens also read the
+surrounding binding through a separate closure to detect hidden cell corruption.
+
 [Guarded string operations](Lokad.Lython.PublicApi.Tests/NativeReceiverOperationTests.cs)
 check Python goldens, argument validation order, terminal replacement refusal and
 actual split/replace index-protocol I/O. In-flight cancellation joins cleanup before

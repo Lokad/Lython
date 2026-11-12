@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
         if (execution.ClosureCells is { } cells && (uint)slot < (uint)cells.Count && cells[slot].CanStoreThroughOwner)
         {
             var value = execution.Stack.TakeValue(instruction.InputStart, instruction.LiveExtent);
-            cells[slot].StoreThroughOwner(value);
+            cells[slot].Value = value;
             return true;
         }
         if (context is null) return false;
@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
-        if (cell.CanStoreThroughOwner) cell.StoreThroughOwner(value);
+        if (cell.CanStoreThroughOwner) cell.Value = value;
         else
         {
             cell.Value = value;
@@ -500,6 +500,7 @@ internal sealed partial class LythonRuntime
     {
         for (var i = 0; i < codeObject.LocalNames.Count; i++)
         {
+            if ((i & 63) == 0) context.CheckExecution(context.CurrentInstructionSpan);
             // Compiler slots belong to this frame, rather than the guest
             // namespace. Fallback statements cannot rebind or delete them.
             if (codeObject.LocalNames[i].StartsWith('<')) continue;

@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
     {
         // A retained closure cell remains authoritative after its defining
         // executable workspace has detached. Do not write only its old namespace.
-        if (context.ScopeFacts.IsNonlocal(name))
+        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _))
             context.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
         var storageContext = ResolveNameStorageContext(name, context, span);
         if (storageContext.GlobalNamespace is not null)
@@ -110,7 +110,8 @@ internal sealed partial class LythonRuntime
     internal static bool DeleteName(string name, ExecutionContext context, LythonSourceSpan span)
     {
         var removed = false;
-        if (context.ScopeFacts.IsNonlocal(name) && context.CurrentExecutableFrame is { } frame &&
+        if (context.ScopeFacts.IsNonlocal(name) && !context.TryGetInlinedBinding(name, out _)
+            && context.CurrentExecutableFrame is { } frame &&
             frame.TryGetCell(name, out var cell))
         {
             removed = cell.Value is not null;
