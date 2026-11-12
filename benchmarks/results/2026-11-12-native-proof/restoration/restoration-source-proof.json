@@ -1,0 +1,10 @@
+{
+  "sourceMatchesQualified2ec9d67f": true,
+  "files": 568,
+  "removed": [
+    "Runtime linear shape proof and transient packing/pop helpers.",
+    "Compiler postorder validator and CopyInputs.",
+    "GuardStackCapacity and new MaximumDepth metadata."
+  ],
+  "requiresNonincrementalBuild": true
+}

@@ -1,0 +1,26 @@
+{
+  "focused-checks.tar.xz": {
+    "bytes": 31092,
+    "sha256": "339818946beac419816c82031a919d2ca9b8205d53f03d684f3a24fbde3a40da"
+  },
+  "README.md": {
+    "bytes": 875,
+    "sha256": "a41fe6f39d592edc2b5b296631caf08dbb05d1171be253b6c594a54de9600e7a"
+  },
+  "restoration-checks.json": {
+    "bytes": 503,
+    "sha256": "1473ccb553ef1af00b47bceb575ae81546ecc87c220863d172f7aa9760170095"
+  },
+  "restoration-source-proof.json": {
+    "bytes": 307,
+    "sha256": "d70beac9b634c1285f2754070d9617ec8d7f7f093003e48cc2c67eb2cdd04d3f"
+  },
+  "restored-internal-build.log": {
+    "bytes": 2196,
+    "sha256": "bfb1c399ae431928becd8c12a1abf78e617f1cfbc8d589182ce312ac97bfdd5c"
+  },
+  "restored-public-build.log": {
+    "bytes": 3240,
+    "sha256": "70c9ab370a0b82380a09a713ddbb1f2067fd763d6b01a5d85938b1f8ba8919ef"
+  }
+}

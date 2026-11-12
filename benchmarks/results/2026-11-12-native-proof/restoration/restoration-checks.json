@@ -1,0 +1,12 @@
+{
+  "exactQualifiedSource": "2ec9d67f",
+  "sourceFiles": 568,
+  "freshNonincrementalBuilds": true,
+  "checks": {
+    "restored-Lokad.Lython.Tests-net11.0": 15,
+    "restored-Lokad.Lython.PublicApi.Tests-net11.0": 140,
+    "restored-Lokad.Lython.Tests-net10.0": 15,
+    "restored-Lokad.Lython.PublicApi.Tests-net10.0": 140
+  },
+  "fullyQualifiedDeliveryReused": "43119174279 terminalGREEN Windows/Ubuntu actual11/10 originalstress and installedconsumers; no repeat of unchanged production"
+}

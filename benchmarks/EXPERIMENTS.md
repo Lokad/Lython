@@ -6,6 +6,27 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Whole helper-route counterfactual](results/2026-11-12-native-route-costs/README.md)
+isolates native-body removal without changing normal production or preparation.
+Two complete unchanged scripts pass both APIs/goldens/balances/cleanup. Search
+adds~451100B/command (~440B/call), captured text only64B/command; live peaks add
+160/144B. Desktop timing mixed, captured controls15–24%; no general CPU inference.
+Existing caller chain/deferred prefix already avoid generic frame construction.
+Source selects shared canonical receiver operations to avoid unnecessary promotion
+for nonzero-argument text calls; preserve native helpers and genuine dynamic paths.
+No further counterfactual collection, public switch or VM rewrite selected.
+
+Both [linear native proof forms](results/2026-11-12-native-proof/README.md) are
+withdrawn. Refinement removes per-node packing but adds no allocation benefit;
+desktop capturedRun+7.90..+9.45% with1.44%control and capturedAsync+3.08..+3.56%
+with0.47%control do not justify its added compiler/runtime machinery or another
+quiet collection. This is an evidence/complexity decision, not a fixed-percent
+veto or design failure inferred from B600's collector error. All forms/binaries,
+adversity and incomplete observations survive. Exact qualified2ec source restored;
+nonincremental actual11/10 builds and15internal/140public per target pass.
+[Restoration](results/2026-11-12-native-proof/restoration/README.md). No dormant
+linear-proof scaffold remains and unchanged full qualification is not repeated.
+
 [Linear native proof first form](results/2026-11-12-native-proof/first-form/README.md)
 passes initial14964focused checks and refined checkpoint3958checks across actual
 targets, plus complete six-script bothAPI/separatecompile goldens and balances.

@@ -1,0 +1,12 @@
+{
+  "reference": "Qualified2ec9d67f/c9829194",
+  "counterfactual": "NativeBody discarded after identical preparation, private compiler-file override only; ordinary executable route retained.",
+  "results": "Two unchanged complete scripts both APIs pass all goldens/files/balances/cleanup. Search allocates about451100additional bytes/command (~440B/helper call), both APIs. Captured text adds64B/command, not per call. Peak live admission rises only144/160B.",
+  "timing": "Desktop mixed/unstable controls; searchRun execution+5.73..+9.64% with3.56%control, searchAsync\u221210.87..\u22126.87% with4.48%control. Captured controls15\u201324%. No general CPU claim or removable-cost forecast.",
+  "sourceFacts": [
+    "Ordinary function calls already use explicit caller links and a deferred synchronous instruction prefix. Do not propose another generic VM/call arena.",
+    "Captured lower/split path already completes without per-call frame allocation.",
+    "Ordinary canonical nonzero-argument string receiver calls currently fall through the prefix and require invocation context, unlike zero-argument text methods. Existing native-body helpers already implement safe affix/split/replace for closed argument shapes."
+  ],
+  "next": "Consolidate existing receiver-operation selection, shape eligibility and invocation across native bodies and ordinary prefix. Avoid promotion for exact strings/canonical arguments; preserve protocol/keyword/index/suspension fallback. Validate guarded ordinary helper plus unchanged complete-script controls. No removal of measured native helpers or blanket CanSuspend bypass."
+}
