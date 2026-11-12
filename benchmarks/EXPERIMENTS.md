@@ -12,8 +12,10 @@ borrow and live export. 1,366focusedactual-target checks/sixwhole scripts pass.
 Shared callback preparation corrects first-form+40% allocation. B617sevenjobs
 249.221s retains material native/search/captured CPU regressions about14–29%,
 while CSV/report/callback controls are much less affected. All adverse observations
-and first stdout-golden correction survive. Not promoted; one paired native-path
-profile precedes a bounded correction/withdrawal decision. No full delivery claim.
+and first stdout-golden correction survive. Paired native-path profiles now
+identify entry, binding and dispatch costs; a bounded shared positional-fill
+refinement precedes retention or withdrawal. Original assertion/archive failures
+remain recorded. No full delivery claim.
 
 [R266 delivery](results/2026-11-12-conditional-helper-bodies/delivery/README.md)
 is terminal GREEN43183343974, exactda9e5066: Windows/Ubuntu, actual .NET11/10,

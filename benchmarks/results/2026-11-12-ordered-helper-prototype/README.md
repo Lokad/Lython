@@ -53,9 +53,9 @@ Warm clocks include invocation, mediated RAM I/O, validation/prior-result cleanu
 exclude startup/compile/reset/protocol/finalcache. WiderCPU includes reset/protocol.
 Desktop includes immediate disposal. No CPython ratio/RSS/tail/largefile claim.
 
-Do not promote this form. One paired six-second profile of the affected native
-script will distinguish actual preparation/dispatch cost from useful work and
-decide a bounded correction or withdrawal. No permanent architecture ban or
+Do not promote this form. [Paired profiles](paired-profile/README.md) now identify entry, general binding
+and prefix dispatch costs. A bounded refinement shares existing positional fill
+without argument packaging; retention remains undecided. No permanent architecture ban or
 fixed-percentage veto; the performance objective remains active. Full new-source
 platform/stress/package qualification has not run. Publication stays postponed.
 

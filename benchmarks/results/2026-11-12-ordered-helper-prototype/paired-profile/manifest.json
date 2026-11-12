@@ -1,0 +1,46 @@
+{
+  "archive-receipt.json": {
+    "bytes": 740,
+    "sha256": "78c95b9f346ba86a17e26f35f331ee845e48778b8823618143569f511147da2e"
+  },
+  "failure-inspection.json": {
+    "bytes": 11705,
+    "sha256": "d563ae19e314bbacfe11279800012b83c05d3660c7a4f93df10814a20cbf9f10"
+  },
+  "identity.json": {
+    "bytes": 4101,
+    "sha256": "fa749712e4c26ebc571cf1baf5dda3fd8da8b08c09b4356a5e8d8e8e03f38dc3"
+  },
+  "observations.tgz": {
+    "bytes": 2526966,
+    "sha256": "6216626a0e3bd6ae8b348bb6431b425777b52b2c6f65edb7e9a988b4debd51cf"
+  },
+  "original-archive-members.json": {
+    "bytes": 14370,
+    "sha256": "518355137f75c8017a059632b892ecd31bcb8bb46c52a31870aa209c19123603"
+  },
+  "original-archive-terminal.json": {
+    "bytes": 298,
+    "sha256": "d232fdd779133db9318d5c011491a43429310761888b51ebb6974c520d8b72d4"
+  },
+  "README.md": {
+    "bytes": 2365,
+    "sha256": "9df711bb9795464b4928db45d2aab614d6aefe9b8d98187afbecfd3ea6259d2c"
+  },
+  "recover-archive.py": {
+    "bytes": 6943,
+    "sha256": "b302ac1bc9bc695a4338a23c8c2f1b07d53f24cde1abd8968b2b3fb492c0e6cc"
+  },
+  "resume-archive-only.py": {
+    "bytes": 4607,
+    "sha256": "c252d638744597e33a74bbeefcfa5d7a4a31413264767e23e75d9eb59f2eb1e9"
+  },
+  "source-identity.json": {
+    "bytes": 78043,
+    "sha256": "9882c4fd3dc838fe3a3dcbfe75151db8627da787db3c6e1b83296e253b9e5755"
+  },
+  "terminal-status.json": {
+    "bytes": 1192,
+    "sha256": "46c5df98ed37cd1c54b68e6f267c5c07f6ba05321504c7cf11b609986b9adecf"
+  }
+}

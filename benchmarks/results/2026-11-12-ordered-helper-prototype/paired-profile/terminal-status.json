@@ -1,0 +1,26 @@
+{
+  "original": {
+    "service": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\nSubState=failed\n",
+    "archiveSHA256": "0f6944be7977b3cd7c95e2db32de3c3a448b148cafccadeaac92344abcfe1d30",
+    "archiveBytes": 12699843,
+    "uid": 1000,
+    "inode": 845070,
+    "allWorkersJoined": true,
+    "guestFixturesRemoved": true
+  },
+  "correctedArchive": {
+    "complete": true,
+    "allWorkersJoined": true,
+    "guestFixturesRemoved": true,
+    "quietBeforeAndAfter": true,
+    "archivedAndVerifiedUnderLease": true,
+    "capturedSeconds": 10.482500224999999,
+    "archiveSHA256": "6216626a0e3bd6ae8b348bb6431b425777b52b2c6f65edb7e9a988b4debd51cf",
+    "freeBytes": 255496192,
+    "originalServiceFailed": true,
+    "originalArchiveSHA256": "0f6944be7977b3cd7c95e2db32de3c3a448b148cafccadeaac92344abcfe1d30",
+    "archivalCorrectionOnly": true,
+    "reason": "Original archive included redundant reference image and failed post-write floor. Every original sampling/identity/verification/close/quiet gate passed. Corrected packaging only; original archive/members/failure retained locally, no sampling replay.",
+    "performanceQualified": false
+  }
+}
