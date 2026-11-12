@@ -1,0 +1,34 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\benchmarks\Lokad.Lython.Benchmarks\Lokad.Lython.Benchmarks.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\benchmarks\Lokad.Lython.Benchmarks\Lokad.Lython.Benchmarks.csproj::TargetFramework=net10.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net10.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net10.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tools\LythonProbe\LythonProbe.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj::TargetFramework=net10.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tools\LythonProbe\LythonProbe.csproj::TargetFramework=net10.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net10.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net10.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net10.0\Lokad.Lython.Utf8Regex.dll
+  LythonProbe -> D:\code\Lython\tools\LythonProbe\bin\Release\net11.0\LythonProbe.dll
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net10.0\Lokad.Lython.WorkerFixture.dll
+  LythonProbe -> D:\code\Lython\tools\LythonProbe\bin\Release\net10.0\LythonProbe.dll
+  Lokad.Lython.Benchmarks -> D:\code\Lython\benchmarks\Lokad.Lython.Benchmarks\bin\Release\net11.0\Lokad.Lython.Benchmarks.dll
+  Lokad.Lython.Benchmarks -> D:\code\Lython\benchmarks\Lokad.Lython.Benchmarks\bin\Release\net10.0\Lokad.Lython.Benchmarks.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll
+  Lokad.Lython.Tests -> D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:24.13

@@ -1,0 +1,84 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 262238208,
+  "requiredFreeBytes": 271192064,
+  "reclaimableBytes": 9662464,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "record-cpython-b616-20261112/observations.tgz",
+      "bytes": 2007524,
+      "sha256": "f0960460a190b002ea211d4e8e1b2cf0ca2edaf82dda9f70be2e7c213e2c0cf7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-cpython-checkpoint/observations.tgz",
+      "reason": "ExactterminalB616 evidence duplicates only; committed2f2154a5 canonicalGit/SHA verified. Freshlease/UID/path/inode/link proof; qualifieda552referenceprotected, floorsunchanged.",
+      "paths": [
+        "record-cpython-b616-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 845007,
+      "allocatedBytes": 2011136,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-cpython-b616-20261112/representative.json",
+      "bytes": 353258,
+      "sha256": "559d7a93fdf145910561b532b0ffc0f7eaa454f6c7329d9ece32ef7d18e7e1dc",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-cpython-checkpoint/observations.tgz",
+      "reason": "ExactterminalB616 evidence duplicates only; committed2f2154a5 canonicalGit/SHA verified. Freshlease/UID/path/inode/link proof; qualifieda552referenceprotected, floorsunchanged.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "f0960460a190b002ea211d4e8e1b2cf0ca2edaf82dda9f70be2e7c213e2c0cf7",
+      "paths": [
+        "record-cpython-b616-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844982,
+      "allocatedBytes": 356352,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "record-cpython-b616-20261112/confirmation/confirmation.json",
+      "bytes": 1601688,
+      "sha256": "25a6f5ff4203fe4e7874e2644275dbd5891369a8d38a6ac60e13d9083fe5a095",
+      "canonicalStorage": "benchmarks/results/2026-11-12-record-cpython-checkpoint/observations.tgz",
+      "reason": "ExactterminalB616 evidence duplicates only; committed2f2154a5 canonicalGit/SHA verified. Freshlease/UID/path/inode/link proof; qualifieda552referenceprotected, floorsunchanged.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "f0960460a190b002ea211d4e8e1b2cf0ca2edaf82dda9f70be2e7c213e2c0cf7",
+      "paths": [
+        "record-cpython-b616-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 845023,
+      "allocatedBytes": 1605632,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "text-batches-b608-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5681664,
+      "sha256": "b2cbfdb6ebec288a356233356e81b72e9dfccdd57065ec53f668acd4ad1597fe",
+      "canonicalStorage": "benchmarks/results/2026-11-12-text-output-batches/refined/b608/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "3439b0eaac3f75a7601e2008ec4b66ea196a842f7c14cb9484359ceb1b27f72f",
+      "reason": "Olderb2baseline supersededbyfullyqualifiedda9/a552. Exactsource/core/oldadversity preserved incommittedcanonicalGit; allaliases provedfresh before retiring onlythisphysicalimage. a552currentreferenceprotected, floorsunchanged.",
+      "paths": [
+        "text-batches-b608-20261112/current-core.dll",
+        "text-batches-b608-20261112/candidate/Lokad.Lython.dll",
+        "conditional-helper-b612-20261112/reference/Lokad.Lython.dll",
+        "call-boundary-profile-b610-20261112/current-core.dll",
+        "call-boundary-profile-b610-20261112/candidate/Lokad.Lython.dll",
+        "conditional-normalized-b614-20261112/reference/Lokad.Lython.dll",
+        "positional-binding-b611-20261112/reference/Lokad.Lython.dll",
+        "conditional-confirmation-b613-20261112/reference/Lokad.Lython.dll",
+        "output-cpython-b609-20261112/current-core.dll",
+        "output-cpython-b609-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844752,
+      "allocatedBytes": 5689344,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

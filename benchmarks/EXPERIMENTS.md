@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Ordered helper prototype](results/2026-11-12-ordered-helper-prototype/README.md)
+removes the native tree/proof/evaluator with one existing prefix, managed span
+borrow and live export. 1,366focusedactual-target checks/sixwhole scripts pass.
+Shared callback preparation corrects first-form+40% allocation. B617sevenjobs
+249.221s retains material native/search/captured CPU regressions about14–29%,
+while CSV/report/callback controls are much less affected. All adverse observations
+and first stdout-golden correction survive. Not promoted; one paired native-path
+profile precedes a bounded correction/withdrawal decision. No full delivery claim.
+
 [R266 delivery](results/2026-11-12-conditional-helper-bodies/delivery/README.md)
 is terminal GREEN43183343974, exactda9e5066: Windows/Ubuntu, actual .NET11/10,
 original stress and installed Release consumers. All568 frozen production sources

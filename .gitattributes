@@ -380,3 +380,6 @@ benchmarks/results/2026-11-12-conditional-helper-bodies/**/*.patch -text -whites
 benchmarks/results/2026-11-12-record-call-attribution/** -text whitespace=cr-at-eol
 
 benchmarks/results/2026-11-12-record-cpython-checkpoint/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-12-ordered-helper-prototype/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-ordered-helper-prototype/**/*.patch -text -whitespace

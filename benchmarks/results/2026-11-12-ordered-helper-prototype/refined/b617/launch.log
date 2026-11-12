@@ -1,0 +1,7 @@
+{"freeBytes": 264863744, "sourceAndImagesVerified": true, "jobs": 7, "ownerSeconds": 300, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=5min
+MainPID=3590013
+ActiveState=active
+
+
+Running as unit: lython-b617-ordered-helper-20261112.service; invocation ID: 4f0af863cf0e4bd7be056b5d646aa700

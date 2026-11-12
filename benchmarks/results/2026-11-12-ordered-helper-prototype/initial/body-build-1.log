@@ -1,0 +1,15 @@
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(316,30): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(317,17): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(318,17): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+
+Build FAILED.
+
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(316,30): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(317,17): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+D:\code\Lython\src\Lokad.Lython\Runtime\LythonRuntime.Executable.cs(318,17): error CS0191: A readonly field cannot be assigned to (except in a constructor or init-only setter of the type in which the field is defined or a variable initializer) [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+    0 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:07.02
