@@ -1,0 +1,12 @@
+{
+  "originalsPreserved": true,
+  "affectedCollections": [
+    "B622",
+    "B623",
+    "B624"
+  ],
+  "issue": "Embedded live-unit.txt inherited the old B621 service name; it is not the live owner identity for these collections.",
+  "authoritativeEvidence": "External launch acknowledgement and cached terminal service status each name the actual B622/B623/B624 unit, enforce 180s/30s owner limits, report joined users and match exact image/fixture identities.",
+  "measurementImpact": "No worker/timer/image change; do not reinterpret old live-unit.txt or retime. B625 run script names its actual service.",
+  "correctedIn": "B625 run-external-phases.sh"
+}

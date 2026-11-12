@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -91,11 +92,11 @@ public sealed class TextFileOwnerStorageTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CloseReturnsReadWindowOnceAndKeepsEscapedLineFunded(bool asynchronous)
+    [InlineData(false, false), InlineData(true, false)]
+    [InlineData(false, true), InlineData(true, true)]
+    public async Task CloseReleasesPrivateReadStorageOnceAndKeepsEscapedLineFunded(bool asynchronous, bool longLine)
     {
-        var expected = new string('x', 200) + " café 😀\n";
+        var expected = longLine ? new string('x', 200) + " café 😀\n" : "tiny\n";
         var mock = asynchronous ? null : new MockLythonHost();
         var delayed = asynchronous ? new DelayedLythonHost() : null;
         if (delayed is not null) delayed.SeedFile("/file", expected + new string('y', 32768));
@@ -105,10 +106,15 @@ public sealed class TextFileOwnerStorageTests
             LythonRuntime.TextErrorMode.Strict, LythonRuntime.TextNewlineMode.TranslateUniversal) : Open("r", context);
         var line = asynchronous ? await handle.ReadLineAsync(-1) : handle.ReadLine();
         Assert.Equal(expected, line.AsString());
+        Assert.True(MemoryMarshal.TryGetArray(line.Utf8Bytes, out var backing));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         if (asynchronous) await handle.ExitAsync(); else handle.Exit();
         var closed = context.MemoryGovernor.CurrentCommittedBytes;
-        Assert.True(closed < before);
+        if (longLine) Assert.True(closed <= before);
+        else Assert.True(closed < before); // Private input storage still returns on close.
+        // Fund actual retained capacity, whether independently copied or shared.
+        Assert.True(closed >= Math.Max(line.CommittedOwnedBytes,
+            PyString.EstimateApproximateBytes(backing.Array!.Length)));
         Assert.True(handle.IsClosed);
         Assert.True(line.CommittedOwnedBytes > 0);
         if (asynchronous) { await handle.ExitAsync(); Assert.True(delayed!.CompletedAsynchronously > 0); }

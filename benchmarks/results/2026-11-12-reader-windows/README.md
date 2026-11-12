@@ -82,3 +82,10 @@ launch. Exact terminal B622 duplicates were retired only after committed canonic
 archive verification/fresh lease/UID/path/inode proof, keeping both image families
 and existing floors. Publication remains postponed. Platform/stress/installed
 Release package qualification follows the retained-source commit.
+
+First full delivery found an old close-refund fixture assumption; its useful
+private-reclamation check is preserved alongside stronger shared-capacity checks.
+[Original failure and correction](close-fixture-correction/README.md). No production
+change or retiming. [Service metadata clarification](measurement-metadata-correction.json)
+preserves the inherited live-unit labels and authoritative actual launch/terminal
+identities. Full corrected-source delivery remains required.
