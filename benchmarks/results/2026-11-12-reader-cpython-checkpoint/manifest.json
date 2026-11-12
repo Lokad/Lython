@@ -1,6 +1,12 @@
 {
-  "README.md": "7c9edfb21f66c7c1c0e5e75c3e07f0b0f666d599fdfad1c92da1d9f46af6c0f0",
+  "README.md": "fcee75bae625d8332c77733a43be2cab836407552c03e16a42f0ce63db293307",
   "source-proof.json": "ea38ea1edf91f590a7e0942dfe7e90ec5a83f75064a3df76fe1f9e7639b9b130",
+  "phases/external-phases-receipt.json": "65f08e5abc854651eb0ff849909da8628facb9fb35aa91f62bc7978cade129e9",
+  "phases/external-phases.tgz": "ab664bcd79027e898d763c3df945b1d599ec85930096482d780ba521430e8767",
+  "phases/extraction.json": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf",
+  "phases/preparation.tar.xz": "bdb84e8d09eea39b09d287bc53f0962e70d7efee433348bdc1486dfe4167ae1c",
+  "phases/summary.json": "264445892e55061a865de6994ee501fbf1c17df06aa01cf63b9fffdd03e5b543",
+  "phases/terminal-status.json": "8211a09177ba1b7c973136ced7e8721e936a8e36dd5e06d351c088ee0ae226da",
   "warm/external-warm-receipt.json": "f369c82c5e9c8500da326e11c359422b9736764bc6f57173b39fa6efb58c0080",
   "warm/external-warm.tgz": "f263840046d9375e78e95ea683fae2361d9b51918b25a45089be4726515654d7",
   "warm/extraction.json": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf",
