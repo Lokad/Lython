@@ -1,0 +1,93 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261476352,
+  "requiredFreeBytes": 270753792,
+  "reclaimableBytes": 9986048,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "positional-binding-b611-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5682176,
+      "sha256": "f4f7655e157f6cecd8a2edefbb2316e416e396a8e765545a65acf6a3b833faff",
+      "canonicalStorage": "benchmarks/results/2026-11-12-positional-default-binding/b611/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "5b47a8455e2f9f94320c5850dfe5e135b054816babe6175e5785f8497a296070",
+      "reason": "WithdrawnR265prototype, allsource/core/rawadversity restored/preserved in committed4511d547. Currentqualifiedb2andnewR266 protected. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "paths": [
+        "positional-binding-b611-20261112/current-core.dll",
+        "positional-binding-b611-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844883,
+      "allocatedBytes": 5689344,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "positional-binding-b611-20261112/observations.tgz",
+      "bytes": 1986807,
+      "sha256": "5b47a8455e2f9f94320c5850dfe5e135b054816babe6175e5785f8497a296070",
+      "canonicalStorage": "benchmarks/results/2026-11-12-positional-default-binding/b611/observations.tgz",
+      "reason": "OnlyunusedterminalB611duplicate, exactcommitted4511d547 canonicalGitSHA verified, alladverse/originalfailedconditions preserved. FreshUID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "paths": [
+        "positional-binding-b611-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844890,
+      "allocatedBytes": 1990656,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "positional-binding-b611-20261112/representative.json",
+      "bytes": 717634,
+      "sha256": "aa6d07295d9223b2ded9212237e34c9a58081cba7db7cc892c8206dfa925e3c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-positional-default-binding/b611/observations.tgz",
+      "reason": "OnlyunusedterminalB611duplicate, exactcommitted4511d547 canonicalGitSHA verified, alladverse/originalfailedconditions preserved. FreshUID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "5b47a8455e2f9f94320c5850dfe5e135b054816babe6175e5785f8497a296070",
+      "paths": [
+        "positional-binding-b611-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844835,
+      "allocatedBytes": 720896,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "positional-binding-b611-20261112/confirmation/confirmation.json",
+      "bytes": 938040,
+      "sha256": "f16e397aefdca46607e3ff37d4b025a3048b2e9855c69c96f7e1e0083706185f",
+      "canonicalStorage": "benchmarks/results/2026-11-12-positional-default-binding/b611/observations.tgz",
+      "reason": "OnlyunusedterminalB611duplicate, exactcommitted4511d547 canonicalGitSHA verified, alladverse/originalfailedconditions preserved. FreshUID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "5b47a8455e2f9f94320c5850dfe5e135b054816babe6175e5785f8497a296070",
+      "paths": [
+        "positional-binding-b611-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844901,
+      "allocatedBytes": 942080,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "cell-authority-b606-20261112/confirmation/confirmation.json",
+      "bytes": 639543,
+      "sha256": "44b072809a3804b5b6c6ba50a3579c7b58adc526e39398a193e4a47837f641a8",
+      "canonicalStorage": "benchmarks/results/2026-11-12-cell-write-authority/b606/observations.tgz",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "c4863970ea6a0d2a2193d19cca7467dcb209f9df4440b6f13164c581db68ee13",
+      "reason": "Exactterminal historicalrawrecord duplicate only; canonicalcommittedGit/SHAverified, allfailed/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "paths": [
+        "cell-authority-b606-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844776,
+      "allocatedBytes": 643072,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

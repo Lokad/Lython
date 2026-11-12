@@ -1,0 +1,7 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+WARNING: Overwriting results file: D:\code\Lython\.git\agent-notes\review-20261031\conditional-helper-r266\tests\internal-net11.0.trx
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\conditional-helper-r266\tests\internal-net11.0.trx
+
+Passed!  - Failed:     0, Passed:   153, Skipped:     0, Total:   153, Duration: 292 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

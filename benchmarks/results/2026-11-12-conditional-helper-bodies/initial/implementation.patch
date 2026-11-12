@@ -1,0 +1,91 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs b/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs
+index 41840e4a..9a973907 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableNativeBody.cs
+@@ -17,7 +17,7 @@ internal enum NativeReturnOperation
+     Split, Replace, StartsWith, EndsWith,
+     CasedSplit,
+     ConvertFormat, FormatValue,
+-    Conditional, None, EmptySequence, StoreClosure,
++    Conditional, None, EmptySequence, StoreClosure, Unary,
+ }
+ 
+ internal readonly record struct NativeReturnValue(NativeReturnOperation Operation, ExecutableInstruction Instruction, int First, int Second,
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+index 163d13e2..547e704a 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+@@ -154,6 +154,14 @@ internal sealed partial class ExecutableCodeObject
+                         // Fold receiver+method into the call; no exposed bound value.
+                         stack[^1] = (stack[^1].Value, instruction.Span, stack[^1].Depth, instruction.NameIndex, stack[^1].Producer, stack[^1].ReadSpan);
+                         continue;
++                    case ExecutableOpCode.Unary when LythonRuntime.TryGetNativeUnaryShape(instruction.UnaryOperator,
++                        LythonRuntime.NativeReturnShape.Integer, out _):
++                        if (stack.Count == 0 || stack[^1].Member is not null) return null;
++                        operation = NativeReturnOperation.Unary;
++                        first = stack[^1].Value;
++                        depth = 1 + stack[^1].Depth;
++                        stack.RemoveAt(stack.Count - 1);
++                        break;
+                     case ExecutableOpCode.Binary when LythonRuntime.TryGetNativeBinaryShape(instruction.BinaryOperator,
+                         LythonRuntime.NativeReturnShape.Integer, LythonRuntime.NativeReturnShape.Integer, out _):
+                     case ExecutableOpCode.Augmented when LythonRuntime.TryGetNativeBinaryShape(
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index c24bf943..4c6abd95 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -95,6 +95,23 @@ internal sealed partial class LythonRuntime
+         _ => NativeReturnShape.Other,
+     };
+ 
++    internal static bool TryGetNativeUnaryShape(ExecutableUnaryOperator op, NativeReturnShape operand,
++        out NativeReturnShape result)
++    {
++        result = op switch
++        {
++            ExecutableUnaryOperator.Not when operand != NativeReturnShape.Other => NativeReturnShape.Boolean,
++            ExecutableUnaryOperator.Plus or ExecutableUnaryOperator.Minus
++                when operand is NativeReturnShape.Integer or NativeReturnShape.Boolean => NativeReturnShape.Integer,
++            ExecutableUnaryOperator.Plus or ExecutableUnaryOperator.Minus
++                when operand == NativeReturnShape.Float => NativeReturnShape.Float,
++            ExecutableUnaryOperator.BitwiseNot when operand is NativeReturnShape.Integer or NativeReturnShape.Boolean
++                => NativeReturnShape.Integer,
++            _ => NativeReturnShape.Other,
++        };
++        return result != NativeReturnShape.Other;
++    }
++
+     // One pure fact serves frontend eligibility and the runtime type proof.
+     // It authorizes canonical operations, never evaluates values or protocols.
+     internal static bool TryGetNativeBinaryShape(BinaryOperatorSyntax op, NativeReturnShape left,
+@@ -198,6 +215,8 @@ internal sealed partial class LythonRuntime
+         if (!GuardNativeReturn(value.First, code, values, arguments, context, out var first)) return false;
+         switch (value.Operation)
+         {
++            case NativeReturnOperation.Unary:
++                return TryGetNativeUnaryShape(value.Instruction.UnaryOperator, first, out shape);
+             case NativeReturnOperation.Binary or NativeReturnOperation.Augmented:
+                 if (!GuardNativeReturn(value.Second, code, values, arguments, context, out var right)) return false;
+                 if (value.Operation == NativeReturnOperation.Augmented &&
+@@ -336,6 +355,8 @@ internal sealed partial class LythonRuntime
+                 case NativeReturnOperation.Read:
+                     TryReadNativeOperand(code, instruction, arguments, context, out var operand);
+                     return RuntimeValue(operand);
++                case NativeReturnOperation.Unary:
++                    return EvaluateExecutableUnary(instruction.UnaryOperator, first!, context, instruction.Span);
+                 case NativeReturnOperation.Binary:
+                     return EvaluateBinaryOperator(instruction.BinaryOperator, first!, second!, context, instruction.Span);
+                 case NativeReturnOperation.Augmented:
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+index 559d3be3..159599bc 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+@@ -7,6 +7,8 @@ public sealed class NativeReturnFunctionTests
+     // Goldens independently captured with isolated CPython 3.13.
+     public static TheoryData<string, string, string> Cases => new()
+     {
++        { "unary-values", "def state(value):\n    if not value:\n        return 'empty'\n    return 'full'\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\nprint([state(value) for value in (None, False, 0, 0.0, '', b'', [], (), {}, set(), range(0), True, 3, 'x')])\nfor value in (False, True, -3, 0, 1, 1 << 80):\n    print(positive(value) is value, positive(value), negative(value), invert(value))\nfor value in (-0.0, 2.5):\n    print(positive(value) is value, positive(value), negative(value))\nfor operation in (positive, negative, invert):\n    try: operation('text')\n    except TypeError: print('bad')\n", "['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'full', 'full', 'full']\nFalse 0 0 -1\nFalse 1 -1 -2\nTrue -3 3 2\nTrue 0 0 -1\nTrue 1 -1 -2\nTrue 1208925819614629174706176 -1208925819614629174706176 -1208925819614629174706177\nTrue -0.0 0.0\nTrue 2.5 -2.5\nbad\nbad\nbad\n" },
++        { "unary-protocols", "events=[]\nclass Value:\n    def __bool__(self):\n        events.append('bool')\n        return False\n    def __pos__(self):\n        events.append('plus')\n        return 11\n    def __neg__(self):\n        events.append('minus')\n        return 12\n    def __invert__(self):\n        events.append('invert')\n        return 13\ndef state(value):\n    if not value: return 'empty'\n    return value.upper()\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\ndef wanted(value, *, prefix='N\u00e9'):\n    if not value: return False\n    return value.startswith(prefix)\nvalue=Value()\nprint(state(value),positive(value),negative(value),invert(value),events)\nprint(wanted('',prefix=value),wanted('N\u00e9x'),wanted('no'))\n", "empty 11 12 13 ['bool', 'plus', 'minus', 'invert']\nFalse True False\n" },
+         { "captured-bound-method", "def make():\n count=0\n def method(self,value):\n  nonlocal count\n  count+=1\n  return value.upper()\n def read():return count\n return method,read\nmethod,read=make()\nclass Box:pass\nBox.run=method\nbox=Box()\nsaved=box.run\nprint(box.run('a'),read(),saved(value='b'),read())\n", "A 1 B 2\n" },
+         { "captured-sequence-text", "def make():\n count=0\n def words(value=' A B '):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nprint(words(),read())\nprint(words(value=' C '),read())\nprint(list(map(words,['D E','F'])),read())\n", "['a', 'b'] 1\n['c'] 2\n[['d', 'e'], ['f']] 4\n" },
+         { "captured-sequence-protocol-once", "def make():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nclass Text:\n def lower(self):\n  print('hook',read())\n  return 'X Y'\nprint(words('A'),read())\nprint(words(Text()),read())\n", "['a'] 1\nhook 2\n['X', 'Y'] 2\n" },
