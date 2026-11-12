@@ -1,0 +1,14 @@
+{
+  "diagnostic.tar.xz": {
+    "bytes": 9980,
+    "sha256": "7b36669211fd62e81aa673781d3e7386622eac5369aa710383718179876854f2"
+  },
+  "facts.json": {
+    "bytes": 48684,
+    "sha256": "e04df8119a263559d79de629912078e1b7b0682e420b1b1009d6d354a351c87d"
+  },
+  "sources.json": {
+    "bytes": 4079,
+    "sha256": "a7da7e76e7a28382c0428dc04ac525288c8411fd83bbadb444a6b542ad718e61"
+  }
+}

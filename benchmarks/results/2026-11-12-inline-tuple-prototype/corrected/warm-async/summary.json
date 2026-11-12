@@ -1,0 +1,412 @@
+{
+  "phase": "warm-async",
+  "performanceQualified": false,
+  "warmupsPerImage": 16,
+  "rounds": 5,
+  "batch": 8,
+  "normalGcAndTiering": true,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.file-search.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 10.7605875,
+          "executionMilliseconds": 9.0153625,
+          "cpuMilliseconds": 5.859375,
+          "allocatedBytes": 149861.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 8.4507625,
+          "executionMilliseconds": 6.8762375,
+          "cpuMilliseconds": 1.953125,
+          "allocatedBytes": 149925.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 8.9344625,
+          "executionMilliseconds": 7.35335,
+          "cpuMilliseconds": 3.90625,
+          "allocatedBytes": 149861.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": -21.465603063029782,
+          "executionMilliseconds": -23.727553939178815,
+          "cpuMilliseconds": -66.66666666666667,
+          "allocatedBytes": 0.04270624111677446
+        },
+        "before-control": {
+          "elapsedMilliseconds": -5.413867929939831,
+          "executionMilliseconds": -6.488369246669878,
+          "cpuMilliseconds": -50.0,
+          "allocatedBytes": 0.04270624111677446
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 16.970495337731318,
+        "executionMilliseconds": 18.435337458698974,
+        "cpuMilliseconds": 33.333333333333336,
+        "allocatedBytes": 0.0
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 241444
+        },
+        "candidate": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 241444
+        },
+        "before-control": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 241444
+        }
+      }
+    },
+    {
+      "case": "scripts.file-search.guarded-helper.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 11.2686,
+          "executionMilliseconds": 9.4775875,
+          "cpuMilliseconds": 17.578125,
+          "allocatedBytes": 149861.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 10.54485,
+          "executionMilliseconds": 8.979025,
+          "cpuMilliseconds": 13.671875,
+          "allocatedBytes": 149925.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 11.59875,
+          "executionMilliseconds": 9.713975,
+          "cpuMilliseconds": 15.625,
+          "allocatedBytes": 149861.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": -6.422714445450184,
+          "executionMilliseconds": -5.260436793646061,
+          "cpuMilliseconds": -22.22222222222222,
+          "allocatedBytes": 0.04270624111677446
+        },
+        "before-control": {
+          "elapsedMilliseconds": -9.086323957322994,
+          "executionMilliseconds": -7.56590376236298,
+          "cpuMilliseconds": -12.5,
+          "allocatedBytes": 0.04270624111677446
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 2.9298226931473437,
+        "executionMilliseconds": 2.4941737546606557,
+        "cpuMilliseconds": 11.111111111111116,
+        "allocatedBytes": 0.0
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 245092
+        },
+        "candidate": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 245092
+        },
+        "before-control": {
+          "PeakExecutionBytes": 167876,
+          "PeakRootBytes": 245092
+        }
+      }
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 16.2473875,
+          "executionMilliseconds": 13.9465375,
+          "cpuMilliseconds": 15.625,
+          "allocatedBytes": 3041471.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 16.5275125,
+          "executionMilliseconds": 13.999475,
+          "cpuMilliseconds": 19.53125,
+          "allocatedBytes": 2967807.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 14.3893375,
+          "executionMilliseconds": 12.5291375,
+          "cpuMilliseconds": 17.578125,
+          "allocatedBytes": 3041440.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": 1.7241233398292533,
+          "executionMilliseconds": 0.3795745001223372,
+          "cpuMilliseconds": 25.0,
+          "allocatedBytes": -2.421985940355831
+        },
+        "before-control": {
+          "elapsedMilliseconds": 14.859440193129124,
+          "executionMilliseconds": 11.735344911012447,
+          "cpuMilliseconds": 11.111111111111116,
+          "allocatedBytes": -2.4209913725077636
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 11.435992401855366,
+        "executionMilliseconds": 10.163096037278073,
+        "cpuMilliseconds": 12.5,
+        "allocatedBytes": 0.001019243648880952
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 4975008,
+          "PeakRootBytes": 5090592
+        },
+        "candidate": {
+          "PeakExecutionBytes": 5073312,
+          "PeakRootBytes": 5188896
+        },
+        "before-control": {
+          "PeakExecutionBytes": 4975008,
+          "PeakRootBytes": 5090592
+        }
+      }
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 51.8686375,
+          "executionMilliseconds": 34.459175,
+          "cpuMilliseconds": 9.765625,
+          "allocatedBytes": 843357.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 56.2717875,
+          "executionMilliseconds": 22.950325,
+          "cpuMilliseconds": 7.8125,
+          "allocatedBytes": 843416.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 65.242475,
+          "executionMilliseconds": 29.0988375,
+          "cpuMilliseconds": 9.765625,
+          "allocatedBytes": 843300.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": 8.489041186015346,
+          "executionMilliseconds": -33.398507073950555,
+          "cpuMilliseconds": -19.999999999999996,
+          "allocatedBytes": 0.0069958511045742355
+        },
+        "before-control": {
+          "elapsedMilliseconds": -13.749765777585843,
+          "executionMilliseconds": -21.1297530356668,
+          "cpuMilliseconds": -19.999999999999996,
+          "allocatedBytes": 0.013755484406496876
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 25.78405399602024,
+        "executionMilliseconds": 15.555617625784723,
+        "cpuMilliseconds": 0.0,
+        "allocatedBytes": 0.0067587036094995945
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 1677321,
+          "PeakRootBytes": 1775145
+        },
+        "candidate": {
+          "PeakExecutionBytes": 1677321,
+          "PeakRootBytes": 1775145
+        },
+        "before-control": {
+          "PeakExecutionBytes": 1677321,
+          "PeakRootBytes": 1775145
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 24.013,
+          "executionMilliseconds": 9.5676875,
+          "cpuMilliseconds": 9.765625,
+          "allocatedBytes": 2665626.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 26.3816875,
+          "executionMilliseconds": 10.3305375,
+          "cpuMilliseconds": 9.765625,
+          "allocatedBytes": 2666012.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 25.8447,
+          "executionMilliseconds": 10.9101875,
+          "cpuMilliseconds": 11.71875,
+          "allocatedBytes": 2665617.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": 9.86418814808645,
+          "executionMilliseconds": 7.973191014025072,
+          "cpuMilliseconds": 0.0,
+          "allocatedBytes": 0.014480651074078033
+        },
+        "before-control": {
+          "elapsedMilliseconds": 2.0777470816066845,
+          "executionMilliseconds": -5.312924273757891,
+          "cpuMilliseconds": -16.666666666666664,
+          "allocatedBytes": 0.01481833286627321
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 7.627951526256593,
+        "executionMilliseconds": 14.031603770503587,
+        "cpuMilliseconds": 19.999999999999996,
+        "allocatedBytes": 0.00033763176079393276
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3578007
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3578007
+        },
+        "before-control": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3578007
+        }
+      }
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 17.6530875,
+          "executionMilliseconds": 16.0853375,
+          "cpuMilliseconds": 9.765625,
+          "allocatedBytes": 2122470.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 17.4466,
+          "executionMilliseconds": 15.8640125,
+          "cpuMilliseconds": 5.859375,
+          "allocatedBytes": 2122503.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 17.9892125,
+          "executionMilliseconds": 16.4968375,
+          "cpuMilliseconds": 5.859375,
+          "allocatedBytes": 2122474.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": -1.1696962358567653,
+          "executionMilliseconds": -1.3759425315135743,
+          "cpuMilliseconds": -40.0,
+          "allocatedBytes": 0.001554792293889662
+        },
+        "before-control": {
+          "elapsedMilliseconds": -3.0163215871734317,
+          "executionMilliseconds": -3.8360382709716423,
+          "cpuMilliseconds": 0.0,
+          "allocatedBytes": 0.0013663300469257678
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 1.9040578595670432,
+        "executionMilliseconds": 2.558230438124154,
+        "cpuMilliseconds": 40.0,
+        "allocatedBytes": 0.0001884596719792242
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 4059855,
+          "PeakRootBytes": 4159343
+        },
+        "candidate": {
+          "PeakExecutionBytes": 4059855,
+          "PeakRootBytes": 4159343
+        },
+        "before-control": {
+          "PeakExecutionBytes": 4059855,
+          "PeakRootBytes": 4159343
+        }
+      }
+    },
+    {
+      "case": "scripts.report-render.utf16.large",
+      "medians": {
+        "before": {
+          "elapsedMilliseconds": 26.35425,
+          "executionMilliseconds": 10.6528875,
+          "cpuMilliseconds": 5.859375,
+          "allocatedBytes": 2808353.0
+        },
+        "candidate": {
+          "elapsedMilliseconds": 25.8946125,
+          "executionMilliseconds": 10.6481,
+          "cpuMilliseconds": 5.859375,
+          "allocatedBytes": 2808417.0
+        },
+        "before-control": {
+          "elapsedMilliseconds": 27.6589,
+          "executionMilliseconds": 11.2100375,
+          "cpuMilliseconds": 11.71875,
+          "allocatedBytes": 2808409.0
+        }
+      },
+      "candidateChangePercent": {
+        "before": {
+          "elapsedMilliseconds": -1.7440735365263693,
+          "executionMilliseconds": -0.04494086697152122,
+          "cpuMilliseconds": 0.0,
+          "allocatedBytes": 0.002278915791564806
+        },
+        "before-control": {
+          "elapsedMilliseconds": -6.378733427576655,
+          "executionMilliseconds": -5.012806603010922,
+          "cpuMilliseconds": -50.0,
+          "allocatedBytes": 0.0002848587937087643
+        }
+      },
+      "unchangedControlSpreadPercent": {
+        "elapsedMilliseconds": 4.950434939336157,
+        "executionMilliseconds": 5.230037395964238,
+        "cpuMilliseconds": 100.0,
+        "allocatedBytes": 0.001994051317621981
+      },
+      "admittedPeaks": {
+        "before": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3579831
+        },
+        "candidate": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3579831
+        },
+        "before-control": {
+          "PeakExecutionBytes": 3493335,
+          "PeakRootBytes": 3579831
+        }
+      }
+    }
+  ]
+}

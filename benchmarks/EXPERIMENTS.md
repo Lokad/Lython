@@ -6845,3 +6845,19 @@ remain separate deliverables.
 +The next actual source prototype is ordinary tuple storage, preserving Python
 +objects and aliases rather than adding a private return/unpack convention.
 +
+## R287/R288 — tuple storage withdrawn; complete-helper design gate
+
++[Three tuple forms and all original conditions](results/2026-11-12-inline-tuple-prototype/README.md)
++measure initial48→72B/refined64B headers. The eager adopted-array refinement fails
++deepcopy; corrected code preserves that backing and passes8222focused actual-target
++checks plus seven scripts/both APIs/compile/fresh. CSV allocation−2.42%, but
++B642four jobs169.406s demonstrates no reliable targeted CPU benefit; Run includes
++possible adversity. Withdraw the storage tag/header/index/admission complexity,
++preserve all results, restore568sources and force a nonincremental build plus
++focused checks. No new full qualification or closure of the whole-script objective.
++[R288 exact code facts](results/2026-11-12-complete-helper-source-gate/README.md)
++show13ordinary CSV helper instructions/8slots/0statement fallbacks. Repeated local
++use and concrete returns need one ordered effect/transition contract, rather than
++duplicated initializers or premature field-type proof. No automatic larger
++compiler migration or replay of the slower generic-prefix/arena forms.
++
