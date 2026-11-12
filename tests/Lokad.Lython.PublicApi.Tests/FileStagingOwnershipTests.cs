@@ -8,9 +8,9 @@ public sealed class FileStagingOwnershipTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task PartlyFilledTextBufferRefusesBeforeEncodedCopyOrPublication(bool asynchronous)
+    public async Task PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication(bool asynchronous)
     {
-        using var script = new LythonEngine().Compile("import time\npayload='x'*262144\nf=open('out','w',encoding='utf-16');f.write(payload);f.write('x')\ntime.time()\nf.flush()");
+        using var script = new LythonEngine().Compile("import time\npayload='x'*32768\nf=open('out','w',encoding='utf-16');f.write('prefix')\ntime.time()\nf.write(payload)\nf.flush()");
         Assert.True(script.IsValid);
         for (var pass=0;pass<3;pass++)
         {
@@ -21,7 +21,7 @@ public sealed class FileStagingOwnershipTests
             {
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
-                Assert.True(result.DeniedReservationBytes>262144);
+                Assert.True(result.DeniedReservationBytes>32768);
 #if !DEBUG
                 // Stop at admission refusal: later diagnostic/async cleanup
                 // allocations do not establish an encoded copy before preflight.

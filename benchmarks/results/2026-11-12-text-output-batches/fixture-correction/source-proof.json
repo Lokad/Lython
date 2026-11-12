@@ -1,0 +1,7 @@
+{
+  "productionRevision": "983bab966f13d4575b514eb20dd237a12159bc65",
+  "productionFiles": 568,
+  "allProductionBytesUnchanged": true,
+  "change": "Only obsolete flush-time-copy fixture moved to replacement-working-batch preflight. Smaller32KiB input, still partlyfilled buffer, refusalbeforeallocation/publication and originalterminalreason/nooutput/rootbaseline assertions.10focused publicchecks peractual11/10pass.",
+  "ci": "43165101428 Ubuntu net11 two obsoletefixturefailures, full run not yet terminal. No qualificationclaim; exact correctedtest head fullcheckpoint follows."
+}

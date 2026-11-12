@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ff84a985-64a9-4b4c-9f63-576304ef6122" name="JoannesVermorel@LOKAD-0399 2026-11-12 07:10:11" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T07:10:11.4825498+01:00" queuing="2026-11-12T07:10:11.4825501+01:00" start="2026-11-12T07:10:07.5608902+01:00" finish="2026-11-12T07:10:12.6151678+01:00" />
+  <TestSettings name="default" id="06362723-ca0c-445d-9d24-99e31697425a">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-11-12_07_10_11" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="b9bc9bc7-da41-413c-8f9f-b3b74b7fd206" testId="cbd94ef5-994d-95d4-ccb5-96c7506c24f9" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.1861742" startTime="2026-11-12T07:10:12.3798292+01:00" endTime="2026-11-12T07:10:12.5662288+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b9bc9bc7-da41-413c-8f9f-b3b74b7fd206" />
+    <UnitTestResult executionId="bc0a516c-037e-4b91-94c3-9a4481e4255a" testId="9b5c14ba-7814-58a9-211b-fa203dd3c0a2" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0025103" startTime="2026-11-12T07:10:12.5664404+01:00" endTime="2026-11-12T07:10:12.5689089+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bc0a516c-037e-4b91-94c3-9a4481e4255a" />
+    <UnitTestResult executionId="ac312245-dd13-4b38-a7b3-c6f96721df1b" testId="edac2b88-510b-7953-9056-33b839e5d5c4" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.WholeBinaryReadTransfersItsFinalCopyFunding(asynchronous: False)" computerName="LOKAD-0399" duration="00:00:00.0136791" startTime="2026-11-12T07:10:11.7573540+01:00" endTime="2026-11-12T07:10:11.7702863+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ac312245-dd13-4b38-a7b3-c6f96721df1b" />
+    <UnitTestResult executionId="312913fd-5900-441f-b670-ef953de7daa9" testId="7b876cf3-b7a0-dded-9b8a-031b3722eb65" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;latin-1&quot;)" computerName="LOKAD-0399" duration="00:00:00.1812066" startTime="2026-11-12T07:10:09.9570742+01:00" endTime="2026-11-12T07:10:10.1279274+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="312913fd-5900-441f-b670-ef953de7daa9" />
+    <UnitTestResult executionId="98685778-bddc-483a-aa57-a120547f4726" testId="af1c6ede-45da-ab56-c2b8-7f62fa5efe9d" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;utf-16&quot;)" computerName="LOKAD-0399" duration="00:00:00.0076003" startTime="2026-11-12T07:10:10.6488124+01:00" endTime="2026-11-12T07:10:10.6561805+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="98685778-bddc-483a-aa57-a120547f4726" />
+    <UnitTestResult executionId="3dbb62d5-8e19-4daa-bd61-45e8132603c4" testId="580bb040-8c69-d04c-c4c3-c9b907a7aea6" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;latin-1&quot;)" computerName="LOKAD-0399" duration="00:00:00.5184349" startTime="2026-11-12T07:10:11.2373504+01:00" endTime="2026-11-12T07:10:11.7557796+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3dbb62d5-8e19-4daa-bd61-45e8132603c4" />
+    <UnitTestResult executionId="cd8148d0-0553-4bf6-8779-ace3580a710b" testId="7ac87ae4-5f9d-312f-c74c-6ba5a28b3b21" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;utf-8&quot;)" computerName="LOKAD-0399" duration="00:00:00.5185697" startTime="2026-11-12T07:10:10.1339663+01:00" endTime="2026-11-12T07:10:10.6482202+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd8148d0-0553-4bf6-8779-ace3580a710b" />
+    <UnitTestResult executionId="839e5618-263f-474e-bccb-972afc75f64c" testId="b4dcfe2b-1134-f4c3-71a1-f66d74749e34" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;utf-16&quot;)" computerName="LOKAD-0399" duration="00:00:00.5787039" startTime="2026-11-12T07:10:10.6582054+01:00" endTime="2026-11-12T07:10:11.2371974+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="839e5618-263f-474e-bccb-972afc75f64c" />
+    <UnitTestResult executionId="1cdc50b1-c62c-48d2-953c-4e7b05f7fae3" testId="ab4243f9-025a-2b6e-a742-01518a7b85c1" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.WholeBinaryReadTransfersItsFinalCopyFunding(asynchronous: True)" computerName="LOKAD-0399" duration="00:00:00.6091805" startTime="2026-11-12T07:10:11.7704623+01:00" endTime="2026-11-12T07:10:12.3796690+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1cdc50b1-c62c-48d2-953c-4e7b05f7fae3" />
+    <UnitTestResult executionId="8124fd5b-cf41-45dd-9e8f-93d3040153dd" testId="b0525fd7-264d-5172-c687-b66c521ca9df" testName="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;utf-8&quot;)" computerName="LOKAD-0399" duration="00:00:00.0018387" startTime="2026-11-12T07:10:10.6563357+01:00" endTime="2026-11-12T07:10:10.6580868+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8124fd5b-cf41-45dd-9e8f-93d3040153dd" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;utf-16&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="af1c6ede-45da-ab56-c2b8-7f62fa5efe9d">
+      <Execution id="98685778-bddc-483a-aa57-a120547f4726" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="cbd94ef5-994d-95d4-ccb5-96c7506c24f9">
+      <Execution id="b9bc9bc7-da41-413c-8f9f-b3b74b7fd206" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.WholeBinaryReadTransfersItsFinalCopyFunding(asynchronous: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="ab4243f9-025a-2b6e-a742-01518a7b85c1">
+      <Execution id="1cdc50b1-c62c-48d2-953c-4e7b05f7fae3" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="WholeBinaryReadTransfersItsFinalCopyFunding" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="9b5c14ba-7814-58a9-211b-fa203dd3c0a2">
+      <Execution id="bc0a516c-037e-4b91-94c3-9a4481e4255a" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="PartlyFilledTextBufferRefusesBeforeWorkingBatchAllocationOrPublication" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;utf-8&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="b0525fd7-264d-5172-c687-b66c521ca9df">
+      <Execution id="8124fd5b-cf41-45dd-9e8f-93d3040153dd" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: False, encoding: &quot;latin-1&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="7b876cf3-b7a0-dded-9b8a-031b3722eb65">
+      <Execution id="312913fd-5900-441f-b670-ef953de7daa9" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.WholeBinaryReadTransfersItsFinalCopyFunding(asynchronous: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="edac2b88-510b-7953-9056-33b839e5d5c4">
+      <Execution id="ac312245-dd13-4b38-a7b3-c6f96721df1b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="WholeBinaryReadTransfersItsFinalCopyFunding" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;utf-16&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="b4dcfe2b-1134-f4c3-71a1-f66d74749e34">
+      <Execution id="839e5618-263f-474e-bccb-972afc75f64c" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;latin-1&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="580bb040-8c69-d04c-c4c3-c9b907a7aea6">
+      <Execution id="3dbb62d5-8e19-4daa-bd61-45e8132603c4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests.CompletedFlushStagingDoesNotAccumulate(asynchronous: True, encoding: &quot;utf-8&quot;)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="7ac87ae4-5f9d-312f-c74c-6ba5a28b3b21">
+      <Execution id="cd8148d0-0553-4bf6-8779-ace3580a710b" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.FileStagingOwnershipTests" name="CompletedFlushStagingDoesNotAccumulate" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="cbd94ef5-994d-95d4-ccb5-96c7506c24f9" executionId="b9bc9bc7-da41-413c-8f9f-b3b74b7fd206" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9b5c14ba-7814-58a9-211b-fa203dd3c0a2" executionId="bc0a516c-037e-4b91-94c3-9a4481e4255a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="edac2b88-510b-7953-9056-33b839e5d5c4" executionId="ac312245-dd13-4b38-a7b3-c6f96721df1b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7b876cf3-b7a0-dded-9b8a-031b3722eb65" executionId="312913fd-5900-441f-b670-ef953de7daa9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="af1c6ede-45da-ab56-c2b8-7f62fa5efe9d" executionId="98685778-bddc-483a-aa57-a120547f4726" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="580bb040-8c69-d04c-c4c3-c9b907a7aea6" executionId="3dbb62d5-8e19-4daa-bd61-45e8132603c4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7ac87ae4-5f9d-312f-c74c-6ba5a28b3b21" executionId="cd8148d0-0553-4bf6-8779-ace3580a710b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b4dcfe2b-1134-f4c3-71a1-f66d74749e34" executionId="839e5618-263f-474e-bccb-972afc75f64c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab4243f9-025a-2b6e-a742-01518a7b85c1" executionId="1cdc50b1-c62c-48d2-953c-4e7b05f7fae3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b0525fd7-264d-5172-c687-b66c521ca9df" executionId="8124fd5b-cf41-45dd-9e8f-93d3040153dd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="10" executed="10" passed="10" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)&#xD;
+[xUnit.net 00:00:00.28]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:02.04]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:02.06]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:04.73]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
