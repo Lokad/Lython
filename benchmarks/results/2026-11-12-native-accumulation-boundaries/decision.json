@@ -1,0 +1,12 @@
+{
+  "retained": false,
+  "forms": ["first-form826c7455", "kernel-only-refinementf145348e"],
+  "focusedPerForm": { "actualTargets": ["net11.0", "net10.0"], "internalPerTarget": 96, "publicPerTarget": 817, "total": 1826 },
+  "completeScriptsPerForm": "Seven existing scripts, both APIs, separate compilation and compile-to-result; goldens/funding/cleanup pass.",
+  "allocation": "Effectively flat for both forms.",
+  "firstForm": "B636 capturedRun elapsed+3.41..+5.60%, CPU+1.68..+4.66% with stable1.19/0.91%controls; report CPU+0.70..+2.35%.",
+  "refinement": "B637 capturedRun elapsed−0.52..+2.98%, CPU−2.09..+3.51%, controls1.61/1.82%; report control also crosses zero with3.45%candidate spread.",
+  "reason": "Withdraw both limited check/span cleanups: no allocation reduction or larger mechanism deletion, first form adverse and narrower form inconclusive. This does not prove the exact cause or permanently forbid justified boundary consolidation.",
+  "next": "Restore exact qualified b3369e3e production/tests, force nonincremental build and focused restored checks. Preserve original/refined source/cores/diagnostics/controls and all gates. No new unchanged full qualification or further unchanged timing.",
+  "wholeScriptObjectiveComplete": false
+}

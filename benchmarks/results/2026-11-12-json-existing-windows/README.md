@@ -4,7 +4,7 @@
 All568 source hashes are frozen; two production files change. Informational
 metadata is not relabelled as a postcommit/CI image. Normal optional adapter0.4,
 fixedfec79 worker and all existing sources/fixtures/goldens remain unchanged.
-Full retained-source platform/stress/installed-consumer delivery follows; publication
+Full retained-source platform/stress/installed-consumer delivery [passes](delivery/README.md); publication
 is held. This is a bounded storage milestone, not completion of the performance goal.
 
 Plain non-inline JSON strings can reuse same-owner immutable input. R271 already

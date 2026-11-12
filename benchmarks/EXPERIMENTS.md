@@ -6704,6 +6704,19 @@ stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
 
+## R280 — native accumulation boundary deletion withdrawn
+
+[Both measured forms](results/2026-11-12-native-accumulation-boundaries/README.md)
+remove checks/span transport only from bounded callback-free native arithmetic;
+per-word stack protection and actual admission/protocol/unwind boundaries remain.
+Each passes1826focused actual-target checks and seven complete scripts/both APIs/
+compile/fresh, allocation flat. B636capturedRun+3..6%elapsed/+2..5%CPU is adverse;
+kernel-only B637refinement is inconclusive with moving controls. Withdraw both
+limited deletions, preserve all original/refined sources/conditions, and restore
+qualifiedb3369e3e nonincrementally with focused checks. No dormant prototype,
+quasi-fuel counter or further unchanged timing. This does not permanently reject
+boundary consolidation or complete the larger performance objective.
+
 ## R279 — JSON tokens over existing immutable storage
 
 The [retained source migration](results/2026-11-12-json-existing-windows/README.md)
@@ -6720,7 +6733,7 @@ are retained. B634four jobs208.984s and targeted B635three143.230s pass all iden
 golden/zero-balance exit/quiet/join/unmount/archive gates; terminal cached. UTF8
 report elapsed improves with modest supporting CPU. UTF16/JSON/CSV CPU remains
 uncertain; small control/retention debt is accepted, no equivalence or extrapolated
-CPython claim. Full delivery follows at the retained-source checkpoint. This
+CPython claim. [Full delivery passes onb3369e3e](results/2026-11-12-json-existing-windows/delivery/README.md) at the retained-source checkpoint. This
 milestone does not complete the substantial whole-script performance objective.
 
 ## R277 — qualified selected CPython checkpoint
