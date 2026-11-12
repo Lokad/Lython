@@ -6642,3 +6642,16 @@ remain adverse. The cached-values form and lifetime-only refinement are both
 All568 qualified production files restored/nonincrementally rebuilt;80 restored
 checks pass. No quiet CPU or permanent design conclusion follows. No dormant
 prototype remains; the whole-script performance objective continues.
+
+
+## R273 — native semantic operation facts
+
+[Representation deletion](results/2026-11-12-native-operation-facts/README.md)
+removes embedded ordinary instructions, physical positions, redundant opcode and
+third input from native nodes. Same guard/evaluator; no controller/solver/option.
+Final node72→48B, affected script compilation−0.06..−0.18%, warm allocation flat.
+1,032focused actual-target checks and six complete scripts pass. First56B form,
+all desktop adversity and the staging-preflight correction survive. B627 finishes
+four jobs184.637seconds; moving6–8%reference controls leave CPU uncertain. Retained
+for the actual representation simplification/storage result, without a speedup
+claim; full delivery tracked separately. The whole-script objective stays open.

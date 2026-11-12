@@ -334,7 +334,9 @@ and no extra async completion stage is needed.
 Failable reads retain their source spans; evaluated call and protocol packets
 retain snapshots across callbacks. Ordinary instructions carry no native-return
 provenance. Eligible helpers own compact prepared native operations, referring
-to original instruction spans and shared call metadata without copying them.
+to original source spans and shared call metadata. Nodes keep semantic operation
+facts; they embed neither ordinary executable instructions nor physical stack
+positions. Compiler preparation validates these facts once.
 Proven captured helpers use these same operations with live definition-owned
 cells. One non-owning readonly input view borrows the bound parameter prefix
 and the definition-owned live cell collection separately; it does not pack or

@@ -48,7 +48,7 @@ internal sealed partial class ExecutableCodeObject
                 if (visited[sourceIndex]) return null; // cycles or shared joins
                 visited[sourceIndex] = true;
                 var instruction = instructions[index];
-                var operation = NativeReturnOperation.Read;
+                NativeReturnOperation operation;
                 LythonRuntime.ReceiverMethod? nativeMethod = null;
                 var first = -1;
                 var second = -1;
@@ -90,8 +90,10 @@ internal sealed partial class ExecutableCodeObject
                         if (conditionalDepth > 16) return null;
                         var whenTrue = negateCondition ? alternative.Value : consequent.Value;
                         var whenFalse = negateCondition ? consequent.Value : alternative.Value;
-                        values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
-                            whenTrue.Root, Third: whenFalse.Root));
+                        // The branch owns no separate instruction operand; retain its
+                        // alternative root in that existing word.
+                        values.Add(new(NativeReturnOperation.Conditional, instruction.Span, whenFalse.Root,
+                            condition.Value, whenTrue.Root));
                         return (FirstTemporarySlot + values.Count - 1, conditionalDepth);
                     case ExecutableOpCode.Return:
                         if (stack.Count != 1 || stack[0].Member is not null) return null;
@@ -103,7 +105,7 @@ internal sealed partial class ExecutableCodeObject
                             var read = root.Value < 0
                                 ? ExecutableInstruction.LoadConst(~root.Value, root.ReadSpan!)
                                 : ExecutableInstruction.LoadLocal(root.Value, root.ReadSpan!);
-                            values.Add(new(NativeReturnOperation.Read, read, -1, -1,
+                            values.Add(new(root.Value < 0 ? NativeReturnOperation.ReadConstant : NativeReturnOperation.ReadLocal, read, -1, -1,
                                 ReturnSpan: instruction.Span));
                             return (FirstTemporarySlot + values.Count - 1, root.Depth);
                         }
@@ -116,7 +118,8 @@ internal sealed partial class ExecutableCodeObject
                             ReturnSpan: instruction.Span));
                         return (FirstTemporarySlot + values.Count - 1, 1);
                     case ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple when instruction.ItemCount == 0:
-                        operation = NativeReturnOperation.EmptySequence;
+                        operation = instruction.OpCode == ExecutableOpCode.MakeTuple
+                            ? NativeReturnOperation.EmptyTuple : NativeReturnOperation.EmptyList;
                         break;
                     case ExecutableOpCode.LoadLocal:
                         // A later read needs the actual binding, not its old input.
@@ -134,11 +137,13 @@ internal sealed partial class ExecutableCodeObject
                     case ExecutableOpCode.LoadClosure:
                         if (hasEffects) return null;
                         hasIncomingCells = true;
+                        operation = NativeReturnOperation.ReadClosure;
                         break;
                     case ExecutableOpCode.LoadGlobal:
                         // Earlier native work can invoke host admission. A later
                         // mutable lookup cannot rely on the entry type proof.
                         if (hasEffects) return null;
+                        operation = NativeReturnOperation.ReadGlobal;
                         break;
                     case ExecutableOpCode.StoreClosure:
                         // The actual incoming cell remains the write target.
@@ -193,11 +198,11 @@ internal sealed partial class ExecutableCodeObject
                         break;
                     case ExecutableOpCode.ConvertFormattedValue:
                     case ExecutableOpCode.FormatField:
+                        if (instruction.OpCode == ExecutableOpCode.FormatField &&
+                            Constants[instruction.ConstantIndex] is not ExecutableFormatField { DynamicSpecifier: false, Append: false }) return null;
                         operation = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
-                            ? NativeReturnOperation.ConvertFormat
-                            : Constants[instruction.ConstantIndex] is ExecutableFormatField { DynamicSpecifier: false, Append: false }
-                                ? NativeReturnOperation.FormatValue : NativeReturnOperation.Read;
-                        if (operation == NativeReturnOperation.Read || stack.Count == 0 || stack[^1].Member is not null) return null;
+                            ? NativeReturnOperation.ConvertFormat : NativeReturnOperation.FormatValue;
+                        if (stack.Count == 0 || stack[^1].Member is not null) return null;
                         first = stack[^1].Value;
                         depth = 1 + stack[^1].Depth;
                         // Actual dictionary-value queries are not speculated on
@@ -228,7 +233,7 @@ internal sealed partial class ExecutableCodeObject
                         if (target.Member is null)
                         {
                             // These shapes never passed the dynamic builtin proof.
-                            if (site.ArgumentCount != 1 || first >= FirstTemporarySlot && values[first - FirstTemporarySlot].Operation != NativeReturnOperation.Read) return null;
+                            if (site.ArgumentCount != 1 || first >= FirstTemporarySlot && !values[first - FirstTemporarySlot].IsRead) return null;
                             operation = NativeReturnOperation.BuiltinUnary;
                         }
                         else
@@ -286,7 +291,7 @@ internal sealed partial class ExecutableCodeObject
                 }
                 // Eligibility bound, never a guest syntax/nesting limit.
                 if (depth > 16) return null;
-                if (operation is not (NativeReturnOperation.Read or NativeReturnOperation.Subscript)) hasEffects = true;
+                if (operation is not (>= NativeReturnOperation.ReadConstant and <= NativeReturnOperation.ReadClosure) && operation != NativeReturnOperation.Subscript) hasEffects = true;
                 values.Add(new(operation, instruction, first, second, nativeMethod, MemberSpan: memberSpan));
                 stack.Add((FirstTemporarySlot + values.Count - 1, null, depth, -1, sourceIndex, null));
             }
