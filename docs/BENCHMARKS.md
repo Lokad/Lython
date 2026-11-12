@@ -98,11 +98,12 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering;
-five-second warmups per role/job and seven rotated 150 ms rounds; the latest
-captured-text warm control uses twelve-second warmups. Current record/search rows
-use `a55202fb`/`da9e5066`; report/text rows retain `b2cbfdb6`/`983bab96` as labelled.
-Keyword-default search keeps `0106a711`/`82ed92d4`. All reuse common worker `fec79afd`
-and adapter 0.4. Other rows retain their recorded images.
+five-second warmups per role/job and seven rotated 250 ms rounds for `8ec7bfab`
+(frozen `641c3f75`); captured-text warmup is twelve seconds. Earlier CSV/guarded
+search use 150 ms rounds and `a55202fb`/`da9e5066`; earlier report/text phases
+retain `b2cbfdb6`/`983bab96` as labelled. Keyword-default search keeps
+`0106a711`/`82ed92d4`. All reuse common worker `fec79afd` and adapter 0.4.
+Other rows retain their recorded images.
 These observations do not qualify a newer regex producer.
 
 Identical scripts and fixtures run on both engines, with complete stdout/file
