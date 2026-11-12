@@ -6676,3 +6676,12 @@ CPython-ratio claim. Full qualification follows at this source boundary. Origina
 failed build/test assertions, desktop adversity, stale raw-purpose prose and disk
 assessment survive. Only rebuildable NuGet HTTP downloads were cleared; no evidence
 or images retired. The broader performance goal remains open.
+
+R274 first delivery43541e78 ends with Ubuntu all-target/stress/consumer green and
+one Windows public numeric allocation-window failure (141336>131071). Original
+condition and unresolved cause survive in [first delivery](results/2026-11-12-prepared-word-ranges/first-delivery/README.md).
+The fixture now measures at its existing first-refusal snapshot with unchanged
+bound and explicit large requested storage; cleanup/terminal semantics remain.
+A deliberately displaced eager power preflight is detected, then exact production
+bytes are restored/nonincrementally rebuilt.29focused cases pass per actual target;
+all568production hashes match. Full correction qualification follows without retiming.

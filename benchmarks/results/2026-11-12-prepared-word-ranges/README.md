@@ -77,3 +77,7 @@ inventories are kept, but no benchmark image/evidence was retired. The SDK's
 nuget-locals HTTP-cache cleanup alone restores140,886,016B; installed packages and
 benchmark inputs remain unchanged. Existing OS240MiB/evidence12MiB/metadata128KiB
 floors remain. The new root ends390,029,312Bfree. All original conditions survive.
+
+[First full delivery and focused fixture correction](first-delivery/README.md)
+preserve the Windows failure, Ubuntu qualification and negative control; runtime
+source remains identical. Cross-platform delivery is pending the corrected fixture.

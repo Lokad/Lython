@@ -1,0 +1,9 @@
+{
+  "run": 43249014616,
+  "head": "43541e787533611218e36b457a72688fdeaa9b6e",
+  "status": "completed",
+  "conclusion": "failure",
+  "Ubuntu": "success all targets/stress/installed consumers",
+  "Windows": "one .NET11 public numeric allocation-window fixture failure;4581 internal/17442 public pass",
+  "terminalCached": true
+}

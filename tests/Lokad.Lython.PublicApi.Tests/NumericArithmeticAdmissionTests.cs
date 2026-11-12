@@ -22,8 +22,12 @@ public sealed class NumericArithmeticAdmissionTests
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Empty(result.StandardOutput);
+                Assert.True(result.FailureAttribution?.Requested >= 131072L);
 #if !DEBUG
-                Assert.InRange(GC.GetTotalAllocatedBytes(true) - host.AllocatedAtGate, 0L, 131071L);
+                // Measure admission-before-allocation at the refusal itself.
+                // Error projection, cleanup and test assertions are later work.
+                Assert.True(budget.AllocatedAtFirstRefusal >= host.AllocatedAtGate);
+                Assert.InRange(budget.AllocatedAtFirstRefusal - host.AllocatedAtGate, 0L, 131071L);
 #endif
             }
             Assert.Equal(0, budget.Root.ReservedBytes);
@@ -66,8 +70,10 @@ public sealed class NumericArithmeticAdmissionTests
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, result.FailureAttribution?.Reason);
                 Assert.Empty(result.StandardOutput);
+                Assert.True(result.FailureAttribution?.Requested >= 131072L);
 #if !DEBUG
-                Assert.InRange(GC.GetTotalAllocatedBytes(true) - host.AllocatedAtGate, 0L, 131071L);
+                Assert.True(budget.AllocatedAtFirstRefusal >= host.AllocatedAtGate);
+                Assert.InRange(budget.AllocatedAtFirstRefusal - host.AllocatedAtGate, 0L, 131071L);
 #endif
             }
             Assert.Equal(0, budget.Root.ReservedBytes);

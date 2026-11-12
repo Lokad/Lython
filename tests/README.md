@@ -696,3 +696,10 @@ ordinary/exposed writes, writelines and CSV/JSON, keeping storage funded through
 late cancellation and awaited close. [Codec ownership](Lokad.Lython.Tests/Utf16CodecAccountingTests.cs)
 also checks repeated output with bounded working storage and release at explicit
 flush; these are resource/semantic assertions, not execution-step counts.
+
+Numeric preflight fixtures measure CLR allocation from their host gate to the
+existing first-refusal snapshot, with a large structured requested size. Error
+projection, cleanup and test assertions are outside that admission-before-allocation
+window; terminal failure, output and budget cleanup are checked independently.
+A controlled displaced-power-preflight check verifies that the bound still detects
+unadmitted magnitude construction; its evidence remains in benchmark history.
