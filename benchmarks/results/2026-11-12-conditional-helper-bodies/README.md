@@ -38,3 +38,8 @@ Only committed withdrawnR265core aliases/raw/catalog/records and exact historica
 B606records retired after freshidle/UID/path/inode/allaliases/canonicalGitSHA proof;
 currentb2 protected, OS/evidence floorsunchanged. Terminalcached, usersjoined and
 fixtures removed; rawarchive independentlySHAverified. Publication stays held.
+
+[Longer-warmup confirmation](confirmation/README.md) retains the helper gain and
+leaves captured control uncertain. A compiler-only negation-normalization form
+is selected for separate correctness/measurement; raw unary runtime additions
+are not promoted. Originaladversity remains unchanged.

@@ -1,0 +1,7 @@
+{"freeBytes": 266551296, "sourceAndImagesVerified": true, "jobs": 2, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=3min
+MainPID=3585914
+ActiveState=active
+
+
+Running as unit: lython-b613-conditional-confirmation-20261112.service; invocation ID: b0fd993849c14b66a8cd8f3cf1cd3a0a
