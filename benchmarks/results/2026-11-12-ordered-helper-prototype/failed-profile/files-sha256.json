@@ -1,0 +1,13 @@
+{
+  "failure-inspection.json": "1e523bf3573faa814fd161e1dba890dedfad42edc3fe2925f58804524d809ebb",
+  "failure-terminal.json": "77d538e81bf32fde0ec96299f79b3c42581d072b2ddf912425209ca371d65e3a",
+  "identity.json": "f6f089285dbedf83e9655729ac5620ae23b2f00bdf1bba61b23281229f7bc953",
+  "inventory.json": "32378692f8471cb03a373fa804302830eb0acb9a9a5f735235d9b18b944e2cb6",
+  "launch.log": "b41f2beed037deb6c8f6488bd563bb40682ce1ff9ba7088dad2eafe204ee277b",
+  "observations-partial.tgz": "360ac0023b4b981a661d6eda258c62a52daf46b40d8e86964d61a95dfff2e8c0",
+  "observe-not-before.json": "6c9a381accac6e4541df287ab0ff18c4d77d75aa1a700db10a77b10119538738",
+  "partial-archive-receipt.json": "2b392b98d8566734d4a8b444184b6d712f8b9503f4e8c3a8b075f687519b6aa0",
+  "preparation.tar.xz": "6a0e49ab6f4d17afdc8f5bd77faa5207df16e2f6b91603467c66e107ddaf04d8",
+  "README.md": "fb8e801ba6d6f484a9eb781c70d3640a4f7764967bf1bbcc9300d13b4f3d990b",
+  "terminal-status.json": "74192a7555b14319b22ab370034535952e2b1dd5ce08c1e0a7374d158666bf24"
+}

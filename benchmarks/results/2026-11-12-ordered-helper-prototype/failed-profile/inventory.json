@@ -1,0 +1,58 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261853184,
+  "requiredFreeBytes": 265588736,
+  "reclaimableBytes": 4071424,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-b617-20261112/observations.tgz",
+      "bytes": 1987672,
+      "sha256": "8a8fb9e2d49238e74071bd8b2af34eb826fb5e485eef2835b330bf344b1fe107",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/refined/b617/observations.tgz",
+      "reason": "ExactcompletedB617 evidence duplicates only, canonicalcommittedbb28250f Git/SHA verified locally; actualcandidate/referencecores protected. Freshlease/UID/resolvedpath/inode/link proof; floorsunchanged, alladversity preserved.",
+      "paths": [
+        "ordered-helper-b617-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 845036,
+      "allocatedBytes": 1990656,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-b617-20261112/representative.json",
+      "bytes": 1169693,
+      "sha256": "1280a45cfd2ad48d7a10807f7a6729b3b90a7de9c613c7ad49dfb867a07c4d95",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/refined/b617/observations.tgz",
+      "reason": "ExactcompletedB617 evidence duplicates only, canonicalcommittedbb28250f Git/SHA verified locally; actualcandidate/referencecores protected. Freshlease/UID/resolvedpath/inode/link proof; floorsunchanged, alladversity preserved.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "8a8fb9e2d49238e74071bd8b2af34eb826fb5e485eef2835b330bf344b1fe107",
+      "paths": [
+        "ordered-helper-b617-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844982,
+      "allocatedBytes": 1171456,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "ordered-helper-b617-20261112/confirmation/confirmation.json",
+      "bytes": 908188,
+      "sha256": "93d2b2e0d4d97568651d97b4a5683ccfd7c6eaff24d56227136bf8bbc3e2a9ca",
+      "canonicalStorage": "benchmarks/results/2026-11-12-ordered-helper-prototype/refined/b617/observations.tgz",
+      "reason": "ExactcompletedB617 evidence duplicates only, canonicalcommittedbb28250f Git/SHA verified locally; actualcandidate/referencecores protected. Freshlease/UID/resolvedpath/inode/link proof; floorsunchanged, alladversity preserved.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "8a8fb9e2d49238e74071bd8b2af34eb826fb5e485eef2835b330bf344b1fe107",
+      "paths": [
+        "ordered-helper-b617-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 845047,
+      "allocatedBytes": 909312,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

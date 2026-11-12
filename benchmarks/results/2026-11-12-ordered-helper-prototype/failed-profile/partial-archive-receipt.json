@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "terminalFailureCached": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "partialArchiveVerifiedUnderLease": true,
+  "archiveSHA256": "360ac0023b4b981a661d6eda258c62a52daf46b40d8e86964d61a95dfff2e8c0",
+  "freeBytes": 261615616,
+  "reason": "Collector checked reference DLL against candidate hash before verification/sampling. Runtime design not evaluated by this failed collection."
+}

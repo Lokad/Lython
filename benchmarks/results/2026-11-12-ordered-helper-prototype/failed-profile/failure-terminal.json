@@ -1,0 +1,32 @@
+{
+  "complete": false,
+  "terminalService": "MainPID=0\nResult=exit-code\nExecMainStatus=1\nActiveState=failed\nSubState=failed\n",
+  "exitCode": 1,
+  "remainingWorkers": "",
+  "workerPIDAbsent": true,
+  "partialEvidence": true,
+  "reason": "Collector checked reference DLL against candidate hash before verification/sampling. Runtime design not evaluated by this failed collection.",
+  "fixtureMetadata": [
+    {
+      "name": "clr-debug-pipe-3591119-300966381-out",
+      "mode": 4544,
+      "uid": 1000,
+      "inode": 12,
+      "bytes": 0
+    },
+    {
+      "name": "clr-debug-pipe-3591119-300966381-in",
+      "mode": 4544,
+      "uid": 1000,
+      "inode": 11,
+      "bytes": 0
+    },
+    {
+      "name": "dotnet-diagnostic-35911",
+      "mode": 49536,
+      "uid": 1000,
+      "inode": 8,
+      "bytes": 0
+    }
+  ]
+}
