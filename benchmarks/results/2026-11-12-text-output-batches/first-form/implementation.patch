@@ -1,0 +1,658 @@
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs
+@@ -452,78 +452,87 @@
+         LythonSourceSpan? span,
+         bool outputAlreadyFunded = false, MemoryGovernor.TemporaryMemoryReservation? outputStorage = null, PyString? originalText = null)
+     {
+-        context.CheckExecution(span);
+-        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(source, encoding, newline, context, span, outputAlreadyFunded, outputStorage);
+-        if (IsSingleByteEncoding(encoding))
+-        {
+-            return EncodeSingleByte(source, encoding, errors, newline, context, span, outputAlreadyFunded, outputStorage, originalText);
+-        }
+-
+-        var newlineExpansion = 0;
+-        if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+-        {
+-            var work = 0;
+-            foreach (var value in source)
+-            {
+-                if ((work++ & 1023) == 0) context.CheckExecution(span);
+-                if (value == (byte)'\n')
+-                {
+-                    newlineExpansion++;
+-                }
+-            }
+-        }
+-
+-        var bomLength = encoding == TextEncodingMode.Utf8Bom ? 3 : 0;
+-        var byteCount = checked(source.Length + newlineExpansion + bomLength);
++        var byteCount = EncodedTextByteCount(source, encoding, errors, newline, context, span, originalText);
+         using var storage = outputAlreadyFunded || outputStorage is not null ? null
+             : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
+         outputStorage?.Grow(PyBytes.EstimateApproximateBytes(byteCount), span);
+-        var bytes = new byte[byteCount];
+-        var offset = 0;
+-        if (bomLength != 0)
+-        {
+-            bytes[0] = 0xEF;
+-            bytes[1] = 0xBB;
+-            bytes[2] = 0xBF;
+-            offset = 3;
+-        }
+-
+-        if (newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
+-        {
+-            source.CopyTo(bytes.AsSpan(offset));
+-            storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
+-        return bytes;
+-        }
+-
+-        var copyWork = 0;
+-        foreach (var value in source)
+-        {
+-            if ((copyWork++ & 1023) == 0) context.CheckExecution(span);
+-            if (value != (byte)'\n')
+-            {
+-                bytes[offset++] = value;
+-                continue;
+-            }
+-
+-            bytes[offset++] = (byte)'\r';
+-            if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+-            {
+-                bytes[offset++] = (byte)'\n';
+-            }
+-        }
+-
++        context.CheckExecution(span);
++        var bytes = byteCount == 0 ? [] : new byte[byteCount];
++        WriteEncodedText(source, bytes, encoding, errors, newline, context, span);
+         storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
+         return bytes;
+     }
+ 
+-    private static byte[] EncodeSingleByte(
+-        ReadOnlySpan<byte> source,
+-        TextEncodingMode encoding,
+-        TextErrorMode errors,
+-        TextNewlineMode newline,
+-        ExecutionState context,
+-        LythonSourceSpan? span,
+-        bool outputAlreadyFunded, MemoryGovernor.TemporaryMemoryReservation? outputStorage, PyString? originalText)
++    // Guest bytes and file staging use the same validation/sizing and final
++    // representation writer. Admission belongs to their existing storage owner.
++    private static int EncodedTextByteCount(ReadOnlySpan<byte> source, TextEncodingMode encoding,
++        TextErrorMode errors, TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span,
++        PyString? originalText = null)
++    {
++        context.CheckExecution(span);
++        if (IsUtf16Encoding(encoding)) return Utf16EncodedByteCount(source, encoding, newline, context, span);
++        if (IsSingleByteEncoding(encoding))
++            return SingleByteEncodedByteCount(source, encoding, errors, newline, context, span, originalText);
++        var expansion = 0;
++        if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
++            for (var index = 0; index < source.Length; index++)
++            {
++                if ((index & 1023) == 0) context.CheckExecution(span);
++                if (source[index] == (byte)'\n') expansion++;
++            }
++        return checked(source.Length + expansion + (encoding == TextEncodingMode.Utf8Bom ? 3 : 0));
++    }
++
++    private static void WriteEncodedText(ReadOnlySpan<byte> source, Span<byte> destination,
++        TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline,
++        ExecutionState context, LythonSourceSpan? span)
++    {
++        context.CheckExecution(span);
++        if (IsUtf16Encoding(encoding))
++        {
++            WriteUtf16Text(source, destination, encoding, newline, context, span);
++            return;
++        }
++        if (IsSingleByteEncoding(encoding))
++        {
++            WriteSingleByteText(source, destination, encoding, errors, newline, context, span);
++            return;
++        }
++        var offset = 0;
++        if (encoding == TextEncodingMode.Utf8Bom)
++        {
++            destination[0] = 0xef;
++            destination[1] = 0xbb;
++            destination[2] = 0xbf;
++            offset = 3;
++        }
++        if (newline is TextNewlineMode.TranslateUniversal or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
++        {
++            for (var copied = 0; copied < source.Length;)
++            {
++                context.CheckExecution(span);
++                var chunk = Math.Min(4096, source.Length - copied);
++                source.Slice(copied, chunk).CopyTo(destination.Slice(offset + copied, chunk));
++                copied += chunk;
++            }
++            return;
++        }
++        for (var index = 0; index < source.Length; index++)
++        {
++            if ((index & 1023) == 0) context.CheckExecution(span);
++            var value = source[index];
++            if (value == (byte)'\n')
++            {
++                destination[offset++] = (byte)'\r';
++                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed) destination[offset++] = (byte)'\n';
++            }
++            else destination[offset++] = value;
++        }
++    }
++
++    private static int SingleByteEncodedByteCount(ReadOnlySpan<byte> source, TextEncodingMode encoding,
++        TextErrorMode errors, TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span,
++        PyString? originalText)
+     {
+         var byteCount = 0;
+         var position = 0;
+@@ -533,38 +542,25 @@
+             _ = Rune.DecodeFromUtf8(source[sourceOffset..], out var rune, out var consumed);
+             sourceOffset += consumed;
+             if (rune.Value == '\n' && newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+-            {
+                 byteCount = checked(byteCount + 2);
+-                continue;
+-            }
+-
+-            if (TryEncodeSingleByteScalar(rune.Value, encoding, out _))
+-            {
+-                byteCount++;
+-            }
+-            else
+-            {
+-                byteCount = errors switch
+-                {
+-                    TextErrorMode.Ignore => byteCount,
+-                    TextErrorMode.Replace => checked(byteCount + 1),
+-                    TextErrorMode.BackslashReplace => checked(byteCount + BackslashEscapedRuneLength(rune)),
+-                    _ => throw SingleByteEncodeError(position, encoding, span, context.MemoryGovernor, source, sourceOffset, originalText, context)
+-                };
+-            }
+-        }
+-
+-        using var storage = outputAlreadyFunded || outputStorage is not null ? null
+-            : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(byteCount), span);
+-        outputStorage?.Grow(PyBytes.EstimateApproximateBytes(byteCount), span);
+-        if (byteCount == 0)
+-        {
+-            return [];
+-        }
+-
+-        var bytes = new byte[byteCount];
++            else if (TryEncodeSingleByteScalar(rune.Value, encoding, out _)) byteCount = checked(byteCount + 1);
++            else byteCount = errors switch
++            {
++                TextErrorMode.Ignore => byteCount,
++                TextErrorMode.Replace => checked(byteCount + 1),
++                TextErrorMode.BackslashReplace => checked(byteCount + BackslashEscapedRuneLength(rune)),
++                _ => throw SingleByteEncodeError(position, encoding, span, context.MemoryGovernor, source, sourceOffset, originalText, context, newline)
++            };
++        }
++        return byteCount;
++    }
++
++    private static void WriteSingleByteText(ReadOnlySpan<byte> source, Span<byte> destination,
++        TextEncodingMode encoding, TextErrorMode errors, TextNewlineMode newline, ExecutionState context,
++        LythonSourceSpan? span)
++    {
+         var offset = 0;
+-        position = 0;
++        var position = 0;
+         for (var sourceOffset = 0; sourceOffset < source.Length;)
+         {
+             if ((position++ & 1023) == 0) context.CheckExecution(span);
+@@ -572,54 +568,56 @@
+             sourceOffset += consumed;
+             if (rune.Value == '\n' && newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)
+             {
+-                bytes[offset++] = (byte)'\r';
+-                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+-                {
+-                    bytes[offset++] = (byte)'\n';
+-                }
+-
+-                continue;
+-            }
+-
+-            if (TryEncodeSingleByteScalar(rune.Value, encoding, out var singleByte))
+-            {
+-                bytes[offset++] = singleByte;
+-                continue;
+-            }
+-
+-            switch (errors)
+-            {
+-                case TextErrorMode.Ignore:
+-                    break;
+-                case TextErrorMode.Replace:
+-                    bytes[offset++] = (byte)'?';
+-                    break;
+-                case TextErrorMode.BackslashReplace:
+-                    WriteBackslashEscapedRune(rune, bytes, ref offset);
+-                    break;
+-            }
+-        }
+-
+-        storage?.Commit(PyBytes.EstimateApproximateBytes(byteCount));
+-        return bytes;
+-    }
+-
+-    private static void WriteBackslashEscapedRune(Rune rune, byte[] destination, ref int offset)
++                destination[offset++] = (byte)'\r';
++                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed) destination[offset++] = (byte)'\n';
++            }
++            else if (TryEncodeSingleByteScalar(rune.Value, encoding, out var value)) destination[offset++] = value;
++            else if (errors == TextErrorMode.Replace) destination[offset++] = (byte)'?';
++            else if (errors == TextErrorMode.BackslashReplace) WriteBackslashEscapedRune(rune, destination, ref offset);
++        }
++    }
++
++    private static void WriteBackslashEscapedRune(Rune rune, Span<byte> destination, ref int offset)
+     {
+         const string hex = "0123456789abcdef";
+-        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xFFFF ? 4 : 8;
++        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xffff ? 4 : 8;
+         destination[offset++] = (byte)'\\';
+-        destination[offset++] = rune.Value <= 0xff ? (byte)'x' : rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U';
++        destination[offset++] = rune.Value <= 0xff ? (byte)'x' : rune.Value <= 0xffff ? (byte)'u' : (byte)'U';
+         for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
+-        {
+-            destination[offset++] = (byte)hex[(rune.Value >> shift) & 0xF];
+-        }
++            destination[offset++] = (byte)hex[(rune.Value >> shift) & 0xf];
+     }
+ 
+     private static LythonRuntimeException SingleByteEncodeError(int position, TextEncodingMode encoding,
+         LythonSourceSpan? span, MemoryGovernor governor, ReadOnlySpan<byte> source, int nextOffset,
+-        PyString? original, ExecutionState guards)
+-    {
++        PyString? original, ExecutionState guards, TextNewlineMode newline = TextNewlineMode.PreserveUniversal)
++    {
++        // TextIOWrapper translates newlines before reporting encoding failures.
++        // Construct that error subject only on failure; ordinary encoding still
++        // writes directly into its admitted final representation.
++        if (newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)
++        {
++            var prefixLineFeeds = 0;
++            var hasLineFeed = false;
++            for (var index = 0; index < source.Length; index++)
++            {
++                if ((index & 1023) == 0) guards.CheckExecution(span);
++                if (source[index] != (byte)'\n') continue;
++                hasLineFeed = true;
++                if (index < nextOffset) prefixLineFeeds++;
++            }
++            if (hasLineFeed)
++            {
++                var count = EncodedTextByteCount(source, TextEncodingMode.Utf8, TextErrorMode.Strict, newline, guards, span);
++                using var storage = governor.ReserveTemporary(PyString.EstimateApproximateBytes(count), span);
++                guards.CheckExecution(span);
++                var bytes = new byte[count];
++                WriteEncodedText(source, bytes, TextEncodingMode.Utf8, TextErrorMode.Strict, newline, guards, span);
++                var translated = PyString.FromOwnedUtf8(bytes, governor, span, storage);
++                var expansion = newline == TextNewlineMode.PreserveCarriageReturnLineFeed ? prefixLineFeeds : 0;
++                return SingleByteEncodeError(position + expansion, encoding, span, governor, translated.Utf8Span,
++                    nextOffset + expansion, translated, guards);
++            }
++        }
+         var end = position + 1;
+         for (var offset = nextOffset; offset < source.Length;)
+         {
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Write.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Write.cs
+@@ -1,5 +1,4 @@
+ using System.Numerics;
+-using System.Text;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+@@ -17,11 +16,10 @@
+             private readonly TextNewlineMode _newline;
+             private readonly GovernedByteBuilder _buffer;
+             private BigInteger _publishedPosition;
+-            private long _bufferedRuneLength;
+-            private long _bufferedLineFeedCount;
+-            private long _bufferedUtf16ByteLength;
+             private bool _hasWrittenText;
+             private bool _bomWritten;
++            private static readonly byte[] Utf8Preamble = [0xef, 0xbb, 0xbf];
++            private static readonly byte[] Utf16Preamble = [0xff, 0xfe];
+ 
+             public TextFileWriteState(
+                 OpenedByteFile file,
+@@ -40,142 +38,50 @@
+                 _buffer = new GovernedByteBuilder(context.MemoryGovernor);
+             }
+ 
+-            public BigInteger Position
++            private ReadOnlyMemory<byte> PendingPreamble => !_hasWrittenText || _bomWritten ? default
++                : _encoding == TextEncodingMode.Utf8Bom ? Utf8Preamble
++                : _encoding == TextEncodingMode.Utf16 ? Utf16Preamble : default;
++
++            public BigInteger Position => _publishedPosition + _buffer.Length + PendingPreamble.Length;
++
++            public BigInteger Write(PyString text) => Write(text.Utf8Span, text);
++
++            // Staging is synchronous. Only the actual awaited host write borrows
++            // stable memory; an inline guest string needs no array view here.
++            internal BigInteger Write(ReadOnlyMemory<byte> utf8) => Write(utf8.Span, null);
++
++            private BigInteger Write(ReadOnlySpan<byte> source, PyString? original)
+             {
+-                get
+-                {
+-                    var length = IsUtf16Encoding(_encoding) ? _bufferedUtf16ByteLength : IsSingleByteEncoding(_encoding)
+-                        ? _bufferedRuneLength
+-                        : _buffer.Length;
+-                    if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
+-                    {
+-                        length += _bufferedLineFeedCount * (IsUtf16Encoding(_encoding) ? 2 : 1);
+-                    }
+-
+-                    if (_hasWrittenText && !_bomWritten && _encoding == TextEncodingMode.Utf8Bom)
+-                    {
+-                        length += 3;
+-                    }
+-                    if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_bomWritten)
+-                        length += 2;
+-
+-                    return _publishedPosition + length;
+-                }
++                _services.CheckExecution(null);
++                var inputLength = original?.GetCharacterCount(_services.CancellationToken, null) ?? CountScalars(source);
++                var encoding = EffectiveEncoding;
++                var byteCount = EncodedTextByteCount(source, encoding, _errors, _newline, _services, null, original);
++                var destination = _buffer.GetWriteWindow(byteCount).Span;
++                _services.CheckExecution(null);
++                WriteEncodedText(source, destination[..byteCount], encoding, _errors, _newline, _services, null);
++                _buffer.Advance(byteCount);
++                _hasWrittenText = true;
++                return new BigInteger(inputLength);
+             }
+ 
+-            public BigInteger Write(PyString text) => Write(text.Utf8Bytes, text);
++            // BOM framing remains a flush concern, independently of capacity
++            // admission/reentry while a write stages its final payload bytes.
++            private TextEncodingMode EffectiveEncoding => _encoding switch
++            {
++                TextEncodingMode.Utf8Bom => TextEncodingMode.Utf8,
++                TextEncodingMode.Utf16 => TextEncodingMode.Utf16LittleEndian,
++                _ => _encoding,
++            };
+ 
+-            // The producer keeps its admitted range alive until staging finishes.
+-            // Ordinary writes retain the original string for codec-error identity.
+-            internal BigInteger Write(ReadOnlyMemory<byte> utf8) => Write(utf8, null);
+-
+-            private BigInteger Write(ReadOnlyMemory<byte> utf8, PyString? original)
++            private int CountScalars(ReadOnlySpan<byte> source)
+             {
+-                var inputLength = original?.Length ?? 0;
+-                var appendedLineFeedCount = 0;
+-                if (original is null || _newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
++                var count = 0;
++                for (var index = 0; index < source.Length; index++)
+                 {
+-                    var offset = 0;
+-                    foreach (var value in utf8.Span)
+-                    {
+-                        if ((offset++ & 1023) == 0) _services.CheckExecution(null);
+-                        if (original is null && (value & 0xC0) != 0x80) inputLength++;
+-                        if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed && value == (byte)'\n')
+-                            appendedLineFeedCount++;
+-                    }
++                    if ((index & 1023) == 0) _services.CheckExecution(null);
++                    if ((source[index] & 0xc0) != 0x80) count++;
+                 }
+-
+-                if (IsSingleByteEncoding(_encoding))
+-                {
+-                    var normalizedLength = GetSingleByteNormalizedLength();
+-                    var normalizedBufferedLength = checked(_bufferedRuneLength + normalizedLength);
+-                    AppendSingleByteNormalized();
+-                    _bufferedRuneLength = normalizedBufferedLength;
+-                    _bufferedLineFeedCount += appendedLineFeedCount;
+-                    return new BigInteger(inputLength);
+-                }
+-
+-                var bufferedLength = checked(_bufferedRuneLength + inputLength);
+-                _buffer.Append(utf8.Span);
+-                if (IsUtf16Encoding(_encoding))
+-                    _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(utf8.Span);
+-                _hasWrittenText = true;
+-                _bufferedRuneLength = bufferedLength;
+-                _bufferedLineFeedCount += appendedLineFeedCount;
+-                return new BigInteger(inputLength);
+-
+-                long GetSingleByteNormalizedLength()
+-                {
+-                    var length = 0L;
+-                    var position = 0;
+-                    var source = utf8.Span;
+-                    for (var offset = 0; offset < source.Length; position++)
+-                    {
+-                        if ((position & 1023) == 0) _services.CheckExecution(null);
+-                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                        offset += consumed;
+-                        if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
+-                        {
+-                            length++;
+-                            continue;
+-                        }
+-
+-                        length = _errors switch
+-                        {
+-                            TextErrorMode.Ignore => length,
+-                            TextErrorMode.Replace => checked(length + 1),
+-                            TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
+-                            _ => throw SingleByteEncodeError(position, _encoding, null, _services.MemoryGovernor, source, offset, original, _services)
+-                        };
+-                    }
+-
+-                    return length;
+-                }
+-
+-                void AppendSingleByteNormalized()
+-                {
+-                    const string hex = "0123456789abcdef";
+-                    var source = utf8.Span;
+-                    Span<byte> encoded = stackalloc byte[4];
+-                    var position = 0;
+-                    for (var offset = 0; offset < source.Length;)
+-                    {
+-                        if ((position++ & 1023) == 0) _services.CheckExecution(null);
+-                        _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+-                        offset += consumed;
+-                        if (rune.Value <= 0x7F)
+-                        {
+-                            _buffer.Append((byte)rune.Value);
+-                            continue;
+-                        }
+-
+-                        if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
+-                        {
+-                            var encodedLength = rune.EncodeToUtf8(encoded);
+-                            _buffer.Append(encoded[..encodedLength]);
+-                            continue;
+-                        }
+-
+-                        if (_errors == TextErrorMode.Ignore)
+-                        {
+-                            continue;
+-                        }
+-
+-                        if (_errors == TextErrorMode.Replace)
+-                        {
+-                            _buffer.Append((byte)'?');
+-                            continue;
+-                        }
+-
+-                        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xFFFF ? 4 : 8;
+-                        _buffer.Append((byte)'\\');
+-                        _buffer.Append(rune.Value <= 0xff ? (byte)'x' : rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U');
+-                        for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
+-                        {
+-                            _buffer.Append((byte)hex[(rune.Value >> shift) & 0xF]);
+-                        }
+-                    }
+-                }
++                return count;
+             }
+ 
+             internal void InitializePosition(long position)
+@@ -186,55 +92,38 @@
+ 
+             public async ValueTask FlushAsync(LythonSourceSpan? span, bool asynchronous)
+             {
+-                using var pending = PrepareFlush(span);
+-                if (pending is { } output)
++                var publishedPreamble = false;
++                try
+                 {
+-                    await _file.WriteAsync(output.Payload, span, asynchronous).ConfigureAwait(false);
+-                    // Drop accepted staging before any later metadata/flush failure.
+-                    CompleteFlush();
+-                    _services.CheckExecution(span);
+-                    _publishedPosition = _file.Position(span);
++                    if (PendingPreamble is { IsEmpty: false } preamble)
++                    {
++                        await _file.WriteAsync(preamble, span, asynchronous).ConfigureAwait(false);
++                        publishedPreamble = true;
++                        _bomWritten = true;
++                        _services.CheckExecution(span);
++                        _publishedPosition = _file.Position(span);
++                    }
++                    if (_buffer.Length != 0)
++                    {
++                        // Final bytes stay funded through the real host borrow.
++                        await _file.WriteAsync(_buffer.WrittenMemory, span, asynchronous).ConfigureAwait(false);
++                        _buffer.Release();
++                        _services.CheckExecution(span);
++                        _publishedPosition = _file.Position(span);
++                    }
++                }
++                catch
++                {
++                    // The preamble and payload form one logical publication.
++                    // A later zero-byte failure still follows an accepted prefix;
++                    // retire the handle instead of allowing that flush to replay.
++                    if (publishedPreamble) await _file.CloseAfterFailureAsync(span, asynchronous).ConfigureAwait(false);
++                    throw;
+                 }
+                 await _file.FlushAsync(span, asynchronous).ConfigureAwait(false);
+             }
+ 
+             public void Release() => _buffer.Release();
+-
+-            private PendingTextFlush? PrepareFlush(LythonSourceSpan? span)
+-            {
+-                var needsBom = _hasWrittenText && !_bomWritten && _encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom;
+-                if (_buffer.Length == 0 && !needsBom)
+-                {
+-                    return null;
+-                }
+-
+-                var effectiveEncoding = _encoding == TextEncodingMode.Utf8Bom && _bomWritten ? TextEncodingMode.Utf8 : _encoding;
+-                if (_encoding == TextEncodingMode.Utf16 && _bomWritten) effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
+-                if (effectiveEncoding == TextEncodingMode.Utf8 && _newline is TextNewlineMode.TranslateUniversal
+-                    or TextNewlineMode.PreserveUniversal or TextNewlineMode.PreserveLineFeed)
+-                    return new PendingTextFlush(_buffer.WrittenMemory, null);
+-                var reservation = _services.MemoryGovernor.ReserveTemporary(0, span);
+-                byte[] payload;
+-                try { payload = EncodeText(_buffer.WrittenSpan, effectiveEncoding, _errors, _newline, _services, span, outputStorage: reservation); }
+-                catch { reservation.Dispose(); throw; }
+-                return new PendingTextFlush(payload, reservation);
+-            }
+-
+-            private void CompleteFlush()
+-            {
+-                if (_encoding is TextEncodingMode.Utf16 or TextEncodingMode.Utf8Bom && _hasWrittenText) _bomWritten = true;
+-                _buffer.Release();
+-                _bufferedRuneLength = 0;
+-                _bufferedLineFeedCount = 0;
+-                _bufferedUtf16ByteLength = 0;
+-            }
+-
+-            private readonly record struct PendingTextFlush(ReadOnlyMemory<byte> Payload,
+-                MemoryGovernor.TemporaryMemoryReservation? Reservation) : IDisposable
+-            {
+-                public void Dispose() => Reservation?.Dispose();
+-            }
+-
+         }
+     }
+ }
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Utf16Codec.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Utf16Codec.cs
+@@ -145,19 +145,12 @@
+         return true;
+     }
+ 
+-    private static byte[] EncodeUtf16Text(ReadOnlySpan<byte> source, TextEncodingMode encoding,
+-        TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span, bool outputAlreadyFunded,
+-        MemoryGovernor.TemporaryMemoryReservation? outputStorage)
+-    {
+-        var length = Utf16EncodedByteCount(source, encoding, newline, context, span);
+-        using var output = outputAlreadyFunded || outputStorage is not null ? null
+-            : context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span);
+-        outputStorage?.Grow(PyBytes.EstimateApproximateBytes(length), span);
+-        if (length == 0) return [];
+-        var bytes = new byte[length];
++    private static void WriteUtf16Text(ReadOnlySpan<byte> source, Span<byte> destination, TextEncodingMode encoding,
++        TextNewlineMode newline, ExecutionState context, LythonSourceSpan? span)
++    {
+         var offset = 0;
+         var bigEndian = encoding == TextEncodingMode.Utf16BigEndian;
+-        if (encoding == TextEncodingMode.Utf16) PutUnit(0xfeff);
++        if (encoding == TextEncodingMode.Utf16) PutUtf16Unit(destination, ref offset, bigEndian, 0xfeff);
+         var position = 0;
+         for (var index = 0; index < source.Length;)
+         {
+@@ -166,25 +159,23 @@
+             index += consumed;
+             if (rune.Value == '\n' && newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)
+             {
+-                PutUnit('\r');
+-                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed) PutUnit('\n');
+-            }
+-            else if (rune.Value <= 0xffff) PutUnit((ushort)rune.Value);
++                PutUtf16Unit(destination, ref offset, bigEndian, '\r');
++                if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed) PutUtf16Unit(destination, ref offset, bigEndian, '\n');
++            }
++            else if (rune.Value <= 0xffff) PutUtf16Unit(destination, ref offset, bigEndian, (ushort)rune.Value);
+             else
+             {
+                 var value = rune.Value - 0x10000;
+-                PutUnit((ushort)(0xd800 | (value >> 10)));
+-                PutUnit((ushort)(0xdc00 | (value & 0x3ff)));
+-            }
+-        }
+-        output?.Commit(PyBytes.EstimateApproximateBytes(length));
+-        return bytes;
+-
+-        void PutUnit(ushort value)
+-        {
+-            bytes[offset++] = (byte)(bigEndian ? value >> 8 : value & 255);
+-            bytes[offset++] = (byte)(bigEndian ? value & 255 : value >> 8);
+-        }
++                PutUtf16Unit(destination, ref offset, bigEndian, (ushort)(0xd800 | (value >> 10)));
++                PutUtf16Unit(destination, ref offset, bigEndian, (ushort)(0xdc00 | (value & 0x3ff)));
++            }
++        }
++    }
++
++    private static void PutUtf16Unit(Span<byte> destination, ref int offset, bool bigEndian, ushort value)
++    {
++        destination[offset++] = (byte)(bigEndian ? value >> 8 : value & 255);
++        destination[offset++] = (byte)(bigEndian ? value & 255 : value >> 8);
+     }
+ 
+     private static MemoryGovernor.TemporaryMemoryReservation? ReserveUtf16Output(PyString text,

@@ -1,0 +1,5 @@
+{
+  "SHA256": "85cce72ec0d4c51cf8c8d12942ef9288080cc234923d084ad3d814756497bf7d",
+  "bytes": 2007922,
+  "verification": "Matches terminal owned archive receipt; all raw payload identities verified under lease before owned RAM removed. SCP archive independently SHA-verified; original archive preserved, only Linux FIFOs skipped on extraction."
+}

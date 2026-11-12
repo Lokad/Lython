@@ -1,0 +1,33 @@
+
+Test run for D:\code\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.75]     Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(encoding: 2, encodedBytes: 6) [FAIL]
+  Failed Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(encoding: 2, encodedBytes: 6) [39 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(Int32 encoding, Int32 encodedBytes) in D:\code\Lython\tests\Lokad.Lython.Tests\Utf16CodecAccountingTests.cs:line 44
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.86]     Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(encoding: 1, encodedBytes: 7) [FAIL]
+[xUnit.net 00:00:00.86]     Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding [FAIL]
+  Failed Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(encoding: 1, encodedBytes: 7) [29 ms]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodedOutputStaysFundedAcrossASuspendedWriteAndRefundsOnCancellation(Int32 encoding, Int32 encodedBytes) in D:\code\Lython\tests\Lokad.Lython.Tests\Utf16CodecAccountingTests.cs:line 44
+--- End of stack trace from previous location ---
+  Failed Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding [3 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(Lokad.Lython.Runtime.LythonRuntimeException)
+  Stack Trace:
+     at Lokad.Lython.Tests.Utf16CodecAccountingTests.EncodingDenialKeepsStagedTextAndRefundsTemporaryFunding() in D:\code\Lython\tests\Lokad.Lython.Tests\Utf16CodecAccountingTests.cs:line 67
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\final-text-storage-r262\tests\first-internal11.trx
+
+Failed!  - Failed:     3, Passed:   244, Skipped:     0, Total:   247, Duration: 656 ms - Lokad.Lython.WhiteBox.Tests.dll (net11.0)

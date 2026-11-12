@@ -363,3 +363,6 @@ benchmarks/results/2026-11-12-completed-call-lifecycle/**/*.patch -text -whitesp
 
 benchmarks/results/2026-11-12-cell-write-authority/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-cell-write-authority/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-12-text-output-batches/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-text-output-batches/**/*.patch -text -whitespace

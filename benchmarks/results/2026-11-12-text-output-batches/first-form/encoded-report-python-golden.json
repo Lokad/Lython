@@ -1,0 +1,7 @@
+{
+  "reference": "CPython3.13.2 isolated -I -S",
+  "case": "scripts.report-render.utf16.large",
+  "stdout": "3072\n",
+  "fullBytesMatch": true,
+  "expectedFilesSHA256": "c9b1c3179f091612acf27b82e9a7beaca7da2272fe1062466bbd39869953820a"
+}

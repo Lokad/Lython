@@ -1,0 +1,27 @@
+
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+  Lokad.Lython -> D:\code\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+  Lokad.Lython.Utf8Regex -> D:\code\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+C:\Users\JoannesVermorel\.dotnet11\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\code\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj::TargetFramework=net11.0]
+  Lokad.Lython.WorkerFixture -> D:\code\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+  Lokad.Lython.PublicApi.Tests -> D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+Test run for D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.58]     Lokad.Lython.PublicApi.Tests.EncodedFileStagingTests.EncodedStoragePreservesIncrementalPythonBehavior(codec: "ascii", source: "with open('report.bin','w',encoding='ascii',errors"···, expected: "initial 0\nwrite 0 0\nflushed 0\nerror 3 4 False T"···, hex: "0d0d0a5a21") [FAIL]
+  Failed Lokad.Lython.PublicApi.Tests.EncodedFileStagingTests.EncodedStoragePreservesIncrementalPythonBehavior(codec: "ascii", source: "with open('report.bin','w',encoding='ascii',errors"···, expected: "initial 0\nwrite 0 0\nflushed 0\nerror 3 4 False T"···, hex: "0d0d0a5a21") [5 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+                                    ↓ (pos 36)
+Expected: ···"0 0\nflushed 0\nerror 3 4 False True\nflushe"···
+Actual:   ···"0 0\nflushed 0\nerror 2 3 True True\nflushed"···
+                                    ↑ (pos 36)
+  Stack Trace:
+     at Lokad.Lython.PublicApi.Tests.EncodedFileStagingTests.EncodedStoragePreservesIncrementalPythonBehavior(String codec, String source, String expected, String hex) in D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\EncodedFileStagingTests.cs:line 36
+--- End of stack trace from previous location ---
+Results File: D:\code\Lython\.git\agent-notes\review-20261031\final-text-storage-r262\tests\first-public11.trx
+
+Failed!  - Failed:     1, Passed:   414, Skipped:     0, Total:   415, Duration: 14 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)

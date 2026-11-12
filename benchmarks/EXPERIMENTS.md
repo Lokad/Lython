@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Final-byte text storage/batching](results/2026-11-12-text-output-batches/README.md)
+preserves two active prototype forms. Whole-file final staging raises UTF16
+allocation6.8%/peak208KB; bounded batches instead reduce report allocation12.7%
+UTF8/19.2%UTF16 and peak494KB.4574focused actualtarget checks and complete-script
+bothAPI/compile goldens/balances pass. B607tenjobs277.347s allgates/join/RAM/archive
+pass. CPU is mixed; additional asyncUTF8report+2..8.61% debt requires a bounded
+completed-receiver refinement before promotion. Original desktop adversity,
+space-short inventory and baseline codec-error defect/goldens survive. No new
+externalbaseline or final delivery claim; wider roadmap continues.
+
 The retained cell-write runtime `f4f44caf` is fully qualified by terminal GREEN
 [43155450349](results/2026-11-12-cell-write-authority/delivery/README.md):
 Windows/Ubuntu actual .NET 11/10, original stress and installed Release consumers.

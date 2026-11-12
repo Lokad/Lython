@@ -1,0 +1,7 @@
+{"freeBytes": 265244672, "sourceAndImagesVerified": true, "jobs": 10, "ownerSeconds": 330, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=5min 30s
+MainPID=3579043
+ActiveState=active
+
+
+Running as unit: lython-b607-text-batches-20261112.service; invocation ID: 2f8559d4a219419db0e2b21395429c5c

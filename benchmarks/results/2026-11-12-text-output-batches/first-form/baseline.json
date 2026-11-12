@@ -1,0 +1,9 @@
+{
+  "revision": "f4f44caf2bea091e9f1f117abc33b37b2b429f5a",
+  "coreSHA256": "09ad301e790ce664ed044088f80e8e144c5d502de70f656ccb55eeb235e0e463",
+  "source": {
+    "LythonRuntime.TextCodec.cs": "221dc7d900b9d035eabc484caa956ffa550d451cc7a6490244f43089bd10d33d",
+    "LythonRuntime.Utf16Codec.cs": "45914174d8223a70a1b9d9a5ed8e727e45714aedf6c83b24a7a3f09c1f848895",
+    "LythonRuntime.TextFileHandle.Write.cs": "9acdfaeb215ffd0346387a830983b4ee0a586a0e885be2e8b25481e61cf408cb"
+  }
+}

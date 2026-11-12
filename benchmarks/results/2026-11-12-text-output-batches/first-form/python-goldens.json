@@ -1,0 +1,69 @@
+{
+  "reference": "Python 3.13.2",
+  "cases": [
+    {
+      "codec": "utf-8",
+      "errors": "strict",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='utf-8',errors='strict',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='utf-8',errors='strict',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nwrite 3 5\nflushed 5\nwrite 2 12\nflushed 12\nwrite 3 16\nflushed 16\nappend 1 17\n410d0ac3a9e282acf09f98800d0d0a5a21\n",
+      "hex": "410d0ac3a9e282acf09f98800d0d0a5a21"
+    },
+    {
+      "codec": "utf-8-sig",
+      "errors": "strict",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='utf-8-sig',errors='strict',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='utf-8-sig',errors='strict',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 3\nflushed 3\nwrite 3 8\nflushed 8\nwrite 2 15\nflushed 15\nwrite 3 19\nflushed 19\nappend 1 20\nefbbbf410d0ac3a9e282acf09f98800d0d0a5a21\n",
+      "hex": "efbbbf410d0ac3a9e282acf09f98800d0d0a5a21"
+    },
+    {
+      "codec": "utf-16",
+      "errors": "strict",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='utf-16',errors='strict',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='utf-16',errors='strict',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 2\nflushed 2\nwrite 3 10\nflushed 10\nwrite 2 16\nflushed 16\nwrite 3 24\nflushed 24\nappend 1 26\nfffe41000d000a00e900ac203dd800de0d000d000a005a002100\n",
+      "hex": "fffe41000d000a00e900ac203dd800de0d000d000a005a002100"
+    },
+    {
+      "codec": "utf-16-le",
+      "errors": "strict",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='utf-16-le',errors='strict',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='utf-16-le',errors='strict',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nwrite 3 8\nflushed 8\nwrite 2 14\nflushed 14\nwrite 3 22\nflushed 22\nappend 1 24\n41000d000a00e900ac203dd800de0d000d000a005a002100\n",
+      "hex": "41000d000a00e900ac203dd800de0d000d000a005a002100"
+    },
+    {
+      "codec": "utf-16-be",
+      "errors": "strict",
+      "newline": "\r",
+      "source": "with open('report.bin','w',encoding='utf-16-be',errors='strict',newline='\\r') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='utf-16-be',errors='strict',newline='\\r') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nwrite 3 6\nflushed 6\nwrite 2 12\nflushed 12\nwrite 3 18\nflushed 18\nappend 1 20\n0041000d00e920acd83dde00000d000d005a0021\n",
+      "hex": "0041000d00e920acd83dde00000d000d005a0021"
+    },
+    {
+      "codec": "latin-1",
+      "errors": "ignore",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='latin-1',errors='ignore',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='latin-1',errors='ignore',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nwrite 3 4\nflushed 4\nwrite 2 4\nflushed 4\nwrite 3 8\nflushed 8\nappend 1 9\n410d0ae90d0d0a5a21\n",
+      "hex": "410d0ae90d0d0a5a21"
+    },
+    {
+      "codec": "ascii",
+      "errors": "strict",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='ascii',errors='strict',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='ascii',errors='strict',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nerror 3 4 False True\nflushed 0\nerror 0 2 True True\nflushed 0\nwrite 3 4\nflushed 4\nappend 1 5\n0d0d0a5a21\n",
+      "hex": "0d0d0a5a21"
+    },
+    {
+      "codec": "cp1252",
+      "errors": "backslashreplace",
+      "newline": "\r\n",
+      "source": "with open('report.bin','w',encoding='cp1252',errors='backslashreplace',newline='\\r\\n') as target:\n    print('initial',target.tell())\n    for value in ['', 'A\\né', '€😀', '\\r\\nZ']:\n        before=target.tell()\n        try:\n            print('write',target.write(value),target.tell())\n        except UnicodeEncodeError as error:\n            print('error',error.start,error.end,error.object is value,target.tell()==before)\n        target.flush()\n        print('flushed',target.tell())\nwith open('report.bin','a',encoding='cp1252',errors='backslashreplace',newline='\\r\\n') as target:\n    print('append',target.write('!'),target.tell())\nwith open('report.bin','rb') as result:\n    print(result.read().hex())\n",
+      "expected": "initial 0\nwrite 0 0\nflushed 0\nwrite 3 4\nflushed 4\nwrite 2 15\nflushed 15\nwrite 3 19\nflushed 19\nappend 1 20\n410d0ae9805c5530303031663630300d0d0a5a21\n",
+      "hex": "410d0ae9805c5530303031663630300d0d0a5a21"
+    }
+  ]
+}
