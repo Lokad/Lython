@@ -1,0 +1,34 @@
+{
+  "archive-receipt.json": {
+    "bytes": 364,
+    "sha256": "3a44a1a989764e9d296d09b359fe5788de6d67f2d065f4441b0d0e925025aa6a"
+  },
+  "candidate-identity.json": {
+    "bytes": 74069,
+    "sha256": "0a74dd34a14b317cbac5599e3eac46d07702c720537554a1b7b22e890a1204c2"
+  },
+  "diagnostics.tar.xz": {
+    "bytes": 2729104,
+    "sha256": "344b8f139358f7ed7e593974b544a959e47bcab92217b5a91889b7706cfce739"
+  },
+  "extraction.json": {
+    "bytes": 70,
+    "sha256": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf"
+  },
+  "observations.tgz": {
+    "bytes": 2912595,
+    "sha256": "7af77d4ce973d0a87df64f27fcaa9e8491dce18973a884fe47c47f6c5fbd896a"
+  },
+  "restoration.json": {
+    "bytes": 157751,
+    "sha256": "0a4e915bf3c01bd23a8b314428a87013d04dd5016d062671614fdefd414a78c3"
+  },
+  "summary.json": {
+    "bytes": 6639,
+    "sha256": "e010215d4ee9afc6987e45720828454134066dfc83a588fe14628b9761535208"
+  },
+  "terminal-status.json": {
+    "bytes": 564,
+    "sha256": "019184b4498947cbddb9b6fddb4a2b21386aedf4416407905b2a485e8f59677a"
+  }
+}

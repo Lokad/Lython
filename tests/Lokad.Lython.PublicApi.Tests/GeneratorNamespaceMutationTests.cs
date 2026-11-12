@@ -4,6 +4,48 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class GeneratorNamespaceMutationTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClassPromotionKeepsOldAliasesAndTheLiveBindingAfterGeneratorClose(bool asynchronous)
+    {
+        const string source = """
+            def outer():
+                value=['old']
+                def replace(new):
+                    nonlocal value
+                    class Holder:
+                        nonlocal value
+                        before=value
+                        value=new
+                        def read(self):return value
+                    return value,Holder.before,Holder()
+                yield replace
+                yield value
+            generator=outer()
+            replace=next(generator)
+            new=['new']
+            observed,before,holder=replace(new)
+            last=next(generator)
+            generator.close()
+            print(observed is new,before,last is new,holder.read() is new)
+            """;
+        var budget = new LythonMemoryBudget(2 * 1024 * 1024);
+        using (var script = new LythonEngine().Compile(source, budget))
+        {
+            Assert.True(script.IsValid);
+            var baseline = budget.ReservedBytes;
+            using (var result = asynchronous ? await script.RunAsync(new MockLythonHost()) : script.Run(new MockLythonHost()))
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("True ['old'] True True\n", result.StandardOutput);
+                Assert.True(budget.ReservedBytes > baseline);
+            }
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     // Independent CPython 3.13 outputs. A lowered class updates the enclosing
     // namespace while its generator's executable slots are suspended.
     [Theory]

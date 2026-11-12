@@ -6818,3 +6818,16 @@ moving desktop controls survive. Retain the smaller encoder; full delivery follo
 No new pool/policy/backend/unsafe code or inferred CPython ratio. Whole-script
 objective stays open; coherent external checkpoint and larger engine source proof
 remain separate deliverables.
+
+## R284 — explicit lexical cell storage withdrawn
+
++[The prototype and all original conditions](results/2026-11-12-lexical-cell-storage-withdrawn/README.md)
++reduce each cell48→40B but leave whole-script allocation effectively flat. Explicit
++namespace promotion adds machinery;14316focused actual-target checks and seven
++scripts/both APIs/compile/fresh pass. B641five jobs275.929s shows CSV Run
+++1.28..+3.46% elapsed/+1.70..+4.98% CPU, while captured text remains uncertain.
++Withdraw the source, retain the independent alias regression and all favorable/
++adverse desktop and VM data.568sources restore to qualified production; forced
++nonincremental build and438focused target checks pass. No dormant promotion hooks
++or repeated full qualification. The substantial performance objective stays open.
++
