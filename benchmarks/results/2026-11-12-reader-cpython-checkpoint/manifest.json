@@ -1,0 +1,10 @@
+{
+  "README.md": "7c9edfb21f66c7c1c0e5e75c3e07f0b0f666d599fdfad1c92da1d9f46af6c0f0",
+  "source-proof.json": "ea38ea1edf91f590a7e0942dfe7e90ec5a83f75064a3df76fe1f9e7639b9b130",
+  "warm/external-warm-receipt.json": "f369c82c5e9c8500da326e11c359422b9736764bc6f57173b39fa6efb58c0080",
+  "warm/external-warm.tgz": "f263840046d9375e78e95ea683fae2361d9b51918b25a45089be4726515654d7",
+  "warm/extraction.json": "492a860f1fa6b39e117f194f2cefa40f8a6baca9f3ae1c7bdfc1165a8d665fbf",
+  "warm/preparation.tar.xz": "fc034bae22ba9cedb0dc3ce9b791bf8ce737db546fd6190554cfcc03c9d80a48",
+  "warm/summary.json": "7a21a90c6fa9354bedc065a193cd0bc1c92d05ee1ea6db6d00fee29db0758e4a",
+  "warm/terminal-status.json": "a65e9012121ac93c5deb84f4f1549770bcca29002d04e7b549dd6be593e5be14"
+}
