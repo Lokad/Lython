@@ -418,6 +418,10 @@ write final words without allocating a cased intermediate string. Custom receive
 keep ordinary method dispatch and suspension; intervening local bindings remain
 observable on ordinary execution. Final storage is admitted before allocation and
 keeps the current cancellation context and requesting source span.
+UTF16 byte and file output transcodes bounded UTF8 spans into admitted final
+storage, with explicit byte order, BOM and newline framing. Sizing remains a
+preflight; cancellation checks separate scalar-aligned chunks. No intermediate
+character buffer is allocated.
 Ordinary positional class calls also borrow the existing operand storage. The
 engine's default allocator needs no class-prefixed argument copy, and user
 allocators/initializers bind the class or instance directly into function locals.

@@ -703,3 +703,8 @@ projection, cleanup and test assertions are outside that admission-before-alloca
 window; terminal failure, output and budget cleanup are checked independently.
 A controlled displaced-power-preflight check verifies that the bound still detects
 unadmitted magnitude construction; its evidence remains in benchmark history.
+
+[Bulk UTF16 boundaries](Lokad.Lython.PublicApi.Tests/BulkUtf16EncodingTests.cs)
+check native/LE/BE bytes, newlines and supplementary scalars crossing1024-byte
+boundaries. Both APIs preserve repeated-write counts/positions and retained byte
+results while sharing an allowance; disposal returns each result's funding.

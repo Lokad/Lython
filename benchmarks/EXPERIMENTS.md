@@ -6703,3 +6703,18 @@ R274 correction1011ed0b is fully GREEN43254088804 on both OSes/actual targets,
 stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
+
+## R276 — bulk managed UTF16 output
+
+[Both forms and bounded confirmation](results/2026-11-12-bulk-utf16/README.md)
+replace manual scalar emission with bounded span transcoding and delete three
+dormant helpers. First sizing/count fusion shows UTF8 control elapsed+2..+5%;
+withdraw that branch and restore common UTF8 files exactly. Refined source changes
+one production file, passes686actual-target checks and seven complete scripts/both
+APIs/fresh; allocation flat. B632three jobs153.958s: UTF16 elapsed−1..−8%Run/
+−2..−5%Async, supporting AsyncCPU; sync CPU uncertain. UTF8elapsed−.36..+2.11%,
+CPU0..+1.25%is accepted small debt/uncertainty, not equivalence. First/adverse and
+moving desktop controls survive. Retain the smaller encoder; full delivery follows.
+No new pool/policy/backend/unsafe code or inferred CPython ratio. Whole-script
+objective stays open; coherent external checkpoint and larger engine source proof
+remain separate deliverables.

@@ -1,0 +1,11 @@
+{
+  "all568BeforeSourcesMatchR274Reference": true,
+  "all568CurrentSourcesMatchFrozenCandidate": true,
+  "beforeHead": "ae46f502; production equals43541e78/1011ed0b",
+  "differentGeneratedMetadataNotRelabelled": true,
+  "changedProductionFiles": [
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextCodec.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.TextFileHandle.Write.cs",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Utf16Codec.cs"
+  ]
+}

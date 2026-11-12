@@ -1,0 +1,13 @@
+{
+  "before": "R274 frozen568 sources, plus fixture-only1011ed0b and docs ae46; no runtime differences",
+  "candidate": "refined/candidate-sources.tar.xz and refined/candidate-identity.json",
+  "snapshotSHA256": "524af8f2ae5da0479cf521915e446dcae81e327d787a6c3634144f43de74e568",
+  "sourceCount": 568,
+  "focusedActualTargetChecks": 686,
+  "standaloneBaselineCoreSHA256": "871e5dbf0f507a723114f5ce4df4ea7a2cad87b46abef8fdd8be7ca32525c532",
+  "differentGeneratedMetadataNotRelabelled": true,
+  "commonUtf8WriterAndCountExactBaseline": true,
+  "changedProductionFiles": [
+    "LythonRuntime.Utf16Codec.cs"
+  ]
+}

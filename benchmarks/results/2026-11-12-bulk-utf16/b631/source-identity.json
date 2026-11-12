@@ -1,0 +1,9 @@
+{
+  "before": "R274 frozen568 sources, plus fixture-only1011ed0b and docs ae46; no runtime differences",
+  "candidate": "R276 frozen candidate-sources.tar.xz and candidate-identity.json retained locally",
+  "snapshotSHA256": "1c1e8cbf869118ec965e7ec6f2b7c168ecca53eccdde023f415ffddb270543f1",
+  "sourceCount": 568,
+  "focusedActualTargetChecks": 686,
+  "standaloneBaselineCoreSHA256": "871e5dbf0f507a723114f5ce4df4ea7a2cad87b46abef8fdd8be7ca32525c532",
+  "differentGeneratedMetadataNotRelabelled": true
+}
