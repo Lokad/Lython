@@ -52,8 +52,8 @@ Compilation includes disposal. Wider CPU includes reset/protocol and sharedJIT/G
 
 Retain the shared fact/demand contract and actual removal of repeated work. Accept
 explicit warm uncertainty for this milestone; do not claim a substantial whole-
-script speedup or attribute the combined observation to one change. Final platform/
-stress/installed Release consumers remain pending. The broader performance
+script speedup or attribute the combined observation to one change. Final Windows/Ubuntu, actual .NET11/10, original stress and installed Release
+consumers pass; see [delivery](delivery/README.md). The broader performance
 objective continues; existing scalar/container/operand work is not replayed.
 
 The first read-only staging inventory lacked151552bytes for redundant before-
