@@ -6704,6 +6704,28 @@ stress and installed consumers. All568frozen production sources match.
 [Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
 No arithmetic runtime change, retiming or erased first failure. R276 stays separate.
 
+## R283 — shared-allowance frequency source gate
+
+[One untimed pass](results/2026-11-12-admission-frequency/README.md) over three
+complete scripts/both APIs observes6229text/13398CSV/14425report reservation
+resizes per command, with identical API counts and full output/balance checks.
+The source already combines record/word preflights. Counts and prior monitor
+samples do not prove removable CPU or duplicate funding. No governor-wide funding
+cache is selected: it would add a balance, reentry/headroom/refusal rules and
+retention changes. No new allocator, policy, runtime option or ownership layer;
+the private framework-selection/build failures remain alongside the diagnostic.
+
+## R282 — committed-source CPython checkpoint
+
+[Five targeted jobs](results/2026-11-12-captured-cpython-checkpoint/README.md) on
+committed9bca1337/frozene4cc65b2 complete in238.674s, with all source/image/golden/
+ownership/quiet/join/unmount/archive gates passing. Captured text warm1.63–1.74×,
+compile0.83–0.84× and compile-to-result1.44–1.54× CPython3.13.16; UTF8report
+warm1.30–1.33× and compile-to-result1.23–1.29×. Moving controls/IQR remain visible.
+These are external ratios, not source-pair gains or release qualification. Full
+delivery43295336048 runs independently; the broad performance objective remains
+open. Original guide/rows and all raw observations survive; publication held.
+
 ## R281 — authoritative captured slots
 
 [The representation migration](results/2026-11-12-captured-slot-ownership/README.md)

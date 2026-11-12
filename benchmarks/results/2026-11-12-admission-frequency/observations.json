@@ -1,0 +1,153 @@
+{
+  "revision": "9bca1337",
+  "coreHash": "e4cc65b251ace242546f337b0846908a4e2a4313953da74df6fb666e1ce87529",
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "allGoldensAndBalancesPassed": true,
+  "rows": [
+    {
+      "id": "scripts.csv-validated-records.large",
+      "asynchronous": false,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 13398,
+        "BytesReads": 0,
+        "GrowthCalls": 13375,
+        "RefundCalls": 23,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 23,
+          "atMost256": 8216,
+          "atMost4096": 5135,
+          "atMost65536": 1,
+          "larger": 0
+        }
+      },
+      "baselineBytes": 107264,
+      "finalBytes": 107264
+    },
+    {
+      "id": "scripts.csv-validated-records.large",
+      "asynchronous": true,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 13398,
+        "BytesReads": 0,
+        "GrowthCalls": 13375,
+        "RefundCalls": 23,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 23,
+          "atMost256": 8216,
+          "atMost4096": 5135,
+          "atMost65536": 1,
+          "larger": 0
+        }
+      },
+      "baselineBytes": 107264,
+      "finalBytes": 107264
+    },
+    {
+      "id": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "asynchronous": false,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 6229,
+        "BytesReads": 0,
+        "GrowthCalls": 6212,
+        "RefundCalls": 17,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 20,
+          "atMost256": 4129,
+          "atMost4096": 2059,
+          "atMost65536": 4,
+          "larger": 0
+        }
+      },
+      "baselineBytes": 89504,
+      "finalBytes": 89504
+    },
+    {
+      "id": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "asynchronous": true,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 6229,
+        "BytesReads": 0,
+        "GrowthCalls": 6212,
+        "RefundCalls": 17,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 20,
+          "atMost256": 4129,
+          "atMost4096": 2059,
+          "atMost65536": 4,
+          "larger": 0
+        }
+      },
+      "baselineBytes": 89504,
+      "finalBytes": 89504
+    },
+    {
+      "id": "scripts.report-render.large",
+      "asynchronous": false,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 14425,
+        "BytesReads": 0,
+        "GrowthCalls": 14393,
+        "RefundCalls": 32,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 3078,
+          "atMost256": 8210,
+          "atMost4096": 3087,
+          "atMost65536": 12,
+          "larger": 6
+        }
+      },
+      "baselineBytes": 76352,
+      "finalBytes": 76352
+    },
+    {
+      "id": "scripts.report-render.large",
+      "asynchronous": true,
+      "counts": {
+        "ReserveCalls": 4,
+        "ScopeCreates": 4,
+        "ScopeDisposals": 4,
+        "ResizeCalls": 14425,
+        "BytesReads": 0,
+        "GrowthCalls": 14393,
+        "RefundCalls": 32,
+        "UnchangedCalls": 0,
+        "ReservationDisposals": 0,
+        "growthDeltaBuckets": {
+          "atMost64": 3078,
+          "atMost256": 8210,
+          "atMost4096": 3087,
+          "atMost65536": 12,
+          "larger": 6
+        }
+      },
+      "baselineBytes": 76352,
+      "finalBytes": 76352
+    }
+  ]
+}
