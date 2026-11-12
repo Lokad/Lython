@@ -350,3 +350,8 @@ benchmarks/results/2026-11-12-native-route-costs/** -text whitespace=cr-at-eol
 
 benchmarks/results/2026-11-12-receiver-operations/** -text whitespace=cr-at-eol
 benchmarks/results/2026-11-12-receiver-operations/**/*.patch -text -whitespace
+
+benchmarks/results/2026-11-12-receiver-cpython-checkpoint/** -text whitespace=cr-at-eol
+
+benchmarks/results/2026-11-12-counting-increment-withdrawn/** -text whitespace=cr-at-eol
+benchmarks/results/2026-11-12-counting-increment-withdrawn/**/*.patch -text -whitespace

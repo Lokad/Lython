@@ -1,0 +1,9 @@
+{
+  "head": "82ed92d422a947726fdc802108cd0ffebbaa5472",
+  "files": {
+    "src/Lokad.Lython/Runtime/PyDict.Accumulation.cs": "8f19e897010198d279beed0b2837fd4014b9ca9c5dbeda341930fc92620e452f",
+    "src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs": "ac405b6f7fa20c2bb9159711cf47769d9b078961e73317fc377551baa1029465"
+  },
+  "hypothesis": "Compiler-proven bounded increment should travel once as long into the existing no-admission update service, instead of per-word BigInteger width/cast. General caller checks before handoff; preserve exact promotion/fallback and all effects/owners.",
+  "validation": "Existing focused dictionary/native/loop/cancellation/lifetime cases; short complete scripts bothAPIs with controls, no full checkpoint yet."
+}

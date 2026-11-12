@@ -1,0 +1,9 @@
+{
+  "exactProductionRestored": true,
+  "revision": "82ed92d422a947726fdc802108cd0ffebbaa5472",
+  "sourceFiles": 568,
+  "candidateArchived": true,
+  "forcedBuildPending": false,
+  "nonincrementalSolutionBuild": "23.35s,zero warnings/errors,actual11/10",
+  "restorationChecks": "DictionaryIntegerValueTests1pass per actual11/10; exact82ed full delivery tracked separately43139754244"
+}

@@ -1,0 +1,97 @@
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+index 22c2e64d..6a0fa782 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.DictionaryAccumulation.cs
+@@ -21,7 +21,10 @@ internal sealed partial class LythonRuntime
+             ref readonly var add = ref execution.Code.Instructions[callIndex + 1];
+             ref readonly var store = ref execution.Code.Instructions[callIndex + 2];
+             var fallback = execution.Code.Constants[execution.Code.Instructions[headIndex + 4].ConstantIndex]!;
+-            var increment = (BigInteger)execution.Code.Constants[~add.SecondInput]!;
++            // The compiler establishes the signed-seven-byte range once. Keep
++            // the primitive through this segment, rather than rechecking and
++            // unpacking its BigInteger representation for every word.
++            var increment = (long)(BigInteger)execution.Code.Constants[~add.SecondInput]!;
+             var storeSpan = (LythonSourceSpan)execution.Code.Constants[store.TargetSpanIndex]!;
+             var totalIndex = callIndex + 3;
+             var hasTotal = execution.Code.Instructions[totalIndex].OpCode == ExecutableOpCode.Augmented;
+@@ -175,7 +178,7 @@ internal sealed partial class LythonRuntime
+             context.EnterInterpreterFrame(call.CallSpan);
+             try
+             {
+-                if (!dictionary.TryAccumulateWithoutAdmission(key, fallback, integer, context,
++                if (!dictionary.TryAccumulateWithoutAdmission(key, fallback, (long)integer, context,
+                     call.CallSpan, add.Span, storeSpan)) return false;
+             }
+             finally { context.LeaveInterpreterFrame(); }
+diff --git a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+index 9822cade..f9bfba2c 100644
+--- a/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
++++ b/src/Lokad.Lython/Runtime/PyDict.Accumulation.cs
+@@ -8,21 +8,23 @@ internal sealed partial class PyDict
+     // The get and assignment share this one probe only while neither operation
+     // nor the intervening addition can invoke a protocol or an admission hook.
+     // Retained old values remain ordinary immutable integers with their owner.
+-    internal bool TryAccumulateWithoutAdmission(PyString key, object fallback, BigInteger increment,
++    // Callers establish the signed-seven-byte increment before this handoff;
++    // compiled loops keep that primitive for their complete native segment.
++    internal bool TryAccumulateWithoutAdmission(PyString key, object fallback, long increment,
+         LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+     {
+         if (_nativeItems is null || _nativeValues is null || HasProtocolKeys
+-            || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
++            || !ReferenceEquals(_memoryGovernor, context.MemoryGovernor)) return false;
+         var hash = MixNativeHash(LythonRuntime.ComputeStructuralHashCode(key, querySpan, context));
+         var index = FindNativeIndex(key, hash, context, querySpan);
+         return TryAccumulateAt(index, key, hash, fallback, increment, context, addSpan, storeSpan);
+     }
+ 
+-    internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, BigInteger increment,
++    internal bool TryAccumulateInlineWord(ReadOnlySpan<byte> bytes, object fallback, long increment,
+         LythonRuntime.ExecutionContext context, LythonSourceSpan querySpan, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+     {
+         if (_nativeItems is null || _nativeValues is null || _recordKeys is not null || HasProtocolKeys ||
+-            !ReferenceEquals(_memoryGovernor, context.MemoryGovernor) || increment.GetByteCount() >= 8) return false;
++            !ReferenceEquals(_memoryGovernor, context.MemoryGovernor)) return false;
+         var hash = MixNativeHash(PyValueComparer.NormalizeHash(PyString.HashUtf8(bytes, context, querySpan)));
+         var index = FindNativeTextIndex(_nativeItems, hash, bytes, context, querySpan);
+         // New keys need their real word identity. Resume the original body
+@@ -31,7 +33,7 @@ internal sealed partial class PyDict
+             fallback, increment, context, addSpan, storeSpan);
+     }
+ 
+-    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, BigInteger increment,
++    private bool TryAccumulateAt(int index, PyString key, uint hash, object fallback, long increment,
+         LythonRuntime.ExecutionContext context, LythonSourceSpan addSpan, LythonSourceSpan storeSpan)
+     {
+         // Both query forms established native storage and exclude callbacks.
+@@ -52,7 +54,7 @@ internal sealed partial class PyDict
+         context.CheckExecution(addSpan);
+         // Both signed operands fit seven bytes. The exact result fits long;
+         // wider subsequent updates retain the ordinary promotion/admission path.
+-        var sum = prior + (long)increment;
++        var sum = prior + increment;
+         context.CheckExecution(storeSpan);
+         var before = _nativeCount;
+         if (_recordKeys is null)
+diff --git a/tests/Lokad.Lython.Tests/DictionaryIntegerValueTests.cs b/tests/Lokad.Lython.Tests/DictionaryIntegerValueTests.cs
+index f9dba910..4a9f47e6 100644
+--- a/tests/Lokad.Lython.Tests/DictionaryIntegerValueTests.cs
++++ b/tests/Lokad.Lython.Tests/DictionaryIntegerValueTests.cs
+@@ -18,7 +18,7 @@ public sealed class DictionaryIntegerValueTests
+             var key = PyString.FromString("count", context.MemoryGovernor, span);
+             var original = new PyDict(2, context.MemoryGovernor, span);
+             original.SetItem(key, new BigInteger(1000));
+-            Assert.True(original.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span, span, span));
++            Assert.True(original.TryAccumulateWithoutAdmission(key, BigInteger.Zero, 1, context, span, span, span));
+             var copy = new PyDict(original);
+             Assert.True(original.TryGetValue(key, out var value));
+             Assert.True(copy.TryGetValue(key, out var copied));
+@@ -28,7 +28,7 @@ public sealed class DictionaryIntegerValueTests
+             record.SetRecordItem(key, new BigInteger(7), context, span);
+             Assert.True(original.TryGetValue(key, out var shared));
+             Assert.Same(value, shared);
+-            Assert.True(record.TryAccumulateWithoutAdmission(key, BigInteger.Zero, BigInteger.One, context, span, span, span));
++            Assert.True(record.TryAccumulateWithoutAdmission(key, BigInteger.Zero, 1, context, span, span, span));
+             Assert.True(record.TryGetValue(key, out var updated));
+             Assert.Equal(new BigInteger(8), updated);
+             Assert.True(original.TryGetValue(key, out var unchanged));

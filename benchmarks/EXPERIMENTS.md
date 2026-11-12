@@ -6,6 +6,22 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Primitive counting increment](results/2026-11-12-counting-increment-withdrawn/README.md)
+is withdrawn.574focused checks and three complete scripts bothAPIs pass, allocation
+flat, diagnostic elapsed mixed with adversity preserved. Replacing a checked
+BigInteger argument with a plain long creates an implicit range precondition;
+restoring enforcement recreates the check, a new wrapper adds machinery. The
+constant was already unboxed outside the loop. This small contract tradeoff does
+not justify retention or a quiet campaign. Exact82ed production restored; continue
+with the complete ordinary helper lifecycle rather than another local threshold.
+
+[Affected CPython checkpoint](results/2026-11-12-receiver-cpython-checkpoint/README.md)
+refreshes retained82ed92d4 captured/native-search/guarded-search across compile,
+warm and compile-to-result. Ninejobs/247.974s all gates/joins/RAM/archive pass.
+Warm ratios1.73–1.79x,1.61–1.64x,2.30–2.33x; substantial guarded gap remains despite
+independent source-pair gains. No attribution across collections. Original cutoff/
+summary postcondition failures survive; raw source and observations unchanged.
+
 [Shared receiver operations](results/2026-11-12-receiver-operations/refined/README.md)
 retain one canonical selector/shape/invocation across ordinary prefixes and native
 helpers, plus awaited async replacement count protocols. 4562focused checks pass;
