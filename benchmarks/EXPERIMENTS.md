@@ -6722,8 +6722,8 @@ committed9bca1337/frozene4cc65b2 complete in238.674s, with all source/image/gold
 ownership/quiet/join/unmount/archive gates passing. Captured text warm1.63–1.74×,
 compile0.83–0.84× and compile-to-result1.44–1.54× CPython3.13.16; UTF8report
 warm1.30–1.33× and compile-to-result1.23–1.29×. Moving controls/IQR remain visible.
-These are external ratios, not source-pair gains or release qualification. Full
-delivery43295336048 runs independently; the broad performance objective remains
+These are external ratios, not source-pair gains or release qualification. [Full
+delivery43295336048 passes](results/2026-11-12-captured-slot-ownership/delivery/README.md) independently; the broad performance objective remains
 open. Original guide/rows and all raw observations survive; publication held.
 
 ## R281 — authoritative captured slots
@@ -6740,7 +6740,7 @@ capturedRun elapsed−4..−6%/CPU−2.6..−4.5%; async/control uncertainty and
 report adversity remain. Same-source B639two jobs139.022s narrows CSVAsync elapsed
 debt to+0.4..2.3%, with CPU uncertain; report remains variable and initial CPU
 adversity is not reproduced. Retain the mechanism removal/affectedRun benefit,
-accept that explicit debt, and batch full delivery separately. No CPython
+accept that explicit debt; [full delivery passes](results/2026-11-12-captured-slot-ownership/delivery/README.md) separately on9bca1337. No CPython
 extrapolation or closure of the broader whole-script objective; publication held.
 
 ## R280 — native accumulation boundary deletion withdrawn

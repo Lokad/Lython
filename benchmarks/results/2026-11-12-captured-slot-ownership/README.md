@@ -1,8 +1,7 @@
 # Authoritative captured slots — R281
 
 2026-11-12, qualifiedb3369e3e/frozen4f57ca33 versus candidatee4cc65b2 over
-documentation98585baa. **Retain the representation simplification; full delivery
-qualification follows.** Captured executable slots hold their existing shared
+documentation98585baa. **Retain the representation simplification; [full delivery passes](delivery/README.md) on9bca1337.** Captured executable slots hold their existing shared
 cell directly. Remove sparse LocalCells arrays and parameters, owner-slot
 backpointers, active-frame cache propagation, generator cell-to-slot resume loops
 and duplicate namespace seeding. No new backend, opcode, policy, pool, value
@@ -77,5 +76,5 @@ OS240MiB/evidence12MiB floors unchanged, final free277,164,032B.
 
 Frozen source/core, all original diagnostics/failures and raw observations survive
 in the archives. No extrapolated CPython ratio, RSS, pending-I/O or embedding-tail
-claim. Full platform/stress/installed-consumer delivery remains separate.
+claim. Full platform/stress/installed-consumer [delivery passes](delivery/README.md) separately on9bca1337.
 Publication stays held.

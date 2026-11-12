@@ -2,9 +2,8 @@
 
 2026-11-12, committed **9bca1337** / frozen **e4cc65b2**, stock CPython **3.13.16**.
 All 568 measured production sources match the commit with explicit newline
-normalization. Full platform/stress/package qualification of that source is running
-independently as CI43295336048 at collection time; these observations alone do not
-qualify the release. No new runtime/producer change or source-pair speedup claim.
+normalization. Full platform/stress/package qualification was pending at collection time and
+subsequently [passes independently on that source](../2026-11-12-captured-slot-ownership/delivery/README.md) as CI43295336048; timing alone does not qualify a release. No new runtime/producer change or source-pair speedup claim.
 
 | Complete script / phase | Lython | CPython | Lython / CPython | L / Python process spread; max IQR |
 | --- | ---: | ---: | ---: | --- |
