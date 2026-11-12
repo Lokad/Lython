@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+The direct-call runtime7114021e is fully qualified by terminalGREEN
+[43148511620](results/2026-11-12-completed-call-lifecycle/delivery/README.md):Windows/
+Ubuntu actual11/10, original stress and installedReleaseconsumers. Receiptcached;
+no unchanged requalification. Further cell-write work and latent lexical/generator
+bug fixes are separate prototypes; their evidence cannot inherit this qualification.
+
 [Direct completed-call lifecycle](results/2026-11-12-completed-call-lifecycle/README.md)
 retains five-file state/control migration for delivery. Pendingfunction/receiver and
 runner preparation are removed; actualchildren keep funded result/error staging.
