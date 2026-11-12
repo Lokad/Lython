@@ -1,0 +1,7 @@
+{"freeBytes": 264929280, "sourceAndImagesVerified": true, "sampledSeconds": 8, "ownerSeconds": 120, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=2min
+MainPID=3582389
+ActiveState=active
+
+
+Running as unit: lython-b610-call-boundary-profile-20261112.service; invocation ID: 0a690e4614b24f578530cfdcaee7e12e

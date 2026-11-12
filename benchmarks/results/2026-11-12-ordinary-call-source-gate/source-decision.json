@@ -1,0 +1,18 @@
+{
+  "revision": "983bab96 productionunchanged796c3218",
+  "samples": 1006,
+  "unknown": 35,
+  "guestCpuSeconds": 5.089999999999999,
+  "executionSeconds": 5.464143757,
+  "selectedTop24LeafSamples": {
+    "binding": 80,
+    "entryAndWork": 91,
+    "dispatch": 206
+  },
+  "claim": "Current ordinaryhelper binding/entry/work and shared dispatch material; useful/inlined workincluded, no removableCPU/speedup/allocation/causalclaim.",
+  "source": "No duplicatecontext/local/operandarray. Guardedhelper hasif/not, no protectedregion/nativebody; native operations alreadycompleteinborrowedprefix. CurrentCSV/format helpers ordinary; capturedhelpernative.",
+  "next": "Complete ordinary call/body transport source design: name actual bound/work preparation removed across conditional/validation/format helpers before selecting code. Preserve existing measured native paths. No extra opcode or arena presentedas whole redesign; compare prior slower shared-prefix/arena lessons. If coherent removalrequires morethanremainingcostsupports, record concretebarrier and choose constructionstage.",
+  "acceptance": "Native/default/keyword/receiver/descriptor/protocol/cell/error/evaluationorder/realasync suspension, cancellation and terminal admission beforeeffects, retainedaliases and joined cleanup. Focusedactualtargets then bounded completeaffected/control sourcepair. Temporary debt explicit, no fixed%veto.",
+  "cleanup": "Terminalcached, usersjoined and temporarymaps archived/SHAverified before retirement; RAM removed. OnlycommittedB609raw/catalog/records exactduplicates retired under freshUID/path/inode/allaliases/canonicalGitSHA proof; b2cbprotected; no new VMmeasurementpending.",
+  "qualification": "Full correctedsource43166350709 pending independently; publicationheld."
+}

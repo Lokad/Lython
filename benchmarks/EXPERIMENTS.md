@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Ordinary call/body source gate](results/2026-11-12-ordinary-call-source-gate/README.md)
+retains exact983bab96 source facts and one6s guarded-search profile:1006guest
+leaves/5.09CPU-s,35unknown. Binding80/entry-work91/dispatch206 top24leaf samples
+include useful work, not removable shares. No duplicate frame/array exists;
+ordinary helpers still prepare binding/work and dispatch. Next design must remove
+a coherent call/body stage, preserving native gains and slower arena/prefix lessons.
+All identity/output/ownership/quiet/join/RAM/archive gates pass; no timing claim.
+
 [Current output/text CPython checkpoint](results/2026-11-12-output-cpython-checkpoint/README.md)
 completes12jobs325.440s, allgates/join/RAM/archive pass. Retained983bab96 warm
 UTF8report1.26–1.33x, UTF16report1.44–1.51x, capturedtext1.62–1.67x; ordinarytext

@@ -1,0 +1,20 @@
+{
+  "archive-receipt.json": "5b6a54005040bd82d4d865864666b5092ec552b2b00dbb8cf9c062e1202ca3bf",
+  "archive.py": "52197f9a03a07707b40160806f5fcc14c7fcec12e8590e30202eab86bec0d4d6",
+  "code-facts.json": "2ad9109ebcedecf1c43f7b3eed13eedb06858851759c3a6a3d41365106335d20",
+  "guest-cpu-leaves.json": "a7cf7c8615472379c0a5c938b96013dab638d922799713764d76bdbf6fb5e8f0",
+  "identity.json": "040eade931a3e80cc340651a0cac4c0452d29ced6ed65a159d2d6b2cb3c27f36",
+  "inspect.csproj": "be60e4d4b31b737aa7d2f41f0f0210ca2bc83d8b710bd9ff6a58ae23be4cff31",
+  "inventory.json": "61611b41df79b2a42b125220b322726144c416043854a5c2ab1194d5c0a64e0a",
+  "launch.log": "adeb77cc73da82c56d48f690aa08198404df627373cac9059d0381b87e98d9dd",
+  "observations.tgz": "07f9bb93bf1fb3be5ffaef64a8181287d933d7aaa602edda31de0d57c387eaf9",
+  "observe-not-before.json": "c10dd06484379a1e068cf90614862b3eca867f4ce41f9a3c1c6d486eee15984b",
+  "preparation.tar.xz": "4db78501e95e8977c15b13cbeb987c303e56afee52c1e56672d5364bea2ba752",
+  "prepare-profile.py": "bb5e13a604c021db603d548780a1dce633912418f008616069bbf279c70eb146",
+  "Program.cs": "0dcab2b77aa5ed3d00105566ec75ec33feefaa2ad258eae6dcf320f87eb1bb55",
+  "README.md": "8060338e027236f3c204b8d3666202c4aabe8856dab01bf711787d998ea8f2a8",
+  "source-decision.json": "0b4ff6ef452270ff5b6d3a6bc19dc778f0af9b1db5b409b564924f491645cc6d",
+  "source-gate.md": "6972d6bae828354784b8ce1009ecf4f290fb40c260c1bec8e28b32a104b83870",
+  "source-identity.json": "b5063b74e1d1c541ae72043037c2ec500d0acb654690e40484b1856ff9f214e7",
+  "terminal-status.json": "8322f687f955d549c9cd63cc1761998b57b851a99e58540cad6e833a7dc58728"
+}

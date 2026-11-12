@@ -1,0 +1,58 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 260837376,
+  "requiredFreeBytes": 265134080,
+  "reclaimableBytes": 4980736,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "output-cpython-b609-20261112/observations.tgz",
+      "bytes": 2018631,
+      "sha256": "9dee67bb547a0625f9cbf6ea5f927c055f50279c51e34a84ea5aaef54c4dda84",
+      "canonicalStorage": "benchmarks/results/2026-11-12-output-cpython-checkpoint/observations.tgz",
+      "reason": "Only exact terminalB609duplicates, committed10a9f09f canonicalGitSHA verified; selectedb2cbprotected. Original/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "paths": [
+        "output-cpython-b609-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844835,
+      "allocatedBytes": 2023424,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "output-cpython-b609-20261112/representative.json",
+      "bytes": 1200865,
+      "sha256": "51f7c6b9f933fee0757d8d31380e8455c4bd2827606d3c3ec2a79b2e3126ff72",
+      "canonicalStorage": "benchmarks/results/2026-11-12-output-cpython-checkpoint/observations.tgz",
+      "reason": "Only exact terminalB609duplicates, committed10a9f09f canonicalGitSHA verified; selectedb2cbprotected. Original/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "9dee67bb547a0625f9cbf6ea5f927c055f50279c51e34a84ea5aaef54c4dda84",
+      "paths": [
+        "output-cpython-b609-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844813,
+      "allocatedBytes": 1204224,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "output-cpython-b609-20261112/confirmation/confirmation.json",
+      "bytes": 1752822,
+      "sha256": "89e15edc4667ebb38d8417db0c0a81814e1dda1584fc068fd274d8dbbbf4a234",
+      "canonicalStorage": "benchmarks/results/2026-11-12-output-cpython-checkpoint/observations.tgz",
+      "reason": "Only exact terminalB609duplicates, committed10a9f09f canonicalGitSHA verified; selectedb2cbprotected. Original/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, unchangedfloors.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "9dee67bb547a0625f9cbf6ea5f927c055f50279c51e34a84ea5aaef54c4dda84",
+      "paths": [
+        "output-cpython-b609-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844846,
+      "allocatedBytes": 1753088,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
