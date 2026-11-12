@@ -89,3 +89,6 @@ private-reclamation check is preserved alongside stronger shared-capacity checks
 change or retiming. [Service metadata clarification](measurement-metadata-correction.json)
 preserves the inherited live-unit labels and authoritative actual launch/terminal
 identities. Full corrected-source delivery remains required.
+
+Corrected-source full delivery is now [GREEN](delivery/README.md) at beeb828e,
+with all568 measured production sources proven equal. No unchanged replay.

@@ -5,7 +5,7 @@ R271 source with explicit checkout newline normalization. Fixed fec79 worker,
 normalGC/tiering, optional adapter0.4; stock CPython3.13.16, Azure F4as_v7 /
 Ubuntu24.04.4 /.NET11RC3. Initial full43223095054 public suites pass but an inherited private-window
 fixture fails. Corrected fixture/headbeeb828e passes focused checks; full delivery
-is active43225489349. Production and measured bits remain unchanged;
+passes43225489349 ([qualified source](../2026-11-12-reader-windows/delivery/README.md)). Production and measured bits remain unchanged;
 these measurements do not qualify a release. Publication remains postponed.
 
 Warm execution: two processes/engine,5swarmup(12s captured text),7rotated250msrounds,
