@@ -1,7 +1,10 @@
-# Ordered helper prototype — not promoted
+# Ordered helper prototype — withdrawn
 
-2026-11-12. Uncommitted R268 versus fully qualified da9e5066/a552. Production is
-an active prototype, not a delivered improvement. The proposed coherent migration
+2026-11-12. R268 versus fully qualified da9e5066/a552. All production changes were
+withdrawn after the [positional refinement](positional-refinement/README.md)
+retained material CPU regressions under stable controls. Exact qualified source
+hashes were restored; the independent partial-formatting lifetime test is kept.
+The proposed coherent migration
 replaces the compiler native body tree/recursive proof/evaluation and shape/input
 transport with the existing instruction prefix, a concrete managed span borrow,
 live-state export and shared owned callback preparation. No second interpreter,
@@ -53,11 +56,12 @@ Warm clocks include invocation, mediated RAM I/O, validation/prior-result cleanu
 exclude startup/compile/reset/protocol/finalcache. WiderCPU includes reset/protocol.
 Desktop includes immediate disposal. No CPython ratio/RSS/tail/largefile claim.
 
-Do not promote this form. [Paired profiles](paired-profile/README.md) now identify entry, general binding
-and prefix dispatch costs. A bounded refinement shares existing positional fill
-without argument packaging; retention remains undecided. No permanent architecture ban or
-fixed-percentage veto; the performance objective remains active. Full new-source
-platform/stress/package qualification has not run. Publication stays postponed.
+Do not promote this form. [Paired profiles](paired-profile/README.md) identify
+entry, general binding and prefix dispatch costs. Sharing the existing positional
+fill did not resolve the regressions; the whole migration was withdrawn. This is
+no permanent architecture ban or fixed-percentage veto. Full new-source
+platform/stress/package qualification was unnecessary after withdrawal. The
+performance objective remains active; publication stays postponed.
 
 Terminal VM state is cached and raw SHA independently verified. Exact committed
 B616 archive/catalog/records and all aliases of superseded qualified b2 physical

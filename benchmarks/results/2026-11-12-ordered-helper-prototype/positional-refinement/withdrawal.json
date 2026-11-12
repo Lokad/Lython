@@ -1,0 +1,48 @@
+{
+  "restoredQualifiedProduction": "da9e5066ecdf03b990ddb53137fc5e43f7dcf73d",
+  "productionSourceFiles": 568,
+  "allSourceHashesRestored": true,
+  "keptIndependentPublicRegression": "HelperContinuationLifetimeTests.cs",
+  "fullQualificationRepeated": false,
+  "restoredFocusedChecks": {
+    "restored-net10.0.trx": {
+      "total": "2",
+      "executed": "2",
+      "passed": "2",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "restored-net11.0.trx": {
+      "total": "2",
+      "executed": "2",
+      "passed": "2",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  "restoredBuild": "nonincremental Release solution, actual SDK11RC3, zero warnings/errors",
+  "restoredCoreSHA256": "32eea38dac4a0734888730bc151deb6ccf20a856e60e04d7fc65a87086f5c1f0",
+  "identityNote": "Restored production source hashes exactly match the qualified baseline; fresh build has current Git informational metadata and is not substituted for the historical measured DLL. No repeated performance/full-platform qualification claim."
+}

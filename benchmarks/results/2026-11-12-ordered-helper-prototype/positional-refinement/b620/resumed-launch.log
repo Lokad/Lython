@@ -1,0 +1,7 @@
+{"correction": {"originalFailure": "Launch stopped before service/worker creation because hardlink/directory metadata exceeded predicted staging space by 12288 bytes. Existing mounted fixture remained empty.", "freshIdleLease": true, "knownPath": "/home/lokad/lython-bench-checks/ordered-helper-b617-20261112/source-identity.json", "uid": 1000, "inode": 845007, "allAliasesVerified": true, "canonicalArchive": "benchmarks/results/2026-11-12-ordered-helper-prototype/refined/b617/observations.tgz", "canonicalEntry": "source-identity.json", "canonicalArchiveSHA256": "8a8fb9e2d49238e74071bd8b2af34eb826fb5e485eef2835b330bf344b1fe107", "sha256": "9882c4fd3dc838fe3a3dcbfe75151db8627da787db3c6e1b83296e253b9e5755", "beforeFreeBytes": 264228864, "afterFreeBytes": 264310784, "osFloorMiB": 240, "evidenceHeadroomMiB": 12, "noWorkersReplayed": true}, "setup": {"freeBytes": 264306688, "sourceAndImagesVerified": true, "jobs": 4, "ownerSeconds": 180, "stopSeconds": 30, "marginSeconds": 30}}
+RuntimeMaxUSec=3min
+MainPID=3593332
+ActiveState=active
+
+
+Running as unit: lython-b620-ordered-helper-positional-20261112.service; invocation ID: 9fad24b60fa84c88857eef041eacef10

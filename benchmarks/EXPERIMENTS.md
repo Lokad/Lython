@@ -7,15 +7,14 @@ original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
 [Ordered helper prototype](results/2026-11-12-ordered-helper-prototype/README.md)
-removes the native tree/proof/evaluator with one existing prefix, managed span
-borrow and live export. 1,366focusedactual-target checks/sixwhole scripts pass.
-Shared callback preparation corrects first-form+40% allocation. B617sevenjobs
-249.221s retains material native/search/captured CPU regressions about14–29%,
-while CSV/report/callback controls are much less affected. All adverse observations
-and first stdout-golden correction survive. Paired native-path profiles now
-identify entry, binding and dispatch costs; a bounded shared positional-fill
-refinement precedes retention or withdrawal. Original assertion/archive failures
-remain recorded. No full delivery claim.
+is withdrawn. One prefix/span borrow/live export removed the duplicate native
+tree and passed 1,366 focused checks/six complete scripts. Shared callback
+preparation fixed +40% allocation, but B617 retained material CPU regressions.
+Paired profiles justified sharing positional fill; B620 still shows native CPU
++19–24% and guarded async +11–17% with stable controls. The entire migration was
+removed and all 568 qualified production hashes restored. The independent partial
+formatting I/O/cancellation/ownership test is retained. Original/adverse results
+and collector/staging failures survive. No permanent design ban or CPU gain claim.
 
 [R266 delivery](results/2026-11-12-conditional-helper-bodies/delivery/README.md)
 is terminal GREEN43183343974, exactda9e5066: Windows/Ubuntu, actual .NET11/10,

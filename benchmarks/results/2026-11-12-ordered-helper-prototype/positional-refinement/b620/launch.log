@@ -1,0 +1,6 @@
+
+Traceback (most recent call last):
+  File "/home/lokad/lython-bench-checks/ordered-helper-positional-b620-launch.py", line 59, in <module>
+    assert setup['freeBytes']>252*1024*1024
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

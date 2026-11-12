@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b9cc85c2-65b0-4eaf-8836-4572d10ced19" name="JoannesVermorel@LOKAD-0399 2026-11-12 11:45:36" runUser="AzureAD\JoannesVermorel" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-12T11:45:36.5739950+01:00" queuing="2026-11-12T11:45:36.5739962+01:00" start="2026-11-12T11:45:29.5374337+01:00" finish="2026-11-12T11:45:36.5807523+01:00" />
+  <TestSettings name="default" id="f6839044-9e51-456c-93d8-6c9a439b542b">
+    <Deployment runDeploymentRoot="JoannesVermorel_LOKAD-0399_2026-11-12_11_45_36" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="1c4234bb-58b9-4c51-ad5b-7f21282ae757" testId="1e3bb9c2-810c-008b-0c1a-1401870c9bf2" testName="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests.PartialFormattingKeepsValuesThroughProtocolIoAndCleanup(cancel: False)" computerName="LOKAD-0399" duration="00:00:00.4056571" startTime="2026-11-12T11:45:36.0025571+01:00" endTime="2026-11-12T11:45:36.4368939+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c4234bb-58b9-4c51-ad5b-7f21282ae757" />
+    <UnitTestResult executionId="18e7bb0e-d553-4516-8b0e-b6aad3273ff4" testId="7024b761-9d82-5270-5cf2-3c7f52c122c4" testName="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests.PartialFormattingKeepsValuesThroughProtocolIoAndCleanup(cancel: True)" computerName="LOKAD-0399" duration="00:00:00.6626350" startTime="2026-11-12T11:45:35.3447447+01:00" endTime="2026-11-12T11:45:35.9905710+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="18e7bb0e-d553-4516-8b0e-b6aad3273ff4" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests.PartialFormattingKeepsValuesThroughProtocolIoAndCleanup(cancel: False)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="1e3bb9c2-810c-008b-0c1a-1401870c9bf2">
+      <Execution id="1c4234bb-58b9-4c51-ad5b-7f21282ae757" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests" name="PartialFormattingKeepsValuesThroughProtocolIoAndCleanup" />
+    </UnitTest>
+    <UnitTest name="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests.PartialFormattingKeepsValuesThroughProtocolIoAndCleanup(cancel: True)" storage="d:\code\lython\tests\lokad.lython.publicapi.tests\bin\release\net11.0\lokad.lython.publicapi.tests.dll" id="7024b761-9d82-5270-5cf2-3c7f52c122c4">
+      <Execution id="18e7bb0e-d553-4516-8b0e-b6aad3273ff4" />
+      <TestMethod codeBase="D:\code\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Lokad.Lython.PublicApi.Tests.HelperContinuationLifetimeTests" name="PartialFormattingKeepsValuesThroughProtocolIoAndCleanup" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1e3bb9c2-810c-008b-0c1a-1401870c9bf2" executionId="1c4234bb-58b9-4c51-ad5b-7f21282ae757" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7024b761-9d82-5270-5cf2-3c7f52c122c4" executionId="18e7bb0e-d553-4516-8b0e-b6aad3273ff4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 11.0.0-rc.3.26522.148)&#xD;
+[xUnit.net 00:00:00.58]   Discovering: Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:04.25]   Discovered:  Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:04.32]   Starting:    Lokad.Lython.PublicApi.Tests&#xD;
+[xUnit.net 00:00:05.49]   Finished:    Lokad.Lython.PublicApi.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,122 @@
+{
+  "candidate-net10.dll": {
+    "bytes": 5668352,
+    "sha256": "aca0e26181ff71ef8c273cb2aaad84dcf890af5885163286351149b0a4c9f11e"
+  },
+  "development.tar.xz": {
+    "bytes": 1108988,
+    "sha256": "31a84736c2fbc238115078e9950ea9dca42311909309f8079d484771400f0794"
+  },
+  "diagnostic-identity.json": {
+    "bytes": 79661,
+    "sha256": "9cfd96012fde67ac627ddb1001854974da6df993dbd3d5cef13a9501b657aa38"
+  },
+  "focused-checks.json": {
+    "bytes": 1633,
+    "sha256": "8ab2d48633e131e60a10b6081286b91e7e2f8c089b685f02452e1db84d00ac29"
+  },
+  "implementation.patch": {
+    "bytes": 129841,
+    "sha256": "07be985023230416befb9f51bc752304b80a1e5f8770da2016f5bf63c3b3d100"
+  },
+  "README.md": {
+    "bytes": 3759,
+    "sha256": "ee32bd6f4ead7a4fae2d5b5dfa4cf5a0a5bb16e7ece1e64b5ca6b5fc1c24da88"
+  },
+  "restored-build.log": {
+    "bytes": 6348,
+    "sha256": "b237648989ba21d74d1cb4fc69f62b3c550a419b5fe59b65c7f8ae8e905a7447"
+  },
+  "sources-candidate.tar.xz": {
+    "bytes": 917920,
+    "sha256": "e28855a450aef5cecf168f809da7d657776749db3373790129c4c4d3232a3a50"
+  },
+  "withdrawal.json": {
+    "bytes": 1621,
+    "sha256": "becdebf1c4a22959f0e0830565ceceea9aea8b819dcaffc061c578fd2b912c52"
+  },
+  "b620/archive-receipt.json": {
+    "bytes": 366,
+    "sha256": "c2ec0c8e4cb65cd5955fbd04a4640bbd56efd13edf44e5b49f3319a40d2cb307"
+  },
+  "b620/config.json": {
+    "bytes": 34178,
+    "sha256": "c9f7b1e32f1707a5a0eb217c16ec3ff3aee40eeec5b22c0d44066f75232430ec"
+  },
+  "b620/inventory.json": {
+    "bytes": 38693,
+    "sha256": "7de58319430b5215ef72a8a8d70c5a235cc87e39ba2d0625270a662243bfe295"
+  },
+  "b620/launch-floor-failure.json": {
+    "bytes": 447,
+    "sha256": "eeebb2d20bca0894f8694bf15beb77b512c03309f6a996ebebb17ae68a3124bb"
+  },
+  "b620/launch.log": {
+    "bytes": 243,
+    "sha256": "2e1e7f20cbe4dd8b7af852403302dd57e7f43f584921ce5fd70020096beeed72"
+  },
+  "b620/observations.tgz": {
+    "bytes": 1971791,
+    "sha256": "e1f3e9a8e3f87840e5819715340c9ffba7f307c5fb64afc31a80c38c78b06207"
+  },
+  "b620/resume-staging.py": {
+    "bytes": 7055,
+    "sha256": "b8fff7a3152553c42ca6e9389dae3596b1a176d85d430af09bea4fd119ed7640"
+  },
+  "b620/resumed-launch.log": {
+    "bytes": 1170,
+    "sha256": "49af545d76ed3205927c589225614f3fdcbaf9e1e3fb528a891c36a9f5fccddf"
+  },
+  "b620/summary.json": {
+    "bytes": 5845,
+    "sha256": "e3554b33642c303551f37b8e65aa4e816d9e8aabf4f9a0ecc793cf7d4d2e0da4"
+  },
+  "b620/terminal-status.json": {
+    "bytes": 566,
+    "sha256": "975542493e162a0ca0ee35b5bcf9afd389de5cf017ef3d299c57e83c960f1813"
+  },
+  "compile/measurements.json": {
+    "bytes": 25750,
+    "sha256": "88310074620ba27a902bf7762aa5364474652596b1c912478fcfafa98486858d"
+  },
+  "compile/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "compile/summary.json": {
+    "bytes": 10774,
+    "sha256": "18de33ef996b41f174da2c703de2d3f2af3122e7b5bcf5a30edcc6e6066b0a68"
+  },
+  "restored-tests/restored-net10.0.trx": {
+    "bytes": 4619,
+    "sha256": "e9a24a4b508a127cc59e60601629d165031fba6a71d7309e348a59e297b6c322"
+  },
+  "restored-tests/restored-net11.0.trx": {
+    "bytes": 4634,
+    "sha256": "8bf874b0b69f54eb56b26d6b4344e95766d234fdb35caad25b997696663a8f0f"
+  },
+  "warm-async/measurements.json": {
+    "bytes": 26774,
+    "sha256": "241ae44346ac6329fab4f5e7cbb206cc341e7aa017043bfd5f1c465de924b6fb"
+  },
+  "warm-async/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "warm-async/summary.json": {
+    "bytes": 11308,
+    "sha256": "150a5a5d51e9c67c4ea38c93028bc579a75bc0c2ce8ee541c33d9541a2d992dd"
+  },
+  "warm-sync/measurements.json": {
+    "bytes": 26754,
+    "sha256": "e45185b67cef11d7a9f2b0106d6883cc9335c5930f42b2cd793a21774c56effe"
+  },
+  "warm-sync/stderr.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "warm-sync/summary.json": {
+    "bytes": 11275,
+    "sha256": "11161962ba73cb2e70d5b1472fc3b978e65570ac2b03b013adf94a4b3ab83436"
+  }
+}

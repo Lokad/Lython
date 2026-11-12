@@ -118,6 +118,11 @@ admission reentry during a real compiled helper and refusal during cleanup.
 Both APIs preserve the first failure and keep retained data and cached storage
 funded until their owner ends; the failed refund cannot return storage twice.
 
+[Partial helper formatting](Lokad.Lython.PublicApi.Tests/HelperContinuationLifetimeTests.cs)
+keeps already-rendered fields alive through genuinely pending `__format__` host
+I/O. Success preserves once-only side effects and retained results; cancellation
+joins cleanup before the shared allowance returns to baseline.
+
 [Mirrored function lifetimes](Lokad.Lython.PublicApi.Tests/MirroredFunctionLifetimeTests.cs)
 exercise positional, variadic and keyword binding, local classes, escaping closures
 and compiled initializers. Pending reads retain their inputs through cancellation;

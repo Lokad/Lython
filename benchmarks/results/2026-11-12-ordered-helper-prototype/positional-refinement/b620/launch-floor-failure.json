@@ -1,0 +1,5 @@
+{
+  "code": 0,
+  "stdout": "{\"free\": 264228864, \"stagedSetup\": null, \"knownRootFiles\": {\"source-identity.json\": 78043, \"live-unit.txt\": 72, \"setup.json\": 144, \"cpython-worker.py\": 20599, \"collect.py\": 10245, \"started.utc\": 21, \"identity.json\": 4423, \"stopped.utc\": 21, \"run.sh\": 409, \"exit-code.txt\": 2, \"space-recovery.json\": 4484, \"archive-owned.py\": 1505, \"archive-receipt.json\": 366}}\n",
+  "stderr": ""
+}

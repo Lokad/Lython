@@ -127,12 +127,11 @@ compile-to-result controls are tighter. The unchanged config warm control is
 1.26–1.27× CPython; this does not qualify config compilation at the newer source.
 Earlier CPython 3.13.2 correctness smoke and all its unqualified clocks survive.
 
-Captured text retains a substantial warm gap at1.74×CPython; keyword-default
-search is1.52–1.60×. Ordinary text is0.99–1.06×, CSV1.08–1.09×, JSON-lines0.85–0.89×,
-report1.26–1.31×. Ordinary/JSON/search/report retain variable cases. Search complete
-compile-to-result is1.51–1.55×. Current source-pair text gains do not translate into
-the same external ratio change: both engines have new observations. No isolated
-cause follows from comparison with an earlier checkpoint.
+The source-labelled tables above are authoritative. Captured text, helper search
+and reports retain material warm gaps; CSV is close to CPython and JSON-lines is
+faster in these observations. Variable controls remain visible. Source-pair gains
+cannot be multiplied into external ratios, and comparisons across collections do
+not isolate the cause of a change.
 
 Additional reportAsync source-pair widerCPU0..+6.25% versus8f8628a4 remains accepted
 uncertainty; its elapsed overlaps zero. Earlier8f8628a4 report debt has a different
