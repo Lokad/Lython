@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current retained-source CPU captures](results/2026-11-12-current-runtime-costs/README.md)
+complete two bounded windows: captured text 1,162 leaves/5.85 guest CPU seconds,
+helper search 895/4.53. Histogram/preparation dominate text labels; shared dispatch,
+proof and real binding are material in search. These are overlapping labels, not
+removable-cost estimates or timing gains. The next source gate assesses linear
+native proof over existing postorder nodes, retaining dynamic semantics and effects.
+All gates/joins/persistent SHA/RAM cleanup pass; no unchanged repeat capture selected.
+
 [Immutable regex dev73](results/2026-11-12-regex-development-73/README.md) passes
 86 internal/532 public focused checks per actual target with the unchanged Validate
 development bridge. Exact loaded-package and 29-file normal-state isolation proofs

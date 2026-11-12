@@ -1,0 +1,74 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 259821568,
+  "requiredFreeBytes": 265371648,
+  "reclaimableBytes": 6631424,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "native-inputs-cpython-b598-20261112/observations.tgz",
+      "bytes": 2047297,
+      "sha256": "ef452dca34faed0fde0f0f94746b8b35543a6613b582e21abf1b87af26513674",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-inputs-cpython-checkpoint/observations.tgz",
+      "reason": "Terminal duplicate evidence; exact canonical committed Git bytes verified. Fresh path/UID/inode/all-alias proof; both selected core roles protected.",
+      "paths": [
+        "native-inputs-cpython-b598-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844575,
+      "allocatedBytes": 2052096,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-inputs-cpython-b598-20261112/representative.json",
+      "bytes": 957807,
+      "sha256": "f071caeb62bcc157696c7c94426fe5c16723cde12990c826403cb580ea05893e",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-inputs-cpython-checkpoint/observations.tgz",
+      "reason": "Terminal duplicate evidence; exact canonical committed Git bytes verified. Fresh path/UID/inode/all-alias proof; both selected core roles protected.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "ef452dca34faed0fde0f0f94746b8b35543a6613b582e21abf1b87af26513674",
+      "paths": [
+        "native-inputs-cpython-b598-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844539,
+      "allocatedBytes": 958464,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "inline-cpython-b440-20261108/observations.tgz",
+      "bytes": 2080210,
+      "sha256": "cc05281919228295a92ffafa5fdccdafdf45b70da241cd6a017eef2b6daa9604",
+      "canonicalStorage": "benchmarks/results/2026-11-08-inline-checkpoint/observations.tgz",
+      "reason": "Terminal duplicate evidence; exact canonical committed Git bytes verified. Fresh path/UID/inode/all-alias proof; both selected core roles protected.",
+      "paths": [
+        "inline-cpython-b440-20261108/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 793900,
+      "allocatedBytes": 2080768,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "all-aliases",
+      "knownPath": "inline-cpython-b440-20261108/representative.json",
+      "bytes": 1537475,
+      "sha256": "8bdc9d05da9a4a5c12a7ad681afd5c5d91dcd65b96fbee0087365dc4db36b8e6",
+      "canonicalStorage": "benchmarks/results/2026-11-08-inline-checkpoint/observations.tgz",
+      "reason": "Terminal duplicate evidence; exact canonical committed Git bytes verified. Fresh path/UID/inode/all-alias proof; both selected core roles protected.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "cc05281919228295a92ffafa5fdccdafdf45b70da241cd6a017eef2b6daa9604",
+      "paths": [
+        "inline-cpython-b440-20261108/representative.json",
+        "inline-cpython-b438-20261108/representative.json"
+      ],
+      "device": 66305,
+      "inode": 793865,
+      "allocatedBytes": 1540096,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}
