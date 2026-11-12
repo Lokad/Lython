@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "guestFixturesRemoved": true,
+  "quietBeforeAndAfter": true,
+  "archivedAndVerifiedUnderLease": true,
+  "capturedSeconds": 10.403759608,
+  "profileFiles": 37,
+  "archiveSHA256": "82e79d7249c98352305b65143bfb75337959639548b2f6df6a6c20676cd624c7",
+  "freeBytesAfterArchive": 262356992,
+  "performanceQualified": false
+}

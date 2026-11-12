@@ -1,0 +1,14 @@
+{
+  "archive-receipt.json": "3707dae0999c19181ddbe1014c7e1d0e2453f373e9fbf84bf0c17857b7ec2bf7",
+  "assessment.json": "eb27a9c5b467d1bfa0fd894b0d24040a7fa231f30cea758d2c025d413e45669b",
+  "config.json": "827c03ec7241de8b191eaf2e76244f16ed5878a09edc8c28f0f068a142640f6c",
+  "identity.json": "94ae0046de4dc196d5a60f9f2b3888cb5a3e89c3b7552d4a4ca5f9f261b7cc15",
+  "inventory.json": "8eafee7b553d0c284c95b649236c4f52c6eda46a9beeb1b86fc1f794da98140b",
+  "launch.log": "1f0f774afc912e65aaa67363e65af3eeba2c650e4afd7c97f2501b3267dbcb08",
+  "observations.tgz": "82e79d7249c98352305b65143bfb75337959639548b2f6df6a6c20676cd624c7",
+  "observe-not-before.json": "9fee75d46a6682c3ed793ab560e4ce8a5103d3f5f5fc985823070a5bf53544b1",
+  "preparation.tar.xz": "9abdbc21c0f8e91bea2b68b73fcc2a18453f6d8f9cb557a873d8424d8d011a86",
+  "README.md": "b127cefb2d88716374fb6f0f139e990290a4b4e6d078f17caa703bf29bf083eb",
+  "source-identity.json": "a7ece185e5b461b5e9308be78f6d61831b3dd5347348c8bee65e5083b1357453",
+  "terminal-status.json": "9cf24b424639f0cd2163d2e12e57e8e5b474b2a62b347dd15cd4541e0cbb4cb2"
+}

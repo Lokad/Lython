@@ -1,0 +1,58 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261017600,
+  "requiredFreeBytes": 265334784,
+  "reclaimableBytes": 5005312,
+  "proofs": [
+    {
+      "kind": "exact",
+      "knownPath": "receiver-cpython-b603-20261112/observations.tgz",
+      "bytes": 2002638,
+      "sha256": "8438898f2dea596fd8494fed6024f18e540f45e0c614310f41b1e8b99df44c32",
+      "canonicalStorage": "benchmarks/results/2026-11-12-receiver-cpython-checkpoint/observations.tgz",
+      "reason": "Exact committed terminal raw duplicate; fresh idle/UID/path/inode/allaliases proof. Current0106 and priorc982 protected, floors unchanged.",
+      "paths": [
+        "receiver-cpython-b603-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844696,
+      "allocatedBytes": 2007040,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "receiver-cpython-b603-20261112/representative.json",
+      "bytes": 917844,
+      "sha256": "2c6821631aa2c7d822ce3bfd1e93c3d61da763d6a51f939ff8f33b8e3fe957a9",
+      "canonicalStorage": "benchmarks/results/2026-11-12-receiver-cpython-checkpoint/observations.tgz",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "8438898f2dea596fd8494fed6024f18e540f45e0c614310f41b1e8b99df44c32",
+      "reason": "Exact committed unused terminal catalog duplicate; fresh path/UID/inode proof.",
+      "paths": [
+        "receiver-cpython-b603-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844686,
+      "allocatedBytes": 921600,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "independent-proof-b474-20261108/observations.tgz",
+      "bytes": 2073878,
+      "sha256": "8bccaabac064910fb12c6009dfef7e5928b68ac21bb96bbbe976e845e522e909",
+      "canonicalStorage": "benchmarks/results/2026-11-08-independent-native-proof/observations.tar.xz",
+      "canonicalEntry": "b474/observations.tgz",
+      "canonicalArchiveSHA256": "636b245bc0a7acbc0d4a2a7398246b62c5322610ce03ff26f4221229ee6cf1a2",
+      "reason": "Exact committed unused terminal raw duplicate; source/core/evidence preserved, fresh path/UID/inode/allaliases proof.",
+      "paths": [
+        "independent-proof-b474-20261108/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 802824,
+      "allocatedBytes": 2076672,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

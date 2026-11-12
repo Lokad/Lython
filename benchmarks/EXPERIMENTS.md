@@ -6,6 +6,21 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Completed helper-lifecycle captures](results/2026-11-12-helper-lifecycle-costs/README.md)
+record986guarded leaves/4.99guestCPU seconds and898native leaves/4.55seconds.
+Binding/workstate/pending transitions are real ordinary work; allocations already
+nearly equal. Labels overlap useful/inlined work, not removable shares. All37raw
+payloads/goldens/allowance/quiet/join/archive/RAM gates pass; terminalcached. Select
+consolidating completed ordinary call preparation/publication into the existing
+runner, preserving native binding and actual suspension; no new dispatcher/arena.
+No unchanged capture replay or speed forecast.
+
+The retained receiver runtime82ed92d4 is fully qualified by terminalGREEN
+[43139754244](results/2026-11-12-receiver-operations/delivery/README.md):Windows/
+Ubuntu, actual11/10, original stress and installed Release package consumers.
+Terminal cached; no unchanged requalification or publication. The next source
+investigation profiles guarded/native helper lifecycles with equal allocation.
+
 [Primitive counting increment](results/2026-11-12-counting-increment-withdrawn/README.md)
 is withdrawn.574focused checks and three complete scripts bothAPIs pass, allocation
 flat, diagnostic elapsed mixed with adversity preserved. Replacing a checked
