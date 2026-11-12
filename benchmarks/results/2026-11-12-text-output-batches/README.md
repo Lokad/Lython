@@ -1,6 +1,10 @@
 # Final-byte text storage and bounded output batches
 
-2026-11-12. **Refined design retained; full delivery qualification pending.**
+2026-11-12. **Refined design retained and fully qualified.** Exact corrected-test
+head796c3218 passes Windows/Ubuntu actual.NET11/10, original stress and installed
+Release consumers in terminal **GREEN43166350709**, cached. Production matches
+measured983bab96/b2cbfdb6. [Delivery and original failures](delivery/README.md).
+The qualification status below describes each original collection.
 Reference f4f44caf/09ad is fully qualified, unchanged by receipt32f26ba9. Frozen
 production sources and precommit core metadata identify each form. Core stays
 managed/safe; normal optional adapter0.4 and common fec79 worker unchanged.

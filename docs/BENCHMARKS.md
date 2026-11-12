@@ -23,8 +23,10 @@ fixture staging/reset, protocol and final cache teardown are excluded.
 
 **Measured sources:** `983bab96` for UTF8/UTF16 reports and both text shapes,
 collected2026-11-12, frozen core `b2cbfdb6`, exact568production source hashes.
-Full corrected-source qualification is pending; the fixture-only followup leaves
-production unchanged. `82ed92d4` remains the two helper-search rows; `2ec9d67f`
+[Full qualification](../benchmarks/results/2026-11-12-text-output-batches/delivery/README.md)
+passes for fixture-only followup796c3218 with production unchanged: Windows/Ubuntu,
+actual.NET11/10, original stress and installed Release consumers.
+`82ed92d4` remains the two helper-search rows; `2ec9d67f`
 remains CSV validation/JSON-lines. Both older runtimes passed full Windows/Ubuntu
 actual.NET11/10, original stress and installed Release consumers. All run against
 stock CPython3.13.16 on the same quiet VM. Sources are labelled per row.

@@ -34,7 +34,11 @@ The completed-operation refinement passes8616focused actual-target checks;
 B608sixjobs169.344s allgates pass. Async report CPU falls4–6%UTF8/2–6%UTF16;
 elapsed mostly uncertain, smallCSVelapsed+0.03..1.52% debt accepted. Retain final
 encoded/bounded storage, preserving all prior adversity and separate-base debts.
-Full exact-source delivery and representative external checkpoint follow.
+Full exact796c3218 delivery is terminal GREEN43166350709/cached: Windows/Ubuntu
+actual11/10, original stress and installed Release consumers. Production matches
+983bab96/b2cb; first fullrun's obsolete flush-copy fixture failures and correction
+are preserved in the delivery supplement. Representative B609 checkpoint above
+keeps its original at-collection status; no timing uncertainty is erased.
 
 The retained cell-write runtime `f4f44caf` is fully qualified by terminal GREEN
 [43155450349](results/2026-11-12-cell-write-authority/delivery/README.md):
