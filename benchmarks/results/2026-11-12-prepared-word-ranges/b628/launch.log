@@ -1,0 +1,7 @@
+{"freeBytes": 392609792, "sourceAndImagesVerified": true, "jobs": 3, "ownerSeconds": 240, "stopSeconds": 30, "marginSeconds": 30}
+RuntimeMaxUSec=4min
+MainPID=3602994
+ActiveState=active
+
+
+Running as unit: lython-b628-prepared-word-ranges-20261112.service; invocation ID: fbea6346a11d492696c64d6582494e03

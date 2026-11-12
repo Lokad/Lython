@@ -1,0 +1,9 @@
+{
+  "baselineHead": "cb8f59c3f98a474e462fc7a9862248f35fae5ce5",
+  "qualifiedR273Head": "cb8f59c3",
+  "all568NormalizedSourcesMatch": true,
+  "working568SourcesMatchFrozenCandidate": true,
+  "desktopBeforeCoreSHA256": "e5e7083502170f7a447d98fc23fe6e1f8fbb1eda3362824ffb5756dc8a033158",
+  "vmReferenceCoreSHA256": "e5e7083502170f7a447d98fc23fe6e1f8fbb1eda3362824ffb5756dc8a033158",
+  "differentGeneratedMetadataNotRelabelled": true
+}

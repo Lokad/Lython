@@ -132,6 +132,89 @@ public sealed class DictionaryCountingLoopAdmissionTests
         Assert.Equal(0, budget.ReservedBytes);
     }
 
+    [Theory]
+    [InlineData(false, false)] [InlineData(true, false)]
+    [InlineData(false, true)] [InlineData(true, true)]
+    public async Task ExhaustedWordLoanPublishesBindingsBeforeRefundReentry(bool asynchronous, bool refuse)
+    {
+        const string source = """
+            counts=initial_counts;word=None;total=0
+            arm()
+            for word in 'ALPHA ALPHA ECHO'.lower().split():counts[word]=counts.get(word,0)+1;total+=1
+            mark()
+            """;
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var counts = new PyDict(context.MemoryGovernor, span);
+            foreach (var key in new[] { "alpha", "echo" }) counts.SetItem(PyString.FromString(key), BigInteger.Zero);
+            context.Variables["initial_counts"] = counts;
+            var arm = new ArmRefund(hook, refuse);
+            var mark = new Mark();
+            context.Variables["arm"] = arm;
+            context.Variables["mark"] = mark;
+            var frontend = LythonFrontend.Compile(source);
+            var code = ExecutableScript.Compile(LoweredScript.Lower(frontend.Script!));
+            Assert.Contains(code.EntryPoint.Instructions, i => i.OpCode == ExecutableOpCode.ForNextDictionaryAccumulation);
+            try
+            {
+                async Task Execute()
+                {
+                    if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
+                    else LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+                }
+                if (refuse)
+                {
+                    var failure = await Assert.ThrowsAsync<LythonRuntimeException>(Execute);
+                    Assert.Same(arm.First, failure);
+                }
+                else await Execute();
+                Assert.True(arm.Observed);
+                Assert.Equal(refuse ? 0 : 1, mark.Calls);
+                Assert.True(counts.TryGetValue(PyString.FromString("alpha"), out var count));
+                Assert.Equal(new BigInteger(2), count);
+                Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+                Assert.Null(context.CurrentExecutableFrame);
+            }
+            finally { hook.AfterGrowth = null; hook.AfterShrink = null; context.State.CloseResources(); }
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    private sealed class ArmRefund(AdmissionHookMemoryBudget hook, bool refuse) : LythonRuntime.ICallable
+    {
+        internal bool Observed;
+        internal LythonRuntimeException? First;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            hook.AfterGrowth = bytes =>
+            {
+                var words = 128 + 2 * PyString.EstimateApproximateBytes(5) + PyString.EstimateApproximateBytes(4);
+                if (bytes != words) return;
+                hook.AfterGrowth = null;
+                // A nested loan has returned a larger idle buffer while the
+                // native source is still active. Its return must now refund.
+                var spare = context.MemoryGovernor.RentWordRanges(4, span);
+                context.MemoryGovernor.ReturnWordRanges(spare, 4);
+                hook.AfterShrink = refunded =>
+                {
+                    if (refunded != MemoryGovernor.WorkspaceBytes(3)) return;
+                    hook.AfterShrink = null;
+                    Assert.True(context.CurrentExecutableFrame!.TryReadExecutableLocal("word", out var word));
+                    Assert.Equal("echo", Assert.IsType<PyString>(word).AsString());
+                    Assert.True(context.CurrentExecutableFrame.TryReadExecutableLocal("total", out var total));
+                    Assert.Equal(new BigInteger(3), total);
+                    Observed = true;
+                    if (refuse) First = context.MemoryGovernor.RefuseAdmission("refund callback refusal", 777, span);
+                };
+            };
+            return PyNone.Instance;
+        }
+    }
+
     private sealed class Arm(LythonMemoryBudget budget, AdmissionHookMemoryBudget hook, bool waitForEcho = false) : LythonRuntime.ICallable, IDisposable
     {
         private ILythonMemoryReservation? _blocker;

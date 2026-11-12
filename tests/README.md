@@ -171,6 +171,10 @@ checks Unicode words across direct/default/keyword helper calls, escaping aliase
 comprehensions, generators, dynamic targets and actual suspended host I/O. Native
 ownership cases require admission before body effects and preserve terminal refusal,
 cancellation, cleanup and shared-budget reuse.
+Prepared-range ownership checks keep overlapping active cursors funded through
+cache shutdown and return a loan after eager refusal without publishing a cursor.
+Counting-loop refund callbacks observe completed word/total bindings and preserve
+the first refusal before subsequent guest effects.
 
 [Scalar comparisons](Lokad.Lython.Tests/ScalarComparisonCancellationTests.cs) check
 current tokens, bound-method reuse, nested native comparisons, terminal admission

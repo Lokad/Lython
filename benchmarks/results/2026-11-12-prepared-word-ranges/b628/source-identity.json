@@ -1,0 +1,8 @@
+{
+  "before": "cb8f59c3; R273 frozen production source equality checked separately",
+  "candidate": "candidate-identity.json and candidate-sources.tar.xz retained locally",
+  "snapshotSHA256": "67d2ea78f6881b4cd2f7c50ccd7d86f05fffba542848c817985bf8a264ba30d4",
+  "sourceCount": 568,
+  "checks": 730,
+  "qualification": "prototype; correctness separate from CPU measurement"
+}

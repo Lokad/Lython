@@ -50,42 +50,61 @@ internal static partial class PyStringOps
     {
         context.CheckExecution(span);
         var mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
-        var state = new WhitespaceRangeState(-1, mapping);
-        long bytes = 128; // cursor metadata, including its retained source/state
-        while (TryReadWhitespaceRange(value.Utf8Span, ref state, context, span, out var range))
-            bytes = checked(bytes + PyString.EstimateApproximateBytes(range.Capacity));
-        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
-        context.CheckExecution(span);
-        var result = new CasedWhitespaceIteration(value, upper, context, span);
-        storage.Commit(bytes);
-        return result;
+        Span<(int Start, int End, int Capacity)> ranges = stackalloc (int, int, int)[8];
+        var count = 0;
+        long outputBytes = 0, scratchBytes = 0;
+        MemoryGovernor.TemporaryMemoryReservation? scratch = null;
+        (int Start, int End, int Capacity)[]? prepared = null;
+        try
+        {
+            try
+            {
+                CollectWhitespaceForward(value.Utf8Span, -1, ref ranges, ref count, ref outputBytes,
+                    ref scratchBytes, ref scratch, context.MemoryGovernor, span, context, mapping);
+                prepared = context.MemoryGovernor.RentWordRanges(count, span);
+                ranges[..count].CopyTo(prepared);
+            }
+            finally { scratch?.Dispose(); }
+            var bytes = checked(128 + outputBytes); // cursor and all eventual words
+            using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+            context.CheckExecution(span);
+            var result = new CasedWhitespaceIteration(value, upper, context, span, prepared, count);
+            storage.Commit(bytes);
+            prepared = null;
+            return result;
+        }
+        finally { if (prepared is not null) context.MemoryGovernor.ReturnWordRanges(prepared, count); }
     }
 
-    internal sealed class CasedWhitespaceIteration
+    internal sealed class CasedWhitespaceIteration : ExecutableTemporaryValue
     {
         private readonly PyString _source;
         private readonly CaseMapping _mapping;
         private readonly LythonRuntime.ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private WhitespaceRangeState _state;
+        private (int Start, int End, int Capacity)[]? _ranges;
+        private readonly int _count;
+        private int _position;
 
         internal CasedWhitespaceIteration(PyString source, bool upper,
-            LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+            LythonRuntime.ExecutionContext context, LythonSourceSpan span,
+            (int Start, int End, int Capacity)[] ranges, int count)
         {
             _source = source;
             _mapping = upper ? CaseMapping.Upper : CaseMapping.Lower;
             _context = context;
             _span = span;
-            _state = new WhitespaceRangeState(-1, _mapping);
+            _ranges = ranges;
+            _count = count;
         }
 
         internal PyIterationResult MoveNext()
         {
             // ForNext already checks the active execution before entering this
-            // private cursor. The shared scanner/writer check inside long work;
+            // private cursor. The shared writer checks inside long work;
             // publication retains the ordinary binding/next-opcode check.
-            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
-                return PyIterationResult.End;
+            if (_position == _count) return PyIterationResult.End;
+            var range = _ranges![_position++];
             var word = CreateSplitFragment(_source.Utf8Span, range, _mapping,
                 _context.MemoryGovernor, _span, _context);
             return PyIterationResult.Yield(word);
@@ -98,8 +117,8 @@ internal static partial class PyStringOps
         internal bool TryReadWord(out CompactWord word)
         {
             word = default;
-            if (!TryReadWhitespaceRange(_source.Utf8Span, ref _state, _context, _span, out var range))
-                return false;
+            if (_position == _count) return false;
+            var range = _ranges![_position++];
             if (range.Capacity > PyString.InlineUtf8Capacity)
                 word.Value = CreateSplitFragment(_source.Utf8Span, range, _mapping,
                     _context.MemoryGovernor, _span, _context);
@@ -123,6 +142,13 @@ internal static partial class PyStringOps
             value.CompleteUnpublishedUtf8(word.Length);
             word.Value = value;
             return value;
+        }
+
+        public override void Dispose()
+        {
+            if (_ranges is not { } ranges) return;
+            _ranges = null;
+            _context.MemoryGovernor.ReturnWordRanges(ranges, _count);
         }
     }
 

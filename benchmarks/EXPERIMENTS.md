@@ -6660,3 +6660,19 @@ R273 full delivery is GREEN on exact cb8f59c3: Windows/Ubuntu, actual .NET 11/10
 original stress and installed Release consumers. All 568 frozen production files
 match with explicit newline normalization. [Archived delivery](results/2026-11-12-native-operation-facts/delivery/README.md).
 CPU uncertainty remains; this does not qualify the later range prototype.
+
+## R274 — prepared cased-word ranges
+
+[Source pair and bounded comparison](results/2026-11-12-prepared-word-ranges/README.md)
+replaces private consumption's second whitespace scan with prepared ranges, using
+the existing scanner and operand-stack retirement. One private cache implementation
+serves function and range buffers; active loans remain funded through shutdown.
+Eager word admission and publication before refund reentry remain explicit.
+730 actual-target focused checks and six complete scripts/both APIs/compile/fresh
+pass. Allocation flat; desktop elapsed mixed. B628 three jobs finish152.867s:
+captured Run elapsed−5.44..−0.97%, Async−4.94..−3.26%, but report/control and CPU
+movement limit attribution. Retain complete-stage removal, no substantial CPU or
+CPython-ratio claim. Full qualification follows at this source boundary. Original
+failed build/test assertions, desktop adversity, stale raw-purpose prose and disk
+assessment survive. Only rebuildable NuGet HTTP downloads were cleared; no evidence
+or images retired. The broader performance goal remains open.

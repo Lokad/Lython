@@ -307,7 +307,7 @@ internal sealed partial class ExecutionState
                 finally
                 {
                     try { CloseSubprocessCompletions(); }
-                    finally { MemoryGovernor.EndFunctionWorkspaceReuse(); }
+                    finally { MemoryGovernor.EndWorkspaceReuse(); }
                 }
             }
         }

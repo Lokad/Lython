@@ -66,7 +66,7 @@ public sealed class FunctionWorkspaceOwnershipTests
             Assert.Same(first, second);
             Assert.Equal(charge, budget.ReservedBytes);
             governor.ReturnFunctionWorkspace(second, second.Length);
-            governor.EndFunctionWorkspaceReuse();
+            governor.EndWorkspaceReuse();
             Assert.Equal(0, budget.ReservedBytes);
         }
         Assert.Equal(0, budget.ReservedBytes);
@@ -87,9 +87,9 @@ public sealed class FunctionWorkspaceOwnershipTests
         Assert.NotSame(a, b);
         Assert.Equal(2 * charge, budget.ReservedBytes);
         second.ReturnFunctionWorkspace(b, b.Length);
-        first.EndFunctionWorkspaceReuse();
+        first.EndWorkspaceReuse();
         Assert.Equal(charge, budget.ReservedBytes);
-        second.EndFunctionWorkspaceReuse();
+        second.EndWorkspaceReuse();
         Assert.Equal(0, budget.ReservedBytes);
     }
 
@@ -105,13 +105,13 @@ public sealed class FunctionWorkspaceOwnershipTests
         var idle = governor.RentFunctionWorkspace(12, Span);
         Assert.NotSame(active, idle);
         governor.ReturnFunctionWorkspace(idle, idle.Length);
-        governor.EndFunctionWorkspaceReuse();
+        governor.EndWorkspaceReuse();
         Assert.Equal(charge, budget.ReservedBytes);
         Assert.NotNull(active[0]);
         governor.ReturnFunctionWorkspace(active, active.Length);
         Assert.All(active, value => Assert.Null(value));
         Assert.Equal(0, budget.ReservedBytes);
-        governor.EndFunctionWorkspaceReuse();
+        governor.EndWorkspaceReuse();
         Assert.Equal(0, budget.ReservedBytes);
     }
 
@@ -124,9 +124,9 @@ public sealed class FunctionWorkspaceOwnershipTests
         var first = governor.RentFunctionWorkspace(12, Span);
         governor.ReturnFunctionWorkspace(first, first.Length);
         var second = governor.RentFunctionWorkspace(8, Span);
-        var activeCharge = MemoryGovernor.FunctionWorkspaceBytes(second.Length);
+        var activeCharge = MemoryGovernor.WorkspaceBytes(second.Length);
         Assert.Equal(activeCharge, budget.ReservedBytes);
-        governor.EndFunctionWorkspaceReuse();
+        governor.EndWorkspaceReuse();
         Assert.Equal(activeCharge, budget.ReservedBytes);
         governor.ReturnFunctionWorkspace(second, second.Length);
         Assert.Equal(0, budget.ReservedBytes);
@@ -158,9 +158,9 @@ public sealed class FunctionWorkspaceOwnershipTests
         Assert.True(bound.Values.Length >= function.CodeObject.ValueStorageCapacity);
         Assert.Same(retained, bound.Values[0]);
         Assert.All(bound.Values.Skip(1), value => Assert.Null(value));
-        var charge = MemoryGovernor.FunctionWorkspaceBytes(bound.Values.Length);
+        var charge = MemoryGovernor.WorkspaceBytes(bound.Values.Length);
         Assert.Equal(baseline + charge, budget.ReservedBytes);
-        governor.EndFunctionWorkspaceReuse();
+        governor.EndWorkspaceReuse();
         Assert.Equal(baseline + charge, budget.ReservedBytes);
         LythonRuntime.ReturnBoundArguments(bound);
         Assert.All(bound.Values, value => Assert.Null(value));
@@ -187,7 +187,7 @@ public sealed class FunctionWorkspaceOwnershipTests
         Assert.Equal(1, first.Attribution?.Requested);
         Assert.Equal(Span, first.Span);
         Assert.Equal(256, budget.ReservedBytes);
-        governor.EndFunctionWorkspaceReuse();
+        governor.EndWorkspaceReuse();
         Assert.Equal(0, budget.ReservedBytes);
     }
 }

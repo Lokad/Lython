@@ -494,6 +494,10 @@ callback and error handler sees the completed binding; native unwind publishes i
 from already-funded storage without new admission. Larger words and dynamic
 protocols keep ordinary materialization. Eager preflight still funds all eventual
 words, including capacity not physically materialized during the native segment.
+Private cased-word iteration prepares whitespace ranges once and consumes those
+facts. Its range buffer stays funded through the cursor's actual users and returns
+through operand-stack cleanup, including early exits and cancellation. Completed
+bindings are published before a refund can reenter the host.
 
 Private dictionary entries can retain exact counting results as managed integers
 without boxing each update. A Python value read materializes and caches an ordinary
@@ -594,6 +598,10 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
+The same cache policy separately retains one private word-range buffer per
+execution. Active range loans survive idle-cache shutdown; all backing capacity
+remains charged, including oversized reuse. This additional capacity can reject
+a tighter shared allowance earlier.
 Each call opcode prepares the evaluated function and receiver at the instruction.
 Native borrowed/inline binding and the ordinary deferred prefix remain shared by
 both APIs. Completed bodies publish directly after bound argument, workspace and

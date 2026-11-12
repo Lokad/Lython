@@ -10,58 +10,83 @@ internal sealed class MemoryGovernor
     // through an uncharged window; estimates intentionally need only be safe.
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
-    private object[]? _functionWorkspace;
-    private bool _functionWorkspaceReuseEnded;
+    private WorkspaceCache<object> _functionWorkspace;
+    private WorkspaceCache<(int Start, int End, int Capacity)> _wordRanges;
     private bool _resizingOwnership;
 
-    internal static long FunctionWorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
+    internal static long WorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
 
     internal object[] RentFunctionWorkspace(int capacity, LythonSourceSpan span)
-    {
-        ThrowIfAdmissionFailed();
-        if (capacity == 0) return [];
-        var cached = _functionWorkspace;
-        _functionWorkspace = null;
-        if (cached is not null)
-        {
-            if (cached.Length >= capacity) return cached;
-            // End idle ownership before a different allocation. This is normal
-            // eviction, never recovery/retry after an admission refusal.
-            Release(FunctionWorkspaceBytes(cached.Length));
-        }
-        var bytes = FunctionWorkspaceBytes(capacity);
-        Reserve(bytes, span);
-        try
-        {
-            var values = new object[capacity];
-            Commit(bytes);
-            return values;
-        }
-        catch { ReleaseReserved(bytes); throw; }
-    }
+        => _functionWorkspace.Rent(this, capacity, span);
 
     internal void ReturnFunctionWorkspace(object[] values, int usedLength)
+        => _functionWorkspace.Return(this, values, usedLength);
+
+    internal (int Start, int End, int Capacity)[] RentWordRanges(int capacity, LythonSourceSpan span)
+        => _wordRanges.Rent(this, capacity, span);
+
+    internal void ReturnWordRanges((int Start, int End, int Capacity)[] values, int usedLength)
+        => _wordRanges.Return(this, values, usedLength);
+
+    internal void EndWorkspaceReuse()
     {
-        // Every prior loan cleared its logical extent. Unused capacity remains
-        // empty without repeatedly scanning a larger retained backing array.
-        Array.Clear(values, 0, usedLength);
-        var cached = _functionWorkspace;
-        if (!_functionWorkspaceReuseEnded && values.Length != 0 &&
-            (cached is null || cached.Length < values.Length))
-        {
-            // Publish the surviving owner before a host refund can reenter.
-            _functionWorkspace = values;
-            if (cached is not null) Release(FunctionWorkspaceBytes(cached.Length));
-        }
-        else Release(FunctionWorkspaceBytes(values.Length));
+        try { _functionWorkspace.End(this); }
+        finally { _wordRanges.End(this); }
     }
 
-    internal void EndFunctionWorkspaceReuse()
+    // Two explicit execution-owned buffers share one cache policy. Active loans
+    // remain charged even after idle reuse ends; no global pool owns storage.
+    private struct WorkspaceCache<T>
     {
-        _functionWorkspaceReuseEnded = true;
-        if (_functionWorkspace is not { } cached) return;
-        _functionWorkspace = null;
-        Release(FunctionWorkspaceBytes(cached.Length));
+        private T[]? _idle;
+        private bool _ended;
+
+        internal T[] Rent(MemoryGovernor governor, int capacity, LythonSourceSpan span)
+        {
+            governor.ThrowIfAdmissionFailed();
+            if (capacity == 0) return [];
+            var cached = _idle;
+            _idle = null;
+            if (cached is not null)
+            {
+                if (cached.Length >= capacity) return cached;
+                // Normal idle eviction, never a retry after refused admission.
+                governor.Release(WorkspaceBytes(cached.Length));
+            }
+            var bytes = WorkspaceBytes(capacity);
+            governor.Reserve(bytes, span);
+            try
+            {
+                var values = new T[capacity];
+                governor.Commit(bytes);
+                return values;
+            }
+            catch { governor.ReleaseReserved(bytes); throw; }
+        }
+
+        internal void Return(MemoryGovernor governor, T[] values, int usedLength)
+        {
+            // Every prior loan cleared its logical extent. Unused capacity is
+            // already empty; do not scan a larger retained backing array.
+            Array.Clear(values, 0, usedLength);
+            var cached = _idle;
+            if (!_ended && values.Length != 0 &&
+                (cached is null || cached.Length < values.Length))
+            {
+                // Publish the surviving owner before a host refund can reenter.
+                _idle = values;
+                if (cached is not null) governor.Release(WorkspaceBytes(cached.Length));
+            }
+            else governor.Release(WorkspaceBytes(values.Length));
+        }
+
+        internal void End(MemoryGovernor governor)
+        {
+            _ended = true;
+            if (_idle is not { } cached) return;
+            _idle = null;
+            governor.Release(WorkspaceBytes(cached.Length));
+        }
     }
 
     public MemoryGovernor(ILythonMemoryBudget? budget)

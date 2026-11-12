@@ -72,7 +72,7 @@ public sealed class CompletedInvocationLifetimeTests
         root.Variables["observe"] = observer;
         var result = asynchronous ? LythonRuntime.ExecuteExecutableCodeObjectAsync(code, root).GetAwaiter().GetResult()
             : LythonRuntime.ExecuteExecutableCodeObject(code, root, default, null);
-        root.MemoryGovernor.EndFunctionWorkspaceReuse();
+        root.MemoryGovernor.EndWorkspaceReuse();
         return (Assert.IsAssignableFrom<PyFunctionBase>(result), root, observer);
     }
 

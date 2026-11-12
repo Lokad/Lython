@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
             if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var word, out var hasWord)) return false;
             if (!hasWord)
             {
-                _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                execution.Stack.RetireTo(head.InputStart);
                 execution.InstructionIndex = head.TargetIndex;
                 return true;
             }
@@ -46,6 +46,7 @@ internal sealed partial class LythonRuntime
             PyStringOps.CompactWord pendingWord = default;
             var totalChanged = false;
             long pendingTotal = 0;
+            var exhausted = false;
             try
             {
                 while (true)
@@ -128,7 +129,7 @@ internal sealed partial class LythonRuntime
                     if (!TryReadDictionaryWord(ref execution, cursor, head.InputStart, out var nextWord, out hasWord))
                         throw new InvalidOperationException("A native loop lost its private iteration source.");
                     if (hasWord) { word = nextWord; continue; }
-                    _ = execution.Stack.TakeValue(head.InputStart, head.InputStart);
+                    exhausted = true;
                     execution.InstructionIndex = head.TargetIndex;
                     return true;
                 }
@@ -142,7 +143,13 @@ internal sealed partial class LythonRuntime
                 {
                     if (wordChanged) execution.Locals[store.ThirdInput] = cursor!.Materialize(ref pendingWord);
                 }
-                finally { if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal); }
+                finally
+                {
+                    if (totalChanged) execution.Locals[total.InputStart] = new BigInteger(pendingTotal);
+                    // Returning the prepared ranges can refund storage and
+                    // reenter. Publish both Python bindings before that point.
+                    if (exhausted) execution.Stack.RetireTo(head.InputStart);
+                }
             }
         }
 

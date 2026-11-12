@@ -7,6 +7,62 @@ namespace Lokad.Lython.Tests;
 
 public sealed class CasedSplitOwnershipTests
 {
+    [Fact]
+    public void PreparedRangesKeepOverlappingLoansFundedThroughReuseShutdown()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = owner });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var input = PyString.FromString("A ß C D E F G H I J K", context.MemoryGovernor, span);
+            using var first = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
+            var beforeSecond = budget.ReservedBytes;
+            using var second = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
+            Assert.True(budget.ReservedBytes > beforeSecond);
+            Assert.Equal("A", Assert.IsType<PyString>(first.MoveNext().Value).AsString());
+            Assert.Equal("A", Assert.IsType<PyString>(second.MoveNext().Value).AsString());
+            first.Dispose();
+            var idleAndActive = budget.ReservedBytes;
+            context.State.CloseResources();
+            Assert.True(budget.ReservedBytes < idleAndActive);
+            var active = budget.ReservedBytes;
+            Assert.Equal("SS", Assert.IsType<PyString>(second.MoveNext().Value).AsString());
+            second.Dispose();
+            Assert.True(budget.ReservedBytes < active);
+            var ended = budget.ReservedBytes;
+            first.Dispose();
+            second.Dispose();
+            context.State.CloseResources();
+            Assert.Equal(ended, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Fact]
+    public void EagerWordRefusalReturnsPreparedStorageWithoutPublishingCursor()
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new() { MemoryBudget = hook });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var input = PyString.FromString("A " + new string('B', 20000), context.MemoryGovernor, span);
+            var baseline = budget.ReservedBytes;
+            hook.RefuseGrowth = bytes => bytes >= 20000;
+            var first = Assert.Throws<LythonRuntimeException>(() =>
+                PyStringOps.PrepareCasedWhitespaceIteration(input, false, context, span));
+            Assert.Same(first, context.MemoryGovernor.AdmissionFailure);
+            Assert.Equal(LythonFailureReason.SharedMemoryAllowance, first.Attribution?.Reason);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.True(budget.ReservedBytes > baseline); // returned range cache is still owned
+            context.State.CloseResources();
+            Assert.Equal(baseline, budget.ReservedBytes);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
     [Theory]
     [InlineData(false, 0), InlineData(true, 0)]
     [InlineData(false, 1), InlineData(true, 1)]

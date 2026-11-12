@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
                                 if (nativeNext.HasValue) PublishInstructionResult(ref execution, invocation, instruction, nativeNext.Value);
                                 else
                                 {
-                                    _ = execution.Stack.TakeValue(instruction.InputStart, instruction.InputStart);
+                                    execution.Stack.RetireTo(instruction.InputStart);
                                     execution.InstructionIndex = instruction.TargetIndex;
                                     jumped = true;
                                 }
