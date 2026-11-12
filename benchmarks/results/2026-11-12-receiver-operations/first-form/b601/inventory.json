@@ -1,0 +1,74 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261017600,
+  "requiredFreeBytes": 271011840,
+  "reclaimableBytes": 10616832,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "native-proof-b600-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5672448,
+      "sha256": "660a0450a6b80c8c860cc127b68260dfcd775ae1eb6181b5b821e6fe4c10a611",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-proof/first-form/observations-partial.tgz",
+      "reason": "Withdrawn R254 first prototype or terminal duplicates. Exact committed canonical source/core/adverse/failure evidence verified; fresh idle/path/UID/inode/all-alias proof required. Current c982reference and new R256 candidate protected.",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "31e7ef1029101a72751b06cfc57e1b68a854251a5657cdc1e2a9652387cfce74",
+      "paths": [
+        "native-proof-b600-20261112/current-core.dll",
+        "native-proof-b600-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844605,
+      "allocatedBytes": 5677056,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-proof-b600-20261112/observations-partial.tgz",
+      "bytes": 2012133,
+      "sha256": "31e7ef1029101a72751b06cfc57e1b68a854251a5657cdc1e2a9652387cfce74",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-proof/first-form/observations-partial.tgz",
+      "reason": "Withdrawn R254 first prototype or terminal duplicates. Exact committed canonical source/core/adverse/failure evidence verified; fresh idle/path/UID/inode/all-alias proof required. Current c982reference and new R256 candidate protected.",
+      "paths": [
+        "native-proof-b600-20261112/observations-partial.tgz"
+      ],
+      "device": 66305,
+      "inode": 844637,
+      "allocatedBytes": 2015232,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "native-proof-b600-20261112/representative.json",
+      "bytes": 860512,
+      "sha256": "3802094a8b1f698d420a1361bd98bddf2405824dd744d8a8baba8f0b7825f8ec",
+      "canonicalStorage": "benchmarks/results/2026-11-12-native-proof/first-form/observations-partial.tgz",
+      "reason": "Withdrawn R254 first prototype or terminal duplicates. Exact committed canonical source/core/adverse/failure evidence verified; fresh idle/path/UID/inode/all-alias proof required. Current c982reference and new R256 candidate protected.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "31e7ef1029101a72751b06cfc57e1b68a854251a5657cdc1e2a9652387cfce74",
+      "paths": [
+        "native-proof-b600-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844608,
+      "allocatedBytes": 864256,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "combined-cpython-b446-20261108/observations.tgz",
+      "bytes": 2058339,
+      "sha256": "c9859ad19ee02952e9649718da1a67d5695a24fb5400e3af216b306ed8a1ecfc",
+      "canonicalStorage": "benchmarks/results/2026-11-08-runtime-checkpoint/observations.tgz",
+      "reason": "Unused terminal duplicate archive; exact committed Git bytes verified locally. Fresh path/UID/inode/all-hardlink proof required. Current selected reference/new candidate protected; OS/evidence headroom unchanged.",
+      "paths": [
+        "combined-cpython-b446-20261108/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 794196,
+      "allocatedBytes": 2060288,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

@@ -1,0 +1,7 @@
+{
+  "source": "def affixes(text,prefix,suffix):\n    if not text:return False,False\n    return text.startswith(prefix),text.endswith(suffix)\ndef parts(text,separator=None,count=-1):\n    if not text:return []\n    return text.split(separator,count)\ndef change(text,old,new,count=-1):\n    if not text:return text\n    return text.replace(old,new,count)\nprint(affixes('é😀end','é','end'))\nprint(affixes('ab',('x','a'),('z','b')))\nprint(parts('A😀B😀C','😀',1))\nprint(parts('α β γ',None,2**40))\nprint(change('İΣΣİ','Σ','!',True))\nprint(change('ab','a','x',2**40))\nclass Count:\n    def __index__(self):\n        print('index')\n        return 1\nprint(parts('a,b,c',',',Count()))\nprint(change('aaa','a','x',Count()))\nfor operation,arguments in [(parts,('a b',None,None)),(parts,('ab','',1)),\n                            (change,('ab','a','x',None)),(affixes,('ab',1,'b')),\n                            (change,('ab',None,'x',Count())),\n                            (parts,('a b',None,2**80)),(change,('ab','a','x',2**80))]:\n    try:operation(*arguments)\n    except (TypeError,ValueError,OverflowError) as error:print(type(error).__name__)\n",
+  "stdout": "(True, True)\n(True, True)\n['A', 'B😀C']\n['α', 'β', 'γ']\nİ!Σİ\nxb\nindex\n['a', 'b,c']\nindex\nxaa\nTypeError\nValueError\nTypeError\nTypeError\nTypeError\nOverflowError\nOverflowError\n",
+  "stderr": "",
+  "exitCode": 0,
+  "expectedAgrees": true
+}
