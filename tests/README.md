@@ -17,6 +17,12 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Guarded string operations](Lokad.Lython.PublicApi.Tests/NativeReceiverOperationTests.cs)
+check Python goldens, argument validation order, terminal replacement refusal and
+actual split/replace index-protocol I/O. In-flight cancellation joins cleanup before
+reusing the shared allowance. Native cell tests also rebind caller arguments during
+admission while guarded helpers retain their already-bound inputs.
+
 [Framed functions](Lokad.Lython.PublicApi.Tests/FramedFunctionExecutionTests.cs)
 preserve handler aliases, builtin shadowing, exception context, class cells,
 annotations and retained results through both APIs against Python goldens.

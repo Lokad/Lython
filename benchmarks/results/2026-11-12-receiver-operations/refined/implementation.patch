@@ -1,0 +1,299 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+index 2a524b0b..163d13e2 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+@@ -250,14 +250,8 @@ internal sealed partial class ExecutableCodeObject
+                             }
+                             else
+                             {
+-                                var selected = member switch
+-                                {
+-                                    "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
+-                                    "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
+-                                    "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
+-                                    "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
+-                                    _ => (NativeReturnOperation?)null
+-                                };
++                                var selected = LythonRuntime.SelectNativeStringOperation(
++                                    LythonRuntime.StringMembers.GetMethod(member), site.ArgumentCount);
+                                 if (selected is null) return null;
+                                 operation = selected.Value;
+                             }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+index fa7ff116..99e0529e 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Calls.Invoke.cs
+@@ -81,6 +81,31 @@ internal sealed partial class LythonRuntime
+                 catch { execution.Stack.RetireTo(start); throw; }
+             }
+ 
++            // Closed text arguments need execution services, not an invocation
++            // namespace. Snapshot evaluated inputs before admission can reenter;
++            // dynamic coercions/keywords still promote through the existing path.
++            if (call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is >= 1 and <= 3
++                && execution.Stack[start] is PyString text
++                && SelectNativeStringOperation(target, call.ArgumentCount) is { } operation)
++            {
++                var inputs = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
++                var first = inputs[0];
++                var second = inputs.Length > 1 ? inputs[1] : null;
++                var third = inputs.Length > 2 ? inputs[2] : null;
++                if (TryGetNativeStringCallShape(operation, NativeReturnShape.String,
++                    ReturnShape(first), ReturnShape(second), ReturnShape(third), out _))
++                {
++                    try
++                    {
++                        var result = InvokeNativeStringOperation(operation, text, first, second, third,
++                            call.CallSpan, invocation ?? scope);
++                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
++                        return true;
++                    }
++                    catch { execution.Stack.RetireTo(start); throw; }
++                }
++            }
++
+             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
+             var dictionary = call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is 1 or 2 &&
+                 ReferenceEquals(target, ReceiverMethods.DictionaryGet)
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+index f79e0cbb..b4c79017 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Inputs.cs
+@@ -80,7 +80,8 @@ internal sealed partial class LythonRuntime
+                     ExecutableOpCode.Binary or ExecutableOpCode.Augmented =>
+                         first is BigInteger or double or bool && second is BigInteger or double or bool ||
+                         first is PyString && second is PyString,
+-                    ExecutableOpCode.Unary => first is BigInteger or double or bool,
++                    ExecutableOpCode.Unary => first is BigInteger or double or bool
++                        || instruction.UnaryOperator == ExecutableUnaryOperator.Not && CanUseNativeTruth(first),
+                     ExecutableOpCode.Subscript => second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
+                         first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!),
+                     _ => throw new InvalidOperationException("Unexpected direct input instruction."),
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+index 7eea83b7..78835808 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.Interpreter.Dispatch.cs
+@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
+                             break;
+                         case ExecutableOpCode.JumpIfFalse:
+                             var condition = ReadOperand(ref execution, instruction.InputStart, scope, 0);
+-                            if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
++                            if (invocation is null && !CanUseNativeTruth(condition))
+                                 return InstructionPause.ContextRequired;
+                             if (!asynchronous || condition is not PyInstance)
+                                 jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
+index acd090df..cbc1f6d0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeCalls.cs
+@@ -1,10 +1,60 @@
+ using System.Numerics;
++using Lokad.Lython.Frontend;
+ using Lokad.Lython.Runtime.Text;
+ 
+ namespace Lokad.Lython.Runtime;
+ 
+ internal sealed partial class LythonRuntime
+ {
++    // Conditional branches and unary not need the same closed truth contract.
++    // Other values may run Python protocols and require their invocation frame.
++    private static bool CanUseNativeTruth(object value)
++        => value is PyNone or bool or BigInteger or double or PyString or PyBytes
++            or PyList or PyTuple or PyDict or PySet or PyRange;
++
++    // Compiler preparation and ordinary receiver entry select the same closed
++    // operations. Other arities/keywords/protocol values keep ordinary binding.
++    internal static NativeReturnOperation? SelectNativeStringOperation(object? target, int argumentCount)
++        => ReferenceEquals(target, ReceiverMethods.StringSplit) && argumentCount is 1 or 2 ? NativeReturnOperation.Split
++            : ReferenceEquals(target, ReceiverMethods.StringReplace) && argumentCount is 2 or 3 ? NativeReturnOperation.Replace
++            : ReferenceEquals(target, ReceiverMethods.StringStartsWith) && argumentCount == 1 ? NativeReturnOperation.StartsWith
++            : ReferenceEquals(target, ReceiverMethods.StringEndsWith) && argumentCount == 1 ? NativeReturnOperation.EndsWith
++            : null;
++
++    private static bool TryGetNativeStringCallShape(NativeReturnOperation operation, NativeReturnShape receiver,
++        NativeReturnShape first, NativeReturnShape second, NativeReturnShape third, out NativeReturnShape result)
++    {
++        result = NativeReturnShape.Other;
++        if (receiver != NativeReturnShape.String) return false;
++        switch (operation)
++        {
++            case NativeReturnOperation.Split:
++                result = NativeReturnShape.Sized;
++                return first is NativeReturnShape.None or NativeReturnShape.String
++                    && second is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
++            case NativeReturnOperation.Replace:
++                result = NativeReturnShape.String;
++                return first == NativeReturnShape.String && second == NativeReturnShape.String
++                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
++            case NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith:
++                result = NativeReturnShape.Boolean;
++                return first == NativeReturnShape.String;
++            default:
++                throw new InvalidOperationException("Unknown prepared string operation.");
++        }
++    }
++
++    private static object InvokeNativeStringOperation(NativeReturnOperation operation, PyString receiver,
++        object? first, object? second, object? third, LythonSourceSpan span, ExecutionContext context)
++        => operation switch
++        {
++            NativeReturnOperation.Split => InvokeStringSplit(receiver, first, second, span, context),
++            NativeReturnOperation.Replace => InvokeStringReplace(receiver, first!, second!, third, span, context),
++            NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith =>
++                InvokeStringAffix(receiver, first!, span, context, operation == NativeReturnOperation.StartsWith),
++            _ => throw new InvalidOperationException("Unknown prepared string operation."),
++        };
++
+     // Select the existing operation without doing native work. A caller supplies
+     // either an actual operand, or the proved shape of a not-yet-evaluated one.
+     // Other means no closed return proof; ordinary calls can still use an
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+index ceed66b4..6f93e217 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.Executable.NativeReturn.cs
+@@ -234,22 +234,7 @@ internal sealed partial class LythonRuntime
+             && !GuardNativeReturn(thirdIndex, code, values, arguments, context, out third)) return false;
+         if (site.NativeArgumentSource(2) is not int.MaxValue and var fourthIndex
+             && !GuardNativeReturn(fourthIndex, code, values, arguments, context, out fourth)) return false;
+-        if (first != NativeReturnShape.String) return false;
+-        switch (value.Operation)
+-        {
+-            case NativeReturnOperation.Split:
+-                shape = NativeReturnShape.Sized;
+-                return second is NativeReturnShape.None or NativeReturnShape.String
+-                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+-            case NativeReturnOperation.Replace:
+-                shape = NativeReturnShape.String;
+-                return second == NativeReturnShape.String && third == NativeReturnShape.String
+-                    && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
+-            case NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith:
+-                shape = NativeReturnShape.Boolean;
+-                return second == NativeReturnShape.String;
+-            default: throw new InvalidOperationException("Unknown prepared native proof.");
+-        }
++        return TryGetNativeStringCallShape(value.Operation, first, second, third, fourth, out shape);
+     }
+ 
+     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
+@@ -372,14 +357,7 @@ internal sealed partial class LythonRuntime
+             var receiver = (PyString)first!;
+             if (value.Method is { } method)
+                 return InvokeReceiverMethod(method, receiver, site.CallSpan, context);
+-            return value.Operation switch
+-            {
+-                NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
+-                NativeReturnOperation.Replace => InvokeStringReplace(receiver, second!, third!, fourth, site.CallSpan, context),
+-                NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith =>
+-                    InvokeStringAffix(receiver, second!, site.CallSpan, context, value.Operation == NativeReturnOperation.StartsWith),
+-                _ => throw new InvalidOperationException("Unknown prepared native value."),
+-            };
++            return InvokeNativeStringOperation(value.Operation, receiver, second, third, fourth, site.CallSpan, context);
+         }
+         catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
+     }
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.ReceiverMethods.cs b/src/Lokad.Lython/Runtime/LythonRuntime.ReceiverMethods.cs
+index cd4b9979..c0ab69d8 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.ReceiverMethods.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.ReceiverMethods.cs
+@@ -143,6 +143,8 @@ internal sealed partial class LythonRuntime
+         internal static readonly ReceiverMethod StringReplace = new(
+             LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2),
+             static (receiver, arguments, span, context) => StringMembers.Replace((PyString)receiver,
++                arguments.Span[0]!, arguments.Span[1]!, arguments.Length == 3 ? arguments.Span[2] : null, span, context),
++            static (receiver, arguments, span, context) => StringMembers.ReplaceAsync((PyString)receiver,
+                 arguments.Span[0]!, arguments.Span[1]!, arguments.Length == 3 ? arguments.Span[2] : null, span, context));
+ 
+         internal static readonly ReceiverMethod StringStartsWith = Affix("str.startswith", true);
+diff --git a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
+index 15da90da..3cb2f3c0 100644
+--- a/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
++++ b/src/Lokad.Lython/Runtime/LythonRuntime.StringMembers.Basic.cs
+@@ -54,23 +54,42 @@ internal sealed partial class LythonRuntime
+         internal static PyString Replace(PyString receiver, object oldArgument, object newArgument, object? countArgument,
+             LythonSourceSpan span, ExecutionContext context)
+         {
+-            if (!PyStringOps.TryAsString(oldArgument, out var oldValue))
++            RequireReplacementStrings(oldArgument, newArgument, span, out var oldValue, out var newValue);
++            // Null is internal omission; an explicitly supplied Python None
++            // still reaches the existing count validation, after both strings.
++            var count = countArgument is null ? -1 : NormalizeSequenceCount(CoerceIoIntegerAsync(countArgument, span, context, false).GetAwaiter().GetResult());
++            return receiver.Replace(oldValue, newValue, count, context, span);
++        }
++
++        internal static ValueTask<object> ReplaceAsync(PyString receiver, object oldArgument, object newArgument,
++            object? countArgument, LythonSourceSpan span, ExecutionContext context)
++            => countArgument is PyInstance
++                ? ReplaceWithGuestCountAsync(receiver, oldArgument, newArgument, countArgument, span, context)
++                : new(Replace(receiver, oldArgument, newArgument, countArgument, span, context));
++
++        private static async ValueTask<object> ReplaceWithGuestCountAsync(PyString receiver, object oldArgument,
++            object newArgument, object countArgument, LythonSourceSpan span, ExecutionContext context)
++        {
++            RequireReplacementStrings(oldArgument, newArgument, span, out var oldValue, out var newValue);
++            var count = NormalizeSequenceCount(await CoerceIoIntegerAsync(countArgument, span, context, true).ConfigureAwait(false));
++            return receiver.Replace(oldValue, newValue, count, context, span);
++        }
++
++        private static void RequireReplacementStrings(object oldArgument, object newArgument, LythonSourceSpan span,
++            out PyString oldValue, out PyString newValue)
++        {
++            if (!PyStringOps.TryAsString(oldArgument, out oldValue))
+             {
+                 // CPython numbers the bad argument, spelling a None value bare.
+                 var oldType = oldArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(oldArgument);
+                 throw new LythonRuntimeException("TypeError", $"replace() argument 1 must be str, not {oldType}", span);
+             }
+ 
+-            if (!PyStringOps.TryAsString(newArgument, out var newValue))
++            if (!PyStringOps.TryAsString(newArgument, out newValue))
+             {
+                 var newType = newArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(newArgument);
+                 throw new LythonRuntimeException("TypeError", $"replace() argument 2 must be str, not {newType}", span);
+             }
+-
+-            // Null is internal omission; an explicitly supplied Python None
+-            // still reaches the existing count validation, after both strings.
+-            var count = countArgument is null ? -1 : NormalizeSequenceCount(CoerceIoIntegerAsync(countArgument, span, context, false).GetAwaiter().GetResult());
+-            return receiver.Replace(oldValue, newValue, count, context, span);
+         }
+ 
+         private static readonly ReceiverMethod EncodeMethod = new(
+diff --git a/tests/Lokad.Lython.Tests/NativeClosureSequenceTests.cs b/tests/Lokad.Lython.Tests/NativeClosureSequenceTests.cs
+index 9002b271..4c4d6cc8 100644
+--- a/tests/Lokad.Lython.Tests/NativeClosureSequenceTests.cs
++++ b/tests/Lokad.Lython.Tests/NativeClosureSequenceTests.cs
+@@ -9,9 +9,11 @@ namespace Lokad.Lython.Tests;
+ public sealed class NativeClosureSequenceTests
+ {
+     [Theory]
+-    [InlineData(false, false)] [InlineData(true, false)]
+-    [InlineData(false, true)] [InlineData(true, true)]
+-    public async Task AdmissionRebindingCallerLocalsKeepsAlreadyBoundParameters(bool asynchronous, bool keywords)
++    [InlineData(false, false, false)] [InlineData(true, false, false)]
++    [InlineData(false, true, false)] [InlineData(true, true, false)]
++    [InlineData(false, false, true)] [InlineData(true, false, true)]
++    [InlineData(false, true, true)] [InlineData(true, true, true)]
++    public async Task AdmissionRebindingCallerLocalsKeepsAlreadyBoundParameters(bool asynchronous, bool keywords, bool guarded)
+     {
+         var source = """
+             def make():
+@@ -30,6 +32,9 @@ public sealed class NativeClosureSequenceTests
+             assert read()==1
+             return result
+             """.Replace("CALL", keywords ? "append(suffix=suffix,value=payload)" : "append(payload,suffix)");
++        if (guarded)
++            source = source.Replace("return value.lower()+suffix",
++                "if not value: return value\n        return value.replace('A',suffix)");
+         var budget = new LythonMemoryBudget(1024 * 1024);
+         using (var owner = budget.CreateScope())
+         {
+@@ -46,7 +51,8 @@ public sealed class NativeClosureSequenceTests
+                     ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
+                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
+                 Assert.True(armed.Rebound);
+-                Assert.Equal(new string('a', 4096) + "-old", Assert.IsType<PyString>(result).AsString());
++                Assert.Equal(guarded ? string.Concat(Enumerable.Repeat("-old", 4096)) : new string('a', 4096) + "-old",
++                    Assert.IsType<PyString>(result).AsString());
+                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
+                 Assert.Equal(0, context.State.CurrentRecursionDepth);
+                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

@@ -234,22 +234,7 @@ internal sealed partial class LythonRuntime
             && !GuardNativeReturn(thirdIndex, code, values, arguments, context, out third)) return false;
         if (site.NativeArgumentSource(2) is not int.MaxValue and var fourthIndex
             && !GuardNativeReturn(fourthIndex, code, values, arguments, context, out fourth)) return false;
-        if (first != NativeReturnShape.String) return false;
-        switch (value.Operation)
-        {
-            case NativeReturnOperation.Split:
-                shape = NativeReturnShape.Sized;
-                return second is NativeReturnShape.None or NativeReturnShape.String
-                    && third is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
-            case NativeReturnOperation.Replace:
-                shape = NativeReturnShape.String;
-                return second == NativeReturnShape.String && third == NativeReturnShape.String
-                    && fourth is NativeReturnShape.None or NativeReturnShape.Integer or NativeReturnShape.Boolean;
-            case NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith:
-                shape = NativeReturnShape.Boolean;
-                return second == NativeReturnShape.String;
-            default: throw new InvalidOperationException("Unknown prepared native proof.");
-        }
+        return TryGetNativeStringCallShape(value.Operation, first, second, third, fourth, out shape);
     }
 
     private static bool GuardNativeFormattedValue(int index, ExecutableCodeObject code,
@@ -372,14 +357,7 @@ internal sealed partial class LythonRuntime
             var receiver = (PyString)first!;
             if (value.Method is { } method)
                 return InvokeReceiverMethod(method, receiver, site.CallSpan, context);
-            return value.Operation switch
-            {
-                NativeReturnOperation.Split => InvokeStringSplit(receiver, second, third, site.CallSpan, context),
-                NativeReturnOperation.Replace => InvokeStringReplace(receiver, second!, third!, fourth, site.CallSpan, context),
-                NativeReturnOperation.StartsWith or NativeReturnOperation.EndsWith =>
-                    InvokeStringAffix(receiver, second!, site.CallSpan, context, value.Operation == NativeReturnOperation.StartsWith),
-                _ => throw new InvalidOperationException("Unknown prepared native value."),
-            };
+            return InvokeNativeStringOperation(value.Operation, receiver, second, third, fourth, site.CallSpan, context);
         }
         catch (LythonRuntimeException error) { RestoreNativeReturnException(context, entryException, error); throw; }
     }

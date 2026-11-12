@@ -81,6 +81,31 @@ internal sealed partial class LythonRuntime
                 catch { execution.Stack.RetireTo(start); throw; }
             }
 
+            // Closed text arguments need execution services, not an invocation
+            // namespace. Snapshot evaluated inputs before admission can reenter;
+            // dynamic coercions/keywords still promote through the existing path.
+            if (call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is >= 1 and <= 3
+                && execution.Stack[start] is PyString text
+                && SelectNativeStringOperation(target, call.ArgumentCount) is { } operation)
+            {
+                var inputs = execution.Stack.Slice(start + call.ArgumentOffset, call.ArgumentCount).Span;
+                var first = inputs[0];
+                var second = inputs.Length > 1 ? inputs[1] : null;
+                var third = inputs.Length > 2 ? inputs[2] : null;
+                if (TryGetNativeStringCallShape(operation, NativeReturnShape.String,
+                    ReturnShape(first), ReturnShape(second), ReturnShape(third), out _))
+                {
+                    try
+                    {
+                        var result = InvokeNativeStringOperation(operation, text, first, second, third,
+                            call.CallSpan, invocation ?? scope);
+                        PublishInstructionResult(ref execution, invocation, execution.Code.Instructions[execution.InstructionIndex], result);
+                        return true;
+                    }
+                    catch { execution.Stack.RetireTo(start); throw; }
+                }
+            }
+
             var argument = call.ArgumentCount == 0 ? null : execution.Stack[start + call.ArgumentOffset];
             var dictionary = call.HasReceiver && call.IsPositionalOnly && call.ArgumentCount is 1 or 2 &&
                 ReferenceEquals(target, ReceiverMethods.DictionaryGet)

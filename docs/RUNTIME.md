@@ -311,8 +311,9 @@ retain snapshots across callbacks. Ordinary instructions carry no native-return
 provenance. Eligible helpers own compact prepared native operations, referring
 to original instruction spans and shared call metadata without copying them.
 Proven captured helpers use these same operations with live definition-owned
-cells. The existing inline input buffer holds cell references after the real
-parameters; prepared metadata keeps them separate from unbound local slots.
+cells. One non-owning readonly input view borrows the bound parameter prefix
+and the definition-owned live cell collection separately; it does not pack or
+clear a second buffer or encode cells as appended parameter indexes.
 Numeric nonlocal stores and their proven continuation can omit function-workspace
 binding and ordinary instruction dispatch. Actual owner/cell/namespace writes
 preserve aliases and later reads. The complete proof precedes effects; unsupported
@@ -343,10 +344,16 @@ consumers. Supported expressions in executable code use instructions; there is n
 generic expression opcode or whole-program alternate backend. Unknown compiler
 nodes fail explicitly. Imports retain canonical module namespaces.
 Eligible invocations begin with owned slot workstate. Native zero-argument string
-operations, dictionary views and exact list/tuple iteration run there without
-allocating a lexical context. Other operations materialize a context when needed;
-Defining captured locals, class cells, generators and protected bodies retain
-their lexical frames.
+operations, exact positional split/replace/affix calls, dictionary views and exact
+list/tuple iteration run there without allocating a lexical context. Canonical
+truth tests and unary `not` share eligibility; custom truth protocols retain their
+normal frame. String operation selection, shape checking and invocation are shared
+with prepared native helpers. Evaluated arguments stay snapshotted across admission
+callbacks. Other operations materialize a context when needed; defining captured
+locals, class cells, generators and protected bodies retain their lexical frames.
+Dynamic index arguments, keyword binding and guest callbacks use ordinary execution.
+In `RunAsync`, split and replacement counts can await a guest `__index__` that
+reaches host I/O; replacement validates its old/new strings before that callback.
 The same native dispatch serves both forms. Admitted iteration positions transfer
 with the workstate, with one owner throughout. A separate interpreter object is
 unnecessary. Terminal cleanup finishes pending users, then detaches

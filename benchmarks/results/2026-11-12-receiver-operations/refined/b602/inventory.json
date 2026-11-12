@@ -1,0 +1,76 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 261332992,
+  "requiredFreeBytes": 270942208,
+  "reclaimableBytes": 12468224,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "receiver-ops-b601-20261112/current-core.dll",
+      "bytes": 5673472,
+      "sha256": "251c8d45a87884fc1ff160486ea28a5ebaa3b41cd12e3d1d31d909f326ce4f07",
+      "canonicalStorage": "benchmarks/results/2026-11-12-receiver-operations/first-form/b601/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "7e6721b4c1bbe469789426015f1337d7c441aa1851ebf8c4549dda570651d660",
+      "reason": "Superseded first form preserved in exact committed archive; verify fresh idle lease, UID/path/inode and all hardlink aliases. Protect reference and new candidate.",
+      "paths": [
+        "receiver-ops-b601-20261112/current-core.dll",
+        "receiver-ops-b601-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844605,
+      "allocatedBytes": 5681152,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "receiver-ops-b601-20261112/representative.json",
+      "bytes": 917844,
+      "sha256": "2c6821631aa2c7d822ce3bfd1e93c3d61da763d6a51f939ff8f33b8e3fe957a9",
+      "canonicalStorage": "benchmarks/results/2026-11-12-receiver-operations/first-form/b601/observations.tgz",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "7e6721b4c1bbe469789426015f1337d7c441aa1851ebf8c4549dda570651d660",
+      "reason": "Superseded first form preserved in exact committed archive; verify fresh idle lease, UID/path/inode and all hardlink aliases. Protect reference and new candidate.",
+      "paths": [
+        "receiver-ops-b601-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 844608,
+      "allocatedBytes": 921600,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "receiver-ops-b601-20261112/observations.tgz",
+      "bytes": 2000620,
+      "sha256": "7e6721b4c1bbe469789426015f1337d7c441aa1851ebf8c4549dda570651d660",
+      "canonicalStorage": "benchmarks/results/2026-11-12-receiver-operations/first-form/b601/observations.tgz",
+      "reason": "Terminal duplicate raw archive, independently committed byte-for-byte.",
+      "paths": [
+        "receiver-ops-b601-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844648,
+      "allocatedBytes": 2002944,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "receiver-contract-b448-20261108/observations.tgz",
+      "bytes": 3860016,
+      "sha256": "0126c0008b7834a6367acf5ba419f812e930def20fc53a79b8359fe9a539fd07",
+      "canonicalStorage": "benchmarks/results/2026-11-08-receiver-contract/observations.tar.xz",
+      "canonicalEntry": "b448/observations.tgz",
+      "canonicalArchiveSHA256": "f871a060fa226b0f7bcecc2c04c2d934e266402fe8ecc16ac89b481c4b052522",
+      "reason": "Unused terminal duplicate; exact committed canonical source/core/evidence preserved. Verify fresh path/UID/inode/allaliases. No current image retirement.",
+      "paths": [
+        "receiver-contract-b448-20261108/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 794264,
+      "allocatedBytes": 3862528,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

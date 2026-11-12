@@ -143,6 +143,8 @@ internal sealed partial class LythonRuntime
         internal static readonly ReceiverMethod StringReplace = new(
             LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2),
             static (receiver, arguments, span, context) => StringMembers.Replace((PyString)receiver,
+                arguments.Span[0]!, arguments.Span[1]!, arguments.Length == 3 ? arguments.Span[2] : null, span, context),
+            static (receiver, arguments, span, context) => StringMembers.ReplaceAsync((PyString)receiver,
                 arguments.Span[0]!, arguments.Span[1]!, arguments.Length == 3 ? arguments.Span[2] : null, span, context));
 
         internal static readonly ReceiverMethod StringStartsWith = Affix("str.startswith", true);

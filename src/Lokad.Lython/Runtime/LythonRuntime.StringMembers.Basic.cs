@@ -54,23 +54,42 @@ internal sealed partial class LythonRuntime
         internal static PyString Replace(PyString receiver, object oldArgument, object newArgument, object? countArgument,
             LythonSourceSpan span, ExecutionContext context)
         {
-            if (!PyStringOps.TryAsString(oldArgument, out var oldValue))
+            RequireReplacementStrings(oldArgument, newArgument, span, out var oldValue, out var newValue);
+            // Null is internal omission; an explicitly supplied Python None
+            // still reaches the existing count validation, after both strings.
+            var count = countArgument is null ? -1 : NormalizeSequenceCount(CoerceIoIntegerAsync(countArgument, span, context, false).GetAwaiter().GetResult());
+            return receiver.Replace(oldValue, newValue, count, context, span);
+        }
+
+        internal static ValueTask<object> ReplaceAsync(PyString receiver, object oldArgument, object newArgument,
+            object? countArgument, LythonSourceSpan span, ExecutionContext context)
+            => countArgument is PyInstance
+                ? ReplaceWithGuestCountAsync(receiver, oldArgument, newArgument, countArgument, span, context)
+                : new(Replace(receiver, oldArgument, newArgument, countArgument, span, context));
+
+        private static async ValueTask<object> ReplaceWithGuestCountAsync(PyString receiver, object oldArgument,
+            object newArgument, object countArgument, LythonSourceSpan span, ExecutionContext context)
+        {
+            RequireReplacementStrings(oldArgument, newArgument, span, out var oldValue, out var newValue);
+            var count = NormalizeSequenceCount(await CoerceIoIntegerAsync(countArgument, span, context, true).ConfigureAwait(false));
+            return receiver.Replace(oldValue, newValue, count, context, span);
+        }
+
+        private static void RequireReplacementStrings(object oldArgument, object newArgument, LythonSourceSpan span,
+            out PyString oldValue, out PyString newValue)
+        {
+            if (!PyStringOps.TryAsString(oldArgument, out oldValue))
             {
                 // CPython numbers the bad argument, spelling a None value bare.
                 var oldType = oldArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(oldArgument);
                 throw new LythonRuntimeException("TypeError", $"replace() argument 1 must be str, not {oldType}", span);
             }
 
-            if (!PyStringOps.TryAsString(newArgument, out var newValue))
+            if (!PyStringOps.TryAsString(newArgument, out newValue))
             {
                 var newType = newArgument is PyNone ? "None" : RuntimeErrors.OperandTypeName(newArgument);
                 throw new LythonRuntimeException("TypeError", $"replace() argument 2 must be str, not {newType}", span);
             }
-
-            // Null is internal omission; an explicitly supplied Python None
-            // still reaches the existing count validation, after both strings.
-            var count = countArgument is null ? -1 : NormalizeSequenceCount(CoerceIoIntegerAsync(countArgument, span, context, false).GetAwaiter().GetResult());
-            return receiver.Replace(oldValue, newValue, count, context, span);
         }
 
         private static readonly ReceiverMethod EncodeMethod = new(

@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Shared receiver operations](results/2026-11-12-receiver-operations/refined/README.md)
+retain one canonical selector/shape/invocation across ordinary prefixes and native
+helpers, plus awaited async replacement count protocols. 4562focused checks pass;
+seven complete scripts bothAPIs/compile pass full goldens and balances. Guarded
+search allocation−71%, quiet elapsed−23..−30% with supporting CPU. Native searchRun
+and capturedRun carry additional CPU debt versus2ec; other controls remain variable.
+All first-form/refined adversity and original failures preserved. Full delivery
+and new external CPython rows remain separate; continue the wider roadmap.
+
 [Whole helper-route counterfactual](results/2026-11-12-native-route-costs/README.md)
 isolates native-body removal without changing normal production or preparation.
 Two complete unchanged scripts pass both APIs/goldens/balances/cleanup. Search

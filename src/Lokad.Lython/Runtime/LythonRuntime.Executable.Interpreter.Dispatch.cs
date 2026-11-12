@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
                             break;
                         case ExecutableOpCode.JumpIfFalse:
                             var condition = ReadOperand(ref execution, instruction.InputStart, scope, 0);
-                            if (invocation is null && condition is not (PyNone or bool or BigInteger or double or PyString or PyBytes or PyList or PyTuple or PyDict or PySet or PyRange))
+                            if (invocation is null && !CanUseNativeTruth(condition))
                                 return InstructionPause.ContextRequired;
                             if (!asynchronous || condition is not PyInstance)
                                 jumped = ExecuteControlFlow(ref execution, scope, invocation, instruction);

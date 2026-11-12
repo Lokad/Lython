@@ -250,14 +250,8 @@ internal sealed partial class ExecutableCodeObject
                             }
                             else
                             {
-                                var selected = member switch
-                                {
-                                    "split" when site.ArgumentCount is 1 or 2 => NativeReturnOperation.Split,
-                                    "replace" when site.ArgumentCount is 2 or 3 => NativeReturnOperation.Replace,
-                                    "startswith" when site.ArgumentCount == 1 => NativeReturnOperation.StartsWith,
-                                    "endswith" when site.ArgumentCount == 1 => NativeReturnOperation.EndsWith,
-                                    _ => (NativeReturnOperation?)null
-                                };
+                                var selected = LythonRuntime.SelectNativeStringOperation(
+                                    LythonRuntime.StringMembers.GetMethod(member), site.ArgumentCount);
                                 if (selected is null) return null;
                                 operation = selected.Value;
                             }

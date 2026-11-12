@@ -29,6 +29,12 @@ Earlier rows remain historical: `4aa` = qualified `4aa2d46d` (patch, 2026-11-11)
 (CSV summary, 2026-11-08), `4598` = `459813a3` (manifest, 2026-11-09).
 They do not describe current HEAD.
 
+Later shared receiver-operation changes have a
+[separate source-pair comparison](../benchmarks/results/2026-11-12-receiver-operations/refined/README.md):
+guarded search allocation is 71% lower, with supported elapsed/CPU improvement;
+existing search/captured CPU regressions remain explicit. They have no refreshed
+CPython rows yet. The tables above retain their measured revision.
+
 The [six-script checkpoint](../benchmarks/results/2026-11-12-native-inputs-cpython-checkpoint/README.md)
 refreshes compilation, warm execution and compile-to-result with existing workers
 and unchanged sources/fixtures. All identity/output/ownership/quiet/join/archive

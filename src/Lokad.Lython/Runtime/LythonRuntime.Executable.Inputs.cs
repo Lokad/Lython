@@ -80,7 +80,8 @@ internal sealed partial class LythonRuntime
                     ExecutableOpCode.Binary or ExecutableOpCode.Augmented =>
                         first is BigInteger or double or bool && second is BigInteger or double or bool ||
                         first is PyString && second is PyString,
-                    ExecutableOpCode.Unary => first is BigInteger or double or bool,
+                    ExecutableOpCode.Unary => first is BigInteger or double or bool
+                        || instruction.UnaryOperator == ExecutableUnaryOperator.Not && CanUseNativeTruth(first),
                     ExecutableOpCode.Subscript => second is BigInteger && first is PyList or PyTuple or PyBytes or PyString or PyRange ||
                         first is PyDict dictionary && dictionary.CanReadKeySynchronously(second!),
                     _ => throw new InvalidOperationException("Unexpected direct input instruction."),

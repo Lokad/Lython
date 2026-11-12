@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share canonical string receiver operations between prepared helpers and ordinary
+  executable calls, avoiding unnecessary function contexts for guarded helpers.
+  Preserve dynamic protocols and admission-time argument snapshots. Await guest
+  replacement-count `__index__` callbacks in `RunAsync`, after validating strings.
+
 - Relinquish native helper argument storage once when a refund callback fails,
   preserving shared funding for retained data and idle workspaces.
 

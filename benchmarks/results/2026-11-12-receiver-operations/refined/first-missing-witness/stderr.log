@@ -1,0 +1,7 @@
+Unhandled exception. System.IO.FileNotFoundException: Could not find file 'D:\code\Lython\.git\agent-notes\review-20261031\receiver-operations-r256\refined\warm-sync\hash-witness.json'.
+File name: 'D:\code\Lython\.git\agent-notes\review-20261031\receiver-operations-r256\refined\warm-sync\hash-witness.json'
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+   at System.IO.File.ReadAllBytes(String path)
+   at Program.<Main>$(String[] args) in D:\code\Lython\.git\agent-notes\review-20261031\receiver-operations-r256\tool\Program.cs:line 20

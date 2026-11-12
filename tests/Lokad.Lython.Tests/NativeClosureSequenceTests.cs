@@ -9,9 +9,11 @@ namespace Lokad.Lython.Tests;
 public sealed class NativeClosureSequenceTests
 {
     [Theory]
-    [InlineData(false, false)] [InlineData(true, false)]
-    [InlineData(false, true)] [InlineData(true, true)]
-    public async Task AdmissionRebindingCallerLocalsKeepsAlreadyBoundParameters(bool asynchronous, bool keywords)
+    [InlineData(false, false, false)] [InlineData(true, false, false)]
+    [InlineData(false, true, false)] [InlineData(true, true, false)]
+    [InlineData(false, false, true)] [InlineData(true, false, true)]
+    [InlineData(false, true, true)] [InlineData(true, true, true)]
+    public async Task AdmissionRebindingCallerLocalsKeepsAlreadyBoundParameters(bool asynchronous, bool keywords, bool guarded)
     {
         var source = """
             def make():
@@ -30,6 +32,9 @@ public sealed class NativeClosureSequenceTests
             assert read()==1
             return result
             """.Replace("CALL", keywords ? "append(suffix=suffix,value=payload)" : "append(payload,suffix)");
+        if (guarded)
+            source = source.Replace("return value.lower()+suffix",
+                "if not value: return value\n        return value.replace('A',suffix)");
         var budget = new LythonMemoryBudget(1024 * 1024);
         using (var owner = budget.CreateScope())
         {
@@ -46,7 +51,8 @@ public sealed class NativeClosureSequenceTests
                     ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
                     : LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, null);
                 Assert.True(armed.Rebound);
-                Assert.Equal(new string('a', 4096) + "-old", Assert.IsType<PyString>(result).AsString());
+                Assert.Equal(guarded ? string.Concat(Enumerable.Repeat("-old", 4096)) : new string('a', 4096) + "-old",
+                    Assert.IsType<PyString>(result).AsString());
                 Assert.Equal(0, context.State.CurrentInterpreterDepth);
                 Assert.Equal(0, context.State.CurrentRecursionDepth);
                 Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
