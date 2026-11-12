@@ -624,6 +624,9 @@ without constructing bound argument storage. These completed helpers run directl
 in call dispatch, before pending-call state is created. Call and function stack
 admission still apply; result publication and input retirement follow completion.
 Eligible acyclic branch returns use this same prepared native expression proof.
+Consecutive `not` operations used immediately by a branch are normalized during
+preparation by exchanging the existing conditional roots. Other unary expressions
+keep ordinary execution; no additional runtime unary plan is needed.
 All type proofs precede effects; only selected operations execute, with the selected
 return's source span. Empty lists remain fresh and admitted, including cancellation
 after admission. Loops, shared joins, custom truth and format proofs that query

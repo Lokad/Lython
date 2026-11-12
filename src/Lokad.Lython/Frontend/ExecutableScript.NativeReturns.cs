@@ -41,6 +41,7 @@ internal sealed partial class ExecutableCodeObject
             if (controlDepth > 16) return null;
             var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer, LythonSourceSpan? ReadSpan)>();
             var instructions = blocks[block].InstructionArray;
+            var negateCondition = false;
             for (var index = firstInstruction; index < instructions.Length; index++)
             {
                 var sourceIndex = offsets[block] + index;
@@ -60,6 +61,21 @@ internal sealed partial class ExecutableCodeObject
                         instructions = blocks[block].InstructionArray;
                         index = -1;
                         continue;
+                    case ExecutableOpCode.Unary when instruction.UnaryOperator == ExecutableUnaryOperator.Not:
+                        if (stack.Count != 1 || stack[0].Member is not null) return null;
+                        var end = index;
+                        do { negateCondition = !negateCondition; end++; }
+                        while (end < instructions.Length && instructions[end].OpCode == ExecutableOpCode.Unary
+                            && instructions[end].UnaryOperator == ExecutableUnaryOperator.Not);
+                        if (end >= instructions.Length || instructions[end].OpCode != ExecutableOpCode.JumpIfFalse)
+                            return null;
+                        for (var skipped = index + 1; skipped < end; skipped++)
+                        {
+                            if (visited[offsets[block] + skipped]) return null;
+                            visited[offsets[block] + skipped] = true;
+                        }
+                        index = end - 1;
+                        continue;
                     case ExecutableOpCode.JumpIfFalse:
                         if (stack.Count != 1 || stack[0].Member is not null) return null;
                         hasConditional = true;
@@ -72,8 +88,10 @@ internal sealed partial class ExecutableCodeObject
                         var conditionalDepth = 1 + Math.Max(condition.Depth,
                             Math.Max(consequent.Value.Depth, alternative.Value.Depth));
                         if (conditionalDepth > 16) return null;
+                        var whenTrue = negateCondition ? alternative.Value : consequent.Value;
+                        var whenFalse = negateCondition ? consequent.Value : alternative.Value;
                         values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
-                            consequent.Value.Root, Third: alternative.Value.Root));
+                            whenTrue.Root, Third: whenFalse.Root));
                         return (FirstTemporarySlot + values.Count - 1, conditionalDepth);
                     case ExecutableOpCode.Return:
                         if (stack.Count != 1 || stack[0].Member is not null) return null;

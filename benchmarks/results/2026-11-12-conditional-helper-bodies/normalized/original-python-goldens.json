@@ -1,0 +1,15 @@
+{
+  "version": "Python 3.13.2",
+  "cases": [
+    {
+      "name": "unary-values",
+      "source": "def state(value):\n    if not value:\n        return 'empty'\n    return 'full'\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\nprint([state(value) for value in (None, False, 0, 0.0, '', b'', [], (), {}, set(), range(0), True, 3, 'x')])\nfor value in (False, True, -3, 0, 1, 1 << 80):\n    print(positive(value) is value, positive(value), negative(value), invert(value))\nfor value in (-0.0, 2.5):\n    print(positive(value) is value, positive(value), negative(value))\nfor operation in (positive, negative, invert):\n    try: operation('text')\n    except TypeError: print('bad')\n",
+      "expected": "['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'full', 'full', 'full']\nFalse 0 0 -1\nFalse 1 -1 -2\nTrue -3 3 2\nTrue 0 0 -1\nTrue 1 -1 -2\nTrue 1208925819614629174706176 -1208925819614629174706176 -1208925819614629174706177\nTrue -0.0 0.0\nTrue 2.5 -2.5\nbad\nbad\nbad\n"
+    },
+    {
+      "name": "unary-protocols",
+      "source": "events=[]\nclass Value:\n    def __bool__(self):\n        events.append('bool')\n        return False\n    def __pos__(self):\n        events.append('plus')\n        return 11\n    def __neg__(self):\n        events.append('minus')\n        return 12\n    def __invert__(self):\n        events.append('invert')\n        return 13\ndef state(value):\n    if not value: return 'empty'\n    return value.upper()\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\ndef wanted(value, *, prefix='N\u00e9'):\n    if not value: return False\n    return value.startswith(prefix)\nvalue=Value()\nprint(state(value),positive(value),negative(value),invert(value),events)\nprint(wanted('',prefix=value),wanted('N\u00e9x'),wanted('no'))\n",
+      "expected": "empty 11 12 13 ['bool', 'plus', 'minus', 'invert']\nFalse True False\n"
+    }
+  ]
+}

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Prepare negated branch predicates with the existing conditional helper plan,
+  avoiding ordinary binding and body dispatch for eligible complete helpers.
+  Preserve lazy branches, Python truth protocols and guarded execution before
+  effects, without adding runtime unary dispatch.
+
 - Share final-byte encoding between guest bytes and text files, removing normalized
   UTF-8 staging, alternative length counters and flush-time encoding copies.
   Reuse governed text-output batches and await actual I/O from ordinary/exposed

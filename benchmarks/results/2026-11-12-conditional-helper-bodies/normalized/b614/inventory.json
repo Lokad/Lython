@@ -1,0 +1,78 @@
+{
+  "freshIdleLease": true,
+  "freeBytes": 264138752,
+  "requiredFreeBytes": 270753792,
+  "reclaimableBytes": 8704000,
+  "proofs": [
+    {
+      "kind": "all-aliases",
+      "knownPath": "conditional-helper-b612-20261112/candidate/Lokad.Lython.dll",
+      "bytes": 5682176,
+      "sha256": "fffc95d715a46602e6f3a29f5f40964fc1bdcaa6b5db82e3edda0c68cfca6fda",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/initial/b612/observations.tgz",
+      "canonicalEntry": "current-core.dll",
+      "canonicalArchiveSHA256": "c13da53bf67d4dc4d942d74925597839d4694f55eae4a9d23dea2c1593abc377",
+      "reason": "SupersededrawUnaryprototype, exactsource/core/initialadversity andsame-sourceconfirmation preserved in committed38745af9/354618ab. b2reference/newcompiler-onlysourceprotected. Freshidle/UID/path/inode/allaliasesproof, floorsunchanged.",
+      "paths": [
+        "conditional-helper-b612-20261112/current-core.dll",
+        "conditional-helper-b612-20261112/candidate/Lokad.Lython.dll",
+        "conditional-confirmation-b613-20261112/current-core.dll",
+        "conditional-confirmation-b613-20261112/candidate/Lokad.Lython.dll"
+      ],
+      "device": 66305,
+      "inode": 844906,
+      "allocatedBytes": 5689344,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "conditional-confirmation-b613-20261112/observations.tgz",
+      "bytes": 1968749,
+      "sha256": "b95f7ce9f1b8823be14f0f067cc2b9135c9e922a56f2c56a3dcca23e2070b212",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/confirmation/observations.tgz",
+      "reason": "OnlyterminalB613duplicate, exactcommitted354618ab canonicalGitSHA verified; originalallfailed/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "paths": [
+        "conditional-confirmation-b613-20261112/observations.tgz"
+      ],
+      "device": 66305,
+      "inode": 844935,
+      "allocatedBytes": 1970176,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "conditional-confirmation-b613-20261112/representative.json",
+      "bytes": 717634,
+      "sha256": "aa6d07295d9223b2ded9212237e34c9a58081cba7db7cc892c8206dfa925e3c7",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/confirmation/observations.tgz",
+      "reason": "OnlyterminalB613duplicate, exactcommitted354618ab canonicalGitSHA verified; originalallfailed/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "canonicalEntry": "representative.json",
+      "canonicalArchiveSHA256": "b95f7ce9f1b8823be14f0f067cc2b9135c9e922a56f2c56a3dcca23e2070b212",
+      "paths": [
+        "conditional-confirmation-b613-20261112/representative.json"
+      ],
+      "device": 66305,
+      "inode": 807519,
+      "allocatedBytes": 720896,
+      "allAliasesVerified": true
+    },
+    {
+      "kind": "exact",
+      "knownPath": "conditional-confirmation-b613-20261112/confirmation/confirmation.json",
+      "bytes": 321885,
+      "sha256": "673c2d800d41f887e0ddae19e45edbe10ee1d5c4bcd4c2b5cb392a943aad7a95",
+      "canonicalStorage": "benchmarks/results/2026-11-12-conditional-helper-bodies/confirmation/observations.tgz",
+      "reason": "OnlyterminalB613duplicate, exactcommitted354618ab canonicalGitSHA verified; originalallfailed/adverseconditions preserved. Freshidle/UID/path/inode/allaliasesproof, b2protected, floorsunchanged.",
+      "canonicalEntry": "confirmation/confirmation.json",
+      "canonicalArchiveSHA256": "b95f7ce9f1b8823be14f0f067cc2b9135c9e922a56f2c56a3dcca23e2070b212",
+      "paths": [
+        "conditional-confirmation-b613-20261112/confirmation/confirmation.json"
+      ],
+      "device": 66305,
+      "inode": 844946,
+      "allocatedBytes": 323584,
+      "allAliasesVerified": true
+    }
+  ],
+  "protectedImagesUnchanged": true
+}

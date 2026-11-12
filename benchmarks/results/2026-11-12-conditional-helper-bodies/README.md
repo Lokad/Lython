@@ -1,4 +1,4 @@
-# Conditional helper bodies — measured prototype
+# Conditional helper bodies — prototype and retained simplification
 
 2026-11-12. **No runtime promotion or final qualification yet.** Source pair versus
 fullyqualified983bab96/unchanged796c3218, frozenb2cb. Three production files add
@@ -43,3 +43,8 @@ fixtures removed; rawarchive independentlySHAverified. Publication stays held.
 leaves captured control uncertain. A compiler-only negation-normalization form
 is selected for separate correctness/measurement; raw unary runtime additions
 are not promoted. Originaladversity remains unchanged.
+
+The [compiler-only form](normalized/README.md) passes 996 focused checks and
+retains the affected whole-script gain in B614. It replaces the raw runtime unary
+additions with branch-root normalization. Native-search control debt and captured
+text uncertainty are explicit; full exact-source delivery is pending.

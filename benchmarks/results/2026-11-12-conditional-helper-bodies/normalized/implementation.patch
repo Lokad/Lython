@@ -1,0 +1,60 @@
+diff --git a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+index 163d13e2..db2d5a6b 100644
+--- a/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
++++ b/src/Lokad.Lython/Frontend/ExecutableScript.NativeReturns.cs
+@@ -41,6 +41,7 @@ internal sealed partial class ExecutableCodeObject
+             if (controlDepth > 16) return null;
+             var stack = new List<(int Value, LythonSourceSpan? Member, int Depth, int MemberName, int Producer, LythonSourceSpan? ReadSpan)>();
+             var instructions = blocks[block].InstructionArray;
++            var negateCondition = false;
+             for (var index = firstInstruction; index < instructions.Length; index++)
+             {
+                 var sourceIndex = offsets[block] + index;
+@@ -60,6 +61,21 @@ internal sealed partial class ExecutableCodeObject
+                         instructions = blocks[block].InstructionArray;
+                         index = -1;
+                         continue;
++                    case ExecutableOpCode.Unary when instruction.UnaryOperator == ExecutableUnaryOperator.Not:
++                        if (stack.Count != 1 || stack[0].Member is not null) return null;
++                        var end = index;
++                        do { negateCondition = !negateCondition; end++; }
++                        while (end < instructions.Length && instructions[end].OpCode == ExecutableOpCode.Unary
++                            && instructions[end].UnaryOperator == ExecutableUnaryOperator.Not);
++                        if (end >= instructions.Length || instructions[end].OpCode != ExecutableOpCode.JumpIfFalse)
++                            return null;
++                        for (var skipped = index + 1; skipped < end; skipped++)
++                        {
++                            if (visited[offsets[block] + skipped]) return null;
++                            visited[offsets[block] + skipped] = true;
++                        }
++                        index = end - 1;
++                        continue;
+                     case ExecutableOpCode.JumpIfFalse:
+                         if (stack.Count != 1 || stack[0].Member is not null) return null;
+                         hasConditional = true;
+@@ -72,8 +88,10 @@ internal sealed partial class ExecutableCodeObject
+                         var conditionalDepth = 1 + Math.Max(condition.Depth,
+                             Math.Max(consequent.Value.Depth, alternative.Value.Depth));
+                         if (conditionalDepth > 16) return null;
++                        var whenTrue = negateCondition ? alternative.Value : consequent.Value;
++                        var whenFalse = negateCondition ? consequent.Value : alternative.Value;
+                         values.Add(new(NativeReturnOperation.Conditional, instruction, condition.Value,
+-                            consequent.Value.Root, Third: alternative.Value.Root));
++                            whenTrue.Root, Third: whenFalse.Root));
+                         return (FirstTemporarySlot + values.Count - 1, conditionalDepth);
+                     case ExecutableOpCode.Return:
+                         if (stack.Count != 1 || stack[0].Member is not null) return null;
+diff --git a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+index 559d3be3..672cd3e7 100644
+--- a/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
++++ b/tests/Lokad.Lython.PublicApi.Tests/NativeReturnFunctionTests.cs
+@@ -7,6 +7,9 @@ public sealed class NativeReturnFunctionTests
+     // Goldens independently captured with isolated CPython 3.13.
+     public static TheoryData<string, string, string> Cases => new()
+     {
++        { "negated-branches", "events=[]\ndef double(value):\n    if not not value: return 'full'\n    return 'empty'\ndef triple(value):\n    if not not not value: return 'empty'\n    return 'full'\nclass Flag:\n    def __bool__(self):\n        events.append('bool')\n        return True\nfor value in (None,False,0,1,'','x',[],[1]):\n    print(double(value),triple(value))\nfor operation in (double,triple):\n    print(operation(Flag()),events)\n    events.clear()\n", "empty empty\nempty empty\nempty empty\nfull full\nempty empty\nfull full\nempty empty\nfull full\nfull ['bool']\nfull ['bool']\n" },
++        { "unary-values", "def state(value):\n    if not value:\n        return 'empty'\n    return 'full'\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\nprint([state(value) for value in (None, False, 0, 0.0, '', b'', [], (), {}, set(), range(0), True, 3, 'x')])\nfor value in (False, True, -3, 0, 1, 1 << 80):\n    print(positive(value) is value, positive(value), negative(value), invert(value))\nfor value in (-0.0, 2.5):\n    print(positive(value) is value, positive(value), negative(value))\nfor operation in (positive, negative, invert):\n    try: operation('text')\n    except TypeError: print('bad')\n", "['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'full', 'full', 'full']\nFalse 0 0 -1\nFalse 1 -1 -2\nTrue -3 3 2\nTrue 0 0 -1\nTrue 1 -1 -2\nTrue 1208925819614629174706176 -1208925819614629174706176 -1208925819614629174706177\nTrue -0.0 0.0\nTrue 2.5 -2.5\nbad\nbad\nbad\n" },
++        { "unary-protocols", "events=[]\nclass Value:\n    def __bool__(self):\n        events.append('bool')\n        return False\n    def __pos__(self):\n        events.append('plus')\n        return 11\n    def __neg__(self):\n        events.append('minus')\n        return 12\n    def __invert__(self):\n        events.append('invert')\n        return 13\ndef state(value):\n    if not value: return 'empty'\n    return value.upper()\ndef positive(value): return +value\ndef negative(value): return -value\ndef invert(value): return ~value\ndef wanted(value, *, prefix='N\u00e9'):\n    if not value: return False\n    return value.startswith(prefix)\nvalue=Value()\nprint(state(value),positive(value),negative(value),invert(value),events)\nprint(wanted('',prefix=value),wanted('N\u00e9x'),wanted('no'))\n", "empty 11 12 13 ['bool', 'plus', 'minus', 'invert']\nFalse True False\n" },
+         { "captured-bound-method", "def make():\n count=0\n def method(self,value):\n  nonlocal count\n  count+=1\n  return value.upper()\n def read():return count\n return method,read\nmethod,read=make()\nclass Box:pass\nBox.run=method\nbox=Box()\nsaved=box.run\nprint(box.run('a'),read(),saved(value='b'),read())\n", "A 1 B 2\n" },
+         { "captured-sequence-text", "def make():\n count=0\n def words(value=' A B '):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nprint(words(),read())\nprint(words(value=' C '),read())\nprint(list(map(words,['D E','F'])),read())\n", "['a', 'b'] 1\n['c'] 2\n[['d', 'e'], ['f']] 4\n" },
+         { "captured-sequence-protocol-once", "def make():\n count=0\n def words(value):\n  nonlocal count\n  count+=1\n  return value.lower().split()\n def read():return count\n return words,read\nwords,read=make()\nclass Text:\n def lower(self):\n  print('hook',read())\n  return 'X Y'\nprint(words('A'),read())\nprint(words(Text()),read())\n", "['a'] 1\nhook 2\n['X', 'Y'] 2\n" },

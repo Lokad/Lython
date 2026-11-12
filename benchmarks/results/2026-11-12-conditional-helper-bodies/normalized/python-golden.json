@@ -1,0 +1,6 @@
+{
+  "version": "Python 3.13.2",
+  "source": "events=[]\ndef double(value):\n    if not not value: return 'full'\n    return 'empty'\ndef triple(value):\n    if not not not value: return 'empty'\n    return 'full'\nclass Flag:\n    def __bool__(self):\n        events.append('bool')\n        return True\nfor value in (None,False,0,1,'','x',[],[1]):\n    print(double(value),triple(value))\nfor operation in (double,triple):\n    print(operation(Flag()),events)\n    events.clear()\n",
+  "expected": "empty empty\nempty empty\nempty empty\nfull full\nempty empty\nfull full\nempty empty\nfull full\nfull ['bool']\nfull ['bool']\n",
+  "stderr": ""
+}

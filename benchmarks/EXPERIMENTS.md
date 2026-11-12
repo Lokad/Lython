@@ -6,6 +6,16 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Conditional helper normalization](results/2026-11-12-conditional-helper-bodies/normalized/README.md)
+retains the one-file compiler form after996focused actual-target checks and five
+complete scripts/bothAPIs. B614 fourjobs254.822s supports guardedRun elapsed
+−28.45..−22.30%/Async−25.05..−14.58%, supporting widerCPU. Native-search CPU
++0.46..+1.54% is accepted control debt; captured text remains uncertain with
+9.11% candidate spread. Compilation allocation+1.02%, warm allocation flat.
+No runtime unary enum/shape/guard/evaluator additions survive; raw prototype and
+same-source confirmation remain immutable. Full exact-source delivery pending;
+no compounded CPython ratio or causal explanation of adverse controls.
+
 [Positional/default binding](results/2026-11-12-positional-default-binding/README.md)
 withdraws the three-file form after628focused actualtarget checks/five complete
 scripts and B611sixjobs170.297s. Allocationflat; guarded elapsed modest/uncertain,
