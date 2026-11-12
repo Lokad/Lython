@@ -6698,3 +6698,8 @@ transcoding with shared count/sizing, exact semantics/preflight/cancellation and
 one affected/control comparison. No CPU forecast from leaf shares. Preserve B629
 pre-sampling filename failure and B630 corrected-path confirmation; no runtime edit
 or permanent design rejection follows. Existing patch evidence needs no replay.
+
+R274 correction1011ed0b is fully GREEN43254088804 on both OSes/actual targets,
+stress and installed consumers. All568frozen production sources match.
+[Archived delivery](results/2026-11-12-prepared-word-ranges/delivery/README.md).
+No arithmetic runtime change, retiming or erased first failure. R276 stays separate.

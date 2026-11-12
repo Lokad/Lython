@@ -1,0 +1,9 @@
+{
+  "run": 43254088804,
+  "headSha": "1011ed0b3dca8bf87a90fd992459712db985e130",
+  "status": "completed",
+  "conclusion": "success",
+  "Ubuntu": "success",
+  "Windows": "success",
+  "terminalCached": true
+}

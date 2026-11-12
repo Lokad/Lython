@@ -1,4 +1,4 @@
-# Prepared word ranges — R274, retained for delivery
+# Prepared word ranges — R274, fully qualified
 
 2026-11-12 over fully qualified cb8f59c3; documentation receipt229df58c.
 The private immediate cased-split cursor consumes prepared (start,end,capacity)
@@ -64,8 +64,8 @@ removed scanner. These observations support retaining the complete-stage removal
 without a substantial whole-script CPU claim or refreshed CPython ratio. Warm
 includes mediated RAM I/O, full validation and prior-result cleanup; excludes
 compilation/startup/reset/protocol/finalcache. Wider CPU includes reset/protocol/
-JIT/GC. Full platform/stress/installed consumers follow at this retained-source
-boundary; publication remains postponed and the broader performance goal stays open.
+JIT/GC. Full platform/stress/installed consumers pass on1011ed0b; see
+[delivery](delivery/README.md); publication remains postponed and the broader performance goal stays open.
 
 The raw purpose prose mistakenly describes inherited R273 work; sourceRevision,
 core identities, frozen source snapshots and actual three-job list identify R274.
@@ -80,4 +80,4 @@ floors remain. The new root ends390,029,312Bfree. All original conditions surviv
 
 [First full delivery and focused fixture correction](first-delivery/README.md)
 preserve the Windows failure, Ubuntu qualification and negative control; runtime
-source remains identical. Cross-platform delivery is pending the corrected fixture.
+source remains identical. Corrected-source cross-platform delivery is now GREEN on1011ed0b.
