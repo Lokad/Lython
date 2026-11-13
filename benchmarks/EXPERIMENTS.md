@@ -7380,3 +7380,10 @@ identity/output/allowance/quiet/join/persistent archival gates pass; no working
 evidence retired or floor changed. Current table retains moving controls; earlier
 B683 remains separately labelled. No allocation/source-pair CPU/causal speedup or
 objective-completion claim. Full delivery43520131516 is independent. Publication held.
+
+R331full delivery43520131516 is GREEN on exactd90dd5fe/frozen798edc1d:
+Windows/Ubuntu actual.NET11/10, original stress and installed Release consumers.
+All578frozen production inputs match;16step summaries and full logs are
+[archived](results/2026-11-13-dictionary-boundaries/delivery/README.md).
+R332uses that same qualified runtime; evidence-onlyd7cef555 changes no production
+source. No unchanged qualification/retiming or universal CPU claim follows.

@@ -13,9 +13,9 @@ complete embedding measurements, not isolated interpreter CPU. Spreads are the
 Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
 Measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, against stock
-**CPython 3.13.16**. Focused .NET 11/10 checks pass; full Windows/Ubuntu,
-original stress and installed-package qualification is
-[pending](https://github.com/Lokad/Lython/actions/runs/43520131516).
+**CPython 3.13.16**. This runtime passes full Windows/Ubuntu .NET 11/10,
+original stress and installed Release package-consumer qualification.
+[Exact source proof and logs](../benchmarks/results/2026-11-13-dictionary-boundaries/delivery/README.md).
 The quiet Azure F4as_v7 VM runs Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs,
 16 GiB/no swap and .NET 11 RC3, ordinary workstation GC/tiering and CPython GIL/GC.
 

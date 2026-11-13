@@ -20,7 +20,8 @@ native/cased loops, mirrored/private stores, promotion, immutable counter aliase
 required growth, first refusal through suppression/finally returns, reentrant
 refund publication, genuine protocol suspension and cancellation. Only two
 white-box helper entry calls lose their obsolete span arguments; assertions stay.
-Full platform/stress/installed-consumer qualification is pending; publication held.
+Full delivery passes[43520131516](delivery/README.md): both platforms/actual11/10,
+original stress and installed consumers;578inputs/16summaries cached. Publication held.
 
 ## One bounded complete-script comparison
 

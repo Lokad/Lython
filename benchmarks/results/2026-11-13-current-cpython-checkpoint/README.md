@@ -4,7 +4,10 @@
 inputs match the R331 snapshot. Fixed B685workeracda3ef3 and optional nonpackable
 adapter0.4, stock CPython3.13.16, quiet AzureF4as_v7/Ubuntu24.04.4/.NET11RC3,
 four EPYC9V45vCPUs/16GiB/no swap, ordinary GC/tiering and CPython GIL/GC.
-Focused actual .NET11/10 checks pass; full Windows/Ubuntu, original stress and installed-package qualification43520131516 is still pending.
+Full Windows/Ubuntu .NET11/10, original stress and installed Release consumers
+pass in[43520131516](../2026-11-13-dictionary-boundaries/delivery/README.md);
+all578frozen source inputs match the exact qualified commit. Evidence-only
+commitd7cef555 publishes this comparison; it changes no production source.
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
