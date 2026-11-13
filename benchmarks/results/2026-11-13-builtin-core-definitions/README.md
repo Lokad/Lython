@@ -26,6 +26,11 @@ cancellation, awaited cleanup and reuse. The original full delivery then
 The missed partialmethod consumer is corrected separately through canonical
 binding; these earlier7ee timings do not qualify that corrected source.
 
+Correctedcb8736ff/frozen5a184a1d with test correction90de765d has
+[full Windows/Ubuntu11/10, stress and installed-consumer qualification](delivery/README.md).
+The [intermediate Ubuntu10 allocation-observation failure](staging-correction/delivery-failed/README.md)
+and original byte bound survive. This does not relabel the7ee timings below.
+
 ## Allocation and complete scripts
 
 The same private inspector,512 calls after256 warmups, measures builtin-factory

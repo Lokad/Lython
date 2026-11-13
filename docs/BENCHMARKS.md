@@ -200,7 +200,8 @@ factory(10248→7680B), not the entire execution. Against qualified6237552b, con
 config compile-to-result/report warm have modest supported direction; other CPU
 results are small or inconclusive. Original flat partial config and adverse local
 factory clocks remain visible. Original7ee delivery fails an existing factory-slot
-case; corrected-source qualification is separate. These timings do not describe
+case; correctedcb8736ff/frozen5a184a1d has [full delivery qualification](../benchmarks/results/2026-11-13-builtin-core-definitions/delivery/README.md)
+with the same-thread allocation-observation correction. These timings do not describe
 the correction or establish new CPython ratios.
 [Exact observations, failures and ownership tradeoffs](../benchmarks/results/2026-11-13-builtin-core-definitions/README.md).
 

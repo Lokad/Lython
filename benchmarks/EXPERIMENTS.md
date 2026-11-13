@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Corrected fixed-definition delivery](results/2026-11-13-builtin-core-definitions/delivery/README.md):
+runtimecb8736ff/frozen5a184a1d, test correction90de765d, GREEN43450480558.
+Windows/Ubuntu actual11/10, original stress and installed consumers pass;573frozen
+inputs match the exact commit and16step counts/full logs are cached. The intermediate
+cb Ubuntu10 process-global allocation failure remains preserved. Same-thread
+observation asserts thread identity and retains the65536copy-sized bound, refusal,
+no-publication and final balance. Historical7ee clocks stay source-specific; no
+cold-fix CPU inference. The independent positional ZIP prototype is outside this
+qualification. CPython refresh is active on the qualified frozen image, after an
+unchanged disk-floor refusal; only canonical byte-proved obsolete VM working copies
+were retired. Original launch conditions remain archived. Publication stays held.
+
 [Metadata delivery correction](results/2026-11-13-builtin-core-definitions/factory-correction/README.md):
 original157/7ee fails the same existing FactoryNewSlots public case on both platforms;
 4681white-box pass and17500/17501public pass per platform. Subsequent gates skip.
