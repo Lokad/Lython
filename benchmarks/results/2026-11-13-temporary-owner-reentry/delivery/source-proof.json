@@ -1,0 +1,7 @@
+{
+  "commit": "fc2531b8139e527404cbb887aac4e36256ae5d65",
+  "coreSHA256": "6b468bf11b163e45464f5dac7bd40cdf7694a6d5b627ef661aee17561a91cdb8",
+  "productionFiles": 571,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "laterInvoiceWorkloadExcluded": true
+}

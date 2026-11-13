@@ -36,3 +36,8 @@ Measured source-pair cores are reference `0370472f` and corrected `6b468bf1`, bo
 built at Git revision `3a063cb0`; the source archive records all571 production
 inputs and their one-file delta. Full platform/stress/installed-package delivery
 is pending from the retained-source commit. Publication remains postponed.
+
+Runtime **fc2531b8** is now fully qualified by GREEN43364639355;
+[cached platform/stress/package delivery](delivery/README.md). The original pending
+state in the frozen validation describes its recording time. Later invoice
+workload/catalog tests are excluded; production source remains unchanged.

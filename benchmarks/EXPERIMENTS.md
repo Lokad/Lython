@@ -7050,3 +7050,9 @@ growth before refusing to continue a disposed owner. Five corrected cases,854int
 Allocation is flat; moving desktop controls retain uncertainty, no CPU claim.
 Original overlapping-build/fixture conditions and all logs survive. Full delivery
 is batched from the retained-source commit; broader performance work remains open.
+
+R301 runtimefc2531b8 / source-pair core6b468bf1 is fully qualified by terminal
+GREEN43364639355: Windows/Ubuntu actual .NET11/.NET10 ordinary, original stress
+and installed Release package consumers. [Cached full delivery/source proof](results/2026-11-13-temporary-owner-reentry/delivery/README.md).
+All 571 frozen inputs match the commit; later invoice catalog/tests are excluded.
+No CPU improvement or unchanged full qualification replay is claimed.
