@@ -13,7 +13,9 @@ and fresh7.0–13.1% with supporting wider CPU; fresh controls widen the range.
 Captured warm0.1–3.3% with3.1% reference-control movement remains unresolved debt.
 Initial628ab680 establishes warm−19.51%/fresh−18.97% allocation, separately labeled.
 All original/adverse controls, failed iteration conditions and raw sources survive.
-Current final-source local diagnostics and full delivery are pending; no CPython claim.
+Retained2f34a48f also confirms warm−19.51%allocation,120internal/193public.NET11
+checks and eight warm goldens/balances/cleanup. Desktop controls move up27.88%; no
+desktop CPU claim. Full delivery and current external ratios remain pending.
 
 [Invoice helper-call source gate](results/2026-11-13-invoice-cpu-source-gate/README.md)
 captures1,608samples/8.09guestCPU seconds on qualifiedfc2531b8/6b468bf1 with the

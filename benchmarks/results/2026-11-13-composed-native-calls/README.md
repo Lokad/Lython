@@ -57,6 +57,13 @@ overlapping rebuild are retained. Serial rechecks of the initial source pass.
 [initial sources/binary/raw evidence](initial/source-checks.tar.xz),
 [refined validation](refined/validation.json) and
 [refined sources/binary/VM evidence with partial local snapshots](refined/source-checks.tar.xz)
-preserve the exact boundary and every adverse condition. Current external invoice
-comparisons, final allocation confirmation and full platform/package qualification
-are still pending. Publication remains postponed.
+preserve the exact boundary and every adverse condition.
+
+[Subsequent local completion](refined/local-completion.json) and
+[complete logs/raw warm observations](refined/local-completion.tar.xz) close the two
+previously live handles: retained2f34a48f passes120internal/193public.NET11 checks
+and all eight warm-script goldens, balances and cleanup. Its warm invoice allocation
+is also **−19.51%**. Unchanged desktop controls move up27.88%, with adverse results
+retained; there is no desktop CPU claim. Initial fresh/async allocation evidence
+keeps its628ab680 label. Current external invoice comparisons and full platform/
+package qualification remain pending. Publication remains postponed.
