@@ -341,6 +341,14 @@ bind once, local initializers run once, and returned tuples/lists remain ordinar
 Python values. There is no separate native expression graph or whole-body type
 proof. Each operation checks its actual operands after earlier effects and admission.
 
+Adjacent exact integer operations can retain one unpublished temporary in a signed
+64-bit accumulator, following the existing executable instructions. Only the final
+value is boxed. Stores, calls and control flow keep ordinary Python values;
+overflow, other operands and protocols retain the general exact-integer path.
+Each operation observes cancellation. Fixed-size results use existing minor-storage
+headroom; major arithmetic retains its allocation preflights and result funding.
+This adds no shadow slots, numeric identity ledger or separate evaluator.
+
 Eligible composed executable helpers keep using these private slots when their callees
 complete directly, including named/default arguments and saved methods. A callee
 requiring a frame stops before its dynamic operation. Its prepared frame and every

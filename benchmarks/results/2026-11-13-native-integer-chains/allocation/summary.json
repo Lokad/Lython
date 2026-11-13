@@ -1,0 +1,51 @@
+{
+  "complete": true,
+  "performanceQualified": false,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocationBytes": {
+        "before": 6200041.0,
+        "candidate": 5675753.0,
+        "before-control": 6201665.0
+      },
+      "allocationChangePercent": [
+        -8.456202144469692,
+        -8.480174275779163
+      ],
+      "executionMilliseconds": {
+        "before": 8.3113355,
+        "candidate": 8.090880375,
+        "before-control": 8.441078
+      },
+      "diagnosticChangePercent": [
+        -2.652463313507203,
+        -4.148731062549116
+      ]
+    },
+    {
+      "case": "scripts.csv-invoice.rich-text",
+      "allocationBytes": {
+        "before": 8006584.0,
+        "candidate": 7482522.0,
+        "before-control": 8006553.0
+      },
+      "allocationChangePercent": [
+        -6.545388145556208,
+        -6.54502630532765
+      ],
+      "executionMilliseconds": {
+        "before": 9.285009625,
+        "candidate": 8.66202075,
+        "before-control": 9.03551475
+      },
+      "diagnosticChangePercent": [
+        -6.70962013138463,
+        -4.133621717567348
+      ]
+    }
+  ]
+}

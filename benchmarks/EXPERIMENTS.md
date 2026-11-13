@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Same-stream native integer intermediates retained](results/2026-11-13-native-integer-chains/README.md):
+91d removes16384unpublished boxes/524288B per4096invoice records without shadow
+slots or a new engine. Allocation−8.46..−8.48%(rich−6.55%); controlled invoice
+warm−6.55..−2.91%/fresh−6.03..−3.78%, supporting CPU. Original adverse report and
+longer-warmup confirmation retain moving controls: report remains unresolved debt,
+no universal gain or inferred CPython ratio.135internal/216public unique focused
+cases pass; initial invalid fixture retained/corrected. Full source delivery follows.
+
 [Qualified native-return CPython refresh](results/2026-11-13-native-return-cpython-checkpoint/README.md):
 B671 six jobs233.888s on85c73469/8f, no later integer prototype. Invoice warm
 1.27–1.31×CPython3.13.16, compilation1.08–1.09×, fresh1.29–1.31×. Captured text

@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
-    internal ref struct NativeExecution(PyExecutableFunction function, Span<object> values,
+    internal ref partial struct NativeExecution(PyExecutableFunction function, Span<object> values,
         bool consumedByIteration, int unpackedReturnCount)
     {
         private readonly PyExecutableFunction _function = function;
@@ -143,6 +143,7 @@ internal sealed partial class LythonRuntime
                         var first = Read(instruction.InputStart, 0);
                         var second = Read(instruction.SecondInput, 1);
                         var augmented = instruction.OpCode == ExecutableOpCode.Augmented;
+                        if (!augmented && TryIntegerChain(instruction, first, second)) break;
                         if (!augmented && TryEvaluateScalarComparison(instruction.BinaryOperator, first, second,
                             _scope, instruction.Span, out var scalarTruth))
                         {

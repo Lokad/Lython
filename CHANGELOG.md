@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep unpublished intermediate integer results in one machine accumulator within
+  adjacent native instructions, boxing the final value once. Preserve exact
+  overflow promotion, Python floor/remainder, protocols, error order, cancellation
+  and memory ownership without adding a value representation or execution backend.
+
 - Transfer completed native tuple-return elements directly to immediate exact
   unpacking, avoiding a transient tuple and backing array. Preserve conservative
   admission, aliases, target order, cancellation and ordinary suspended results.

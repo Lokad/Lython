@@ -29,6 +29,10 @@ checks refusal before major allocation, retained input/result funding and
 cancellation during host admission. Both execution APIs preserve signed floor and
 remainder identities, reflected operators, augmented evaluation order and math
 accumulators in the [public semantic checks](Lokad.Lython.PublicApi.Tests/IntegerBinarySemanticsTests.cs).
+Native integer chains also preserve exact promotion, error order, identity at stores
+and actual I/O transfer in their[public cases](Lokad.Lython.PublicApi.Tests/NativeIntegerChainTests.cs);
+the[ownership boundary](Lokad.Lython.Tests/NativeIntegerChainTests.cs) preserves
+first refusal, cancellation and retained inputs through promoted arithmetic.
 
 [Builtin slot owners](Lokad.Lython.PublicApi.Tests/BuiltinSlotOwnerTests.cs) preserve
 original descriptor identity through class-body and later aliases, including
