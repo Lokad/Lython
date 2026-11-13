@@ -4,7 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- | --- |
 | CSV validation/helper calls | 5,120 records / 68,625 B | 4.170–4.249 ms | 4.464–4.520 ms | 0.92–0.95× | `2d91eb1a` | Diagnostic; L1.90%, P1.24% / 1.86% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
-| CSV invoice / composed pricing helpers | 4,096 records /127,031 B | 8.914–9.067 ms | 6.288–6.305 ms | 1.41–1.44× | `63389c9d` | Diagnostic; L1.71%, P0.26% /1.25% |
+| CSV invoice / composed pricing helpers | 4,096 records /127,031 B | 8.140–8.204 ms | 6.273–6.313 ms | 1.29–1.31× | `85c73469` | Diagnostic; L0.78%, P0.63% /1.16% |
 | Text summary/helpers | 3,072 lines /35,840 B | 1.295–1.323 ms | 1.290–1.308 ms | 0.99–1.03× | `983bab96` | Variable; L2.14%, P1.37% / 2.70% |
 | Text / captured helper + counter | 3,072 lines /35,840 B | 1.552–1.562 ms | 1.032–1.038 ms | 1.50–1.51× | `31d65e01` | Diagnostic; L0.63%, P0.58% / 0.83% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 3.613–3.627 ms | 4.183–4.214 ms | 0.86–0.87× | `8ec7bfab` | Diagnostic; L0.37%, P0.72% / 0.63% |
@@ -22,14 +22,16 @@ Timed rows measure **compilation plus one execution in an already-running host**
 mediated RAM-file I/O, full output validation and prior-result cleanup. Startup,
 fixture staging/reset, protocol and final cache teardown are excluded.
 
-**Latest measured source:** `63389c9d`/`2e74ef4f`, collected2026-11-13UTC;
+**Latest measured source:** `85c73469`/`8f69261d`, collected2026-11-13UTC;
 full Windows/Ubuntu actual.NET11/10, stress and installed-package checks GREEN.
-Six jobs finish250.895s with complete identity/output/ownership/quiet/join/archive
-gates. Invoice warm remains1.45–1.46×CPython; compilation1.10–1.11× and fresh
-1.41–1.44×. Captured text warm1.65–1.66× and variable file search1.59–1.67× retain
-material gaps; JSON warm0.82–0.83×. The invoice warm source-pair gain is separately
-8.4–10.7% versus an earlier qualified Lython, with supporting wider CPU.
-[Exact sources, controls and boundaries](../benchmarks/results/2026-11-13-invoice-cpython-checkpoint/README.md).
+Six jobs finish233.888s with complete identity/output/ownership/quiet/join/archive
+gates. Invoice warm is1.27–1.31×CPython; compilation1.08–1.09× and fresh1.29–1.31×.
+Captured text warm1.65–1.75× and file search1.75–1.82× retain material gaps and
+moving Lython controls(4.47%/3.21%). JSON warm0.82–0.86× also has moving controls.
+These observations include no later integer prototype and attribute no change
+against earlier collections. [Exact sources, controls and boundaries](../benchmarks/results/2026-11-13-native-return-cpython-checkpoint/README.md).
+The[previous633/2e observations](../benchmarks/results/2026-11-13-invoice-cpython-checkpoint/README.md)
+remain historical.
 
 **Earlier measured source:** `31d65e01`/`e34cacaf`, collected 2026-11-13 UTC:
 complete UTF-8/UTF-16 report warm, compilation and compile-to-result. Six jobs finish
@@ -96,15 +98,15 @@ Warm execution reuses the compiled script and excludes compilation:
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
 | CSV validation/helper calls | 4.098–4.169 ms | 4.302–4.311 ms | 0.95–0.97× | `2d91eb1a` | Partial campaign; L1.74%, P0.20% / 1.27% |
-| CSV invoice / composed pricing helpers | 8.788–8.819 ms | 6.038–6.075 ms | 1.45–1.46× | `63389c9d` | Diagnostic; L0.36%, P0.62% /1.30% |
+| CSV invoice / composed pricing helpers | 7.923–8.004 ms | 6.132–6.247 ms | 1.27–1.31× | `85c73469` | Diagnostic; L1.02%, P1.85% /1.20% |
 | CSV summary/helpers | 3.282–3.302 ms | 3.201 ms | 1.03–1.03× | `6f76` | Diagnostic; 0.60% / 0.68% |
 | Text summary/helpers | 1.143–1.305 ms | 1.179–1.200 ms | 0.95–1.11× | `983bab96` | Variable; L12.40%, P1.74% / 1.10% |
-| Text / captured helper + counter | 1.477–1.478 ms | 0.892–0.893 ms | 1.65–1.66× | `63389c9d` | Diagnostic; L0.10%, P0.12% /2.44% |
-| JSON-lines/helpers | 3.410–3.410 ms | 4.084–4.165 ms | 0.82–0.83× | `63389c9d` | Diagnostic; L0.001%, P1.97% /1.69% |
+| Text / captured helper + counter | 1.475–1.544 ms | 0.884–0.894 ms | 1.65–1.75× | `85c73469` | Variable; L4.47%, P1.08% /2.35% |
+| JSON-lines/helpers | 3.408–3.481 ms | 4.046–4.138 ms | 0.82–0.86× | `85c73469` | Variable; L2.08%, P2.23% /1.64% |
 | JSON-to-Markdown report | 2.85–2.96 ms | 2.31–2.32 ms | 1.23–1.28× | `31d65e01` | Variable; L3.91%, P0.73% / 2.51% |
 | JSON-to-Markdown / UTF-16 output | 3.08–3.13 ms | 2.45–2.46 ms | 1.25–1.28× | `31d65e01` | Variable; L1.64%, P0.44% / 4.04% |
 | Config edit | 78.3–78.6 µs | 61.8–62.1 µs | 1.26–1.27× | `ee44` | Diagnostic; L0.41%, P0.43% / 2.18% |
-| Protected file search | 0.257–0.263 ms | 0.157–0.162 ms | 1.59–1.67× | `63389c9d` | Variable; L2.44%, P2.70% /3.10% |
+| Protected file search | 0.280–0.290 ms | 0.1595–0.1599 ms | 1.75–1.82× | `85c73469` | Variable; L3.21%, P0.25% /2.52% |
 | File search / keyword-default helper | 259.11–262.53 µs | 160.56–161.12 µs | 1.61–1.64× | `82ed92d4` | Diagnostic; L1.32%, P0.35% / 1.40% |
 | File search / guarded helper | 0.276–0.282 ms | 0.160–0.166 ms | 1.66–1.76× | `2d91eb1a` | Partial/variable; L2.16%, P3.56% / 2.72% |
 | Copy/checksum/manifest | 0.243–0.247 ms | 0.155 ms | 1.56–1.59× | `4598` | Diagnostic; 1.72% /2.72% |
@@ -115,7 +117,7 @@ Compilation alone includes code construction and disposal under the shared allow
 | Workload | Lython | CPython | Lython / CPython | Source | Status; control / max IQR |
 | --- | ---: | ---: | ---: | --- | --- |
 | CSV validation/helper calls | 70.24–70.33 µs | 66.80–67.09 µs | 1.05–1.05× | `2d91eb1a` | Partial campaign; L0.12%, P0.43% / 4.06% |
-| CSV invoice / composed pricing helpers | 102.43–103.31 µs | 92.93–93.51 µs | 1.10–1.11× | `63389c9d` | Diagnostic; L0.85%, P0.63% /1.49% |
+| CSV invoice / composed pricing helpers | 100.84–101.30 µs | 92.95–93.10 µs | 1.08–1.09× | `85c73469` | Diagnostic; L0.46%, P0.16% /1.55% |
 | CSV summary/helpers | 61.3–62.2 µs | 59.1 µs | 1.04–1.05× | `6f76` | Diagnostic; 1.46% / 0.89% |
 | Text summary/helpers | 0.044–0.044 ms | 0.041–0.041 ms | 1.07–1.07× | `983bab96` | Diagnostic; L0.29%, P0.40% / 1.71% |
 | Text / captured helper + counter | 44.390–44.589 µs | 54.191–54.480 µs | 0.81–0.82× | `31d65e01` | Diagnostic; L0.45%, P0.53% / 0.77% |
@@ -136,7 +138,7 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering;
-For`63389c9d`, five-second warmups (twelve captured) and five rotated500ms
+For`85c73469`, five-second warmups (twelve captured) and five rotated500ms
 rounds. Earlier sources retain their recorded settings:
 eight-second warmups (five for compilation) and seven rotated500ms rounds for
 `31d65e01` reports; captured text uses twelve seconds (five compilation) with the

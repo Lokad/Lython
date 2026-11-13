@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Qualified native-return CPython refresh](results/2026-11-13-native-return-cpython-checkpoint/README.md):
+B671 six jobs233.888s on85c73469/8f, no later integer prototype. Invoice warm
+1.27–1.31×CPython3.13.16, compilation1.08–1.09×, fresh1.29–1.31×. Captured text
+1.65–1.75×, search1.75–1.82× and JSON0.82–0.86× retain moving controls; all raw
+spreads/goldens/ownership/quiet/join/archive evidence survives. No multiplied
+speedup, cross-collection attribution or whole-script objective completion.
+
 [Final tuple-result transport retained](results/2026-11-13-native-tuple-return/final/README.md):
 8f69261d removes transient tuple/backing, caller scratch/shared declaration/duplicate
 publisher and the caller-output span from hot state.110internal/183public focused11
