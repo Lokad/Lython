@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current file-search execution gate](results/2026-11-13-file-search-source-gate/README.md):
+40d92aef/91d,905guest leaves/4.59CPU s,20.0%unknown/0ambiguous; all source/output/
+ownership/quiet/join/SHA-RAM-archive gates. Actual source has a live keyword-only
+default. Native entry/dispatch includes real work; buffered sync reads already
+avoid per-line async state. A bounded remaining-window header-capacity admission
+candidate removes per-line transactions, without a call arena or inferred CPU gain.
+
 [Frontend identifier source gate](results/2026-11-13-frontend-name-source-gate/README.md):
 six current sources on40d92aef/91d, valid public compilation and all shared balances
 return to baseline. Parser18–62KiB/full compilation86–243KiB; modeled duplicate
@@ -19,7 +26,8 @@ slots or a new engine. Allocation−8.46..−8.48%(rich−6.55%); controlled inv
 warm−6.55..−2.91%/fresh−6.03..−3.78%, supporting CPU. Original adverse report and
 longer-warmup confirmation retain moving controls: report remains unresolved debt,
 no universal gain or inferred CPython ratio.135internal/216public unique focused
-cases pass; initial invalid fixture retained/corrected. Full source delivery follows.
+cases pass; initial invalid fixture retained/corrected. Source-matched40d92aef full
+delivery is[cached GREEN43417375221](results/2026-11-13-native-integer-chains/delivery/README.md).
 
 [Qualified native-return CPython refresh](results/2026-11-13-native-return-cpython-checkpoint/README.md):
 B671 six jobs233.888s on85c73469/8f, no later integer prototype. Invoice warm

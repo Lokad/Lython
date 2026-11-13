@@ -15,7 +15,9 @@ first refusal/cancellation with retained inputs and balanced frames, genuine del
 I/O after arithmetic, plus existing isolated managed-stack continuations. An initial
 test fixture was correctly rejected by static unbound-local validation; original
 failure is retained and corrected valid-source/operand-error coverage passes.
-Full platform/stress/installed-consumer qualification follows committed source.
+Committed40d92aef is fully source-matched and qualified on Windows/Ubuntu actual
+NET11/10, original stress and installed Release consumers by[cached GREEN43417375221](delivery/README.md).
+All573frozen production inputs match that head; no unchanged measurement replay.
 
 | Complete script / phase | Elapsed change | Wider process CPU change | Reference/candidate spread; max IQR |
 | --- | ---: | ---: | --- |

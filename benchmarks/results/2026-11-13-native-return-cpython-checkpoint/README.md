@@ -12,7 +12,7 @@ consumers. R311's later integer prototype is excluded.
 | Invoice compile + run |8.140–8.204|6.273–6.313|1.29–1.31×|0.78/0.63%;1.16%|
 | Captured text warm |1.475–1.544|0.884–0.894|1.65–1.75×|4.47/1.08%;2.35%|
 | JSON-lines warm |3.408–3.481|4.046–4.138|0.82–0.86×|2.08/2.23%;1.64%|
-| File search warm |0.280–0.290|0.1595–0.1599|1.75–1.82×|3.21/0.25%;2.52%|
+| File search / keyword-only helper default warm |0.280–0.290|0.1595–0.1599|1.75–1.82×|3.21/0.25%;2.52%|
 
 Ratio above one means Lython is slower. Ranges span two process medians per
 engine/four ratio pairings, not confidence intervals. Text, JSON and search have

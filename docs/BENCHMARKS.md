@@ -26,7 +26,8 @@ fixture staging/reset, protocol and final cache teardown are excluded.
 full Windows/Ubuntu actual.NET11/10, stress and installed-package checks GREEN.
 Six jobs finish233.888s with complete identity/output/ownership/quiet/join/archive
 gates. Invoice warm is1.27–1.31×CPython; compilation1.08–1.09× and fresh1.29–1.31×.
-Captured text warm1.65–1.75× and file search1.75–1.82× retain material gaps and
+Captured text warm1.65–1.75× and file search with a keyword-only helper default
+1.75–1.82× retain material gaps and
 moving Lython controls(4.47%/3.21%). JSON warm0.82–0.86× also has moving controls.
 These observations include no later integer prototype and attribute no change
 against earlier collections. [Exact sources, controls and boundaries](../benchmarks/results/2026-11-13-native-return-cpython-checkpoint/README.md).
@@ -106,7 +107,7 @@ Warm execution reuses the compiled script and excludes compilation:
 | JSON-to-Markdown report | 2.85–2.96 ms | 2.31–2.32 ms | 1.23–1.28× | `31d65e01` | Variable; L3.91%, P0.73% / 2.51% |
 | JSON-to-Markdown / UTF-16 output | 3.08–3.13 ms | 2.45–2.46 ms | 1.25–1.28× | `31d65e01` | Variable; L1.64%, P0.44% / 4.04% |
 | Config edit | 78.3–78.6 µs | 61.8–62.1 µs | 1.26–1.27× | `ee44` | Diagnostic; L0.41%, P0.43% / 2.18% |
-| Protected file search | 0.280–0.290 ms | 0.1595–0.1599 ms | 1.75–1.82× | `85c73469` | Variable; L3.21%, P0.25% /2.52% |
+| Protected file search / keyword-only helper default | 0.280–0.290 ms | 0.1595–0.1599 ms | 1.75–1.82× | `85c73469` | Variable; L3.21%, P0.25% /2.52% |
 | File search / keyword-default helper | 259.11–262.53 µs | 160.56–161.12 µs | 1.61–1.64× | `82ed92d4` | Diagnostic; L1.32%, P0.35% / 1.40% |
 | File search / guarded helper | 0.276–0.282 ms | 0.160–0.166 ms | 1.66–1.76× | `2d91eb1a` | Partial/variable; L2.16%, P3.56% / 2.72% |
 | Copy/checksum/manifest | 0.243–0.247 ms | 0.155 ms | 1.56–1.59× | `4598` | Diagnostic; 1.72% /2.72% |
@@ -205,7 +206,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Native integer intermediates | Snapshot91d0540d: invoice allocation−8.46..−8.48%(rich−6.55%); whole-invoice warm−6.55..−2.91%/fresh−6.03..−3.78%, supporting wider CPU | Against qualified85c73469/8f. One accumulator in the existing stream; report controls remain inconclusive. Focused checks pass, full source delivery pending. No update to CPython ratios above. [Exact sources, original adverse control and confirmation](../benchmarks/results/2026-11-13-native-integer-chains/README.md) |
+| Native integer intermediates | Qualified40d92aef/frozen91d0540d: invoice allocation−8.46..−8.48%(rich−6.55%); whole-invoice warm−6.55..−2.91%/fresh−6.03..−3.78%, supporting wider CPU | Against qualified85c73469/8f. One accumulator in the existing stream; report controls remain inconclusive. Full platform/stress/consumer delivery GREEN. No update to CPython ratios above. [Exact sources, original adverse control and confirmation](../benchmarks/results/2026-11-13-native-integer-chains/README.md) |
 | Immediate tuple-return transport | Qualified85c73469/frozen8f69261d: invoice allocation−6.4%(rich text−5.0%); observed invoice warm elapsed1.8–5.1% lower | Against qualified14dd45b7/93a6d134. Fresh execution uncertain; small text-control debt retained. Full platform/stress/consumer delivery GREEN. Does not update CPython ratios above. [Exact sources, adverse phases and boundaries](../benchmarks/results/2026-11-13-native-tuple-return/final/README.md) |
 | Formatted helpers in final slots | UTF8/UTF16 report warm elapsed−5.8..−9.1% /−6.5..−8.0%, report compile-to-result−4.9..−8.3%, supporting wider CPU; allocation flat | Shares one formatting kernel; avoids per-row frame/workspace setup. Compilation/text/search uncertainty survives; fully qualified31d65e01. External rows above are measured separately. [All source-pair controls](../benchmarks/results/2026-11-13-formatted-helper-slots/README.md) |
 | Direct split-range construction | Captured-text compile-to-result elapsed−3.6..−9.1%, supporting wider CPU−4.4..−7.7%; allocation effectively flat | Removes separate scratch and the final cursor inventory copy. Warm text crosses zero; moving CSV/search controls leave regression uncertainty. Timed `9e53b9fa` versus qualified `161cd935`; source-pair result, no new CPython measurement. [Evidence](../benchmarks/results/2026-11-13-direct-range-construction/README.md) |
