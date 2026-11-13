@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 267362304,
+  "archiveSHA256": "8bc4a6ee33f94e88535366a4f9b82696d4e3bf36301816a443dc81ef24938abd",
+  "source": "Committed557d18d4/frozen9d157bb2 after word-buffer loan consolidation; corrected full delivery independently running",
+  "performanceComparison": false
+}
