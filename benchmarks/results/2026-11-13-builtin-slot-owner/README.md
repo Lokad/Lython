@@ -31,3 +31,5 @@ the larger performance/regex roadmap continues.
 
 [Exact source, original failures, invalid attempt and focused checks](source-checks.tar.xz),
 [validation/source identity](validation.json), [CPU source gate](../2026-11-13-config-cpu-source-gate/README.md).
+
+Finald413392c full qualification is GREEN; [cached delivery](delivery/README.md). Earlier pending statements describe their recording dates.

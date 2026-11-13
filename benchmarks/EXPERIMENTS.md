@@ -7011,3 +7011,5 @@ identities,29 normal files/571 core sources unchanged. No normal pin/API/depende
 promotion or backend speed claim. Final single-match owners, nativeUTF8 names and
 token-independent preparation remain separate; source unchanged funded forwarding
 is not a new successful capability probe. [Exact copies and validation](results/2026-11-13-regex-dev79-bridge/README.md).
+
+R298 d413392c/d7b2ddaf full Windows/Ubuntu actual.NET11/10 ordinary, original stress and installed Release consumers are GREEN43354417890. [Cached source-matched delivery](results/2026-11-13-builtin-slot-owner/delivery/README.md). No performance or publication claim.
