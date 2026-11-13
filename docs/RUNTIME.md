@@ -341,13 +341,16 @@ bind once, local initializers run once, and returned tuples/lists remain ordinar
 Python values. There is no separate native expression graph or whole-body type
 proof. Each operation checks its actual operands after earlier effects and admission.
 
-Composed executable helpers keep using these private slots when their callees
+Eligible composed executable helpers keep using these private slots when their callees
 complete directly, including named/default arguments and saved methods. A callee
 requiring a frame stops before its dynamic operation. Its prepared frame and every
 caller transfer once to the same linear runner; no host operation is left running
 during promotion. Refused caller admission unwinds all prepared descendants before
 retiring their funding. Existing native receiver operations precede user-function
-selection, and managed stack admission remains active at each call.
+selection. A conservative native-nesting eligibility threshold hands deeper calls
+to the existing linear runner before entering another CLR call chain. It reuses
+logical depth state and adds no guest recursion limit or counter. Managed stack
+admission remains active; deep calls can acquire ordinary frame storage earlier.
 
 Incoming captured cells retain their definition-owned identity. Creating new
 captured locals, protected suites, mirrored namespaces and special lexical scopes

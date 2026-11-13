@@ -6,6 +6,9 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal const int NativeValueCapacity = 16;
+    // Eligibility only: deeper calls continue in the existing linear runner.
+    // Use its logical depth, without a second counter or a guest recursion limit.
+    private const int NativeCallDepth = 8;
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
@@ -312,6 +315,7 @@ internal sealed partial class LythonRuntime
         private bool CallFunction(ExecutableCallSite call, int start, object target, out object result)
         {
             result = PyNone.Instance;
+            if (_scope.State.CurrentRecursionDepth >= NativeCallDepth) return false;
             var function = target as PyExecutableFunction;
             object? receiver = call.HasReceiver && Values[start] is not PyNone ? Values[start] : null;
             if (target is PyBoundMethod { Function: PyExecutableFunction boundFunction } bound)

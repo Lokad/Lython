@@ -15,6 +15,7 @@ internal static class StackGuardFixture
             throw new InvalidOperationException("Fixture and requested library bytes differ.");
         if (scenario is "native-rglob" or "native-glob") return await FilesystemTraversalFixture.RunAsync(scenario, libraryHash);
         if (scenario.StartsWith("dataclass-convert-", StringComparison.Ordinal)) return await DataclassTraversalFixture.RunAsync(scenario, libraryHash);
+        if (scenario == "native-call-continuation") return await NativeCallStackFixture.RunAsync(scenario, libraryHash);
         const string suspension = "with open('/ready', 'r') as stream:\n stream.read()\n";
         const string lists = "x = 7\ny = 7\nfor _ in range(512):\n x = [x]\n y = [y]\n";
         var body = scenario switch

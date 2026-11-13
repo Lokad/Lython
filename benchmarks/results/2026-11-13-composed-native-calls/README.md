@@ -7,6 +7,13 @@ operation and transfer once to the existing linear runner. Parent admission fail
 unwinds every prepared descendant. No new evaluator, call arena, policy or public
 option is introduced.
 
+Delivery qualification subsequently found a native call-nesting stack overflow
+after genuine suspension on Windows. Core2f34a48f is not fully qualified. A
+controlled256KiB managed-continuation probe reproduces the fatal regression against
+the qualified6b468bf1 reference. The following handoff correction and its independent
+qualification are tracked in [native call stack handoff](../2026-11-13-native-call-stack-handoff/README.md).
+All measurements below retain their original source labels.
+
 The qualified reference is **fc2531b8**, measured core **6b468bf1**. Initial prototype
 **628ab680** has the same 571 production inputs except four runtime files. The retained
 refinement **2f34a48f** changes only native call selection order relative to that

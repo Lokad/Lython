@@ -27,7 +27,8 @@ internal static class SubprocessProbeRunner
         string executable,
         IEnumerable<string> arguments,
         string? standardInput = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        IReadOnlyDictionary<string, string>? environment = null)
     {
         var startInfo = new ProcessStartInfo(executable)
         {
@@ -46,6 +47,8 @@ internal static class SubprocessProbeRunner
         {
             startInfo.ArgumentList.Add(argument);
         }
+        if (environment is not null)
+            foreach (var (name, value) in environment) startInfo.Environment[name] = value;
 
         Process process;
         try

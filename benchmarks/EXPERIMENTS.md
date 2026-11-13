@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Managed continuation call handoff](results/2026-11-13-native-call-stack-handoff/README.md)
+corrects a demonstrated R303 stack overflow. A controlled owned256KiB continuation
+returns structured failure with qualified6b468bf1 but crashes2f34a48f with0xC00000FD.
+Corrected2e74ef4f uses existing logical depth to hand deep calls to the linear runner;
+no new guest limit/counter or native stack telemetry. Direct/mutual recovery and
+finite100-depth calls pass, with66focused Release cases per actual target. Original
+failed CI, inconclusive probes and fatal traces survive; full delivery is pending.
+Older R303 performance observations keep their original source labels.
+
 [Composed executable calls](results/2026-11-13-composed-native-calls/README.md)
 remove eager caller materialization for completing helper compositions. Retained
 refinement2f34a48f versus qualified6b468bf1 improves complete invoice warm8.0–9.8%

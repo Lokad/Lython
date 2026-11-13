@@ -68,6 +68,11 @@ live defaults, saved receivers, closure effects and aliases through real I/O and
 cancellation. The [native boundary](Lokad.Lython.Tests/ComposedNativeCallTests.cs)
 rejects parent admission after descendants acquire storage, checks that no callback
 ran, balances call entries and preserves an independently owned input's funding.
+The existing isolated stack fixture also resumes direct/mutual recursion on a
+256 KiB managed thread. A completed command on its single-worker profile proves
+that the first prefix returned before host completion. It checks the actual
+continuation thread, recovery, finite recursion and budget cleanup without a sleep
+race or a new runtime execution policy.
 
 [Formatted helper slots](Lokad.Lython.Tests/FormattedStringExecutableTests.cs)
 check complete record rendering, nested/dynamic fields and single-field string

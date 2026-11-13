@@ -6,6 +6,8 @@
   directly, avoiding eager caller frames and workspace transport. Transfer prepared
   descendants once for dynamic operations and actual I/O; preserve cancellation,
   retained inputs, stack admission and terminal refusal cleanup.
+  Hand deeper compositions to the linear runner before exhausting small managed
+  continuation stacks; preserve supported finite recursion after actual suspension.
 
 - Preserve neighboring temporary reservations through reentrant refund cleanup.
   Stop growth if its owner ends during admission, returning unused funding and
