@@ -1,0 +1,437 @@
+﻿2026-11-13T17:32:48.7104417Z Current runner version: '2.338.2'
+2026-11-13T17:32:48.7131524Z ##[group]Runner Image Provisioner
+2026-11-13T17:32:48.7132389Z Hosted Compute Agent
+2026-11-13T17:32:48.7132935Z Version: 20261103.629
+2026-11-13T17:32:48.7133583Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-13T17:32:48.7134293Z Build Date: 2026-11-03T17:26:59Z
+2026-11-13T17:32:48.7134956Z Worker ID: {95ffbbdf-e879-4f3f-8bbb-69da9ea8b0af}
+2026-11-13T17:32:48.7135678Z Region: westus
+2026-11-13T17:32:48.7136182Z Cloud: Azure
+2026-11-13T17:32:48.7136689Z ##[endgroup]
+2026-11-13T17:32:48.7138037Z ##[group]Operating System
+2026-11-13T17:32:48.7138724Z Microsoft Windows Server 2025
+2026-11-13T17:32:48.7139326Z 10.0.26100
+2026-11-13T17:32:48.7140372Z Datacenter
+2026-11-13T17:32:48.7140896Z ##[endgroup]
+2026-11-13T17:32:48.7141416Z ##[group]Runner Image
+2026-11-13T17:32:48.7141973Z Image: windows-2025-vs2026
+2026-11-13T17:32:48.7142615Z Version: 20261103.298.1
+2026-11-13T17:32:48.7144111Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261103.298/images/windows/Windows2025-VS2026-Readme.md
+2026-11-13T17:32:48.7145857Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261103.298
+2026-11-13T17:32:48.7146886Z ##[endgroup]
+2026-11-13T17:32:48.7148009Z ##[group]GITHUB_TOKEN Permissions
+2026-11-13T17:32:48.7149892Z Contents: read
+2026-11-13T17:32:48.7150601Z Metadata: read
+2026-11-13T17:32:48.7151157Z ##[endgroup]
+2026-11-13T17:32:48.7153448Z Secret source: Actions
+2026-11-13T17:32:48.7154345Z Cache mode: write
+2026-11-13T17:32:48.7155043Z Prepare workflow directory
+2026-11-13T17:32:48.7516463Z Prepare all required actions
+2026-11-13T17:32:48.7573514Z Getting action download info
+2026-11-13T17:32:49.1339386Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-13T17:32:49.2720796Z Download action repository 'actions/setup-dotnet@v4' (SHA:67a3573c9a986a3f9c594539f4ab511d57bb3ce9)
+2026-11-13T17:32:49.7588046Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-13T17:32:49.9198401Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-13T17:32:50.3062205Z Complete job name: tests (windows-latest)
+2026-11-13T17:32:50.4910837Z ##[group]Run actions/checkout@v4
+2026-11-13T17:32:50.4912416Z with:
+2026-11-13T17:32:50.4913192Z   repository: Lokad/Lython
+2026-11-13T17:32:50.4921567Z   token: ***
+2026-11-13T17:32:50.4922351Z   ssh-strict: true
+2026-11-13T17:32:50.4923141Z   ssh-user: git
+2026-11-13T17:32:50.4923949Z   persist-credentials: true
+2026-11-13T17:32:50.4924834Z   clean: true
+2026-11-13T17:32:50.4925645Z   sparse-checkout-cone-mode: true
+2026-11-13T17:32:50.4926617Z   fetch-depth: 1
+2026-11-13T17:32:50.4927441Z   fetch-tags: false
+2026-11-13T17:32:50.4928196Z   show-progress: true
+2026-11-13T17:32:50.4928957Z   lfs: false
+2026-11-13T17:32:50.4929702Z   submodules: false
+2026-11-13T17:32:50.4930510Z   set-safe-directory: true
+2026-11-13T17:32:50.4931383Z   allow-unsafe-pr-checkout: false
+2026-11-13T17:32:50.4932718Z ##[endgroup]
+2026-11-13T17:32:50.6432730Z Syncing repository: Lokad/Lython
+2026-11-13T17:32:50.6435195Z ##[group]Getting Git version info
+2026-11-13T17:32:50.6436298Z Working directory is 'D:\a\Lython\Lython'
+2026-11-13T17:32:50.7454975Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T17:32:51.1297452Z git version 2.56.0.windows.4
+2026-11-13T17:32:51.1428257Z ##[endgroup]
+2026-11-13T17:32:51.1435880Z Temporarily overriding HOME='D:\a\_temp\822578e0-175e-477a-bd23-45b786a29815' before making global git config changes
+2026-11-13T17:32:51.1439563Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T17:32:51.1441574Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Lython\Lython
+2026-11-13T17:32:51.2086169Z Deleting the contents of 'D:\a\Lython\Lython'
+2026-11-13T17:32:51.2094012Z ##[group]Initializing the repository
+2026-11-13T17:32:51.2106797Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\Lython\Lython
+2026-11-13T17:32:51.3017647Z Initialized empty Git repository in D:/a/Lython/Lython/.git/
+2026-11-13T17:32:51.3066481Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Lokad/Lython
+2026-11-13T17:32:51.3856218Z ##[endgroup]
+2026-11-13T17:32:51.3857589Z ##[group]Disabling automatic garbage collection
+2026-11-13T17:32:51.3865231Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-13T17:32:51.4265729Z ##[endgroup]
+2026-11-13T17:32:51.4267005Z ##[group]Setting up auth
+2026-11-13T17:32:51.4277857Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T17:32:51.4689760Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T17:32:53.0700563Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T17:32:53.1096958Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T17:32:53.6854668Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T17:32:53.7265417Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T17:32:54.3399198Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-13T17:32:54.3827306Z ##[endgroup]
+2026-11-13T17:32:54.3827930Z ##[group]Fetching the repository
+2026-11-13T17:32:54.3845521Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +23a65e9e3372ce6262d048f9a1def86cb6e2ec2e:refs/remotes/origin/master
+2026-11-13T17:34:11.7390634Z From https://github.com/Lokad/Lython
+2026-11-13T17:34:11.7394458Z  * [new ref]           23a65e9e3372ce6262d048f9a1def86cb6e2ec2e -> origin/master
+2026-11-13T17:34:11.7437298Z ##[endgroup]
+2026-11-13T17:34:11.7437964Z ##[group]Determining the checkout info
+2026-11-13T17:34:11.7442208Z ##[endgroup]
+2026-11-13T17:34:11.7454198Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-13T17:34:11.8183328Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-13T17:34:11.8577741Z ##[group]Checking out the ref
+2026-11-13T17:34:11.8592157Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B master refs/remotes/origin/master
+2026-11-13T17:34:12.9577913Z Updating files:  15% (2598/16420)
+2026-11-13T17:34:13.0104228Z Updating files:  16% (2628/16420)
+2026-11-13T17:34:13.0860113Z Updating files:  17% (2792/16420)
+2026-11-13T17:34:13.1797564Z Updating files:  18% (2956/16420)
+2026-11-13T17:34:13.2432897Z Updating files:  19% (3120/16420)
+2026-11-13T17:34:13.3091691Z Updating files:  20% (3284/16420)
+2026-11-13T17:34:13.3709650Z Updating files:  21% (3449/16420)
+2026-11-13T17:34:13.6064603Z Updating files:  22% (3613/16420)
+2026-11-13T17:34:13.6650155Z Updating files:  23% (3777/16420)
+2026-11-13T17:34:13.7538872Z Updating files:  24% (3941/16420)
+2026-11-13T17:34:13.8218033Z Updating files:  25% (4105/16420)
+2026-11-13T17:34:13.8930005Z Updating files:  26% (4270/16420)
+2026-11-13T17:34:13.9413264Z Updating files:  27% (4434/16420)
+2026-11-13T17:34:13.9501098Z Updating files:  28% (4598/16420)
+2026-11-13T17:34:13.9988546Z Updating files:  28% (4620/16420)
+2026-11-13T17:34:14.0744540Z Updating files:  29% (4762/16420)
+2026-11-13T17:34:14.1580244Z Updating files:  30% (4926/16420)
+2026-11-13T17:34:14.2194746Z Updating files:  31% (5091/16420)
+2026-11-13T17:34:14.2750271Z Updating files:  32% (5255/16420)
+2026-11-13T17:34:14.3395981Z Updating files:  33% (5419/16420)
+2026-11-13T17:34:14.4013687Z Updating files:  34% (5583/16420)
+2026-11-13T17:34:14.4521809Z Updating files:  35% (5747/16420)
+2026-11-13T17:34:14.5284477Z Updating files:  36% (5912/16420)
+2026-11-13T17:34:14.6066210Z Updating files:  37% (6076/16420)
+2026-11-13T17:34:14.6797432Z Updating files:  38% (6240/16420)
+2026-11-13T17:34:14.8983205Z Updating files:  39% (6404/16420)
+2026-11-13T17:34:14.9539680Z Updating files:  40% (6568/16420)
+2026-11-13T17:34:14.9599442Z Updating files:  41% (6733/16420)
+2026-11-13T17:34:15.0064516Z Updating files:  41% (6751/16420)
+2026-11-13T17:34:15.0616769Z Updating files:  42% (6897/16420)
+2026-11-13T17:34:15.1213264Z Updating files:  43% (7061/16420)
+2026-11-13T17:34:15.1791090Z Updating files:  44% (7225/16420)
+2026-11-13T17:34:15.2577683Z Updating files:  45% (7389/16420)
+2026-11-13T17:34:15.3189880Z Updating files:  46% (7554/16420)
+2026-11-13T17:34:15.3877284Z Updating files:  47% (7718/16420)
+2026-11-13T17:34:15.6262089Z Updating files:  48% (7882/16420)
+2026-11-13T17:34:15.8035073Z Updating files:  49% (8046/16420)
+2026-11-13T17:34:15.9650348Z Updating files:  50% (8210/16420)
+2026-11-13T17:34:16.0346083Z Updating files:  50% (8319/16420)
+2026-11-13T17:34:16.2230906Z Updating files:  51% (8375/16420)
+2026-11-13T17:34:16.4625126Z Updating files:  52% (8539/16420)
+2026-11-13T17:34:16.9748470Z Updating files:  53% (8703/16420)
+2026-11-13T17:34:16.9809133Z Updating files:  53% (8863/16420)
+2026-11-13T17:34:17.3181476Z Updating files:  54% (8867/16420)
+2026-11-13T17:34:17.5860393Z Updating files:  55% (9031/16420)
+2026-11-13T17:34:17.8623706Z Updating files:  56% (9196/16420)
+2026-11-13T17:34:17.9706223Z Updating files:  57% (9360/16420)
+2026-11-13T17:34:18.0457893Z Updating files:  57% (9471/16420)
+2026-11-13T17:34:18.2898980Z Updating files:  58% (9524/16420)
+2026-11-13T17:34:18.4213530Z Updating files:  59% (9688/16420)
+2026-11-13T17:34:18.6442959Z Updating files:  60% (9852/16420)
+2026-11-13T17:34:18.7993608Z Updating files:  61% (10017/16420)
+2026-11-13T17:34:18.9801894Z Updating files:  62% (10181/16420)
+2026-11-13T17:34:18.9883842Z Updating files:  62% (10330/16420)
+2026-11-13T17:34:19.1145827Z Updating files:  63% (10345/16420)
+2026-11-13T17:34:19.2313274Z Updating files:  64% (10509/16420)
+2026-11-13T17:34:19.3076493Z Updating files:  65% (10673/16420)
+2026-11-13T17:34:19.4705867Z Updating files:  66% (10838/16420)
+2026-11-13T17:34:19.5821256Z Updating files:  67% (11002/16420)
+2026-11-13T17:34:19.6874831Z Updating files:  68% (11166/16420)
+2026-11-13T17:34:19.8462094Z Updating files:  69% (11330/16420)
+2026-11-13T17:34:19.9295022Z Updating files:  70% (11494/16420)
+2026-11-13T17:34:19.9803407Z Updating files:  71% (11659/16420)
+2026-11-13T17:34:20.0124206Z Updating files:  71% (11764/16420)
+2026-11-13T17:34:20.1644083Z Updating files:  72% (11823/16420)
+2026-11-13T17:34:20.3685741Z Updating files:  73% (11987/16420)
+2026-11-13T17:34:20.4728104Z Updating files:  74% (12151/16420)
+2026-11-13T17:34:20.5552654Z Updating files:  75% (12315/16420)
+2026-11-13T17:34:20.7650000Z Updating files:  76% (12480/16420)
+2026-11-13T17:34:20.9382790Z Updating files:  77% (12644/16420)
+2026-11-13T17:34:20.9944075Z Updating files:  78% (12808/16420)
+2026-11-13T17:34:21.0687649Z Updating files:  78% (12914/16420)
+2026-11-13T17:34:21.1739957Z Updating files:  79% (12972/16420)
+2026-11-13T17:34:21.3107561Z Updating files:  80% (13136/16420)
+2026-11-13T17:34:21.4057870Z Updating files:  81% (13301/16420)
+2026-11-13T17:34:21.4953508Z Updating files:  82% (13465/16420)
+2026-11-13T17:34:21.6866156Z Updating files:  83% (13629/16420)
+2026-11-13T17:34:21.9087170Z Updating files:  84% (13793/16420)
+2026-11-13T17:34:21.9925904Z Updating files:  85% (13957/16420)
+2026-11-13T17:34:22.0543287Z Updating files:  85% (14029/16420)
+2026-11-13T17:34:22.0983842Z Updating files:  86% (14122/16420)
+2026-11-13T17:34:22.1505383Z Updating files:  87% (14286/16420)
+2026-11-13T17:34:22.1971598Z Updating files:  88% (14450/16420)
+2026-11-13T17:34:22.2419870Z Updating files:  89% (14614/16420)
+2026-11-13T17:34:22.2845480Z Updating files:  90% (14778/16420)
+2026-11-13T17:34:22.3266023Z Updating files:  91% (14943/16420)
+2026-11-13T17:34:22.3721104Z Updating files:  92% (15107/16420)
+2026-11-13T17:34:22.4136325Z Updating files:  93% (15271/16420)
+2026-11-13T17:34:22.4543441Z Updating files:  94% (15435/16420)
+2026-11-13T17:34:22.4963438Z Updating files:  95% (15599/16420)
+2026-11-13T17:34:22.5371243Z Updating files:  96% (15764/16420)
+2026-11-13T17:34:22.5786307Z Updating files:  97% (15928/16420)
+2026-11-13T17:34:22.6187338Z Updating files:  98% (16092/16420)
+2026-11-13T17:34:22.6604112Z Updating files:  99% (16256/16420)
+2026-11-13T17:34:22.6604641Z Updating files: 100% (16420/16420)
+2026-11-13T17:34:22.6604950Z Updating files: 100% (16420/16420), done.
+2026-11-13T17:34:22.6948583Z Reset branch 'master'
+2026-11-13T17:34:22.6965671Z branch 'master' set up to track 'origin/master'.
+2026-11-13T17:34:22.8470769Z ##[endgroup]
+2026-11-13T17:34:22.8885174Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-13T17:34:22.9251603Z 23a65e9e3372ce6262d048f9a1def86cb6e2ec2e
+2026-11-13T17:34:22.9767224Z ##[group]Run actions/setup-dotnet@v4
+2026-11-13T17:34:22.9767561Z with:
+2026-11-13T17:34:22.9767765Z   global-json-file: global.json
+2026-11-13T17:34:22.9768019Z   dotnet-version: 10.0.x
+2026-11-13T17:34:22.9768256Z   cache: false
+2026-11-13T17:34:22.9768441Z ##[endgroup]
+2026-11-13T17:34:23.1566038Z (node:2920) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T17:34:23.1566779Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T17:34:23.2639092Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v4\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Runtime dotnet -Channel LTS
+2026-11-13T17:34:25.2376642Z dotnet-install: Downloaded file https://builds.dotnet.microsoft.com/dotnet/Runtime/10.0.15/dotnet-runtime-10.0.15-win-x64.zip size is 36980907 bytes.
+2026-11-13T17:34:25.2379488Z dotnet-install: Either downloaded or local package size can not be measured. One of them may be corrupted.
+2026-11-13T17:34:25.2413452Z dotnet-install: Extracting the archive.
+2026-11-13T17:34:26.1769547Z dotnet-install: Note that the script does not ensure your Windows version is supported during the installation.
+2026-11-13T17:34:26.1776382Z dotnet-install: To check the list of supported versions, go to https://learn.microsoft.com/dotnet/core/install/windows#supported-versions
+2026-11-13T17:34:26.1784632Z dotnet-install: Installed version is 10.0.15
+2026-11-13T17:34:26.1793141Z dotnet-install: Installation finished
+2026-11-13T17:34:26.3400129Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v4\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Channel 10.0
+2026-11-13T17:34:32.1320009Z dotnet-install: Downloaded file https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk-10.0.404-win-x64.zip size is 303618098 bytes.
+2026-11-13T17:34:32.1326358Z dotnet-install: Either downloaded or local package size can not be measured. One of them may be corrupted.
+2026-11-13T17:34:32.1355360Z dotnet-install: Extracting the archive.
+2026-11-13T17:34:53.6297972Z dotnet-install: Note that the script does not ensure your Windows version is supported during the installation.
+2026-11-13T17:34:53.6302679Z dotnet-install: To check the list of supported versions, go to https://learn.microsoft.com/dotnet/core/install/windows#supported-versions
+2026-11-13T17:34:53.6308946Z dotnet-install: Installed version is 10.0.404
+2026-11-13T17:34:53.6315314Z dotnet-install: Installation finished
+2026-11-13T17:34:53.7615551Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v4\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Runtime dotnet -Channel LTS
+2026-11-13T17:34:54.5294176Z dotnet-install: .NET Core Runtime with version '10.0.15' is already installed.
+2026-11-13T17:34:54.6856264Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -Sta -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command & 'D:\a\_actions\actions\setup-dotnet\v4\externals\install-dotnet.ps1' -SkipNonVersionedFiles -Version 11.0.100-rc.3.26522.148
+2026-11-13T17:35:01.9695231Z dotnet-install: Downloaded file https://builds.dotnet.microsoft.com/dotnet/Sdk/11.0.100-rc.3.26522.148/dotnet-sdk-11.0.100-rc.3.26522.148-win-x64.zip size is 336948730 bytes.
+2026-11-13T17:35:01.9701860Z dotnet-install: Either downloaded or local package size can not be measured. One of them may be corrupted.
+2026-11-13T17:35:01.9731407Z dotnet-install: Extracting the archive.
+2026-11-13T17:35:19.3705934Z dotnet-install: Note that the script does not ensure your Windows version is supported during the installation.
+2026-11-13T17:35:19.3712999Z dotnet-install: To check the list of supported versions, go to https://learn.microsoft.com/dotnet/core/install/windows#supported-versions
+2026-11-13T17:35:19.3717000Z dotnet-install: Installed version is 11.0.100-rc.3.26522.148
+2026-11-13T17:35:19.3722513Z dotnet-install: Installation finished
+2026-11-13T17:35:19.4462638Z ##[group]Run actions/setup-python@v5
+2026-11-13T17:35:19.4463069Z with:
+2026-11-13T17:35:19.4463335Z   python-version: 3.13
+2026-11-13T17:35:19.4463622Z   check-latest: false
+2026-11-13T17:35:19.4466097Z   token: ***
+2026-11-13T17:35:19.4466373Z   update-environment: true
+2026-11-13T17:35:19.4466683Z   allow-prereleases: false
+2026-11-13T17:35:19.4466974Z   freethreaded: false
+2026-11-13T17:35:19.4467250Z env:
+2026-11-13T17:35:19.4467501Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-13T17:35:19.4467809Z ##[endgroup]
+2026-11-13T17:35:19.6094534Z ##[group]Installed versions
+2026-11-13T17:35:19.6321164Z (node:7688) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T17:35:19.6322631Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T17:35:19.6323531Z Successfully set up CPython (3.13.17)
+2026-11-13T17:35:19.6324194Z ##[endgroup]
+2026-11-13T17:35:19.6605608Z ##[group]Run dotnet build Lokad.Lython.slnx -c Release
+2026-11-13T17:35:19.6606189Z [36;1mdotnet build Lokad.Lython.slnx -c Release[0m
+2026-11-13T17:35:19.7170424Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-13T17:35:19.7170982Z env:
+2026-11-13T17:35:19.7171316Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-13T17:35:19.7171875Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:35:19.7172639Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+2026-11-13T17:35:19.7173251Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:35:19.7174395Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:35:19.7174988Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:35:19.7175437Z ##[endgroup]
+2026-11-13T17:35:20.9968536Z 
+2026-11-13T17:35:22.2208391Z   Determining projects to restore...
+2026-11-13T17:35:25.3137927Z   Restored D:\a\Lython\Lython\tools\LythonProbe\LythonProbe.csproj (in 1.26 sec).
+2026-11-13T17:35:25.3377709Z   Restored D:\a\Lython\Lython\tests\Lokad.Lython.WorkerFixture\Lokad.Lython.WorkerFixture.csproj (in 9 ms).
+2026-11-13T17:35:28.9419015Z   Restored D:\a\Lython\Lython\src\Lokad.Lython\Lokad.Lython.csproj (in 4.8 sec).
+2026-11-13T17:35:28.9420370Z   Restored D:\a\Lython\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj (in 4.81 sec).
+2026-11-13T17:35:34.4321573Z   Restored D:\a\Lython\Lython\benchmarks\Lokad.Lython.Benchmarks\Lokad.Lython.Benchmarks.csproj (in 10.61 sec).
+2026-11-13T17:35:34.6637189Z   Restored D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj (in 5.69 sec).
+2026-11-13T17:35:34.6639018Z   Restored D:\a\Lython\Lython\tests\Lokad.Lython.Tests\Lokad.Lython.Tests.csproj (in 9.26 sec).
+2026-11-13T17:35:34.9664350Z C:\Program Files\dotnet\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\Lokad.Lython.PublicApi.Tests.csproj::TargetFramework=net11.0]
+2026-11-13T17:35:35.0471752Z C:\Program Files\dotnet\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\a\Lython\Lython\src\Lokad.Lython.Utf8Regex\Lokad.Lython.Utf8Regex.csproj::TargetFramework=net11.0]
+2026-11-13T17:35:35.0530041Z C:\Program Files\dotnet\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\a\Lython\Lython\src\Lokad.Lython\Lokad.Lython.csproj::TargetFramework=net11.0]
+2026-11-13T17:35:35.1167081Z C:\Program Files\dotnet\sdk\11.0.100-rc.3.26522.148\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(385,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [D:\a\Lython\Lython\benchmarks\Lokad.Lython.Benchmarks\Lokad.Lython.Benchmarks.csproj::TargetFramework=net11.0]
+2026-11-13T17:36:21.7266376Z   Lokad.Lython -> D:\a\Lython\Lython\src\Lokad.Lython\bin\Release\net11.0\Lokad.Lython.dll
+2026-11-13T17:36:22.3271098Z   Lokad.Lython -> D:\a\Lython\Lython\src\Lokad.Lython\bin\Release\net10.0\Lokad.Lython.dll
+2026-11-13T17:36:26.6542760Z   Lokad.Lython.Utf8Regex -> D:\a\Lython\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net10.0\Lokad.Lython.Utf8Regex.dll
+2026-11-13T17:36:26.6544000Z   Lokad.Lython.Utf8Regex -> D:\a\Lython\Lython\src\Lokad.Lython.Utf8Regex\bin\Release\net11.0\Lokad.Lython.Utf8Regex.dll
+2026-11-13T17:36:31.2760977Z   Lokad.Lython.WorkerFixture -> D:\a\Lython\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net10.0\Lokad.Lython.WorkerFixture.dll
+2026-11-13T17:36:36.5782669Z   Lokad.Lython.Benchmarks -> D:\a\Lython\Lython\benchmarks\Lokad.Lython.Benchmarks\bin\Release\net10.0\Lokad.Lython.Benchmarks.dll
+2026-11-13T17:36:36.6101568Z   Lokad.Lython.WorkerFixture -> D:\a\Lython\Lython\tests\Lokad.Lython.WorkerFixture\bin\Release\net11.0\Lokad.Lython.WorkerFixture.dll
+2026-11-13T17:36:36.9319673Z   Lokad.Lython.Benchmarks -> D:\a\Lython\Lython\benchmarks\Lokad.Lython.Benchmarks\bin\Release\net11.0\Lokad.Lython.Benchmarks.dll
+2026-11-13T17:36:38.6890301Z   LythonProbe -> D:\a\Lython\Lython\tools\LythonProbe\bin\Release\net11.0\LythonProbe.dll
+2026-11-13T17:36:40.8513168Z   LythonProbe -> D:\a\Lython\Lython\tools\LythonProbe\bin\Release\net10.0\LythonProbe.dll
+2026-11-13T17:36:56.8468143Z   Lokad.Lython.Tests -> D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll
+2026-11-13T17:37:11.8639590Z   Lokad.Lython.Tests -> D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net10.0\Lokad.Lython.WhiteBox.Tests.dll
+2026-11-13T17:37:42.2803187Z   Lokad.Lython.PublicApi.Tests -> D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll
+2026-11-13T17:38:12.7864455Z   Lokad.Lython.PublicApi.Tests -> D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net10.0\Lokad.Lython.PublicApi.Tests.dll
+2026-11-13T17:38:12.7866572Z 
+2026-11-13T17:38:12.7866948Z Build succeeded.
+2026-11-13T17:38:12.7867663Z     0 Warning(s)
+2026-11-13T17:38:12.7867945Z     0 Error(s)
+2026-11-13T17:38:12.7868274Z 
+2026-11-13T17:38:12.7868576Z Time Elapsed 00:02:51.81
+2026-11-13T17:38:13.3845789Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+2026-11-13T17:38:13.3847574Z [36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }[0m
+2026-11-13T17:38:13.3848569Z [36;1mif ($LASTEXITCODE -ne 0) { exit 1 }[0m
+2026-11-13T17:38:13.3950628Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-13T17:38:13.3951294Z env:
+2026-11-13T17:38:13.3951713Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-13T17:38:13.3952360Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:38:13.3953274Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+2026-11-13T17:38:13.3954292Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:38:13.3955144Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:38:13.3955957Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:38:13.3956658Z   DOTNET_DbgEnableMiniDump: 1
+2026-11-13T17:38:13.3957149Z   DOTNET_DbgMiniDumpType: Mini
+2026-11-13T17:38:13.3957717Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+2026-11-13T17:38:13.3958403Z ##[endgroup]
+2026-11-13T17:38:14.4833545Z 
+2026-11-13T17:38:15.6062172Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+2026-11-13T17:38:15.7455816Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+2026-11-13T17:38:15.8631862Z A total of 1 test files matched the specified pattern.
+2026-11-13T17:38:16.0091451Z A total of 1 test files matched the specified pattern.
+2026-11-13T17:38:16.2101987Z Blame: Attaching crash dump utility to process testhost (7688).
+2026-11-13T17:38:16.3705439Z Blame: Attaching crash dump utility to process testhost (7344).
+2026-11-13T17:39:01.0296118Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-13T17:39:01.0519338Z 
+2026-11-13T17:39:01.0622458Z Passed!  - Failed:     0, Passed:  4691, Skipped:     0, Total:  4691, Duration: 41 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+2026-11-13T17:41:02.2473441Z [31;1m[xUnit.net 00:02:45.36]     Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "{}") [FAIL][0m
+2026-11-13T17:41:02.2999993Z [31;1m[xUnit.net 00:02:45.36]     Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "3.14") [FAIL][0m
+2026-11-13T17:41:02.3078194Z [31;1m[xUnit.net 00:02:45.37]     Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "None") [FAIL][0m
+2026-11-13T17:41:02.3190907Z [31;1m[xUnit.net 00:02:45.37]     Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "[]") [FAIL][0m
+2026-11-13T17:41:02.3217684Z [31;1m[xUnit.net 00:02:45.37]     Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "1") [FAIL][0m
+2026-11-13T17:41:02.3227466Z   Failed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "{}") [2 ms]
+2026-11-13T17:41:02.3232764Z   Error Message:
+2026-11-13T17:41:02.3242010Z    Assert.Contains() Failure: Filter not matched in collection
+2026-11-13T17:41:02.3254932Z Collection: [LythonDiagnostic { Code = LA3158, Message = json.loads(s, *, ...) expects str or bytes., Severity = Error, Span = LythonSourceSpan { Start = 23, Length = 2, Line = 2, Column = 12 } }]
+2026-11-13T17:41:02.3257736Z   Stack Trace:
+2026-11-13T17:41:02.3259990Z      at Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(String expression) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonRoundTripScenarioTests.cs:line 124
+2026-11-13T17:41:02.3270676Z    at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+2026-11-13T17:41:02.3275544Z    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+2026-11-13T17:41:02.3291595Z   Failed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "3.14") [< 1 ms]
+2026-11-13T17:41:02.3301102Z   Error Message:
+2026-11-13T17:41:02.3303554Z    Assert.Contains() Failure: Filter not matched in collection
+2026-11-13T17:41:02.3307819Z Collection: [LythonDiagnostic { Code = LA3158, Message = json.loads(s, *, ...) expects str or bytes., Severity = Error, Span = LythonSourceSpan { Start = 23, Length = 4, Line = 2, Column = 12 } }]
+2026-11-13T17:41:02.3324296Z   Stack Trace:
+2026-11-13T17:41:02.3332687Z      at Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(String expression) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonRoundTripScenarioTests.cs:line 124
+2026-11-13T17:41:02.3346689Z    at InvokeStub_JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(Object, Span`1)
+2026-11-13T17:41:02.3351400Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-11-13T17:41:02.3357676Z   Failed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "None") [< 1 ms]
+2026-11-13T17:41:02.3364470Z   Error Message:
+2026-11-13T17:41:02.3369882Z    Assert.Contains() Failure: Filter not matched in collection
+2026-11-13T17:41:02.3377307Z Collection: [LythonDiagnostic { Code = LA3158, Message = json.loads(s, *, ...) expects str or bytes., Severity = Error, Span = LythonSourceSpan { Start = 23, Length = 4, Line = 2, Column = 12 } }]
+2026-11-13T17:41:02.3381520Z   Stack Trace:
+2026-11-13T17:41:02.3390100Z      at Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(String expression) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonRoundTripScenarioTests.cs:line 124
+2026-11-13T17:41:02.3395828Z    at InvokeStub_JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(Object, Span`1)
+2026-11-13T17:41:02.3404479Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-11-13T17:41:02.3409316Z   Failed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "[]") [< 1 ms]
+2026-11-13T17:41:02.3416861Z   Error Message:
+2026-11-13T17:41:02.3420865Z    Assert.Contains() Failure: Filter not matched in collection
+2026-11-13T17:41:02.3426955Z Collection: [LythonDiagnostic { Code = LA3158, Message = json.loads(s, *, ...) expects str or bytes., Severity = Error, Span = LythonSourceSpan { Start = 23, Length = 2, Line = 2, Column = 12 } }]
+2026-11-13T17:41:02.3432699Z   Stack Trace:
+2026-11-13T17:41:02.3438346Z      at Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(String expression) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonRoundTripScenarioTests.cs:line 124
+2026-11-13T17:41:02.3441452Z    at InvokeStub_JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(Object, Span`1)
+2026-11-13T17:41:02.3478035Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-11-13T17:41:02.3490264Z   Failed Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(expression: "1") [< 1 ms]
+2026-11-13T17:41:02.3492099Z   Error Message:
+2026-11-13T17:41:02.3497487Z    Assert.Contains() Failure: Filter not matched in collection
+2026-11-13T17:41:02.3502149Z Collection: [LythonDiagnostic { Code = LA3158, Message = json.loads(s, *, ...) expects str or bytes., Severity = Error, Span = LythonSourceSpan { Start = 23, Length = 1, Line = 2, Column = 12 } }]
+2026-11-13T17:41:02.3503836Z   Stack Trace:
+2026-11-13T17:41:02.3505729Z      at Lokad.Lython.PublicApi.Tests.JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(String expression) in D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\JsonRoundTripScenarioTests.cs:line 124
+2026-11-13T17:41:02.3508168Z    at InvokeStub_JsonRoundTripScenarioTests.JsonLoads_NonStringInput_FailsWithTypeError(Object, Span`1)
+2026-11-13T17:41:02.3509876Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-11-13T17:42:53.9158678Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+2026-11-13T17:42:53.9345711Z 
+2026-11-13T17:42:53.9540533Z Failed!  - Failed:     5, Passed: 17597, Skipped:     0, Total: 17602, Duration: 4 m 26 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+2026-11-13T17:42:54.5685815Z ##[error]Process completed with exit code 1.
+2026-11-13T17:42:54.5921956Z ##[group]Run actions/upload-artifact@v4
+2026-11-13T17:42:54.5922369Z with:
+2026-11-13T17:42:54.5922646Z   name: crash-dumps-windows-latest
+2026-11-13T17:42:54.5923320Z   path: D:\a\Lython\Lython/crash-*.dmp
+D:\a\Lython\Lython/**/TestResults/**/Sequence_*.xml
+D:\a\Lython\Lython/**/TestResults/**/*.dmp
+
+2026-11-13T17:42:54.5923973Z   if-no-files-found: ignore
+2026-11-13T17:42:54.5924270Z   compression-level: 6
+2026-11-13T17:42:54.5924545Z   overwrite: false
+2026-11-13T17:42:54.5924826Z   include-hidden-files: false
+2026-11-13T17:42:54.5925122Z env:
+2026-11-13T17:42:54.5925381Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-13T17:42:54.5925817Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:54.5926336Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+2026-11-13T17:42:54.5926845Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:54.5927401Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:54.5927870Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:54.5928253Z ##[endgroup]
+2026-11-13T17:42:54.7880904Z (node:6924) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T17:42:54.7881735Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T17:42:58.0274985Z No files were found with the provided path: D:\a\Lython\Lython/crash-*.dmp
+2026-11-13T17:42:58.0275986Z D:\a\Lython\Lython/**/TestResults/**/Sequence_*.xml
+2026-11-13T17:42:58.0276818Z D:\a\Lython\Lython/**/TestResults/**/*.dmp. No artifacts will be uploaded.
+2026-11-13T17:42:58.0623597Z ##[group]Run actions/upload-artifact@v4
+2026-11-13T17:42:58.0624039Z with:
+2026-11-13T17:42:58.0624323Z   name: test-log-windows-latest
+2026-11-13T17:42:58.0624651Z   path: test.log
+test-net10.log
+stress-*.log
+
+2026-11-13T17:42:58.0625011Z   if-no-files-found: warn
+2026-11-13T17:42:58.0625284Z   compression-level: 6
+2026-11-13T17:42:58.0625572Z   overwrite: false
+2026-11-13T17:42:58.0625831Z   include-hidden-files: false
+2026-11-13T17:42:58.0626111Z env:
+2026-11-13T17:42:58.0626362Z   DOTNET_ROOT: C:\Program Files\dotnet
+2026-11-13T17:42:58.0626761Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:58.0628162Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+2026-11-13T17:42:58.0628670Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:58.0629132Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:58.0629558Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+2026-11-13T17:42:58.0629870Z ##[endgroup]
+2026-11-13T17:42:58.2563116Z (node:1748) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-13T17:42:58.2564858Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-13T17:42:58.2655273Z With the provided path, there will be 1 file uploaded
+2026-11-13T17:42:58.2663829Z Artifact name is valid!
+2026-11-13T17:42:58.2665693Z Root directory input is valid!
+2026-11-13T17:42:58.6474228Z Beginning upload of artifact content to blob storage
+2026-11-13T17:42:58.6686411Z (node:1748) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-13T17:42:58.9482714Z Uploaded bytes 1102
+2026-11-13T17:42:59.0284289Z Finished uploading artifact content to blob storage!
+2026-11-13T17:42:59.0285762Z SHA256 digest of uploaded artifact zip is fb9ddff645cd0dba33e3b487670911317730bbfa88b77c7a76c8590ec8808eeb
+2026-11-13T17:42:59.0287234Z Finalizing artifact upload
+2026-11-13T17:42:59.8055701Z Artifact test-log-windows-latest.zip successfully finalized. Artifact ID 14063540666
+2026-11-13T17:42:59.8056843Z Artifact test-log-windows-latest has been successfully uploaded! Final size is 1102 bytes. Artifact ID is 14063540666
+2026-11-13T17:42:59.8065914Z Artifact download URL: https://github.com/Lokad/Lython/actions/runs/43473827059/artifacts/14063540666
+2026-11-13T17:42:59.8489098Z Post job cleanup.
+2026-11-13T17:43:00.0537900Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-13T17:43:00.0930935Z git version 2.56.0.windows.4
+2026-11-13T17:43:00.1011384Z Temporarily overriding HOME='D:\a\_temp\a3a4b89c-870b-429b-b877-eebf84caee21' before making global git config changes
+2026-11-13T17:43:00.1012473Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-13T17:43:00.1023112Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\Lython\Lython
+2026-11-13T17:43:00.1431397Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-13T17:43:00.1824702Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-13T17:43:00.7512139Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-13T17:43:00.7847291Z http.https://github.com/.extraheader
+2026-11-13T17:43:00.7892449Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-13T17:43:00.8274562Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-13T17:43:01.3951223Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-13T17:43:01.4325867Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-13T17:43:02.0207365Z Cleaning up orphan processes
+2026-11-13T17:43:02.0408332Z Terminate orphan process: pid (3852) (MSBuild)
+2026-11-13T17:43:02.0545079Z Terminate orphan process: pid (4984) (conhost)
+2026-11-13T17:43:02.0697422Z Terminate orphan process: pid (6020) (MSBuild)
+2026-11-13T17:43:02.0829305Z Terminate orphan process: pid (8288) (MSBuild)
+2026-11-13T17:43:02.0959737Z Terminate orphan process: pid (5212) (MSBuild)
+2026-11-13T17:43:02.1183842Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-dotnet@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,9 @@
+{
+  "completeCaptures": true,
+  "allActualUsersJoined": true,
+  "guestAndDiagnosticFixturesRemoved": true,
+  "originalFinalCheckFailedOnlyOnEmptyToolBuildDirectories": true,
+  "samplingNotExactBytesOrCpu": true,
+  "eventLossNotInferredAbsent": true,
+  "source": "Qualified976f9439/frozen97bb; Windows local allocation origins, no timing comparison"
+}

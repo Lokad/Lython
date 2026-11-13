@@ -113,7 +113,7 @@ json.loads("{")
     [InlineData("[]")]
     [InlineData("{}")]
     [InlineData("None")]
-    public void JsonLoads_NonStringInput_FailsWithTypeError(string expression)
+    public void JsonLoads_NonTextOrBytesInput_IsRejected(string expression)
     {
         var result = new LythonEngine(Utf8RegexProvider.Instance).Run(
             "import json\njson.loads(" + expression + ")",
@@ -121,7 +121,8 @@ json.loads("{")
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("json.loads(s, *, ...) expects a string argument", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Code == "LA3158" &&
+            d.Message.Contains("json.loads(s, *, ...) expects str or bytes", StringComparison.Ordinal));
     }
 
     [Fact]
