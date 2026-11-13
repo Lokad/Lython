@@ -218,10 +218,13 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
 
     public void Release()
     {
-        _memoryGovernor?.Release(_committedCapacity);
+        var retired = _committedCapacity;
         _buffer = [];
         _length = 0;
         _committedCapacity = 0;
+        // A refund can reenter or fail. Publish the empty owner first so later
+        // cleanup never refunds another value's still-retained storage.
+        _memoryGovernor?.Release(retired);
     }
 
     public override void Dispose() => Release();
@@ -246,6 +249,11 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
             return;
         }
 
+        Grow(requiredCapacity);
+    }
+
+    private void Grow(int requiredCapacity)
+    {
         var doubledCapacity = _buffer.Length == 0
             ? 8L
             : (long)_buffer.Length * 2L;
@@ -263,17 +271,21 @@ internal sealed class GovernedByteBuilder : ExecutableTemporaryValue
             _memoryGovernor.Reserve(newCapacity, _allocationSpan);
         }
 
-        var expanded = new byte[newCapacity];
-        _buffer.AsSpan(0, _length).CopyTo(expanded);
-
-        if (_memoryGovernor is not null)
+        byte[] expanded;
+        try
         {
-            _memoryGovernor.Release(_committedCapacity);
-            _memoryGovernor.Commit(newCapacity);
-            _committedCapacity = newCapacity;
+            expanded = new byte[newCapacity];
+            _buffer.AsSpan(0, _length).CopyTo(expanded);
+            _memoryGovernor?.Commit(newCapacity);
         }
+        catch { _memoryGovernor?.ReleaseReserved(newCapacity); throw; }
 
+        var retired = _committedCapacity;
         _buffer = expanded;
+        _committedCapacity = _memoryGovernor is null ? 0 : newCapacity;
+        // Both backings were funded during construction. The replacement now
+        // survives even if retiring the old backing invokes a failing callback.
+        _memoryGovernor?.Release(retired);
     }
 
 }

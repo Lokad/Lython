@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Keep byte-builder ownership consistent through refusing, throwing or reentrant
+  refund callbacks. Publish replacement/empty storage before refunding and roll
+  back only unpublished allocation, preserving retained inputs and cleanup balances.
+
 - Construct split-range inventories in existing execution-owned buffers, removing
   separate growing scratch and the final private-cursor copy. Retain admission for
   replacement overlap, cancellation and active loans. Idle capacity stays charged

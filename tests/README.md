@@ -94,6 +94,11 @@ testing initializer mutation without allocation restart.
 checks refusal before publication and funding for an adopted buffer's entire
 capacity, with cleanup returning the shared allowance to baseline.
 
+[Byte-builder transactions](Lokad.Lython.Tests/ByteBuilderOwnershipTransactionTests.cs)
+keep retained inputs funded when a growth refund refuses or throws, or a release
+refund reenters cleanup. The completed owner is published before external refunds;
+cleanup returns to baseline without refunding another value's storage.
+
 [Call input lifetimes](Lokad.Lython.PublicApi.Tests/CallInputLifetimeTests.cs) check
 target/argument order, keyword and positional aliases, function/constructor host
 suspension, cancellation, retained results and joined cleanup. Operand-read cases

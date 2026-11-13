@@ -877,6 +877,9 @@ result owner; finalization admits new string metadata without duplicating payloa
 funding. This avoids a final copy but can retain more capacity than an exact-sized
 copy. Builders detach before reuse. Nonconsuming snapshots remain independent
 copies and admit their real working/output overlap; byte-array results stay exact-sized.
+Builder growth commits and publishes its surviving backing before refunding the
+old one. Release publishes an empty owner before refund callbacks. A failing or
+reentrant refund therefore cannot make later cleanup refund retained input storage.
 
 Whitespace and explicit-separator splitting collect UTF-8 ranges, then admit the complete string
 output and final list capacity together. It fills and adopts the final element
