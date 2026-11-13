@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Invoice helper-call source gate](results/2026-11-13-invoice-cpu-source-gate/README.md)
+captures1,608samples/8.09guestCPU seconds on qualifiedfc2531b8/6b468bf1 with the
+completeb649cbd8 invoice workload. Unresolved leaves8.58%; useful/inlined work is
+not a removable share. Source confirms composed native-eligible calls force eager
+caller frames. R303 is selected for a bounded migration/whole-script decision;
+no predicted speedup or elapsed/CPython comparison. All identity, golden, quiet,
+join and persistent-archive-before-RAM-unmount gates pass.
+
 [Shared annotation demand](results/2026-11-12-annotation-demand/README.md) removes
 the repeated demand walk/body dictionary from unannotated and regex scripts,
 using facts from lexical preparation. 816 focused actual-target checks and five
