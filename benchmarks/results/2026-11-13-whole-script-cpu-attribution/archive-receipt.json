@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266113024,
+  "archiveSHA256": "575be067bba40f8ee71908b8d891ee1f298f2863eceaa297263cc80f1d4ff68a",
+  "source": "Qualifiedcb8736ff/frozen5a184a1d complete captured-text and keyword-default search CPU attribution; no elapsed comparison or later ZIP source included",
+  "performanceComparison": false
+}
