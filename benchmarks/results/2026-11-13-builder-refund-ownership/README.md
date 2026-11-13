@@ -51,3 +51,5 @@ is pending at the next delivery boundary, independently of917e01d8's GREEN resul
 
 [Final source/checks and all seven raw sync rows](refined/source-checks.tar.xz),
 [exact validation state](refined/validation.json).
+
+Finaled398473/91064b5d full qualification is GREEN; [cached delivery](delivery/README.md). Earlier pending statements describe their recording date.
