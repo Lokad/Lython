@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Qualified-source CPython refresh](results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md):
+B683 completes7jobs/296.496s on frozen5a184a1d. Invoice warm1.25–1.27×,
+compile1.09–1.11×, compile-to-result1.21–1.24×; captured text1.60–1.63×,
+search1.68–1.72×, JSON0.84–0.86× and report1.21–1.25×. Report maxIQR5.63%
+and JSON3.24%remain visible. All identity/golden/quiet/join/archive gates pass;
+no later ZIP source or cross-collection gain is inferred. Original space-floor
+refusal and canonical byte/inode/alias retirement proofs survive. The current
+guide now leads with these five warm workloads and separates compilation,
+startup uncertainty, historical cases and source-pair allocation observations.
+Original full guide is archived; publication remains held and the roadmap active.
+
 [Corrected fixed-definition delivery](results/2026-11-13-builtin-core-definitions/delivery/README.md):
 runtimecb8736ff/frozen5a184a1d, test correction90de765d, GREEN43450480558.
 Windows/Ubuntu actual11/10, original stress and installed consumers pass;573frozen
