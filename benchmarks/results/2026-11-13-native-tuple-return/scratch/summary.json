@@ -1,0 +1,159 @@
+{
+  "complete": true,
+  "jobs": 4,
+  "elapsedSeconds": 180.33566296380013,
+  "sourceRevision": "Fully qualified14dd45b7/93a6d134 versus uncommitted75de63a4 direct tuple-result transport with live input cleanup guard",
+  "coreSHA256": {
+    "reference": "93a6d13483515e82313ef9136ab3b96d5b432218d7b3461f95d79dbf12df417e",
+    "candidate": "75de63a45add42a31f263d4ac699254848a499bb57cb6868c7fc30fd7bce09ae",
+    "reference-control": "93a6d13483515e82313ef9136ab3b96d5b432218d7b3461f95d79dbf12df417e",
+    "candidate-control": "75de63a45add42a31f263d4ac699254848a499bb57cb6868c7fc30fd7bce09ae"
+  },
+  "timing": [
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 8.150147403225807,
+        "candidate": 8.041220936507937,
+        "reference-control": 8.078339936507936,
+        "candidate-control": 7.911039625
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 8.387096774193548,
+        "candidate": 8.095238095238095,
+        "reference-control": 8.253968253968255,
+        "candidate-control": 8.125
+      },
+      "iqrPercent": {
+        "reference": 0.7460935710485965,
+        "candidate": 1.097287960410965,
+        "reference-control": 0.804100947063971,
+        "candidate-control": 0.3432662579730035
+      },
+      "changePercentRange": [
+        -2.933784708374343,
+        -2.070973898385564,
+        -1.3364968917587539,
+        -0.45948796772279366
+      ],
+      "processCpuChangePercentRange": [
+        -3.4798534798534786,
+        -3.125,
+        -1.9230769230769384,
+        -1.562500000000011
+      ],
+      "referenceControlPercent": 0.8810572762088964,
+      "candidateControlPercent": 1.618924694842061
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 8.599807644067797,
+        "candidate": 8.1424142,
+        "reference-control": 8.316375766666667,
+        "candidate-control": 8.164635459016393
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 8.813559322033898,
+        "candidate": 8.333333333333334,
+        "reference-control": 8.5,
+        "candidate-control": 8.360655737704919
+      },
+      "iqrPercent": {
+        "reference": 1.5087408803710152,
+        "candidate": 0.9717109863231136,
+        "reference-control": 1.564609536462632,
+        "candidate-control": 1.392706212257513
+      },
+      "changePercentRange": [
+        -5.318647381413355,
+        -5.060254869207315,
+        -2.091795411216657,
+        -1.8245965779765783
+      ],
+      "processCpuChangePercentRange": [
+        -5.44871794871794,
+        -5.138713745271106,
+        -1.9607843137254832,
+        -1.6393442622950727
+      ],
+      "referenceControlPercent": 3.2957932215686547,
+      "candidateControlPercent": 0.27290749979771434
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 1.4833186371681415,
+        "reference-control": 1.439408724137931,
+        "candidate": 1.5120680271903322,
+        "reference": 1.4680046666666666
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 1.5634218289085546,
+        "reference-control": 1.4942528735632183,
+        "candidate": 1.5709969788519638,
+        "reference": 1.5476190476190477
+      },
+      "iqrPercent": {
+        "candidate-control": 0.6998042884060119,
+        "reference-control": 0.0638109235130653,
+        "candidate": 0.8199439475577547,
+        "reference": 0.4283275925747904
+      },
+      "changePercentRange": [
+        1.043182685259958,
+        3.001581774512907,
+        3.0505520978072687,
+        5.047857626117791
+      ],
+      "processCpuChangePercentRange": [
+        1.0211027910143056,
+        1.5105740181268867,
+        4.628999319264815,
+        5.135951661631433
+      ],
+      "referenceControlPercent": 1.9479462959519855,
+      "candidateControlPercent": 1.9013291403040755
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 2.8703104972067037,
+        "reference-control": 2.8060408032786883,
+        "candidate": 2.892275976878613,
+        "reference": 2.9185375
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 3.016759776536313,
+        "reference-control": 2.9508196721311477,
+        "candidate": 3.0635838150289016,
+        "reference": 3.0681818181818183
+      },
+      "iqrPercent": {
+        "candidate-control": 1.035287134830244,
+        "reference-control": 1.6357327311570595,
+        "candidate": 1.51564218849557,
+        "reference": 1.7925763915846717
+      },
+      "changePercentRange": [
+        -1.65243731811896,
+        -0.8998179095312975,
+        2.290404824224934,
+        3.0731974210483237
+      ],
+      "processCpuChangePercentRange": [
+        -1.6759776536312887,
+        -0.14986084350246953,
+        2.2346368715083775,
+        3.8214515093127677
+      ],
+      "referenceControlPercent": 3.8545571787688693,
+      "candidateControlPercent": 0.7594531036286045
+    }
+  ],
+  "externalBaseline": false
+}

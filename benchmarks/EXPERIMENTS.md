@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Tuple-return scratch phase](results/2026-11-13-native-tuple-return/scratch/README.md)
+activates the intended path: invoice allocation−6.4%(rich−5.1%),110internal/
+181public/eight scripts pass. B667180.336s improves invoice warm0.5–2.9%/fresh
+1.8–5.3% with CPU, but text regresses1–5%. Refine to already-admitted caller slots,
+deleting128B scratch/shared declaration/span-publication helper. Wider/narrower
+overlap and old stack/cancellation/ownership coverage precede the changed-source
+control-debt decision. No promotion or inferred CPython ratio.
+
 [Native tuple return, initial inactive guard](results/2026-11-13-native-tuple-return/initial/README.md):
 23eb passes110internal/180public and eight scripts, but invoice allocation is flat.
 Compiled facts prove unrelated owned-slot maxima block the intended call. B666
