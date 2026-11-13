@@ -290,6 +290,14 @@ internal sealed class MemoryGovernor
 
             var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
             governor.Reserve(bytes, span);
+            // Admission can dispose this owner. Its old balance has already
+            // been returned, but these newly admitted bytes have no user yet.
+            if (_governor is null)
+            {
+                governor.ReleaseReserved(bytes);
+                governor.ThrowIfAdmissionFailed();
+                throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
+            }
             _reservedBytes = governor.AddChecked(_reservedBytes, bytes, span);
         }
 
@@ -299,8 +307,8 @@ internal sealed class MemoryGovernor
             var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
             if (bytes > _reservedBytes)
                 throw new InvalidOperationException("Cannot release another reservation's funding.");
-            governor.ReleaseReserved(bytes);
             _reservedBytes -= bytes;
+            governor.ReleaseReserved(bytes);
         }
 
         // Transfer only this reservation's funding to its final storage owner.
@@ -322,8 +330,9 @@ internal sealed class MemoryGovernor
                 return;
             }
 
-            governor.ReleaseReserved(_reservedBytes);
+            var bytes = _reservedBytes;
             _reservedBytes = 0;
+            governor.ReleaseReserved(bytes);
         }
     }
 }

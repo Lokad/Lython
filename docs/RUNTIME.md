@@ -1066,6 +1066,11 @@ against the shared root. Failed admission or callback failure returns only the
 unallocated pending charge; retained callback results keep their funding. Native
 refund/cleanup remains available, and callback suppression cannot erase first refusal.
 
+Temporary owners publish reduced balances before refund callbacks. Reentrant
+cleanup cannot return another owner's funding. If admission ends a temporary
+owner, the pending operation stops and returns its unused growth before allocating;
+any first memory refusal remains the command's failure.
+
 `enumerate` admits a wide next-index magnitude before incrementing it. Its tuples
 fund their exposed old indices while the iterator retains the funded next index.
 Source pulling precedes index construction; exhausted pulls need no unused

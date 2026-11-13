@@ -7034,3 +7034,19 @@ Git-version metadata changes the rebuilt binary identity; the failed private has
 expectation and valid source/build/test proof remain visible. No unchanged full
 qualification replay, speedup claim, dormant code or permanent design veto.
 The whole-script objective continues through the complete call/frame/operand gate.
+
+## R301 — shared temporary reservation ownership correction
+
+[Complete-call source gate and reproduced callback failures](results/2026-11-13-temporary-owner-reentry/README.md)
+confirm bound/local arrays, linear callers, native completion, lazy namespaces and
+operand forwarding already exist. Do not add a duplicate controller from that premise.
+Temporary shrink refunds before publishing its own reduced balance: reentrant
+disposal steals16B from an independent96B reservation. Growth can complete after
+its owner ends. Three before-fix failures reproduce; first-refusal coverage passes.
+
+The existing transaction now publishes balances before refunds and returns unused
+growth before refusing to continue a disposed owner. Five corrected cases,854internal/
+216public per actual target and seven complete-script warm diagnostics pass.
+Allocation is flat; moving desktop controls retain uncertainty, no CPU claim.
+Original overlapping-build/fixture conditions and all logs survive. Full delivery
+is batched from the retained-source commit; broader performance work remains open.

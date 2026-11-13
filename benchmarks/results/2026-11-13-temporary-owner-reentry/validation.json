@@ -1,0 +1,27 @@
+{
+  "referenceCoreSHA256": "0370472fdb33218f0318beaf4ed795fbc5af0f6ae5bd30617b035325b261c169",
+  "coreSHA256": "6b468bf11b163e45464f5dac7bd40cdf7694a6d5b627ef661aee17561a91cdb8",
+  "productionFiles": 571,
+  "changedProductionFiles": [
+    "Runtime/MemoryGovernor.cs"
+  ],
+  "reproducedBefore": {
+    "failed": 3,
+    "passed": 1
+  },
+  "correctedReservationCases": 5,
+  "focusedPerActualTarget": {
+    "internal": 854,
+    "public": 216
+  },
+  "completeScriptWarmSyncCases": 7,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "allocationChangeApproximatelyZero": true,
+  "desktopElapsedQualified": false,
+  "fullDeliveryPending": true,
+  "initialBuildCondition": "Two before-fix builds overlapped while correcting fixture argument-evaluation order. Both finished compilation; the duplicate owned process tree was stopped while exiting (exit1). The original exited0. Negative checks ran only after both were terminal and reproduced three genuine failures; all logs retained. Later corrected serial build succeeds.",
+  "publicApiChange": false,
+  "publicationHeld": true
+}

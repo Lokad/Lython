@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve neighboring temporary reservations through reentrant refund cleanup.
+  Stop growth if its owner ends during admission, returning unused funding and
+  preserving the first memory refusal.
+
 - Preserve builtin object slots' original defining class when they are assigned
   to other classes, including aliases through staticmethod, classmethod or property.
 
