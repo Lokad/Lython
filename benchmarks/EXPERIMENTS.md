@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Counted window-header capacity, not promoted](results/2026-11-13-text-window-capacity/counting/README.md):
+fd258a65 passes198internal/106public Release11 checks. B676 five complete warm
+jobs228.141s remains inconclusive with moving controls; no allocation/CPU gain
+claim. Refine by deleting the counting scan and admitting a conservative byte-based
+capacity bound; retain extra-headroom/earlier-denial tradeoff and all original
+adverse conditions. No scalar credits, failed-design label or percentage veto.
+
 [Current file-search execution gate](results/2026-11-13-file-search-source-gate/README.md):
 40d92aef/91d,905guest leaves/4.59CPU s,20.0%unknown/0ambiguous; all source/output/
 ownership/quiet/join/SHA-RAM-archive gates. Actual source has a live keyword-only
