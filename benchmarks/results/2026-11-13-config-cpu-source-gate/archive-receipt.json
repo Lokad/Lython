@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "freeBytes": 267776000,
+  "archiveSHA256": "7033aed3aeb40727f09a65d411d89917d8b9e216b735b93978f2ef8b25f9a16e",
+  "source": "31d65e01/e34cacaf",
+  "performanceComparison": false
+}

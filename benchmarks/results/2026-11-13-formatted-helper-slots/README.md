@@ -94,3 +94,5 @@ Last free268935168B; all VM users and RAM fixtures are gone at this terminal sta
 [All current rows](b652/summary.json), [raw](b652/observations.tgz),
 [collection/analysis](b652/collection-sources.tar.xz), [terminal](b652/terminal-status.json),
 [custody](b652/archive-receipt.json).
+
+31d65e01/e34cacaf full qualification is GREEN; [cached delivery](delivery/README.md). Earlier pending statements describe their recording dates. Later R298 is excluded.

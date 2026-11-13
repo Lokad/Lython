@@ -6968,3 +6968,16 @@ separate, roughly1.07–1.08×. Six report rows refresh the maintained guide, re
 all earlier/adverse observations and process/IQR variability. Full delivery runs
 independently; no unrelated script or async speed claim follows. [Raw/current/older
 rows](results/2026-11-13-formatted-helper-slots/README.md#cpython-checkpoint--b652).
+
+
+## R297 — current complete config-edit CPU source gate
+
+One bounded current31d65e01/e34cacaf capture has737 samples/3.87guest CPU seconds,
+63.23% unknown leaves (mostly kernel). Host resolve/open nearest frames total45.73%;
+builtin construction3.12%. Useful/inlined work and unknown stacks limit attribution;
+no setup-dominance, CPU-free sharing or speedup is established. No shared-type
+prototype is selected. Mutable per-run namespace/hierarchy/descriptor caches would
+make blind sharing unsafe for ownership. The source gate additionally confirms an
+independent object-slot owner alias bug, trackedR298. Original staging/offline-path
+failures survive; the completed capture passes all output/ownership/quiet/join/
+archive gates, without repeating valid rows. [Evidence and limits](results/2026-11-13-config-cpu-source-gate/README.md).

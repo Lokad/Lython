@@ -24,8 +24,7 @@ fixture staging/reset, protocol and final cache teardown are excluded.
 **Latest measured source:** `31d65e01`/`e34cacaf`, collected 2026-11-13 UTC:
 complete UTF-8/UTF-16 report warm, compilation and compile-to-result. Six jobs finish
 281.260 seconds with complete output/ownership/quiet/join/archive gates. Full
-platform/stress/package qualification is pending; focused actual.NET11/10 checks
-pass. UTF-8 warm has 3.91% Lython process spread; UTF-16 warm maxIQR is4.04% and
+platform/stress/package qualification is GREEN; [cached source-matched delivery](../benchmarks/results/2026-11-13-formatted-helper-slots/delivery/README.md). UTF-8 warm has 3.91% Lython process spread; UTF-16 warm maxIQR is4.04% and
 fresh Lython spread2.39%, so those cases remain variable.
 [Exact current rows, source and controls](../benchmarks/results/2026-11-13-formatted-helper-slots/README.md).
 
@@ -177,7 +176,7 @@ not additive or universal CPU gains:
 
 | Change / affected work | Established result | Limits / evidence |
 | --- | --- | --- |
-| Formatted helpers in final slots | UTF8/UTF16 report warm elapsed−5.8..−9.1% /−6.5..−8.0%, report compile-to-result−4.9..−8.3%, supporting wider CPU; allocation flat | Shares one formatting kernel; avoids per-row frame/workspace setup. Compilation/text/search uncertainty survives, full delivery pending on31d65e01. External rows above are measured separately. [All source-pair controls](../benchmarks/results/2026-11-13-formatted-helper-slots/README.md) |
+| Formatted helpers in final slots | UTF8/UTF16 report warm elapsed−5.8..−9.1% /−6.5..−8.0%, report compile-to-result−4.9..−8.3%, supporting wider CPU; allocation flat | Shares one formatting kernel; avoids per-row frame/workspace setup. Compilation/text/search uncertainty survives; fully qualified31d65e01. External rows above are measured separately. [All source-pair controls](../benchmarks/results/2026-11-13-formatted-helper-slots/README.md) |
 | Direct split-range construction | Captured-text compile-to-result elapsed−3.6..−9.1%, supporting wider CPU−4.4..−7.7%; allocation effectively flat | Removes separate scratch and the final cursor inventory copy. Warm text crosses zero; moving CSV/search controls leave regression uncertainty. Timed `9e53b9fa` versus qualified `161cd935`; source-pair result, no new CPython measurement. [Evidence](../benchmarks/results/2026-11-13-direct-range-construction/README.md) |
 | Ordered final-slot helper execution | Final CSV compile+run elapsed−9.3..−11.3%, supporting widerCPU−8.0..−10.0%; warm allocation flat | Removes346 production lines/native graph/proof/evaluator. Observed native-search elapsed+1.1..+6.4%/CPU+1.9..+6.5% accepted with uncertainty; guarded controls remain unstable. Fully qualified2d91eb1a; partial warm rows and original failures remain visible. [All evidence](../benchmarks/results/2026-11-12-ordered-final-slots/README.md) |
 | Authoritative captured slots | Controlled captured-text Run elapsed−4..−6%, supporting widerCPU−2.6..−4.5%; whole allocation effectively flat | Removes sparse cell arrays/cache synchronization. CSVAsync elapsed+0.4..2.3% accepted debt; capturedAsync/report uncertain. Fully qualified9bca1337; external comparisons above remain separate. [Source pair](../benchmarks/results/2026-11-12-captured-slot-ownership/README.md), [delivery](../benchmarks/results/2026-11-12-captured-slot-ownership/delivery/README.md) |

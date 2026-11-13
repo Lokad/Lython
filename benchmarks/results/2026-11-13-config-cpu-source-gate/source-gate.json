@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "31d65e01",
+  "coreSHA256": "e34cacaf53c3ee96afcfc5b833bb4e40ad05fffc5beaf2cceeb40279570f1c5a",
+  "historicalFixture": "benchmarks/results/2026-11-12-utf16-cpython-checkpoint/observations.tgz!representative.json",
+  "caseId": "scripts.config-edit.small",
+  "sourceSha256": "9bbf48a3f033abd2de76a7fb64ab57e576e8980dfdf58b2403285929a6ccb6e4",
+  "fixtureSha256": "1d10ae54c3a744f1edd3d47ae3f2ec30725f67d3bd122b238677000b95aaf831",
+  "hypothesis": "Repeated immutable builtin/type/exception graph setup may remain material for complete small config scripts. Already-shared functions/signatures are the baseline; mutable execution-funded namespace caches cannot be shared.",
+  "stop": "One usable eight-second current-source capture/source review; select a coherent migration only if supported, otherwise proceed without another registry/controller.",
+  "performanceComparison": false
+}
