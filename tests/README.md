@@ -795,3 +795,9 @@ through both execution APIs. [Byte ownership](Lokad.Lython.Tests/JsonByteOwnersh
 keeps borrowed backing charged after private source cleanup and refuses/cancels
 before window publication. Existing callback and retained-result checks cover byte
 inputs as well as text.
+
+[Word-buffer loans](Lokad.Lython.Tests/WordBufferLoanTests.cs) preserve active and
+nested storage through idle shutdown, reentrant admission, refusal and cancellation.
+A failing reentrant retirement must leave the next borrower usable when cleanup
+is retried. Returned loans clear guest references; retained words remain immutable
+and funded. Existing Unicode/split, final-word and async lifetime checks still apply.

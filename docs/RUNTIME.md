@@ -644,12 +644,15 @@ The entire compiled capacity is admitted before binding, including for mirrored
 functions; it can remain idle in this cache after the call. Idle retention and
 earlier capacity admission can reject tight shared allowances sooner. No workspace crosses
 executions or retains a prior token or guest argument.
-The same cache policy separately retains one word-range buffer per execution,
-shared by larger ordinary splits and private cased-word iteration. Growth admits
-the replacement while the previous buffer remains funded. Active loans survive
-idle-cache shutdown; all backing capacity remains charged, including oversized
-reuse. Private iteration starts with a small buffer even for empty input. Minimum
-capacity and idle retention can reject a tighter shared allowance earlier.
+The same lifetime policy retains one word-buffer loan per execution, shared by
+larger ordinary splits and private cased-word iteration. One admitted object owns
+the range array and private cursor state; repeated lines reuse that storage.
+Returned loans clear guest/source references. Growth admits replacement capacity
+while the previous loan stays funded. Active and nested loans survive idle-cache
+shutdown; later returns relinquish their capacity. All backing remains charged,
+including oversized reuse. Private iteration starts with a small buffer even for
+empty input. Conservative metadata and idle retention can reject tight allowances
+earlier; there is no independent cache allowance.
 Each call opcode prepares the evaluated function and receiver at the instruction.
 Native borrowed/inline binding and the ordinary deferred prefix remain shared by
 both APIs. Completed bodies publish directly after bound argument, workspace and
@@ -1612,8 +1615,9 @@ native cursor in the existing engine. Direct returns inherit the caller's use
 through ordinary call frames and suspension; a result stored in a guest local
 keeps its normal Python representation. This replaces the
 transient list and value array, sharing the forward scanner and casing writer.
-All future word capacities and cursor metadata are admitted before any loop-body
-effects. Each yielded word owns its bytes; the cursor retains its immutable input
+All future word capacities and cursor storage are admitted before any loop-body
+effects. The existing buffer loan supplies cursor metadata without a new packet
+or temporary reservation object per line. Each yielded word owns its bytes; the cursor retains its immutable input
 through iteration and suspension. Unused admitted capacity remains charged until
 execution ownership ends. Assigned, exposed and escaping split results keep their
 ordinary mutable lists. Admission estimates and failure boundaries can differ.

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Consolidate private cased-word cursors and range-array storage into one
+  execution-owned buffer loan, reusing capacity across lines. Preserve eager
+  admission, active/nested ownership and retained words. Clear interpreter-owned
+  temporary slots before reentrant disposal, matching native and async cleanup.
+
 - Accept immutable bytes in json.loads and binary readers in json.load, using
   Python UTF-8/16/32 detection and the existing parser. Borrow same-command UTF-8
   storage conservatively, preserve custom decoder/hook order and codec errors,

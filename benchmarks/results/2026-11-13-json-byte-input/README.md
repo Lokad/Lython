@@ -18,7 +18,8 @@ three additional genuinely pending alias/cancel/refusal cases pass per11/10. Ref
 31independent CPython3.13.2 goldens run through both public APIs. Ownership cases
 cover refusal before publication, borrowed backing after private cleanup, actual
 pending users through cancellation/refusal, retained results and baseline reuse.
-Full final Windows/Ubuntu11/10, stress and installed-consumer qualification is pending.
+Final Windows/Ubuntu11/10, original stress and installed consumers pass
+[43476900946](delivery/README.md), with corrected testsdbcd4051;576inputs match.
 
 ## Measurements and decision
 

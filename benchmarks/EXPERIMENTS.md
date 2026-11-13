@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R324 word-buffer loan](results/2026-11-13-word-buffer-loan/README.md) consolidates
+private cursor/range storage and removes per-line transaction packets. Complete
+captured-text allocation falls35.1%; search allocation is flat. Initial B690text
+timing is adverse and search controls move. Same-image B691longer confirmation
+supports modest text CPU direction; exact magnitude/search/tail latency remain
+uncertain. Both original and confirmation survive. The reentrant-retirement regression
+fails the old slot lifetime and passes after clear-before-dispose. No universal
+tagged values, second pool or return dispatcher is introduced.
+
 [R322 native JSON byte input](results/2026-11-13-json-byte-input/README.md) retains
 compatibility/ownership improvements with no CPU gain claim. B687's unchanged str
 control is adverse; cold byte decoding is separated and a duplicate str execution

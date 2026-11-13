@@ -456,7 +456,14 @@ internal sealed partial class LythonRuntime
                     // disposal can fail; retrying the trim must not enqueue twice.
                     _items[i] = null!;
                 }
-                else if (_items[i] is ExecutableTemporaryValue temporary) temporary.Dispose();
+                else if (_items[i] is ExecutableTemporaryValue temporary)
+                {
+                    // Ownership leaves this slot before cleanup can reenter or
+                    // fail, just as on the native and asynchronous paths. A retry
+                    // must not dispose a returned loan that now has another user.
+                    _items[i] = null!;
+                    temporary.Dispose();
+                }
             }
             Array.Clear(_items, newCount, LiveExtent - newCount);
             LiveExtent = newCount;

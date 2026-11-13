@@ -11,7 +11,8 @@ internal sealed class MemoryGovernor
     private readonly ILythonMemoryReservation _ownership;
     internal ILythonMemoryBudget Budget { get; }
     private WorkspaceCache<object> _functionWorkspace;
-    private WorkspaceCache<(int Start, int End, int Capacity)> _wordRanges;
+    private Text.PyStringOps.CasedWhitespaceIteration? _idleWords;
+    private bool _wordReuseEnded;
     private bool _resizingOwnership;
 
     internal static long WorkspaceBytes(int capacity) => capacity == 0 ? 0 : 64L + 16L * capacity;
@@ -22,20 +23,55 @@ internal sealed class MemoryGovernor
     internal void ReturnFunctionWorkspace(object[] values, int usedLength)
         => _functionWorkspace.Return(this, values, usedLength);
 
-    internal (int Start, int End, int Capacity)[] RentWordRanges(int capacity, LythonSourceSpan? span)
-        => _wordRanges.Rent(this, capacity, span);
+    // The range array and its private iteration state share one existing loan.
+    // Reusing a loan retains its full capacity but clears every guest reference.
+    internal Text.PyStringOps.CasedWhitespaceIteration RentWordRanges(int capacity, LythonSourceSpan? span)
+    {
+        ThrowIfAdmissionFailed();
+        var cached = _idleWords;
+        _idleWords = null;
+        if (cached is not null)
+        {
+            if (cached.Ranges.Length >= capacity) { cached.BeginLoan(); return cached; }
+            Release(cached.StorageBytes);
+        }
+        var bytes = Text.PyStringOps.CasedWhitespaceIteration.EstimateStorageBytes(capacity);
+        Reserve(bytes, span);
+        try
+        {
+            var words = new Text.PyStringOps.CasedWhitespaceIteration(this, capacity);
+            Commit(bytes);
+            return words;
+        }
+        catch { ReleaseReserved(bytes); throw; }
+    }
 
-    internal void ReturnWordRanges((int Start, int End, int Capacity)[] values, int usedLength)
-        => _wordRanges.Return(this, values, usedLength);
+    internal void ReturnWordRanges(Text.PyStringOps.CasedWhitespaceIteration words, int usedLength)
+    {
+        if (!words.EndLoan(usedLength)) return;
+        var cached = _idleWords;
+        if (!_wordReuseEnded && (cached is null || cached.Ranges.Length < words.Ranges.Length))
+        {
+            _idleWords = words;
+            if (cached is not null) Release(cached.StorageBytes);
+        }
+        else Release(words.StorageBytes);
+    }
 
     internal void EndWorkspaceReuse()
     {
         try { _functionWorkspace.End(this); }
-        finally { _wordRanges.End(this); }
+        finally
+        {
+            _wordReuseEnded = true;
+            var cached = _idleWords;
+            _idleWords = null;
+            if (cached is not null) Release(cached.StorageBytes);
+        }
     }
 
-    // Two explicit execution-owned buffers share one cache policy. Active loans
-    // remain charged even after idle reuse ends; no global pool owns storage.
+    // Invocation workspaces use the same one-idle-buffer lifetime policy as the
+    // word loan above. Active loans stay charged after idle reuse has ended.
     private struct WorkspaceCache<T>
     {
         private T[]? _idle;
