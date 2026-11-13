@@ -4,6 +4,7 @@
 | --- | --- | ---: | ---: | ---: | --- | --- |
 | CSV validation/helper calls | 5,120 records / 68,625 B | 4.170–4.249 ms | 4.464–4.520 ms | 0.92–0.95× | `2d91eb1a` | Diagnostic; L1.90%, P1.24% / 1.86% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
+| CSV invoice / composed pricing helpers | 4,096 records /127,031 B | — | — | — | `fc2531b8` runtime | Unmeasured; both engines pass complete-output goldens |
 | Text summary/helpers | 3,072 lines /35,840 B | 1.295–1.323 ms | 1.290–1.308 ms | 0.99–1.03× | `983bab96` | Variable; L2.14%, P1.37% / 2.70% |
 | Text / captured helper + counter | 3,072 lines /35,840 B | 1.552–1.562 ms | 1.032–1.038 ms | 1.50–1.51× | `31d65e01` | Diagnostic; L0.63%, P0.58% / 0.83% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 3.613–3.627 ms | 4.183–4.214 ms | 0.86–0.87× | `8ec7bfab` | Diagnostic; L0.37%, P0.72% / 0.63% |

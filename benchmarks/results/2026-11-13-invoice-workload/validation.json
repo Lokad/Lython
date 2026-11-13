@@ -1,0 +1,40 @@
+{
+  "productionSource": "fc2531b8",
+  "productionUnchanged": true,
+  "cases": [
+    {
+      "id": "scripts.csv-invoice.empty",
+      "records": 0,
+      "inputBytes": 55,
+      "sourceSha256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "expectedOutputSha256": "0ccdb5a77ba5bf7687f2565a8ed97dfb9c1af45503c496fb646312239fab5101",
+      "expectedFilesSha256": "bf6d8e1f3bb42178482362719c079f3ac07aa14372218ad7185279fa32d8a172"
+    },
+    {
+      "id": "scripts.csv-invoice.small",
+      "records": 64,
+      "inputBytes": 2039,
+      "sourceSha256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "expectedOutputSha256": "2a1ddd06d7914ab5caf375a1ba82dc61b18f5ef7ac0795db7da42d5f9f0cc223",
+      "expectedFilesSha256": "12b56065783c13bd0b0a7ee0c21d9226fe278cde1ab31d84656d6cf22462be9b"
+    },
+    {
+      "id": "scripts.csv-invoice.large",
+      "records": 4096,
+      "inputBytes": 127031,
+      "sourceSha256": "26e03969795a72457ecf6e18d06781ff93017731764b3bad714d93801daa2992",
+      "expectedOutputSha256": "46c9e30bfc88d8198a5b14882bdc12c3d4f500f4bc65d42deecb8e8cd7a7cf93",
+      "expectedFilesSha256": "5efea7c95294d27999dea8999dbd64e9f9ef2c3f8035c0a6d9a10d8a94c1227a"
+    }
+  ],
+  "focusedPublicChecksPerActualTarget": 100,
+  "independentGoldens": true,
+  "isolatedCPythonCorrectness": true,
+  "compilationWarmFreshSmoke": true,
+  "syncAsyncBudgetReuse": true,
+  "finiteInvoiceBudgetBytes": 16777216,
+  "originalFixtureFailure": "Large finite invoice correctly refused the inherited 4MiB JSON-test allowance. The new invoice case receives16MiB; all cleanup/funding assertions preserved. Original failure retained.",
+  "performanceQualified": false,
+  "cpuAttributionPending": true,
+  "runtimePrototype": false
+}

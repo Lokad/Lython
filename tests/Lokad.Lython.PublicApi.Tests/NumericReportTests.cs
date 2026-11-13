@@ -7,7 +7,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class NumericReportTests
 {
     public static IEnumerable<object[]> Cases()
-        => WorkloadCatalog.CreateRepresentative().Where(c => c.Id.StartsWith("scripts.numeric-report.", StringComparison.Ordinal))
+        => WorkloadCatalog.CreateRepresentative().Where(c => c.Id.StartsWith("scripts.numeric-report.", StringComparison.Ordinal)
+            || c.Id.StartsWith("scripts.csv-invoice.", StringComparison.Ordinal))
             .Select(c => new object[] { c.Id });
 
     [Theory]
@@ -16,7 +17,11 @@ public sealed class NumericReportTests
     {
         var workload = WorkloadCatalog.CreateRepresentative().Single(c => c.Id == id);
         var fixture = ComparisonFileFixture.Parse(workload.FixtureJson)!;
-        var budget = new LythonMemoryBudget(4 * 1024 * 1024);
+        // CSV fields and per-record tuples stay conservatively owned by this
+        // finite command; its 4,096-row case needs more than the JSON arrays.
+        var bytes = workload.Id.StartsWith("scripts.csv-invoice.", StringComparison.Ordinal)
+            ? 16 * 1024 * 1024 : 4 * 1024 * 1024;
+        var budget = new LythonMemoryBudget(bytes);
         using (var script = new LythonEngine().Compile(workload.Source, budget))
         {
             Assert.True(script.IsValid);

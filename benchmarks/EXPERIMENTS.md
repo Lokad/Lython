@@ -7056,3 +7056,18 @@ GREEN43364639355: Windows/Ubuntu actual .NET11/.NET10 ordinary, original stress
 and installed Release package consumers. [Cached full delivery/source proof](results/2026-11-13-temporary-owner-reentry/delivery/README.md).
 All 571 frozen inputs match the commit; later invoice catalog/tests are excluded.
 No CPU improvement or unchanged full qualification replay is claimed.
+
+## R302 — complete invoice workload and composed-call source gate
+
+[One maintained CSV invoice script](results/2026-11-13-invoice-workload/README.md)
+fills arithmetic/composed-helper coverage alongside the existing validation/count
+and bulk-sum scripts. Independent complete-file goldens agree under Lython and
+isolated CPython on empty/small/large compile/warm/fresh smoke. Both target
+frameworks pass100focused public cases, including sync/async shared-budget cleanup.
+Original4MiB new-fixture refusal survives; the finite large invoice uses16MiB.
+
+Compiler inspection confirms pricing/rounding use12/6final slots, both native-
+eligible. User-function calls nevertheless promote the native caller before
+rounding. This concrete context/storage elimination hypothesis needs bounded
+attribution and a decision before a runtime prototype. No timing ratio, speedup,
+new backend/arena/value wrapper or producer dependency is introduced.

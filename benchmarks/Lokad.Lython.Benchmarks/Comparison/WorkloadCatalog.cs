@@ -60,7 +60,7 @@ internal static class WorkloadCatalog
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
             "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
-            "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation" })
+            "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation", "csv-invoice" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -124,6 +124,20 @@ internal static class WorkloadCatalog
                     inputs["config.json"] = Utf8("{\"name\":\"café\",\"retries\":2,\"enabled\":false,\"paths\":" + JsonSerializer.Serialize(paths) + ",\"untouched\":{\"version\":1,\"note\":\"😀\"}}\n");
                     outputs["config.json"] = Utf8("{\"enabled\":true,\"name\":\"café\",\"paths\":" + JsonSerializer.Serialize(paths.Append("generated")) + ",\"retries\":3,\"untouched\":{\"note\":\"😀\",\"version\":1}}\n");
                     stdout = $"{n + 1}\n"; break;
+                case "csv-invoice":
+                    inputs["input.csv"] = Utf8("category,quantity,unit_cents,discount_bps,tax_bps,note\n"
+                        + Repeat("café,2,1250,1000,2000,\"batch,\npacked\"\n"
+                            + "equipment,3,299,500,2000,😀\n"
+                            + "café,-1,1250,0,2000,refund\n"
+                            + "services,5,199,2500,550,ok\n", n));
+                    // Independent checked totals for the four fixed input rows:
+                    // café: (1,1000,200,1200), equipment: (3,852,170,1022),
+                    // services: (5,746,41,787). Do not run the guest pricing helper.
+                    outputs["report.csv"] = Utf8("category,quantity,net_cents,tax_cents,gross_cents\n"
+                        + (n == 0 ? "" : $"café,{n},{1000 * n},{200 * n},{1200 * n}\n"
+                            + $"equipment,{3 * n},{852 * n},{170 * n},{1022 * n}\n"
+                            + $"services,{5 * n},{746 * n},{41 * n},{787 * n}\n"));
+                    stdout = $"{4 * n} {3009 * n}\n"; break;
                 case "csv-summary" or "csv-validated-records":
                     inputs["input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n"
                         + (kind == "csv-validated-records" ? "red,9,skip\n" : ""), n));
