@@ -66,3 +66,21 @@ public interface ILythonByteFile : IAsyncDisposable
         => throw new LythonHostCapabilityUnavailableException("owned file rewriting");
     ValueTask FlushAsync(CancellationToken cancellationToken);
 }
+
+/// <summary>Optional positional reading on an already opened byte-file identity.</summary>
+/// <remarks>
+/// Capability inspection and ReadableLength must not acquire or buffer file contents.
+/// The readable extent is fixed at open; the host defines visibility of in-place
+/// changes within it. This is not an immutable-content snapshot. Path replacement
+/// must not redirect reads. ReadAtAsync must preserve the sequential cursor and
+/// buffered lookahead, including on failure or cancellation. It borrows the supplied
+/// buffer until actual completion. Short reads are allowed; zero means EOF.
+/// This capability does not imply guest seek support or positional writing.
+/// </remarks>
+public interface ILythonPositionalByteFile : ILythonByteFile
+{
+    /// <summary>Gets the nonnegative opened readable extent in bytes.</summary>
+    long ReadableLength { get; }
+    /// <summary>Reads at a nonnegative absolute byte offset without moving the cursor.</summary>
+    ValueTask<int> ReadAtAsync(long offset, Memory<byte> buffer, CancellationToken cancellationToken);
+}

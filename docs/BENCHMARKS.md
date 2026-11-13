@@ -14,8 +14,8 @@ are more variable. These embedding measurements do not isolate interpreter CPU.
 
 Measured 2026-11-13 UTC: **runtime cb8736ff / frozen 5a184a1d**, test correction 90de765d,
 against stock **CPython 3.13.16**. This source has full Windows/Ubuntu .NET 11/10,
-stress and installed-package qualification. Later working changes, including
-positional ZIP reading, are excluded. The quiet Azure F4as_v7 VM runs
+stress and installed-package qualification. Later revisions and positional ZIP
+work are excluded. The quiet Azure F4as_v7 VM runs
 Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap and .NET 11 RC3, with ordinary
 workstation GC/tiering and CPython GIL/GC enabled.
 

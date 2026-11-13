@@ -77,10 +77,28 @@ internal sealed partial class LythonRuntime
             {
                 var kind = asynchronous ? await HostPathKindAsync(path, context, span, osPath: true).ConfigureAwait(false) : HostPathKind(path, context, span, osPath: true);
                 if (kind != LythonPathKind.File) return false;
-                using var payload = await ReadGovernedHostBytesCoreAsync(path, context, span, asynchronous).ConfigureAwait(false);
-                var directory = ZipDirectoryReader.Read(payload.Memory, forceUtf8Names: false, context, span);
-                context.MemoryGovernor.Release(directory.MetadataCharge);
-                return true;
+                var file = new OpenedByteFile(context.State);
+                GovernedHostBytes? payload = null;
+                try
+                {
+                    await file.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), span, asynchronous).ConfigureAwait(false);
+                    var length = file.PositionalLength(span);
+                    ZipReadSource source;
+                    if (length is { } extent) source = new ZipReadSource(file, extent);
+                    else
+                    {
+                        payload = await ReadGovernedOpenedBytesAsync(file, context, span, asynchronous).ConfigureAwait(false);
+                        source = new ZipReadSource(payload.Memory);
+                    }
+                    var directory = await ZipDirectoryReader.ReadAsync(source, false, context, span, asynchronous).ConfigureAwait(false);
+                    context.MemoryGovernor.Release(directory.MetadataCharge);
+                    return true;
+                }
+                finally
+                {
+                    try { await file.CloseAsync(span, asynchronous).ConfigureAwait(false); }
+                    finally { payload?.Dispose(); }
+                }
             }
             catch (InvalidDataException) { return false; }
             catch (HostOperationException error) when (IsFileSystemFailure(error)) { return false; }
@@ -353,6 +371,7 @@ internal sealed partial class LythonRuntime
         var path = request.Path.AsString();
         OpenedByteFile? target = null;
         GovernedHostBytes? payload = null;
+        ZipReadSource? source = null;
         PyZipFile? archive = null;
         try
         {
@@ -367,17 +386,31 @@ internal sealed partial class LythonRuntime
             var freshAppend = false;
             if (request.Mode != "w")
             {
-                payload = target is not null
-                    ? await ReadGovernedOpenedBytesAsync(target, context, span, asynchronous).ConfigureAwait(false)
-                    : await ReadGovernedHostBytesCoreAsync(path, context, span, asynchronous).ConfigureAwait(false);
-                freshAppend = request.Mode == "a" && payload.Memory.IsEmpty;
-                if (freshAppend) { payload.Dispose(); payload = null; }
+                if (target is null)
+                {
+                    target = new OpenedByteFile(context.State);
+                    await target.OpenAsync(path, new LythonFileOpenOptions(LythonFileAccess.Read), span, asynchronous).ConfigureAwait(false);
+                }
+                var positionalLength = request.Mode == "r" ? target.PositionalLength(span) : null;
+                if (positionalLength is { } length) source = new ZipReadSource(target, length);
+                else
+                {
+                    payload = await ReadGovernedOpenedBytesAsync(target, context, span, asynchronous).ConfigureAwait(false);
+                    source = new ZipReadSource(payload.Memory);
+                    if (request.Mode == "r")
+                    {
+                        await target.CloseAsync(span, asynchronous).ConfigureAwait(false);
+                        target = null;
+                    }
+                }
+                freshAppend = request.Mode == "a" && payload!.Memory.IsEmpty;
+                if (freshAppend) { source = null; payload!.Dispose(); payload = null; }
                 else
                 {
                     try
                     {
-                        directory = ZipDirectoryReader.Read(payload!.Memory, request.ForceUtf8Names, context, span);
-                        if (request.Mode == "a") preserved = BuildPreservedEntries(payload.Memory, directory, context, span);
+                        directory = await ZipDirectoryReader.ReadAsync(source!, request.ForceUtf8Names, context, span, asynchronous).ConfigureAwait(false);
+                        if (request.Mode == "a") preserved = BuildPreservedEntries(payload!.Memory, directory, context, span);
                     }
                     catch (InvalidDataException error)
                     { throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), error.Message, span); }
@@ -387,7 +420,7 @@ internal sealed partial class LythonRuntime
             var (comment, infos) = BuildDirectoryView(directory, context, span);
             archive = new PyZipFile(request.Path, request.Mode, request.Compression, request.AllowZip64,
                 request.DefaultLevel, request.StrictTimestamps, comment, directory, infos, payload, preserved,
-                target, context, freshAppend);
+                target, source, context, freshAppend);
             context.CheckExecution(span);
             context.State.TrackOpenFile(archive);
             shell.Commit(512);

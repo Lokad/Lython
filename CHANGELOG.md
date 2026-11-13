@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Read ZIP metadata and selected members through an optional opened positional
+  file capability, avoiding whole-archive acquisition on capable hosts. Preserve
+  ZIP64 offsets, eager local-header validation, CRCs, member independence, active
+  cancellation and admitted overlap. Sequential hosts keep explicit buffering.
+  Translate malformed foreign ZipInfo headers into Python BadZipFile errors.
+
 - Share fixed immutable `object`/`type` definitions across executions, keeping
   mutable metadata and namespace views owned by the actual caller. Reject internal
   dataclass mutation of builtins and expose builtin `object.__new__` directly,

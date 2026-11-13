@@ -115,7 +115,8 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
             stream = new FileStream(Resolve(request, token), mode, access, FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 1, FileOptions.SequentialScan);
             if (options.Append) stream.Seek(0, SeekOrigin.End);
-            return ValueTask.FromResult<ILythonByteFile>(new ByteFile(stream, owner, options.Append));
+            return ValueTask.FromResult<ILythonByteFile>(options.Access == LythonFileAccess.Read
+                ? new PositionalByteFile(stream, owner) : new ByteFile(stream, owner, options.Append));
         }
         catch
         {
@@ -125,7 +126,7 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
         }
     }
 
-    private sealed class ByteFile(FileStream stream, ILythonMemoryScope owner, bool append)
+    private class ByteFile(FileStream stream, ILythonMemoryScope owner, bool append)
         : ILythonByteFile, ILythonSynchronousHostCapability
     {
         private bool _closed;
@@ -171,6 +172,31 @@ internal sealed class ComparisonFileHost : ILythonHost, ILythonSynchronousHostCa
             try { stream.Dispose(); }
             finally { owner.Dispose(); }
             return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class PositionalByteFile : ByteFile, ILythonPositionalByteFile
+    {
+        // Acquire the managed handle before sequential reads can create lookahead.
+        // RandomAccess uses this opened identity and never changes its cursor.
+        private readonly Microsoft.Win32.SafeHandles.SafeFileHandle _handle;
+        public long ReadableLength { get; }
+
+        internal PositionalByteFile(FileStream stream, ILythonMemoryScope owner) : base(stream, owner, false)
+        {
+            _handle = stream.SafeFileHandle;
+            ReadableLength = stream.Length;
+        }
+
+        public ValueTask<int> ReadAtAsync(long offset, Memory<byte> buffer, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_handle.IsClosed, this);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            var count = (int)Math.Min(buffer.Length, Math.Max(0, ReadableLength - offset));
+            var read = count == 0 ? 0 : RandomAccess.Read(_handle, buffer.Span[..count], offset);
+            token.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(read);
         }
     }
     public ValueTask<bool> ExistsAsync(LythonPathRequest path, CancellationToken token)

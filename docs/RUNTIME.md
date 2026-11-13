@@ -1995,6 +1995,25 @@ Whole-file/range/text read, write and append members have been removed from
 accepted-prefix writes. `filecmp` compares two opened cursors. `Path.touch` uses
 create/exclusive intent without rewriting existing data. `Path.write_text` opens
 and truncates before encoding, matching Python even when encoding fails.
+
+Hosts can optionally implement `ILythonPositionalByteFile` on an opened readable
+identity. Its `ReadableLength` fixes the readable extent at open; inspecting this
+capability must not scan or buffer contents. In-place changes remain host-defined,
+so this does not promise immutable bytes. `ReadAtAsync` takes an absolute byte
+offset and preserves the sequential cursor and lookahead even on cancellation or
+failure. It uses the active token and borrows its admitted destination through
+actual completion. This is independent of guest seek support.
+
+Read-mode ZIP construction and recognition use that capability to acquire the end
+window, central directory and required local headers instead of retaining the
+whole archive. ZIP64 offsets stay wide; local headers remain eagerly validated.
+Member reads acquire only their compressed input and decoded output. Metadata,
+selected data and construction overlap use the borrowed allowance; conservative
+overlap estimates can reject earlier than the buffered path. Opened members own
+their complete decoded bytes and remain usable after archive close. Sequential
+providers explicitly use admitted whole-archive buffering, selected before work;
+admission refusal never triggers a different acquisition strategy.
+
 Writable ZIP archives open their target at construction: w creates/truncates and
 append acquires one read/write identity. Renaming or replacing its path does not
 redirect later publication. Append reads its snapshot through that same file and

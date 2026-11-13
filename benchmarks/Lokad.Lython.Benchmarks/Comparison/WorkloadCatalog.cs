@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO.Compression;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -60,7 +61,7 @@ internal static class WorkloadCatalog
         foreach (var n in new[] { 0, 16, 1024 })
         foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest", "file-search", "text-uppercase", "config-edit",
             "csv-summary-helpers", "text-summary-helpers", "json-summary-helpers", "file-manifest-helpers", "csv-summary-functions", "csv-validated-records",
-            "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation", "csv-invoice" })
+            "numeric-report.integer", "numeric-report.float", "report-render", "patch-generation", "csv-invoice", "zip-config" })
         {
             var inputs = new Dictionary<string, byte[]>();
             var outputs = new Dictionary<string, byte[]>();
@@ -70,6 +71,23 @@ internal static class WorkloadCatalog
                 : name.EndsWith("-functions", StringComparison.Ordinal) ? name[..^10] : name;
             switch (kind)
             {
+                case "zip-config":
+                    using (var archiveBytes = new MemoryStream())
+                    {
+                        using (var archive = new ZipArchive(archiveBytes, ZipArchiveMode.Create, leaveOpen: true))
+                        {
+                            var timestamp = new DateTimeOffset(2024, 1, 2, 3, 4, 6, TimeSpan.Zero);
+                            var padding = archive.CreateEntry("padding.bin", CompressionLevel.NoCompression);
+                            padding.LastWriteTime = timestamp; padding.ExternalAttributes = 0;
+                            using (var content = padding.Open()) content.Write(new byte[checked(n * 1024)]);
+                            var config = archive.CreateEntry("config.json", CompressionLevel.NoCompression);
+                            config.LastWriteTime = timestamp; config.ExternalAttributes = 0;
+                            using (var content = config.Open()) content.Write(Utf8("{\"version\":3,\"name\":\"café 😀\"}"));
+                        }
+                        inputs["bundle.zip"] = archiveBytes.ToArray();
+                    }
+                    stdout = "2 3 café 😀\n";
+                    break;
                 case "patch-generation":
                     var before = Enumerable.Range(0, n).Select(i =>
                         "setting_" + i.ToString("D4", Invariant) + " = 'café 😀 " + i.ToString("D4", Invariant) + "'\n").ToArray();
@@ -168,7 +186,8 @@ internal static class WorkloadCatalog
                     outputs["manifest.json"] = Utf8($"[{{\"checksum\":{510 * n},\"name\":\"a.bin\",\"size\":{4 * n}}},{{\"checksum\":1383,\"name\":\"\\u00e9.txt\",\"size\":11}}]\n");
                     stdout = "2\n"; break;
             }
-            var caseSize = kind.StartsWith("numeric-report.", StringComparison.Ordinal) ? 4 * n : n;
+            var caseSize = kind == "zip-config" ? inputs["bundle.zip"].Length
+                : kind.StartsWith("numeric-report.", StringComparison.Ordinal) ? 4 * n : n;
             var fixture = JsonSerializer.Serialize(new { size = caseSize, text = (string?)null,
                 inputFiles = inputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)),
                 outputFiles = outputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)) });

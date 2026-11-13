@@ -5,7 +5,7 @@ namespace Lokad.Lython.Runtime.Zip;
 
 /// <summary>
 /// Governed one-shot member reads shared by <c>read</c>, <c>testzip</c>, and
-/// sequential member handles. Inflates STORED/DEFLATED data under work budgets,
+/// sequential member handles. Inflates STORED/DEFLATED data with cooperative cancellation,
 /// enforces declared lengths and CRCs before bytes are exposed, rejects truncated
 /// streams even when lengths and CRCs match, and applies
 /// the encryption/method policy. Returns an uncharged owned array; callers
@@ -33,6 +33,52 @@ internal static class ZipMemberReader
         object? password,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan? span)
+    {
+        ValidateReadSupport(name, method, flags, password, span);
+
+        var bytes = archiveBytes.Span;
+        if (dataOffset > (ulong)bytes.Length)
+        {
+            throw BadZipFile($"Member '{name}' starts beyond the end of data.", span);
+        }
+
+        if (compressedSize > (ulong)bytes.Length || dataOffset + compressedSize > (ulong)bytes.Length)
+        {
+            throw BadZipFile($"Member '{name}' extends beyond the end of data.", span);
+        }
+
+        if (dataOffset + compressedSize > dataEndLimit)
+        {
+            throw BadZipFile($"Overlapped entries: '{name}' (possible zip bomb).", span);
+        }
+
+        if (method == StoredMethod)
+        {
+            // Reserve the copy before allocating, and checksum in governed chunks
+            // so huge members stay interruptible instead of one uninterrupted pass.
+            var length = (int)compressedSize;
+            using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
+            {
+                var stored = bytes.Slice((int)dataOffset, length).ToArray();
+                if ((ulong)stored.Length != uncompressedSize)
+                {
+                    throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
+                }
+
+                if (Crc32.Compute(stored, context, span) != expectedCrc)
+                {
+                    throw BadZipFile($"Bad CRC-32 for file '{name}'.", span);
+                }
+
+                return stored;
+            }
+        }
+
+        return InflateMember(bytes, (int)dataOffset, (int)compressedSize, uncompressedSize, expectedCrc, name, context, span);
+
+    }
+
+    internal static void ValidateReadSupport(string name, ushort method, ushort flags, object? password, LythonSourceSpan? span)
     {
         if (method != StoredMethod && method != DeflatedMethod)
         {
@@ -81,46 +127,6 @@ internal static class ZipMemberReader
                 $"Bad password for file '{name}'",
                 span);
         }
-
-        var bytes = archiveBytes.Span;
-        if (dataOffset > (ulong)bytes.Length)
-        {
-            throw BadZipFile($"Member '{name}' starts beyond the end of data.", span);
-        }
-
-        if (compressedSize > (ulong)bytes.Length || dataOffset + compressedSize > (ulong)bytes.Length)
-        {
-            throw BadZipFile($"Member '{name}' extends beyond the end of data.", span);
-        }
-
-        if (dataOffset + compressedSize > dataEndLimit)
-        {
-            throw BadZipFile($"Overlapped entries: '{name}' (possible zip bomb).", span);
-        }
-
-        if (method == StoredMethod)
-        {
-            // Reserve the copy before allocating, and checksum in governed chunks
-            // so huge members stay interruptible instead of one unbudgeted pass.
-            var length = (int)compressedSize;
-            using (context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
-            {
-                var stored = bytes.Slice((int)dataOffset, length).ToArray();
-                if ((ulong)stored.Length != uncompressedSize)
-                {
-                    throw BadZipFile($"Corrupt member '{name}': length mismatch.", span);
-                }
-
-                if (Crc32.Compute(stored, context, span) != expectedCrc)
-                {
-                    throw BadZipFile($"Bad CRC-32 for file '{name}'.", span);
-                }
-
-                return stored;
-            }
-        }
-
-        return InflateMember(bytes, (int)dataOffset, (int)compressedSize, uncompressedSize, expectedCrc, name, context, span);
 
     }
 

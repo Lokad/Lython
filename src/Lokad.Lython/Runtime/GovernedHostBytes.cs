@@ -2,19 +2,23 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-// Owns unpublished whole-file input. Construction consumes already admitted
-// storage; disposal clears the private reference before returning its allowance.
+// Owns unpublished I/O bytes. Construction consumes already admitted storage;
+// the canonical empty value needs none. Disposal clears the private reference
+// before returning its allowance; TakeValue transfers it to the surviving user.
 internal sealed class GovernedHostBytes : IDisposable
 {
     private PyBytes? _payload;
     private GovernedHostBytes(PyBytes payload)
     {
-        if (payload.OwnerMemoryGovernor is null) throw new InvalidOperationException("Host input requires admitted storage.");
+        if (payload.OwnerMemoryGovernor is null && !payload.Memory.IsEmpty)
+            throw new InvalidOperationException("Host input requires admitted storage.");
         _payload = payload;
     }
 
     internal static GovernedHostBytes FromBuilder(GovernedByteBuilder builder)
         => new(builder.ToPyBytesAndRelease());
+
+    internal static GovernedHostBytes FromValue(PyBytes payload) => new(payload);
 
     private PyBytes Payload => _payload ?? throw new ObjectDisposedException(nameof(GovernedHostBytes));
     public ReadOnlyMemory<byte> Memory => Payload.Memory;
@@ -31,6 +35,6 @@ internal sealed class GovernedHostBytes : IDisposable
     {
         var payload = _payload;
         _payload = null;
-        if (payload is not null) payload.OwnerMemoryGovernor!.Release(payload.CommittedStorageBytes);
+        if (payload?.OwnerMemoryGovernor is { } owner) owner.Release(payload.CommittedStorageBytes);
     }
 }

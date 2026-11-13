@@ -49,6 +49,13 @@ totals include unrelated test-host traffic and cannot establish the preflight or
 The original copy-sized bound, no-publication assertion and final budget balance
 remain independent checks.
 
+[Positional ZIP input](Lokad.Lython.PublicApi.Tests/PositionalZipTests.cs) checks
+opened identity/cursor/extent, bounded acquisition below archive size, sparse ZIP64
+offsets, retained members and actual constructor/member suspension. Cancellation
+and terminal admission refusal join the real read and close before allowance reuse.
+Directory cases distinguish ZIP64 size fields and physical overlap limits from
+central-directory order; the real comparison host exercises managed positional I/O.
+
 [Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
 check class nonlocal updates and deletions during suspension through both APIs,
 including shared-budget cleanup. Generators read their shared captured cells

@@ -38,13 +38,14 @@ internal sealed partial class LythonRuntime
         private PyZipMemberWriter? _activeWriter;
         private PyBytes _comment;
         private GovernedHostBytes? _payload;
+        private ZipReadSource? _readSource;
         private OpenedByteFile? _target;
         private Dictionary<string, int>? _nameIndex;
 
         public PyZipFile(PyString fileName, string mode, BigInteger compression, bool allowZip64,
             int defaultLevel, bool strictTimestamps, PyBytes comment, ZipArchiveDirectory directory,
             List<PyZipInfo> infos, GovernedHostBytes? payload, List<ZipRecordWriter.PreservedEntry>? preserved,
-            OpenedByteFile? target, ExecutionContext context, bool freshAppend)
+            OpenedByteFile? target, ZipReadSource? source, ExecutionContext context, bool freshAppend)
         {
             _fileName = fileName;
             _mode = mode;
@@ -53,6 +54,7 @@ internal sealed partial class LythonRuntime
             _comment = comment;
             _infos = infos;
             _payload = payload;
+            _readSource = source;
             _target = target;
             _context = context;
             _isWriteMode = mode != "r";
@@ -88,14 +90,17 @@ internal sealed partial class LythonRuntime
                 "namelist" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.namelist", static (receiver, span, context) => receiver.NameList(span, context)),
                 "infolist" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.infolist", static (receiver, span, context) => receiver.InfoList(span, context)),
                 "getinfo" => BoundCallable.Create((arguments, span, context) => GetInfo(arguments, span), ZipGetinfoSignature),
-                "read" => BoundCallable.Create((arguments, span, context) => Read(arguments, span, context), ZipReadSignature),
-                "open" => BoundCallable.Create((arguments, span, context) => Open(arguments, span, context), ZipOpenSignature),
+                "read" => BoundCallable.Create((arguments, span, context) => Read(arguments, span, context), ZipReadSignature,
+                    (arguments, span, context) => ReadCoreAsync(arguments, span, context, true)),
+                "open" => BoundCallable.Create((arguments, span, context) => Open(arguments, span, context), ZipOpenSignature,
+                    (arguments, span, context) => OpenCoreAsync(arguments, span, context, true)),
                 "writestr" => BoundCallable.Create((arguments, span, context) => WriteString(arguments, span, context), ZipWritestrSignature),
                 "write" => BoundCallable.Create((arguments, span, context) => WriteFile(arguments, span, context), ZipWriteSignature, async (arguments, span, context) => await WriteFileAsync(arguments, span, context).ConfigureAwait(false)),
                 "mkdir" => BoundCallable.Create((arguments, span, context) => MakeDirectory(arguments, span, context), ZipMkdirSignature),
                 "printdir" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.printdir", static (receiver, span, context) => receiver.PrintDirectory(span, context),
                 static (receiver, span, context) => receiver.PrintDirectoryAsync(span, context)),
-                "testzip" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.testzip", static (receiver, span, context) => receiver.TestZip(span, context)),
+                "testzip" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.testzip", static (receiver, span, context) => receiver.TestZip(span, context),
+                    static (receiver, span, context) => receiver.TestZipCoreAsync(span, context, true)),
                 "extract" => BoundCallable.Create(
                     (arguments, span, context) => Extract(arguments, span, context),
                     ZipExtractSignature,
@@ -186,35 +191,24 @@ internal sealed partial class LythonRuntime
         }
 
         private object Read(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ReadCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private async ValueTask<object> ReadCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             EnsureReadMode(span, "read");
             EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
 
-            var target = ResolveReadTarget(arguments[0], span);
+            var target = await ResolveReadTargetAsync(arguments[0], span, asynchronous).ConfigureAwait(false);
             object password = (arguments.Length < 2 ? null : arguments[1]) ?? PyNone.Instance;
 
-            var bytes = ZipMemberReader.ReadMemberBytes(
-                payload.Memory,
-                target.Name,
-                target.Method,
-                target.Flags,
-                target.Crc,
-                target.CompressedSize,
-                target.UncompressedSize,
-                target.DataOffset,
-                target.DataEndLimit,
-                password,
-                context,
-                span);
-            return CreateBytes(bytes, context, span);
+            using var bytes = await ReadMemberAsync(target, password, context, span, asynchronous).ConfigureAwait(false);
+            return bytes.TakeValue();
         }
 
         private object Open(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => OpenCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private async ValueTask<object> OpenCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var modeText = "r";
             // An explicit None mode is invalid (CPython parity); only an
@@ -247,28 +241,11 @@ internal sealed partial class LythonRuntime
             }
 
             EnsureReadMode(span, "open");
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
 
-            var target = ResolveReadTarget(arguments[0], span);
-            var bytes = ZipMemberReader.ReadMemberBytes(
-                payload.Memory,
-                target.Name,
-                target.Method,
-                target.Flags,
-                target.Crc,
-                target.CompressedSize,
-                target.UncompressedSize,
-                target.DataOffset,
-                target.DataEndLimit,
-                password,
-                context,
-                span);
+            var target = await ResolveReadTargetAsync(arguments[0], span, asynchronous).ConfigureAwait(false);
+            using var bytes = await ReadMemberAsync(target, password, context, span, asynchronous).ConfigureAwait(false);
             return new PyZipMemberReader(
-                CreateBytes(bytes, context, span),
+                bytes.TakeValue(),
                 CreateString(target.Name, context, span),
                 context);
         }
@@ -397,34 +374,18 @@ internal sealed partial class LythonRuntime
         private readonly record struct PlannedExtraction(ResolvedMember Target, string TargetPath, bool IsDirectory);
 
         private object Extract(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ExtractCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private ValueTask<object> ExtractAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ExtractCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> ExtractCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             EnsureReadMode(span, "extract");
             EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
-
-            var request = ParseExtractArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extract()", false).GetAwaiter().GetResult();
+            var request = await ParseExtractArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extract()", asynchronous).ConfigureAwait(false);
             var plan = PlanExtraction(request.Target, request.Destination, span);
-            ExtractPlanned(payload.Memory, plan, request.Password, context, span);
-            return CreateString(plan.TargetPath, context, span);
-        }
-
-        private async ValueTask<object> ExtractAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            EnsureReadMode(span, "extract");
-            EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
-
-            var request = await ParseExtractArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extract()", true).ConfigureAwait(false);
-            var plan = PlanExtraction(request.Target, request.Destination, span);
-            await ExtractPlannedAsync(payload.Memory, plan, request.Password, context, span).ConfigureAwait(false);
+            await ExtractPlannedAsync(plan, request.Password, context, span, asynchronous).ConfigureAwait(false);
             return CreateString(plan.TargetPath, context, span);
         }
 
@@ -444,7 +405,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<ZipExtractRequest> ParseExtractArgumentsAsync(object[] arguments, ExecutionContext context, LythonSourceSpan span, string owner, bool asynchronous)
         {
-            var target = ResolveReadTarget(arguments[0], span);
+            var target = await ResolveReadTargetAsync(arguments[0], span, asynchronous).ConfigureAwait(false);
             object password = (arguments.Length >= 3 ? arguments[2] : null) ?? PyNone.Instance;
             var value = (arguments.Length >= 2 ? arguments[1] : null) ?? PyNone.Instance;
             var destination = value is PyNone ? context.Host.Cwd
@@ -453,59 +414,28 @@ internal sealed partial class LythonRuntime
         }
 
         private object ExtractAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ExtractAllCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        private ValueTask<object> ExtractAllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => ExtractAllCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> ExtractAllCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             EnsureReadMode(span, "extractall");
             EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
-
-            var request = ParseExtractAllArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extractall()", false).GetAwaiter().GetResult();
-            EnsureDirectoryExists(request.Destination, context, span);
-            var plans = PlanExtractions(request.Members, request.Destination, context, span);
+            var request = await ParseExtractAllArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extractall()", asynchronous).ConfigureAwait(false);
+            await CreateDirectoriesAsync(request.Destination, true, context, span, asynchronous).ConfigureAwait(false);
+            var plans = await PlanExtractionsAsync(request.Members, request.Destination, context, span, asynchronous).ConfigureAwait(false);
             for (var i = 0; i < plans.Count; i++)
             {
-                if ((i & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-
-                ExtractPlanned(payload.Memory, plans[i], request.Password, context, span);
+                context.CheckExecution(span);
+                await ExtractPlannedAsync(plans[i], request.Password, context, span, asynchronous).ConfigureAwait(false);
             }
-
             return PyNone.Instance;
         }
 
-        private async ValueTask<object> ExtractAllAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-        {
-            EnsureReadMode(span, "extractall");
-            EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
-
-            var request = await ParseExtractAllArgumentsAsync(arguments, context, span, "zipfile.ZipFile.extractall()", true).ConfigureAwait(false);
-            await EnsureDirectoryExistsAsync(request.Destination, context, span).ConfigureAwait(false);
-            var plans = PlanExtractions(request.Members, request.Destination, context, span);
-            for (var i = 0; i < plans.Count; i++)
-            {
-                if ((i & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-
-                await ExtractPlannedAsync(payload.Memory, plans[i], request.Password, context, span).ConfigureAwait(false);
-            }
-
-            return PyNone.Instance;
-        }
-
-        private List<PlannedExtraction> PlanExtractions(
-            object members, string destination, ExecutionContext context, LythonSourceSpan span)
+        private async ValueTask<List<PlannedExtraction>> PlanExtractionsAsync(
+            object members, string destination, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             var plans = new List<PlannedExtraction>();
             if (members is not PyNone)
@@ -513,7 +443,7 @@ internal sealed partial class LythonRuntime
                 var count = 0;
                 foreach (var item in ToSequence(members, span, context))
                 {
-                    plans.Add(PlanExtraction(ResolveReadTarget(item, span), destination, span));
+                    plans.Add(PlanExtraction(await ResolveReadTargetAsync(item, span, asynchronous).ConfigureAwait(false), destination, span));
                     if ((++count & 63) == 0)
                     {
                         context.CheckExecution(span);
@@ -532,7 +462,7 @@ internal sealed partial class LythonRuntime
                     context.CheckExecution(span);
                 }
 
-                plans.Add(PlanExtraction(ResolveInfoTarget(_infos[i], span), destination, span));
+                plans.Add(PlanExtraction(await ResolveInfoTargetAsync(_infos[i], span, asynchronous).ConfigureAwait(false), destination, span));
                 context.CheckExecution(span);
             }
 
@@ -608,116 +538,76 @@ internal sealed partial class LythonRuntime
             return string.Join("/", kept);
         }
 
-        private static void EnsureDirectoryExists(string directory, ExecutionContext context, LythonSourceSpan? span)
-            => CreateDirectoriesAsync(directory, true, context, span, false).GetAwaiter().GetResult();
-
-        private static ValueTask EnsureDirectoryExistsAsync(string directory, ExecutionContext context, LythonSourceSpan? span)
-            => CreateDirectoriesAsync(directory, true, context, span, true);
-
-        private static void ExtractPlanned(
-            ReadOnlyMemory<byte> payload,
+        private async ValueTask ExtractPlannedAsync(
             PlannedExtraction plan,
             object password,
             ExecutionContext context,
-            LythonSourceSpan? span)
+            LythonSourceSpan? span, bool asynchronous)
         {
             if (plan.IsDirectory)
             {
-                EnsureDirectoryExists(plan.TargetPath, context, span);
+                await CreateDirectoriesAsync(plan.TargetPath, true, context, span, asynchronous).ConfigureAwait(false);
                 return;
             }
 
-            EnsureDirectoryExists(PathOps.Parent(plan.TargetPath), context, span);
+            await CreateDirectoriesAsync(PathOps.Parent(plan.TargetPath), true, context, span, asynchronous).ConfigureAwait(false);
             context.CheckExecution(span);
-            if (context.HostStat(plan.TargetPath, span).IsDir)
+            if ((asynchronous ? await context.HostStatAsync(plan.TargetPath, span).ConfigureAwait(false) : context.HostStat(plan.TargetPath, span)).IsDir)
             {
                 throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
             }
 
             var target = plan.Target;
-            var bytes = ZipMemberReader.ReadMemberBytes(
-                payload,
-                target.Name,
-                target.Method,
-                target.Flags,
-                target.Crc,
-                target.CompressedSize,
-                target.UncompressedSize,
-                target.DataOffset,
-                target.DataEndLimit,
-                password,
-                context,
-                span);
+            using var bytes = await ReadMemberAsync(target, password, context, span, asynchronous).ConfigureAwait(false);
             context.CheckExecution(span);
-            context.WriteHostBytes(plan.TargetPath, bytes, span);
+            if (asynchronous) await context.WriteHostBytesAsync(plan.TargetPath, bytes.Memory, span).ConfigureAwait(false);
+            else context.WriteHostBytes(plan.TargetPath, bytes.Memory, span);
         }
 
-        private static async ValueTask ExtractPlannedAsync(
-            ReadOnlyMemory<byte> payload,
-            PlannedExtraction plan,
-            object password,
-            ExecutionContext context,
-            LythonSourceSpan? span)
+        private async ValueTask<GovernedHostBytes> ReadMemberAsync(ResolvedMember target, object password,
+            ExecutionContext context, LythonSourceSpan? span, bool asynchronous)
         {
-            if (plan.IsDirectory)
-            {
-                await EnsureDirectoryExistsAsync(plan.TargetPath, context, span).ConfigureAwait(false);
-                return;
-            }
+            ZipMemberReader.ValidateReadSupport(target.Name, target.Method, target.Flags, password, span);
+            var source = _readSource!;
+            if (target.DataOffset > source.Length || target.CompressedSize > source.Length - target.DataOffset)
+                throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), $"Member '{target.Name}' extends beyond the end of data.", span);
+            if (target.DataOffset > target.DataEndLimit || target.CompressedSize > target.DataEndLimit - target.DataOffset)
+                throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), $"Overlapped entries: '{target.Name}' (possible zip bomb).", span);
+            if (target.CompressedSize > (ulong)Array.MaxLength || target.UncompressedSize > (ulong)Array.MaxLength)
+                throw new LythonRuntimeException("OverflowError", "ZIP member size is not representable.", span);
 
-            await EnsureDirectoryExistsAsync(PathOps.Parent(plan.TargetPath), context, span).ConfigureAwait(false);
-            context.CheckExecution(span);
-            if ((await context.HostStatAsync(plan.TargetPath, span).ConfigureAwait(false)).IsDir)
+            // Keep the unpublished decoded output funded through decoder scratch
+            // retirement and transfer to an owned value. Compressed input overlaps
+            // that output until its final user completes; no admission retry.
+            using var output = context.MemoryGovernor.ReserveTemporary(
+                PyBytes.EstimateApproximateBytes((int)target.UncompressedSize), span);
+            try
             {
-                throw new LythonRuntimeException("ValueError", $"cannot extract file '{plan.Target.Name}' onto directory '{plan.TargetPath}'.", span);
+                using var input = await source.ReadAsync(target.DataOffset, (int)target.CompressedSize,
+                    context, span, asynchronous).ConfigureAwait(false);
+                var decoded = ZipMemberReader.ReadMemberBytes(input.Memory, target.Name, target.Method, target.Flags,
+                    target.Crc, target.CompressedSize, target.UncompressedSize, 0, target.CompressedSize,
+                    password, context, span);
+                return GovernedHostBytes.FromValue(CreateBytes(decoded, context, span));
             }
-
-            var target = plan.Target;
-            var bytes = ZipMemberReader.ReadMemberBytes(
-                payload,
-                target.Name,
-                target.Method,
-                target.Flags,
-                target.Crc,
-                target.CompressedSize,
-                target.UncompressedSize,
-                target.DataOffset,
-                target.DataEndLimit,
-                password,
-                context,
-                span);
-            context.CheckExecution(span);
-            await context.WriteHostBytesAsync(plan.TargetPath, bytes, span).ConfigureAwait(false);
+            catch (InvalidDataException error)
+            { throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), error.Message, span); }
         }
 
         private object TestZip(LythonSourceSpan? span, ExecutionContext context)
+            => TestZipCoreAsync(span, context, false).GetAwaiter().GetResult();
+
+        private async ValueTask<object> TestZipCoreAsync(LythonSourceSpan? span, ExecutionContext context, bool asynchronous)
         {
             EnsureReadMode(span, "testzip");
             EnsureOpen(span);
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
 
             foreach (var info in _infos)
             {
-                var target = ResolveInfoTarget(info, span);
+                var target = await ResolveInfoTargetAsync(info, span, asynchronous).ConfigureAwait(false);
                 try
                 {
-                    ZipMemberReader.ReadMemberBytes(
-                        payload.Memory,
-                        target.Name,
-                        target.Method,
-                        target.Flags,
-                        target.Crc,
-                        target.CompressedSize,
-                        target.UncompressedSize,
-                        target.DataOffset,
-                        target.DataEndLimit,
-                        PyNone.Instance,
-                        context,
-                        span);
+                    using var bytes = await ReadMemberAsync(target, PyNone.Instance, context, span, asynchronous).ConfigureAwait(false);
                 }
                 catch (LythonRuntimeException exception) when (exception.ExceptionType == "BadZipFile")
                 {
@@ -827,6 +717,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _preserved?.Clear();
+                _readSource = null;
                 _payload?.Dispose();
                 _payload = null;
             }
@@ -1354,16 +1245,16 @@ internal sealed partial class LythonRuntime
             uint ExternalAttributes,
             int CreateSystem);
 
-        private ResolvedMember ResolveReadTarget(object name, LythonSourceSpan? span)
+        private async ValueTask<ResolvedMember> ResolveReadTargetAsync(object name, LythonSourceSpan? span, bool asynchronous)
         {
             if (name is PyZipInfo info)
             {
-                return ResolveInfoTarget(info, span);
+                return await ResolveInfoTargetAsync(info, span, asynchronous).ConfigureAwait(false);
             }
 
             if (name is PyString text && FindOrdinalByName(text.AsString(), span) is { } ordinal)
             {
-                return ResolveInfoTarget(_infos[ordinal], span);
+                return await ResolveInfoTargetAsync(_infos[ordinal], span, asynchronous).ConfigureAwait(false);
             }
 
             throw new LythonRuntimeException("KeyError", $"There is no item named '{FormatKey(name)}' in the archive.", span);
@@ -1385,21 +1276,25 @@ internal sealed partial class LythonRuntime
 
         private Dictionary<string, int> BuildNameIndex(LythonSourceSpan? span)
         {
-            var index = new Dictionary<string, int>(_infos.Count, StringComparer.Ordinal);
             var charge = 0L;
             for (var i = 0; i < _infos.Count; i++)
             {
-                var key = _infos[i].FileName;
-                index[key] = i;
+                if ((i & 63) == 0) _context.CheckExecution(span);
+                var key = _directory.Entries[i].Name;
                 charge = checked(charge + 64 + 2L * key.Length);
             }
-
-            _context.MemoryGovernor.Reserve(charge, span);
-            _context.MemoryGovernor.Commit(charge);
+            using var storage = _context.MemoryGovernor.ReserveTemporary(charge, span);
+            var index = new Dictionary<string, int>(_infos.Count, StringComparer.Ordinal);
+            for (var i = 0; i < _infos.Count; i++)
+            {
+                if ((i & 63) == 0) _context.CheckExecution(span);
+                index[_directory.Entries[i].Name] = i;
+            }
+            storage.Commit(charge);
             return index;
         }
 
-        private ResolvedMember ResolveInfoTarget(PyZipInfo info, LythonSourceSpan? span)
+        private async ValueTask<ResolvedMember> ResolveInfoTargetAsync(PyZipInfo info, LythonSourceSpan? span, bool asynchronous)
         {
             if (info.DirectoryOrdinal >= 0 &&
                 info.DirectoryOrdinal < _infos.Count &&
@@ -1422,19 +1317,18 @@ internal sealed partial class LythonRuntime
 
             // Foreign or manually constructed info: trust the object (like
             // CPython) after validating the local header it points at.
-            var payload = _payload;
-            if (payload is null)
-            {
-                throw new LythonRuntimeException("ValueError", "Attempt to use ZIP archive that was already closed", span);
-            }
 
             var fields = info.ReadFields(span);
-            var dataOffset = ZipDirectoryReader.ReadLocalDataOffset(
-                payload.Memory,
-                fields.HeaderOffset,
-                fields.Name,
-                (fields.Flags & 0x0800) != 0,
-                span);
+            ulong dataOffset;
+            try
+            {
+                using var header = await ZipDirectoryReader.ReadLocalHeaderAsync(_readSource!, fields.HeaderOffset,
+                    _context, span, asynchronous).ConfigureAwait(false);
+                dataOffset = checked(fields.HeaderOffset + ZipDirectoryReader.ReadLocalDataOffset(
+                    header.Memory, 0, fields.Name, (fields.Flags & 0x0800) != 0, span));
+            }
+            catch (InvalidDataException error)
+            { throw new LythonRuntimeException(ModuleException("zipfile", "BadZipFile"), error.Message, span); }
             return new ResolvedMember(
                 fields.Name,
                 fields.Method,
@@ -1443,7 +1337,7 @@ internal sealed partial class LythonRuntime
                 fields.CompressedSize,
                 fields.UncompressedSize,
                 dataOffset,
-                (ulong)payload.Memory.Length,
+                _readSource!.Length,
                 false,
                 0,
                 0);

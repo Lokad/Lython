@@ -25,6 +25,32 @@ internal sealed class OpenedByteFile(ExecutionState services)
     internal long? LengthHint(LythonSourceSpan? span)
         => HostOperation.Invoke(() => _file!.LengthHint, "file_metadata", span, services.MemoryGovernor);
 
+    internal long? PositionalLength(LythonSourceSpan? span)
+        => _file is ILythonPositionalByteFile positional
+            ? HostOperation.Invoke(() =>
+            {
+                var length = positional.ReadableLength;
+                return length >= 0 ? length : throw new LythonHostException(LythonHostFailureKind.Transport,
+                    "host positional file length cannot be negative");
+            }, "file_metadata", span, services.MemoryGovernor)
+            : null;
+
+    internal async ValueTask<int> ReadAtAsync(long offset, Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
+    {
+        services.CheckExecution(span);
+        var file = (ILythonPositionalByteFile)_file!;
+        var count = asynchronous
+            ? await HostOperation.AwaitAsync(() => file.ReadAtAsync(offset, buffer, services.CancellationToken),
+                "read_file", span, services.MemoryGovernor).ConfigureAwait(false)
+            : HostOperation.Await(file, () => file.ReadAtAsync(offset, buffer, services.CancellationToken),
+                "read_file", span, services.MemoryGovernor);
+        services.CheckExecution(span);
+        if (count < 0 || count > buffer.Length)
+            HostOperation.Invoke<int>(static () => throw new LythonHostException(LythonHostFailureKind.Transport,
+                "host positional read exceeded its buffer"), "read_file", span, services.MemoryGovernor);
+        return count;
+    }
+
     internal async ValueTask<int> ReadAsync(Memory<byte> buffer, LythonSourceSpan? span, bool asynchronous)
     {
         services.CheckExecution(span);

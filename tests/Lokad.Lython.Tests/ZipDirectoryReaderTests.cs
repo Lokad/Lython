@@ -173,6 +173,57 @@ public sealed class ZipDirectoryReaderTests
     }
 
     [Fact]
+    public void Zip64MemberEndOverflowIsMalformedArchive()
+    {
+        var payload = LoadPayload("zip-zip64");
+        var central = payload.AsSpan().IndexOf(new byte[] { 0x50, 0x4b, 0x01, 0x02 });
+        Assert.True(central >= 0);
+        var nameLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(central + 28));
+        var extra = central + 46 + nameLength;
+        Assert.Equal(1, System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(extra)));
+        // ZIP64 extra: tag/length, uncompressed size, compressed size, offset.
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(central + 20), uint.MaxValue);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(central + 24), uint.MaxValue);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(central + 42), uint.MaxValue);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(payload.AsSpan(extra + 12), ulong.MaxValue);
+        var failure = Assert.Throws<InvalidDataException>(() => Read(payload));
+        Assert.Contains("data beyond the end", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Zip64SizesFollowDeclaredFieldOrder()
+    {
+        var payload = LoadPayload("zip-zip64");
+        var central = payload.AsSpan().IndexOf(new byte[] { 0x50, 0x4b, 0x01, 0x02 });
+        Assert.True(central >= 0);
+        var nameLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.AsSpan(central + 28));
+        var extra = central + 46 + nameLength;
+        // Unequal declared sizes distinguish the ZIP64 fields. Checksums and
+        // stored-length consistency are validated when this member is read.
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(payload.AsSpan(22), 29);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(payload.AsSpan(extra + 4), 29);
+        var entry = Assert.Single(Read(payload).Entries);
+        Assert.Equal(29UL, entry.UncompressedSize);
+        Assert.Equal(13UL, entry.CompressedSize);
+    }
+
+    [Fact]
+    public void OverlapLimitsUsePhysicalOffsetsWithoutChangingDirectoryOrder()
+    {
+        var payload = BuildRawArchive(("a"u8.ToArray(), 0, "one"u8.ToArray()), ("b"u8.ToArray(), 0, "two"u8.ToArray()));
+        var central = payload.AsSpan().IndexOf(new byte[] { 0x50, 0x4b, 0x01, 0x02 });
+        Assert.True(central >= 0);
+        // Both central records have one-byte names and no extra/comment fields.
+        var first = payload.AsSpan(central, 47).ToArray();
+        payload.AsSpan(central + 47, 47).CopyTo(payload.AsSpan(central, 47));
+        first.CopyTo(payload.AsSpan(central + 47, 47));
+        var entries = Read(payload).Entries;
+        Assert.Equal(new[] { "b", "a" }, entries.Select(entry => entry.Name));
+        Assert.All(entries, entry => Assert.True(entry.DataOffset + entry.CompressedSize <= entry.DataEndLimit));
+        Assert.Equal(entries[0].HeaderOffset, entries[1].DataEndLimit);
+    }
+
+    [Fact]
     public void LocalCentralMismatchesFailDeliberately()
     {
         var sizeMismatch = LoadPayload("zip-stored");
