@@ -72,7 +72,7 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(5)]
     [InlineData(9)]
     [InlineData(17)]
-    public void UnwindDisposesLastInFirstOutBeforeClearingLiveEntries(int size)
+    public void UnwindDisposesLastInFirstOutWhilePreservingLowerEntries(int size)
     {
         using var stack = new StackView(size + 1);
         var retained = new object();
@@ -103,25 +103,26 @@ public sealed class ExecutableOperandStackBoundaryTests
     [InlineData(5)]
     [InlineData(9)]
     [InlineData(17)]
-    public void FailedDisposalKeepsOriginalEntriesForPropagation(int size)
+    public void FailedDisposalRetiresAttemptedEntriesAndPreservesUnvisitedEntries(int size)
     {
         using var stack = new StackView(size + 1);
         var denied = new InvalidOperationException("controlled disposal failure");
-        var fail = true;
         var disposed = new List<int>();
         var values = Enumerable.Range(0, size).Select(i => new Temporary(() =>
         {
             disposed.Add(i);
-            if (i == 1 && fail) throw denied;
+            if (i == 1) throw denied;
         })).ToArray();
         foreach (var value in values) stack.Push(value);
         Assert.Same(denied, Assert.Throws<InvalidOperationException>(() => stack.RemoveTail(size)));
         Assert.Equal(Enumerable.Range(1, size - 1).Reverse(), disposed);
         Assert.Equal(size, stack.Count);
-        for (var i = 0; i < size; i++) Assert.Same(values[i], stack.At(i));
-        fail = false;
+        Assert.Same(values[0], stack.At(0));
+        // A throwing disposer may already have returned its storage to another
+        // user. Propagation preserves the original failure and lower entries;
+        // cleanup must never invoke attempted disposers a second time.
         stack.RemoveTail(size);
-        Assert.Equal(Enumerable.Range(1, size - 1).Reverse().Concat(Enumerable.Range(0, size).Reverse()), disposed);
+        Assert.Equal(Enumerable.Range(0, size).Reverse(), disposed);
         Assert.Equal(0, stack.Count);
     }
 
@@ -136,7 +137,7 @@ public sealed class ExecutableOperandStackBoundaryTests
         public void Dispose() => Disposed = true;
     }
 
-    // Keep reference order and failed-disposal guarantees while supplying the
+    // Keep unwind order, first-error identity and single retirement while supplying the
     // real owner required by operand-capacity admission.
     private sealed class StackView : IDisposable
     {

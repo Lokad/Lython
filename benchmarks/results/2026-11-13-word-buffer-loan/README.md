@@ -71,3 +71,8 @@ multiply these internal gains into the representative comparison table.
 All raw streams and full collector sources are retained. Only byte-proved historical
 VM working copies were retired after their canonical Git archives were verified;
 current reference images and original/adverse evidence remain. Publication is held.
+
+First full delivery found five stale disposal expectations per platform;
+[original failure and corrected focused checks](delivery-first-failure/README.md)
+remain available. Production and measured images are unchanged. Corrected full
+qualification is pending; the original run does not qualify skipped steps.

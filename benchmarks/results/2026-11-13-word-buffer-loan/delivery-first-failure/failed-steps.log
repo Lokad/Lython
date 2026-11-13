@@ -1,0 +1,169 @@
+tests (windows-latest)	Test Release (.NET 11)	﻿2026-11-13T18:57:29.9151266Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9152873Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9153626Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9213672Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9214011Z env:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9214225Z   DOTNET_ROOT: C:\Program Files\dotnet
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9214535Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9214933Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.17\x64/lib/pkgconfig
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9215322Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9215760Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9216107Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.17\x64
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9216427Z   DOTNET_DbgEnableMiniDump: 1
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9216682Z   DOTNET_DbgMiniDumpType: Mini
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9216962Z   DOTNET_DbgMiniDumpName: D:\a\Lython\Lython/crash-%p.dmp
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:29.9217265Z ##[endgroup]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:30.6711715Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:31.4541171Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.Tests\bin\Release\net11.0\Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:31.5762723Z Test run for D:\a\Lython\Lython\tests\Lokad.Lython.PublicApi.Tests\bin\Release\net11.0\Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:31.7402387Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:31.7725501Z A total of 1 test files matched the specified pattern.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:31.9990942Z Blame: Attaching crash dump utility to process testhost (2628).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:32.0300958Z Blame: Attaching crash dump utility to process testhost (5940).
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1650756Z ^[[31;1m[xUnit.net 00:00:11.64]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 9) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1654984Z ^[[31;1m[xUnit.net 00:00:11.65]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 5) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1926513Z ^[[31;1m[xUnit.net 00:00:11.65]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 3) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1940938Z ^[[31;1m[xUnit.net 00:00:11.65]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 17) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1943674Z ^[[31;1m[xUnit.net 00:00:11.65]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 4) [FAIL]^[[0m
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1948003Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 9) [1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1951131Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1952738Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1954794Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1973899Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1977113Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1980955Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 156
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1986645Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 121
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1990607Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1993100Z    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1994736Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 5) [< 1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1995801Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1998666Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.1999533Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2000772Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2002451Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2004080Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 156
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2006111Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 121
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2007907Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2009291Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2010757Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 3) [< 1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2013199Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2014590Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2016836Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2018504Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2019874Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2021609Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 156
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2024307Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 121
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2026487Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2027709Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2029164Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 17) [< 1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2033221Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2034082Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2034920Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2035690Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2054097Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2056912Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 156
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2061577Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 121
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2064370Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2067242Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2068961Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 4) [< 1 ms]
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2071158Z   Error Message:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2073817Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2097243Z   Stack Trace:
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2101436Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2103939Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2107097Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 156
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2110968Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in D:\a\Lython\Lython\tests\Lokad.Lython.Tests\ExecutableOperandStackBoundaryTests.cs:line 121
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2113080Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:57:44.2115159Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:58:03.1942926Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:58:03.2127724Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T18:58:03.2231073Z Failed!  - Failed:     5, Passed:  4691, Skipped:     0, Total:  4696, Duration: 28 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T19:01:59.4068504Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T19:01:59.4243463Z 
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T19:01:59.4469424Z Passed!  - Failed:     0, Passed: 17602, Skipped:     0, Total: 17602, Duration: 4 m 18 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (windows-latest)	Test Release (.NET 11)	2026-11-13T19:01:59.9550885Z ##[error]Process completed with exit code 1.
+tests (ubuntu-latest)	Test Release (.NET 11)	﻿2026-11-13T18:56:14.2179428Z ##[group]Run try { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2180945Z ^[[36;1mtry { dotnet test Lokad.Lython.slnx -c Release -f net11.0 --no-build --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2181659Z ^[[36;1mif ($LASTEXITCODE -ne 0) { exit 1 }^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2226622Z shell: /usr/bin/pwsh -command ". '{0}'"
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2226863Z env:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2227035Z   DOTNET_ROOT: /usr/share/dotnet
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2227296Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2227638Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2227970Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2228318Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2228614Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2228922Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2229193Z   DOTNET_DbgEnableMiniDump: 1
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2229403Z   DOTNET_DbgMiniDumpType: Mini
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2229692Z   DOTNET_DbgMiniDumpName: /home/runner/work/Lython/Lython/crash-%p.dmp
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:14.2229984Z ##[endgroup]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:15.1969020Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:15.7203084Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/bin/Release/net11.0/Lokad.Lython.WhiteBox.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:15.9017266Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:16.0832804Z Test run for /home/runner/work/Lython/Lython/tests/Lokad.Lython.PublicApi.Tests/bin/Release/net11.0/Lokad.Lython.PublicApi.Tests.dll (.NETCoreApp,Version=v11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:16.2506433Z Blame: Attaching crash dump utility to process dotnet (3644).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:16.2672010Z A total of 1 test files matched the specified pattern.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:16.5273431Z Blame: Attaching crash dump utility to process dotnet (3683).
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9075246Z ^[[31;1m[xUnit.net 00:00:02.09]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 9) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9127474Z ^[[31;1m[xUnit.net 00:00:02.10]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 5) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9145858Z ^[[31;1m[xUnit.net 00:00:02.10]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 3) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9156214Z ^[[31;1m[xUnit.net 00:00:02.11]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 17) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9179120Z ^[[31;1m[xUnit.net 00:00:02.11]     Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 4) [FAIL]^[[0m
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9221541Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 9) [1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9224733Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9251388Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9269191Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9281692Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9311922Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9316175Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 156
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9342118Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 121
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9367895Z    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9391664Z    at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9421729Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 5) [< 1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9422958Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9427324Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9451158Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9481676Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9511801Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9518343Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 156
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9542225Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 121
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9567718Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9569464Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9571327Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 3) [< 1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9572613Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9573319Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9574113Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9575001Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9576627Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9578528Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 156
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9581238Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 121
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9583791Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9585377Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9587164Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 17) [< 1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9588420Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9589120Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9589898Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9590961Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9592814Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9594761Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 156
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9597248Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 121
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9599402Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9601213Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9602943Z   Failed Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(size: 4) [< 1 ms]
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9604116Z   Error Message:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9604805Z    System.InvalidOperationException : An internal Lython invariant produced an absent value.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9605572Z   Stack Trace:
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9606453Z      at Lokad.Lython.Internal.NullabilityExtensions.RequireNotNull[T](T value) in /_/src/Lokad.Lython/NullabilityExtensions.cs:line 10
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9608059Z    at Lokad.Lython.Runtime.LythonRuntime.ExecutableValueStorage.get_Item(Int32 index) in /_/src/Lokad.Lython/Runtime/LythonRuntime.Executable.cs:line 350
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9610040Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.StackView.At(Int32 index) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 156
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9612666Z    at Lokad.Lython.Tests.ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Int32 size) in /home/runner/work/Lython/Lython/tests/Lokad.Lython.Tests/ExecutableOperandStackBoundaryTests.cs:line 121
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9614846Z    at InvokeStub_ExecutableOperandStackBoundaryTests.FailedDisposalKeepsOriginalEntriesForPropagation(Object, Span`1)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:18.9616449Z    at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:45.1262729Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:45.1461291Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T18:56:45.1533807Z Failed!  - Failed:     5, Passed:  4691, Skipped:     0, Total:  4696, Duration: 26 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T19:00:31.2131707Z Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T19:00:31.2267000Z 
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T19:00:31.2472269Z Passed!  - Failed:     0, Passed: 17602, Skipped:     0, Total: 17602, Duration: 4 m 4 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)
+tests (ubuntu-latest)	Test Release (.NET 11)	2026-11-13T19:00:32.2727533Z ##[error]Process completed with exit code 1.
