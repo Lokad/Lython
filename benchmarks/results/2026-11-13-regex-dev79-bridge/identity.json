@@ -1,0 +1,24 @@
+{
+  "consumerRevision": "d413392c63f67cf9bda7095879ea1b7bc4742cdf",
+  "producerVersion": "0.5.0-dev.79",
+  "packages": {
+    "Lokad.Utf8Regex.0.5.0-dev.79.nupkg": {
+      "sha256": "e2293dad0e496fa43c845e899b1f858d2752b72ba68d26d3c3e83aed4afa353c",
+      "repositoryCommit": "891cabbf23c9076b4ab9cf2bcceb5f6cd3ae9207",
+      "assemblies": {
+        "net11.0": "5aa55be09491795163db2286ec8eef02be02b4d21fef12b9ae91bcc36097086e",
+        "net10.0": "8ac9c8653fcb2105bc505efa32b50d3a3dcd71f69fdc1c4ab8e7df36c642b1ef"
+      }
+    },
+    "Lokad.Utf8Regex.PythonRe.0.5.0-dev.79.nupkg": {
+      "sha256": "1e48d685719879a7679043aeb61a2775b1789200832f48707f2291f95d1cb5cc",
+      "repositoryCommit": "891cabbf23c9076b4ab9cf2bcceb5f6cd3ae9207",
+      "assemblies": {
+        "net11.0": "9e8af739c686e1a3fb9a673eab9721768a506c2d58fdad9987e9942579b9f160",
+        "net10.0": "93fb11d82a40fb4b3f9bd7a727848f5cd7baee4cfa106617f2b4ffa638372a55"
+      }
+    }
+  },
+  "bridge": "Exact existing dev78 native-cursor/ownership/current-token bridge; PythonRe API unchanged, matching core changed. AssumeValid through working unfunded compile overload, conservative local compilation admission. No normal pin, core contract or source changes.",
+  "limitations": "Independent development semantic/ownership/cancellation validation only. Producer final package qualification, separate single-match owners, UTF8 names and native token-independent preparation remain separate. No backend performance claim."
+}

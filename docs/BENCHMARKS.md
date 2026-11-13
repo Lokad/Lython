@@ -5,7 +5,7 @@
 | CSV validation/helper calls | 5,120 records / 68,625 B | 4.170–4.249 ms | 4.464–4.520 ms | 0.92–0.95× | `2d91eb1a` | Diagnostic; L1.90%, P1.24% / 1.86% |
 | CSV summary/helpers | 4,096 records / 57,361 B | 3.401–3.470 ms | 3.368 ms | 1.01–1.03× | `6f76` | Variable; 2.02% / 0.74% |
 | Text summary/helpers | 3,072 lines /35,840 B | 1.295–1.323 ms | 1.290–1.308 ms | 0.99–1.03× | `983bab96` | Variable; L2.14%, P1.37% / 2.70% |
-| Text / captured helper + counter | 3,072 lines /35,840 B | 1.497–1.582 ms | 1.030–1.043 ms | 1.44–1.54× | `9bca1337` | Variable; L5.36%, P1.21% / 2.33% |
+| Text / captured helper + counter | 3,072 lines /35,840 B | 1.552–1.562 ms | 1.032–1.038 ms | 1.50–1.51× | `31d65e01` | Diagnostic; L0.63%, P0.58% / 0.83% |
 | JSON-lines/helpers | 4,096 records / 110,592 B | 3.613–3.627 ms | 4.183–4.214 ms | 0.86–0.87× | `8ec7bfab` | Diagnostic; L0.37%, P0.72% / 0.63% |
 | JSON-to-Markdown report | 3,072 records /189,441 B | 2.93–2.98 ms | 2.45–2.48 ms | 1.18–1.22× | `31d65e01` | Diagnostic; L1.79%, P1.15% / 2.63% |
 | JSON-to-Markdown / UTF-16 output | 3,072 records /189,441 B | 3.18–3.26 ms | 2.58–2.62 ms | 1.22–1.26× | `31d65e01` | Variable; L2.39%, P1.49% / 3.98% |
@@ -27,6 +27,12 @@ complete UTF-8/UTF-16 report warm, compilation and compile-to-result. Six jobs f
 platform/stress/package qualification is GREEN; [cached source-matched delivery](../benchmarks/results/2026-11-13-formatted-helper-slots/delivery/README.md). UTF-8 warm has 3.91% Lython process spread; UTF-16 warm maxIQR is4.04% and
 fresh Lython spread2.39%, so those cases remain variable.
 [Exact current rows, source and controls](../benchmarks/results/2026-11-13-formatted-helper-slots/README.md).
+
+The same qualified source also refreshes captured-text/helper-counter rows on
+2026-11-13: three jobs finish173.802s with full gates. Warm remains1.61–1.64×
+CPython; compile-to-result1.50–1.51×, while compilation is0.81–0.82×. Tight current
+controls confirm the execution gap warrants further work. The later descriptor
+owner correction is excluded. [All current/older rows and boundaries](../benchmarks/results/2026-11-13-captured-cpython-checkpoint/README.md).
 
 **Preceding measured source:** fully qualified `2d91eb1a`/`161cd935`, collected
 2026-11-12 UTC. CSV compile-to-result has complete quiet/output/ownership/join
@@ -57,8 +63,8 @@ separate compilation, warm execution and compile-to-result. Guarded search,
 captured text and reports retain material warm gaps. CSV is close and JSON-lines
 is faster in these observations, with variability shown. Their completed output, ownership,
 quiet, joined-user and archival checks pass; current partial rows retain the limits above. The [latest selected checkpoint](../benchmarks/results/2026-11-12-ordered-final-slots/README.md)
-updates CSV and keeps its partial search/compilation rows explicit. Captured text
-retains its older source. Current report rows are refreshed separately above;
+updates CSV and keeps its partial search/compilation rows explicit. Current captured
+text and report rows are refreshed separately above;
 all retain material warm gaps. Original/adverse controls and
 replaced rows remain linked; cross-collection differences do not isolate a change.
 
@@ -82,7 +88,7 @@ Warm execution reuses the compiled script and excludes compilation:
 | CSV validation/helper calls | 4.098–4.169 ms | 4.302–4.311 ms | 0.95–0.97× | `2d91eb1a` | Partial campaign; L1.74%, P0.20% / 1.27% |
 | CSV summary/helpers | 3.282–3.302 ms | 3.201 ms | 1.03–1.03× | `6f76` | Diagnostic; 0.60% / 0.68% |
 | Text summary/helpers | 1.143–1.305 ms | 1.179–1.200 ms | 0.95–1.11× | `983bab96` | Variable; L12.40%, P1.74% / 1.10% |
-| Text / captured helper + counter | 1.489–1.562 ms | 0.896–0.911 ms | 1.63–1.74× | `9bca1337` | Variable; L4.92%, P1.63% / 3.74% |
+| Text / captured helper + counter | 1.444–1.453 ms | 0.888–0.899 ms | 1.61–1.64× | `31d65e01` | Diagnostic; L0.68%, P1.19% / 0.97% |
 | JSON-lines/helpers | 3.512 ms | 4.082–4.101 ms | 0.86–0.86× | `8ec7bfab` | Variable; L0.01%, P0.47% / 2.69% |
 | JSON-to-Markdown report | 2.85–2.96 ms | 2.31–2.32 ms | 1.23–1.28× | `31d65e01` | Variable; L3.91%, P0.73% / 2.51% |
 | JSON-to-Markdown / UTF-16 output | 3.08–3.13 ms | 2.45–2.46 ms | 1.25–1.28× | `31d65e01` | Variable; L1.64%, P0.44% / 4.04% |
@@ -100,7 +106,7 @@ Compilation alone includes code construction and disposal under the shared allow
 | CSV validation/helper calls | 70.24–70.33 µs | 66.80–67.09 µs | 1.05–1.05× | `2d91eb1a` | Partial campaign; L0.12%, P0.43% / 4.06% |
 | CSV summary/helpers | 61.3–62.2 µs | 59.1 µs | 1.04–1.05× | `6f76` | Diagnostic; 1.46% / 0.89% |
 | Text summary/helpers | 0.044–0.044 ms | 0.041–0.041 ms | 1.07–1.07× | `983bab96` | Diagnostic; L0.29%, P0.40% / 1.71% |
-| Text / captured helper + counter | 45.02–45.51 µs | 54.44–54.52 µs | 0.83–0.84× | `9bca1337` | Diagnostic; L1.10%, P0.16% / 1.74% |
+| Text / captured helper + counter | 44.390–44.589 µs | 54.191–54.480 µs | 0.81–0.82× | `31d65e01` | Diagnostic; L0.45%, P0.53% / 0.77% |
 | JSON-lines/helpers | 51.02–52.49 µs | 50.80–51.18 µs | 1.00–1.03× | `8ec7bfab` | Variable; L2.80%, P0.74% / 1.27% |
 | JSON-to-Markdown report | 40.00–40.35 µs | 37.27–37.51 µs | 1.07–1.08× | `31d65e01` | Diagnostic; L0.89%, P0.65% / 0.73% |
 | JSON-to-Markdown / UTF-16 output | 41.15–41.19 µs | 38.30–38.47 µs | 1.07–1.08× | `31d65e01` | Diagnostic; L0.09%, P0.43% / 2.17% |
@@ -119,7 +125,8 @@ are unmeasured. Small file-backed scripts do not establish large-file throughput
 Dedicated Azure F4as_v7, Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap.
 Actual .NET 11 RC3 and isolated CPython 3.13.16 use ordinary GC/tiering;
 eight-second warmups (five for compilation) and seven rotated500ms rounds for
-`31d65e01`; five-second warmups per role/job and seven rotated500ms rounds for `2d91eb1a`
+`31d65e01` reports; captured text uses twelve seconds (five compilation) with the
+same seven rotated500ms rounds. Five-second warmups per role/job and seven rotated500ms rounds for `2d91eb1a`
 (frozen`161cd935`); seven rotated250ms rounds for `9bca1337`
 (frozen `e4cc65b2`); captured-text warmups are twelve seconds. `41bd869b`
 (frozen `f0b736b2`); captured-text/UTF16 warmups are twelve seconds. `8ec7bfab`

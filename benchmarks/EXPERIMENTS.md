@@ -6994,3 +6994,20 @@ CPython;627 public semantic/descriptor/cancellation/ownership checks pass per ac
 target, including repeated shared-budget cleanup. The invalid earlier no-test
 attempt is retained/excluded. No speedup or current-HEAD CPython timing is claimed.
 [Original failures, exact source and validation](results/2026-11-13-builtin-slot-owner/README.md).
+
+
+B654 refreshes only three stale captured-text phases at the same qualified
+31d65e01/e34cacaf report checkpoint.173.802s, all gates/joins/archive pass; warm
+1.61–1.64× CPython, fresh1.50–1.51×, compilation0.81–0.82×, tight controls. No
+internal dominance or individual-change attribution follows. Older/adverse rows
+remain, laterR298 excluded. [Full evidence](results/2026-11-13-captured-cpython-checkpoint/README.md).
+
+
+## R299 — immutable dev.79 adapter bridge
+
+The existing isolated bridge independently qualifies new producer891cabbf/dev.79
+on consumerd413392c:88internal/534public per actual.NET11/10, exact loaded package
+identities,29 normal files/571 core sources unchanged. No normal pin/API/dependency
+promotion or backend speed claim. Final single-match owners, nativeUTF8 names and
+token-independent preparation remain separate; source unchanged funded forwarding
+is not a new successful capability probe. [Exact copies and validation](results/2026-11-13-regex-dev79-bridge/README.md).

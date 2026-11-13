@@ -1,0 +1,13 @@
+{
+  "normalFilesUnchanged": 29,
+  "coreSourcesUnchanged": 571,
+  "actualTargets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "loadedProducerAssembliesMatchPinnedPackages": true,
+  "normalAdapterPin": "0.4.0",
+  "coreDependencyChange": false,
+  "developmentOnly": true,
+  "backendPerformanceQualified": false
+}
