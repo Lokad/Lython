@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Byte-bound window capacity, withdrawn](results/2026-11-13-text-window-capacity/rough/README.md):
+cf762db1 deletes the counted scan. Allocation remains effectively flat; search/text
+timings have moving controls, JSON has a small supported gain. Peak charged root
+rises137% for search and25% for JSON, including unused retained headroom; these are
+allowance estimates, not heap measurements. Added window state/earlier rejection
+does not justify that limited benefit. Restore qualified production and retain
+observable admission/mixed-read regressions; all raw adverse results survive.
+
 [Counted window-header capacity, not promoted](results/2026-11-13-text-window-capacity/counting/README.md):
 fd258a65 passes198internal/106public Release11 checks. B676 five complete warm
 jobs228.141s remains inconclusive with moving controls; no allocation/CPU gain

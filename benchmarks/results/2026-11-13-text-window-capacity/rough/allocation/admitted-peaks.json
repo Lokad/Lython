@@ -1,0 +1,142 @@
+{
+  "accountedEstimatesNotClrHeapOrRss": true,
+  "capturedOutsideAllocationSamples": true,
+  "rows": [
+    {
+      "case": "scripts.file-search.large",
+      "reference": {
+        "PeakExecutionBytes": 167876,
+        "PeakRootBytes": 244644
+      },
+      "candidate": {
+        "PeakExecutionBytes": 502468,
+        "PeakRootBytes": 579236
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 167876,
+        "PeakRootBytes": 244644
+      },
+      "executionChangePercent": 199.30901379589696,
+      "rootChangePercent": 136.76689393567796
+    },
+    {
+      "case": "scripts.file-search.guarded-helper.large",
+      "reference": {
+        "PeakExecutionBytes": 167876,
+        "PeakRootBytes": 248292
+      },
+      "candidate": {
+        "PeakExecutionBytes": 502468,
+        "PeakRootBytes": 582884
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 167876,
+        "PeakRootBytes": 248292
+      },
+      "executionChangePercent": 199.30901379589696,
+      "rootChangePercent": 134.75746298712806
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "reference": {
+        "PeakExecutionBytes": 4974816,
+        "PeakRootBytes": 5093600
+      },
+      "candidate": {
+        "PeakExecutionBytes": 4974816,
+        "PeakRootBytes": 5093600
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 4974816,
+        "PeakRootBytes": 5093600
+      },
+      "executionChangePercent": 0.0,
+      "rootChangePercent": 0.0
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "reference": {
+        "PeakExecutionBytes": 1677401,
+        "PeakRootBytes": 1778425
+      },
+      "candidate": {
+        "PeakExecutionBytes": 1924825,
+        "PeakRootBytes": 2025849
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 1677401,
+        "PeakRootBytes": 1778425
+      },
+      "executionChangePercent": 14.750438326911697,
+      "rootChangePercent": 13.9125349677383
+    },
+    {
+      "case": "scripts.report-render.large",
+      "reference": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3581047
+      },
+      "candidate": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3581047
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3581047
+      },
+      "executionChangePercent": 0.0,
+      "rootChangePercent": 0.0
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "reference": {
+        "PeakExecutionBytes": 4059951,
+        "PeakRootBytes": 4162639
+      },
+      "candidate": {
+        "PeakExecutionBytes": 5107887,
+        "PeakRootBytes": 5210575
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 4059951,
+        "PeakRootBytes": 4162639
+      },
+      "executionChangePercent": 25.811543045716554,
+      "rootChangePercent": 25.174798967674118
+    },
+    {
+      "case": "scripts.report-render.utf16.large",
+      "reference": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3582871
+      },
+      "candidate": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3582871
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 3493175,
+        "PeakRootBytes": 3582871
+      },
+      "executionChangePercent": 0.0,
+      "rootChangePercent": 0.0
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "reference": {
+        "PeakExecutionBytes": 10611747,
+        "PeakRootBytes": 10773347
+      },
+      "candidate": {
+        "PeakExecutionBytes": 10611747,
+        "PeakRootBytes": 10773347
+      },
+      "referenceControl": {
+        "PeakExecutionBytes": 10611747,
+        "PeakRootBytes": 10773347
+      },
+      "executionChangePercent": 0.0,
+      "rootChangePercent": 0.0
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "complete": true,
+  "performanceQualified": false,
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "rows": [
+    {
+      "case": "scripts.file-search.large",
+      "allocationBytes": {
+        "before": 151237.0,
+        "candidate": 151237.0,
+        "before-control": 151237.0
+      },
+      "allocationChangePercent": [
+        0.0,
+        0.0
+      ],
+      "executionMilliseconds": {
+        "before": 2.03128425,
+        "candidate": 1.87454075,
+        "before-control": 1.943373375
+      },
+      "diagnosticChangePercent": [
+        -7.716472965317389,
+        -3.541914584478656
+      ]
+    },
+    {
+      "case": "scripts.file-search.guarded-helper.large",
+      "allocationBytes": {
+        "before": 151237.0,
+        "candidate": 151237.0,
+        "before-control": 151237.0
+      },
+      "allocationChangePercent": [
+        0.0,
+        0.0
+      ],
+      "executionMilliseconds": {
+        "before": 2.68650075,
+        "candidate": 2.6173135,
+        "before-control": 2.884412625
+      },
+      "diagnosticChangePercent": [
+        -2.575366859659356,
+        -9.260087224864378
+      ]
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "allocationBytes": {
+        "before": 3042531.0,
+        "candidate": 3042282.0,
+        "before-control": 3042534.0
+      },
+      "allocationChangePercent": [
+        -0.008183975775433172,
+        -0.00828256972641439
+      ],
+      "executionMilliseconds": {
+        "before": 11.423311,
+        "candidate": 5.351009625,
+        "before-control": 4.243396875
+      },
+      "diagnosticChangePercent": [
+        -53.1571045820253,
+        26.102030581337022
+      ]
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "allocationBytes": {
+        "before": 844924.0,
+        "candidate": 844868.0,
+        "before-control": 844868.0
+      },
+      "allocationChangePercent": [
+        -0.006627815046089669,
+        0.0
+      ],
+      "executionMilliseconds": {
+        "before": 7.6060225,
+        "candidate": 8.03238425,
+        "before-control": 7.693823
+      },
+      "diagnosticChangePercent": [
+        5.605580972183555,
+        4.400429409410633
+      ]
+    },
+    {
+      "case": "scripts.report-render.large",
+      "allocationBytes": {
+        "before": 2668452.0,
+        "candidate": 2666854.0,
+        "before-control": 2667214.0
+      },
+      "allocationChangePercent": [
+        -0.05988490705473026,
+        -0.013497229693604229
+      ],
+      "executionMilliseconds": {
+        "before": 11.605817125,
+        "candidate": 3.244149875,
+        "before-control": 3.0070275
+      },
+      "diagnosticChangePercent": [
+        -72.04720839507455,
+        7.8856071319600485
+      ]
+    },
+    {
+      "case": "scripts.json-summary-helpers.large",
+      "allocationBytes": {
+        "before": 2123675.0,
+        "candidate": 2123675.0,
+        "before-control": 2123675.0
+      },
+      "allocationChangePercent": [
+        0.0,
+        0.0
+      ],
+      "executionMilliseconds": {
+        "before": 3.5515735,
+        "candidate": 3.564295375,
+        "before-control": 3.5485365
+      },
+      "diagnosticChangePercent": [
+        0.35820390595886487,
+        0.4440950515797182
+      ]
+    },
+    {
+      "case": "scripts.report-render.utf16.large",
+      "allocationBytes": {
+        "before": 2809052.0,
+        "candidate": 2808989.0,
+        "before-control": 2809390.0
+      },
+      "allocationChangePercent": [
+        -0.002242749511227604,
+        -0.01427356116452394
+      ],
+      "executionMilliseconds": {
+        "before": 4.05977,
+        "candidate": 3.214669875,
+        "before-control": 3.20495525
+      },
+      "diagnosticChangePercent": [
+        -20.816453271983406,
+        0.3031126565651743
+      ]
+    },
+    {
+      "case": "scripts.csv-invoice.large",
+      "allocationBytes": {
+        "before": 5676913.0,
+        "candidate": 5676922.0,
+        "before-control": 5676916.0
+      },
+      "allocationChangePercent": [
+        0.00015853686679001555,
+        0.00010569118866765592
+      ],
+      "executionMilliseconds": {
+        "before": 7.840765875,
+        "candidate": 7.75835875,
+        "before-control": 7.836142625
+      },
+      "diagnosticChangePercent": [
+        -1.0510086171907185,
+        -0.9926296485702313
+      ]
+    }
+  ]
+}
