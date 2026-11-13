@@ -37,3 +37,8 @@ Allocation attribution and the search's unknown CPU fraction remain unresolved.
 The next bounded storage change is native JSON byte input using the existing
 parser and ownership; it is motivated by the complete ZIP/config script's forced
 decode boundary, not by these CPU samples.
+
+`retired-build-image.tar.xz` preserves the exact 2026-10-10 function-frame baseline
+core (SHA256 `2b68163c1401df96efcf511f9706fea3fe64f75811360789b517333f9045d53f`)
+before retiring duplicate historical VM build outputs for working space. This
+binary is unrelated to the profiled source and is not new performance evidence.

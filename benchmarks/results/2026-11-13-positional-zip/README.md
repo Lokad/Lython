@@ -4,6 +4,10 @@
 checkpoint; full delivery and the controlled whole-script comparison are pending.
 No CPU or allocation gain is claimed yet.
 
+Subsequent completion: the [source-pair comparison](comparison/README.md) and
+[full delivery](delivery/README.md) are now recorded. The text below describes
+the original implementation checkpoint, including its original failures.
+
 The optional Lython-owned ILythonPositionalByteFile contract fixes an opened
 readable extent and preserves identity/cursor/lookahead. A capable read-mode ZIP
 uses governed end/directory/local-header regions and selected compressed input,

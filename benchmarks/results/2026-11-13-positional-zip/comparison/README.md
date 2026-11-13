@@ -1,7 +1,7 @@
 # Complete ZIP-config source comparison
 
 2026-11-13 UTC. Source976f9439/frozen97bbeff3 against qualifiedcb8736ff/frozen5a184a1d
-and stock CPython3.13.16. Final platform/stress/package delivery is pending;
+and stock CPython3.13.16. Final platform/stress/package delivery was pending at collection;
 runtime bytes are unchanged by the overlap-test expectation correction.
 Existing quiet F4as_v7/Ubuntu24.04.4/.NET11RC3, ordinary GC/tiering and Python GIL/GC.
 
