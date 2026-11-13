@@ -7387,3 +7387,13 @@ All578frozen production inputs match;16step summaries and full logs are
 [archived](results/2026-11-13-dictionary-boundaries/delivery/README.md).
 R332uses that same qualified runtime; evidence-onlyd7cef555 changes no production
 source. No unchanged qualification/retiming or universal CPU claim follows.
+
+## R333 — ordinary dictionary semantics for XML attributes
+
+[Correction](results/2026-11-13-xml-attribute-lookup/README.md) reuses the
+contextual synchronous/asynchronous dictionary helpers. Original synchronous
+"missing" regression is preserved.79public/32internal XML cases pass per actual
+Release11/10; seven strengthened map-withdrawal/I/O/cancellation/refusal cases
+repass each. Three isolated CPython controls agree. No CPU/allocation claim;
+batch full delivery with the next runtime milestone. Regex dev83 source API
+check still finds the three gaps, without pin promotion/repeated qualification.

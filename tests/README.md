@@ -12,6 +12,9 @@ matches under pressure, retained lists and cancellation/refusal during traversal
 lazy equality errors, actual asynchronous callbacks and cancellation;
 [ownership cases](Lokad.Lython.Tests/XmlTraversalOwnershipTests.cs) preserve aliases,
 depth-based working storage and refusal before clear mutates the tree.
+[Attribute lookup](Lokad.Lython.PublicApi.Tests/XmlAttributeLookupTests.cs) checks
+Python key protocols, defaults/errors and retained maps across real I/O,
+cancellation and terminal admission refusal.
 
 ## Assembly boundaries
 

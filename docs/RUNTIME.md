@@ -1010,6 +1010,9 @@ command owner ends. `clear()` replaces the attribute map, preserving old map, te
 and child aliases and their funding. It can discard private child-reference backing;
 other graph charges remain conservative until their owner ends. These operations
 do not turn `fromstring` into an incremental or constant-memory parser.
+`Element.get()` uses the same contextual key hashing/equality as dictionaries,
+including hooks that suspend through host I/O. The already-bound attribute map
+stays funded if a hook clears the element or replaces its current map.
 
 Spreadsheet cells own their values and metadata independently of their current
 worksheet address. Native cell/sheet capacity and style registration use shared

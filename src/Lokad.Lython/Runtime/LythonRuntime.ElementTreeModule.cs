@@ -401,8 +401,10 @@ internal sealed partial class LythonRuntime
                     "tail" => Tail,
                     "attrib" => Attributes,
                     "__class__" => ElementType,
-                    "get" => BoundCallable.Create((args, _, _) =>
-                        Attributes.TryGetValue(args[0], out var item) ? item : args.Length > 1 ? args[1] : PyNone.Instance, GetSignature),
+                    "get" => BoundCallable.Create((args, span, context) =>
+                        DictMembers.Get(Attributes, args[0], args.Length > 1 ? args[1] : PyNone.Instance, span, context), GetSignature,
+                        (args, span, context) => DictMembers.GetAsync(Attributes, args[0],
+                            args.Length > 1 ? args[1] : PyNone.Instance, span, context)),
                     "find" => BoundCallable.Create((args, span, context) => Select(args, context, span, false), FindSignature),
                     "findall" => BoundCallable.Create((args, span, context) => Select(args, context, span, true), FindAllSignature),
                     "iter" => BoundCallable.Create((args, span, context) =>

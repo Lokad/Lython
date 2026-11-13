@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Make XML attribute lookup honor Python key hashing/equality through the shared
+  dictionary operations, including genuinely asynchronous hooks. Retain the bound
+  attribute map through replacement, cancellation and awaited cleanup.
+
 - Consolidate cancellation at native dictionary-update boundaries and remove
   span transport used only by duplicate polls. Preserve long-work checks,
   managed stack admission and terminal refusal after host reentry.
