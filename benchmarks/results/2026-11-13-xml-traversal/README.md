@@ -11,8 +11,10 @@ Native pulls now share one synchronous path across Run/RunAsync; only user-defin
 tag equality enters the constant-space async protocol loop. Both actual.NET11/10
 targets pass32internal/55public focused cases, including real async equality,
 in-flight cancellation, suppressed admission refusal, alias retention, pre-mutation
-refusal, lazy errors, deep trees and exhausted-stack release. Full platform/stress/
-installed-consumer qualification is pending; publication is held.
+refusal, lazy errors, deep trees and exhausted-stack release. Full delivery passes
+[43515628922](delivery/README.md): both platforms/actual11/10, original stress and
+installed consumers;578inputs/16summaries cached. New dictionary-boundary work is
+outside this qualification; publication is held.
 
 B701 repeats the original catalog/clocks on refined965, completing151.668s/all gates:
 
