@@ -6959,3 +6959,12 @@ compilation/captured/search uncertainty and all adverse controls remain. Retain
 the source change, pending full delivery and affected CPython refresh. Original
 fixture/summarizer failures are preserved; no valid VM rows replayed. The broader
 performance objective remains open. [Exact source, all results and limits](results/2026-11-13-formatted-helper-slots/README.md).
+
+
+R296 external checkpoint B652 completes281.260s with all identity/output/ownership/
+quiet/join/archive gates. Committed31d65e01/e34cacaf reports are1.23–1.28× CPython
+warm; UTF8 compile-to-result1.18–1.22×, UTF16 fresh1.22–1.26×. Compilation remains
+separate, roughly1.07–1.08×. Six report rows refresh the maintained guide, retaining
+all earlier/adverse observations and process/IQR variability. Full delivery runs
+independently; no unrelated script or async speed claim follows. [Raw/current/older
+rows](results/2026-11-13-formatted-helper-slots/README.md#cpython-checkpoint--b652).
