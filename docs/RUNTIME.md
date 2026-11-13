@@ -1091,6 +1091,15 @@ it needs working storage. Cancellation is checked after admission and arithmetic
 an individual managed BigInteger operation cannot be interrupted internally and
 provides no hard execution deadline.
 
+Immutable bytes, text and tuple repetition admit final storage before allocating
+or filling it, including tuple scalar headroom. Results use the active execution
+owner even when the input is a compiled constant. One shared copy routine fills
+bounded chunks and checks cancellation while repeating. Tuple element aliases
+remain shared; unused private storage is refunded on failure or cancellation.
+Formerly uncharged bytes output can therefore be refused earlier.
+Immutable repetition converts counts to the managed process's native index width
+before returning an empty result; unrepresentable indices raise `OverflowError`.
+
 `enumerate` admits a wide next-index magnitude before incrementing it. Its tuples
 fund their exposed old indices while the iterator retains the funded next index.
 Source pulling precedes index construction; exhausted pulls need no unused

@@ -192,6 +192,12 @@ preserves replaced measurements and their source-specific qualification.
 
 ## Improvements within Lython
 
+Qualified `c5d05cff`/`3a2c1cf6` consolidates integer arithmetic and admission.
+Against qualified `63389c9d`/`2e74ef4f`, complete invoice warm execution improves
+7.2–8.2% and compile-plus-run 7.2–9.3%, with supporting wider process CPU. Allocation
+is flat; text and JSON controls cross zero. These source-pair gains do not update
+the CPython ratios above. [Exact measurements and full delivery](../benchmarks/results/2026-11-13-integer-admission/README.md).
+
 CPython remains the primary external baseline. Separate source pairs below are
 not additive or universal CPU gains:
 

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Shared immutable repetition](results/2026-11-13-immutable-repetition/README.md)
+fixes reproduced unfunded/late-admitted bytes output, shares bounded copying and
+removes tuple's duplicate late admission. Final93a6d134 passes192internal/339public
+focused Release checks and CPython count semantics. Initial6f artifact/seven-script
+diagnostics pass both APIs with flat allocation; moving/adverse desktop clocks
+remain diagnostic. Incorrect initial oversized-count expectations survive; full
+delivery is pending and the broader performance objective remains open.
+
 [Captured-text CPU source gate](results/2026-11-13-captured-cpu-source-gate/README.md)
 records1502guest samples on committedc5d05cff/3a2c1cf6. Compiler/source checks rule
 out mirrored locals, per-line ordinary frames, repeated Unicode sizing/mapping and
@@ -19,7 +27,8 @@ quotient/product intermediates and fixes demonstrated allocation before refusal.
 Frozen3a2c1cf6 improves complete invoice warm7.2–8.2% and fresh7.2–9.3% against
 qualified2e74ef4f, supporting wider CPU; allocation is flat. Text/JSON controls cross
 zero.115internal/1049public focused Release checks and eight scripts/both APIs pass.
-All original failed/adverse conditions survive; full delivery is pending.
+All original failed/adverse conditions survive; integer delivery is
+GREEN43384587266 with cached source-matched platform/stress/package evidence.
 
 [Managed continuation call handoff](results/2026-11-13-native-call-stack-handoff/README.md)
 corrects a demonstrated R303 stack overflow. A controlled owned256KiB continuation

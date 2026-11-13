@@ -2,6 +2,12 @@
 
 ## 0.11.0 - Unreleased
 
+- Share bounded, cancellable copying for immutable bytes, text and tuple
+  repetition. Admit bytes output through the active execution before allocation,
+  including compiled inputs; transfer tuple funding from its original reservation.
+  Validate native index representation before empty results; representable large
+  indices can still repeat empty values without allocating.
+
 - Consolidate integer subtraction, multiplication, floor division and remainder
   admission before major allocation, including math accumulators and Counter
   subtraction. Keep results funded after scratch cleanup and observe cancellation

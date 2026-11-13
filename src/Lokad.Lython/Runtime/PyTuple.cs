@@ -67,6 +67,30 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 
+    internal static PyTuple Repeat(IReadOnlyList<object> source, int count, int length,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        long scalarBytes = 0;
+        for (var i = 0; i < source.Count; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            scalarBytes = checked(scalarBytes + RuntimeMemoryEstimates.EstimateScalarStorageBytes(source[i]));
+        }
+        var bytes = checked(EstimateApproximateBytes(length) + scalarBytes * count);
+        using var storage = context.MemoryGovernor.ReserveTemporary(bytes, span);
+        context.CheckExecution(span);
+        var items = new object[length];
+        for (var i = 0; i < source.Count; i++)
+        {
+            if ((i & 1023) == 0) context.CheckExecution(span);
+            items[i] = source[i];
+        }
+        PySequenceMaterialization.FillRepeated<object>(items.AsSpan(0, source.Count), items, context, span);
+        var result = new PyTuple(items, context.MemoryGovernor, span, bytes);
+        storage.Commit(bytes);
+        return result;
+    }
+
     internal static PyTuple FromPositionalArguments(ReadOnlySpan<CallArgumentValue> arguments,
         MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {

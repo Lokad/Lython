@@ -438,11 +438,15 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return RepeatCore(count, OwnerMemoryGovernor, PyStructuralGuard.AmbientSpan);
     }
 
-    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        => RepeatCore(count, governor, allocationSpan);
+    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan,
+        LythonRuntime.ExecutionContext? context = null)
+        => RepeatCore(count, governor, allocationSpan, context);
 
-    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan,
+        LythonRuntime.ExecutionContext? context = null)
     {
+        context ??= PyStructuralGuard.AmbientContext;
+        governor ??= context?.MemoryGovernor;
         if (count <= 0 || _byteLength == 0)
         {
             return Empty;
@@ -454,18 +458,17 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         if (resultLength <= InlineUtf8Capacity)
         {
             Span<byte> inline = stackalloc byte[InlineUtf8Capacity];
-            for (var i = 0; i < count; i++) Utf8Span.CopyTo(inline[(i * _byteLength)..]);
+            PySequenceMaterialization.FillRepeated<byte>(Utf8Span, inline[..resultLength], context, allocationSpan);
             return CopyFromUtf8(inline[..resultLength], governor, allocationSpan);
         }
-        var result = governor is null
-            ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
-        for (var i = 0; i < count; i++)
-        {
-            Utf8Span.CopyTo(result.AsSpan(i * _byteLength));
-        }
-
-        return new PyString(result, result.Length, governor);
+        var bytes = EstimateApproximateBytes(resultLength);
+        using var storage = governor?.ReserveTemporary(bytes, allocationSpan);
+        context?.CheckExecution(allocationSpan);
+        var result = CreateReservedUtf8(resultLength, governor);
+        PySequenceMaterialization.FillRepeated<byte>(Utf8Span, result.UnpublishedUtf8, context, allocationSpan);
+        result.CompleteUnpublishedUtf8(resultLength);
+        storage?.Commit(bytes);
+        return result;
     }
 
     public PyString Slice(IReadOnlyList<int> runeIndices)

@@ -312,13 +312,13 @@ internal sealed partial class LythonRuntime
 
         if (left is PyBytes leftBytes && TryRepeatCount(right, context, span, out var rightByteCount))
         {
-            var repeatedBytes = RepeatBytes(leftBytes, rightByteCount, span);
+            var repeatedBytes = RepeatBytes(leftBytes, rightByteCount, context, span);
             return repeatedBytes;
         }
 
         if (right is PyBytes rightBytes && TryRepeatCount(left, context, span, out var leftByteCount))
         {
-            var repeatedBytes = RepeatBytes(rightBytes, leftByteCount, span);
+            var repeatedBytes = RepeatBytes(rightBytes, leftByteCount, context, span);
             return repeatedBytes;
         }
 

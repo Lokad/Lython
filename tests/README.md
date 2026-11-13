@@ -17,6 +17,13 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Immutable repetition](Lokad.Lython.Tests/ImmutableRepetitionTests.cs) checks
+admission before allocation for owned/unowned inputs, cancellation during admission,
+chunk boundaries and retained aliases. The [public cases](Lokad.Lython.PublicApi.Tests/ImmutableRepetitionTests.cs)
+also preserve Unicode/index protocols and terminal refusal through suppression and
+finally returns. Copy loops check cancellation in bounded chunks; individual managed
+allocations remain atomic.
+
 [Integer arithmetic admission](Lokad.Lython.Tests/IntegerBinaryAdmissionTests.cs)
 checks refusal before major allocation, retained input/result funding and
 cancellation during host admission. Both execution APIs preserve signed floor and

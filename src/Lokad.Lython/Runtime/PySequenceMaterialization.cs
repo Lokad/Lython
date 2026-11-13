@@ -2,6 +2,31 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PySequenceMaterialization
 {
+    // Caller admits final storage first. Copy in bounded chunks, doubling an
+    // initialized prefix instead of making one managed call per repetition.
+    internal static void FillRepeated<T>(ReadOnlySpan<T> source, Span<T> destination,
+        LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+    {
+        if (destination.IsEmpty) return;
+        if (source.IsEmpty || destination.Length % source.Length != 0)
+            throw new ArgumentException("Repeated storage must contain complete source values.");
+        var filled = 0;
+        while (filled < destination.Length)
+        {
+            var count = filled == 0 ? source.Length : Math.Min(filled, destination.Length - filled);
+            var input = filled == 0 ? source : destination[..count];
+            for (var copied = 0; copied < count;)
+            {
+                context?.CheckExecution(span);
+                var chunk = Math.Min(4096, count - copied);
+                input.Slice(copied, chunk).CopyTo(destination.Slice(filled + copied, chunk));
+                copied += chunk;
+            }
+            filled += count;
+        }
+        context?.CheckExecution(span);
+    }
+
     public static object[] MaterializeSlice(
         IReadOnlyList<object> source,
         IEnumerable<int> indices,

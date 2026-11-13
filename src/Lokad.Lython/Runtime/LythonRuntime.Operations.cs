@@ -736,7 +736,8 @@ internal sealed partial class LythonRuntime
 
     private static PyString RepeatString(PyString text, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
-        if (count <= BigInteger.Zero)
+        ValidateImmutableRepeatIndex(count, span);
+        if (count <= BigInteger.Zero || text.ByteLength == 0)
         {
             return PyString.Empty;
         }
@@ -746,13 +747,14 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "String repetition is too large.", span);
         }
 
-        var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
+        var repeated = text.Repeat((int)count, context.MemoryGovernor, span, context);
         GC.KeepAlive(context);
         return repeated;
     }
 
-    private static PyBytes RepeatBytes(PyBytes value, BigInteger count, LythonSourceSpan span)
+    private static PyBytes RepeatBytes(PyBytes value, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
+        ValidateImmutableRepeatIndex(count, span);
         if (count <= BigInteger.Zero || value.Length == 0)
         {
             return new PyBytes([]);
@@ -769,16 +771,11 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "Bytes repetition is too large.", span);
         }
 
-        var source = value.Bytes;
+        using var storage = context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes((int)total), span);
+        context.CheckExecution(span);
         var combined = new byte[(int)total];
-        for (var offset = 0; offset < combined.Length; offset += source.Length)
-        {
-            source.CopyTo(combined.AsSpan(offset));
-        }
-
-        return value.OwnerMemoryGovernor is { } governor
-            ? new PyBytes(combined, governor, span)
-            : new PyBytes(combined);
+        PySequenceMaterialization.FillRepeated<byte>(value.Bytes, combined, context, span);
+        return new PyBytes(combined, context.MemoryGovernor, span, storage);
     }
 
     private static PyList RepeatList(PyList list, BigInteger count, ExecutionContext context, LythonSourceSpan span)
@@ -822,6 +819,7 @@ internal sealed partial class LythonRuntime
 
     private static PyTuple RepeatTuple(IReadOnlyList<object> tuple, BigInteger count, ExecutionContext context, LythonSourceSpan span)
     {
+        ValidateImmutableRepeatIndex(count, span);
         if (count <= BigInteger.Zero || tuple.Count == 0)
         {
             var emptyTuple = new PyTuple([], context.MemoryGovernor, span);
@@ -840,33 +838,19 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "Tuple repetition is too large.", span);
         }
 
-        // N02: deny before the sized allocation; bound the output count.
-        { _ = (int)totalLength; context.CheckExecution(span); }
-        using var preflight34788 = context.MemoryGovernor.ReserveTemporary(PyTuple.EstimateApproximateBytes((int)totalLength), span);
-        var items = new object[(int)totalLength];
-        var filled = 0;
-        for (var i = 0; i < repeatCount; i++)
-        {
-            for (var j = 0; j < tuple.Count; j++)
-            {
-                items[filled++] = tuple[j];
-                if ((filled & 63) == 0)
-                {
-                    context.CheckExecution(span);
-                }
-            }
-
-            { _ = (i + 1) * tuple.Count; context.CheckExecution(span); }
-        }
-
-        // Fresh array transfers without copying (escape proof: allocated here,
-        // never retained elsewhere).
-        var repeated = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
-        return repeated;
+        return PyTuple.Repeat(tuple, repeatCount, (int)totalLength, context, span);
     }
 
     private static PyDeque RepeatDeque(PyDeque source, BigInteger count, ExecutionContext context, LythonSourceSpan span)
         => source.Repeat(count, context.MemoryGovernor, span, context);
+
+    private static void ValidateImmutableRepeatIndex(BigInteger count, LythonSourceSpan span)
+    {
+        // Python converts repetition counts to its native index type before
+        // checking for an empty result. This is a representation bound, not a cap.
+        if (count < (long)nint.MinValue || count > (long)nint.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "cannot fit 'int' into an index-sized integer", span);
+    }
 
     private static int ToListRepeatCount(BigInteger count, LythonSourceSpan span)
     {
