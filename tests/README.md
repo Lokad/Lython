@@ -38,6 +38,9 @@ first refusal, cancellation and retained inputs through promoted arithmetic.
 original descriptor identity through class-body and later aliases, including
 staticmethod/classmethod/property wrappers. Python goldens, ordinary calls and
 repeated shared-budget cleanup cover both execution APIs.
+Builtin-root cases also reject dataclass mutation before builtin metadata changes.
+Definition-isolation cases retain actual object/type namespace views across
+concurrent executions and suspended I/O, checking their slot owners and funding.
 
 [Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
 check class nonlocal updates and deletions during suspension through both APIs,

@@ -42,7 +42,10 @@ compilation, allocation, RSS, embedding-latency or new CPython claim is made.
 Search is uncertain because unchanged controls move materially; JSON/report timing
 is also inconclusive. These observations do not resolve the earlier integer-chain
 report debt or complete the substantial whole-script performance objective.
-Full platform/original stress/installed-package qualification is pending at retention.
+Committed6237552b is now [fully qualified](delivery/README.md): Windows/Ubuntu
+actual.NET11/10, original stress and installed Release package consumers pass.
+All573frozen source inputs match that exact commit. This source-specific delivery
+does not qualify later prototypes; terminal/full logs/step counts are cached.
 
 All VM users join and RAM traces verify before unmount. Only the withdrawncf window
 core's aliases are retired under fresh idle-lease/UID/inode/hash/canonical-evidence

@@ -1,0 +1,36 @@
+{
+  "scope": "Builtin factory only; elapsed diagnostic, not CPU comparison",
+  "bytesRemoved": 2568,
+  "observations": {
+    "reference": {
+      "measurement": {
+        "purpose": "Fixed builtin-factory allocation source gate; no guest work or performance comparison",
+        "count": 512,
+        "factoryBytesPerInvocation": 10248,
+        "diagnosticMilliseconds": 3.8274,
+        "limitation": "Whole factory includes mutable execution-owned type caches; its bytes are not all removable. Object/type subset not isolated; elapsed is diagnostic."
+      },
+      "decorator": {
+        "kind": "Existing source decorator behavior",
+        "Success": true,
+        "StandardOutput": "mutated\nTrue\n",
+        "failure": null
+      }
+    },
+    "candidate": {
+      "measurement": {
+        "purpose": "Fixed builtin-factory allocation source gate; no guest work or performance comparison",
+        "count": 512,
+        "factoryBytesPerInvocation": 7680,
+        "diagnosticMilliseconds": 4.369,
+        "limitation": "Whole factory includes mutable execution-owned type caches; its bytes are not all removable. Object/type subset not isolated; elapsed is diagnostic."
+      },
+      "decorator": {
+        "kind": "Existing source decorator behavior",
+        "Success": true,
+        "StandardOutput": "rejected\nFalse\n",
+        "failure": null
+      }
+    }
+  }
+}

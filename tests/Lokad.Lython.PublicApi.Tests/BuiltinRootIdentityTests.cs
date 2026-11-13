@@ -14,6 +14,8 @@ public sealed class BuiltinRootIdentityTests
         { "native-controls", "for cls in [object,type,int,str,list,ValueError]:\n try:setattr(cls,'marker',1)\n except TypeError:print('immutable')\n else:print('WRITABLE')", "immutable\nimmutable\nimmutable\nimmutable\nimmutable\nimmutable\n" },
         { "original-aliases", "RootObject=object\nRootType=type\nclass object:pass\nclass type:pass\nobject.marker=3\ntype.marker=5\nprint(object.marker,type.marker)\nfor cls in [RootObject,RootType]:\n try:cls.marker=1\n except TypeError:print('immutable')", "3 5\nimmutable\nimmutable\n" },
         { "named-type-subclass", "RootType=type\nclass type(RootType):pass\ntype.marker=2\nprint(type.marker,type.__mro__[1] is RootType)\ndel type.marker", "2 True\n" },
+        { "object-dataclass", "from dataclasses import dataclass\ntry:dataclass(object)\nexcept TypeError:print('immutable')\nprint(hasattr(object,'__dataclass_fields__'))", "immutable\nFalse\n" },
+        { "type-dataclass", "from dataclasses import dataclass\ntry:dataclass(type)\nexcept TypeError:print('immutable')\nprint(hasattr(type,'__dataclass_fields__'))", "immutable\nFalse\n" },
         { "named-descriptor", "class object:\n @property\n def marker(self):return self.value\n @marker.setter\n def marker(self,value):self.value=value+1\nitem=object()\nitem.marker=6\nprint(item.marker,vars(item))", "7 {'value': 7}\n" },
     };
 

@@ -195,10 +195,18 @@ preserves replaced measurements and their source-specific qualification.
 
 ## Improvements within Lython
 
+Fixed builtin definitions on frozen7ee65002 remove2568B/invocation from the builtin
+factory(10248→7680B), not the entire execution. Against qualified6237552b, controlled
+config compile-to-result/report warm have modest supported direction; other CPU
+results are small or inconclusive. Original flat partial config and adverse local
+factory clocks remain visible. Full delivery is pending; no new CPython ratios.
+[Exact observations, failures and ownership tradeoffs](../benchmarks/results/2026-11-13-builtin-core-definitions/README.md).
+
 Native call entry on frozen485e008e removes redundant selection/decline branches
 and duplicate logical body admission. A controlled warm comparison against qualified
 40d92aef supports text0.6–5.9%/invoice1.1–3.4% lower elapsed with wider CPU support;
-search/JSON/report remain inconclusive. Full delivery is pending; no allocation
+search/JSON/report remain inconclusive. Committed6237552b has full platform/stress/
+installed-consumer delivery GREEN; no allocation
 claim or update to CPython ratios. [Exact sources and all controls](../benchmarks/results/2026-11-13-selected-native-call/README.md).
 
 Qualified `c5d05cff`/`3a2c1cf6` consolidates integer arithmetic and admission.

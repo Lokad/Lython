@@ -287,14 +287,13 @@ internal static class PyAttributeLookup
         {
             if (!context.TryGetBuiltin("object", out var objectBase) ||
                 objectBase is not PyType objectType ||
-                !objectType.TryLookupInMro("__new__", 0, out var sharedRaw, out _) ||
-                sharedRaw is not IPyDescriptor sharedDescriptor)
+                !objectType.TryLookupInMro("__new__", 0, out var sharedRaw, out _))
             {
                 value = PyNone.Instance;
                 return false;
             }
 
-            value = sharedDescriptor.Get(null, objectType, context, span);
+            value = BindForType(objectType, sharedRaw, context, span);
             return true;
         }
 
@@ -415,14 +414,13 @@ internal static class PyAttributeLookup
             {
                 if (!context.TryGetBuiltin("object", out var sharedBase) ||
                     sharedBase is not PyType sharedType ||
-                    !sharedType.TryLookupInMro(memberName, 0, out var sharedRaw, out _) ||
-                    sharedRaw is not IPyDescriptor sharedDescriptor)
+                    !sharedType.TryLookupInMro(memberName, 0, out var sharedRaw, out _))
                 {
                     value = PyNone.Instance;
                     return false;
                 }
 
-                value = sharedDescriptor.Get(null, sharedType, context, span);
+                value = BindForType(sharedType, sharedRaw, context, span);
                 return true;
             }
 

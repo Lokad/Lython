@@ -6,13 +6,25 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Fixed immutable builtin definitions retained](results/2026-11-13-builtin-core-definitions/README.md):
+7ee65002 removes per-invocation object/type construction and the builtin-new wrapper,
+reuses canonical inherited binding and prevents internal dataclass mutation. Views
+stay caller-owned; mutable callable hierarchy caches remain per execution.94internal/
+683public Release11 pass. Factory allocation10248→7680B, separate from adverse local
+clocks and complete-script results. B681 is partial after my unsupported fresh lane;
+all failure/RAM evidence is preserved. Corrected same-bit B682193.673s passes all
+gates: modest config compile-to-result/report direction, other CPU small/uncertain.
+No universal gain or external-ratio update; full delivery pending, objective continues.
+
 [Selected native call entry retained](results/2026-11-13-selected-native-call/README.md):
 485e008e removes impossible post-selection decline branches/duplicate eligibility
 and the native body's duplicate logical nesting charge; managed stack validation
 remains.186internal/440public Release11 pass, including the actual256KiB continuation.
 B680229.223s supports modest captured-text/invoice direction with CPU. Search has
 roughly7%unchanged-control movement; JSON/report are inconclusive. All adverse
-controls remain; no allocation or new external-ratio claim. Full delivery pending.
+controls remain; no allocation or new external-ratio claim. Committed6237552b is
+[fully qualified](results/2026-11-13-selected-native-call/delivery/README.md),
+with573source inputs matching cached GREEN43435357297 and16step summaries.
 
 [Isolated dev80 bridge](results/2026-11-13-regex-dev80-bridge/README.md):
 exact15b248dc packages; remove the obsolete validation-option argument from the

@@ -80,13 +80,17 @@ internal sealed partial class LythonRuntime
 
         // Retain each run's connected object/metatype graph. Fixed functions
         // and immutable constructor signatures are shared above.
-        private static Dictionary<string, object> CreateBuiltinVariables()
+        // Fixed immutable definitions contain no execution or memory owner.
+        // Mutable builtin namespaces and callable hierarchy caches stay per run.
+        private static readonly (PyType Object, PyType Type) SharedCoreTypes = CreateCoreTypes();
+
+        private static (PyType Object, PyType Type) CreateCoreTypes()
         {
             // Fixed entries: pre-size these per-run tables instead of growing
             // their storage on insertion. The builtin hint allows additions.
             var objectMembers = new Dictionary<string, object>(17, StringComparer.Ordinal)
             {
-                ["__new__"] = new PyStaticMethod(new ObjectNewMethod()),
+                ["__new__"] = new ObjectNewMethod(),
                 ["__init__"] = new ObjectInitMethod(),
                 ["__init_subclass__"] = new PyClassMethod(new ObjectInitSubclassMethod()),
                 ["__getattribute__"] = new ObjectGetAttrMethod(),
@@ -105,14 +109,20 @@ internal sealed partial class LythonRuntime
                 ["__hash__"] = new ObjectHashMethod()
             };
             var objectType = new PyType("object", Array.Empty<PyType>(), objectMembers);
-            var typeType = new PyType("type", [objectType], new Dictionary<string, object>(StringComparer.Ordinal));
+            var typeMembers = new Dictionary<string, object>(StringComparer.Ordinal);
+            var typeType = new PyType("type", [objectType], typeMembers);
             objectType.SetMetaType(typeType);
             typeType.SetMetaType(typeType);
             // The type metatype carries its own __new__ slot like CPython
             // (type.__new__ is not object.__new__); user classes keep sharing
             // the object slot through their MRO.
-            typeType.TrySetMember("__new__", new TypeNewMethod(typeType, "type"));
+            typeMembers.Add("__new__", new TypeNewMethod(typeType, "type"));
+            return (objectType, typeType);
+        }
 
+        private static Dictionary<string, object> CreateBuiltinVariables()
+        {
+            var (objectType, typeType) = SharedCoreTypes;
             var osErrorType = new ExceptionTypeValue("OSError");
 
             var builtins = new Dictionary<string, object>(128, StringComparer.Ordinal)

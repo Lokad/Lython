@@ -271,12 +271,7 @@ internal static class PyMemberAccess
 
         if (target is PyType type)
         {
-            if (type.IsBuiltinObject || type.IsBuiltinMetatype)
-            {
-                throw ImmutableTypeError(target, memberName, span);
-            }
-
-            if (type.TrySetMember(memberName, value))
+            if (type.TrySetMember(memberName, value, span))
             {
                 return true;
             }

@@ -7,6 +7,10 @@ public sealed class BuiltinDefinitionIsolationTests
     private const string Source = """
 import builtins
 assert not hasattr(object, 'run_marker'), 'object mutation leaked'
+object_namespace = object.__dict__
+type_namespace = type.__dict__
+assert object_namespace['__new__'].__self__ is object, 'object slot owner'
+assert type_namespace['__new__'].__self__ is type, 'type slot owner'
 class Marker:
     run_marker = tag
 assert Marker.__mro__[1] is object, 'guest base identity'

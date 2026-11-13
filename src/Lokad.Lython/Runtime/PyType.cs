@@ -37,10 +37,16 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     internal static readonly PyBuiltinRuntimeType MappingProxyType = CreateOpaqueRuntimeType("mappingproxy");
     internal PyMappingProxy GetNamespace(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        // Views share the live dictionary/version, not their Python identity.
-        // Every returned proxy is admitted through its actual caller's owner.
-        _namespace ??= new PyDict(new ObjectNamespaceStorage(_members, null, context.MemoryGovernor, span), context.MemoryGovernor, span);
-        return new PyMappingProxy(_namespace, context.MemoryGovernor, span);
+        // User classes retain their live dictionary/version. Fixed builtin
+        // definitions must never retain a prior caller's namespace or owner;
+        // their immutable views are funded by each actual caller instead.
+        var view = _namespace;
+        if (view is null)
+        {
+            view = new PyDict(new ObjectNamespaceStorage(_members, null, context.MemoryGovernor, span), context.MemoryGovernor, span);
+            if (!IsBuiltinObject && !IsBuiltinMetatype) _namespace = view;
+        }
+        return new PyMappingProxy(view, context.MemoryGovernor, span);
     }
 
     public PyType(string name, IReadOnlyList<PyType> bases, Dictionary<string, object> members, MemoryGovernor? governor = null, LythonSourceSpan? span = null)
@@ -171,8 +177,9 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         return false;
     }
 
-    public bool TrySetMember(string name, object value)
+    public bool TrySetMember(string name, object value, LythonSourceSpan? span = null)
     {
+        EnsureMutable(name, span);
         // Ordinary assignment does not call a descriptor's __set_name__.
         // Property name metadata retains its existing assignment behavior.
         if (value is PyProperty property) property.BindName(name);
@@ -190,6 +197,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public bool RemoveOwnMember(string name)
     {
+        EnsureMutable(name, null);
         if (!_members.Remove(name)) return false;
         _namespace?.NotifyNamespaceMutation();
         return true;
@@ -218,6 +226,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public void SetDataclassMetadata(IReadOnlyList<DataclassFieldSpec> fields, bool reprEnabled, bool eqEnabled, bool orderEnabled, DataclassHashMode hashMode)
     {
+        EnsureMutable("__dataclass_params__", null);
         DataclassFields = fields;
         DataclassReprFields = fields.Where(static field => field.Repr).ToArray();
         DataclassComparableFields = fields.Where(static field => field.Compare).ToArray();
@@ -225,6 +234,12 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         DataclassEqEnabled = eqEnabled;
         DataclassOrderEnabled = orderEnabled;
         DataclassHashMode = hashMode;
+    }
+
+    private void EnsureMutable(string name, LythonSourceSpan? span)
+    {
+        if (IsBuiltinObject || IsBuiltinMetatype)
+            throw new LythonRuntimeException("TypeError", $"cannot set '{name}' attribute of immutable type '{Name}'", span);
     }
 
     public void SetMetaType(PyType metaType) => MetaType = metaType;

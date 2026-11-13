@@ -565,10 +565,14 @@ maps are immutable shared metadata. Python default tuples/dictionaries remain
 distinct per function and reflect later mutation. Private default storage stays
 admitted through awaited evaluation and construction.
 
-Plain builtin functions and constructor parameter layouts are fixed shared
-metadata. Every execution still constructs its own mutable builtin types,
-exception objects and namespace. A function's `__self__` resolves through the
-current caller; shared definitions retain no execution, host or caller token.
+Plain builtin functions, constructor parameter layouts and the immutable `object`
+and `type` definitions are shared fixed metadata. Every execution keeps its mutable
+builtin dictionaries, callable hierarchy caches and exception objects. Builtin
+namespace views admit their wrappers under the actual caller; shared types retain
+no earlier caller's view or owner. Repeated introspection can retain more minor
+wrapper storage until execution cleanup. Internal decorators cannot mutate these
+immutable definitions. A function's `__self__` resolves through the current caller;
+shared definitions retain no execution, host or caller token.
 
 Ordinary calls to executable functions with slot-local storage advance one explicit
 caller/callee chain, including keyword and variadic signatures. The shared binder

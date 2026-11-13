@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Share fixed immutable `object`/`type` definitions across executions, keeping
+  mutable metadata and namespace views owned by the actual caller. Reject internal
+  dataclass mutation of builtins and expose builtin `object.__new__` directly,
+  using canonical inherited-slot binding.
+
 - Remove redundant native-call selection/decline branches and duplicate logical
   body nesting charges. Keep managed stack validation, function recursion,
   cooperative cancellation and ownership through genuine suspension.
