@@ -9,6 +9,8 @@ internal interface IPyDescriptor
 
 internal interface IClassOwnedMember
 {
+    // Establish the defining owner once; assigning an alias to another class
+    // must not rewrite the original descriptor or function's identity.
     void BindOwner(PyType owner);
 }
 

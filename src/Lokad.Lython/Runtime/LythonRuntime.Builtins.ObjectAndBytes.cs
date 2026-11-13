@@ -359,7 +359,7 @@ internal sealed partial class LythonRuntime
         // reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -561,7 +561,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -642,7 +642,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -753,7 +753,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -847,7 +847,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -919,7 +919,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -990,7 +990,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -1056,7 +1056,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -1122,7 +1122,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -1188,7 +1188,7 @@ internal sealed partial class LythonRuntime
         // __objclass__ reports the defining type like CPython.
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         // Slot wrappers expose the short __name__ and the qualified
         // __qualname__ like CPython; __module__ stays missing (CPython
@@ -1252,7 +1252,7 @@ internal sealed partial class LythonRuntime
 
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -1326,7 +1326,7 @@ internal sealed partial class LythonRuntime
 
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -1392,7 +1392,7 @@ internal sealed partial class LythonRuntime
 
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -1453,7 +1453,7 @@ internal sealed partial class LythonRuntime
 
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -1574,7 +1574,7 @@ internal sealed partial class LythonRuntime
 
         private PyType? _owner;
 
-        public void BindOwner(PyType owner) => _owner = owner;
+        public void BindOwner(PyType owner) => _owner ??= owner;
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {

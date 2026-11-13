@@ -6981,3 +6981,16 @@ make blind sharing unsafe for ownership. The source gate additionally confirms a
 independent object-slot owner alias bug, trackedR298. Original staging/offline-path
 failures survive; the completed capture passes all output/ownership/quiet/join/
 archive gates, without repeating valid rows. [Evidence and limits](results/2026-11-13-config-cpu-source-gate/README.md).
+
+
+## R298 — builtin object slot owner aliases
+
+The config source review confirms that assigning object.__init__ to another class
+changes the original slot's __objclass__. A public probe disagrees with CPython,
+and both API regression cases fail on the compiled baseline. Sixteen native slots
+now retain the first defining owner, matching function binding; no new abstraction
+or representation. The full fifteen-slot alias/wrapper golden matches isolated
+CPython;627 public semantic/descriptor/cancellation/ownership checks pass per actual
+target, including repeated shared-budget cleanup. The invalid earlier no-test
+attempt is retained/excluded. No speedup or current-HEAD CPython timing is claimed.
+[Original failures, exact source and validation](results/2026-11-13-builtin-slot-owner/README.md).

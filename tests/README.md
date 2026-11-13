@@ -17,6 +17,11 @@ invariants belong in the white-box suite.
 
 ## Test responsibilities
 
+[Builtin slot owners](Lokad.Lython.PublicApi.Tests/BuiltinSlotOwnerTests.cs) preserve
+original descriptor identity through class-body and later aliases, including
+staticmethod/classmethod/property wrappers. Python goldens, ordinary calls and
+repeated shared-budget cleanup cover both execution APIs.
+
 [Generator namespace mutations](Lokad.Lython.PublicApi.Tests/GeneratorNamespaceMutationTests.cs)
 check class nonlocal updates and deletions during suspension through both APIs,
 including shared-budget cleanup. Generators read their shared captured cells

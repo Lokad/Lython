@@ -2,6 +2,9 @@
 
 ## 0.11.0 - Unreleased
 
+- Preserve builtin object slots' original defining class when they are assigned
+  to other classes, including aliases through staticmethod, classmethod or property.
+
 - Execute native f-string helpers in final slots using the ordinary formatting
   kernel, avoiding invocation-frame setup for record rendering. Preserve dynamic
   specifications, string identity, actual custom-format I/O, cancellation and

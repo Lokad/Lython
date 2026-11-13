@@ -255,6 +255,9 @@ Module preparation keeps binding facts without computing a class-cell capture;
 function and class scopes retain their own capture requirements.
 Class creation reads its prepared own-cell requirement; it does not repeat lexical
 syntax analysis at execution. Each created class still owns its fresh cell.
+Builtin object slot descriptors keep their original defining class when assigned
+to another class, directly or through descriptor wrappers. Aliases preserve the
+original `__objclass__`; ordinary binding still selects the actual receiver.
 Optimized local snapshots use current frame/cell values before extra mirrored names.
 When enclosing compilation supplies complete lexical bindings, function and generator
 free names use the existing live global/builtin lookup after local and captured
