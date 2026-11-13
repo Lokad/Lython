@@ -42,6 +42,17 @@ execution costs above. Wider process CPU also includes fixture reset/protocol.
 Startup, shared-budget contention, genuinely pending I/O, RSS/heap peaks and
 embedding tail latency remain unmeasured at this checkpoint.
 
+## Additional ZIP comparison awaiting final delivery
+
+Source 976f9439 / frozen 97bbeff3 adds opened positional input. Its complete warm
+archive-config script measures 58.8–59.9 µs versus CPython's 56.6–57.1 µs for a
+1,048,827 B archive (1.03–1.06×, variable). Prior Lython took 263.8–281.9 µs;
+the new path is roughly 77–79% faster, with a variable reference. Sequential hosts
+retain buffering. A 16,635 B archive is about 2.2–2.5 µs slower than prior Lython,
+while remaining around CPython's time. Accept this recorded small-case debt for
+the bounded-input architecture; no universal speedup or tail-latency gain is claimed.
+[All controls, original failed conditions and pending qualification](../benchmarks/results/2026-11-13-positional-zip/comparison/README.md).
+
 ## Useful historical cases not refreshed here
 
 These compile-to-result observations describe their named revisions, **not HEAD**:

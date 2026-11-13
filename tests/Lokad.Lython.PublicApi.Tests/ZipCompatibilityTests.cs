@@ -2559,10 +2559,16 @@ return 1
             """
 import zipfile
 with zipfile.ZipFile("/d.zip") as archive:
-    return [archive.namelist(), archive.read("a")]
+    print(archive.namelist())
+    print(archive.read(archive.infolist()[0]))
+    try:
+        archive.read("a")
+    except zipfile.BadZipFile:
+        print("overlapped")
 """,
             host);
         Assert.True(readable.Success, readable.Failure?.Message);
+        Assert.Equal("['a', 'a']\nb'x'\noverlapped\n", readable.StandardOutput);
         var denied = new LythonEngine(Utf8RegexProvider.Instance).Run(
             """
 import zipfile
@@ -2572,6 +2578,7 @@ with zipfile.ZipFile("/d.zip", "a") as archive:
             host);
         Assert.False(denied.Success);
         Assert.Equal("BadZipFile", denied.Failure?.ExceptionType);
+        Assert.Equal(duplicated, host.ReadBytes("/d.zip"));
     }
 
     private sealed class NoBinaryZipHost : ILythonHost, ILythonSynchronousHostCapability

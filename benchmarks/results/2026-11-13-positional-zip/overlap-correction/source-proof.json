@@ -1,0 +1,9 @@
+{
+  "commit": "976f9439befb52b47abdffa3d4dd7549da9aa1b0",
+  "coreSHA256": "97bbeff306c9c5123454614493be668f0cf0290b8f9cae4acd1eb726b952d2e5",
+  "productionFiles": 575,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "runtimeUnchangedByTestCorrection": true,
+  "fullDeliveryQualified": false,
+  "failedRun": "43461763537"
+}

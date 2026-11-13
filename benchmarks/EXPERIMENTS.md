@@ -6,6 +6,23 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R319 positional ZIP](results/2026-11-13-positional-zip/comparison/README.md):
+source976f9439/frozen97bbeff3 removes full-archive acquisition/retention on capable
+opened files, sharing one parser and genuine async operations. ZIP64 order,
+physical overlap bounds, foreign-header errors and name-index admission improve.
+B684 keeps2partial jobs after underestimated untimed fixture costs; no invoice/final
+gate. Same-image B685 sizes batches by full wall time with unchanged guest clocks
+and240s owner, completes3jobs/127.465s/all gates. Large archive elapsed−79.1..−77.3%
+with reference variability and wider CPU support; small elapsed+4.75..+5.31%
+(roughly2.2–2.5µs), wider CPU uncertain. Invoice control is close to flat. Retain
+coherent bounded storage; record small-case debt without an automatic size switch.
+Initial mutable-reference mismatch and all partial/adverse conditions survive.
+Original delivery43461763537 fails one stale overlapping-read expectation on both
+platforms; CPython golden confirms rejection. Keep first-info/listing, append refusal
+and unchanged-input assertions;120focused cases pass per11/10. Runtime bytes stay
+unchanged, corrected full delivery remains pending. Publication and wider roadmap held
+separately; R321 targets the still-material captured-text/search gaps.
+
 [Qualified-source CPython refresh](results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md):
 B683 completes7jobs/296.496s on frozen5a184a1d. Invoice warm1.25–1.27×,
 compile1.09–1.11×, compile-to-result1.21–1.24×; captured text1.60–1.63×,

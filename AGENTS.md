@@ -49,6 +49,9 @@ Use focused Release regressions during development; see [tests/README.md](tests/
 After restoring source snapshots with preserved timestamps, force a nonincremental
 build before `--no-build` checks or freezing benchmark workers. A recorded binary
 hash alone does not prove that the binary matches the restored source.
+Frozen benchmark images must not hard-link mutable build outputs. Copy mutable
+images and verify the complete measured image, including workers and adapters,
+against its recorded hashes before use; checking only the core DLL is insufficient.
 Use the SDK pinned in global.json. Builds target .NET 11 and .NET 10; select
 `-f net11.0` for ordinary development tests and qualify both at checkpoints.
 Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
