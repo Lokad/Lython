@@ -8,6 +8,51 @@ namespace Lokad.Lython.Tests;
 public sealed class CasedSplitOwnershipTests
 {
     [Theory]
+    [InlineData(0), InlineData(1), InlineData(2)]
+    public void LongWordPublicationAfterStopKeepsRetainedBackingFunded(int failureKind)
+    {
+        var budget = new LythonMemoryBudget(1024 * 1024);
+        using (var owner = budget.CreateScope())
+        using (var cancellation = new CancellationTokenSource())
+        {
+            var hook = new AdmissionHookMemoryBudget(owner);
+            var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new()
+            { MemoryBudget = hook, CancellationToken = cancellation.Token });
+            var span = new LythonSourceSpan(0, 1, 1, 1);
+            var text = string.Concat(Enumerable.Repeat("é😀ß", 256));
+            var expected = string.Concat(Enumerable.Repeat("É😀SS", 256));
+            var input = PyString.FromString(text + " " + text, context.MemoryGovernor, span);
+            using var cursor = PyStringOps.PrepareCasedWhitespaceIteration(input, true, context, span);
+            Assert.True(cursor.TryReadWord(out var first));
+            var retainedFirst = Assert.IsType<PyString>(cursor.Materialize(ref first));
+            Assert.True(cursor.TryReadWord(out var last));
+            LythonRuntimeException? failure = null;
+            if (failureKind == 1) cancellation.Cancel();
+            if (failureKind == 2)
+                failure = context.MemoryGovernor.RefuseAdmission("controlled word refusal", 777, span);
+            // Publishing the final loop binding during unwind may neither admit
+            // new storage nor replace the cancellation/first refusal.
+            hook.RefuseGrowth = _ => throw new InvalidOperationException("Late word admission.");
+            var retainedLast = Assert.IsType<PyString>(cursor.Materialize(ref last));
+            cursor.Dispose();
+            context.State.CloseResources();
+            var ended = budget.ReservedBytes;
+            cursor.Dispose();
+            Assert.Equal(ended, budget.ReservedBytes);
+            Assert.NotSame(retainedFirst, retainedLast);
+            Assert.Equal(expected, retainedFirst.AsString());
+            Assert.Equal(expected, retainedLast.AsString());
+            Assert.Equal(text + " " + text, input.AsString());
+            Assert.True(System.Runtime.InteropServices.MemoryMarshal.TryGetArray(retainedLast.Utf8Bytes, out var backing));
+            Assert.True(budget.ReservedBytes >= backing.Array!.LongLength
+                + 2 * PyString.EstimateApproximateBytes(0) + input.CommittedOwnedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+            if (failure is not null) Assert.Same(failure, context.MemoryGovernor.AdmissionFailure);
+        }
+        Assert.Equal(0, budget.ReservedBytes);
+    }
+
+    [Theory]
     [InlineData(false, false), InlineData(true, false)]
     [InlineData(false, true), InlineData(true, true)]
     public void InterruptedRangeGrowthKeepsInputAndReturnsOwnedCapacity(bool upper, bool cancel)

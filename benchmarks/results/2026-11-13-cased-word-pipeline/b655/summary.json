@@ -1,0 +1,195 @@
+{
+  "complete": true,
+  "jobs": 5,
+  "elapsedSeconds": 266.5926571050659,
+  "sourceRevision": "Qualified d413392c/d7b2ddaf versus uncommitted R300/1fff156b whole cased-text/range pipeline; common worker/catalog/adapter",
+  "coreSHA256": {
+    "reference": "d7b2ddafb1e5ff7c00152cfaa182d12c057a967a0910015d2ab80beecff9089b",
+    "reference-control": "d7b2ddafb1e5ff7c00152cfaa182d12c057a967a0910015d2ab80beecff9089b",
+    "candidate": "1fff156bd5f402527ff620a82be1cd8e4ae1c45c01336a4fd575ede571cdb69c",
+    "candidate-control": "1fff156bd5f402527ff620a82be1cd8e4ae1c45c01336a4fd575ede571cdb69c"
+  },
+  "timing": [
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "reference": 1.487524311764706,
+        "candidate": 1.6731698666666668,
+        "reference-control": 1.4395529312320916,
+        "candidate-control": 1.64236032247557
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.5588235294117647,
+        "candidate": 1.7333333333333334,
+        "reference-control": 1.489971346704871,
+        "candidate-control": 1.726384364820847
+      },
+      "iqrPercent": {
+        "reference": 1.1325072440832922,
+        "candidate": 0.355216374125489,
+        "reference-control": 0.52826632404038,
+        "candidate-control": 0.26154936910644166
+      },
+      "changePercentRange": [
+        10.408973452486059,
+        12.480169462354706,
+        14.088220505368888,
+        16.228436646273646
+      ],
+      "processCpuChangePercentRange": [
+        10.749185667752448,
+        11.194968553459116,
+        15.866950638937617,
+        16.333333333333357
+      ],
+      "referenceControlPercent": 3.224914050359562,
+      "candidateControlPercent": 1.8413877039559878
+    },
+    {
+      "case": "scripts.text-summary-helpers.nonlocal-counter.large",
+      "lane": "compile-run",
+      "medianMilliseconds": {
+        "reference": 1.5645905665634674,
+        "candidate": 1.7495064405594405,
+        "reference-control": 1.5478472707692308,
+        "candidate-control": 1.7691831166077738
+      },
+      "processCpuMedianMilliseconds": {
+        "reference": 1.671826625386997,
+        "candidate": 1.8531468531468531,
+        "reference-control": 1.6307692307692307,
+        "candidate-control": 1.872791519434629
+      },
+      "iqrPercent": {
+        "reference": 0.812987101960016,
+        "candidate": 0.3000596519887271,
+        "reference-control": 0.4356376937948927,
+        "candidate-control": 0.6094158302545561
+      },
+      "changePercentRange": [
+        11.818802819585583,
+        13.028363560055345,
+        13.07642743198192,
+        14.299592086275158
+      ],
+      "processCpuChangePercentRange": [
+        10.845635845635847,
+        12.020677921737999,
+        13.636363636363647,
+        14.840989399293282
+      ],
+      "referenceControlPercent": 1.0701391247048275,
+      "candidateControlPercent": 1.1246986917088142
+    },
+    {
+      "case": "scripts.csv-validated-records.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 3.982769285714286,
+        "reference-control": 3.966357031746032,
+        "candidate": 4.049018516129032,
+        "reference": 4.007369563492063
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 4.126984126984127,
+        "reference-control": 4.0476190476190474,
+        "candidate": 4.193548387096774,
+        "reference": 4.126984126984127
+      },
+      "iqrPercent": {
+        "candidate-control": 1.4060839417926687,
+        "reference-control": 0.4440026456967199,
+        "candidate": 0.4966044180487624,
+        "reference": 0.8719712658759856
+      },
+      "changePercentRange": [
+        -0.6138759450061926,
+        0.4137866015815783,
+        1.0393090025037521,
+        2.084065648185285
+      ],
+      "processCpuChangePercentRange": [
+        0.0,
+        1.612903225806428,
+        1.9607843137255054,
+        3.6053130929791344
+      ],
+      "referenceControlPercent": 1.0234277397239255,
+      "candidateControlPercent": 1.636179981663366
+    },
+    {
+      "case": "scripts.file-search.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 0.25628456911392405,
+        "reference-control": 0.25737803531786074,
+        "candidate": 0.26060232164948455,
+        "reference": 0.2601486132368149
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 0.3139240506329114,
+        "reference-control": 0.31281533804238143,
+        "candidate": 0.31443298969072164,
+        "reference": 0.3154084798345398
+      },
+      "iqrPercent": {
+        "candidate-control": 0.7310483253481003,
+        "reference-control": 1.0891771401777182,
+        "candidate": 1.7366910577957992,
+        "reference": 2.2119698910942627
+      },
+      "changePercentRange": [
+        -1.4853218223282894,
+        -0.4248482985683921,
+        0.17440354842739314,
+        1.2527433926682319
+      ],
+      "processCpuChangePercentRange": [
+        -0.4706370616310296,
+        -0.3092783505154628,
+        0.35443037974682845,
+        0.5171267043565075
+      ],
+      "referenceControlPercent": 1.064998150281149,
+      "candidateControlPercent": 1.656835790345701
+    },
+    {
+      "case": "scripts.report-render.large",
+      "lane": "warm",
+      "medianMilliseconds": {
+        "candidate-control": 2.8495012471910113,
+        "reference-control": 2.7878521803278686,
+        "candidate": 2.818720142857143,
+        "reference": 2.7345899281767956
+      },
+      "processCpuMedianMilliseconds": {
+        "candidate-control": 3.033707865168539,
+        "reference-control": 2.9508196721311477,
+        "candidate": 2.9714285714285715,
+        "reference": 2.8729281767955803
+      },
+      "iqrPercent": {
+        "candidate-control": 1.821388328825249,
+        "reference-control": 1.1170357679174385,
+        "candidate": 2.255358548999005,
+        "reference": 1.9849490013225957
+      },
+      "changePercentRange": [
+        1.1072309624982957,
+        2.2113463295565516,
+        3.0765203152941734,
+        4.202140797425868
+      ],
+      "processCpuChangePercentRange": [
+        0.698412698412687,
+        2.8089887640449396,
+        3.4285714285714253,
+        5.596369922212596
+      ],
+      "referenceControlPercent": 1.9477235545361626,
+      "candidateControlPercent": 1.0920241376878081
+    }
+  ],
+  "externalBaseline": false
+}

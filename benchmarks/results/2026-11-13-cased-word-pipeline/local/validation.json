@@ -1,0 +1,34 @@
+{
+  "coreSHA256": "1fff156bd5f402527ff620a82be1cd8e4ae1c45c01336a4fd575ede571cdb69c",
+  "referenceSHA256": "d7b2ddafb1e5ff7c00152cfaa182d12c057a967a0910015d2ab80beecff9089b",
+  "productionFiles": 571,
+  "focusedPerActualTarget": {
+    "internal": 154,
+    "public": 408
+  },
+  "affectedOriginalStressPerActualTarget": 3,
+  "wholeScriptsPerPhase": 7,
+  "phases": [
+    "warm-sync",
+    "warm-async",
+    "compile",
+    "compile-plus-one-run"
+  ],
+  "allGoldensPassed": true,
+  "allBalancesZero": true,
+  "ownedFixturesRemoved": true,
+  "capturedTextWarmAllocationChangePercent": [
+    29.13,
+    29.16
+  ],
+  "capturedTextFreshAllocationChangePercent": [
+    25.12,
+    25.13
+  ],
+  "desktopElapsedQualified": false,
+  "initialFixtureFailure": "Four refund reentry cases trigger on an obsolete exact reservation size; use complete-word admission threshold, retain all semantic/refusal assertions.",
+  "finalDecisionPending": false,
+  "decision": "Withdraw complete runtime prototype: material controlled CPU/elapsed and allocation regression; preserve independently useful long-word ownership and size-independent refund reentry regressions.",
+  "restoredProductionMatchesQualifiedReference": true,
+  "restoredProductionFiles": 571
+}

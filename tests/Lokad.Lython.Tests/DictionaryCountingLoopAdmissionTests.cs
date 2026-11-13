@@ -192,8 +192,9 @@ public sealed class DictionaryCountingLoopAdmissionTests
         {
             hook.AfterGrowth = bytes =>
             {
-                var words = 128 + 2 * PyString.EstimateApproximateBytes(5) + PyString.EstimateApproximateBytes(4);
-                if (bytes != words) return;
+                // Wait for complete word admission, after the source and range
+                // storage. Cursor/header estimates may change independently.
+                if (bytes < 3 * PyString.EstimateApproximateBytes(4)) return;
                 hook.AfterGrowth = null;
                 // A nested loan has returned a larger idle buffer while the
                 // native source is still active. Its return must now refund.

@@ -7013,3 +7013,24 @@ token-independent preparation remain separate; source unchanged funded forwardin
 is not a new successful capability probe. [Exact copies and validation](results/2026-11-13-regex-dev79-bridge/README.md).
 
 R298 d413392c/d7b2ddaf full Windows/Ubuntu actual.NET11/10 ordinary, original stress and installed Release consumers are GREEN43354417890. [Cached source-matched delivery](results/2026-11-13-builtin-slot-owner/delivery/README.md). No performance or publication claim.
+
+## R300 — whole-line cased-word pipeline withdrawn
+
+[Complete source/ownership migration and controlled evidence](results/2026-11-13-cased-word-pipeline/README.md)
+replace per-word casing, private inline word storage/cutoff and range capacity
+metadata with one cased string and ordinary final UTF8 ranges. Existing windows
+fund long aliases through unwind; both eager/private consumers migrate together.
+154internal/408public and3affected original stress cases pass per actual target;
+seven scripts/four boundaries pass outputs/balances/cleanup. Four fixture failures
+from an exact reservation-size trigger and all original logs remain preserved.
+
+Allocation rises29.1%warm/25.1%fresh. Quiet B655 completes266.593s/all gates:
+captured warm+10.4–16.2%elapsed/+10.8–16.3%widerCPU, fresh+11.8–14.3%elapsed/
++10.9–14.8%CPU. Control uncertainty/adverse report rows remain explicit.
+Withdraw the complete runtime prototype; all571production sources exactly restore
+qualifiedd413392c. Keep independent long-word ownership and size-independent
+refund-reentry regressions (34cases/target after nonincremental build). Generated
+Git-version metadata changes the rebuilt binary identity; the failed private hash
+expectation and valid source/build/test proof remain visible. No unchanged full
+qualification replay, speedup claim, dormant code or permanent design veto.
+The whole-script objective continues through the complete call/frame/operand gate.

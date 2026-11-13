@@ -1,0 +1,17 @@
+{
+  "all571ProductionSourcesExactlyRestored": true,
+  "sourceRuntimeCommit": "d413392c",
+  "restoredHead": "44ee719e",
+  "nonincrementalReleaseSolutionBuildPassed": true,
+  "retainedRegressionsPerActualTarget": 34,
+  "originalReferenceCoreSHA256": "d7b2ddafb1e5ff7c00152cfaa182d12c057a967a0910015d2ab80beecff9089b",
+  "restoredCoreSHA256": "8f505cfc155efc4a9d2422de4f32f1dc931b341bd67083d554667a06ac64e1a1",
+  "originalInformationalVersion": [
+    "0.11.0+4c9f82ca2ebfcbcfc05b6a3e24a30e033f410fd0"
+  ],
+  "restoredInformationalVersion": [
+    "0.11.0+44ee719e313a54b0884b07d64521e01f0595ff92"
+  ],
+  "binaryIdentityNotExpectedEqual": "The earlier source-matched runtime binary was built at a different Git revision. Generated informational version and source-link metadata include that revision; a private equality assertion after successful build/tests was invalid. No binary equivalence or new timing is inferred.",
+  "fullUnchangedQualificationNotRepeated": true
+}
