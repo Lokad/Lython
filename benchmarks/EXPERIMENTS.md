@@ -6,6 +6,13 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Captured-text CPU source gate](results/2026-11-13-captured-cpu-source-gate/README.md)
+records1502guest samples on committedc5d05cff/3a2c1cf6. Compiler/source checks rule
+out mirrored locals, per-line ordinary frames, repeated Unicode sizing/mapping and
+nested allowance locks as proposed duplicated work. Existing dictionary/preparation
+frames include useful work; no new runtime prototype or speedup is selected.
+All output/ownership/quiet/join/RAM-archive gates pass; exact uncertainty survives.
+
 [Pre-admitted integer arithmetic](results/2026-11-13-integer-admission/README.md)
 consolidates four integer operations and math/Counter consumers, removes modulo
 quotient/product intermediates and fixes demonstrated allocation before refusal.

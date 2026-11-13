@@ -1,0 +1,29 @@
+[
+  {
+    "name": "module",
+    "ValueStorageCapacity": 5,
+    "CanInlineInstructions": false,
+    "RequiresLocalVariableMirroring": false,
+    "capturedSlots": 0,
+    "calls": 1,
+    "instructions": 5
+  },
+  {
+    "name": "module.main",
+    "ValueStorageCapacity": 21,
+    "CanInlineInstructions": false,
+    "RequiresLocalVariableMirroring": false,
+    "capturedSlots": 1,
+    "calls": 8,
+    "instructions": 80
+  },
+  {
+    "name": "module.main.words_from_line",
+    "ValueStorageCapacity": 5,
+    "CanInlineInstructions": true,
+    "RequiresLocalVariableMirroring": false,
+    "capturedSlots": 0,
+    "calls": 2,
+    "instructions": 8
+  }
+]
