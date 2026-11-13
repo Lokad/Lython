@@ -1,0 +1,8 @@
+{
+  "commit": "157a338f74c9d005b83e423fe4f0b9324145007f",
+  "coreSHA256": "7ee65002ee91b5750c30c42e8f7792de1e9123ed58e55656dcb1d84fc2c69520",
+  "productionInputs": 573,
+  "allFrozenSourcesMatchExactCommitWithNewlineNormalization": true,
+  "fullQualification": false,
+  "reason": "One existing FactoryNewSlots public failure per platform; subsequent test/package stages skipped"
+}

@@ -362,14 +362,13 @@ internal static class PyAttributeLookup
             {
                 if (!context.TryGetBuiltin("object", out var factoryBase) ||
                     factoryBase is not PyType factoryObject ||
-                    !factoryObject.TryLookupInMro(memberName, 0, out var factoryRaw, out _) ||
-                    factoryRaw is not IPyDescriptor factoryDescriptor)
+                    !factoryObject.TryLookupInMro(memberName, 0, out var factoryRaw, out _))
                 {
                     value = PyNone.Instance;
                     return false;
                 }
 
-                value = factoryDescriptor.Get(null, factoryObject, context, span);
+                value = BindForType(factoryObject, factoryRaw, context, span);
                 return true;
             }
 

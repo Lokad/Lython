@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Metadata delivery correction](results/2026-11-13-builtin-core-definitions/factory-correction/README.md):
+original157/7ee fails the same existing FactoryNewSlots public case on both platforms;
+4681white-box pass and17500/17501public pass per platform. Subsequent gates skip.
+The fourth object-new consumer, partialmethod's factory, still requires a descriptor.
+Reuse canonical binding there too;86internal/802public focused11pass with the
+existing assertion unchanged. Failed full logs and exact573-source proof survive.
+Corrected-source delivery and CPython refresh are separate; no cold-fix timing claim.
+
 [Fixed immutable builtin definitions retained](results/2026-11-13-builtin-core-definitions/README.md):
 7ee65002 removes per-invocation object/type construction and the builtin-new wrapper,
 reuses canonical inherited binding and prevents internal dataclass mutation. Views

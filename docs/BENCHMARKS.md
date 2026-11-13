@@ -199,7 +199,9 @@ Fixed builtin definitions on frozen7ee65002 remove2568B/invocation from the buil
 factory(10248→7680B), not the entire execution. Against qualified6237552b, controlled
 config compile-to-result/report warm have modest supported direction; other CPU
 results are small or inconclusive. Original flat partial config and adverse local
-factory clocks remain visible. Full delivery is pending; no new CPython ratios.
+factory clocks remain visible. Original7ee delivery fails an existing factory-slot
+case; corrected-source qualification is separate. These timings do not describe
+the correction or establish new CPython ratios.
 [Exact observations, failures and ownership tradeoffs](../benchmarks/results/2026-11-13-builtin-core-definitions/README.md).
 
 Native call entry on frozen485e008e removes redundant selection/decline branches

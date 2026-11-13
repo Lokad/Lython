@@ -21,7 +21,10 @@ Initial/refined failures exposed those old assumptions; their logs survive with
 clearly labelled reconstructed source phases. Final94internal/683public Release11
 checks pass, including metaclasses, original slot owners, mutable namespaces,
 retained results, suspended/concurrent shared-budget runs, first refusal,
-cancellation, awaited cleanup and reuse. Full delivery is pending at retention.
+cancellation, awaited cleanup and reuse. The original full delivery then
+[fails one existing factory-slot case per platform](delivery-failed/README.md).
+The missed partialmethod consumer is corrected separately through canonical
+binding; these earlier7ee timings do not qualify that corrected source.
 
 ## Allocation and complete scripts
 

@@ -1,0 +1,18 @@
+[
+  {
+    "file": "tests (windows-latest)/6_Test Release (.NET 11).txt",
+    "line": "2026-11-13T14:36:52.1972857Z Passed!  - Failed:     0, Passed:  4681, Skipped:     0, Total:  4681, Duration: 34 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (windows-latest)/6_Test Release (.NET 11).txt",
+    "line": "2026-11-13T14:41:00.7990234Z Failed!  - Failed:     1, Passed: 17500, Skipped:     0, Total: 17501, Duration: 4 m 35 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/6_Test Release (.NET 11).txt",
+    "line": "2026-11-13T14:34:27.2501452Z Passed!  - Failed:     0, Passed:  4681, Skipped:     0, Total:  4681, Duration: 23 s - Lokad.Lython.WhiteBox.Tests.dll (net11.0)"
+  },
+  {
+    "file": "tests (ubuntu-latest)/6_Test Release (.NET 11).txt",
+    "line": "2026-11-13T14:38:25.4469734Z Failed!  - Failed:     1, Passed: 17500, Skipped:     0, Total: 17501, Duration: 4 m 13 s - Lokad.Lython.PublicApi.Tests.dll (net11.0)"
+  }
+]
