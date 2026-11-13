@@ -6,6 +6,18 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R322 native JSON byte input](results/2026-11-13-json-byte-input/README.md) retains
+compatibility/ownership improvements with no CPU gain claim. B687's unchanged str
+control is adverse; cold byte decoding is separated and a duplicate str execution
+check removed. B688 and same-bit B6891s confirmation retain moving controls and
+uncertain small debt. All raw data, original source/binary and final diagnostic-only
+delta remain explicit. This does not close the whole-script objective.
+
+[R321 complete-script CPU attribution](results/2026-11-13-whole-script-cpu-attribution/README.md)
+finds different text/search costs. Owning frames include useful work; unknowns and
+allocation attribution remain unresolved. Current dictionary accumulation already
+uses one probe/unboxed counters; no second representation or repeated arena is built.
+
 [R319 positional ZIP](results/2026-11-13-positional-zip/comparison/README.md):
 source976f9439/frozen97bbeff3 removes full-archive acquisition/retention on capable
 opened files, sharing one parser and genuine async operations. ZIP64 order,
@@ -20,8 +32,9 @@ Initial mutable-reference mismatch and all partial/adverse conditions survive.
 Original delivery43461763537 fails one stale overlapping-read expectation on both
 platforms; CPython golden confirms rejection. Keep first-info/listing, append refusal
 and unchanged-input assertions;120focused cases pass per11/10. Runtime bytes stay
-unchanged, corrected full delivery remains pending. Publication and wider roadmap held
-separately; R321 targets the still-material captured-text/search gaps.
+unchanged; corrected full delivery passes43465190359 on both platforms/targets,
+original stress and installed consumers. Publication remains postponed; the wider
+captured-text/search performance gaps remain open.
 
 [Qualified-source CPython refresh](results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md):
 B683 completes7jobs/296.496s on frozen5a184a1d. Invoice warm1.25–1.27×,

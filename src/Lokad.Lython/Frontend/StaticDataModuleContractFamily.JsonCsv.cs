@@ -44,12 +44,12 @@ internal static partial class StaticDataModuleContractFamily
         }
 
         if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone
-            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass or AbstractValueKind.StringIO)
+            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass or AbstractValueKind.StringIO or AbstractValueKind.BytesIO)
         {
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.TextFileHandle)
+        if (value.Kind is AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle)
         {
             var mode = value.RequireTextFileMode();
             if (mode is AbstractTextFileMode.Write or AbstractTextFileMode.Append)
@@ -61,7 +61,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        AddDiagnostic(diagnostics, "LA3158", "json.load(fp, *, ...) expects a text stream with read().", expression.Span);
+        AddDiagnostic(diagnostics, "LA3158", "json.load(fp, *, ...) expects a text or binary stream with read().", expression.Span);
         return true;
     }
 

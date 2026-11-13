@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = PyTextStream.ReadAll(bound.Values[0], span, context);
+            var text = ReadDocumentAsync(bound.Values[0], span, context, false).GetAwaiter().GetResult();
             return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
         }
 
@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = await PyTextStream.ReadAllAsync(bound.Values[0], span, context).ConfigureAwait(false);
+            var text = await ReadDocumentAsync(bound.Values[0], span, context, true).ConfigureAwait(false);
             return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
 
@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = RequireLoadsText(bound.Values[0], span);
+            var text = RequireLoadsText(bound.Values[0], context, span);
 
             return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context);
         }
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecution(span);
-            var text = RequireLoadsText(bound.Values[0], span);
+            var text = RequireLoadsText(bound.Values[0], context, span);
 
             return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound.Values, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
@@ -236,15 +236,8 @@ internal sealed partial class LythonRuntime
         private ValueTask<object> LoadsDefault(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             context.CheckExecution(span);
-            var text = RequireLoadsText(value, span);
+            var text = RequireLoadsText(value, context, span);
             return ParseJsonTextCoreAsync(text, JsonLoadOptions.Default, context, span, asynchronous);
-        }
-
-        private static PyString RequireLoadsText(object value, LythonSourceSpan span)
-        {
-            if (!PyStringOps.TryAsString(value, out var text))
-                throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
-            return text;
         }
 
         private object Dump(

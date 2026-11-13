@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Accept immutable bytes in json.loads and binary readers in json.load, using
+  Python UTF-8/16/32 detection and the existing parser. Borrow same-command UTF-8
+  storage conservatively, preserve custom decoder/hook order and codec errors,
+  and keep retained windows funded through cleanup. Decoder methods remain str-only.
+
 - Read ZIP metadata and selected members through an optional opened positional
   file capability, avoiding whole-archive acquisition on capable hosts. Preserve
   ZIP64 offsets, eager local-header validation, CRCs, member independence, active

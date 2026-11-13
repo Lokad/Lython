@@ -29,6 +29,9 @@ public sealed class JsonSuspendingCallbackTests
 
     [Theory]
     [InlineData("json.loads('7', parse_int=read)", "v")]
+    [InlineData("json.loads(b'7', parse_int=read)", "v")]
+    [InlineData("json.loads(b'{\"x\":1}', object_hook=read)", "v")]
+    [InlineData("json.loads(b'7', cls=D)", "7")]
     [InlineData("json.loads('1.5', parse_float=read)", "v")]
     [InlineData("json.loads('NaN', parse_constant=read)", "v")]
     [InlineData("json.loads('{}', object_hook=read)", "v")]
@@ -81,6 +84,8 @@ public sealed class JsonSuspendingCallbackTests
 
     [Theory]
     [InlineData("json.loads('7', parse_int=read)")]
+    [InlineData("json.loads(b'7', parse_int=read)")]
+    [InlineData("json.loads(b'{\"x\":1}', object_hook=read)")]
     [InlineData("json.loads('1.5', parse_float=read)")]
     [InlineData("json.loads('NaN', parse_constant=read)")]
     [InlineData("''.join(json.JSONEncoder(default=read).iterencode([{1}]))")]

@@ -22,7 +22,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.PathlibPureWindowsPath, "LA3151", "pathlib.PureWindowsPath(...) is not supported by Lython's normalized POSIX-like path model."),
         new(LythonKnownCallableSignatures.PathlibWindowsPath, "LA3151", "pathlib.WindowsPath(...) is not supported by Lython's normalized POSIX-like path model."),
         new(LythonKnownCallableSignatures.JsonLoad, "LA3151", "json.load(fp, *, ...) expects one text stream with read().", StaticReturnShape.Unknown),
-        new(LythonKnownCallableSignatures.JsonLoads, "LA3151", "json.loads(s, *, ...) expects one string argument plus supported keyword options."),
+        new(LythonKnownCallableSignatures.JsonLoads, "LA3151", "json.loads(s, *, ...) expects one str or bytes argument plus supported keyword options."),
         new(LythonKnownCallableSignatures.JsonDump, "LA3151", "json.dump(obj, fp, *, ...) expects an object and text stream with write().", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.JsonDumps, "LA3151", "json.dumps(obj, *, ...) expects one object plus supported keyword options.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.IoBytesIO, "LA3158", "io.BytesIO([initial_bytes]) expects bytes or None.", StaticReturnShape.BytesIO),

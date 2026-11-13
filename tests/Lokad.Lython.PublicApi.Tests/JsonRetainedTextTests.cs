@@ -5,9 +5,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class JsonRetainedTextTests
 {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RetainedDecodedAliasesShareTheHostAllowanceUntilResultsEnd(bool asynchronous)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RetainedDecodedAliasesShareTheHostAllowanceUntilResultsEnd(bool asynchronous, bool binary)
     {
         const string source = """
             import json
@@ -20,7 +22,7 @@ public sealed class JsonRetainedTextTests
         const string expected = "decoded café😀 text";
         var document = new string(' ', 32768) + "\"" + expected + "\"" + new string(' ', 32768);
         var budget = new LythonMemoryBudget(2 * 1024 * 1024);
-        using (var script = new LythonEngine().Compile(source, budget))
+        using (var script = new LythonEngine().Compile(binary ? source.Replace("open('/input.json')", "open('/input.json', 'rb')") : source, budget))
         {
             Assert.True(script.IsValid);
             var baseline = budget.ReservedBytes;

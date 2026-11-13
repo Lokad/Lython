@@ -1215,6 +1215,17 @@ JSON indentation has no fixed width ceiling. Encoding prepares admitted indentat
 storage, which can remain charged for the execution; constructors retain the option
 without materializing unused padding. Checked string-representation bounds apply.
 
+`json.loads` accepts text or immutable bytes; `json.load` uses an ordinary text
+or binary reader. Byte inputs follow Python's UTF-8/16/32 BOM and leading-zero
+detection before invoking a custom decoder or hook. UTF-8 is validated in bounded,
+cancellable chunks and can lend same-command immutable storage to the existing
+parser/document windows. The complete source payload stays funded even after
+private I/O cleanup; another owner receives an admitted copy. UTF-16 uses the
+shared codec and UTF-32 writes directly into admitted UTF-8 capacity. Newline text
+is preserved. A text BOM produces JSONDecodeError; a byte BOM is consumed by its
+codec. Decoder decode/raw_decode methods remain str-only. Bytearray and lone
+surrogates remain outside the supported string/bytes subset.
+
 JSON decoders evaluate a guest `strict` option once when preparing the scanner,
 including asynchronous callbacks. The public attribute retains the supplied
 object; replacing it later does not alter the scanner's captured setting.

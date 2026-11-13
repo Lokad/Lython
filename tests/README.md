@@ -788,3 +788,10 @@ unadmitted magnitude construction; its evidence remains in benchmark history.
 check native/LE/BE bytes, newlines and supplementary scalars crossing1024-byte
 boundaries. Both APIs preserve repeated-write counts/positions and retained byte
 results while sharing an allowance; disposal returns each result's funding.
+
+[JSON byte input](Lokad.Lython.PublicApi.Tests/JsonByteInputTests.cs) covers Python
+encoding/BOM detection, codec errors, custom decoders and binary reader protocols
+through both execution APIs. [Byte ownership](Lokad.Lython.Tests/JsonByteOwnershipTests.cs)
+keeps borrowed backing charged after private source cleanup and refuses/cancels
+before window publication. Existing callback and retained-result checks cover byte
+inputs as well as text.

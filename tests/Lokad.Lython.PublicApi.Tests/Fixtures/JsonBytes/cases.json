@@ -1,0 +1,157 @@
+[
+  {
+    "Name": "utf-8",
+    "Source": "import json\nprint(json.loads(b'{\"\\xc3\\xa9\":\"\\xf0\\x9f\\x98\\x80\",\"n\":7}'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-8-sig",
+    "Source": "import json\nprint(json.loads(b'\\xef\\xbb\\xbf{\"\\xc3\\xa9\":\"\\xf0\\x9f\\x98\\x80\",\"n\":7}'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-16",
+    "Source": "import json\nprint(json.loads(b'\\xff\\xfe{\\x00\"\\x00\\xe9\\x00\"\\x00:\\x00\"\\x00=\\xd8\\x00\\xde\"\\x00,\\x00\"\\x00n\\x00\"\\x00:\\x007\\x00}\\x00'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-16-le",
+    "Source": "import json\nprint(json.loads(b'{\\x00\"\\x00\\xe9\\x00\"\\x00:\\x00\"\\x00=\\xd8\\x00\\xde\"\\x00,\\x00\"\\x00n\\x00\"\\x00:\\x007\\x00}\\x00'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-16-be",
+    "Source": "import json\nprint(json.loads(b'\\x00{\\x00\"\\x00\\xe9\\x00\"\\x00:\\x00\"\\xd8=\\xde\\x00\\x00\"\\x00,\\x00\"\\x00n\\x00\"\\x00:\\x007\\x00}'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-32",
+    "Source": "import json\nprint(json.loads(b'\\xff\\xfe\\x00\\x00{\\x00\\x00\\x00\"\\x00\\x00\\x00\\xe9\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x00\"\\x00\\x00\\x00\\x00\\xf6\\x01\\x00\"\\x00\\x00\\x00,\\x00\\x00\\x00\"\\x00\\x00\\x00n\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x007\\x00\\x00\\x00}\\x00\\x00\\x00'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-32-le",
+    "Source": "import json\nprint(json.loads(b'{\\x00\\x00\\x00\"\\x00\\x00\\x00\\xe9\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x00\"\\x00\\x00\\x00\\x00\\xf6\\x01\\x00\"\\x00\\x00\\x00,\\x00\\x00\\x00\"\\x00\\x00\\x00n\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x007\\x00\\x00\\x00}\\x00\\x00\\x00'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf-32-be",
+    "Source": "import json\nprint(json.loads(b'\\x00\\x00\\x00{\\x00\\x00\\x00\"\\x00\\x00\\x00\\xe9\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x00\"\\x00\\x01\\xf6\\x00\\x00\\x00\\x00\"\\x00\\x00\\x00,\\x00\\x00\\x00\"\\x00\\x00\\x00n\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x007\\x00\\x00\\x00}'))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf32be-bom",
+    "Source": "import json\ntry:\n print(json.loads(b'\\x00\\x00\\xfe\\xff\\x00\\x00\\x00{\\x00\\x00\\x00\"\\x00\\x00\\x00\\xe9\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x00\"\\x00\\x01\\xf6\\x00\\x00\\x00\\x00\"\\x00\\x00\\x00,\\x00\\x00\\x00\"\\x00\\x00\\x00n\\x00\\x00\\x00\"\\x00\\x00\\x00:\\x00\\x00\\x007\\x00\\x00\\x00}'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "utf16be-bom",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xfe\\xff\\x00{\\x00\"\\x00\\xe9\\x00\"\\x00:\\x00\"\\xd8=\\xde\\x00\\x00\"\\x00,\\x00\"\\x00n\\x00\"\\x00:\\x007\\x00}'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "{'é': '😀', 'n': 7}\n"
+  },
+  {
+    "Name": "single-le",
+    "Source": "import json\ntry:\n print(json.loads(b'7\\x00'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "7\n"
+  },
+  {
+    "Name": "single-be",
+    "Source": "import json\ntry:\n print(json.loads(b'\\x007'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "7\n"
+  },
+  {
+    "Name": "crlf",
+    "Source": "import json\ntry:\n print(json.loads(b'{\\r\\n\"x\":\"a\\\\r\\\\nb\"\\r\\n}'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "{'x': 'a\\r\\nb'}\n"
+  },
+  {
+    "Name": "empty",
+    "Source": "import json\ntry:\n print(json.loads(b''))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "JSONDecodeError Expecting value 0 1 1 ''\n"
+  },
+  {
+    "Name": "empty-bom",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xef\\xbb\\xbf'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "JSONDecodeError Expecting value 0 1 1 ''\n"
+  },
+  {
+    "Name": "utf8-invalid",
+    "Source": "import json\ntry:\n print(json.loads(b'\"ok\"\\xff'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-8 4 5 226f6b22ff\n"
+  },
+  {
+    "Name": "utf8-sig-invalid",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xef\\xbb\\xbf\"ok\"\\xff'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-8 4 5 226f6b22ff\n"
+  },
+  {
+    "Name": "utf16-truncated",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xff\\xfe7\\x00\\xff'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-16-le 4 5 fffe3700ff\n"
+  },
+  {
+    "Name": "utf16be-truncated",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xfe\\xff\\x007\\xff'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-16-be 4 5 feff0037ff\n"
+  },
+  {
+    "Name": "utf32-truncated",
+    "Source": "import json\ntry:\n print(json.loads(b'\\xff\\xfe\\x00\\x007\\x00\\x00'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-32-le 4 7 fffe0000370000\n"
+  },
+  {
+    "Name": "utf32-range",
+    "Source": "import json\ntry:\n print(json.loads(b'\\x00\\x00\\xfe\\xff\\x00\\x11\\x00\\x00'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "UnicodeDecodeError utf-32-be 4 8 0000feff00110000\n"
+  },
+  {
+    "Name": "trailing-text",
+    "Source": "import json\ntry:\n print(json.loads(b'\\x00\"\\x00\\xe9\\x00\"\\x00 \\x00x'))\nexcept UnicodeDecodeError as e:\n print(type(e).__name__,e.encoding,e.start,e.end,e.object.hex())\nexcept json.JSONDecodeError as e:\n print(type(e).__name__,e.msg,e.pos,e.lineno,e.colno,repr(e.doc))",
+    "Output": "JSONDecodeError Extra data 4 1 5 '\"é\" x'\n"
+  },
+  {
+    "Name": "keyword-alias-hooks",
+    "Source": "import json\nf=json.loads\nprint(f(s=b\"[12,1.5,NaN]\",parse_int=lambda s:\"i\"+s,parse_float=lambda s:\"f\"+s,parse_constant=str))",
+    "Output": "['i12', 'f1.5', 'NaN']\n"
+  },
+  {
+    "Name": "pairs-hook",
+    "Source": "import json\nprint(json.loads(b'{\"x\":1,\"x\":2}',object_pairs_hook=lambda p:p))",
+    "Output": "[('x', 1), ('x', 2)]\n"
+  },
+  {
+    "Name": "custom-decoder",
+    "Source": "import json\nclass D(json.JSONDecoder):\n def __init__(self,tag,**kw):\n  print(\"init\",tag)\n  super().__init__(**kw)\n def decode(self,s):\n  print(type(s).__name__,repr(s))\n  return super().decode(s)\nprint(json.loads(b\"7\",cls=D,tag=\"t\"))",
+    "Output": "init t\nstr '7'\n7\n"
+  },
+  {
+    "Name": "decode-before-constructor",
+    "Source": "import json\nclass D:\n def __init__(self,**kw):print(\"init\")\n def decode(self,s):print(\"decode\")\ntry:json.loads(b\"7\\xff\",cls=D)\nexcept UnicodeDecodeError:print(\"unicode\")",
+    "Output": "unicode\n"
+  },
+  {
+    "Name": "string-bom-before-constructor",
+    "Source": "import json\nclass D:\n def __init__(self,**kw):print(\"init\")\n def decode(self,s):print(\"decode\")\ntry:json.loads(\"\\ufeff7\",cls=D)\nexcept json.JSONDecodeError as e:print(e.msg,e.pos,e.doc==\"\\ufeff7\")",
+    "Output": "Unexpected UTF-8 BOM (decode using utf-8-sig) 0 True\n"
+  },
+  {
+    "Name": "binary-stream",
+    "Source": "import json,io\nprint(json.load(io.BytesIO(b'{\"x\":7}')) )",
+    "Output": "{'x': 7}\n"
+  },
+  {
+    "Name": "reader-protocol",
+    "Source": "import json\nclass R:\n def read(self):return b\"7\"\nprint(json.load(R()))",
+    "Output": "7\n"
+  },
+  {
+    "Name": "decoder-str-only",
+    "Source": "import json\nfor method in [json.JSONDecoder().decode,json.JSONDecoder().raw_decode]:\n try:method(b\"7\")\n except TypeError:print(\"type\")",
+    "Output": "type\ntype\n"
+  },
+  {
+    "Name": "utf8-boundaries",
+    "Source": "import json\nfor n in [4094,4095,4096]:\n s=\" \"*n+'\"é😀\"'\n print(json.loads(s.encode(\"utf-8\")))",
+    "Output": "é😀\né😀\né😀\n"
+  }
+]

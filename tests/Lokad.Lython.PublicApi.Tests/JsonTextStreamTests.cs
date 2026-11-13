@@ -114,9 +114,8 @@ public sealed class JsonTextStreamTests : LifetimeScenario
     [Theory]
     [InlineData("7")]
     [InlineData("None")]
-    [InlineData("b'{}'")]
     [InlineData("[]")]
-    public async Task ReaderMustReturnText(string value)
+    public async Task ReaderMustReturnTextOrBytes(string value)
     {
         await AssertBothModes("import json\nclass Reader:\n    def read(self):\n        return " + value +
             "\ntry:\n    json.load(Reader())\nexcept TypeError:\n    print('bad read')", "bad read\n");

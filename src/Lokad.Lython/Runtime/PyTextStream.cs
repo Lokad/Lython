@@ -1,5 +1,3 @@
-using Lokad.Lython.Runtime.Text;
-
 namespace Lokad.Lython.Runtime;
 
 // Native file writes share the executable engine's guarded operation. Other
@@ -7,21 +5,6 @@ namespace Lokad.Lython.Runtime;
 // without introducing a CLR stream or an ambient capability.
 internal static class PyTextStream
 {
-    internal static PyString ReadAll(object stream, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var method = ResolveMember(stream, "read", span, context);
-        var value = LythonRuntime.InvokeCallableTarget(method, span, span, context, static () => []);
-        return RequireText(value, span);
-    }
-
-    internal static async ValueTask<PyString> ReadAllAsync(object stream, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        var method = await ResolveMemberAsync(stream, "read", span, context).ConfigureAwait(false);
-        var value = await LythonRuntime.InvokeCallableTargetAsync(method, span, span, context,
-            static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false);
-        return RequireText(value, span);
-    }
-
     internal static void Write(object stream, object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (stream is LythonRuntime.ExecutionContext.TextFileHandle or LythonRuntime.ExecutionContext.BinaryFileHandle)
@@ -63,7 +46,4 @@ internal static class PyTextStream
         return result.Found ? result.Value : throw PyMemberAccess.CreateMissingMemberError(target, name, span, context);
     }
 
-    private static PyString RequireText(object value, LythonSourceSpan span)
-        => PyStringOps.TryAsString(value, out var text) ? text
-            : throw new LythonRuntimeException("TypeError", "text stream read() must return a string.", span);
 }

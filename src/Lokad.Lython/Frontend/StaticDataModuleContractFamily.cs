@@ -20,8 +20,8 @@ internal static partial class StaticDataModuleContractFamily
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonLoads.Name, StringComparison.Ordinal))
         {
-            var emitted = AnalyzeStringArgument(arguments, 0, "s", "json.loads(s, *, ...) expects a string argument.", diagnostics, bindings);
-            return emitted;
+            return AnalyzeArgument(arguments, 0, "s", "json.loads(s, *, ...) expects str or bytes.", diagnostics, bindings,
+                static value => value.IsStringLike || StaticAbstractFacts.IsBytesLike(value));
         }
 
         if (string.Equals(targetName, LythonKnownCallableSignatures.JsonDump.Name, StringComparison.Ordinal))
