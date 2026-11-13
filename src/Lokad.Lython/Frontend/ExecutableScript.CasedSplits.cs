@@ -11,7 +11,7 @@ internal sealed record ExecutableCasedSplit(
 
 internal sealed partial class ExecutableCodeObject
 {
-    private void PrepareCasedSplits(IReadOnlyList<ExecutableBasicBlock> blocks, ExecutableCallSite[] sites)
+    private void PrepareCallResults(IReadOnlyList<ExecutableBasicBlock> blocks, ExecutableCallSite[] sites)
     {
         foreach (var block in blocks)
         {
@@ -20,14 +20,18 @@ internal sealed partial class ExecutableCodeObject
             // result in a guest binding. A direct return inherits its caller's
             // consumption; a local store always keeps an ordinary Python value.
             for (var index = 0; index + 1 < instructions.Length; index++)
-                if (instructions[index].OpCode == ExecutableOpCode.Call
-                    && instructions[index + 1].OpCode is ExecutableOpCode.GetIter or ExecutableOpCode.Return)
+                if (instructions[index].OpCode == ExecutableOpCode.Call)
                 {
                     var site = instructions[index].CallSiteIndex;
+                    var next = instructions[index + 1];
                     sites[site] = sites[site] with
                     {
-                        ConsumedByIteration = instructions[index + 1].OpCode == ExecutableOpCode.GetIter,
-                        ReturnedDirectly = instructions[index + 1].OpCode == ExecutableOpCode.Return,
+                        ConsumedByIteration = next.OpCode == ExecutableOpCode.GetIter,
+                        ReturnedDirectly = next.OpCode == ExecutableOpCode.Return,
+                        UnpackedReturnCount = next.OpCode == ExecutableOpCode.UnpackValues
+                            && !next.UnpackLayout.HasStarredTarget
+                            && next.UnpackLayout.TargetCount <= LythonRuntime.NativeValueCapacity
+                            ? next.UnpackLayout.TargetCount : 0,
                     };
                 }
             for (var index = 1; index + 2 < instructions.Length; index++)

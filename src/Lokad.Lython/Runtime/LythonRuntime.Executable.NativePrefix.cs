@@ -12,7 +12,8 @@ internal sealed partial class LythonRuntime
 
     // This view cannot survive a suspension. The final executable slots and PC
     // are also the ordinary frame's representation; transfer never replays work.
-    internal ref struct NativeExecution(PyExecutableFunction function, Span<object> values, bool consumedByIteration)
+    internal ref struct NativeExecution(PyExecutableFunction function, Span<object> values,
+        bool consumedByIteration, int unpackedReturnCount)
     {
         private readonly PyExecutableFunction _function = function;
         internal readonly ExecutableCodeObject Code = function.CodeObject;
@@ -20,17 +21,30 @@ internal sealed partial class LythonRuntime
         private readonly IReadOnlyList<ExecutableCell> _cells = function.ClosureCells;
         private readonly ExecutionContext _scope = function.DefinitionContext;
         private readonly bool _consumedByIteration = consumedByIteration;
+        private readonly int _unpackedReturnCount = unpackedReturnCount;
+        private int _unpackedTupleStart = -1;
+        internal bool ReturnedUnpacked => _unpackedTupleStart >= 0;
         internal int Index = function.CodeObject.EntryIndex;
         internal int LiveExtent = function.CodeObject.FirstTemporarySlot;
         private bool _transferred;
         private ExecutionContext? _preparedChild;
         private MemoryGovernor? _preparedChildOwner;
 
-        internal bool Run(LythonSourceSpan entrySpan, out object result)
+        internal bool Run(LythonSourceSpan entrySpan, out object result, Span<object> unpackedReturn = default)
         {
             _scope.EnterInterpreterFrame(entrySpan);
             var previous = _scope.State.CurrentException;
-            try { return RunCore(out result); }
+            try
+            {
+                var completed = RunCore(out result);
+                if (completed && ReturnedUnpacked)
+                {
+                    Values.Slice(_unpackedTupleStart, _unpackedReturnCount).CopyTo(unpackedReturn);
+                    Trim(Code.FirstTemporarySlot);
+                    _scope.CheckExecution(Code.Instructions[Index + 1].Span);
+                }
+                return completed;
+            }
             catch (LythonRuntimeException error)
             {
                 if (previous is not null && !ReferenceEquals(error.OriginalPythonException, previous))
@@ -167,6 +181,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     case ExecutableOpCode.MakeTuple:
                     {
+                        if (TryReturnUnpackedTuple(instruction)) return true;
                         var tuple = instruction.ItemCount == 0 ? PyTuple.Empty
                             : new PyTuple(Values.Slice(instruction.InputStart, instruction.ItemCount),
                                 _scope.MemoryGovernor, instruction.Span, _scope);
@@ -334,7 +349,7 @@ internal sealed partial class LythonRuntime
                 var arguments = Values.Slice(start + call.ArgumentOffset, call.ArgumentCount);
                 if (!function.TryStartNativeCall(call, arguments, receiver, _scope, call.CallSpan,
                     call.ConsumedByIteration || _consumedByIteration && call.ReturnedDirectly,
-                    borrow, out result, out var child)) return false;
+                    borrow, default, out _, out result, out var child)) return false;
                 if (child is not null)
                 {
                     // No operation is running in the child. Keep its exact
@@ -346,6 +361,30 @@ internal sealed partial class LythonRuntime
                 }
             }
             finally { if (entered) _scope.LeaveInterpreterFrame(); }
+            return true;
+        }
+
+        private bool TryReturnUnpackedTuple(in ExecutableInstruction instruction)
+        {
+            if (_unpackedReturnCount == 0 || instruction.ItemCount != _unpackedReturnCount
+                || instruction.HasLocalResult || Index + 1 >= Code.Instructions.Length) return false;
+            ref readonly var next = ref Code.Instructions[Index + 1];
+            if (next.OpCode != ExecutableOpCode.Return || next.InputStart != instruction.ResultSlot) return false;
+            var items = Values.Slice(instruction.InputStart, instruction.ItemCount);
+            // Keep eager tuple admission before any caller target can change.
+            // Its conservative funding survives until the execution owner ends;
+            // only the unobservable tuple shell/backing allocation disappears.
+            var bytes = PyTuple.EstimateStorageBytes(items, _scope, instruction.Span);
+            _scope.MemoryGovernor.Reserve(bytes, instruction.Span);
+            try
+            {
+                _scope.CheckExecution(instruction.Span);
+                _scope.MemoryGovernor.Commit(bytes);
+            }
+            catch { _scope.MemoryGovernor.ReleaseReserved(bytes); throw; }
+            // The return wrapper copies these already-admitted operands before
+            // native cleanup. The hot execution state retains no caller borrow.
+            _unpackedTupleStart = instruction.InputStart;
             return true;
         }
 

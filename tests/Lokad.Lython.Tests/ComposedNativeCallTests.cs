@@ -34,7 +34,7 @@ public sealed class ComposedNativeCallTests
             try
             {
                 Assert.True(function.TryStartNativeCall(call, [new BigInteger(1250)], null, context, Span,
-                    false, !named, out var result, out var frame));
+                    false, !named, default, out _, out var result, out var frame));
                 Assert.Null(frame);
                 Assert.Equal(new BigInteger(1350), result);
                 Assert.Null(context.MemoryGovernor.AdmissionFailure);
@@ -91,7 +91,7 @@ public sealed class ComposedNativeCallTests
             try
             {
                 var failure = Assert.Throws<LythonRuntimeException>(() => function.TryStartNativeCall(call,
-                    [retained], null, context, Span, false, true, out _, out _));
+                    [retained], null, context, Span, false, true, default, out _, out _, out _));
                 Assert.Same(context.MemoryGovernor.AdmissionFailure, failure);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance, failure.Attribution?.Reason);
                 Assert.Equal(admittedWorkspaces, growths);

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Transfer completed native tuple-return elements directly to immediate exact
+  unpacking, avoiding a transient tuple and backing array. Preserve conservative
+  admission, aliases, target order, cancellation and ordinary suspended results.
+
 - Share bounded, cancellable copying for immutable bytes, text and tuple
   repetition. Admit bytes output through the active execution before allocation,
   including compiled inputs; transfer tuple funding from its original reservation.

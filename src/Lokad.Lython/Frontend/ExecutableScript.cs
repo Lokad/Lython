@@ -454,6 +454,7 @@ internal sealed record ExecutableCallSite(
     public ExecutableCasedSplit? CasedSplit { get; init; }
     public bool ConsumedByIteration { get; init; }
     public bool ReturnedDirectly { get; init; }
+    public int UnpackedReturnCount { get; init; }
     public bool AccumulatesDictionary { get; init; }
     public bool IsPositionalOnly { get; } = Arguments.All(argument => argument.Kind == CallArgumentKind.Positional);
     public int TargetOffset => HasReceiver ? 1 : 0;
@@ -528,7 +529,7 @@ internal sealed partial class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
-        PrepareCasedSplits(blocks, callSites);
+        PrepareCallResults(blocks, callSites);
         var reads = ExecutableStackLayout.ForwardValues(this, blocks);
         // Assign physical positions after forwarding. Both execution forms use
         // this final layout, including at a dynamic-operation transition.

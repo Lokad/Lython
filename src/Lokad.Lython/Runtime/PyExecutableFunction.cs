@@ -83,8 +83,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     internal bool TryStartNativeCall(ExecutableCallSite call, ReadOnlySpan<object?> arguments, object? receiver,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span, bool consumedByIteration,
-        bool borrow, out object result, out LythonRuntime.ExecutionContext? frame)
+        bool borrow, Span<object> unpackedReturn, out bool unpacked,
+        out object result, out LythonRuntime.ExecutionContext? frame)
     {
+        unpacked = false;
         result = PyNone.Instance;
         frame = null;
         if (!CanStartInline || !borrow && !CanBindNativeArguments) return false;
@@ -102,7 +104,8 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         }
         else LythonRuntime.BindFunctionArgumentsInto(values[..BindingPlan.ParameterCount], ref assigned,
             [], span, BindingPlan, context, receiver: receiver, callSite: call, operands: arguments);
-        return StartInline(values, assigned, null, span, consumedByIteration, out result, out frame);
+        return StartInline(values, assigned, null, span, consumedByIteration, unpackedReturn,
+            out unpacked, out result, out frame);
     }
 
     internal override bool TryStartBoundInvocation(in BoundCallArguments bound, LythonSourceSpan span,
@@ -115,15 +118,17 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         result = PyNone.Instance;
         frame = null;
         return CanStartInline && StartInline(bound.Values.AsSpan(0, _codeObject.ValueStorageCapacity),
-            bound.Assigned, bound, span, consumedByIteration, out result, out frame);
+            bound.Assigned, bound, span, consumedByIteration, default, out _, out result, out frame);
     }
 
     private bool StartInline(Span<object> values, ArgumentPresence assigned, BoundCallArguments? existing,
-        LythonSourceSpan span, bool consumedByIteration, out object result, out LythonRuntime.ExecutionContext? frame)
+        LythonSourceSpan span, bool consumedByIteration, Span<object> unpackedReturn, out bool unpacked,
+        out object result, out LythonRuntime.ExecutionContext? frame)
     {
+        unpacked = false;
         result = PyNone.Instance;
         frame = null;
-        var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration);
+        var state = new LythonRuntime.NativeExecution(this, values, consumedByIteration, unpackedReturn.Length);
         var entered = false;
         var transferred = false;
         BoundCallArguments owned = existing.GetValueOrDefault();
@@ -132,7 +137,11 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         {
             Closure.EnterFunctionCall(span);
             entered = true;
-            if (state.Run(span, out result)) return true;
+            if (state.Run(span, out result, unpackedReturn))
+            {
+                unpacked = state.ReturnedUnpacked;
+                return true;
+            }
             state.PrepareTransfer();
             if (existing is null)
             {

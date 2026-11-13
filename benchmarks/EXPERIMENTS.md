@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Final tuple-result transport retained](results/2026-11-13-native-tuple-return/final/README.md):
+8f69261d removes transient tuple/backing, caller scratch/shared declaration/duplicate
+publisher and the caller-output span from hot state.110internal/183public focused11
+pass. B669180.051s: invoice warm−5.07..−1.80%, fresh uncertain, old report regression
+not repeated; small text debt explicitly retained. Final Windows allocation run
+stalls; targeted B670 on quiet VM completes15.062s using the existing driver with
+only its fixture-count guard relaxed. Allocation−6.408..−6.436%(rich−5.049..−5.052%),
+all goldens/balances/cleanup/identity/quiet/join/archive gates pass. Earlier failures
+and adverse phases preserved; full source-matched delivery pending, no universal
+CPU claim or new external ratio. Performance/independent regex continue.
+
 [Direct caller tuple operands](results/2026-11-13-native-tuple-return/operands/README.md)
 883c removes caller scratch/shared buffer/duplicate publisher;110internal/181public
 plus7overlap cases and8scripts pass. Allocation−6.4%(rich−5.1%). B668180.434s gives

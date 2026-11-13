@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
         private readonly int _lastOwnedTemporarySlot;
         private PyIteration.Cursor? _pendingDisposalHead, _pendingDisposalTail;
         internal bool DeferAsyncDisposal;
-        internal bool HasPendingDisposals => _pendingDisposalHead is not null;
+        internal readonly bool HasPendingDisposals => _pendingDisposalHead is not null;
 
         public ExecutableValueStorage(int capacity, int firstTemporarySlot, int lastOwnedTemporarySlot, ExecutionContext context,
             LythonSourceSpan? allocationSpan, long frameStorageBytes, object[]? borrowedValues,
@@ -426,6 +426,14 @@ internal sealed partial class LythonRuntime
         }
 
         public ReadOnlyMemory<object?> Slice(int start, int count) => _items.AsMemory(start, count);
+
+        internal readonly bool CanRetireWithoutCleanup(int liveExtent)
+        {
+            if (HasPendingDisposals) return false;
+            for (var i = Math.Min(LiveExtent - 1, _lastOwnedTemporarySlot); i >= liveExtent; i--)
+                if (_items[i] is PyIteration.Cursor or ExecutableTemporaryValue) return false;
+            return true;
+        }
 
         public void RetireTo(int liveExtent)
         {

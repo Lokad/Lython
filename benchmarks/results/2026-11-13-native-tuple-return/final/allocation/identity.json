@@ -1,0 +1,11 @@
+{
+  "purpose": "Targeted final8f allocation qualification on quiet VM after incomplete Windows8-case diagnostic; existing ALC driver changes only fixture-count guard/description, no runtime/host/clock change",
+  "coreSHA256": {
+    "reference": "93a6d13483515e82313ef9136ab3b96d5b432218d7b3461f95d79dbf12df417e",
+    "candidate": "8f69261d79a3e32a563bb374d1ad9bc49b980b1b9884fbf697fea02996068aa2"
+  },
+  "catalogSHA256": "8540e010f8421b83ec41be0f1a69116340be12e20709e9d14bfb1a3ef6d3e327",
+  "sourceIdentitySHA256": "9763f7d40f9aac224ee1e8179e6107ce556be675eb6637f366378c4ec146663e",
+  "driverSourceSHA256": "a362f1ec590dfc128903d8152eccd4648bf83be7feb07214cc75e487f61e46da",
+  "driverSHA256": "794b87445e08139a12ff648ffd0463eb0aec361afad659a2a389f49d8f3b3052"
+}

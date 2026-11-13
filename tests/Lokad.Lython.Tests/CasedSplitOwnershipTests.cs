@@ -118,7 +118,7 @@ public sealed class CasedSplitOwnershipTests
             values[source] = cursor;
             // Model interruption after the real fused kernel has completed but
             // before Return publishes its private value, without a timer race.
-            var execution = new LythonRuntime.NativeExecution(function, values, true)
+            var execution = new LythonRuntime.NativeExecution(function, values, true, default)
             { Index = index, LiveExtent = source + 1 };
             context.State.CloseResources();
             var active = budget.ReservedBytes;

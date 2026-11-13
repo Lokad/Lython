@@ -578,6 +578,12 @@ into that storage, including functions requiring namespace mirroring. Mirrored
 namespaces copy values for their class, closure and lowered readers; they never
 borrow the reusable array. Mirrored functions retain their scope context.
 Suspended callers retain their operands.
+An immediately unpacked exact tuple return from a completed native helper can
+transfer its elements into the caller's admitted operand slots, avoiding a transient
+tuple object and backing array. The original conservative tuple admission still
+precedes target publication. Element aliases and target order remain unchanged;
+escaping tuples, starred or mismatched unpacking, and suspended producers keep
+ordinary tuple construction. Call-input cleanup must complete before unpacking.
 Ownership admits the fixed whole-frame capacity and fresh cell/control storage
 before construction and retains them through suspension. A cache-eligible member
 lookup admits its frame's table before descriptor or protocol effects. Instances,
