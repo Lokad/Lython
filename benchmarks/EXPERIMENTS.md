@@ -7368,3 +7368,15 @@ eligible. User-function calls nevertheless promote the native caller before
 rounding. This concrete context/storage elimination hypothesis needs bounded
 attribution and a decision before a runtime prototype. No timing ratio, speedup,
 new backend/arena/value wrapper or producer dependency is introduced.
+
+## R332 — current representative external checkpoint
+
+[B704](results/2026-11-13-current-cpython-checkpoint/README.md) refreshes five
+complete scripts and separate invoice compilation/compile-to-result at committed
+d90dd5fe/frozen798;7jobs/294.095s. Existing fixed workers/catalog/
+protocol; ordinary GC/tiering, two processes per engine, five rotating rounds.
+Full-request wall sizing/warmup and unchanged guest clocks are explicit. All
+identity/output/allowance/quiet/join/persistent archival gates pass; no working
+evidence retired or floor changed. Current table retains moving controls; earlier
+B683 remains separately labelled. No allocation/source-pair CPU/causal speedup or
+objective-completion claim. Full delivery43520131516 is independent. Publication held.

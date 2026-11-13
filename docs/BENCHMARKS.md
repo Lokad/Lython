@@ -2,47 +2,48 @@
 
 | Representative workload, warm execution | Input | Lython | CPython | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
-| CSV invoice / pricing helpers |4,096 records /127,031 B|7.596–7.646 ms|6.012–6.069 ms|1.25–1.27×|Complete diagnostic; controls0.66/0.95%|
-| Text / captured helper and counter |3,072 lines /35,840 B|1.438–1.442 ms|0.886–0.900 ms|1.60–1.63×|Complete diagnostic; controls0.24/1.55%|
-| JSON-lines / aggregation helpers |4,096 records /110,592 B|3.424–3.473 ms|4.023–4.089 ms|0.84–0.86×|Complete, variable; maxIQR3.24%|
-| File search / keyword-default helper |2,049 lines /42,010 B; stop after1,025|252.4–255.2 µs|148.6–149.8 µs|1.68–1.72×|Complete diagnostic; controls1.10/0.84%|
-| JSON-to-Markdown report |3,072 records /189,441 B|2.829–2.876 ms|2.309–2.347 ms|1.21–1.25×|Complete, variable; maxIQR5.63%|
+| CSV invoice / pricing helpers |4,096 records /127,031 B|7.646–7.662 ms|6.082–6.108 ms|1.25–1.26×|Diagnostic; spreads0.21/0.43%; maxIQR2.78%|
+| Text / captured helper and counter |3,072 lines /35,840 B|1.377–1.388 ms|900.3–912.7 µs|1.51–1.54×|Diagnostic; spreads0.84/1.38%; maxIQR1.83%|
+| JSON-lines / aggregation helpers |4,096 records /110,592 B|3.390–3.489 ms|4.089–4.134 ms|0.82–0.85×|Diagnostic; spreads2.92/1.10%; maxIQR1.05%|
+| File search / keyword-default helper |2,049 lines /42,010 B; stop after1,025|260.5–265.7 µs|157.7–158.2 µs|1.65–1.69×|Diagnostic; spreads1.98/0.34%; maxIQR5.01%|
+| JSON-to-Markdown report |3,072 records /189,441 B|2.825–2.848 ms|2.330–2.334 ms|1.21–1.22×|Diagnostic; spreads0.82/0.15%; maxIQR4.62%|
 
-**Ratio = Lython elapsed / CPython elapsed; above one means slower.** Text and
-search retain substantial gaps. JSON is faster in this workload; report timings
-are more variable. These embedding measurements do not isolate interpreter CPU.
+**Ratio = Lython elapsed / CPython elapsed; above one means slower.** These are
+complete embedding measurements, not isolated interpreter CPU. Spreads are the
+Lython/CPython process-median differences; moving controls and IQRs remain visible.
 
-Measured 2026-11-13 UTC: **runtime cb8736ff / frozen 5a184a1d**, test correction 90de765d,
-against stock **CPython 3.13.16**. This source has full Windows/Ubuntu .NET 11/10,
-stress and installed-package qualification. Later revisions and positional ZIP
-work are excluded. The quiet Azure F4as_v7 VM runs
-Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs, 16 GiB/no swap and .NET 11 RC3, with ordinary
-workstation GC/tiering and CPython GIL/GC enabled.
+Measured 2026-11-13 UTC: **runtime d90dd5fe / frozen798edc1d**, against stock
+**CPython 3.13.16**. Focused .NET 11/10 checks pass; full Windows/Ubuntu,
+original stress and installed-package qualification is
+[pending](https://github.com/Lokad/Lython/actions/runs/43520131516).
+The quiet Azure F4as_v7 VM runs Ubuntu 24.04.4, four AMD EPYC 9V45 vCPUs,
+16 GiB/no swap and .NET 11 RC3, ordinary workstation GC/tiering and CPython GIL/GC.
 
 Warm clocks include mediated RAM-file I/O, full stdout/file validation and
 prior-result cleanup. They exclude compilation, startup, fixture staging/reset,
-protocol and final cache teardown. Two processes per engine, five rotating rounds;
-time ranges span their medians and ratios include all four pairings, not confidence
-intervals. Warmup budgets include full-request reset/protocol costs; retained
-responses give their actual guest-execution totals. Controls are the
-Lython/CPython process-median spreads. JSON/report
-variability remains visible rather than being treated as a failed design.
-[Exact sources, wider CPU, raw data and boundaries](../benchmarks/results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md).
+protocol and final cache teardown. Two independent processes per engine, five
+rotating rounds. Ranges span process medians and ratios all four pairings;
+they are not confidence intervals. Warmup and batch sizing use full-request
+wall time; guest-execution clocks remain unchanged. This refresh does not
+attribute differences from older collections to individual changes.
+[Exact sources, raw/wider CPU and controls](../benchmarks/results/2026-11-13-current-cpython-checkpoint/README.md).
 
 ## Compilation, compile-to-result and startup
 
-The same invoice script and measured revision separate frontend cost from execution:
+The same invoice source separates frontend cost from execution:
 
 | Phase | Lython | CPython | Lython / CPython | Status |
 | --- | ---: | ---: | ---: | --- |
-| Compilation alone |102.4–103.9 µs|93.34–93.65 µs|1.09–1.11×|Complete diagnostic; maxIQR2.42%|
-| Compile and execute once in a running host |7.686–7.806 ms|6.310–6.365 ms|1.21–1.24×|Complete diagnostic; maxIQR2.59%|
-| Process startup |—|—|—|No current qualified comparison|
+| Compilation alone |101.5–102.4 µs|93.2–93.6 µs|1.08–1.10×|Diagnostic; spreads0.85/0.42%; maxIQR1.48%|
+| Compile and execute once in a running host |7.691–7.876 ms|6.201–6.268 ms|1.23–1.27×|Diagnostic; spreads2.35/1.08%; maxIQR1.16%|
+| Process startup |—|—|—|No current comparison|
 
-Compile-to-result includes compilation and compiled-owner disposal, plus the warm
-execution costs above. Wider process CPU also includes fixture reset/protocol.
+Compile-to-result includes compilation and compiled-owner disposal, plus warm
+execution costs above. Wider process CPU includes fixture reset/protocol.
 Startup, shared-budget contention, genuinely pending I/O, RSS/heap peaks and
-embedding tail latency remain unmeasured at this checkpoint.
+embedding tail latency remain unmeasured. The
+[previous fully qualified checkpoint](../benchmarks/results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md)
+retains its own exact revision, boundaries and adverse/variable observations.
 
 ## Additional qualified ZIP comparison
 
