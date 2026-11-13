@@ -58,6 +58,12 @@ at cleanup. Ordinary split aliases remain funded after the inventory cache ends;
 refund-reentry fixtures observe completed Python bindings without requiring an
 exact internal refund size.
 
+[Formatted helper slots](Lokad.Lython.Tests/FormattedStringExecutableTests.cs)
+check complete record rendering, nested/dynamic fields and single-field string
+identity without an invocation frame. [Pending helper lifetimes](Lokad.Lython.PublicApi.Tests/HelperContinuationLifetimeTests.cs)
+withdraw the input's global alias inside a custom formatter that reaches actual
+host I/O, preserving funded inputs, once-only effects and cancellation cleanup.
+
 [Function defaults](Lokad.Lython.PublicApi.Tests/FunctionDefaultMetadataTests.cs)
 check live default aliases and replacement, keyword binding, wide calls, retained
 values and genuinely suspending default protocols through both APIs. The white-box

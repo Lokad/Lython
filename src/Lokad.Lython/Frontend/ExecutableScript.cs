@@ -617,6 +617,8 @@ internal sealed partial class ExecutableCodeObject
         or ExecutableOpCode.LoadCallMember or ExecutableOpCode.Call or ExecutableOpCode.Unary
         or ExecutableOpCode.Binary or ExecutableOpCode.Augmented or ExecutableOpCode.Subscript
         or ExecutableOpCode.CompareJumpIfFalse or ExecutableOpCode.Jump or ExecutableOpCode.JumpIfFalse
+        or ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
+        or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField
         or ExecutableOpCode.MakeList or ExecutableOpCode.MakeTuple or ExecutableOpCode.Return
         or ExecutableOpCode.ReturnNone or ExecutableOpCode.Complete or ExecutableOpCode.Dup or ExecutableOpCode.PopTop;
 }

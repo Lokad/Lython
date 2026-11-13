@@ -180,6 +180,10 @@ internal sealed partial class LythonRuntime
                         Publish(instruction, PyList.FromTransferredArray(items, _scope.MemoryGovernor, instruction.Span));
                         break;
                     }
+                    case ExecutableOpCode.StartFormattedString or ExecutableOpCode.AppendFormattedText
+                        or ExecutableOpCode.FinishFormattedString or ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField:
+                        if (!Format(instruction)) return false;
+                        break;
                     case ExecutableOpCode.Dup:
                         Put(instruction.ResultSlot + 1, instruction.LiveExtent, Read(instruction.InputStart, 0));
                         break;
@@ -193,6 +197,46 @@ internal sealed partial class LythonRuntime
                 Index++;
             }
             return true;
+        }
+
+        private bool Format(in ExecutableInstruction instruction)
+        {
+            ExecutableFormatField? field = null;
+            object? value = null;
+            string? specifier = null;
+            if (instruction.OpCode is ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField)
+            {
+                var source = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
+                    ? instruction.InputStart : instruction.ResultSlot;
+                if (!IsImmediateFormattedValue(Read(source, 0))) return false;
+                if (instruction.OpCode == ExecutableOpCode.FormatField)
+                {
+                    field = (ExecutableFormatField)Code.Constants[instruction.ConstantIndex]!;
+                    specifier = GetExecutableFormatSpecifier(field, field.DynamicSpecifier
+                        ? TakeFormattedInput(instruction.ResultSlot + 1, instruction.ResultSlot + 1) : null);
+                }
+                value = TakeFormattedInput(source, instruction.ResultSlot);
+            }
+            else if (instruction.OpCode == ExecutableOpCode.AppendFormattedText)
+                value = Code.Constants[instruction.ConstantIndex];
+            var output = instruction.OpCode is ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FinishFormattedString
+                || field?.Append == true ? (GovernedByteBuilder)Values[instruction.InputStart] : null;
+            var result = ExecuteBuiltinFormattedInstruction(instruction, output, value, specifier, field, _scope);
+            if (instruction.OpCode == ExecutableOpCode.FinishFormattedString) Trim(instruction.ResultSlot);
+            if (result is not null)
+            {
+                try { Publish(instruction, result); }
+                catch { if (result is ExecutableTemporaryValue owned) owned.Dispose(); throw; }
+            }
+            return true;
+        }
+
+        private object TakeFormattedInput(int source, int liveExtent)
+        {
+            var value = Values[source];
+            Values[source] = null!;
+            Trim(liveExtent);
+            return value;
         }
 
         private bool Call(in ExecutableInstruction instruction)

@@ -345,6 +345,14 @@ receiver declarations; dynamic protocols stop before their operation and transfe
 the current PC and live values into the existing frame runner. They may then
 genuinely suspend. Defaults, bindings and earlier work are never replayed.
 
+Native f-string helpers use the same formatting kernel as ordinary executable
+frames, including nested fields, conversions and dynamic specifications. Their
+private slots own incremental byte builders until completion or transfer. An
+actual custom formatter transfers the live builder and already-evaluated inputs
+before invoking its protocol; pending I/O and cancellation retain those owners
+through awaited cleanup. Ordinary formatting does not require a separate frame
+solely because the helper contains f-string instructions.
+
 Direct positional, named and method calls can fill the private span without an
 owned workspace. Wider or dynamic binding keeps admitted invocation storage.
 The sixteen-slot inline capacity is an optimization threshold, not a Python

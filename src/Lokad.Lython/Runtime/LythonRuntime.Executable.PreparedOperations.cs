@@ -1,4 +1,3 @@
-using System.Numerics;
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
@@ -18,56 +17,36 @@ internal sealed partial class LythonRuntime
         private static bool TryExecuteFormattedInstruction(ref ExecutableWorkState execution,
             ExecutionContext? invocation, in ExecutableInstruction instruction, ExecutionContext context)
         {
-            switch (instruction.OpCode)
+            ExecutableFormatField? field = null;
+            object? value = null;
+            string? specifier = null;
+            if (instruction.OpCode is ExecutableOpCode.ConvertFormattedValue or ExecutableOpCode.FormatField)
             {
-                case ExecutableOpCode.StartFormattedString:
-                    var output = new GovernedByteBuilder(context.MemoryGovernor, instruction.Span,
-                        instruction.FormattedInitialCapacity, context.State.CancellationToken);
-                    try { PublishInstructionResult(ref execution, invocation, instruction, output); }
-                    catch { output.Release(); throw; }
-                    return true;
-                case ExecutableOpCode.AppendFormattedText:
-                    ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).Append(
-                        (PyString)execution.Code.Constants[instruction.ConstantIndex]!);
-                    return true;
-                case ExecutableOpCode.FinishFormattedString:
-                    var formattedResult = ((GovernedByteBuilder)execution.Stack[instruction.InputStart]).ToPyStringAndRelease();
-                    execution.Stack.RetireTo(instruction.ResultSlot);
-                    PublishInstructionResult(ref execution, invocation, instruction, formattedResult);
-                    return true;
-                case ExecutableOpCode.ConvertFormattedValue:
-                    if (IsImmediateFormattedValue(execution.Stack[instruction.InputStart]))
-                    {
-                        var converted = FormatInterpolatedStringPart(
-                            execution.Stack.TakeValue(instruction.InputStart, instruction.ResultSlot),
-                            instruction.FormattedConversion, null, context, instruction.Span);
-                        PublishInstructionResult(ref execution, invocation, instruction, converted);
-                        return true;
-                    }
-                    goto case ExecutableOpCode.FormatField;
-                case ExecutableOpCode.FormatField:
-                    if (instruction.OpCode == ExecutableOpCode.FormatField &&
-                        IsImmediateFormattedValue(execution.Stack[instruction.ResultSlot]))
-                    {
-                        var field = (ExecutableFormatField)execution.Code.Constants[instruction.ConstantIndex]!;
-                        var specifier = field.DynamicSpecifier
-                            ? ((PyString)execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1)).AsString()
-                            : field.FormatSpecifier;
-                        var fieldValue = execution.Stack.TakeValue(instruction.ResultSlot, instruction.ResultSlot);
-                        if (field.Append)
-                            AppendInterpolatedStringPart((GovernedByteBuilder)execution.Stack[instruction.InputStart],
-                                fieldValue, null, specifier, context, instruction.Span, field.PreparedFormat);
-                        else PublishInstructionResult(ref execution, invocation, instruction,
-                            FormatInterpolatedStringPart(fieldValue, null, specifier, context, instruction.Span, field.PreparedFormat));
-                        return true;
-                    }
-                    return false;
-                default: throw new InvalidOperationException("Unknown formatted instruction.");
+                var source = instruction.OpCode == ExecutableOpCode.ConvertFormattedValue
+                    ? instruction.InputStart : instruction.ResultSlot;
+                if (!IsImmediateFormattedValue(execution.Stack[source])) return false;
+                if (instruction.OpCode == ExecutableOpCode.FormatField)
+                {
+                    field = (ExecutableFormatField)execution.Code.Constants[instruction.ConstantIndex]!;
+                    specifier = GetExecutableFormatSpecifier(field, field.DynamicSpecifier
+                        ? execution.Stack.TakeValue(instruction.ResultSlot + 1, instruction.ResultSlot + 1) : null);
+                }
+                value = execution.Stack.TakeValue(source, instruction.ResultSlot);
             }
+            else if (instruction.OpCode == ExecutableOpCode.AppendFormattedText)
+                value = execution.Code.Constants[instruction.ConstantIndex];
+            var output = instruction.OpCode is ExecutableOpCode.AppendFormattedText or ExecutableOpCode.FinishFormattedString
+                || field?.Append == true ? (GovernedByteBuilder)execution.Stack[instruction.InputStart] : null;
+            var result = ExecuteBuiltinFormattedInstruction(instruction, output, value, specifier, field, context);
+            if (instruction.OpCode == ExecutableOpCode.FinishFormattedString)
+                execution.Stack.RetireTo(instruction.ResultSlot);
+            if (result is not null)
+            {
+                try { PublishInstructionResult(ref execution, invocation, instruction, result); }
+                catch { if (result is ExecutableTemporaryValue owned) owned.Dispose(); throw; }
+            }
+            return true;
         }
-
-        private static bool IsImmediateFormattedValue(object value)
-            => value is PyNone or BigInteger or double or bool or PyString or PyBytes;
 
         // Only actual protocol values need the function context/async driver.
         // Already-evaluated native values and dynamic specs remain in the prefix.

@@ -2,6 +2,11 @@
 
 ## 0.11.0 - Unreleased
 
+- Execute native f-string helpers in final slots using the ordinary formatting
+  kernel, avoiding invocation-frame setup for record rendering. Preserve dynamic
+  specifications, string identity, actual custom-format I/O, cancellation and
+  ownership through once-only transfer and awaited cleanup.
+
 - Keep byte-builder ownership consistent through refusing, throwing or reentrant
   refund callbacks. Publish replacement/empty storage before refunding and roll
   back only unpublished allocation, preserving retained inputs and cleanup balances.

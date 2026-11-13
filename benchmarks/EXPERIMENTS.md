@@ -6945,3 +6945,17 @@ are corrected in the existing byte-builder transaction. New/empty ownership is
 published before external refunds; only unpublished allocation rolls back.134internal/
 704public per actual target and all seven scripts/both APIs pass. No new mechanism
 or CPU claim; full qualification of this later source remains a separate delivery gate.
+
+
+## R296 — formatted helpers in final slots (2026-11-13)
+
+The actual three-field report helper now shares ordinary formatting operations in
+the native final slots, with once-only transfer at custom protocols. No separate
+formatter/controller is introduced. Focused target checks and all seven complete
+scripts/four phase boundaries pass. Allocation is flat. B651 finishes351.629s with
+all quiet/ownership/golden/join/archive gates: UTF8/UTF16 warm improves5.8–9.1% /
+6.5–8.0%, report compile-to-result4.9–8.3%, supporting wider CPU. CSV is stable;
+compilation/captured/search uncertainty and all adverse controls remain. Retain
+the source change, pending full delivery and affected CPython refresh. Original
+fixture/summarizer failures are preserved; no valid VM rows replayed. The broader
+performance objective remains open. [Exact source, all results and limits](results/2026-11-13-formatted-helper-slots/README.md).
