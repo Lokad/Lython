@@ -12,7 +12,8 @@ returns structured failure with qualified6b468bf1 but crashes2f34a48f with0xC000
 Corrected2e74ef4f uses existing logical depth to hand deep calls to the linear runner;
 no new guest limit/counter or native stack telemetry. Direct/mutual recovery and
 finite100-depth calls pass, with66focused Release cases per actual target. Original
-failed CI, inconclusive probes and fatal traces survive; full delivery is pending.
+failed CI, inconclusive probes and fatal traces survive; full delivery is GREEN.
+[Current external/source-pair checkpoint](results/2026-11-13-invoice-cpython-checkpoint/README.md) qualifies corrected2e shallow gains, with remaining external gaps.
 Older R303 performance observations keep their original source labels.
 
 [Composed executable calls](results/2026-11-13-composed-native-calls/README.md)
