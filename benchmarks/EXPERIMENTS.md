@@ -6,6 +6,29 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R328 XML UTF8 input](results/2026-11-13-xml-utf8-input/README.md) removes the
+whole-source UTF16 cache request with a bounded managed TextReader. Complete XML
+summary allocation falls10.57%; B697elapsed−13.22..−7.63% has wider CPU support,
+with search controls about±2%. Process spreads and exact magnitude remain
+diagnostic. B696's fixture-schema failure before Ready is preserved; corrected
+manifest goldens and identical runtime images pass. No whole-runtime claim.
+
+[R327 native-entry instruction attribution](results/2026-11-13-native-entry-instructions/README.md)
+resolves all46entry samples against the same process's Tier1 code. Live-default
+dictionary work leads; prolog/epilog each receive three samples. This does not
+establish a dominant removable activation or packet, so another arena or calling
+convention is not justified by this capture. Unknowns and mixed useful work remain.
+
+[R326 final-slot binding](results/2026-11-13-final-slot-binding/README.md) removes
+the separate positional binder and entry selection. The first form loses local
+inlining and has adverse controls. Moving general supplied-form parsing out of
+common completion preserves one binder; refined search timings are effectively
+flat, text remains inconclusive. Retain the simplification without a speedup claim.
+Both forms survive; full platform/stress/installed qualification passes43493784585.
+The [warmup correction](results/2026-11-13-final-slot-binding/warmup-boundaries.json)
+distinguishes full-request wall budgets from actual guest warmup totals without
+changing raw observations or timed medians.
+
 [R324 word-buffer loan](results/2026-11-13-word-buffer-loan/README.md) consolidates
 private cursor/range storage and removes per-line transaction packets. Complete
 captured-text allocation falls35.1%; search allocation is flat. Initial B690text

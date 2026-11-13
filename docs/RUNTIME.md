@@ -985,8 +985,14 @@ earlier same-hash custom keys before selecting a native hit. Callback mutation
 is revalidated, and errors remain observable before mutation. Candidate snapshots
 borrow the existing allowance through asynchronous equality and cleanup; native-only
 tables retain direct lookup. Snapshot headroom can reject tighter allowances
-earlier. XML parsing
-retains its 1,024-level depth protection.
+earlier.
+
+ElementTree feeds its parser through bounded managed character windows, without
+requesting a UTF16 cache of ordinary UTF8 input. Encoding-specific declaration
+validation can still materialize text. Input reads observe cancellation
+even while the XML parser is consuming one long token. Parser working storage and
+retained graph aliases keep their existing conservative admission and ownership;
+the 1,024-level depth protection and DTD/entity restrictions remain.
 
 Spreadsheet cells own their values and metadata independently of their current
 worksheet address. Native cell/sheet capacity and style registration use shared

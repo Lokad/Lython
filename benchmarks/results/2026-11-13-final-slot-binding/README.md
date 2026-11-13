@@ -16,17 +16,21 @@ ownership, before-allocation admission, terminal refusal and real async transfer
 They preserve live/default replacement and aliases, bound receivers, argument/error
 order, variadics, actual protocol suspension/cancellation, retained inputs, reentrant
 refunds and budget reuse. Architecture-specific test entry calls switch to the
-common binder; their independent assertions remain. Full delivery is pending.
+common binder; their independent assertions remain. Full delivery passes[43493784585](delivery/README.md): both platforms/targets,
+original stress and installed consumers;576source inputs match.
 
 ## Bounded source-pair comparisons
 
 Same complete text/search scripts and fixed B685 workers/optional0.4 adapters on
 the quiet F4as_v7 VM; normal tiering/GC. Two fresh Lython processes per source,
-12guest-second warmups and five rotating1s full-request-sized batches per job.
+12s full-request-wall warmup budgets and five rotating1s full-request-sized batches per job.
 Warm guest clocks include mediated RAM-file I/O, complete stdout/file checking and
 prior-result cleanup; exclude compile/startup, fixture reset, protocol and final
 cache teardown. Wider process CPU includes reset/protocol. No new CPython
 measurement, tail-latency, live-heap or allocation comparison is made.
+The original prose mislabeled the warmups as guest seconds. The collectors use
+wall budgets, with a possible final-batch overrun; [derived guest totals](warmup-boundaries.json)
+are10.62–12.35seconds for B693/B694. Raw observations and timed medians are unchanged.
 
 | Source / collection | Complete duration | Search elapsed change | Search wider CPU change | Text elapsed / wider CPU change |
 | --- | ---: | ---: | ---: | --- |
@@ -38,7 +42,8 @@ intervals. First candidate search-process spread9.57% remains explicit. The
 refinement's search spreads are1.40%candidate/.22%reference; text spreads3.75%/
 2.79% and wider CPU crossing zero keep its apparent elapsed benefit diagnostic.
 All identity, golden, quietness, join and archive gates pass; all actual users
-finish, and raw evidence is SHA-verified before RAM fixtures unmount. Historical
+finish; observations stay persistent while RAM fixtures are removed/unmounted,
+then the resulting archive is SHA-verified. Historical
 VM working copies are retired only after exact committed-archive verification;
 current9d reference images remain. No original adverse evidence is discarded.
 

@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Feed ElementTree's XML parser from bounded UTF8 character windows, removing
+  the whole-source UTF16 copy and observing cancellation during long token reads.
+  Preserve parser admission, graph aliases, encoding behavior and depth protection.
+
 - Share final-slot argument binding across native and owned calls, placing flat
   positional operands directly and removing the separate positional binder.
   Preserve live defaults, dynamic keyword/variadic forms and awaited cleanup.

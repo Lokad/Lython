@@ -37,6 +37,10 @@ Full Windows/Ubuntu actual.NET11/10, original stress and installed consumers pas
 
 ## Quiet-VM comparisons and decision
 
+Warmup budgets use full-request wall time, including reset/protocol, with a possible
+last-batch overrun. They are not guest-execution-second targets; the retained warmup
+responses preserve the actual guest totals.
+
 Both runs use identical fixed B685 workers and optional0.4 adapters, the same complete
 captured-text and search scripts, and normal GC/tiering on the F4as_v7 VM. Warm timing
 includes mediated RAM I/O, complete stdout/file checks and prior-result cleanup;

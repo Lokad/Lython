@@ -1,5 +1,10 @@
 # Testing Lython
 
+[XML input](Lokad.Lython.Tests/XmlUtf8ReaderTests.cs) covers scalar boundaries,
+single-code-unit reads/peeks, borrowed source funding and terminal refusal.
+Cancellation is triggered by actual decoded text during one long XML token;
+existing ElementTree cases preserve encodings, graph aliases, depth and DTD rules.
+
 ## Assembly boundaries
 
 - `Lokad.Lython.PublicApi.Tests` references `Lokad.Lython.csproj` normally. It

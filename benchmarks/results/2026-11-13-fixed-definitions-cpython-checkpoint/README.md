@@ -20,7 +20,8 @@ remain enabled. Existing fec79comparison worker and adapter0.4 are unchanged.
 | Keyword-default file search warm |0.2524–0.2552|0.1486–0.1498|1.68–1.72×|1.10/0.84%;1.98%|
 | JSON-to-Markdown report warm |2.829–2.876|2.309–2.347|1.21–1.25×|1.65/1.58%;5.63%|
 
-Two processes per engine,5s warmup per process (12s captured text/report), five
+Two processes per engine,5s full-request-wall warmup budget per process (12s
+captured text/report), with a possible last-batch overrun; five
 rotated500ms rounds. Ranges span process medians; ratios include all four pairings,
 not confidence intervals. Complete collection takes296.496s within its360s owner.
 All identity, full stdout/file golden, quiet-before/after, actual joined-user and

@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 267952128,
+  "archiveSHA256": "e190bf8771deef4927c0657f8a6fa364431c17ceda913e27d6fde443a0a57eb4",
+  "source": "Committede698656c/frozen660a0338; R327 native-entry instruction attribution",
+  "performanceComparison": false
+}

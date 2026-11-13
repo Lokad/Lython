@@ -23,7 +23,9 @@ Warm clocks include mediated RAM-file I/O, full stdout/file validation and
 prior-result cleanup. They exclude compilation, startup, fixture staging/reset,
 protocol and final cache teardown. Two processes per engine, five rotating rounds;
 time ranges span their medians and ratios include all four pairings, not confidence
-intervals. Controls are the Lython/CPython process-median spreads. JSON/report
+intervals. Warmup budgets include full-request reset/protocol costs; retained
+responses give their actual guest-execution totals. Controls are the
+Lython/CPython process-median spreads. JSON/report
 variability remains visible rather than being treated as a failed design.
 [Exact sources, wider CPU, raw data and boundaries](../benchmarks/results/2026-11-13-fixed-definitions-cpython-checkpoint/README.md).
 

@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             using var graph = new GraphConstruction(context, span);
             // No intermediate DOM. Reserve a conservative bound for the reader's
-            // UTF-16 input/token storage, name table, namespace stack and buffers.
+            // token storage, name table, namespace stack and parser buffers.
             // Guest graph storage and the conversion ledger are funded separately.
             var inputBytes = args[0] is PyString textInput ? textInput.ByteLength : ((PyBytes)args[0]).Length;
             using var parserScratch = context.MemoryGovernor.ReserveTemporary(16_384L + 24L * inputBytes, span);
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
                 throw ParseError("not well-formed (invalid encoded character)", span, error);
             }
             context.CheckExecution(span);
-            using var characters = new StringReader(source.AsString());
+            using var characters = new Utf8XmlTextReader(source, context.State, span);
             var settings = new XmlReaderSettings
             {
                 DtdProcessing = DtdProcessing.Prohibit,
