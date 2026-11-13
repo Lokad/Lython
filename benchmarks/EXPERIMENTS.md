@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Direct caller tuple operands](results/2026-11-13-native-tuple-return/operands/README.md)
+883c removes caller scratch/shared buffer/duplicate publisher;110internal/181public
+plus7overlap cases and8scripts pass. Allocation−6.4%(rich−5.1%). B668180.434s gives
+invoice warm−1.31..−0.43% with CPU, fresh/text uncertain, report+1.77..3.04% debt.
+Final simplification removes the result span from hot native state, keeping it only
+in the synchronous return wrapper; focused checks/changed-source decision pending.
+No promotion, unchanged retiming or new external ratio; all adverse phases retained.
+
 [Tuple-return scratch phase](results/2026-11-13-native-tuple-return/scratch/README.md)
 activates the intended path: invoice allocation−6.4%(rich−5.1%),110internal/
 181public/eight scripts pass. B667180.336s improves invoice warm0.5–2.9%/fresh
