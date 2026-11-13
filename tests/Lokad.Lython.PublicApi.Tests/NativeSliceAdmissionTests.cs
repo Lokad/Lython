@@ -23,7 +23,11 @@ public sealed class NativeSliceAdmissionTests
                 Assert.Equal(fundedPrefix, result.Success);
                 if (!fundedPrefix) Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
                 Assert.True(host.AllocatedAtGate>0);
-                var allocated=GC.GetTotalAllocatedBytes(true)-host.AllocatedAtGate;
+                // The gate and refusal/completed rendering are synchronous on
+                // one execution thread. Exclude other process traffic and later
+                // diagnostic/async cleanup; keep the copy-sized allocation bound.
+                Assert.Equal(host.ThreadAtGate,fundedPrefix?host.ThreadAtSecondGate:budget.ThreadAtFirstRefusal);
+                var allocated=(fundedPrefix?host.ThreadAllocatedAtSecondGate:budget.ThreadAllocatedAtFirstRefusal)-host.ThreadAllocatedAtGate;
                 Assert.InRange(allocated,0,128*1024);
             }
             Assert.Equal(0,budget.Root.ReservedBytes);
@@ -42,7 +46,8 @@ public sealed class NativeSliceAdmissionTests
             {
                 Assert.False(result.Success);
                 Assert.Equal(LythonFailureReason.SharedMemoryAllowance,result.FailureAttribution?.Reason);
-                Assert.InRange(GC.GetTotalAllocatedBytes(true)-host.AllocatedAtGate,0,128*1024);
+                Assert.Equal(host.ThreadAtGate,budget.ThreadAtFirstRefusal);
+                Assert.InRange(budget.ThreadAllocatedAtFirstRefusal-host.ThreadAllocatedAtGate,0,128*1024);
             }
             Assert.Equal(0,budget.Root.ReservedBytes);
         }

@@ -6,6 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R329 iterative XML selection](results/2026-11-13-xml-selection/README.md) removes
+frontier lists and per-candidate UTF16 tag conversion, adds namespace-aware
+descendants and stops `find` early. Complete settings/report allocation falls44.83%;
+same-image reversed-order B699 supports XML elapsed−35.76..−35.55% with wider CPU
+support. Original search+2.99..+7.08% remains; confirmation spans−3.39..+5.08% with
+6.72%candidate-process spread. Retain simplification/semantics with explicit search
+uncertainty, not a universal speedup; stop unchanged retiming at this checkpoint.
+
 [R328 XML UTF8 input](results/2026-11-13-xml-utf8-input/README.md) removes the
 whole-source UTF16 cache request with a bounded managed TextReader. Complete XML
 summary allocation falls10.57%; B697elapsed−13.22..−7.63% has wider CPU support,

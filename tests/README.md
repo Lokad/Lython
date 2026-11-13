@@ -4,6 +4,10 @@
 single-code-unit reads/peeks, borrowed source funding and terminal refusal.
 Cancellation is triggered by actual decoded text during one long XML token;
 existing ElementTree cases preserve encodings, graph aliases, depth and DTD rules.
+[Selection goldens](Lokad.Lython.PublicApi.Tests/XmlSelectionTests.cs) cover
+composed descendant order/duplicates, namespaces and deep paths;
+[ownership checks](Lokad.Lython.Tests/XmlSelectionOwnershipTests.cs) cover first
+matches under pressure, retained lists and cancellation/refusal during traversal growth.
 
 ## Assembly boundaries
 

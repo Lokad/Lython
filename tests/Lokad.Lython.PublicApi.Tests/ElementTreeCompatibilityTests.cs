@@ -14,7 +14,6 @@ public sealed class ElementTreeCompatibilityTests
     [InlineData("root.append(root[0])")]
     [InlineData("root.tag='changed'")]
     [InlineData("root.text='changed'")]
-    [InlineData("root.find('.//x')")]
     [InlineData("root.findall('x[1]')")]
     [InlineData("root.find('..')")]
     [InlineData("root.find('/r')")]

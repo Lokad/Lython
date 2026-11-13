@@ -993,6 +993,12 @@ validation can still materialize text. Input reads observe cancellation
 even while the XML parser is consuming one long token. Parser working storage and
 retained graph aliases keep their existing conservative admission and ownership;
 the 1,024-level depth protection and DTD/entity restrictions remain.
+Relative XML selection uses an iterative, temporarily funded path cursor;
+`find` stops at its first match and `findall` admits its retained result capacity.
+Child/descendant steps preserve Python's composed order and duplicate matches,
+including namespace maps. Cursor cleanup refunds no graph aliases. Prepared
+namespace text and result growth remain conservative estimates, so tightly funded
+commands can be refused earlier than with a different capacity layout.
 
 Spreadsheet cells own their values and metadata independently of their current
 worksheet address. Native cell/sheet capacity and style registration use shared

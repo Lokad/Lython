@@ -52,6 +52,8 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
     public long ThreadAllocatedAtGate { get; private set; }
     public int ThreadAtGate { get; private set; }
     public long AllocatedAtSecondGate { get; private set; }
+    public long ThreadAllocatedAtSecondGate { get; private set; }
+    public int ThreadAtSecondGate { get; private set; }
     public long AtSecondGate { get; private set; }
     public bool CompletesSynchronously => files is null || files is ILythonSynchronousHostCapability { CompletesSynchronously: true };
     public string Cwd => "/";
@@ -70,6 +72,8 @@ internal sealed class AdmissionGateHost(AdmissionGateBudget budget, long headroo
             else
             {
                 AtSecondGate = budget.Root.ReservedBytes;
+                ThreadAtSecondGate = Environment.CurrentManagedThreadId;
+                ThreadAllocatedAtSecondGate = GC.GetAllocatedBytesForCurrentThread();
                 AllocatedAtSecondGate = GC.GetTotalAllocatedBytes(true);
             }
             return DateTimeOffset.UnixEpoch;

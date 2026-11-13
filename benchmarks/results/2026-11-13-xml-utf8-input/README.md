@@ -65,7 +65,9 @@ cases, with sync/async public execution, encodings/errors, mixed content, graph
 aliases, depth/DTD protection, input scalar boundaries, terminal refusal and budget
 reuse. Deterministic cancellation is triggered by actual decoded XML text during
 one long parser token. Full platform/stress/installed-package qualification is
-pending. R320 traversal/clear/iterparse remains separate; publication is held.
+not established: [original delivery](first-delivery/README.md) fails an older
+slice allocation observation. The corrected test joins the next coherent selector
+delivery. R320 traversal/clear/iterparse remains separate; publication is held.
 
 [Source/check/allocation evidence](source-checks.tar.xz),
 [allocation summary](allocation-summary.json), [timing summary](summary.json),

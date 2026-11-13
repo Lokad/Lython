@@ -407,6 +407,7 @@ internal sealed partial class LythonRuntime
 
             private object Select(object[] args, ExecutionContext context, LythonSourceSpan span, bool all)
             {
+                context.CheckExecution(span);
                 var path = ExpectString(args[0], "Element path", span);
                 var namespaces = args.Length > 1 && args[1] is not PyNone ? args[1] as PyDict : null;
                 if (args.Length > 1 && args[1] is not PyNone && namespaces is null)
@@ -414,38 +415,97 @@ internal sealed partial class LythonRuntime
                 using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 64L * path.Length, span);
                 if (path.Length == 0) return all ? new PyList([], context.MemoryGovernor, span) : PyNone.Instance;
                 var steps = ParsePath(path, namespaces, context, span, scratch);
-                var current = new List<Element> { this };
-                scratch.Grow(32, span);
-                foreach (var step in steps)
+                using var cursor = new SelectionCursor(this, steps, context, span);
+                if (!all) return cursor.TryMoveNext(out var first) ? first : PyNone.Instance;
+                var result = new PyList(0, context.MemoryGovernor, span);
+                try
                 {
-                    if (step == ".") continue;
-                    var next = new List<Element>();
-                    foreach (var parent in current)
-                    {
-                        foreach (Element child in parent.Children)
-                        {
-                            context.CheckExecution(span);
-                            if (step != "*" && !child.Tag.AsString().Equals(step, StringComparison.Ordinal)) continue;
-                            { _ = next.Count + 1; context.CheckExecution(span); }
-                            if (next.Count == next.Capacity)
-                                scratch.Grow(8L * (next.Capacity == 0 ? 4 : next.Capacity), span);
-                            next.Add(child);
-                        }
-                    }
-                    current = next;
+                    while (cursor.TryMoveNext(out var element)) result.Add(element);
+                    return result;
                 }
-                if (!all) return current.Count == 0 ? PyNone.Instance : current[0];
-                var result = new PyList(current, context.MemoryGovernor, span);
-                return result;
+                catch { result.DiscardUnpublishedStorage(); throw; }
             }
         }
 
-        private static List<string> ParsePath(string path, PyDict? namespaces, ExecutionContext context, LythonSourceSpan span,
+        private readonly record struct SelectionStep(PyString? Tag, bool Descendants);
+
+        // A frame resumes one axis after its selected child's remaining path.
+        // This preserves ElementPath's duplicate/order semantics without CLR
+        // recursion or a materialized frontier for each path component.
+        private sealed class SelectionCursor : IDisposable
+        {
+            private readonly record struct Frame(Element Parent, int Step, int NextChild);
+            private readonly List<SelectionStep> _steps;
+            private readonly List<Frame> _stack = [];
+            private readonly ExecutionContext _context;
+            private readonly LythonSourceSpan _span;
+            private readonly MemoryGovernor.TemporaryMemoryReservation _storage;
+            private Element? _self;
+
+            internal SelectionCursor(Element root, List<SelectionStep> steps, ExecutionContext context, LythonSourceSpan span)
+            {
+                _steps = steps;
+                _context = context;
+                _span = span;
+                _storage = context.MemoryGovernor.ReserveTemporary(64, span);
+                try
+                {
+                    if (steps.Count == 0) _self = root;
+                    else Push(root, 0);
+                }
+                catch { Dispose(); throw; }
+            }
+
+            internal bool TryMoveNext([MaybeNullWhen(false)] out Element element)
+            {
+                _context.CheckExecution(_span);
+                if (_self is { } self) { _self = null; element = self; return true; }
+                while (_stack.Count != 0)
+                {
+                    _context.CheckExecution(_span);
+                    var frame = _stack[^1];
+                    if (frame.NextChild == frame.Parent.Children.Count) { _stack.RemoveAt(_stack.Count - 1); continue; }
+                    var child = (Element)frame.Parent.Children[frame.NextChild];
+                    _stack[^1] = frame with { NextChild = frame.NextChild + 1 };
+                    var step = _steps[frame.Step];
+                    if (step.Descendants) Push(child, frame.Step);
+                    if (step.Tag is not null && !child.Tag.Equals(step.Tag)) continue;
+                    if (frame.Step + 1 == _steps.Count) { element = child; return true; }
+                    Push(child, frame.Step + 1);
+                }
+                element = null;
+                return false;
+            }
+
+            private void Push(Element parent, int step)
+            {
+                if (_stack.Count == _stack.Capacity)
+                {
+                    var previous = _stack.Capacity;
+                    var capacity = previous == 0 ? 4 : checked(previous * 2);
+                    _storage.Grow(32L + 16L * capacity, _span);
+                    _stack.Capacity = capacity;
+                    if (previous != 0) _storage.Shrink(32L + 16L * previous);
+                }
+                _stack.Add(new(parent, step, 0));
+            }
+
+            public void Dispose()
+            {
+                _self = null;
+                _stack.Clear();
+                _stack.Capacity = 0;
+                _storage.Dispose();
+            }
+        }
+
+        private static List<SelectionStep> ParsePath(string path, PyDict? namespaces, ExecutionContext context, LythonSourceSpan span,
             MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var steps = new List<string>();
+            var steps = new List<SelectionStep>();
             var start = 0;
             var inClark = false;
+            var descendants = false;
             for (var index = 0; index <= path.Length; index++)
             {
                 if ((index & 1023) == 0) context.CheckExecution(span);
@@ -458,8 +518,23 @@ internal sealed partial class LythonRuntime
                 }
                 var step = path[start..index];
                 if (index == path.Length && start == index) step = "*";
-                if (step.Length == 0 || step == "..")
-                    throw new LythonRuntimeException("NotImplementedError", "Element paths support only relative child steps.", span);
+                if (step.Length == 0)
+                {
+                    if (index == 0)
+                        throw new LythonRuntimeException("NotImplementedError", "Element paths must be relative.", span);
+                    if (descendants) throw new LythonRuntimeException("SyntaxError", "invalid descendant", span);
+                    descendants = true;
+                    start = index + 1;
+                    continue;
+                }
+                if (step == "..")
+                    throw new LythonRuntimeException("NotImplementedError", "Element parent selection is not supported.", span);
+                if (step == ".")
+                {
+                    if (descendants) throw new LythonRuntimeException("SyntaxError", "invalid descendant", span);
+                    start = index + 1;
+                    continue;
+                }
                 var local = step.StartsWith('{') ? step[(step.IndexOf('}') + 1)..] : step;
                 if (local.IndexOfAny(['[', ']', '@', '(', ')', '|']) >= 0 ||
                     (local.Contains('*', StringComparison.Ordinal) && local != "*") ||
@@ -478,18 +553,19 @@ internal sealed partial class LythonRuntime
                             if (namespaces is null || !namespaces.TryGetValue(prefix, out var uri))
                                 throw new LythonRuntimeException("SyntaxError", "prefix not found in prefix map", span);
                             var name = ExpectString(uri, "namespace URI", span);
-                            scratch.Grow(64 + 2L * name.Length, span);
+                            scratch.Grow(128 + 8L * name.Length, span);
                             step = ClarkName(name, step[(colon + 1)..]);
                         }
                     }
                     else if (namespaces is not null && namespaces.TryGetValue(PyString.Empty, out var defaultUri))
                     {
                         var name = ExpectString(defaultUri, "namespace URI", span);
-                        scratch.Grow(64 + 2L * name.Length, span);
+                        scratch.Grow(128 + 8L * name.Length, span);
                         step = ClarkName(name, step);
                     }
                 }
-                steps.Add(step);
+                steps.Add(new(step == "*" ? null : PyString.FromString(step), descendants));
+                descendants = false;
                 start = index + 1;
             }
             if (inClark) throw new LythonRuntimeException("SyntaxError", "invalid Clark name", span);

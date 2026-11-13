@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Support namespace-aware XML descendant selection through the same iterative
+  relative-path cursor as child selection. Stop `find` at its first match and
+  remove intermediate frontier lists and per-candidate UTF16 tag conversion.
+
 - Feed ElementTree's XML parser from bounded UTF8 character windows, removing
   the whole-source UTF16 copy and observing cancellation during long token reads.
   Preserve parser admission, graph aliases, encoding behavior and depth protection.
