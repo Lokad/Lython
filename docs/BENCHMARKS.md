@@ -89,6 +89,9 @@ CPython remains the external baseline. Separate source-pair experiments establis
 - Shared immutable builtin definitions remove2,568 B from the builtin factory,
   25.06% of that factory, not whole execution. Local factory clocks are adverse;
   complete-script results are modest or inconclusive.
+- Qualified XML settings selection removes intermediate match lists and UTF16 tag
+  conversion: allocation falls44.83%, with elapsed about35.6% lower in confirmation.
+  This is a source-specific comparison; [search-control uncertainty remains](../benchmarks/results/2026-11-13-xml-selection/README.md).
 
 [Experimental history and source-specific evidence](../benchmarks/EXPERIMENTS.md)
 preserve controlled comparisons, rejected designs, adverse results and qualification.

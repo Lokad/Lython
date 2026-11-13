@@ -999,6 +999,14 @@ Child/descendant steps preserve Python's composed order and duplicate matches,
 including namespace maps. Cursor cleanup refunds no graph aliases. Prepared
 namespace text and result growth remain conservative estimates, so tightly funded
 commands can be refused earlier than with a different capacity layout.
+Tree iterators admit one working stack using a conservative subtree-depth bound
+recorded during parsing. Native pulls share the synchronous path across both host
+APIs; user tag equality can genuinely suspend with storage still funded. Exhaustion
+relinquishes the private stack; an unexhausted iterator can retain it until its
+command owner ends. `clear()` replaces the attribute map, preserving old map, text
+and child aliases and their funding. It can discard private child-reference backing;
+other graph charges remain conservative until their owner ends. These operations
+do not turn `fromstring` into an incremental or constant-memory parser.
 
 Spreadsheet cells own their values and metadata independently of their current
 worksheet address. Native cell/sheet capacity and style registration use shared

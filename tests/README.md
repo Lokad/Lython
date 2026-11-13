@@ -8,6 +8,10 @@ existing ElementTree cases preserve encodings, graph aliases, depth and DTD rule
 composed descendant order/duplicates, namespaces and deep paths;
 [ownership checks](Lokad.Lython.Tests/XmlSelectionOwnershipTests.cs) cover first
 matches under pressure, retained lists and cancellation/refusal during traversal growth.
+[Tree traversal](Lokad.Lython.PublicApi.Tests/XmlTraversalTests.cs) adds mixed text,
+lazy equality errors, actual asynchronous callbacks and cancellation;
+[ownership cases](Lokad.Lython.Tests/XmlTraversalOwnershipTests.cs) preserve aliases,
+depth-based working storage and refusal before clear mutates the tree.
 
 ## Assembly boundaries
 

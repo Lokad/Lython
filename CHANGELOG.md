@@ -2,6 +2,10 @@
 
 ## 0.11.0 - Unreleased
 
+- Add funded XML tree iteration, mixed-text iteration and alias-safe `clear()`.
+  Native pulls share the synchronous path across host APIs, while user tag
+  equality can await real host operations without relinquishing traversal storage.
+
 - Support namespace-aware XML descendant selection through the same iterative
   relative-path cursor as child selection. Stop `find` at its first match and
   remove intermediate frontier lists and per-candidate UTF16 tag conversion.

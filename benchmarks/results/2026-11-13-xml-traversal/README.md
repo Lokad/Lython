@@ -1,4 +1,39 @@
-# Native XML traversal: initial evidence
+# Native XML traversal and alias-safe clear
+
+2026-11-13. Retain refined965c7e0f against qualifiedR329/frozenc16b44f0 for
+Python compatibility and bounded traversal storage, with no demonstrated CPU gain.
+One funded nonrecursive cursor powers iter/itertext; a conservative subtree-depth
+bound admits its fixed stack before publication. clear replaces attributes before
+discarding child-reference backing, preserving old maps/text/child aliases. No new
+pool, ownership subsystem, runtime policy or public option. Incremental input is separate.
+
+Native pulls now share one synchronous path across Run/RunAsync; only user-defined
+tag equality enters the constant-space async protocol loop. Both actual.NET11/10
+targets pass32internal/55public focused cases, including real async equality,
+in-flight cancellation, suppressed admission refusal, alias retention, pre-mutation
+refusal, lazy errors, deep trees and exhausted-stack release. Full platform/stress/
+installed-consumer qualification is pending; publication is held.
+
+B701 repeats the original catalog/clocks on refined965, completing151.668s/all gates:
+
+| Refined result | Allocated-byte change | Elapsed change | Wider process CPU change |
+| --- | ---: | ---: | ---: |
+| Aggregation: iter versus findall |−0.41%|−1.05..+2.57%|−0.36..+1.98%|
+| Unchanged XML settings |+0.62..+0.63%|−2.16..−0.46%|−2.18..−0.75%|
+
+Aggregation process spreads1.49%candidate/2.09%reference keep the apparent small
+difference uncertain; settings candidate spread1.69% also limits precision. The
+initial8–10%adverse direction is no longer established, not proof of a universal
+improvement. Accept small unresolved aggregation CPU debt and the8B/element depth
+metadata cost. No unchanged retiming or further field-packing work at this checkpoint.
+Native traversal succeeds with4KiBspare where materialized selection needs capacity
+for every match; the0.4%whole-invocation allocation reduction is separate and modest.
+Original/adverse conditions and discarded narrowing remain below.
+
+[Final source/checks](native-source-checks.tar.xz), [allocated bytes](native-allocation-summary.json),
+[B701raw](b701/observations.tgz) record the578source inputs and exact measured images.
+
+## Original and discarded forms
 
 2026-11-13. Initial frozen53f3eb87 supports iter/itertext/alias-safe clear with a
 funded fixed traversal stack. Reference is qualifiedR329/frozenc16b44f0. Complete

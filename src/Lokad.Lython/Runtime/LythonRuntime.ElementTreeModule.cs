@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class ElementTreeModule : PyModule
+    internal sealed partial class ElementTreeModule : PyModule
     {
         internal static readonly ElementTreeModule Instance = new();
         internal static readonly PyBuiltinRuntimeType ElementType = new("xml.etree.ElementTree.Element",
@@ -35,6 +35,8 @@ internal sealed partial class LythonRuntime
             LythonCallableSignature.Create("Element.find", ["path", "namespaces"], requiredCount: 1);
         private static readonly LythonCallableSignature FindAllSignature =
             LythonCallableSignature.Create("Element.findall", ["path", "namespaces"], requiredCount: 1);
+        private static readonly LythonCallableSignature IterSignature =
+            LythonCallableSignature.Create("Element.iter", ["tag"], requiredCount: 0);
         private const int MaximumDepth = 1024;
 
         private ElementTreeModule() : base("xml.etree.ElementTree") { }
@@ -210,6 +212,7 @@ internal sealed partial class LythonRuntime
                                 var parent = stack[^1];
                                 parent.FinishContent(graph);
                                 parent.Element.Children.Add(element);
+                                parent.Element.SubtreeDepth = Math.Max(parent.Element.SubtreeDepth, 1);
                                 parent.LastChild = element;
                             }
                             if (!reader.IsEmptyElement)
@@ -230,6 +233,9 @@ internal sealed partial class LythonRuntime
                         case XmlNodeType.EndElement:
                             var completed = stack[^1];
                             completed.FinishContent(graph);
+                            if (stack.Count > 1)
+                                stack[^2].Element.SubtreeDepth = Math.Max(stack[^2].Element.SubtreeDepth,
+                                    completed.Element.SubtreeDepth + 1);
                             completed.Dispose();
                             stack.RemoveAt(stack.Count - 1);
                             break;
@@ -354,10 +360,13 @@ internal sealed partial class LythonRuntime
         {
             private const long ShellBytes = 128;
             internal readonly PyString Tag;
-            internal readonly PyDict Attributes;
+            internal PyDict Attributes;
             internal readonly PyList Children;
             internal object Text = PyNone.Instance;
             internal object Tail = PyNone.Instance;
+            // Parsing establishes this upper bound. Supported mutation only
+            // removes descendants, so ancestor bounds can remain conservative.
+            internal int SubtreeDepth;
             internal Element(PyString tag, PyDict attributes, PyList children, MemoryGovernor governor, LythonSourceSpan span)
             {
                 governor.Reserve(ShellBytes, span);
@@ -396,13 +405,37 @@ internal sealed partial class LythonRuntime
                         Attributes.TryGetValue(args[0], out var item) ? item : args.Length > 1 ? args[1] : PyNone.Instance, GetSignature),
                     "find" => BoundCallable.Create((args, span, context) => Select(args, context, span, false), FindSignature),
                     "findall" => BoundCallable.Create((args, span, context) => Select(args, context, span, true), FindAllSignature),
-                    "append" or "extend" or "insert" or "remove" or "clear" or "set" or
-                    "keys" or "items" or "iter" or "itertext" or "findtext" or "iterfind" or "makeelement" =>
+                    "iter" => BoundCallable.Create((args, span, context) =>
+                        new TreeIterator(this, args.Length == 0 ? PyNone.Instance : args[0], false, context, span), IterSignature),
+                    "itertext" => BoundCallable.CreateNoArguments(this, "Element.itertext", static (receiver, span, context) =>
+                        new TreeIterator(receiver, PyNone.Instance, true, context, span)),
+                    "clear" => BoundCallable.CreateNoArguments(this, "Element.clear", static (receiver, span, context) => receiver.Clear(context, span)),
+                    "append" or "extend" or "insert" or "remove" or "set" or
+                    "keys" or "items" or "findtext" or "iterfind" or "makeelement" =>
                         BoundCallable.Create((_, span, _) => throw new LythonRuntimeException("NotImplementedError",
                             "Element." + name + " is not supported.", span), "Element." + name),
                     _ => MissingMemberValue.Instance,
                 };
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
+            }
+
+            private object Clear(ExecutionContext context, LythonSourceSpan span)
+            {
+                context.CheckExecution(span);
+                var governor = context.MemoryGovernor;
+                using var shell = governor.ReserveTemporary(256, span);
+                context.CheckExecution(span);
+                var replacement = new PyDict(governor, span);
+                try { context.CheckExecution(span); }
+                catch { governor.RefundUnpublishedValue(replacement); throw; }
+                shell.Commit(256);
+                // Publish the entire cleared state before Children returns its
+                // private backing. Old attribute/text/child aliases keep owners.
+                Attributes = replacement;
+                Text = Tail = PyNone.Instance;
+                SubtreeDepth = 0;
+                Children.Clear();
+                return PyNone.Instance;
             }
 
             private object Select(object[] args, ExecutionContext context, LythonSourceSpan span, bool all)

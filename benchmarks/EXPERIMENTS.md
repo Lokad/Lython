@@ -6,6 +6,17 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[R330 XML traversal/clear](results/2026-11-13-xml-traversal/README.md) adds one funded
+nonrecursive tree iterator and preserves old attribute/text/child aliases through
+clear. The first unconditional async pull is8–10%slower; a shared synchronous native
+path with real-suspension protocol handling becomes effectively flat in B701
+(elapsed−1.05..+2.57%, widerCPU−0.36..+1.98%). Native iter intentionally replaces
+findall in this comparison; no engine-wide speedup is claimed. Heap savings0.41%
+and settings+0.63%remain separate. Ushort depth gives no object-size benefit and is
+withdrawn. Retain compatibility/working-storage benefits and explicit small debt;
+4KiBspare funds wide traversal while materialization refuses/refunds in the paired
+regression. Original/narrowed/final sources and all adverse observations survive.
+
 [R329 iterative XML selection](results/2026-11-13-xml-selection/README.md) removes
 frontier lists and per-candidate UTF16 tag conversion, adds namespace-aware
 descendants and stops `find` early. Complete settings/report allocation falls44.83%;
