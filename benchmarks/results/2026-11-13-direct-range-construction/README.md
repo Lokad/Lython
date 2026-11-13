@@ -61,7 +61,7 @@ CPU win. No new CPython comparison is inferred from this source pair.
 Retain the common construction/deletion and source-supported compile-to-result
 benefit. Warm/CSV uncertainty remains delivery debt for later coherent checkpoints;
 it does not trigger another small timing campaign or finish the performance goal.
-Full platform/stress/consumer qualification is pending at this evidence commit.
+Full platform/stress/consumer qualification passes on917e01d8; [cached delivery](delivery/README.md).
 Publication remains held.
 
 ## Custody

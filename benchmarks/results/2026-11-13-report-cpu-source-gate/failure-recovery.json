@@ -1,0 +1,11 @@
+{
+  "originalServiceExit": 1,
+  "originalWorkerExit": -9,
+  "normalWorkerCloseMissing": true,
+  "profilePartial": true,
+  "allUsersJoined": true,
+  "guestFixturesArchivedAndRemoved": true,
+  "deadWorkerMapsRecovered": [],
+  "freeBytes": 266194944,
+  "archiveSHA256": "a54b1111f891e701aa64a7b31b92132074d9621ba533822a310746a0dde4e80b"
+}

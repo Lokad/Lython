@@ -1,0 +1,17 @@
+{
+  "reference": "917e01d8/9e53b9fa",
+  "candidate": "305fa32f5a10f8dcfca901cbfb2b1babb20c3864e6f1aa027a469e6a6ed8058b",
+  "failingBefore": 4,
+  "passedAfterPerTarget": {
+    "internal": 134,
+    "public": 704
+  },
+  "actualTargets": [
+    "net11.0",
+    "net10.0"
+  ],
+  "allSevenScriptsBothApis": true,
+  "allReturnedBalancesZero": true,
+  "fullQualificationPending": true,
+  "performanceQualified": false
+}

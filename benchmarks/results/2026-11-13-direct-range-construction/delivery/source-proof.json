@@ -1,0 +1,8 @@
+{
+  "commit": "917e01d88007776f7e46193ba1ae14bdf75e6dbf",
+  "coreSHA256": "9e53b9fa4e62ba5aa6e7e5154ccbc10c2db086062cc420c8f54fe58483242a8f",
+  "productionFiles": 570,
+  "allFrozenSourcesMatchCommitWithExplicitNewlineNormalization": true,
+  "netProductionLines": -12,
+  "reference": "2d91eb1a/161cd935"
+}

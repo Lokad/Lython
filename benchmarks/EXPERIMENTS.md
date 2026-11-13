@@ -6925,3 +6925,23 @@ is flat. Captured compile-to-result improves3.61–9.06% elapsed /4.37–7.67% w
 warm results cross zero and adverse/moving CSV/search controls remain explicit.
 Retain the common ownership simplification; do not claim universal CPU improvement.
 Minimum/idle capacity can deny earlier. Full delivery remains pending separately.
+
+
+## R294 — complete report CPU gate
+
+[1,477 current-source CPU samples](results/2026-11-13-report-cpu-source-gate/README.md)
+retain10.16% unknown leaves and all raw maps/stacks. Existing UTF8/default numeric
+formatting and JSON windows are confirmed, not proposed again. Formatting
+instruction/operand construction is a follow-on source gate; shared builder refund
+publication is a separate focused ownership hypothesis to reproduce first. Original
+B649 decoding/forced-close failure and corrected B650 normal shutdown/quiet/balance
+gates survive. No timing comparison or removable-CPU share is claimed.
+
+
+## R295 — publish builder ownership before refund
+
+[Four demonstrated retained-funding/cleanup failures](results/2026-11-13-builder-refund-ownership/README.md)
+are corrected in the existing byte-builder transaction. New/empty ownership is
+published before external refunds; only unpublished allocation rolls back.134internal/
+704public per actual target and all seven scripts/both APIs pass. No new mechanism
+or CPU claim; full qualification of this later source remains a separate delivery gate.
