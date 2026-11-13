@@ -6,6 +6,15 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Current invoice source gate](results/2026-11-13-invoice-current-cpu-source-gate/README.md)
+profiles qualified93 after the measured R305 change:1603leaves/8.06CPU seconds,
+8.36%unknown,0ambiguous. No dominant ordinary-frame phase; useful work remains
+inside native/ordinary dispatch. Tuple construction46leaves plus immediate
+helper-return unpacking selects bounded direct tuple-result transport. No universal
+tagged values/larger tuple headers; exact semantic/admission/cancellation and whole-
+script acceptance precede retention. Raw inherited metadata correction explicit;
+all output/ownership/quiet/join/persistent-SHA gates pass. No speedup claim.
+
 [CSV shared long-field backing withdrawn](results/2026-11-13-csv-shared-fields/refined/README.md):
 initial21d0 allocation−3.50%, CPU uncertain; descriptor-derived277c deletes parser
 counter/reset state but adds a pass. Four-job B664169.149s shows rich warm crossing

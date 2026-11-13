@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "allWorkersJoined": true,
+  "quietBeforeAndAfter": true,
+  "guestFixturesRemoved": true,
+  "archivedAndVerifiedUnderLease": true,
+  "ramTraceArchivedAndVerifiedBeforeUnmount": true,
+  "freeBytes": 266096640,
+  "archiveSHA256": "ce4439156c06f7b36aa962c16b15329e2d6844d4dc9070cc0f60b75416b710ef",
+  "source": "Fully qualified14dd45b7/93a6d134 invoice source gate after integer kernel",
+  "performanceComparison": false
+}
