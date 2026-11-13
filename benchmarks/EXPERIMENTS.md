@@ -6,12 +6,14 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
-[CSV shared long-field backing, first phase](results/2026-11-13-csv-shared-fields/initial/README.md)
-uses existing UTF8 windows to remove per-long-field byte arrays.117internal/372public
-CSV checks and eight scripts/both APIs pass; rich-field allocation−3.50%. B663 four
-controlled jobs169.459s does not reproduce desktop adversity, but CPU/fresh cross
-zero and captured controls move7.65%. One state-removal refinement is selected;
-no promotion/CPU claim or fixed-percentage veto. All original adverse rows survive.
+[CSV shared long-field backing withdrawn](results/2026-11-13-csv-shared-fields/refined/README.md):
+initial21d0 allocation−3.50%, CPU uncertain; descriptor-derived277c deletes parser
+counter/reset state but adds a pass. Four-job B664169.149s shows rich warm crossing
+zero/fresh+0.65..2.88% adverse. Restore qualified production, force nonincremental
+build;117internal/372public CSV checks pass. Six ownership/cancellation/refusal
+regressions retained; no dormant CSV alternative. Initial/adverse/incomplete
+desktop evidence remains. No fixed-percentage veto or CPU claim; future work
+requires a changed storage/copy premise.
 
 [Shared immutable repetition](results/2026-11-13-immutable-repetition/README.md)
 fixes reproduced unfunded/late-admitted bytes output, shares bounded copying and
