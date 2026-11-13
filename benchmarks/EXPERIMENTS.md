@@ -6,6 +6,12 @@ justify bounded confirmation, refinement or correction, with adverse results and
 original conditions retained. Current comparisons belong in
 [BENCHMARKS](../docs/BENCHMARKS.md).
 
+[Native tuple return, initial inactive guard](results/2026-11-13-native-tuple-return/initial/README.md):
+23eb passes110internal/180public and eight scripts, but invoice allocation is flat.
+Compiled facts prove unrelated owned-slot maxima block the intended call. B666
+four jobs180.263s preserves flat warm/adverse fresh/moving controls. Refine actual
+bounded input cleanup eligibility; no unchanged retiming, promotion or CPU claim.
+
 [Current invoice source gate](results/2026-11-13-invoice-current-cpu-source-gate/README.md)
 profiles qualified93 after the measured R305 change:1603leaves/8.06CPU seconds,
 8.36%unknown,0ambiguous. No dominant ordinary-frame phase; useful work remains
